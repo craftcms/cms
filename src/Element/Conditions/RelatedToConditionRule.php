@@ -45,6 +45,38 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         return t('Related To');
     }
 
+    /** @var array{string, int[]}|null The IDs last checked against a type, and those of it. */
+    private ?array $_idsOfType = null;
+
+    /**
+     * Picked elements belong to the type they were picked as, so switching
+     * types drops them: element IDs are unique across types.
+     *
+     * @return int[]|string
+     */
+    #[\Override]
+    public function getElementIds(bool $parse = true): array|string
+    {
+        $ids = parent::getElementIds($parse);
+
+        if (! is_array($ids) || $ids === []) {
+            return $ids;
+        }
+
+        $key = $this->elementType.':'.implode(',', $ids);
+
+        if (($this->_idsOfType[0] ?? null) !== $key) {
+            $this->_idsOfType = [$key, $this->elementType::find()
+                ->id($ids)
+                ->site('*')
+                ->unique()
+                ->status(null)
+                ->ids()];
+        }
+
+        return array_values(array_filter($ids, fn ($id) => in_array($id, $this->_idsOfType[1])));
+    }
+
     protected function elementType(): string
     {
         return $this->elementType;

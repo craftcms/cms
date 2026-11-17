@@ -407,7 +407,7 @@
         />
       </template>
 
-      <template #footer>
+      <template #footer="{exportSelection}">
         <ElementBulkActionsBar
           :selected-ids="selectedIds"
           :selected-elements="selectedElements"
@@ -455,6 +455,14 @@
             .disabled="busy || loading || movePage === page"
             @click="moveSelectionToPage"
             >{{ t('Move') }}</craft-button
+          >
+          <craft-button
+            v-if="exportSelection"
+            type="button"
+            :variant="ButtonVariant.Plain"
+            .disabled="busy || loading"
+            @click="exportSelection()"
+            >{{ t('Export…') }}</craft-button
           >
         </ElementBulkActionsBar>
       </template>

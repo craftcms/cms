@@ -1,5 +1,6 @@
 import type {ChipThumbSizeValue} from '@craftcms/ui';
 import type {SortItem} from '@/common/types';
+import type {ConditionConfig} from '@/modules/conditions/types';
 
 export type ViewMode = {
   mode: 'table' | 'cards' | 'structure' | 'thumbs';
@@ -36,6 +37,14 @@ export type SourceViewState = {
    * views too. Absent entries fall back to that view's default size.
    */
   thumbSizes?: Partial<Record<'table' | 'thumbs', ThumbSize>>;
+  /** The search, status and filters last applied to this source. */
+  filters?: SourceFilterState;
+};
+
+export type SourceFilterState = {
+  search?: string | null;
+  status?: string | null;
+  condition?: ConditionConfig | null;
 };
 
 /** How cards show a thumbnail, as a source's field layout has it. */

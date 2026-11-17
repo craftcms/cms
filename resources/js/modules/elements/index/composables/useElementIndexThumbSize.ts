@@ -1,3 +1,4 @@
+import {t} from '@craftcms/ui';
 import {computed, type Ref} from 'vue';
 import type {
   IndexQueryParams,
@@ -35,6 +36,17 @@ function viewFor(mode: ViewMode['mode']): ThumbSizeView | null {
     default:
       return null;
   }
+}
+
+/** A thumb size's name, as the View menu shows it. */
+export function thumbSizeLabel(size: ThumbSizeValue): string {
+  return {
+    sm: t('Small'),
+    md: t('Medium'),
+    lg: t('Large'),
+    xl: t('XL'),
+    '2xl': t('2XL'),
+  }[size];
 }
 
 /**

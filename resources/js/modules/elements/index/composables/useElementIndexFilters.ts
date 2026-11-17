@@ -25,6 +25,12 @@ export interface ElementIndexFilters {
   conditions: Ref<ConditionConfig | null>;
   submit: () => void;
   cancelPendingSearch: () => void;
+  /** Sets the filters to what a visit already requested, without another one. */
+  sync: (values: {
+    search?: string | null;
+    status?: string | null;
+    conditions?: ConditionConfig | null;
+  }) => void;
 }
 
 /** Applies shared filters immediately or after typing, deferring while busy. */
@@ -116,7 +122,15 @@ export function useElementIndexFilters(
     apply();
   }
 
-  watch(search, () => applySearch.start());
+  watch(search, (value) => {
+    // A synced search was already requested.
+    if ((value || null) === (applied?.search ?? null)) {
+      applySearch.stop();
+      return;
+    }
+
+    applySearch.start();
+  });
   watch([status, conditions], () => apply());
   watch(
     () => toValue(options.busy) ?? false,
@@ -127,11 +141,25 @@ export function useElementIndexFilters(
     }
   );
 
+  function sync(values: {
+    search?: string | null;
+    status?: string | null;
+    conditions?: ConditionConfig | null;
+  }): void {
+    applySearch.stop();
+    search.value = values.search ?? '';
+    status.value = values.status ?? '';
+    conditions.value = values.conditions ?? null;
+    applied = parameters();
+    lastRequestedSearch = Boolean(applied.search);
+  }
+
   return {
     search,
     status,
     conditions,
     submit,
     cancelPendingSearch: applySearch.stop,
+    sync,
   };
 }

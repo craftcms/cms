@@ -136,7 +136,7 @@ it('gives a source switch the new source’s own mode and thumbnail size', async
   expect(index.view.mode.value).toBe('table');
 });
 
-it('uses the new source default when clearing a search without a saved sort', async () => {
+it('drops the search and its relevance sort when switching to a source without one', async () => {
   vi.useFakeTimers();
   vi.stubGlobal('Craft', {systemUid: 'test'});
   const source = {type: 'native' as const, key: 'section:news', label: 'News'};
@@ -145,10 +145,7 @@ it('uses the new source default when clearing a search without a saved sort', as
     .fn()
     .mockResolvedValueOnce(indexData(1, {search: 'needle', sort: score}))
     .mockResolvedValueOnce(
-      indexData(2, {source, search: 'needle', sort: score})
-    )
-    .mockResolvedValueOnce(
-      indexData(3, {source, sort: [{field: 'dateCreated', direction: 'desc'}]})
+      indexData(2, {source, sort: [{field: 'dateCreated', direction: 'desc'}]})
     );
   scope = effectScope();
   const index = scope.run(() =>
@@ -159,14 +156,12 @@ it('uses the new source default when clearing a search without a saved sort', as
   await vi.advanceTimersByTimeAsync(500);
   index.changeSource(source.key);
   await nextTick();
-  await Promise.resolve();
-  index.view.search.value = '';
-  await nextTick();
   await vi.advanceTimersByTimeAsync(500);
 
+  expect(index.view.search.value).toBe('');
+  expect(fetch).toHaveBeenCalledTimes(2);
   expect(fetch).toHaveBeenLastCalledWith({
     source: 'section:news',
-    viewMode: 'table',
     sort: [],
   });
   expect(index.view.elementIndex.sort).toEqual([

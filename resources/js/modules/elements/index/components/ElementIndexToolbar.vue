@@ -3,7 +3,7 @@
   import CraftSelectRich from '@craftcms/ui/vue/CraftSelectRich.vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import ElementStatus from '@/modules/elements/ElementStatus.vue';
-  import IndexViewSettings from '@/modules/elements/index/components/IndexViewSettings.vue';
+  import ViewSettingsMenu from '@/modules/elements/index/components/ViewSettingsMenu.vue';
   import type {CheckboxOption} from '@/common/types';
   import type {
     ThumbSize,
@@ -11,10 +11,11 @@
     ViewMode,
   } from '@/modules/elements/types/view-state';
   import FilterHud from './FilterHud.vue';
+  import type {ViewSettingKind} from '@/modules/elements/index/composables/useElementIndex';
   import type {ConditionConfig} from '@/modules/conditions/types';
+  import {rootGroup} from '@/modules/conditions/conditionTree';
   import type {IndexSite} from '@/modules/elements/types/sites';
-  import {computed, ref, useId} from 'vue';
-  import '@craftcms/ui/components/tooltip/tooltip';
+  import {computed, ref} from 'vue';
 
   const props = withDefaults(
     defineProps<{
@@ -24,8 +25,8 @@
       /** The thumbnail sizes the active view mode offers. */
       thumbSizeOptions?: Array<ThumbSize>;
       sortOptions: Array<SortOption>;
-      /** Whether any View menu setting differs from the source's default. */
-      viewCustomized?: boolean;
+      /** Which view settings differ from the source's, view mode included. */
+      viewChangedSettings?: ViewSettingKind[];
       processing?: boolean;
       /**
        * The sites this index can be switched between.
@@ -60,32 +61,17 @@
   const emit = defineEmits<{
     (e: 'submit'): void;
     (e: 'reorder', options: Array<CheckboxOption>): void;
-    (e: 'use-default-view'): void;
+    (e: 'use-default-view', kinds: ViewSettingKind[]): void;
     (e: 'site-change', handle: string): void;
   }>();
 
   const filterActive = ref(false);
-  const filterAnchor = ref<HTMLElement>();
+  /** How many filters are applied: the condition's top-level rules and groups. */
+  const filterCount = computed(() => rootGroup(conditions.value).rules.length);
+  const filterButton = ref<HTMLElement>();
 
   // One site is no choice at all, so the menu only earns its place from two.
   const showSiteMenu = computed(() => (props.sites?.length ?? 0) > 1);
-
-  const visibleSortOptions = computed(() => {
-    const options = props.sortOptions.filter(
-      (option) => option.value !== 'score'
-    );
-
-    return search.value || sortField.value === 'score'
-      ? [
-          {label: t('Score'), value: 'score', defaultDir: 'desc' as const},
-          ...options,
-        ]
-      : options;
-  });
-
-  const sortDirectionLocked = computed(() =>
-    ['score', 'sortOrder'].includes(sortField.value)
-  );
 
   function statusOptionIcon(value: string | number): string | undefined {
     return props.statusOptions?.find((option) => option.value === value)?.icon;
@@ -104,10 +90,6 @@
     event.stopPropagation();
     emit('submit');
   }
-
-  // Unique per toolbar, since an index can share the page with another (e.g.
-  // an element selection modal).
-  const viewModeIdPrefix = `element-view-mode-${useId()}`;
 </script>
 
 <template>
@@ -187,32 +169,12 @@
         </CraftSelectRich>
       </div>
 
-      <div ref="filterAnchor" class="element-toolbar__filter">
+      <div class="element-toolbar__filter">
         <CraftInputSearch
+          class="element-toolbar__search"
           name="search"
           v-model="search"
           @keydown.enter="onSearchEnter"
-        >
-          <craft-button
-            slot="suffix"
-            type="button"
-            icon
-            size="small"
-            variant="plain"
-            .disabled="processing"
-            @click="filterActive = true"
-            :class="{'is-active': !!conditions}"
-          >
-            <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
-          </craft-button>
-        </CraftInputSearch>
-
-        <FilterHud
-          v-if="filterActive"
-          :anchor="filterAnchor"
-          @close="filterActive = false"
-          @apply="emit('submit')"
-          v-model="conditions"
         />
 
         <slot name="search-options"></slot>
@@ -220,50 +182,52 @@
 
       <div class="element-toolbar__state">
         <div class="flex gap-md justify-end">
-          <craft-button-group
-            name="viewState[mode]"
-            :aria-label="t('View Mode')"
-            .value="mode"
-            @change="(event: CustomEvent) => (mode = event.detail.value)"
+          <craft-button
+            ref="filterButton"
+            type="button"
+            :variant="Appearance.Fill"
+            .disabled="processing"
+            :aria-expanded="filterActive"
+            @click="filterActive = !filterActive"
+            icon="filter"
           >
-            <template v-for="viewMode in viewModes" :key="viewMode.mode">
-              <craft-button
-                :id="`${viewModeIdPrefix}-${viewMode.mode}`"
-                type="button"
-                :variant="Appearance.Fill"
-                :icon="viewMode.icon"
-                :aria-label="viewMode.title"
-                :value="viewMode.mode"
-                .disabled="processing"
-              ></craft-button>
-            </template>
-          </craft-button-group>
-          <!-- Icon-only buttons, so their names show on hover and focus too.
-            They label the buttons rather than describing them, so the name
-            isn't announced twice. -->
-          <craft-tooltip
-            v-for="viewMode in viewModes"
-            :key="viewMode.mode"
-            :for="`${viewModeIdPrefix}-${viewMode.mode}`"
-            invoker-relation="label"
-          >
-            {{ viewMode.title }}
-          </craft-tooltip>
+            {{ t('Filter') }}
+            <craft-badge-indicator
+              v-if="filterCount"
+              slot="suffix"
+              style="margin-inline-start: var(--c-spacing-xs)"
+              :alt-text="t('Filters applied')"
+            ></craft-badge-indicator>
+          </craft-button>
 
-          <IndexViewSettings
-            :options="columnOptions"
-            :sort-options="visibleSortOptions"
-            :sort-direction-locked="sortDirectionLocked"
-            :disabled="processing"
+          <FilterHud
+            v-if="filterActive && filterButton"
+            :anchor="filterButton"
+            align="end"
+            @close="filterActive = false"
+            @apply="emit('submit')"
+            v-model="conditions"
+          />
+
+          <!-- The order the elements come in, then how they're shown. -->
+          <ViewSettingsMenu
+            v-for="menu in ['sort', 'settings'] as const"
+            :key="menu"
+            :menu="menu"
+            :view-modes="viewModes"
+            :column-options="columnOptions"
+            :sort-options="sortOptions"
             :thumb-size-options="thumbSizeOptions"
-            :show-table-columns="mode === 'table' || mode === 'structure'"
-            :customized="viewCustomized"
+            :search="search"
+            :changed="viewChangedSettings ?? []"
+            :disabled="processing"
+            v-model:mode="mode"
             v-model:sort-field="sortField"
             v-model:sort-direction="sortDirection"
             v-model:table-columns="tableColumns"
             v-model:thumb-size="thumbSize"
             @reorder="(options) => emit('reorder', options)"
-            @use-defaults="emit('use-default-view')"
+            @use-defaults="(kinds) => emit('use-default-view', kinds)"
           />
         </div>
       </div>
@@ -335,5 +299,13 @@
 
   .element-toolbar__filter {
     grid-area: filter;
+    display: flex;
+    gap: var(--c-spacing-sm);
+    align-items: center;
+  }
+
+  .element-toolbar__search {
+    flex: 1;
+    min-width: 0;
   }
 </style>

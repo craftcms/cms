@@ -106,5 +106,19 @@ export function useElementIndexViewMode(
     };
   }
 
-  return {mode, restore, persistedMode};
+  /** Switches back to `defaultMode`, folded into a caller's visit. */
+  function resetToDefault(defaultMode: ViewMode['mode']): IndexRestore | null {
+    if (mode.value === defaultMode) {
+      return null;
+    }
+
+    store(defaultMode);
+
+    return {
+      params: {viewMode: defaultMode, ...modeParams(defaultMode)},
+      only: MODE_PROPS,
+    };
+  }
+
+  return {mode, restore, persistedMode, resetToDefault};
 }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Condition\ConditionSummary;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
@@ -332,6 +333,18 @@ abstract class ContentIndexViewModel extends ViewModel
     public function currentCondition(): ?array
     {
         return $this->request->condition()?->getConfig();
+    }
+
+    /**
+     * The applied filters' rules, as the condition builder renders them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function currentConditionSummary(): array
+    {
+        $condition = $this->request->condition();
+
+        return $condition ? app(ConditionSummary::class)->rules($condition) : [];
     }
 
     /** @return array<string, mixed> */
@@ -741,6 +754,14 @@ abstract class ContentIndexViewModel extends ViewModel
     public function defaultTableColumns(): array
     {
         return $this->sourceSettings()->defaultTableColumns;
+    }
+
+    /**
+     * The view mode the source opens in when none is requested.
+     */
+    public function defaultViewMode(): string
+    {
+        return $this->sourceSettings()->defaultViewMode;
     }
 
     /**

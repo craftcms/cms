@@ -23,7 +23,7 @@ vi.mock('@/modules/elements/composables/useElementQuickEdit', () => ({
 }));
 vi.mock('@inertiajs/vue3', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@inertiajs/vue3')>()),
-  router: {visit: vi.fn(), prefetch: vi.fn()},
+  router: {visit: vi.fn(), prefetch: vi.fn(), on: vi.fn(() => () => {})},
   usePage: () => ({props: {readOnly: false}}),
 }));
 // Customize Sources is for admins, where admin changes are allowed.
@@ -100,7 +100,18 @@ const ElementIndexPage = (await import('./ElementIndexPage.vue')).default;
 
 let teardown: (() => void) | undefined;
 
+// `craft-button-group` calls attachInternals(), which happy-dom doesn't
+// implement. Same stub UiRenderer.test.ts uses.
+const attachInternals = Object.getOwnPropertyDescriptor(
+  HTMLElement.prototype,
+  'attachInternals'
+);
+
 beforeEach(() => {
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    configurable: true,
+    value: () => ({setFormValue: vi.fn()}),
+  });
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => new Response('<svg></svg>'))
@@ -115,6 +126,16 @@ afterEach(() => {
   quickEdit.openEditor.mockReset();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+
+  if (attachInternals) {
+    Object.defineProperty(
+      HTMLElement.prototype,
+      'attachInternals',
+      attachInternals
+    );
+  } else {
+    delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+  }
 });
 
 async function mountPage(
@@ -194,6 +215,8 @@ async function mountPage(
       reorder: vi.fn(),
       sortField: ref(null),
       sortDirection: ref(null),
+      changes: ref([]),
+      resetAll: vi.fn(),
       mode: ref(mode),
       inlineEditing: {
         active: ref(false),
@@ -319,14 +342,18 @@ it('leaves the primary title link to page navigation', async () => {
 it('offers inline editing and export on page tables', async () => {
   const container = await mountPage();
 
-  expect(container.textContent).toContain('Edit inline');
+  expect(
+    container.querySelector('craft-button-group[name="tableMode"]')
+  ).not.toBeNull();
   expect(container.textContent).toContain('Export');
 });
 
 it('hides inline editing outside table mode', async () => {
   const container = await mountPage({}, undefined, 'cards');
 
-  expect(container.textContent).not.toContain('Edit inline');
+  expect(
+    container.querySelector('craft-button-group[name="tableMode"]')
+  ).toBeNull();
   expect(container.textContent).toContain('Export');
 });
 

@@ -1,6 +1,16 @@
 <script setup lang="ts">
-  import {computed, h, provide, ref, useTemplateRef, watch} from 'vue';
-  import {onLongPress} from '@vueuse/core';
+  import {
+    computed,
+    h,
+    onBeforeUnmount,
+    provide,
+    ref,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
+  import {onLongPress, useEventListener} from '@vueuse/core';
+  import {router, usePage} from '@inertiajs/vue3';
   import {ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
@@ -17,7 +27,20 @@
   import type {ElementIndexView} from '@/modules/elements/index/types/model';
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
-  import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
+  import ElementIndexFilterBar from '@/modules/elements/index/components/ElementIndexFilterBar.vue';
+  import ViewChangeSegment from '@/modules/elements/index/components/ViewChangeSegment.vue';
+  import ViewSettingsMenu from '@/modules/elements/index/components/ViewSettingsMenu.vue';
+  import type {ConditionConfig} from '@/modules/conditions/types';
+  import {
+    VIEW_SETTING_KINDS,
+    type ViewSettingKind,
+  } from '@/modules/elements/index/composables/useElementIndex';
+  import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
+  import type {SourcesLanding} from '@/modules/elements/index/composables/useCustomizeSources';
+  import ExportModal from '@/modules/elements/index/components/ExportModal.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {CraftData} from '@/common/composables/useCraftData';
+  import {showNotice} from '@/modules/messages/messages';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
@@ -55,6 +78,8 @@
       tableAppearance?: Exclude<TableAppearanceValue, 'raised'>;
       toolbarAsForm?: boolean;
       quickEdit?: ElementIndexQuickEdit;
+      /** Shows how the index differs from its source, and offers to save it. */
+      offersSaveView?: boolean;
     }>(),
     {
       contained: false,
@@ -64,11 +89,14 @@
       withBottomBorder: true,
       tableAppearance: TableAppearance.Flush,
       toolbarAsForm: true,
+      offersSaveView: false,
     }
   );
   const emit = defineEmits<{
     'site-change': [handle: string];
     dblclick: [event: MouseEvent];
+    /** A new source was saved from the index's settings. */
+    'sources-saved': [landing: SourcesLanding];
   }>();
   const {
     elementIndex,
@@ -83,8 +111,9 @@
     cardThumbs,
     sortField,
     sortDirection,
-    viewCustomized,
     resetView,
+    changes,
+    resetAll,
     tableColumns,
     columnOptions,
     visibleViewModes,
@@ -111,7 +140,6 @@
   provide(elementIndexContextKey, filterContext);
 
   const body = useTemplateRef<HTMLElement>('body');
-
   async function onThumbSizeChange(size: ThumbSize): Promise<void> {
     if (body.value) {
       await resizeThumbs(body.value, size);
@@ -256,6 +284,135 @@
     void structure?.moveRow(id, move);
   }
 
+  /** The table's View | Edit switch. Edit stays on until saved or left. */
+  function setEditing(editing: boolean): void {
+    if (editing === isInlineEditing.value) return;
+
+    if (editing) {
+      void startInlineEditing();
+    } else {
+      inlineEditor.cancel();
+    }
+  }
+
+  // Rows reloaded while editing (a new filter, sort or page) come back with
+  // their inputs, so editing carries on over them.
+  watch(data, () => {
+    if (inlineEditing?.active.value && !inlineEditor.saving.value) {
+      void inlineEditor.resume();
+    }
+  });
+
+  function hasUnsavedEdits(): boolean {
+    return !inlineEditor.saving.value && inlineEditor.isDirty();
+  }
+
+  const removeNavigationGuard = router.on('before', (event) => {
+    const visit = event.detail.visit;
+
+    if (visit.prefetch || visit.method !== 'get' || !hasUnsavedEdits()) {
+      return;
+    }
+
+    if (!window.confirm(t('Discard your unsaved changes to these rows?'))) {
+      event.preventDefault();
+      return;
+    }
+
+    inlineEditor.clear();
+  });
+  onBeforeUnmount(removeNavigationGuard);
+  useEventListener(window, 'beforeunload', (event) => {
+    if (hasUnsavedEdits()) event.preventDefault();
+  });
+
+  // Embedded indexes can render without an Inertia page.
+  const page = usePage<{craft?: CraftData}>();
+  const canEditSources = computed(
+    () =>
+      Boolean(page.props?.craft?.currentUser?.admin) &&
+      Boolean(page.props?.craft?.allowAdminChanges)
+  );
+  /** Changes to how the index is shown, rather than what it shows. */
+  const viewChanges = computed(() =>
+    changes.value.filter((change) =>
+      (VIEW_SETTING_KINDS as string[]).includes(change.kind)
+    )
+  );
+  const viewChangedKinds = computed(() =>
+    viewChanges.value.map((change) => change.kind as ViewSettingKind)
+  );
+  /** Changes to what the index shows, which built-in sources can't store. */
+  const hasFilterChanges = computed(() =>
+    changes.value.some((change) =>
+      ['rule', 'status', 'search'].includes(change.kind)
+    )
+  );
+  const updateBlockedReason = computed(() =>
+    elementIndex.source?.type === 'native' && hasFilterChanges.value
+      ? t(
+          'Built-in sources can’t store filters. Remove them, or save as a new source.'
+        )
+      : null
+  );
+  /** The settings modal's mode while it's open. */
+  const savingNew = shallowRef(false);
+
+  /** What sets the index apart from its source, as the sources editor marks it. */
+  const editedParts = computed(() => {
+    const kinds: string[] = changes.value.map((change) => change.kind);
+    const parts = ['sort', 'columns', 'viewMode'].filter((kind) =>
+      kinds.includes(kind)
+    );
+
+    return kinds.some((kind) => kind === 'rule' || kind === 'status')
+      ? ['filters', ...parts]
+      : parts;
+  });
+
+  function saveToSource(): void {
+    showNotice(
+      t('Prototype: would save these changes to “{source}”.', {
+        source: elementIndex.source?.label ?? '',
+      })
+    );
+  }
+
+  /** The current view, as a new source's settings. */
+  const newSourceSettings = computed(() => ({
+    ...(conditions.value ? {condition: conditions.value} : {}),
+    defaultSort: {attr: sortField.value, dir: sortDirection.value},
+    defaultViewMode: mode.value,
+    tableAttributes: [...tableColumns.value],
+  }));
+
+  /** What the export modal exports while it's open. */
+  const exporting = shallowRef<'all' | 'selected' | null>(null);
+  const canExport = computed(() =>
+    Boolean(exportElements && elementIndex.exporters?.length)
+  );
+  const moreActions = computed(() =>
+    canExport.value
+      ? [
+          {
+            label: t('Export…'),
+            // Not mid-request, when the criteria it would send are changing.
+            disabled: processing.value,
+            onClick: () => (exporting.value = 'all'),
+          },
+        ]
+      : []
+  );
+
+  /** The selection as the exporter takes it: IDs, or every result but some. */
+  function selectedExportIds(): Array<string | number> {
+    if (!selectAll.active.value) return [...selection.selectedIds.value];
+
+    return selectAll.exceptIds.value.length
+      ? ['not', ...selectAll.exceptIds.value]
+      : [];
+  }
+
   async function startInlineEditing(): Promise<void> {
     if (!inlineEditing) {
       return;
@@ -339,7 +496,6 @@
   <div class="element-index" :class="{'element-index--contained': contained}">
     <div class="element-index__header">
       <ElementIndexToolbar
-        v-if="!isInlineEditing"
         v-model:search="search"
         v-model:status="status"
         v-model:conditions="conditions"
@@ -356,7 +512,7 @@
         :column-options="columnOptions"
         :thumb-size-options="thumbSizeOptions"
         :sort-options="elementIndex.sortOptions"
-        :view-customized="viewCustomized"
+        :view-changed-settings="viewChangedKinds"
         :sites="showSites ? elementIndex.sites : undefined"
         :site-handle="showSites ? activeSiteHandle : undefined"
         @submit="submit"
@@ -367,40 +523,46 @@
         <template
           v-if="
             canEditInline ||
-            exportElements ||
+            isInlineEditing ||
+            moreActions.length ||
             $slots['toolbar-actions'] ||
             $slots['toolbar-actions-after']
           "
           #actions
         >
-          <div class="flex flex-wrap gap-md">
-            <craft-button
-              v-if="canEditInline"
-              type="button"
-              :variant="ButtonVariant.Fill"
-              .disabled="processing"
-              @click="startInlineEditing"
-              >{{ t('Edit inline') }}</craft-button
-            >
-            <slot name="toolbar-actions" :element-index="elementIndex" />
-            <ElementIndexExportMenu
-              v-if="exportElements"
-              :exporters="elementIndex.exporters ?? []"
-              :max-limit="elementIndex.pagination?.total"
-              :disabled="processing"
-              @export="
-                (format, type, limit) =>
-                  exportElements?.(
-                    format,
-                    type,
-                    selectAll.active.value
-                      ? selectAll.exceptIds.value.length
-                        ? ['not', ...selectAll.exceptIds.value]
-                        : []
-                      : selection.selectedIds.value,
-                    limit
-                  )
+          <div class="flex flex-wrap gap-md items-center">
+            <craft-button-group
+              v-if="canEditInline || isInlineEditing"
+              name="tableMode"
+              :aria-label="t('Table mode')"
+              .value="isInlineEditing ? 'edit' : 'view'"
+              @change="
+                (event: CustomEvent) =>
+                  setEditing(event.detail.value === 'edit')
               "
+            >
+              <craft-button
+                type="button"
+                value="view"
+                :variant="ButtonVariant.Fill"
+                .disabled="processing"
+                >{{ t('View') }}</craft-button
+              >
+              <craft-button
+                type="button"
+                value="edit"
+                :variant="ButtonVariant.Fill"
+                .disabled="processing"
+                >{{ t('Edit') }}</craft-button
+              >
+            </craft-button-group>
+            <slot name="toolbar-actions" :element-index="elementIndex" />
+            <ActionMenu
+              v-if="moreActions.length"
+              :actions="moreActions"
+              :label="t('More actions')"
+              :button-variant="ButtonVariant.Fill"
+              :flush="false"
             />
             <slot name="toolbar-actions-after" :element-index="elementIndex" />
           </div>
@@ -409,6 +571,86 @@
           <slot name="search-options" />
         </template>
       </ElementIndexToolbar>
+      <!-- Saving as new adds a source in the sources editor, ready to name. -->
+      <CustomizeSourcesModal
+        v-if="offersSaveView && canEditSources && savingNew"
+        :is-active="savingNew"
+        :element-type="filterContext?.elementType ?? ''"
+        :page="elementIndex.page"
+        :new-source="{settings: newSourceSettings, edited: editedParts}"
+        @close="savingNew = false"
+        @saved="emit('sources-saved', $event)"
+      />
+      <ElementIndexFilterBar
+        v-if="offersSaveView && !isInlineEditing"
+        :condition="conditions"
+        :summaries="elementIndex.currentConditionSummary ?? []"
+        :disabled="processing"
+        :edited="canEditSources && changes.length > 0"
+        :updatable-source="canEditSources ? elementIndex.source?.label : null"
+        :update-blocked-reason="updateBlockedReason"
+        @update-condition="conditions = $event"
+        @reset="resetAll"
+        @update="saveToSource"
+        @reset-view="resetView()"
+        @save-new="savingNew = true"
+        :view-changes="viewChanges"
+        :sort-direction="sortDirection"
+      >
+        <!-- Each chip opens the menu its settings are in, right below it. -->
+        <template #view-chip="{chip}">
+          <ViewSettingsMenu
+            :menu="chip.menu"
+            :view-modes="visibleViewModes"
+            :column-options="columnOptions"
+            :sort-options="elementIndex.sortOptions"
+            :thumb-size-options="thumbSizeOptions"
+            :search="search"
+            :changed="viewChangedKinds"
+            :disabled="processing"
+            v-model:mode="mode"
+            v-model:sort-field="sortField"
+            v-model:sort-direction="sortDirection"
+            v-model:table-columns="tableColumns"
+            :thumb-size="thumbSize"
+            @update:thumb-size="onThumbSizeChange"
+            @reorder="reorder"
+            @use-defaults="resetView"
+          >
+            <template #invoker>
+              <ViewChangeSegment
+                slot="invoker"
+                :label="chip.label"
+                :icon="chip.icon"
+                :parts="chip.parts"
+                :disabled="processing"
+              />
+            </template>
+          </ViewSettingsMenu>
+        </template>
+      </ElementIndexFilterBar>
+      <ExportModal
+        v-if="canExport"
+        :is-active="exporting !== null"
+        :exporters="elementIndex.exporters ?? []"
+        :selected="exporting === 'selected'"
+        :count="
+          exporting === 'selected'
+            ? selectAll.count.value
+            : (elementIndex.pagination?.total ?? 0)
+        "
+        :source-label="elementIndex.source?.label"
+        @close="exporting = null"
+        @export="
+          (format, type, limit) =>
+            exportElements?.(
+              format,
+              type,
+              exporting === 'selected' ? selectedExportIds() : [],
+              limit
+            )
+        "
+      />
     </div>
     <div class="element-index__navbar" v-if="$slots.navbar">
       <slot name="navbar" />
@@ -579,6 +821,9 @@
         v-else-if="footerActive"
         name="footer"
         :pagination="FooterPageControls"
+        :export-selection="
+          canExport ? () => (exporting = 'selected') : undefined
+        "
       />
       <PlaceholderShape
         v-else-if="pending"

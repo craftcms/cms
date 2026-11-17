@@ -17,6 +17,10 @@ import type {
 import type {InlineEditingSaveResult} from '../composables/useInlineEditing';
 import type {ElementIndexExportFormat} from './exporters';
 import type {ElementIndexContext} from '../index-context';
+import type {
+  ElementIndexChange,
+  ViewSettingKind,
+} from '../composables/useElementIndex';
 
 export interface ElementIndexInlineEditing {
   active: Ref<boolean>;
@@ -72,7 +76,11 @@ export interface ElementIndexView {
   /** Whether any of the View menu's settings differ from the source's defaults. */
   viewCustomized: ComputedRef<boolean>;
   /** Returns the View menu's settings to the source's defaults. */
-  resetView(this: void): void;
+  resetView(this: void, kinds?: ViewSettingKind[]): void;
+  /** How the index differs from its source's saved view. */
+  changes: ComputedRef<ElementIndexChange[]>;
+  /** Puts the source back to its saved view: filters, search and view. */
+  resetAll(this: void): void;
   tableColumns: Ref<string[]>;
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;

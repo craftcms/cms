@@ -58,8 +58,13 @@
   });
 
   const {elementIndex, selection, selectAll} = page.view;
+  // Export works on a selection even where there are no element actions.
   const footerActive = computed(
-    () => Boolean(elementIndex.actions?.length) && selectAll.count.value > 0
+    () =>
+      Boolean(
+        elementIndex.actions?.length ||
+        (page.view.exportElements && elementIndex.exporters?.length)
+      ) && selectAll.count.value > 0
   );
   /**
    * With every result selected, the server rebuilds the index's query rather
@@ -147,6 +152,7 @@
     </LayoutSlot>
 
     <ElementIndex
+      @sources-saved="onSourcesSaved"
       :view="page.view"
       :item-behavior="itemBehavior"
       :footer-active="footerActive"
@@ -154,6 +160,7 @@
       :enable-adjust-page-size="true"
       :with-bottom-border="false"
       :quick-edit="quickEdit"
+      offers-save-view
     >
       <template #toolbar-actions v-if="$slots['toolbar-actions']">
         <slot name="toolbar-actions" :element-index="elementIndex" />
@@ -164,7 +171,7 @@
       <template #navbar v-if="$slots.navbar">
         <slot name="navbar" />
       </template>
-      <template #footer="{pagination}">
+      <template #footer="{pagination, exportSelection}">
         <ElementBulkActionsBar
           :selected-ids="selection.selectedIds.value"
           :selected-count="selectAll.count.value"
@@ -184,6 +191,13 @@
           <template #center>
             <component :is="pagination" />
           </template>
+          <craft-button
+            v-if="exportSelection"
+            type="button"
+            size="small"
+            @click="exportSelection()"
+            >{{ t('Export…') }}</craft-button
+          >
         </ElementBulkActionsBar>
       </template>
     </ElementIndex>
