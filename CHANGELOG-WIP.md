@@ -54,6 +54,16 @@
 - Dashboard widgets, such as Recent Entries and My Drafts, now update when elements are saved, in the same browser tab or another one. ([#20485](https://github.com/craftcms/cms/pull/20485))
 - Dashboard widgets can now be given a color, like entry types, from the dashboard’s Widget Settings menu. Widgets are gray unless given another color, now drawn like gray cards elsewhere in the control panel, with a filled header bar, and “No color” draws a widget with no fill of its own, like an uncolored element card.
 - Dashboard widget titles now line up with the widgets’ content.
+- Dashboard widgets’ titles now sit above a hairline at the top of each widget, and widget settings have their Save and Cancel buttons in a footer.
+- Recent Entries widgets now have an “Entry Criteria” setting, like custom entry sources, in place of their “Site” and “Section” settings. Existing widgets’ site and section selections carry over as criteria rules.
+- Recent Entries widgets now have a “Widget Title” setting, and show each entry’s thumbnail, when it was created, its section, and its authors’ avatars.
+- My Drafts widgets now show each draft’s thumbnail, section, and draft name, and leave out drafts in sections the user can no longer view.
+- Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
+- Feed widgets, such as Craft News, now show each item’s summary and image.
+- New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day, which gets taller as the widget gets wider.
+- Craft Support widgets are now a list of links to the documentation, Knowledge Base, Craft Support, GitHub bug reports and feature requests, Discord, and Craft Partners, plus an “Ask AI” button when the AI assistant is available. Support requests are now sent from craftcms.com/contact, rather than a form in the widget.
+- Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
+- Updates widgets now say when they last checked for updates.
 - Fields in slideouts, the details pane, and dashboard widget settings are now 16px apart, rather than 24px. Fields in the main content pane of full-page forms are still 24px apart.
 - Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
@@ -142,6 +152,7 @@
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Saved element conditions, such as custom sources’ and Recent Entries widgets’ criteria, now load faster on sites with many custom fields. Their rules are checked without loading every field layout, unless they’re rules for fields.
 
 ### Fields & Field Layouts
 - Added sidebar field layout tabs, whose fields are shown in element edit forms’ details sidebar. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -666,12 +677,15 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 #### Dashboard & Widgets
 
 - Added `CraftCms\Cms\Dashboard\Contracts\WidgetInterface::$color`, `CraftCms\Cms\Dashboard\Dashboard::changeWidgetColor()`, and the `dashboard/change-widget-color` action.
+- Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::getCondition()` and `setCondition()`, replacing `$siteId` and `$section`.
+- Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::$customTitle`.
+- Removed the `dashboard/send-support-request` action.
+- Added `EntryList`, `AvatarStack`, `TileContent`, `WidgetTile`, `SparklineStat`, `WidgetHeaderActions`, `useWidgetHeader()`, `useWidgetColor()`, and `isTintedColor()` to `@craftcms/cp`, for building plugins’ dashboard widgets from the same pieces as Craft’s own.
 
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
-  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
 
 ##### Deprecations

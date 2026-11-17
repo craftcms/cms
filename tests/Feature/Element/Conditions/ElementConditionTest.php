@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\User\Conditions\AdminConditionRule;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -251,4 +252,40 @@ describe('getConfig', function () {
         expect($config['conditionRules']['rules'][0])->toHaveKey('uid')
             ->and($config['conditionRules']['rules'][0]['uid'])->toBe($titleRule->uid);
     });
+});
+
+describe('rule validation', function () {
+    /** An entry condition that counts how often it loads its field layouts. */
+    function layoutCountingCondition(): ElementCondition
+    {
+        return new class(Entry::class) extends ElementCondition
+        {
+            public int $layoutLoads = 0;
+
+            public function getFieldLayouts(): array
+            {
+                $this->layoutLoads++;
+
+                return parent::getFieldLayouts();
+            }
+        };
+    }
+
+    it('validates rules that aren’t for fields without loading the field layouts', function () {
+        $condition = layoutCountingCondition();
+
+        $condition->setConditionRules([
+            ['class' => SlugConditionRule::class, 'operator' => '=', 'value' => 'alpha'],
+        ]);
+        $condition->addConditionRule($condition->createConditionRule(TitleConditionRule::class));
+
+        expect($condition->getConditionRules()->getRules())->toHaveCount(2)
+            ->and($condition->layoutLoads)->toBe(0);
+    });
+
+    it('still rejects rules the condition doesn’t offer', function () {
+        $condition = layoutCountingCondition();
+
+        $condition->addConditionRule($condition->createConditionRule(AdminConditionRule::class));
+    })->throws(InvalidArgumentException::class, 'Invalid condition rule');
 });

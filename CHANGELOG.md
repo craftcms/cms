@@ -50,6 +50,19 @@
 - Pages shown to logged-out users, such as the login page, now use the “Theme” preference of the last user who signed in on the browser, rather than always following the system’s light or dark setting.
 - Condition builders now stack each rule’s controls at full width when they’re narrow, such as in dashboard widget settings, rather than squeezing them side by side. Date range rules’ date inputs now fill their fields, and rules have a little more space between them.
 - Multi-select comboboxes now keep their text box on the same line as the selected values while there’s room, and only move it to its own line once the typed text needs it.
+- Dashboard widgets’ titles now sit above a hairline at the top of each widget, rather than in a header bar, and widget settings have their Save and Cancel buttons in a footer.
+- Recent Entries widgets now have an “Entry Criteria” setting, like custom entry sources, in place of their “Site” and “Section” settings. Existing widgets’ site and section selections carry over as criteria rules.
+- Recent Entries widgets now have a “Widget Title” setting. When it’s left blank, the widget is titled after the section its criteria limit it to, if just one.
+- Recent Entries widgets now show each entry’s thumbnail, when it was created, its section unless the widget only shows one section, and its authors’ avatars, with their names in tooltips.
+- My Drafts widgets now show each draft’s thumbnail, section, and draft name, and leave out drafts in sections the user can no longer view.
+- Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
+- Feed widgets, such as Craft News, now show each item’s summary and image, and show dates as other control panel timestamps do.
+- New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day in the widget’s color, which gets taller as the widget gets wider.
+- Craft Support widgets are now a list of links to the documentation, Knowledge Base, Craft Support, GitHub bug reports and feature requests, Discord, and Craft Partners, plus an “Ask AI” button when the AI assistant is available. Support requests are now sent from craftcms.com/contact, rather than a form in the widget.
+- Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
+- Updates widgets now show whether updates are available with an icon, say when they last checked, and check again from a button beside their title.
+- Dashboard widgets’ settings now load when they’re opened, rather than with the dashboard.
+- Saved element conditions, such as custom sources’ and Recent Entries widgets’ criteria, now load faster on sites with many custom fields. Their rules are checked without loading every field layout, unless they’re rules for fields.
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))
@@ -59,6 +72,12 @@
 - Added the `--c-nav-item-color` CSS custom property to `craft-nav-item`, which sets its label’s color while it isn’t hovered or current. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Added the `--c-field-group-gap` CSS custom property to `craft-field-group`, which sets the space between its rows of fields. It defaults to `--c-spacing-lg`, and the main content pane of full-page screens sets it to 24px.
 - `craft-icon` now defaults to the `--c-size-icon-sm` token (12px), rather than `0.8em` of the surrounding text, and small `craft-button`s give their icons `--c-size-icon-xs`. Set `--c-icon-size` to another `--c-size-icon-*` token alongside text that’s bigger or smaller than usual.
+- Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::getCondition()` and `setCondition()`, replacing `$siteId` and `$section`.
+- Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::$customTitle`.
+- Plugins’ dashboard widgets can now be built from the same pieces as Craft’s own, imported from `@craftcms/cp`: `EntryList`, `AvatarStack`, `TileContent`, `WidgetTile`, `SparklineStat`, `WidgetHeaderActions`, `useWidgetHeader()`, `useWidgetColor()`, and `isTintedColor()`. A guide to building dashboard widgets is in Storybook, under **Plugins**.
+- `CraftCms\Cms\Dashboard\Data\WidgetData` and `WidgetTypeData` now have a `$hasSettings` property in place of `$settingsUi`. The dashboard loads a widget’s settings UI when its settings are opened, from the `dashboard/refresh-widget-settings` action, which now also accepts a saved widget’s `widgetId`.
+- Removed `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController` and the `dashboard/send-support-request` action.
+- The `updates/check` action’s response now includes `dateFetched`, when the updates were last fetched.
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where control panel screens, such as section settings, failed to load when the control panel was served over plain HTTP from a hostname other than `localhost`. ([#20680](https://github.com/craftcms/cms/issues/20680), [#20695](https://github.com/craftcms/cms/pull/20695))
