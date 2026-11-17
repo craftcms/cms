@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 test('next returns 1 on first call', function () {
@@ -168,19 +167,6 @@ test('database state after complex sequence of operations', function () {
     expect(DB::table(Table::SEQUENCES)->where('name', 'a')->value('next'))->toBe(3);
     expect(DB::table(Table::SEQUENCES)->where('name', 'b')->value('next'))->toBe(3);
 });
-
-test('next acquires cache lock with correct key', function (string $name, string $expectedLockKey) {
-    Cache::spy();
-
-    Sequence::next($name);
-
-    Cache::shouldHaveReceived('lock')->once()->with($expectedLockKey, 10);
-})->with([
-    ['test', 'seq--test'],
-    ['test/path', 'seq--test-path'],
-    ['test\\path', 'seq--test-path'],
-    ['a/b\\c', 'seq--a-b-c'],
-]);
 
 test('handles large sequence numbers', function () {
     DB::table(Table::SEQUENCES)->insert(['name' => 'test', 'next' => 999999]);

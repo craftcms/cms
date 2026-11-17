@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Cms\Database\Table;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -36,25 +35,15 @@ readonly class Sequence
     {
         $name = Str::emojiToShortcodes($name);
 
-        return Cache::lock('seq--'.str_replace(['/', '\\'], '-', $name), 10)
-            ->block(3, function () use ($name, $length) {
-                $num = self::nextNumber($name);
+        // The update locks the row until the transaction commits, so concurrent callers get distinct numbers
+        $next = DB::transaction(function () use ($name) {
+            DB::table(Table::SEQUENCES)->insertOrIgnore(['name' => $name, 'next' => 1]);
+            DB::table(Table::SEQUENCES)->where('name', $name)->increment('next');
 
-                if ($num === 1) {
-                    DB::table(Table::SEQUENCES)->insert([
-                        'name' => $name,
-                        'next' => $num + 1,
-                    ]);
+            return self::nextNumber($name);
+        });
 
-                    return self::format($num, $length);
-                }
-
-                DB::table(Table::SEQUENCES)
-                    ->where('name', $name)
-                    ->increment('next');
-
-                return self::format($num, $length);
-            });
+        return self::format($next - 1, $length);
     }
 
     /**
