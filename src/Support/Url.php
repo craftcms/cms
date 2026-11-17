@@ -12,6 +12,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Support\Uri;
+use Uri\InvalidUriException;
+use Uri\Rfc3986\Uri as Rfc3986Uri;
 
 /**
  * @since 6.0.0
@@ -52,6 +54,26 @@ class Url extends \Illuminate\Support\Facades\URL
     public static function isRootRelativeUrl(string $url): bool
     {
         return str_starts_with($url, '/') && ! static::isProtocolRelativeUrl($url);
+    }
+
+    /**
+     * Resolves a relative URL, such as `/uploads/a.png` or `//cdn.example.com/a.png`, against a base URL, as a browser
+     * would. The base URL defaults to the current site’s base URL. The URL is returned as it is when it’s already
+     * absolute, when the base URL isn’t absolute, or when either can’t be parsed.
+     */
+    public static function absoluteUrl(string $url, ?string $baseUrl = null): string
+    {
+        $baseUrl ??= static::baseSiteUrl();
+
+        if (static::isAbsoluteUrl($url) || ! static::isAbsoluteUrl($baseUrl)) {
+            return $url;
+        }
+
+        try {
+            return new Rfc3986Uri($url, new Rfc3986Uri($baseUrl))->toString();
+        } catch (InvalidUriException) {
+            return $url;
+        }
     }
 
     /**

@@ -281,6 +281,18 @@ describe('query and encoding helpers', function () {
         'sftp' => ['sftp://www.craftcms.com/', 'https://www.craftcms.com/', 'sftp'],
     ]);
 
+    test('makes URLs absolute', function (string $expected, string $url, ?string $baseUrl) {
+        expect(Url::absoluteUrl($url, $baseUrl))->toBe($expected);
+    })->with([
+        'root-relative, current site' => ['https://localhost/uploads/a.png', '/uploads/a.png', null],
+        'root-relative, base with a path' => ['https://example.com/uploads/a.png', '/uploads/a.png', 'https://example.com/fr/'],
+        'path-relative, base with a path' => ['https://example.com/fr/uploads/a.png', 'uploads/a.png', 'https://example.com/fr/'],
+        'protocol-relative' => ['http://cdn.example.com/a.png', '//cdn.example.com/a.png', 'http://example.com/'],
+        'query and fragment' => ['https://example.com/a.png?v=2#top', '/a.png?v=2#top', 'https://example.com/'],
+        'already absolute' => ['https://cdn.example.com/a.png', 'https://cdn.example.com/a.png', 'https://example.com/'],
+        'relative base' => ['/a.png', '/a.png', '/fr/'],
+    ]);
+
     test('strips query strings', function (string $expected, string $url) {
         expect(Url::stripQueryString($url))->toBe($expected);
     })->with([
