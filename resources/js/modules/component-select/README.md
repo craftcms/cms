@@ -53,7 +53,7 @@ boot-order–sensitive in ways a controller reference can't paper over:
 - **`getInputValue`.** `Group.init()` (in `grouped-entry-type-manager.ts`)
   assigns `select.getInputValue = (id) => ...` immediately after querying
   `container.querySelector('craft-component-select')` — which can run before
-  the select's own `ControllerElement` boot (a `requestAnimationFrame` retry)
+  the select's own `ControllerElement` boot (which waits for its markup)
   has resolved `:scope > ul` and constructed the controller. If the hook lived
   on the controller, that assignment would either throw (no instance yet) or
   silently target an instance that gets replaced. Instead the element owns a

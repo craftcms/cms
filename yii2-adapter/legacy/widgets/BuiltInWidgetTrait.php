@@ -24,6 +24,18 @@ trait BuiltInWidgetTrait
         return $this->hasHtmlOverride() ? $this->htmlProps() : parent::props();
     }
 
+    /**
+     * Leaves out the colspan and color that `WidgetTrait` declares on this
+     * concrete class. They're saved in columns of their own, which saved
+     * settings would otherwise override.
+     *
+     * @return string[]
+     */
+    public function settingsAttributes(): array
+    {
+        return array_values(array_diff(parent::settingsAttributes(), ['colspan', 'color']));
+    }
+
     private function hasHtmlOverride(): bool
     {
         return new ReflectionMethod($this, 'getBodyHtml')->getDeclaringClass()->isSubclassOf(

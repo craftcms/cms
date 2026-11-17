@@ -325,6 +325,11 @@
               }}</span>
               <span class="sr-only">{{ panel.label }}</span>
             </template>
+            <craft-icon
+              v-else-if="panel.iconSvg"
+              :label="panel.label"
+              v-html="panel.iconSvg"
+            />
             <craft-icon v-else :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
@@ -385,18 +390,22 @@
   }
 
   .details-panels__trigger {
-    --c-icon-size: 1em;
+    --c-icon-size: var(--cp-chrome-icon-size);
     display: grid;
-    inline-size: var(--c-size-touch-target);
+    inline-size: var(--cp-rail-item-size);
     aspect-ratio: 1;
     padding: 0;
     place-items: center;
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     background-color: transparent;
-    color: var(--color-slate-700);
+    color: var(--cp-chrome-icon-color);
     font-size: var(--c-text-base);
     cursor: pointer;
+  }
+
+  .details-panels__trigger :deep(craft-icon > svg) {
+    fill: currentColor;
   }
 
   .details-panels__trigger:not([aria-expanded='true']) {

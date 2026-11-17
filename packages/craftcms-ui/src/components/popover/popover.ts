@@ -11,6 +11,7 @@ import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
+import {isOutsidePressClaimedWithin} from '@src/utilities/overlay-outside-press.js';
 import {announceOverlayState} from '@src/utilities/overlay-events.js';
 import {
   hideLayer,
@@ -204,6 +205,9 @@ export default class CraftPopover extends LitElement {
 
   #pointerUpInside = false;
 
+  /** The `pointerdown` that started the press in progress. */
+  #pressStart: PointerEvent | null = null;
+
   constructor() {
     super();
     this.addEventListener('keydown', this.#claimEscape);
@@ -231,13 +235,25 @@ export default class CraftPopover extends LitElement {
 
     if (
       focusStaysWithin(event, this, this.invoker) ||
-      this.#controlsContent(event.relatedTarget)
+      this.#controlsContent(event.relatedTarget) ||
+      this.#pressClosedInside()
     ) {
       return;
     }
 
     this.#request(false);
   };
+
+  /**
+   * Whether an overlay in the content, such as a select's list, closed on the
+   * press in progress, which leaves the popover open.
+   */
+  #pressClosedInside(): boolean {
+    return (
+      this.#pressStart !== null &&
+      isOutsidePressClaimedWithin(this.#pressStart, this)
+    );
+  }
 
   /**
    * Focus leaving an invoker linked with `for` or `anchor` never reaches the
@@ -544,19 +560,31 @@ export default class CraftPopover extends LitElement {
     this.#pointerUpInside = true;
   };
 
+  #onDocumentPointerDown = (event: PointerEvent): void => {
+    this.#pressStart = event;
+  };
+
   /**
    * Closes on a click that both started and ended outside the content and the
-   * invoker. The document sees the mouseup first, in its capture phase, so the
-   * decision waits a task for the inside listeners to report.
+   * invoker, unless an overlay in the content, such as a select's list, closed
+   * on it instead. The document sees the mouseup first, in its capture phase,
+   * so the decision waits a task for the inside listeners to report.
    */
   #onDocumentPointerUp = (): void => {
+    const pressClosedInside = this.#pressClosedInside();
+
     setTimeout(() => {
-      if (!this.#pointerDownInside && !this.#pointerUpInside) {
+      if (
+        !this.#pointerDownInside &&
+        !this.#pointerUpInside &&
+        !pressClosedInside
+      ) {
         this.#request(false);
       }
 
       this.#pointerDownInside = false;
       this.#pointerUpInside = false;
+      this.#pressStart = null;
     });
   };
 
@@ -675,6 +703,11 @@ export default class CraftPopover extends LitElement {
       this.#addPointerListeners(this.#invoker.node);
     }
     document.documentElement.addEventListener(
+      'pointerdown',
+      this.#onDocumentPointerDown,
+      true
+    );
+    document.documentElement.addEventListener(
       'mouseup',
       this.#onDocumentPointerUp,
       true
@@ -706,6 +739,11 @@ export default class CraftPopover extends LitElement {
       this.#removePointerListeners(this.#invoker.node);
     }
     document.documentElement.removeEventListener(
+      'pointerdown',
+      this.#onDocumentPointerDown,
+      true
+    );
+    document.documentElement.removeEventListener(
       'mouseup',
       this.#onDocumentPointerUp,
       true
@@ -713,6 +751,7 @@ export default class CraftPopover extends LitElement {
     window.removeEventListener('blur', this.#onWindowBlur);
     this.#pointerDownInside = false;
     this.#pointerUpInside = false;
+    this.#pressStart = null;
 
     if (focusWasInContent) {
       this.#returnFocus();

@@ -23,7 +23,7 @@ Follows the toggletip pattern described in Heydon Pickering's [Tooltips & Toggle
 
 - [x] Activating the button toggles the bubble: the first press opens it, the second closes it. Per WCAG 2.1.1 (Keyboard). Verified for the tooltip's click trigger by `toggles on invoker click when trigger includes click` in `tooltip.test.ts`, which uses `button.click()`. No test presses Enter or Space on the info icon's button.
 - [ ] The bubble opens only on a press, never on hover or focus, so WCAG 1.4.13 (Content on Hover or Focus) doesn't apply. `trigger="click"` removes the tooltip's hover and focus interaction. Not yet verified.
-- [ ] Escape closes the bubble while focus is on the button, and focus stays there. Per WCAG 2.1.1 (Keyboard). The tooltip closes on Escape released on its invoker; not yet verified.
+- [ ] Escape closes the bubble while focus is on the button, and focus stays there. Per WCAG 2.1.1 (Keyboard). The tooltip's click trigger closing on Escape is verified by `claims the keydown on its invoker while open, so only the tooltip closes` in `tooltip.test.ts`. Focus staying on the info icon's button is not yet verified.
 - [ ] A click outside the button and bubble closes it. Per WCAG 2.4.11 (Focus Not Obscured (Minimum)). Known gap: the tooltip doesn't set `hidesOnOutsideClick`.
 - [ ] Moving focus away from the button closes the bubble, so it doesn't cover the next focused control. Per WCAG 2.4.11 (Focus Not Obscured (Minimum)). Known gap: nothing closes it on blur.
 - [ ] Opening one info icon closes any other that's open. Per WCAG 2.4.11 (Focus Not Obscured (Minimum)). Not yet verified. The `OnlyOneOpen` story has no `play()` assertion.
@@ -31,7 +31,7 @@ Follows the toggletip pattern described in Heydon Pickering's [Tooltips & Toggle
 
 ### Visual
 
-- [ ] The button is at least 24×24 CSS px, or has enough space around it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: it uses `size="zero"`, which sets no height or padding and has no minimum hit area, so the target is the icon's own size.
+- [x] The button is a 24×24 CSS px box, all of which opens the bubble, while the icon keeps its own size. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `gives the button a target of at least 24×24 CSS px, all of which opens it` in `info-icon.browser.test.ts`.
 - [ ] The button shows a focus indicator at 3:1 against its surroundings, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified for the `plain`, `zero` button.
 - [ ] The icon reaches 3:1 against the surface it sits on, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
 - [ ] In forced-colors mode, the icon and focus indicator stay visible. Not yet verified.

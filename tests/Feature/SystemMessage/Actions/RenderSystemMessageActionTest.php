@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+
+use function CraftCms\Cms\renderSandboxedString;
 
 it('renders twig subject, text, and html for system messages', function () {
     $user = UserModel::factory()->createElement();
@@ -73,3 +76,30 @@ it('escapes variables in the html body but not in the text body', function () {
         ->and($message->htmlBody)->toContain('&lt;b&gt;&amp;')
         ->and($message->htmlBody)->not->toContain('<b>');
 });
+
+it('suggests only variables that render for the message', function (string $key, Closure $variables, bool $hasUser) {
+    $systemMessages = app(SystemMessages::class);
+    $systemMessages->register('contact_submission', fn () => new SystemMessage([
+        'key' => 'contact_submission',
+        'heading' => 'When someone submits the contact form:',
+        'subject' => 'New message',
+        'body' => '{{ message }}',
+        'variables' => ['message' => 'Message'],
+    ]));
+
+    $rendered = app(RenderSystemMessageAction::class)->handle($key, $variables());
+    $suggested = array_keys($systemMessages->getTemplateVariables($systemMessages->getMessage($key)));
+
+    expect(in_array('user.friendlyName', $suggested, true))->toBe($hasUser);
+
+    foreach ($suggested as $name) {
+        expect(renderSandboxedString("{{ $name }}", $rendered->variables))->toBeString();
+    }
+})->with([
+    'message sent without a user' => ['contact_submission', fn () => ['message' => 'Hello'], false],
+    'message sent to a user' => ['forgot_password', fn () => app(SystemMessages::class)->mailable(
+        'forgot_password',
+        User::find()->id(UserModel::factory()->createElement()->id)->one(),
+        ['link' => 'https://example.test/reset'],
+    )->variables, true],
+]);

@@ -73,6 +73,24 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
   };
 });
 
+const creation = vi.hoisted(() => ({
+  post: vi.fn(),
+  openSlideout: vi.fn(),
+  showError: vi.fn(),
+}));
+
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/modules/messages/messages')>()),
+  showError: creation.showError,
+}));
+
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@craftcms/ui')>()),
+  actionClient: {post: creation.post},
+}));
+
+vi.mock('@/common/slideouts', () => ({openSlideout: creation.openSlideout}));
+
 vi.mock('./ElementPicker.vue', async () => {
   const {defineComponent: define, h: create} = await import('vue');
 
@@ -80,7 +98,13 @@ vi.mock('./ElementPicker.vue', async () => {
     default: define({
       name: 'ElementPickerStub',
       props: ['action', 'initial', 'params', 'disabledElementIds'],
-      emits: ['selection-change', 'choose', 'source-change'],
+      emits: [
+        'selection-change',
+        'choose',
+        'source-change',
+        'sources-change',
+        'site-change',
+      ],
       setup(props, {emit, expose}) {
         stub.lastProps = props as Record<string, any>;
         stub.emit = emit as (event: string, payload?: unknown) => void;
@@ -112,13 +136,20 @@ function controller(options = {}) {
   });
 }
 
-async function mountModal(instance: ElementSelectorController) {
+async function mountModal(
+  instance: ElementSelectorController,
+  presentation: {
+    returnFocus?: () => HTMLElement | null;
+    onHandoff?: (settled: Promise<void>) => void;
+  } = {}
+) {
   const {default: ElementSelectorModal} =
     await import('./ElementSelectorModal.vue');
 
   const app = createApp(
     defineComponent({
-      setup: () => () => h(ElementSelectorModal, {controller: instance}),
+      setup: () => () =>
+        h(ElementSelectorModal, {controller: instance, ...presentation}),
     })
   );
   app.config.compilerOptions.isCustomElement = (tag: string) =>
@@ -475,6 +506,294 @@ describe('the upload button', () => {
     upload.emit!('uploaded', {id: 3, label: 'photo.jpg'});
 
     expect(stub.refresh).toHaveBeenCalledWith(3);
+    unmount();
+  });
+});
+
+describe('the new entry button', () => {
+  const source = {
+    type: 'native',
+    key: 'section:abc',
+    label: 'Authors',
+    data: {handle: 'authors'},
+  };
+
+  beforeEach(() => {
+    creation.post.mockReset();
+    creation.openSlideout.mockReset().mockResolvedValue({id: 'slideout-1'});
+    creation.showError.mockReset();
+    window.Craft = {
+      publishableSections: [
+        {
+          id: 4,
+          uid: 'abc',
+          handle: 'authors',
+          name: 'Authors',
+          type: 'channel',
+          sites: [2],
+          canSave: true,
+          entryTypesBySite: {
+            2: [{id: 8, handle: 'author', name: 'Author', icon: null}],
+          },
+        },
+      ],
+    };
+  });
+
+  afterEach(() => {
+    delete window.Craft;
+  });
+
+  it('creates an entry in the section on screen and chooses it once it’s saved', async () => {
+    const onSelect = vi.fn();
+    const instance = controller({onSelect});
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    const button = host.querySelector<HTMLElement>(
+      '[slot="secondary-actions"] craft-button'
+    );
+    expect(button?.textContent?.trim()).toBe('New Authors entry');
+
+    creation.post.mockResolvedValue({
+      data: {entry: {id: 21, draftId: 5, title: null}},
+    });
+    button!.click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    expect(creation.post.mock.calls[0]![1]).toEqual({
+      siteId: 2,
+      section: 'authors',
+      type: 'author',
+    });
+    expect(instance.state.open).toBe(false);
+
+    const [url, options] = creation.openSlideout.mock.calls[0]!;
+    expect(new URL(url, 'https://x').searchParams.get('draftId')).toBe('5');
+
+    options.onSaved({draft: true});
+    options.onSaved({});
+    options.onSaved({data: {element: {id: 21, dateDeleted: '2026-11-13'}}});
+    expect(onSelect).not.toHaveBeenCalled();
+
+    // "Save as a new entry" saves another entry than the draft
+    options.onSaved({data: {element: {id: 34, title: 'Jane Austen'}}});
+    expect(onSelect).toHaveBeenCalledWith(
+      [expect.objectContaining({id: 34, siteId: 2, label: 'Jane Austen'})],
+      {}
+    );
+
+    options.onSaved({data: {element: {id: 34, title: 'Jane Austen'}}});
+    expect(onSelect).toHaveBeenCalledTimes(1);
+
+    // Without an `onHandoff`, as relation fields open it
+    expect(() => options.onClosed()).not.toThrow();
+
+    unmount();
+  });
+
+  it('stays away when the field has a selection condition', async () => {
+    const instance = controller({condition: {class: 'EntryCondition'}});
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    expect(
+      host.querySelector('[slot="secondary-actions"] craft-button')
+    ).toBeNull();
+
+    unmount();
+  });
+
+  it('returns focus to what the field offers once the slideout closes', async () => {
+    const addButton = document.createElement('button');
+    let focusTarget = addButton;
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance, {
+      returnFocus: () => focusTarget,
+    });
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+    expect(options.opener).toBe(addButton);
+
+    // Relating the entry filled the field, taking its Add button away
+    const chip = document.createElement('button');
+    focusTarget = chip;
+    expect(options.returnFocus()).toBe(chip);
+
+    unmount();
+  });
+
+  it('reports a failed choose and tries again on the next save', async () => {
+    const onSelect = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('render failed'))
+      .mockResolvedValue(undefined);
+    const instance = controller({onSelect});
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    await vi.waitFor(() =>
+      expect(creation.showError).toHaveBeenCalledWith(
+        'Couldn’t select “Jane Austen”.'
+      )
+    );
+
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    expect(onSelect).toHaveBeenCalledTimes(2);
+
+    unmount();
+  });
+
+  it('tells the opener when it has handed off to the slideout', async () => {
+    const handoffs: Array<Promise<void>> = [];
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance, {
+      onHandoff: (settled) => handoffs.push(settled),
+    });
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    let closedWhenHandedOff: boolean | null = null;
+    instance.on('close', () => {
+      closedWhenHandedOff = handoffs.length === 1;
+    });
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    // Told before the modal closes, as that's when openers resume
+    expect(closedWhenHandedOff).toBe(true);
+
+    let settled = false;
+    void handoffs[0]!.then(() => {
+      settled = true;
+    });
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    options.onClosed();
+    await vi.waitFor(() => expect(settled).toBe(true));
+
+    unmount();
+  });
+
+  it('reports a creation error in its own modal when another has been opened', async () => {
+    // Each modal is its own Vue app, as `createElementSelectorModal` mounts
+    // them, and the one shown last registers its message outlet last
+    async function showModal() {
+      const instance = controller();
+      const modal = await mountModal(instance);
+      await instance.open();
+      await nextTick();
+      stub.emit!('sources-change', [source]);
+      stub.emit!('source-change', source);
+      stub.emit!('site-change', 2);
+      await nextTick();
+
+      return modal;
+    }
+
+    const firstModal = await showModal();
+    const secondModal = await showModal();
+
+    creation.post.mockRejectedValue({
+      response: {data: {message: 'The section is full.'}},
+    });
+    firstModal.host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+
+    await vi.waitFor(() =>
+      expect(
+        firstModal.host
+          .querySelector('[slot="secondary-actions"] [role="alert"]')
+          ?.textContent?.trim()
+      ).toBe('The section is full.')
+    );
+
+    secondModal.unmount();
+    firstModal.unmount();
+  });
+
+  it('keeps the selector open and reports the error when creating fails', async () => {
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    creation.post.mockRejectedValue({
+      response: {data: {message: 'The section is full.'}},
+    });
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    // In the modal: the page's messages are behind its dialog, out of reach
+    await vi.waitFor(() =>
+      expect(
+        host
+          .querySelector('[slot="secondary-actions"] [role="alert"]')
+          ?.textContent?.trim()
+      ).toBe('The section is full.')
+    );
+    expect(creation.showError).not.toHaveBeenCalled();
+
+    expect(instance.state.open).toBe(true);
+    expect(instance.state.busy).toBe(false);
+    expect(creation.openSlideout).not.toHaveBeenCalled();
+
     unmount();
   });
 });

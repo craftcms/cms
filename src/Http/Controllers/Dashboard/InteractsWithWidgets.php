@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Data\WidgetData;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
@@ -42,6 +43,7 @@ trait InteractsWithWidgets
             type: $widget->getType(),
             colspan: min($widget->colspan ?: 1, $widget->getMaxColspan() ?: 4),
             maxColspan: $widget->getMaxColspan() ?: 4,
+            color: Color::tryFrom((string) $widget->color),
             title: $widget->getTitle(),
             subtitle: $widget->getSubtitle(),
             name: $widget->getDisplayName(),

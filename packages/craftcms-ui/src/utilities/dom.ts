@@ -10,7 +10,16 @@ type AssetDetails = {
   value: string;
 };
 
-const ownedAssets = new Map<string, OwnedAsset>();
+/**
+ * Registry of the stylesheets and scripts appended here, shared through the
+ * global object because the control panel's bundles (the Vue app, the legacy
+ * `Craft` global, legacy HTML controls) each bundle their own copy of this
+ * module. A per-copy registry would let one copy skip an asset another copy
+ * owns without taking a reference, and lose it when that copy disposes it.
+ */
+const ownedAssets: Map<string, OwnedAsset> = ((globalThis as any)[
+  Symbol.for('craft.ownedAssets')
+] ??= new Map<string, OwnedAsset>());
 
 /**
  * Disposer returned from {@link appendHeadHtml} / {@link appendBodyHtml}.

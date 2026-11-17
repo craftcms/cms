@@ -1259,8 +1259,12 @@
     padding: var(--c-spacing-lg);
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
-      var(--c-surface-default) var(--c-spacing-lg)
+      color-mix(
+        in srgb,
+        var(--cp-details-bg, var(--c-surface-default)) 0%,
+        transparent
+      ),
+      var(--cp-details-bg, var(--c-surface-default)) var(--c-spacing-lg)
     );
   }
 
@@ -1274,8 +1278,8 @@
     border: var(--c-form-control-border-width) solid
       var(--c-form-control-border-color);
     border-radius: var(--c-radius-lg);
-    background-color: var(--c-surface-white);
-    box-shadow: var(--c-shadow-md);
+    background-color: var(--c-input-fill, var(--c-form-control-fill));
+    box-shadow: var(--c-input-shadow, 0 0 transparent);
   }
 
   .assistant-chat__card {

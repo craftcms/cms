@@ -40,6 +40,16 @@ abstract class BaseElementLinkType extends BaseLinkType
     private static array $fetchedElements = [];
 
     /**
+     * Forgets the linked elements fetched so far, so a long-lived worker doesn't keep them between requests.
+     *
+     * @internal
+     */
+    public static function forgetFetchedElements(): void
+    {
+        self::$fetchedElements = [];
+    }
+
+    /**
      * Returns the element type this link type is for.
      *
      * @return class-string<ElementInterface>

@@ -407,6 +407,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
         Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
         Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
+        Route::post('dashboard/change-widget-color', [WidgetsController::class, 'updateColor']);
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);

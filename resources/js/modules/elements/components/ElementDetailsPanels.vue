@@ -155,6 +155,7 @@
     :key="panel.id"
     :label="panel.label"
     :icon="panel.icon"
+    :icon-svg="panel.iconSvg"
     :order="panel.order"
     :status="panel.status?.(payload) ?? null"
   >

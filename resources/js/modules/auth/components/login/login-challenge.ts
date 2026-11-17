@@ -50,12 +50,19 @@ export default class CraftLoginChallenge extends LitElement {
 
   #assetsAppendedFor: TwoFactorData | null = null;
 
+  /** The native form most recently focused, so each one is focused once. */
+  #focusedForm: Element | null = null;
+
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
     const isNativeMethod = CraftAuthChallengeForm.isNative(
       this.data?.authMethod
     );
+
+    if (isNativeMethod && !this._switching) {
+      await this.#focusNativeForm();
+    }
 
     if (
       !isNativeMethod &&
@@ -66,6 +73,26 @@ export default class CraftLoginChallenge extends LitElement {
       this.#initialized = true;
       await this.#initLegacyForm();
     }
+  }
+
+  /**
+   * Focuses a native form's code input when it's first shown, including after
+   * switching methods: on the login screen it's the only thing to fill in.
+   * Legacy forms are focused the same way in {@link #initLegacyForm}.
+   */
+  async #focusNativeForm(): Promise<void> {
+    const form = this._container?.firstElementChild;
+
+    if (
+      !(form instanceof CraftAuthChallengeForm) ||
+      form === this.#focusedForm
+    ) {
+      return;
+    }
+
+    this.#focusedForm = form;
+    await form.updateComplete;
+    form.focus();
   }
 
   async #initLegacyForm() {

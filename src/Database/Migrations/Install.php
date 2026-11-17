@@ -1074,6 +1074,7 @@ class Install extends Migration
             $table->string('type');
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->tinyInteger('colspan')->nullable();
+            $table->string('color')->nullable()->default('gray');
             $table->jsonb('settings')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');

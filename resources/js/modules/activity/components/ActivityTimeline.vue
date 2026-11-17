@@ -177,8 +177,12 @@
     padding-inline: var(--cp-container-padding);
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
-      var(--c-surface-default) var(--c-spacing-lg)
+      color-mix(
+        in srgb,
+        var(--cp-details-bg, var(--c-surface-default)) 0%,
+        transparent
+      ),
+      var(--cp-details-bg, var(--c-surface-default)) var(--c-spacing-lg)
     );
     position: relative;
     z-index: 1;

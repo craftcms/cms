@@ -371,7 +371,10 @@ export default css`
 
   :host([variant~='primary']:hover),
   :host([variant~='danger']:hover),
-  :host([variant~='solid']:hover) {
+  :host([variant~='solid']:hover),
+  :host([variant~='primary'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='danger'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='solid'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -402,7 +405,8 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant~='fill']:hover) {
+  :host([variant~='fill']:hover),
+  :host([variant~='fill'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
@@ -430,7 +434,16 @@ export default css`
   :host([variant~='outline']:not(:disabled):not(.loading):hover),
   :host([variant~='dashed']:not(:disabled):not(.loading):hover),
   :host([variant~='danger-plain']:not(:disabled):not(.loading):hover),
-  :host([variant~='plain']:not(:disabled):not(.loading):hover) {
+  :host([variant~='plain']:not(:disabled):not(.loading):hover),
+  /* A menu or popover's button keeps its hover state while it's open. */
+  :host(
+    :is(
+        [variant~='outline'],
+        [variant~='dashed'],
+        [variant~='danger-plain'],
+        [variant~='plain']
+      )[slot='invoker'][aria-expanded='true']
+  ) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
@@ -541,7 +554,8 @@ export default css`
   }
 
   :host([variant~='plain'][inherit]:not(:disabled):not(.loading):active),
-  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)) {
+  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)),
+  :host([variant~='plain'][inherit][slot='invoker'][aria-expanded='true']) {
     color: inherit;
   }
 

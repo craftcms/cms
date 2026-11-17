@@ -17,7 +17,14 @@ afterEach(() => {
 });
 
 function widget(id: number, title: string): DashboardWidget {
-  return {id, title, name: title, colspan: 1, maxColspan: 2} as DashboardWidget;
+  return {
+    id,
+    title,
+    name: title,
+    colspan: 1,
+    maxColspan: 2,
+    color: 'gray',
+  } as DashboardWidget;
 }
 
 async function mountManager() {
@@ -35,6 +42,7 @@ async function mountManager() {
         widgets: widgets.value,
         columns: 2,
         busy: busy.value,
+        colors: ['red', 'gray'],
         opened: opened.value,
         'onUpdate:opened': (value: boolean) => (opened.value = value),
         async onReorder(from: number, to: number) {

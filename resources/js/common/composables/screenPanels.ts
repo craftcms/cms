@@ -291,3 +291,34 @@ export const ScreenPanelsKey: InjectionKey<ScreenPanels> =
 export function useScreenPanels(): ScreenPanels | null {
   return inject(ScreenPanelsKey, null);
 }
+
+/** What a page, or a panel on it, can do with its screen's details column. */
+export interface DetailsPanelsControl {
+  /** The open panel's id, or `null` when the column is folded to its rail. */
+  readonly openPanelId: Readonly<ShallowRef<string | null>>;
+  /** See {@link ScreenPanels.open}. */
+  open(
+    panelId: string,
+    options?: {withFocus?: boolean; focus?: PanelFocusTarget}
+  ): void;
+  /** See {@link ScreenPanels.close}. */
+  close(panelId: string, options?: {returnFocus?: boolean}): void;
+}
+
+/**
+ * Opens and closes panels in the nearest screen's details column: the page's,
+ * or a slideout's. `null` outside a screen.
+ */
+export function useDetailsPanels(): DetailsPanelsControl | null {
+  const panels = useScreenPanels();
+
+  if (!panels) {
+    return null;
+  }
+
+  return {
+    openPanelId: panels.openPanelId,
+    open: (panelId, options) => panels.open(panelId, options),
+    close: (panelId, options) => panels.close(panelId, options),
+  };
+}

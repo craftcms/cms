@@ -154,6 +154,7 @@ readonly class FormFields
                 ? ActionMenu::make()
                     ->menuItems($config['actionMenuItems'])
                     ->label(t('Actions'))
+                    ->flush()
                     ->toHtml()
                 : null,
             $showAttribute

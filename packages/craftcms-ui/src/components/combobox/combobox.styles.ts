@@ -24,7 +24,7 @@ export default css`
     border: 1px solid var(--c-form-control-border-color);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
-    box-shadow: var(--c-shadow-sm);
+    box-shadow: var(--c-shadow-overlay);
   }
 
   /* Lion gives the listbox a white background, which the overlay's own surface has to show through. */

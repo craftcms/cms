@@ -70,14 +70,14 @@ export interface AssistantApi {
    * until they remove it, and returns its ref. Its `type` is the handle of a
    * context type registered on the server, which describes it to the model.
    */
-  addContext(item: AssistantContextInput): string;
+  addContext: (item: AssistantContextInput) => string;
   /** The item added with a key, while it’s in the context. Reactive. */
-  getContext(key: string): Readonly<AssistantContextItem> | undefined;
-  removeContext(ref: string): void;
-  registerContextSource(source: AssistantContextSource): void;
-  registerTextExpander(expander: AssistantTextExpander): void;
+  getContext: (key: string) => Readonly<AssistantContextItem> | undefined;
+  removeContext: (ref: string) => void;
+  registerContextSource: (source: AssistantContextSource) => void;
+  registerTextExpander: (expander: AssistantTextExpander) => void;
   /** Opens the assistant, and moves focus to its message box. */
-  open(): void;
+  open: () => void;
 }
 
 export function createAssistantApi(): AssistantApi {

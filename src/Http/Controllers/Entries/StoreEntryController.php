@@ -127,9 +127,9 @@ readonly class StoreEntryController
 
     private function getEntry(CraftUser $currentUser): Entry
     {
-        $entryId = $this->request->input('canonicalId')
-            ?? $this->request->input('sourceId')
-            ?? $this->request->input('entryId');
+        $entryId = $this->request->integer('canonicalId')
+            ?: $this->request->integer('sourceId')
+            ?: $this->request->integer('entryId');
 
         $siteId = $this->request->input('siteId');
 

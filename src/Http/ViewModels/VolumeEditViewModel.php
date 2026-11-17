@@ -22,7 +22,9 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Outlet;
 use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\Tab;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -65,8 +67,7 @@ class VolumeEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $ui = Ui::make([
-            HiddenField::make('volumeId'),
+        $settings = Tab::make('settings', t('Settings'), [
             Field::make(t('Name'), Text::make('name')->autofocus())->required(),
             Field::make(t('Handle'), $handle)->required(),
             Separator::make('filesystem-separator'),
@@ -91,7 +92,7 @@ class VolumeEditViewModel extends ViewModel
         ]);
 
         if (Sites::isMultiSite()) {
-            $ui->add(
+            $settings->add(
                 Separator::make('translation-separator'),
                 Field::make(
                     t('Propagation Method'),
@@ -107,7 +108,7 @@ class VolumeEditViewModel extends ViewModel
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $ui->add(Group::make('volume-title-translation-settings', [
+                $settings->add(Group::make('volume-title-translation-settings', [
                     Field::make(
                         t('{name} Translation Key Format', ['name' => t('Title')]),
                         Text::make('titleTranslationKeyFormat')
@@ -121,13 +122,13 @@ class VolumeEditViewModel extends ViewModel
                 ])->dependsOn('titleTranslationMethod'));
             }
 
-            $ui->add(Field::make(
+            $settings->add(Field::make(
                 t('{name} Translation Method', ['name' => t('Alternative Text')]),
                 Choice::make('altTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
             )->instructions(t('How should {name} values be translated?', ['name' => t('Alternative Text')])));
 
             if (($values['altTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $ui->add(Group::make('volume-alt-translation-settings', [
+                $settings->add(Group::make('volume-alt-translation-settings', [
                     Field::make(
                         t('{name} Translation Key Format', ['name' => t('Alternative Text')]),
                         Text::make('altTranslationKeyFormat')
@@ -142,13 +143,20 @@ class VolumeEditViewModel extends ViewModel
             }
         }
 
-        $ui->add(
-            Separator::make('field-layout-separator'),
-            Field::make(null, FieldLayoutDesigner::make('fieldLayout')
-                ->elementType(Asset::class)
-                ->withGeneratedFields()
-                ->withCardViewDesigner()),
-        );
+        $ui = Ui::make([
+            HiddenField::make('volumeId'),
+            $settings,
+            Tab::make('content', t('Content'), [
+                Field::make(null, FieldLayoutDesigner::make('fieldLayout')
+                    ->elementType(Asset::class)
+                    ->withGeneratedFields()
+                    ->withCardViewDesigner()
+                    ->cardViewDesignerOutlet('volume.card-view-designer')),
+            ]),
+            Tab::make('appearance', t('Appearance'), [
+                Outlet::make('card-view-designer', 'volume.card-view-designer'),
+            ]),
+        ]);
 
         return $this->uiResolver->resolve($ui, new UiContext(
             values: $values,

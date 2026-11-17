@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Gql as GqlFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -197,3 +203,56 @@ it('lets OAuth clients discover, register for, and use the API with the access l
     'read only by default' => [null, ['graphql:read'], false],
     'read and write' => ['graphql:write', ['graphql:read', 'graphql:write'], true],
 ]);
+
+it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
+    Cms::config()->enableGraphqlCaching = true;
+    $schema = new GqlSchema(['name' => 'Front end', 'scope' => GqlHelper::createFullAccessSchema()->scope]);
+    GqlFacade::saveSchema($schema);
+    GqlFacade::saveToken(new GqlToken(['name' => 'Front end', 'schemaId' => $schema->id, 'accessToken' => 'front-end', 'enabled' => true]));
+
+    // The user has no permissions, so the schema can only come from the GraphQL token
+    $user = UserModel::factory()->createElement(['admin' => false]);
+    $draft = app(Drafts::class)->createDraft($this->peer, $user->id, provisional: true);
+    $draft->title = 'Unsaved changes';
+    Elements::saveElement($draft);
+    $userToken = gqlUserToken($user);
+    $published = $this->peer->title;
+    $title = function (array $headers): ?string {
+        app(Factory::class)->forgetGuards();
+
+        return graphQL("{ entry(id: {$this->peer->id}, withProvisionalDrafts: true) { title } }", $headers)
+            ->assertOk()
+            ->json('data.entry.title');
+    };
+
+    // Results are cached, so the user's provisional drafts must not leak into other requests. Save the pending project
+    // config first, so the cache keys don't change between requests.
+    app(ProjectConfig::class)->saveModifiedConfigData();
+    expect($title(['X-Craft-Gql-Token' => 'front-end', 'Authorization' => "Bearer $userToken"]))->toBe('Unsaved changes')
+        ->and($title(['X-Craft-Gql-Token' => 'front-end']))->toBe($published)
+        // Without the GraphQL token, the schema is the user's own, which can't query entries
+        ->and($title(['Authorization' => "Bearer $userToken"]))->toBeNull();
+
+    // Results that depend on the user's permissions change with them
+    $editable = fn (): array => graphQL('{ entries(section: "news", editable: true) { id } }', [
+        'X-Craft-Gql-Token' => 'front-end',
+        'Authorization' => "Bearer $userToken",
+    ])->assertOk()->json('data.entries');
+    app(Factory::class)->forgetGuards();
+    expect($editable())->toBe([]);
+    app(UserPermissions::class)->saveUserPermissions($user->id, ["viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}"]);
+    app(Factory::class)->forgetGuards();
+    expect($editable())->toEqualCanonicalizing([['id' => (string) $this->own->id], ['id' => (string) $this->peer->id]]);
+
+    app(Factory::class)->forgetGuards();
+    graphQL('{ __typename }', ['X-Craft-Gql-Token' => 'nope', 'Authorization' => "Bearer $userToken"])->assertBadRequest();
+    app(Factory::class)->forgetGuards();
+    graphQL('{ __typename }', ['X-Craft-Gql-Token' => 'front-end', 'Authorization' => 'Bearer aaa.bbb.ccc'])->assertUnauthorized();
+
+    // The same goes for users authenticated by their session
+    app(Factory::class)->forgetGuards();
+    actingAs(UserModel::findOrFail($user->id), Cms::config()->getAuthGuard());
+    graphQL("{ entry(id: {$this->peer->id}, withProvisionalDrafts: true) { title } }", ['X-Craft-Gql-Token' => 'front-end'])
+        ->assertOk()
+        ->assertJsonPath('data.entry.title', 'Unsaved changes');
+});

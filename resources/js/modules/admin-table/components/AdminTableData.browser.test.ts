@@ -206,7 +206,7 @@ it('keeps thin columns, and the delete column, as narrow as their content', asyn
   const text = document.createRange();
   text.selectNodeContents(cell);
   const lines = new Set([...text.getClientRects()].map((rect) => rect.top));
-  const name = page.getByRole('cell', {name: 'Body'}).element();
+  const name = page.getByRole('cell', {name: 'Body', exact: true}).element();
 
   expect(lines.size).toBe(1);
   expect(cell.getBoundingClientRect().width).toBeLessThan(
@@ -658,6 +658,54 @@ it('uses independent endpoints and confirmations for row and bulk deletion', asy
     data: {ids: [2, 3]},
   });
   expect(confirmDelete).toHaveBeenLastCalledWith('Delete these records?');
+});
+
+it('names rows in their delete buttons and confirmations, and counts the rows a bulk deletion takes', async () => {
+  const confirmDelete = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  const request = vi.spyOn(actionClient, 'delete');
+  const host = mountNode({
+    deletable: true,
+    deleteUrl: '/settings/delete-one',
+    bulkDeleteUrl: '/settings/delete-many',
+    rows: [...records, {id: 3, name: 'Gamma', _deleteLabel: 'Remove Gamma'}],
+  });
+
+  await expect
+    .element(page.getByRole('button', {name: 'Delete Beta'}))
+    .toBeInTheDocument();
+  await expect
+    .element(page.getByRole('button', {name: 'Remove Gamma'}))
+    .toBeInTheDocument();
+  await page.getByRole('button', {name: 'Delete Alpha'}).click();
+  expect(confirmDelete).toHaveBeenLastCalledWith(
+    'Are you sure you want to delete “Alpha”?'
+  );
+
+  const rows = host.querySelectorAll('tbody tr');
+  const deleteSelected = async () => {
+    await host.querySelector('craft-action-menu')!.show();
+    Array.from(host.querySelectorAll<HTMLElement>('craft-action-item'))
+      .find((item) => item.textContent?.trim() === 'Delete')!
+      .click();
+  };
+  rows[0]!.dispatchEvent(
+    new KeyboardEvent('keydown', {key: ' ', bubbles: true})
+  );
+  await nextTick();
+  await deleteSelected();
+  expect(confirmDelete).toHaveBeenLastCalledWith(
+    'Are you sure you want to delete 1 item?'
+  );
+
+  for (const row of [rows[1]!, rows[2]!]) {
+    row.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', bubbles: true}));
+  }
+  await nextTick();
+  await deleteSelected();
+  expect(confirmDelete).toHaveBeenLastCalledWith(
+    'Are you sure you want to delete 3 items?'
+  );
+  expect(request).not.toHaveBeenCalled();
 });
 
 it('filters rows by status and search, clears selection, and restores manual ordering when filters are cleared', async () => {

@@ -5,6 +5,7 @@
     "useDefineForClassFields": false,
     "paths": {
       "@/*": ["./resources/js/*"],
+      "@craftcms/cp": ["./resources/js/cp-module.ts"],
       "@actions/*": ["./resources/js/actions/CraftCms/Cms/Http/Controllers/*"],
       "@icons/*": ["./cms-assets/resources/icons/*"],
       "@public/*": ["./resources/public/*"],

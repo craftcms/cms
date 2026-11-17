@@ -4,6 +4,9 @@
   import CreateEntryController from '@actions/Entries/CreateEntryController';
   import {useSlideoutOpener} from '@/common/slideouts';
   import type {DashboardWidget} from './types';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{widget: DashboardWidget}>();
   const creating = ref(false);
@@ -48,7 +51,7 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <p v-if="widget.data?.message">{{ widget.data.message }}</p>

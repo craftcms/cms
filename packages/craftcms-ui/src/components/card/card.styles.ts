@@ -291,6 +291,8 @@ export default css`
     );
     --_body-padding-inline: var(--c-card-padding-inline, var(--_body-padding));
     --_body-padding-block: var(--c-card-padding-block, var(--_body-padding));
+    /* Fields in the card mark changes along its edge. */
+    --c-field-indicator-inset: var(--_body-padding-inline);
     gap: var(--c-spacing-md);
     padding-inline: var(--_body-padding-inline);
     padding-block: var(--_body-padding-block);

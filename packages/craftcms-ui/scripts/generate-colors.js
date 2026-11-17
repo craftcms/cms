@@ -197,8 +197,8 @@ function generateStyles(paletteColors, semanticColors) {
 /*
   Also on [data-theme]: these tokens are built from the palette with var(),
   which is substituted where it's declared, so a themed subtree re-resolves them.
-  Likewise what's in a black card, chip, or badge, and a neutral card, so it
-  doesn't take a tinted card's colors (see utils.js).
+  Likewise what's in a black card, chip, badge, or tooltip, and a neutral
+  card, so it doesn't take a tinted card's colors (see utils.js).
 */
 :root,
 [data-theme],

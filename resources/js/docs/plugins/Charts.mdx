@@ -1,0 +1,80 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Charts" />
+
+# Charts
+
+`AreaChart` draws a value over time, like the dashboard's New Users widget.
+The server builds the data with `Chart::get()`, and the page passes it to the
+component.
+
+## On the server
+
+`CraftCms\Cms\Dashboard\Chart::get()` runs an aggregate query once per
+interval between two dates, and returns `{columns, rows}`: a date column, then
+a value column.
+
+```php
+use CraftCms\Cms\Dashboard\Chart;
+use Illuminate\Support\Facades\DB;
+
+use function CraftCms\Cms\t;
+
+$data = Chart::get(
+    DB::table('exhibitions_tickets')->where('exhibitionId', $exhibition->id),
+    $startDate,
+    $endDate,
+    dateColumn: 'dateCreated',
+    func: 'count',
+    q: '*',
+    options: ['valueLabel' => t('Tickets')],
+);
+
+return inertia('my-plugin/ExhibitionStats', [
+    'tickets' => $data,
+    'scale' => Chart::getIntervalUnit($startDate, $endDate),
+]);
+```
+
+`func` is `count`, `sum`, `average`, `min` or `max`. Pass `intervalUnit`
+(`hour`, `day`, `month` or `year`) in `options` to choose the interval rather
+than letting `Chart` pick one from the date range, and `valueType` (`number`,
+`currency`, `percent` or `time`) for values that aren't plain numbers.
+
+## On the page
+
+```vue
+<script setup lang="ts">
+  import {AreaChart, type ChartData, type ChartScale} from '@craftcms/cp';
+
+  defineProps<{tickets: ChartData; scale: ChartScale}>();
+</script>
+
+<template>
+  <AreaChart :data="tickets" :scale="scale" label="Tickets sold" />
+</template>
+```
+
+| Prop          | What it does                                                                          |
+| ------------- | ------------------------------------------------------------------------------------- |
+| `data`        | The `{columns, rows}` from `Chart::get()`. The chart redraws when it changes.         |
+| `label`       | Names the chart for screen readers. Required.                                         |
+| `scale`       | The interval between rows, which picks how dates are labelled. Defaults to `day`.     |
+| `valueFormat` | A [d3-format](https://d3js.org/d3-format) specifier for the values, such as `',.0f'`. |
+| `color`       | The line and fill color. Defaults to the control panel's chart blue.                  |
+
+Without `valueFormat`, the value column's type picks the format: whole numbers
+for counts, the locale's currency, a percentage, or `hh:mm:ss` for `time`. Dates
+and numbers follow the user's formatting locale, and the chart flips for
+right-to-left languages.
+
+The chart fills its container's width and is 12.5rem tall. Give it a CSS
+height, such as `class="h-80"`, to change that. It redraws as its container resizes.
+
+d3 loads with the component, so it costs nothing on pages that don't show a
+chart.
+
+## Other charts
+
+`AreaChart` is the only chart the control panel draws. For others, bundle a
+charting library with your plugin.

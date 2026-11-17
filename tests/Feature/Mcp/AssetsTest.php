@@ -22,10 +22,12 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploads;
+use CraftCms\Cms\Mcp\AssetUploads;
 use CraftCms\Cms\Mcp\Capabilities\Assets;
 use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
@@ -463,6 +465,32 @@ it('rejects stdio upload credentials once their session expires', function (): v
         'HTTP_TUS_RESUMABLE' => '1.0.0',
         'HTTP_AUTHORIZATION' => "Bearer {$upload['authorization']['token']}",
     ])->assertStatus(410);
+});
+
+it('responds to upload requests with JSON errors when clients accept any content type', function (): void {
+    $patch = fn (string $url, ?string $token, int $offset = 0) => $this->call('PATCH', $url, server: [
+        'CONTENT_TYPE' => 'application/offset+octet-stream',
+        'HTTP_ACCEPT' => '*/*',
+        'HTTP_TUS_RESUMABLE' => '1.0.0',
+        'HTTP_UPLOAD_OFFSET' => (string) $offset,
+        ...($token === null ? [] : ['HTTP_AUTHORIZATION' => "Bearer $token"]),
+    ], content: 'abc');
+
+    Context::addHidden(StdioTransport::ContextStdio, true);
+    $stdio = app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id)['upload'];
+    Context::forgetHidden(StdioTransport::ContextStdio);
+    app(Factory::class)->forgetGuards();
+    $unknownId = Str::uuid()->toString();
+    $unknownUrl = str_replace($stdio['id'], $unknownId, $stdio['urls']['transfer']);
+
+    $patch($stdio['urls']['transfer'], 'guess')->assertUnauthorized()->assertJsonStructure(['message']);
+    $patch($unknownUrl, app(AssetUploads::class)->credential($unknownId))->assertNotFound()->assertJsonStructure(['message']);
+    $patch($stdio['urls']['transfer'], $stdio['authorization']['token'], 1)->assertConflict()->assertJsonStructure(['message']);
+
+    $http = app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id)['upload'];
+    app(Factory::class)->forgetGuards();
+
+    $patch($http['urls']['transfer'], null)->assertUnauthorized()->assertJsonStructure(['message']);
 });
 
 it('rejects local paths where volumes could not be', function (string $path): void {

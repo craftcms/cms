@@ -57,7 +57,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
@@ -1694,7 +1693,7 @@ class Fields
      */
     private function hasTipAndWarningColumns(): bool
     {
-        return Schema::hasColumn(Table::FIELDS, 'tip');
+        return DB::getReadSchemaBuilder()->hasColumn(Table::FIELDS, 'tip');
     }
 
     private function _createLayoutQuery(bool $withTrashed = false): Builder

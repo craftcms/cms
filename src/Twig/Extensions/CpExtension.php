@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
 use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
@@ -51,6 +52,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFunction('cardViewDesigner', app(CardDesigner::class)->html(...), ['is_safe' => ['html']]),
             new TwigFunction('chip', app(ElementHtml::class)->chipHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('craftCommand', fn (string $command): string => app(TerminalCommands::class)->craft($command)),
             new TwigFunction('customSelect', FormFields::customSelectHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('disclosureMenu', app(MenuHtml::class)->disclosureMenu(...), ['is_safe' => ['html']]),
             new TwigFunction('elementCard', app(ElementHtml::class)->elementCardHtml(...), ['is_safe' => ['html']]),

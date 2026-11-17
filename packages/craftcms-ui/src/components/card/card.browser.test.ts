@@ -7,6 +7,7 @@ import '../button/button.js';
 import '../checkbox/checkbox.js';
 import '../badge/badge.js';
 import '../truncate/truncate.js';
+import '../field/field.js';
 import {contrast} from '../../../test/contrast';
 import {
   HARD_IMAGES,
@@ -1331,3 +1332,26 @@ it.each(COVER_IMAGES.map((image) => [image.name, image] as const))(
     expect(await coverContrast(card)).toEqual({shortfalls: [], clipped: []});
   }
 );
+
+it.each([
+  ['narrow', '20rem'],
+  ['wide', '60rem'],
+])('marks a changed field along a %s card’s edge', async (_case, width) => {
+  document.body.innerHTML = `
+      <craft-card style="inline-size: ${width}">
+        <craft-field label="Title" status="modified" status-label="Modified">
+          <input slot="input">
+        </craft-field>
+      </craft-card>`;
+  const card = document.querySelector('craft-card')!;
+  const field = document.querySelector('craft-field')!;
+  await field.updateComplete;
+  const indicator = field.shadowRoot!.querySelector(
+    '.form-field__status-indicator'
+  )!;
+  const edge = card
+    .shadowRoot!.querySelector('.card-body')!
+    .getBoundingClientRect().left;
+
+  expect(indicator.getBoundingClientRect().left).toBeCloseTo(edge, 0);
+});

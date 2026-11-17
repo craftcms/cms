@@ -11,6 +11,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -73,12 +74,14 @@ use GraphQL\Validator\Rules\ValidationRule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
 use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -1168,15 +1171,24 @@ class Gql
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
 
-            // Results for authenticated requests are limited to what the user can access, so vary them by the
-            // user’s current permissions as well
-            if ($schema->user) {
-                $cacheKey .= '::'.$this->userPermissionsHash($schema->user);
+            // Results for logged-in users can include their provisional drafts and depend on their permissions (such as
+            // with `editable: true`, or authenticated schemas), so vary them by the user and their current permissions
+            $user = $schema->user ?? currentUserElement();
+
+            if ($user) {
+                $cacheKey .= "::$user->id::".$this->userPermissionsHash($user);
 
                 // Field layout user conditions are commonly based on the user’s groups as well
-                $groupIds = array_map(fn (UserGroup $group) => $group->id, $schema->user->getGroups());
+                $groupIds = array_map(fn (UserGroup $group) => $group->id, $user->getGroups());
                 sort($groupIds);
                 $cacheKey .= '::'.implode(',', $groupIds);
+            }
+
+            // Preview tokens can swap in another user’s provisional drafts
+            $previewUserId = Context::getHidden(Drafts::CONTEXT_PREVIEW_USER_ID);
+
+            if ($previewUserId !== null && $previewUserId !== $user?->id) {
+                $cacheKey .= "::provisional:$previewUserId";
             }
         } catch (Throwable $e) {
             report($e);

@@ -4,6 +4,9 @@
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import {renderHtmlWidget, type RenderHtmlWidget} from './htmlWidgets';
   import type {DashboardWidget} from './types';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   defineProps<{widget: DashboardWidget}>();
   const emit = defineEmits<{ready: []}>();
@@ -22,7 +25,7 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <craft-spinner class="body-loading" visible role="status">{{
       t('Loading…')
