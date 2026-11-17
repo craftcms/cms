@@ -130,6 +130,8 @@ Craft.UploadSessionUploader = Craft.BaseUploader.extend(
       try {
         this._dispatch('fileuploaddone', await upload.upload());
       } catch (error) {
+        // Nothing retries it, so don't leave its file staged until it expires
+        upload.cancel().catch(() => {});
         this._dispatch('fileuploadfail', {
           message: error.message,
           filename: file.name,

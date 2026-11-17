@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use craft\uploads\AssetUploadHandler;
 use craft\web\Controller;
 use yii\filters\RateLimiter;
+use yii\web\BadRequestHttpException;
 use yii\web\HttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
@@ -30,7 +31,14 @@ class UploadsController extends Controller
     /**
      * @inheritdoc
      */
-    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+    protected array|bool|int $allowAnonymous = [
+        // Guests need an Uploads::EVENT_AUTHORIZE_UPLOAD handler's approval
+        'start' => self::ALLOW_ANONYMOUS_LIVE,
+        'complete' => self::ALLOW_ANONYMOUS_LIVE,
+        'cancel' => self::ALLOW_ANONYMOUS_LIVE,
+        // The token in the URL authorizes the request, and the upload already started
+        'transfer' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+    ];
 
     /**
      * @inheritdoc
@@ -42,8 +50,10 @@ class UploadsController extends Controller
                 'class' => RateLimiter::class,
                 'only' => ['start'],
                 'enableRateLimitHeaders' => false,
-                // Users are limited by permissions; guests by IP
-                'user' => fn() => Craft::$app->getUser()->getIsGuest() ? IpRateLimitIdentity::createDefault('upload-start') : null,
+                // Users are limited by permissions; guests by IP, at Craft 6's limit, since each file is one start
+                'user' => fn() => Craft::$app->getUser()->getIsGuest() && Craft::$app->getConfig()->getGeneral()->defaultRateLimit
+                    ? new IpRateLimitIdentity(['keyPrefix' => 'upload-start', 'limit' => 60, 'window' => 60])
+                    : null,
             ],
         ];
     }
@@ -58,7 +68,17 @@ class UploadsController extends Controller
             $this->enableCsrfValidation = false;
         }
 
-        return parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        // Actions that allow guests skip the control panel's access check, which control panel requests still need
+        if ($action->id !== 'transfer' && $this->request->getIsCpRequest()) {
+            $this->requireLogin();
+            $this->requirePermission('accessCp');
+        }
+
+        return true;
     }
 
     /**
@@ -73,10 +93,19 @@ class UploadsController extends Controller
 
         $params = $this->request->getBodyParams();
         unset($params[$this->request->csrfParam], $params['filename'], $params['size']);
+        $filename = $this->request->getRequiredBodyParam('filename');
+
+        if (!is_string($filename)) {
+            throw new BadRequestHttpException('The filename must be a string.');
+        }
+
+        if (isset($params['folderId'], $params['fieldId'])) {
+            throw new BadRequestHttpException('Send either folderId or fieldId, not both.');
+        }
 
         $upload = Craft::$app->getUploads()->start(
             AssetUploadHandler::class,
-            $this->request->getRequiredBodyParam('filename'),
+            $filename,
             (int)$this->request->getRequiredBodyParam('size'),
             $params,
         );
