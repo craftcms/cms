@@ -8,9 +8,11 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\Passport;
@@ -85,6 +87,35 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
     'named transform with deferred generation' => ['thumbnail', false],
     'inline transform on a disk that generates immediately' => [['width' => 160, 'height' => 80, 'format' => 'png'], true],
 ]);
+
+it('returns absolute transform URLs for volumes with root-relative URLs', function (): void {
+    $root = storage_path('framework/testing/transform-relative-'.uniqid());
+    config()->set('filesystems.disks.transform-relative', [
+        'driver' => 'local',
+        'root' => $root,
+        'url' => '/transforms',
+        'asset_transformer' => ['driver' => 'craft', 'generate_transforms_before_page_load' => true],
+    ]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => Volume::factory()->create(['fs' => 'transform-relative', 'hasUrls' => true])->id,
+        'filename' => 'source.png',
+    ]);
+    Storage::disk('transform-relative')->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/google.png'));
+
+    try {
+        $url = McpRequest::send($this, 'tools/call', [
+            'name' => 'assets_transform_url',
+            'arguments' => ['id' => $asset->id, 'transform' => ['width' => 160]],
+        ])
+            ->assertOk()
+            ->assertJsonPath('result.isError', false)
+            ->json('result.structuredContent.url');
+    } finally {
+        File::deleteDirectory($root);
+    }
+
+    expect($url)->toStartWith(Sites::getPrimarySite()->getBaseUrl().'transforms/');
+});
 
 it('requires asset view permission before generating a preview', function (): void {
     $user = User::query()->firstOrFail();
