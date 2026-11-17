@@ -21,11 +21,12 @@ import {
 import CraftSwitch from '@craftcms/ui/vue/CraftSwitch.vue';
 import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem} from '@/common/types';
+import type {AccessorParam} from '@/common/table/createCraftColumnHelper';
 import useCraftData from '@/common/composables/useCraftData';
 
-/** A Lion form control, which labels its inner control through `addToAriaLabelledBy()`. */
+/** A form control, which labels its inner control through `addToAriaLabelledBy()`. */
 type LabelledFormControl = HTMLElement & {
-  addToAriaLabelledBy(element: HTMLElement, config?: {reorder?: boolean}): void;
+  addToAriaLabelledBy(element: HTMLElement): void;
 };
 
 type MaybeGetter<T> = T | (() => T);
@@ -86,10 +87,6 @@ interface AutocompleteColumnOptions<
     ctx: Pick<CellContext<CraftTableFeatures, T, unknown>, 'row' | 'column'>
   ) => void;
 }
-
-export type AccessorParam<T extends object> = Parameters<
-  ColumnHelper<CraftTableFeatures, T>['accessor']
->[0];
 
 interface EditableColumnHelper<T extends object> {
   accessor: ColumnHelper<CraftTableFeatures, T>['accessor'];
@@ -258,7 +255,7 @@ export function useEditableTable<T extends object>(
             cellOptions?.ariaLabelledBy ?? tableHeaderId(table, column.id)
           );
           if (labelEl) {
-            switchEl.addToAriaLabelledBy(labelEl, {reorder: false});
+            switchEl.addToAriaLabelledBy(labelEl);
           }
         },
         'onUpdate:modelValue': (value: boolean | undefined) => {

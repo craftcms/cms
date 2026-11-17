@@ -77,6 +77,26 @@ export function useUiValues(initial: UiPayload) {
     });
   }
 
+  /**
+   * Takes in nodes the server held back, such as a deferred tab's, along with
+   * their values. Those values are what the server already holds, so they join
+   * the baseline as well as the values, rather than reading as edits.
+   */
+  function adoptDeferred(nodes: UiNodePayload[], source: UiValues): void {
+    visitControls(nodes, (control) => {
+      const group = control.deltaGroup;
+
+      if (valueAt(baseline, group) === undefined) {
+        setPathValue(baseline, group, cloneRaw(valueAt(source, group)));
+      }
+
+      if (valueAt(values, group) === undefined) {
+        write(group, cloneRaw(valueAt(source, group)));
+      }
+    });
+    rememberControls(nodes);
+  }
+
   /** Seeds the values again from `source`, as mounting it would have. */
   function reset(source: UiPayload): void {
     touchedPaths.clear();
@@ -103,6 +123,91 @@ export function useUiValues(initial: UiPayload) {
           groupCanonical(valueAt(baseline, segments), segments)
         );
       })
+    );
+  }
+
+  /**
+   * Takes in a successful submission's response, the payload the server
+   * rendered from what it saved. `submitted` is what the submission sent, and
+   * `held` what the form held when the response arrived.
+   *
+   * What the server saved can differ from what was sent: applying a draft
+   * replaces the nested entries created in it, say. So values left as they
+   * were sent take the server's, rather than going on referring to elements
+   * that are gone. Edits made while the submission was out stay unsaved, on
+   * the identities that replaced the ones they were made to.
+   *
+   * `later` settles only the groups in `saved`, such as those of tabs the
+   * server sent once the page had loaded, keeping the rest of the baseline.
+   */
+  function settle(
+    saved: UiPayload,
+    submitted: UiValues,
+    held: UiValues,
+    later = false
+  ): void {
+    const savedBaseline = cloneRaw(later ? baseline : submitted);
+    const groups = new Map<string, string[]>();
+
+    visitControls(saved.nodes, (control) => {
+      // A group at the root is the whole form, which no one control speaks for.
+      if (control.mode === 'editable' && control.deltaGroup.length) {
+        groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+      }
+    });
+
+    for (const group of groups.values()) {
+      const savedValue = valueAt(saved.values, group);
+
+      if (savedValue === undefined) {
+        continue;
+      }
+
+      setPathValue(savedBaseline, group, cloneRaw(savedValue));
+
+      const sentValue = valueAt(submitted, group);
+      const sent = groupCanonical(sentValue, group);
+
+      if (groupCanonical(valueAt(held, group), group) === sent) {
+        if (
+          groupCanonical(valueAt(values, group), group) !==
+          groupCanonical(savedValue, group)
+        ) {
+          write(group, cloneRaw(savedValue));
+        }
+
+        continue;
+      }
+
+      const renames = new Map<string, string>();
+      collectRenames(sentValue, savedValue, renames);
+
+      if (renames.size) {
+        write(group, renamed(valueAt(values, group), renames));
+        renameTrackedPaths(renames);
+      }
+    }
+
+    rebase(savedBaseline);
+  }
+
+  /** Moves the edits recorded under replaced identities onto their replacements. */
+  function renameTrackedPaths(renames: Map<string, string>): void {
+    const rename = (path: string[]) =>
+      path.map((segment) => renames.get(segment) ?? segment);
+
+    // A copy, as the loop changes the set.
+    for (const key of Array.from(touchedPaths)) {
+      const next = JSON.stringify(rename(JSON.parse(key) as string[]));
+
+      if (next !== key) {
+        touchedPaths.delete(key);
+        touchedPaths.add(next);
+      }
+    }
+
+    changedPaths.value = new Set(
+      [...changedPaths.value].map((path) => rename(path.split('.')).join('.'))
     );
   }
 
@@ -274,8 +379,10 @@ export function useUiValues(initial: UiPayload) {
     write,
     recordEdit,
     adopt,
+    adoptDeferred,
     reset,
     rebase,
+    settle,
     snapshot,
     mutation,
     currentValues,
@@ -285,6 +392,101 @@ export function useUiValues(initial: UiPayload) {
     controlAt,
     restructured,
   };
+}
+
+/**
+ * The identities a save replaced, such as nested entries' UIDs, read off lists
+ * of them: the server keeps what was sent in the order it was sent, so an
+ * identity in a list it saved stands for the one sent in its place. Records
+ * are followed under the keys that replaced theirs, so the lists inside the
+ * replaced entries are read too.
+ */
+function collectRenames(
+  sent: UiValue,
+  saved: UiValue,
+  renames: Map<string, string>
+): void {
+  if (Array.isArray(sent) && Array.isArray(saved)) {
+    if (sent.length !== saved.length) {
+      return;
+    }
+
+    sent.forEach((sentItem, index) => {
+      const savedItem = saved[index];
+
+      if (
+        typeof sentItem === 'string' &&
+        typeof savedItem === 'string' &&
+        sentItem !== savedItem &&
+        !saved.includes(sentItem) &&
+        !sent.includes(savedItem)
+      ) {
+        renames.set(sentItem, savedItem);
+      } else {
+        collectRenames(sentItem, savedItem, renames);
+      }
+    });
+
+    return;
+  }
+
+  if (!isRecord(sent) || !isRecord(saved)) {
+    return;
+  }
+
+  // Lists first, as they name the keys of the records beside them.
+  const keys = Object.keys(sent).sort(
+    (a, b) => Number(!Array.isArray(sent[a])) - Number(!Array.isArray(sent[b]))
+  );
+
+  for (const key of keys) {
+    const savedKey = renames.get(key) ?? key;
+
+    if (savedKey in saved) {
+      collectRenames(sent[key], saved[savedKey], renames);
+    }
+  }
+}
+
+/**
+ * A copy of `value` that uses the identities that replaced the ones it has,
+ * as record keys and list items: the places {@link collectRenames} reads them.
+ */
+function renamed(value: UiValue, renames: Map<string, string>): UiValue {
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      typeof item === 'string'
+        ? (renames.get(item) ?? item)
+        : renamed(item, renames)
+    );
+  }
+
+  if (isRecord(value)) {
+    const replaced = new Set(
+      Object.keys(value).flatMap((key) => renames.get(key) ?? [])
+    );
+    const result: UiValues = Object.fromEntries(
+      Object.entries(value)
+        .filter(([key]) => !replaced.has(key))
+        .map(([key, item]) => [renames.get(key) ?? key, renamed(item, renames)])
+    );
+
+    // The response's own copy of a replacement, which the values took in when
+    // it arrived, gives way to the one the client is holding, but fills in
+    // what that lacks, as it would have had their keys matched.
+    for (const key of replaced) {
+      const response = value[key];
+      const held = result[key];
+
+      if (isRecord(held) && isRecord(response)) {
+        mergeMissing(held, response);
+      }
+    }
+
+    return result;
+  }
+
+  return cloneRaw(value);
 }
 
 function mergeMissing(target: UiValues, source: UiValues): void {

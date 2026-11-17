@@ -6,18 +6,13 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\JsonData;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Textarea;
-use CraftCms\Cms\View\LegacyAssets\CodeMirrorAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use InvalidArgumentException;
 use Override;
 
@@ -28,7 +23,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
+class Json extends Field implements MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -96,60 +91,9 @@ class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFi
         return Textarea::make($context->path)
             ->rows(12)
             ->monospace()
+            // Only JSON is pasted in, as copied from another JSON field.
+            ->valueScope('json')
             ->value($value);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->_inputHtml($value, false);
-    }
-
-    private function _inputHtml(?JsonData $value, bool $static): string
-    {
-        $id = $this->getInputId();
-
-        app(InternalAssetRegistry::class)->register(CodeMirrorAsset::class);
-        HtmlStack::jsWithVars(fn ($id, $static) => <<<JS
-(() => {
-  const textarea = document.getElementById($id)
-  const init = () => {
-    const editor = CodeMirror.fromTextArea(textarea, {
-      mode: {
-        name: 'javascript',
-        json: true,
-      },
-      viewportMargin: Infinity,
-      readOnly: $static,
-      theme: [
-        'default',
-        $static ? 'readonly' : null,
-      ].filter(v => v).join(' '),
-    })
-    editor.on('change', (editor) => {
-      editor.save();
-    });
-  };
-
-  const intersectionObserver = new IntersectionObserver((entries) => {
-    // was the field just made visible?
-    if (entries[0].intersectionRatio !== 0) {
-      intersectionObserver.disconnect();
-      init();
-    }
-  });
-  intersectionObserver.observe(textarea);
-})();
-JS, [
-            InputNamespace::namespaceId($id),
-            $static,
-        ]);
-
-        return Html::beginTag('div', ['class' => 'json-field']).
-            Html::textarea($this->handle, $value?->getJson(true), [
-                'id' => $id,
-            ]).
-            Html::endTag('div');
     }
 
     /** @return list<Closure> */

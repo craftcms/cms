@@ -8,28 +8,23 @@ import {
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {FormControlMixin} from '@lion/ui/form-core.js';
-// Named explicitly so the emitted .d.ts can reference Lion's mixin
-// constructor by package specifier instead of a pnpm store path (TS2883).
-import type {} from '@open-wc/dedupe-mixin';
-import '../tooltip/tooltip.js';
+import '../info-icon/info-icon.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
-import {FieldNotices} from '@src/mixins/FieldNotices';
+import {FormControl, type AriaReferenceConfig} from '@src/mixins/FormControl';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 
 type FormControlTarget = HTMLElement & {
-  addToAriaLabelledBy(
-    element: HTMLElement,
-    config?: {idPrefix?: string; reorder?: boolean}
-  ): void;
+  addToAriaLabelledBy(element: HTMLElement, config?: AriaReferenceConfig): void;
+  removeFromAriaLabelledBy(element: HTMLElement): void;
   addToAriaDescribedBy(
     element: HTMLElement,
-    config?: {idPrefix?: string; reorder?: boolean}
+    config?: AriaReferenceConfig
   ): void;
+  removeFromAriaDescribedBy(element: HTMLElement): void;
 };
 
 /**
@@ -40,7 +35,7 @@ type FormControlTarget = HTMLElement & {
  *
  * The shell never touches the slotted input's value, validation or events —
  * it only provides the surrounding chrome and the label/description aria
- * wiring supplied by Lion's `FormControlMixin`.
+ * wiring.
  *
  * @slot input - The wrapped control. Required.
  * @slot label - The field label. Alternative to the `label` attribute.
@@ -49,17 +44,21 @@ type FormControlTarget = HTMLElement & {
  * @slot feedback - Validation errors (e.g. an error list).
  * @slot tip - Tip notice content, rendered inside an info callout.
  * @slot warning - Warning notice content, rendered inside a warning callout.
+ * @slot label-badge - A short badge right after the label, styled like the
+ *   read-only badge, such as one saying the field changed. Give it its colors.
  * @slot label-extra - Extra heading content, rendered after a flex-grow spacer.
  *   @deprecated Use `actions` instead.
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
- *   field settings menus), rendered as a group at the end of the heading.
+ *   field settings menus), rendered as a group right after a visible label,
+ *   or at the end of the heading when the label is visually hidden.
+ *
+ * @cssproperty --c-field-indicator-inset - How far the changed/outdated
+ *   indicator sits before the field's leading edge. Set it to the padding of
+ *   whatever holds the field, so the indicator runs along that edge. Defaults
+ *   to `--c-spacing-lg`.
  */
-export default class CraftField extends FieldNotices(
-  FormControlMixin(LitElement)
-) {
-  static override get styles() {
-    return [visuallyHiddenStyles, baseFieldStyles, styles];
-  }
+export default class CraftField extends FormControl(LitElement) {
+  static override styles = [visuallyHiddenStyles, baseFieldStyles, styles];
 
   /** Renders the required indicator inside the label. */
   @property({type: Boolean, reflect: true}) required = false;
@@ -120,13 +119,6 @@ export default class CraftField extends FieldNotices(
    */
   @property({type: String, reflect: true}) width?: 'full' | 'auto';
 
-  /**
-   * Visually hides the label, keeping it available to screen readers.
-   * `FormControlMixin` declares this property (`label-sr-only`), but its
-   * types leave it out.
-   */
-  declare labelSrOnly: boolean;
-
   private readonly __hasSlot = new HasSlotController(
     this,
     'heading-prefix',
@@ -144,14 +136,16 @@ export default class CraftField extends FieldNotices(
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.__enhancedInput = this._inputNode ?? null;
+    this.__enhancedInput = this._control ?? null;
     this.__lightDomObserver.observe(this, {childList: true});
     this.__syncHasErrors();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
     void this.updateComplete.then(() => {
       // Nested controls initialize their ARIA references after the field connects.
-      this.addToAriaLabelledBy(this._labelNode);
+      if (this._labelNode) {
+        this.addToAriaLabelledBy(this._labelNode);
+      }
       this.__wireDescribedBy();
     });
   }
@@ -201,13 +195,6 @@ export default class CraftField extends FieldNotices(
   override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
 
-    if (changedProperties.has('disabled')) {
-      // FormControlMixin reflects `aria-disabled` onto the slotted input, but
-      // the shell doesn't own the input (its disabled state is the input's
-      // own business), so undo that.
-      this._inputNode?.removeAttribute('aria-disabled');
-    }
-
     if (changedProperties.has('fieldset')) {
       this.__syncFieldsetSemantics();
     }
@@ -218,8 +205,8 @@ export default class CraftField extends FieldNotices(
       changedProperties.has('translatable') ||
       changedProperties.has('translationDescription')
     ) {
-      // FormControlMixin rewrites the label node's textContent when the label
-      // property changes, wiping any decorations, so re-sync afterwards.
+      // Setting `label` rewrites the label node's textContent, wiping any
+      // decorations, so re-sync afterwards.
       this.__syncLabelDecorations();
     }
   }
@@ -229,7 +216,7 @@ export default class CraftField extends FieldNotices(
    * value or listens to its events.
    */
   get control(): HTMLElement | undefined {
-    return this._inputNode ?? undefined;
+    return this._control ?? undefined;
   }
 
   protected get _resolvedOrientation(): 'ltr' | 'rtl' {
@@ -253,20 +240,13 @@ export default class CraftField extends FieldNotices(
     this.__syncFieldsetSemantics();
   }
 
-  protected _onLabelClick(): void {
-    this.__formControlTarget()?.focus();
-  }
-
   /**
-   * Registers aria references in insertion order instead of Lion's
-   * DOM-order reordering. The reorder implementation depends on
-   * `Element.assignedSlot`, which happy-dom doesn't populate, and insertion
-   * order already matches the template order here (label; help-text,
-   * feedback, tip, warning).
+   * Hands the label to the slotted control when it manages its own
+   * references, and otherwise names the control, or the field as a group.
    */
   override addToAriaLabelledBy(
     element: HTMLElement,
-    customConfig: {idPrefix?: string; reorder?: boolean} = {}
+    customConfig: AriaReferenceConfig = {}
   ): void {
     const control = this.__formControlTarget();
     if (control) {
@@ -282,7 +262,7 @@ export default class CraftField extends FieldNotices(
       return;
     }
 
-    super.addToAriaLabelledBy(element, {...customConfig, reorder: false});
+    super.addToAriaLabelledBy(element, customConfig);
   }
 
   /**
@@ -291,7 +271,7 @@ export default class CraftField extends FieldNotices(
    */
   override addToAriaDescribedBy(
     element: HTMLElement,
-    customConfig: {idPrefix?: string; reorder?: boolean} = {}
+    customConfig: AriaReferenceConfig = {}
   ): void {
     const control = this.__formControlTarget();
     if (control) {
@@ -311,11 +291,43 @@ export default class CraftField extends FieldNotices(
       return;
     }
 
-    super.addToAriaDescribedBy(element, {...customConfig, reorder: false});
+    super.addToAriaDescribedBy(element, customConfig);
   }
 
-  // `readOnly` (attribute: `readonly`) is inherited from FormControlMixin
-  // and renders the read-only badge in the heading.
+  /** Takes a label back from wherever `addToAriaLabelledBy()` gave it. */
+  override removeFromAriaLabelledBy(element: HTMLElement): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.removeFromAriaLabelledBy(element);
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__removeGroupAriaReference('aria-labelledby', element);
+      return;
+    }
+
+    super.removeFromAriaLabelledBy(element);
+  }
+
+  /** Takes a description back from wherever `addToAriaDescribedBy()` gave it. */
+  override removeFromAriaDescribedBy(element: HTMLElement): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.removeFromAriaDescribedBy(element);
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__removeGroupAriaReference('aria-describedby', element);
+      return;
+    }
+
+    super.removeFromAriaDescribedBy(element);
+  }
+
+  // `readOnly` (attribute: `readonly`) renders the read-only badge in the
+  // heading.
 
   override render() {
     return html`
@@ -356,10 +368,14 @@ export default class CraftField extends FieldNotices(
    * and actions, mirroring `.field > .heading` in the Blade wrapper. Skipped
    * entirely when there's nothing to put in it.
    *
+   * Beside a visible label, the actions follow it and its indicators, so a
+   * field's menu sits with the name it acts on. Otherwise they go at the end.
+   *
    * With `label-sr-only`, the label stays available to screen readers but is
-   * visually hidden. When it's the only thing in the heading, the whole
-   * heading is hidden rather than just the label, so it leaves the flow and
-   * takes no gap; otherwise only the label is, keeping the rest visible.
+   * visually hidden, along with the read-only badge that belongs to it. When
+   * they're all the heading has, the whole heading is hidden rather than just
+   * the label, so it leaves the flow and takes no gap; otherwise only the
+   * label is, keeping the rest visible.
    */
   protected override _labelTemplate() {
     const hasLabel = this.__hasLabel;
@@ -368,14 +384,33 @@ export default class CraftField extends FieldNotices(
     const hasOtherContent =
       hasLabelExtra ||
       hasActions ||
-      this.readOnly ||
+      (this.readOnly && !this.labelSrOnly) ||
+      this.__hasSlot.test('label-badge') ||
       this.__hasSlot.test('heading-prefix') ||
       this.__hasSlot.test('heading-suffix');
 
-    if (!hasLabel && !hasOtherContent) {
-      // Lion types this override as returning a TemplateResult.
+    if (!hasLabel && !hasOtherContent && !this.readOnly) {
       return html``;
     }
+
+    const actionsBesideLabel = hasActions && hasLabel && !this.labelSrOnly;
+    const actions = hasActions
+      ? html`
+          <div
+            class=${classMap({
+              'field-actions': true,
+              'field-actions--beside-label': actionsBesideLabel,
+              'field-actions--after-text':
+                actionsBesideLabel && !this.__hasLabelDecorations,
+            })}
+            part="actions"
+            role="group"
+            aria-label=${t('Field actions')}
+          >
+            <slot name="actions"></slot>
+          </div>
+        `
+      : html`<slot name="actions"></slot>`;
 
     let label: TemplateResult | typeof nothing = nothing;
     if (hasLabel) {
@@ -397,24 +432,21 @@ export default class CraftField extends FieldNotices(
         <slot name="heading-prefix"></slot>
         ${label}
         ${this.readOnly
-          ? html`<span class="read-only-badge">${t('Read Only')}</span>`
+          ? html`<span
+              class=${classMap({
+                'read-only-badge': true,
+                'cp-visually-hidden': this.labelSrOnly && hasOtherContent,
+              })}
+              >${t('Read Only')}</span
+            >`
           : nothing}
-        ${hasLabelExtra || hasActions
+        <slot name="label-badge"></slot>
+        ${actionsBesideLabel ? actions : nothing}
+        ${hasLabelExtra || (hasActions && !actionsBesideLabel)
           ? html`<div class="flex-grow"></div>`
           : nothing}
         <slot name="label-extra"></slot>
-        ${hasActions
-          ? html`
-              <div
-                class="field-actions"
-                part="actions"
-                role="group"
-                aria-label=${t('Field actions')}
-              >
-                <slot name="actions"></slot>
-              </div>
-            `
-          : html`<slot name="actions"></slot>`}
+        ${actionsBesideLabel ? nothing : actions}
         <slot name="heading-suffix"></slot>
       </div>
     `;
@@ -433,8 +465,8 @@ export default class CraftField extends FieldNotices(
 
   /**
    * The input container, mirroring the server-side
-   * `.input.{orientation}.errors.disabled` classes while keeping Lion's
-   * `input-group` structure.
+   * `.input.{orientation}.errors.disabled` classes around the `input-group`
+   * structure.
    */
   protected override _inputGroupTemplate() {
     const classes = {
@@ -472,10 +504,10 @@ export default class CraftField extends FieldNotices(
   }
 
   /**
-   * Whether there's a label to show. Lion's `SlotMixin` always generates a
-   * light-DOM label node (empty when there's no `label`), so the node's
-   * presence says nothing — its text does. `label` reads that text back when
-   * a consumer slots their own label instead of setting the attribute.
+   * Whether there's a label to show. A light-DOM label node is always
+   * generated (empty when there's no `label`), so the node's presence says
+   * nothing — its text does. `label` reads that text back when a consumer
+   * slots their own label instead of setting the attribute.
    */
   private get __hasLabel(): boolean {
     return this.label.trim() !== '';
@@ -506,30 +538,42 @@ export default class CraftField extends FieldNotices(
   }
 
   private __wireDescribedBy(): void {
+    // Controls after the main one, such as a custom value's input, take their
+    // own label, but the field's instructions and errors describe them too.
+    const afterControls = (Array.from(this.children) as HTMLElement[]).filter(
+      (el): el is HTMLElement & FormControlTarget =>
+        el.slot === 'after' && 'addToAriaDescribedBy' in el
+    );
+
     for (const slotName of ['help-text', 'feedback']) {
       const node = this.__lightChild(slotName);
       if (node) {
         // Already-registered nodes are ignored by addToAriaDescribedBy.
         this.addToAriaDescribedBy(node, {idPrefix: slotName});
+        for (const control of afterControls) {
+          control.addToAriaDescribedBy(node, {
+            idPrefix: `field-${slotName}`,
+          });
+        }
       }
     }
   }
 
   /**
-   * FormControlMixin wires up the slotted control once, when the field
+   * FormControl wires up the slotted control once, when the field
    * connects. A control swapped in afterward, as when a server-driven UI
    * refresh replaces a hidden input with a textarea, gets the same treatment
    * here: the `form-control` class that sizes it, an id for the label, and the
    * label and descriptions it would otherwise go without.
    */
   private __enhanceSwappedInput(): void {
-    const input = this._inputNode;
+    const input = this._control;
     if (!input || input === this.__enhancedInput) {
       return;
     }
 
     this.__enhancedInput = input;
-    this._enhanceLightDomClasses();
+    input.classList.add('form-control');
     input.id ||= this._inputId;
 
     if (this.__formControlTarget()) {
@@ -539,14 +583,11 @@ export default class CraftField extends FieldNotices(
       return;
     }
 
-    // Lion only reflects these lists when they change, so reassign them to
-    // write them onto the new input.
-    this._ariaLabelledNodes = [...this._ariaLabelledNodes];
-    this._ariaDescribedNodes = [...this._ariaDescribedNodes];
+    this._reflectAriaReferences();
   }
 
   private __formControlTarget(): FormControlTarget | undefined {
-    const input = this._inputNode;
+    const input = this._control;
 
     return input &&
       'addToAriaLabelledBy' in input &&
@@ -557,7 +598,7 @@ export default class CraftField extends FieldNotices(
 
   private __hasNativeLabelTarget(): boolean {
     return Boolean(
-      this._inputNode?.matches(
+      this._control?.matches(
         'button, input, meter, output, progress, select, textarea'
       )
     );
@@ -574,6 +615,21 @@ export default class CraftField extends FieldNotices(
     );
     ids.add(element.id);
     this.setAttribute(attribute, [...ids].join(' '));
+  }
+
+  private __removeGroupAriaReference(
+    attribute: 'aria-labelledby' | 'aria-describedby',
+    element: HTMLElement
+  ): void {
+    const ids = (this.getAttribute(attribute) ?? '')
+      .split(/\s+/)
+      .filter((id) => id && id !== element.id);
+
+    if (ids.length) {
+      this.setAttribute(attribute, ids.join(' '));
+    } else {
+      this.removeAttribute(attribute);
+    }
   }
 
   private __syncHasErrors(): void {
@@ -606,8 +662,8 @@ export default class CraftField extends FieldNotices(
       this.removeAttribute('aria-labelledby');
       if (labelNode && control) {
         labelNode.removeAttribute('for');
-      } else if (labelNode && this._inputNode) {
-        labelNode.setAttribute('for', this._inputNode.id || this._inputId);
+      } else if (labelNode && this._control) {
+        labelNode.setAttribute('for', this._control.id || this._inputId);
       }
     }
   }
@@ -618,6 +674,11 @@ export default class CraftField extends FieldNotices(
    * the light DOM (like the server-rendered markup), so they pick up the CP's
    * global `.visually-hidden`, `.required` and `.t9n-indicator` styles.
    */
+  /** Whether the label gets a required indicator or translation icon. */
+  private get __hasLabelDecorations(): boolean {
+    return Boolean(this.label) && (this.required || this.translatable);
+  }
+
   private __syncLabelDecorations(): void {
     const labelNode = this._labelNode;
     if (!labelNode) {
@@ -630,9 +691,21 @@ export default class CraftField extends FieldNotices(
       el.remove();
     }
 
-    if (!this.label) {
+    if (!this.label || !this.__hasLabelDecorations) {
       return;
     }
+
+    // One flex item, so only the gap after the label's text widens to make
+    // up for the space beside each icon's glyph.
+    const decorations = document.createElement('span');
+    decorations.setAttribute('data-craft-field-decoration', '');
+    Object.assign(decorations.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 'var(--_heading-gap)',
+      marginInlineStart: 'var(--_label-text-bearing)',
+    });
+    labelNode.append(decorations);
 
     if (this.required) {
       const srLabel = document.createElement('craft-visually-hidden');
@@ -650,26 +723,20 @@ export default class CraftField extends FieldNotices(
       indicator.setAttribute('data-color', 'danger');
       indicator.setAttribute('aria-hidden', 'true');
 
-      labelNode.append(srLabel, indicator);
+      decorations.append(srLabel, indicator);
     }
 
     if (this.translatable) {
-      const tooltip = document.createElement('craft-tooltip');
-      tooltip.setAttribute('placement', 'bottom');
-      tooltip.textContent = this.translationDescription;
-      tooltip.setAttribute('data-craft-field-decoration', '');
+      const infoIcon = document.createElement('craft-info-icon');
+      infoIcon.icon = 'language';
+      infoIcon.label = this.translationDescription;
+      infoIcon.textContent = this.translationDescription;
+      infoIcon.className = 't9n-indicator prevent-autofocus';
+      infoIcon.setAttribute('data-craft-field-decoration', '');
+      // Keeps the label it sits in from moving focus to the control.
+      infoIcon.addEventListener('click', (event) => event.preventDefault());
 
-      const button = document.createElement('craft-button');
-      button.type = 'button';
-      button.slot = 'invoker';
-      button.variant = 'plain';
-      button.size = 'small';
-      button.icon = 'language';
-      button.className = 't9n-indicator prevent-autofocus';
-      button.setAttribute('aria-label', this.translationDescription);
-
-      tooltip.append(button);
-      labelNode.append(tooltip);
+      decorations.append(infoIcon);
     }
   }
 }

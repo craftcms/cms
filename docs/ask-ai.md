@@ -1,6 +1,6 @@
 # Ask AI
 
-**Ask AI** is the control panel’s AI chat. It opens from the header bar in a panel beside the screen, and answers the user’s questions about the site’s content and settings. It looks things up with Craft’s [MCP tools](mcp.md), as the user, so it can only see and change what they can.
+**Ask AI** is the control panel’s AI chat. It opens from the header bar in a panel beside the screen, or from the details rail of an element editor slideout or Live Preview, which it moves into while they’re open, and answers the user’s questions about the site’s content and settings. It looks things up with Craft’s [MCP tools](mcp.md), as the user, so it can only see and change what they can.
 
 The chat runs as the `craft:assistant` [AI task](ai.md), which needs a model with tool calling, and it’s shown to users with the **Use the AI assistant** permission (`useAiAssistant`) while that task is available. Conversations are stored with `laravel/ai`’s conversation tables, one user each.
 
@@ -8,10 +8,10 @@ The chat runs as the `craft:assistant` [AI task](ai.md), which needs a model wit
 
 Users steer the chat without code, in two ways:
 
-- **Guidance**: instructions the chat always follows. Guidance for every site, and additions for each site, are edited in the **AI Guidance & Skills** utility, which the `utility:ai-guidance` permission opens. Users can only edit the additions for sites they can edit, and the guidance for every site only if they can edit every site. Each user can add their own on their account’s **AI Assistant** screen. The chat gets the guidance for every site, the addition for the site the user is working in (the open element’s, or else the control panel’s), and the user’s own, in its instructions. MCP clients are told to read guidance with `guidance.get` before writing content, and the chat only reads it for other sites.
+- **Guidance**: instructions the chat always follows. Guidance for every site, and additions for each site, are edited in the **AI Guidance & Skills** utility, which the `utility:ai-guidance` permission opens. Users can only edit the additions for sites they can edit, and the guidance for every site only if they can edit every site. Each user can add their own on their account’s **AI Assistant** screen. The chat gets the guidance for every site, the addition for the site the user is working in (the open element’s, or else the control panel’s), and the user’s own, in its instructions. MCP clients are told to read guidance with `guidance_get` before writing content, and the chat only reads it for other sites.
 - **Skills**: instructions for kinds of tasks, with a unique title and a short description, created in the same utility. They apply to the whole site. The chat loads a skill with `laravel/ai`’s `LoadSkill` tool when a request matches its description. Users can also choose a skill by typing `/`, which adds a `craft:skill` item to the context.
 
-Guidance and skills are instructions, not data: they shape how the chat works and writes, but don’t allow changes the user didn’t ask for, and the chat still asks the user to approve each change. MCP clients get them with the `guidance.get`, `skills.list`, and `skills.get` tools. The chat isn’t offered `skills.list` or `skills.get`, as it has its own tool for loading skills. Users who can use the utility can also save guidance with `guidance.update`, held to the sites they can edit, and manage skills with `skills.create`, `skills.update`, and `skills.delete`, from an MCP client or the chat. Any user can save their own guidance with `guidance.updatePersonal`.
+Guidance and skills are instructions, not data: they shape how the chat works and writes, but don’t allow changes the user didn’t ask for, and the chat still asks the user to approve each change. MCP clients get them with the `guidance_get`, `skills_list`, and `skills_get` tools. The chat isn’t offered `skills_list` or `skills_get`, as it has its own tool for loading skills. Users who can use the utility can also save guidance with `guidance_update`, held to the sites they can edit, and manage skills with `skills_create`, `skills_update`, and `skills_delete`, from an MCP client or the chat. Any user can save their own guidance with `guidance_update_personal`.
 
 Plugins can read guidance with `CraftCms\Cms\Ai\Guidance\Guidance`, such as for their own AI features:
 
@@ -32,13 +32,13 @@ Plugins can extend the chat in three ways:
 The chat gets the same tools as Craft’s stdio MCP server. A plugin that [adds MCP capabilities](mcp.md#adding-capabilities-from-a-plugin) adds them to the chat as well, with nothing else to register:
 
 - The same edition, admin, and permission requirements apply. Tools marked with `#[RequiresHttp]` aren’t offered, and neither are tools marked with `#[PublicMcp]`, which only the public server has.
-- Tool names are renamed for providers, which only allow letters, numbers, underscores, and hyphens: `reviews.list` becomes `reviews_list`. The chat shows the original name.
+- The chat uses each tool’s MCP name, so name tools in [snake_case](mcp.md#capabilities), such as `reviews_list`. Model providers reject dots in tool names, so the chat replaces them with underscores.
 - The user must approve each call of a tool that can change anything, before it runs. Mark tools that only read with `readOnlyHint: true` so they run without asking. For tools that change things but can’t delete or overwrite them, set `destructiveHint: false`, which tells the user so in the approval request.
 - Changes made through tools are recorded in activity as the AI assistant’s.
 
 ```php
 #[McpTool(
-    name: 'reviews.list',
+    name: 'reviews_list',
     description: 'Lists reviews for an entry, newest first.',
     annotations: new ToolAnnotations(readOnlyHint: true),
 )]
@@ -56,40 +56,39 @@ When it’s an image asset, and the assistant’s model has vision, the image go
 
 An item has two halves:
 
-- In the browser, the plugin adds the item with `Cp.$assistant.addContext()`, or offers it in the message box’s **Add** menu.
+- In the browser, the plugin adds the item with `Assistant.addContext()` from `@craftcms/cp`, or offers it in the message box’s **Add** menu.
 - On the server, a **context type** with the same handle describes the items to the model, and can give the model tools that work with them.
 
 Items whose type isn’t registered on the server are left out of what the model sees.
 
 ### Adding items in the browser
 
-Add an item from your plugin’s control panel script, once `Cp` is booting:
+Add an item from your plugin’s control panel script, with `Assistant` from `@craftcms/cp`:
 
 ```ts
-window.Cp.booting((cp) => {
-  cp.$assistant.registerContextSource({
-    id: 'commerce:order',
-    label: () => 'Current order',
-    icon: 'cart-shopping',
-    order: 1,
-    // Only while an order page is open, and the order isn’t in the context yet.
-    available: () =>
-      currentOrderId() !== null &&
-      cp.$assistant.getContext(`commerce:order:${currentOrderId()}`) ===
-        undefined,
-    add: () => {
-      const orderId = currentOrderId();
+import {Assistant} from '@craftcms/cp';
 
-      cp.$assistant.addContext({
-        type: 'commerce:order',
-        key: `commerce:order:${orderId}`,
-        label: `Order #${orderId}`,
-        icon: 'cart-shopping',
-        data: {orderId},
-        reference: () => ({orderId}),
-      });
-    },
-  });
+Assistant.registerContextSource({
+  id: 'commerce:order',
+  label: () => 'Current order',
+  icon: 'cart-shopping',
+  order: 1,
+  // Only while an order page is open, and the order isn’t in the context yet.
+  available: () =>
+    currentOrderId() !== null &&
+    Assistant.getContext(`commerce:order:${currentOrderId()}`) === undefined,
+  add: () => {
+    const orderId = currentOrderId();
+
+    Assistant.addContext({
+      type: 'commerce:order',
+      key: `commerce:order:${orderId}`,
+      label: `Order #${orderId}`,
+      icon: 'cart-shopping',
+      data: {orderId},
+      reference: () => ({orderId}),
+    });
+  },
 });
 ```
 
@@ -106,9 +105,9 @@ window.Cp.booting((cp) => {
 | `reference` | What the conversation keeps of the item for later messages. See [Earlier items](#earlier-items). |
 | `meta` | Kept with the item, to read back with `getContext()`. Not sent. |
 
-`addContext()` returns the item’s `ref`, which the server gets with it, and which `Cp.$assistant.removeContext(ref)` takes. `Cp.$assistant.getContext(key)` returns the item added with a key while it’s in the context. It’s reactive, so `available()` can use it to hide a source once its item is in.
+`addContext()` returns the item’s `ref`, which the server gets with it, and which `Assistant.removeContext(ref)` takes. `Assistant.getContext(key)` returns the item added with a key while it’s in the context. It’s reactive, so `available()` can use it to hide a source once its item is in.
 
-`Cp.$assistant.open()` opens the chat and moves focus to its message box, for a button such as “Ask AI about this order”.
+`Assistant.open()` opens the chat and moves focus to its message box, for a button such as “Ask AI about this order”.
 
 ### Context sources
 
@@ -236,27 +235,27 @@ An earlier item may no longer exist, or the user may no longer be able to view i
 The message box offers suggestions as the user types a trigger character, which can add what’s chosen to the context. Craft has two: `@` for elements the user can view, and `{` for the fields of the element being edited.
 
 ```ts
-window.Cp.booting((cp) => {
-  cp.$assistant.registerTextExpander({
-    id: 'commerce:orders',
-    trigger: '!',
-    label: 'Orders',
-    // The URL of your plugin’s action, such as one Wayfinder generates.
-    source: () => OrderSuggestionsController.url(),
-    limit: 10,
-    select: (option) => {
-      const {orderId} = option.data as {orderId: number};
+import {Assistant} from '@craftcms/cp';
 
-      cp.$assistant.addContext({
-        type: 'commerce:order',
-        key: `commerce:order:${orderId}`,
-        label: option.label,
-        icon: 'cart-shopping',
-        data: {orderId},
-        reference: () => ({orderId}),
-      });
-    },
-  });
+Assistant.registerTextExpander({
+  id: 'commerce:orders',
+  trigger: '!',
+  label: 'Orders',
+  // The URL of your plugin’s action, such as one Wayfinder generates.
+  source: () => OrderSuggestionsController.url(),
+  limit: 10,
+  select: (option) => {
+    const {orderId} = option.data as {orderId: number};
+
+    Assistant.addContext({
+      type: 'commerce:order',
+      key: `commerce:order:${orderId}`,
+      label: option.label,
+      icon: 'cart-shopping',
+      data: {orderId},
+      reference: () => ({orderId}),
+    });
+  },
 });
 ```
 

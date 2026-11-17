@@ -19,13 +19,13 @@ describe('configure', function () {
         $html = Callout::make()
             ->configure([
                 'variant' => 'warning',
-                'title' => 'Heads up',
+                'label' => 'Heads up',
                 'inline' => true,
             ])
             ->toHtml();
 
         expect($html)->toContain('variant="warning"')
-            ->and($html)->toContain('title="Heads up"')
+            ->and($html)->toContain('label="Heads up"')
             ->and($html)->toContain(' inline');
 
         expect(Field::make()->configure(['instructions-position' => 'after'])->toHtml())

@@ -2,12 +2,7 @@
   import CraftCheckbox from '@craftcms/ui/components/checkbox/checkbox';
   import {inject} from 'vue';
   import type {UiControlPayload} from './types';
-  import {
-    FieldLabelSrOnly,
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {FieldLabelSrOnly, inputName} from './runtime';
 
   type CheckboxControlProps = {
     label?: string;
@@ -27,13 +22,13 @@
   // beside the box and read it twice.
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
+  function onChange(event: Event): void {
     if (!(event.currentTarget instanceof CraftCheckbox)) {
       throw new TypeError('Expected a checkbox event target.');
     }
 
     emit('update:value', event.currentTarget.checked);
-  });
+  }
 </script>
 
 <template>
@@ -41,10 +36,10 @@
     :name="editable ? inputName(control.path) : ''"
     :label="control.props.label ?? (fieldLabelSrOnly ? undefined : label)"
     .checked="Boolean(value)"
-    .choiceValue="String(control.props.checkedValue ?? '1')"
+    .value="String(control.props.checkedValue ?? '1')"
     .disabled="!editable"
     :required="editable && required"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    .invalid="invalid"
+    @change="onChange"
   ></craft-checkbox>
 </template>

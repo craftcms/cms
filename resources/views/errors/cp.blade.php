@@ -109,7 +109,9 @@
             @if ($message)
                 <p>{{ $message }}</p>
             @endif
-            <a href="{{ \CraftCms\Cms\cp_url('dashboard') }}">{{ \CraftCms\Cms\t('Dashboard') }}</a>
+            @if ($dashboardUrl)
+                <a href="{{ $dashboardUrl }}">{{ \CraftCms\Cms\t('Dashboard') }}</a>
+            @endif
         </main>
     </body>
 </html>

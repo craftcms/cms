@@ -12,9 +12,30 @@
 
 {% js %}
 (() => {
-  $(document).on('dblclick taphold', '#{{chipId|namespaceInputId}}', (ev) => {
-    $(ev.currentTarget).find('[data-edit-action]').first().click();
+  const chip = document.getElementById('{{ chipId|namespaceInputId }}');
+  const edit = () => chip?.querySelector('[data-edit-action]')?.click();
+  let pressTimer = null;
+  let pressStart = null;
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+    pressStart = null;
+  };
+  chip?.addEventListener('dblclick', edit);
+  // A long press edits on touch screens, unless the finger moves more than 10px
+  chip?.addEventListener('pointerdown', (ev) => {
+    if (ev.pointerType === 'touch') {
+      pressStart = {x: ev.clientX, y: ev.clientY};
+      pressTimer = setTimeout(edit, 750);
+    }
   });
+  chip?.addEventListener('pointermove', (ev) => {
+    if (pressStart && Math.hypot(ev.clientX - pressStart.x, ev.clientY - pressStart.y) > 10) {
+      cancelPress();
+    }
+  });
+  for (const type of ['pointerup', 'pointercancel']) {
+    chip?.addEventListener(type, cancelPress);
+  }
 })();
 {% endjs %}
 
@@ -53,6 +74,5 @@
     name: 'description',
     value: old('description', entryType.description != entryType.original.description ? entryType.description : null),
     placeholder: entryType.original.description,
-    inputAttributes: {class: ['nicetext']},
   }),
 }) }}

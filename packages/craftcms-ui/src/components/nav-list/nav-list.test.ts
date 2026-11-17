@@ -49,4 +49,82 @@ describe('craft-nav-list', () => {
 
     expect(element.shadowRoot!.querySelector('ul')).toBeTruthy();
   });
+
+  it('lays its items out as a list by default, marking none of them', async () => {
+    const element = await createNavList(
+      '<craft-nav-item>Entries</craft-nav-item>'
+    );
+
+    expect(element.appearance).toBe('list');
+    expect(
+      element.querySelector('craft-nav-item')!.hasAttribute('appearance')
+    ).toBe(false);
+  });
+
+  it('passes a tabs appearance down to its items', async () => {
+    const element = await createNavList(`
+      <craft-nav-item>Feeds</craft-nav-item>
+      <craft-nav-item>Logs</craft-nav-item>
+    `);
+
+    element.appearance = 'tabs';
+    await element.updateComplete;
+
+    expect(
+      [...element.querySelectorAll('craft-nav-item')].map((item) =>
+        item.getAttribute('appearance')
+      )
+    ).toEqual(['tabs', 'tabs']);
+  });
+
+  it('passes the appearance to an item added after it rendered', async () => {
+    const element = await createNavList(
+      '<craft-nav-item>Feeds</craft-nav-item>'
+    );
+    element.appearance = 'tabs';
+    await element.updateComplete;
+
+    const added = document.createElement('craft-nav-item');
+    added.textContent = 'Logs';
+    element.append(added);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(added.getAttribute('appearance')).toBe('tabs');
+  });
+
+  it('takes the appearance back off its items when it returns to a list', async () => {
+    const element = await createNavList(
+      '<craft-nav-item>Feeds</craft-nav-item>'
+    );
+    element.appearance = 'tabs';
+    await element.updateComplete;
+
+    element.appearance = 'list';
+    await element.updateComplete;
+
+    expect(
+      element.querySelector('craft-nav-item')!.hasAttribute('appearance')
+    ).toBe(false);
+  });
+
+  it('keeps its list semantics as a tab strip', async () => {
+    const element = await createNavList(`
+      <craft-nav-item href="/feeds">Feeds</craft-nav-item>
+      <craft-nav-item href="/logs">Logs</craft-nav-item>
+    `);
+
+    element.appearance = 'tabs';
+    await element.updateComplete;
+
+    const list = element.shadowRoot!.querySelector('ul')!;
+
+    expect(list).toBeTruthy();
+    expect(list.getAttribute('role')).toBe(null);
+    expect(element.shadowRoot!.querySelector('[role="tablist"]')).toBe(null);
+    expect(
+      [...element.querySelectorAll('craft-nav-item')].map((item) =>
+        item.getAttribute('role')
+      )
+    ).toEqual(['listitem', 'listitem']);
+  });
 });

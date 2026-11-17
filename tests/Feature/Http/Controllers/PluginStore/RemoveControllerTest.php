@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\UserPermissions;
@@ -28,10 +29,15 @@ dataset('routes', [
     'index',
     'precheck',
     'recheckComposer',
-    'composerInstall',
     'composerRemove',
     'finish',
 ]);
+
+test('plugin removals never install Composer packages', function () {
+    postJson(cp_url('pluginstore/remove/'.BaseUpdaterController::ACTION_COMPOSER_INSTALL), [
+        'data' => $this->hashedData,
+    ])->assertNotFound();
+});
 
 it('uses normal CP routes', function (string $action) {
     expect(parse_url(action([RemoveController::class, $action]), PHP_URL_PATH))
@@ -101,6 +107,16 @@ test('composer-remove', function () {
         'status' => 'The plugin was removed successfully.',
         'nextUrl' => action([RemoveController::class, 'finish']),
     ]);
+});
+
+test('missing Composer prevents the removal workflow from starting', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    postJson(action([RemoveController::class, 'index']), [
+        'packageName' => 'craftcms/test-plugin',
+    ])->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('initialState.error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->missing('initialState.nextUrl'));
 });
 
 test('finish', function () {

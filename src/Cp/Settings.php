@@ -104,22 +104,15 @@ class Settings
             'label' => t('Users'),
         ];
 
-        if (Edition::get()->supportsCustomNavigations()) {
-            $settings[$label]['cp-nav'] = [
-                'url' => route('craft.cp.settings.cp-nav.index'),
-                'iconName' => I18N::getLocale()->getOrientation() === 'rtl'
-                    ? 'custom-icons/sidebar-nav-flip-light'
-                    : 'custom-icons/sidebar-nav-light',
-                'label' => t('CP Navigation'),
-            ];
-        }
+        $settings[$label]['cp-nav'] = [
+            'url' => route('craft.cp.settings.cp-nav.index'),
+            'iconName' => I18N::getLocale()->getOrientation() === 'rtl'
+                ? 'custom-icons/sidebar-nav-flip-light'
+                : 'custom-icons/sidebar-nav-light',
+            'label' => t('CP Navigation'),
+        ];
 
         if ($this->generalConfig->allowAdminChanges) {
-            $settings[$label]['addresses'] = [
-                'iconName' => 'map-location',
-                'label' => t('Addresses'),
-            ];
-
             $settings[$label]['email'] = [
                 'url' => route('craft.cp.settings.email.index'),
                 'iconName' => 'envelope',
@@ -149,6 +142,13 @@ class Settings
             'iconName' => 'image',
             'label' => t('Assets'),
         ];
+
+        if ($this->generalConfig->allowAdminChanges) {
+            $settings[$label]['addresses'] = [
+                'iconName' => 'map-location',
+                'label' => t('Addresses'),
+            ];
+        }
 
         $settings[$label]['fields'] = [
             'iconName' => 'pen-to-square',

@@ -52,8 +52,16 @@ test('content block field merges nested field errors onto the element', function
         ->createElementWithFields(save: false);
 
     $result->element->validate();
+    // An error deeper than any of the block's controls keeps its path, as it does outside a content block, so the
+    // control that owns it can place it.
+    $result->element->errors()->add('contentBlock.innerText.0', 'Deeper error');
 
-    expect($result->element->errors()->has('contentBlock.innerText'))->toBeTrue();
+    expect($result->element->errors()->has('contentBlock.innerText'))->toBeTrue()
+        // The editor shows it on the nested field's control, at `fields.contentBlock.fields.innerText`.
+        ->and($result->element->uiErrors())
+        ->toHaveKey('contentBlock.fields.innerText')
+        ->toHaveKey('contentBlock.fields.innerText.0')
+        ->not->toHaveKey('contentBlock.innerText');
 });
 
 test('content block field preserves nested values through element validation', function () {

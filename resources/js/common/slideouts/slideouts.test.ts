@@ -9,10 +9,12 @@ import {
   type Component,
 } from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import type {UiPayload} from '@/modules/ui/types';
 import {registerPreview} from '@/modules/elements/live-preview/previews';
 import type {LivePreviewController} from '@/modules/elements/live-preview/useLivePreview';
+import {standInCheckVisibility} from '@/test/check-visibility';
 
 const fetchSlideoutPage = vi.fn();
 
@@ -53,6 +55,7 @@ const {
   notifySlideoutSaved,
   openSlideout,
   openSlideoutWith,
+  reloadSlideout,
   setSlideoutPageLoader,
   setSlideoutDirtyCheck,
   slideoutPanels,
@@ -129,6 +132,45 @@ describe('slideout store', () => {
     // The container id is what the server namespaces inputs against, so two
     // slideouts of the same screen must not share one.
     expect(panels[0]!.containerId).not.toBe(panels[1]!.containerId);
+  });
+
+  it('nests a panel opened from inside a web component in another', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+
+    const first = (await openSlideout('/a'))!;
+    const host = document.createElement('div');
+    openerInPanel(first.id).after(host);
+    const button = document.createElement('button');
+    host.attachShadow({mode: 'open'}).append(button);
+    await openSlideout('/b', {opener: button});
+
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/a', '/b']);
+  });
+
+  it('nests a panel opened from a popover mounted outside the panel it was opened in', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+
+    const first = (await openSlideout('/a'))!;
+    // As the Markdown field's link popover is: on <body>, anchored to its
+    // toolbar button in the panel
+    const popover = document.createElement('craft-popover') as HTMLElement & {
+      anchor?: HTMLElement;
+    };
+    popover.anchor = openerInPanel(first.id);
+    const button = document.createElement('button');
+    popover.append(button);
+    document.body.append(popover);
+    await openSlideout('/b', {opener: button});
+
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/a', '/b']);
   });
 
   it('replaces the open panel when opened from the base page again', async () => {
@@ -964,6 +1006,85 @@ describe('SlideoutPanel', () => {
     expect(panel.getAttribute('role')).toBe('dialog');
   });
 
+  it('is named by its screen’s title', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
+      title: 'Create a new address',
+    });
+
+    expect(computeAccessibleName(root.querySelector('.slideout-panel')!)).toBe(
+      'Create a new address'
+    );
+  });
+
+  describe('once a fetched screen loads', () => {
+    /** A screen with a link ahead of its first field. */
+    const Screen = defineComponent({
+      render: () =>
+        h('div', [
+          h('a', {href: '#help'}, 'Help'),
+          h('label', ['Label ', h('input')]),
+        ]),
+    });
+
+    /**
+     * Opens a panel that renders while its screen is still loading, as a
+     * fetched screen does, and resolves once the screen is in.
+     */
+    async function openLoadingPanel(): Promise<void> {
+      let finishLoading!: () => void;
+      fetchSlideoutPage.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finishLoading = () =>
+              resolve({
+                component: Screen,
+                props: {title: 'Create a new address'},
+                url: '/screen',
+              });
+          })
+      );
+
+      const opening = openSlideout('/screen');
+      const instance = required(slideoutPanels().at(-1), 'Expected a panel.');
+      mount(defineComponent({render: () => h(SlideoutPanel, {instance})}));
+      await nextTick();
+
+      // Parked on the panel while there's nothing in it to focus.
+      expect(document.activeElement?.classList).toContain('slideout-panel');
+
+      finishLoading();
+      await opening;
+    }
+
+    function focusedName(): string {
+      return document.activeElement
+        ? computeAccessibleName(document.activeElement)
+        : '';
+    }
+
+    standInCheckVisibility();
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('moves focus to its title, with "Disable autofocus" on', async () => {
+      await openLoadingPanel();
+
+      await vi.waitFor(() =>
+        expect(document.activeElement?.tagName).toBe('H2')
+      );
+      expect(focusedName()).toBe('Create a new address');
+    });
+
+    it('moves focus to its first field, with autofocus preferred', async () => {
+      vi.stubGlobal('Craft', {autofocusPreferred: true});
+
+      await openLoadingPanel();
+
+      await vi.waitFor(() => expect(focusedName()).toBe('Label'));
+    });
+  });
+
   /**
    * Escape goes through the UI layer manager rather than a window listener, so
    * it closes one thing: whichever layer is on top, across both slideout
@@ -1014,6 +1135,60 @@ describe('SlideoutPanel', () => {
     expect(root.querySelector('.page-content')?.textContent).toBe('hello');
   });
 
+  /**
+   * A save that keeps the panel open reloads it this way while the form is
+   * still submitting, so the screen has to stay mounted, holding what was
+   * typed meanwhile, and show the saved props by the time the reload resolves.
+   */
+  it('reloads in place when asked to preserve state', async () => {
+    let setups = 0;
+    const Page = defineComponent({
+      props: {label: {type: String, default: ''}},
+      setup(props) {
+        setups++;
+        const typed = ref('');
+
+        return () =>
+          h('input', {
+            class: 'page-input',
+            'data-label': props.label,
+            value: typed.value,
+            onInput: (event: Event) =>
+              (typed.value = (event.target as HTMLInputElement).value),
+          });
+      },
+    });
+    const {root, instance} = await mountPanel(Page, {label: 'Before'});
+    const input = () =>
+      required(
+        root.querySelector<HTMLInputElement>('.page-input'),
+        'Expected the page input.'
+      );
+    input().value = 'typed';
+    input().dispatchEvent(new Event('input'));
+
+    fetchSlideoutPage.mockResolvedValue({
+      component: Page,
+      props: {label: 'After'},
+      url: '/screen',
+    });
+    await reloadSlideout(instance.id, {preserveState: true});
+
+    expect(input().dataset.label).toBe('After');
+    expect(input().value).toBe('typed');
+    expect(setups).toBe(1);
+
+    fetchSlideoutPage.mockRejectedValue(new Error('boom'));
+    await expect(
+      reloadSlideout(instance.id, {preserveState: true})
+    ).rejects.toThrow('boom');
+    await nextTick();
+
+    expect(input().dataset.label).toBe('After');
+    expect(input().value).toBe('typed');
+    expect(setups).toBe(1);
+  });
+
   it("titles itself from the slideout's own props, not the page behind it", async () => {
     // `usePage()` always resolves to the base page, so a shell reading its
     // chrome from there shows the title of whatever is open underneath.
@@ -1040,6 +1215,20 @@ describe('SlideoutPanel', () => {
     expect(
       root.querySelector<HTMLAnchorElement>('.slideout-screen__edit-link')?.href
     ).toContain('/admin/edit/25');
+  });
+
+  it('leaves out the footer when a screen hides it through useAppLayout', async () => {
+    const Screen = defineComponent({
+      setup() {
+        useAppLayout(() => ({hideFooter: true}));
+
+        return () => h('div');
+      },
+    });
+    const {root} = await mountPanel(Screen, {});
+    await nextTick();
+
+    expect(root.querySelector('.slideout-screen__footer')).toBeNull();
   });
 
   it('reads the edit URL from the slideout props', async () => {

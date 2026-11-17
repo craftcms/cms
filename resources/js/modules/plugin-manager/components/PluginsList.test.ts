@@ -1,4 +1,4 @@
-import {createApp, nextTick} from 'vue';
+import {createApp, nextTick, reactive} from 'vue';
 import {
   afterEach,
   beforeEach,
@@ -16,8 +16,13 @@ import PluginsList from './PluginsList.vue';
 
 vi.mock('@inertiajs/vue3', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@inertiajs/vue3')>()),
-  usePage: () => ({props: {readOnly: false}}),
+  usePage: () => ({props: pageProps}),
 }));
+
+const pageProps = reactive({
+  readOnly: false,
+  craft: {general: {allowUpdates: true}},
+});
 
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
@@ -83,6 +88,7 @@ function messages() {
 }
 
 beforeEach(() => {
+  pageProps.craft.general.allowUpdates = true;
   vi.stubGlobal(
     'fetch',
     vi.fn(
@@ -108,7 +114,7 @@ it('shows complete, safe, accessible diagnostics after the real install menu clo
   const menu = item.closest('craft-action-menu')!;
   menu.querySelector('craft-button')!.click();
   await settle();
-  expect(menu.opened).toBe(true);
+  expect(menu.open).toBe(true);
   let resolveRequest!: (response: Response) => void;
   const request = new Promise<Response>((resolve) => {
     resolveRequest = resolve;
@@ -119,7 +125,7 @@ it('shows complete, safe, accessible diagnostics after the real install menu clo
   );
   item.shadowRoot!.querySelector('button')!.click();
   await settle();
-  expect(menu.opened).toBe(false);
+  expect(menu.open).toBe(false);
   const message =
     '<img src=x onerror=alert(1)>\n\n' +
     'x'.repeat(2000) +
@@ -206,4 +212,16 @@ it('posts one removal for the chosen plugin and stops listening once unmounted',
     })
   );
   expect(post).toHaveBeenCalledOnce();
+});
+
+it('disables package removal but keeps downloaded plugins installable without Composer', async () => {
+  pageProps.craft.general.allowUpdates = false;
+  await mount();
+
+  const removeItems = [
+    ...container.querySelectorAll('craft-action-item'),
+  ].filter((item) => item.textContent?.includes('Remove'));
+  expect(removeItems).toHaveLength(2);
+  expect(removeItems.every((item) => item.disabled)).toBe(true);
+  expect(installItem().disabled).toBe(false);
 });

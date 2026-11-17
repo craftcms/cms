@@ -184,3 +184,24 @@ it('returns a hierarchical selection in structure order with missing ancestors f
         [$events->id, 'Events', 1],
     ]);
 });
+
+it('returns the parts a view mode draws its elements with', function () {
+    $entry = EntryModel::factory()->createElement();
+
+    $elements = fn (?string $viewMode) => postJson(action([RelationalFieldsController::class, 'structuredElements']), [
+        'elementType' => EntryElement::class,
+        'elementIds' => [$entry->id],
+        'siteId' => Site::first()->id,
+        'viewMode' => $viewMode,
+    ])->assertOk()->json('elements');
+
+    expect($elements('cards')[0])->toHaveKey('cardHeaderHtml')
+        ->and($elements('cards')[0]['cardHeaderHtml'])->toContain('card-titlebar-label')
+        ->and($elements(null)[0])->not->toHaveKey('cardHeaderHtml');
+
+    postJson(action([RelationalFieldsController::class, 'structuredElements']), [
+        'elementType' => EntryElement::class,
+        'elementIds' => [$entry->id],
+        'viewMode' => 'carousel',
+    ])->assertUnprocessable();
+});

@@ -1,7 +1,9 @@
 import {actionClient, t} from '@craftcms/ui';
 import {computed, nextTick, shallowRef, watch, type Ref} from 'vue';
-import {craft} from '@/modules/matrix/clipboard';
+import {elementTypeName} from '@/common/craft/element-types';
+import {clearCopiedElements} from '@/modules/elements/clipboard';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
+import {elementFocusTarget} from './elementFocusTarget';
 import type {ElementPresentation, ElementSelectProps} from './types';
 
 /**
@@ -87,6 +89,8 @@ export function usePasteableElements(options: {
       sources: field.sources,
       criteria: field.criteria,
       condition: field.selectionCondition,
+      ...field.referenceElement,
+      showFolders: field.showFolders,
       siteId: Craft.siteId ?? null,
       viewMode: field.viewMode,
       thumbSize: field.thumbSize,
@@ -101,9 +105,8 @@ export function usePasteableElements(options: {
 
   const label = computed(() => {
     const field = options.field();
-    const names = craft().elementTypeNames?.[field.elementType];
     const type =
-      (candidates.value.length === 1 ? names?.[2] : names?.[3]) ??
+      elementTypeName(field.elementType, candidates.value.length !== 1) ??
       field.elementDisplayName;
 
     return t('Paste {type}', {type});
@@ -127,19 +130,13 @@ export function usePasteableElements(options: {
     }
 
     const kept = options.relate(pasted);
-    craft().cp?.clearCopiedElements?.();
+    clearCopiedElements();
     await nextTick();
 
-    const item = options.container.value?.querySelector<HTMLElement>(
-      `.elements-stage [data-id="${kept[kept.length - 1]}"]`
-    );
     const fallback = options.fallbackFocus.value;
     const target =
-      (item?.matches('[tabindex="0"]')
-        ? item
-        : item?.querySelector<HTMLElement>(
-            'craft-checkbox, craft-button, button, a[href], [tabindex="0"]'
-          )) ?? (fallback?.isConnected ? fallback : null);
+      elementFocusTarget(options.container.value, kept[kept.length - 1]!) ??
+      (fallback?.isConnected ? fallback : null);
 
     if (!target) {
       return;

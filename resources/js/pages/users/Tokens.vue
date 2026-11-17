@@ -2,6 +2,7 @@
   import {computed, h, nextTick, ref} from 'vue';
   import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CraftCheckboxGroup from '@craftcms/ui/vue/CraftCheckboxGroup.vue';
   import CraftField from '@craftcms/ui/vue/CraftField.vue';
   import {useCraftTable} from '@/common/table/craftTable';
@@ -50,7 +51,7 @@
   });
   const revokeRequest = useHttp<
     {clientId: string; tokenId: string | null},
-    unknown
+    {redirect?: string}
   >({clientId: '', tokenId: null});
 
   // The groups and scopes shown in the modal. Existing tokens show the scopes
@@ -75,6 +76,14 @@
   const modalTitle = computed(() => {
     return editing.value ? editing.value.name : t('Create a new token');
   });
+  const keySetupInstructions = t(
+    'Run {command}, or set the {privateKey} and {publicKey} environment variables to PEM-encoded keys.',
+    {
+      command: `<code>${escapeHtml(page.props.keysCommand)}</code>`,
+      privateKey: '<code>PASSPORT_PRIVATE_KEY</code>',
+      publicKey: '<code>PASSPORT_PUBLIC_KEY</code>',
+    }
+  );
   const expiryOptions = [
     {label: t('7 days'), value: '7'},
     {label: t('30 days'), value: '30'},
@@ -193,7 +202,12 @@
     revokeRequest.clientId = grant.clientId;
     revokeRequest.tokenId = grant.tokenId;
 
-    if (await revokeRequest.post(revokeAction().url)) {
+    const response = await revokeRequest.post(revokeAction().url);
+
+    // The screen goes away once there's nothing left to list or create.
+    if (response?.redirect) {
+      router.visit(response.redirect);
+    } else if (response) {
       router.reload({only: ['grants']});
     }
   }
@@ -246,7 +260,16 @@
 
 <template>
   <UserScreen>
-    <div class="grid gap-lg">
+    <craft-callout v-if="!page.props.hasKeys" variant="warning">
+      <div class="grid gap-md">
+        <p>
+          {{ t('Tokens can’t be created until Craft has OAuth signing keys.') }}
+        </p>
+        <p v-html="keySetupInstructions"></p>
+      </div>
+    </craft-callout>
+
+    <div v-else class="grid gap-lg">
       <div>
         <p>
           {{
@@ -259,7 +282,7 @@
         <div role="status" :class="{'mt-lg': newToken}">
           <craft-callout v-if="newToken" variant="success">
             <div class="grid gap-md">
-              <craft-input-copy .modelValue="newToken" monospace>
+              <craft-input-copy .value="newToken" monospace>
                 <label slot="label">{{ t('New token') }}</label>
               </craft-input-copy>
               <p>
@@ -353,7 +376,7 @@
               <craft-checkbox
                 v-for="scope in group.scopes"
                 :key="scope.value"
-                .choiceValue="scope.value"
+                .value="scope.value"
                 :disabled="!!editing"
               >
                 <label slot="label">{{ scope.label }}</label>

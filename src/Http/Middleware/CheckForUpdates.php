@@ -11,10 +11,12 @@ use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -47,6 +49,8 @@ readonly class CheckForUpdates
             if (! File::cleanDirectory(Path::compiledTemplates(create: false))) {
                 Log::error('Could not delete compiled templates');
             }
+
+            $this->clearCompiledViews();
         }
 
         if ($this->updates->isPluginUpdatePending()) {
@@ -88,6 +92,7 @@ readonly class CheckForUpdates
             }
 
             File::cleanDirectory(Path::compiledTemplates(create: false));
+            $this->clearCompiledViews();
 
             TemplateMode::set(TemplateMode::Cp);
 
@@ -107,5 +112,19 @@ readonly class CheckForUpdates
         }
 
         abort(503);
+    }
+
+    /**
+     * Clears compiled Blade views, which can be newer than the updated views they were compiled from.
+     */
+    private function clearCompiledViews(): void
+    {
+        try {
+            CompiledViews::clear();
+        } catch (Throwable $e) {
+            Log::error('Could not delete compiled views: '.$e->getMessage());
+
+            report($e);
+        }
     }
 }

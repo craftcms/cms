@@ -15,9 +15,10 @@ export default css`
       --c-callout-padding-inline,
       var(--c-spacing-sm)
     );
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    display: flex;
+    flex-wrap: wrap;
     align-items: start;
+    row-gap: var(--c-spacing-sm);
     padding-block: var(--_callout-padding-block);
     padding-inline: var(--_callout-padding-inline);
     border: 1px solid transparent;
@@ -27,9 +28,12 @@ export default css`
 
   .callout__body {
     display: flex;
-    align-items: start;
+    flex: 1 1 0;
+    /* The icon sits on the first line of text, whatever its font and size, as
+       a slotted heading's can differ from the callout's. */
+    align-items: first baseline;
     align-self: center;
-    min-width: 0;
+    min-inline-size: min(16rem, 100%);
   }
 
   .callout__text {
@@ -64,17 +68,28 @@ export default css`
   }
 
   .callout__action {
+    flex: 0 1 auto;
+    min-width: 0;
     margin-inline-start: auto;
   }
 
+  /* The icon shares a grid cell with a zero-width strut: one line of text in
+     the first line's font, which the component copies onto it. The strut gives
+     the column a baseline, which lines up with that first line, and the icon
+     centers on the strut's line. */
   .callout__icon {
-    width: auto;
-    height: 1lh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    place-items: center;
     padding-inline: var(--c-callout-icon-padding-inline, var(--c-spacing-sm));
+  }
+
+  .callout__strut,
+  .callout__icon > slot {
+    grid-area: 1 / 1;
+  }
+
+  .callout__icon > slot {
+    display: flex;
   }
 
   ::slotted(code) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\UserFactory;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -163,6 +164,76 @@ it('clears admin status and permissions from a reactivated inactive user', funct
     expect($user->admin)->toBeFalse();
     expect(app(UserPermissions::class)->getPermissionsByUserId($user->id))->toBeEmpty();
 });
+
+it('does not expose or modify an inactive user when registration fails', function () {
+    Edition::set(Edition::Pro);
+
+    $inactiveUser = UserFactory::new()->createElement([
+        'email' => 'inactive-failed@example.com',
+        'fullName' => 'Existing Person',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    app(UserPermissions::class)->saveUserPermissions($inactiveUser->id, ['accessCp']);
+
+    $response = postJson(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'x',
+    ])->assertJsonValidationErrors(['password']);
+
+    expect($response->json('user.id'))->toBeNull()
+        ->and($response->getContent())->not->toContain('Existing')
+        ->and(app(UserPermissions::class)->getPermissionsByUserId($inactiveUser->id)->all())->toBe(['accessCp']);
+});
+
+it('does not expose an inactive user when registration succeeds', function () {
+    $inactiveUser = UserFactory::new()->createElement([
+        'email' => 'inactive-success@example.com',
+        'fullName' => 'Existing Person',
+        'active' => false,
+        'pending' => false,
+    ]);
+
+    $response = postJson(action(SaveUserController::class), [
+        'email' => $inactiveUser->email,
+        'password' => 'newPassword123!',
+    ])->assertOk();
+
+    expect($response->getContent())->not->toContain('Existing');
+});
+
+it('does not register over a suspended inactive user', function (bool $requireEmailVerification) {
+    Edition::set(Edition::Pro);
+    ProjectConfig::set('users.requireEmailVerification', $requireEmailVerification);
+
+    $suspendedUser = UserFactory::new()->createElement([
+        'email' => 'suspended@example.com',
+        'username' => 'suspended',
+        'active' => false,
+        'pending' => false,
+        'suspended' => true,
+    ]);
+
+    $originalPassword = DB::table(Table::USERS)->where('id', $suspendedUser->id)->value('password');
+
+    post(action(SaveUserController::class), [
+        'email' => $suspendedUser->email,
+        'username' => 'registrant',
+        'password' => 'newPassword123!',
+    ]);
+
+    $record = DB::table(Table::USERS)->where('id', $suspendedUser->id)->first();
+
+    expect((bool) $record->suspended)->toBeTrue()
+        ->and((bool) $record->active)->toBeFalse()
+        ->and((bool) $record->pending)->toBeFalse()
+        ->and($record->password)->toBe($originalPassword)
+        ->and($record->username)->toBe('suspended');
+})->with([
+    'verification required' => [true],
+    'no verification' => [false],
+]);
 
 it('tracks affiliated site on registration', function () {
     post(action(SaveUserController::class), [

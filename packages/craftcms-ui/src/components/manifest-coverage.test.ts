@@ -148,19 +148,6 @@ describe('no scaffold placeholders survive into the manifest', () => {
   });
 });
 
-/**
- * Lion assigns these in a constructor rather than declaring them, so the
- * analyzer records the assignment as a member with nowhere to hang a comment.
- * Redeclaring them to document them fails to type-check against Lion's own
- * declarations, so they are named here instead of being silently tolerated.
- */
-const UNDOCUMENTABLE = new Set([
-  'craft-combobox.modelValue',
-  'craft-combobox.defaultValidators',
-  'craft-combobox.autocomplete',
-  'craft-combobox.selectionFollowsFocus',
-]);
-
 describe('no internals are published as API', () => {
   /**
    * The analyzer records every class member it finds, so without filtering the
@@ -188,11 +175,7 @@ describe('no internals are published as API', () => {
 describe('every public member is described', () => {
   it.each(cases)('$tag', ({element}) => {
     const undescribed = (element.members ?? [])
-      .filter(
-        (member) =>
-          !member.description &&
-          !UNDOCUMENTABLE.has(`${element.tagName}.${member.name}`)
-      )
+      .filter((member) => !member.description)
       .map((member) => member.name);
 
     expect(undescribed).toEqual([]);

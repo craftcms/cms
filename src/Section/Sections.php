@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section;
 
+use CraftCms\Cms\Activity\OperationTypes\SectionOperation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
@@ -56,7 +57,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 
@@ -78,7 +78,7 @@ class Sections
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * they’ve been resaved. (You can resave entries manually by running the `resave:entries` console command.)
      * :::
      */
     public bool $autoResaveEntries = true;
@@ -220,7 +220,7 @@ class Sections
             ->whereNull('sections.dateDeleted')
             ->orderBy('sections.name');
 
-        if (Schema::hasColumn(Table::SECTIONS, 'minAuthors')) {
+        if (DB::getReadSchemaBuilder()->hasColumn(Table::SECTIONS, 'minAuthors')) {
             $query->addSelect('sections.minAuthors');
         }
 
@@ -829,8 +829,8 @@ class Sections
             throw $e;
         }
 
-        // Clear caches
-        $this->refreshSections();
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
 
         if ($wasTrashed) {
             /** @var ElementCollection<int, Entry> $entries */
@@ -845,18 +845,20 @@ class Sections
                 ->where('entries.deletedWithSection', true)
                 ->get();
 
-            $entriesByType = $entries->groupBy('typeId');
-            foreach ($entriesByType as $typeEntries) {
-                try {
-                    $typeEntries->each(function (Entry $entry) {
-                        $entry->deletedWithSection = false;
-                    });
+            SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
+                $entriesByType = $entries->groupBy('typeId');
+                foreach ($entriesByType as $typeEntries) {
+                    try {
+                        $typeEntries->each(function (Entry $entry) {
+                            $entry->deletedWithSection = false;
+                        });
 
-                    $this->elements->restoreElements($typeEntries->all());
-                } catch (RuntimeException) {
-                    // the entry type probably wasn't restored
+                        $this->elements->restoreElements($typeEntries->all());
+                    } catch (RuntimeException) {
+                        // the entry type probably wasn't restored
+                    }
                 }
-            }
+            });
         }
 
         /** @var Section $section */
@@ -1169,8 +1171,8 @@ class Sections
             throw $e;
         }
 
-        // Clear caches
-        $this->refreshSections();
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
 
         event(new SectionDeleted($section));
 

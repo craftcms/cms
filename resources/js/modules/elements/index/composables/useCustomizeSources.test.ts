@@ -5,6 +5,11 @@ import {appendIndexQuery} from './useElementIndexVisits';
 import type {CustomizeSourcesModalOptions} from '@/modules/customize-sources';
 
 vi.mock('@inertiajs/vue3', () => ({router: {visit: vi.fn()}}));
+
+const openModal = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/customize-sources/open-customize-sources-modal', () => ({
+  openCustomizeSourcesModal: openModal,
+}));
 vi.mock('@/common/composables/useCraftData', () => ({
   default: () => ({
     currentUser: {value: {admin: true}},
@@ -18,14 +23,7 @@ const route = {
 };
 
 describe('useCustomizeSources', () => {
-  const openModal = vi.fn();
-
-  beforeEach(() => {
-    vi.stubGlobal('Craft', {openCustomizeSourcesModal: openModal});
-  });
-
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.clearAllMocks();
   });
 

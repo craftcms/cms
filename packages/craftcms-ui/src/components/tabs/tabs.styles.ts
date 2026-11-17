@@ -53,6 +53,7 @@ export default css`
   }
 
   .tabs__tab-group {
+    display: flex;
     flex: 1;
     min-width: 0;
     gap: var(--c-tabs-tab-gap, var(--c-spacing-lg));
@@ -83,8 +84,8 @@ export default css`
     --_tab-text-wrap: nowrap;
   }
 
-  /* Overrides LionTabs' bold, which would otherwise beat the tab's own
-     selected weight and its width-reserving label copy. */
+  /* Beats any selected weight from outside the tab, which would otherwise
+     fight the tab's own and its width-reserving label copy. */
   .tabs__tab-group ::slotted([slot='tab'][selected]) {
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
@@ -137,6 +138,14 @@ export default css`
 
   .tabs__overflow[hidden] {
     display: none;
+  }
+
+  .tabs__panels ::slotted([slot='panel']) {
+    display: none;
+  }
+
+  .tabs__panels ::slotted([slot='panel'][selected]) {
+    display: block;
   }
 
   ::slotted([slot='panel']) {

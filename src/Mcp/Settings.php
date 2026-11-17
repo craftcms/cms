@@ -197,10 +197,16 @@ class Settings extends Component
         return rtrim($this->baseUrl($route), '/').'/'.trim($route, '/');
     }
 
-    /** Returns the configured base URL for a route, without its control panel trigger. */
+    /**
+     * Returns the configured base URL for a route, without its control panel trigger.
+     *
+     * Without a control panel trigger, every request is a control panel request, so every route is on the control
+     * panel’s base URL, which can be its own domain.
+     */
     public function baseUrl(string $route): string
     {
-        $baseUrl = $this->isCpRoute($route) ? Env::parse(Cms::config()->baseCpUrl) : null;
+        $cp = $this->isCpRoute($route) || trim((string) Cms::config()->cpTrigger, '/') === '';
+        $baseUrl = $cp ? Env::parse(Cms::config()->baseCpUrl) : null;
 
         return (string) ($baseUrl ?? config('app.url'));
     }

@@ -1,4 +1,5 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {contrast} from '../../../test/contrast';
 import type CraftNavItem from './nav-item.js';
 import {flyoutHoverIntent} from '@src/utilities/hover-intent.js';
 import './nav-item.js';
@@ -279,6 +280,74 @@ it('opens the flyout from its chevron instead of following the link', async () =
 
   expect(item.flyoutOpen).toBe(false);
   expect(reachedRow).toEqual([]);
+});
+
+it('keeps the flyout open while Tab and Shift+Tab move through its subnav', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const item = await railFixture();
+  const second = document.createElement('craft-nav-item');
+  second.setAttribute('href', '/admin/graphql/tokens');
+  second.textContent = 'Tokens';
+  item.querySelector('[slot="subnav"]')!.append(second);
+  const [schemas, tokens] = item.querySelectorAll<HTMLElement>(
+    '[slot="subnav"] craft-nav-item'
+  );
+  flyoutHoverIntent.reset();
+
+  item
+    .shadowRoot!.querySelector<HTMLElement>('.rail-toggle craft-button')!
+    .focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+  schemas!.focus();
+  await userEvent.keyboard('{Tab}');
+  await item.updateComplete;
+
+  expect(document.activeElement).toBe(tokens);
+  expect(item.flyoutOpen).toBe(true);
+
+  await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+  await item.updateComplete;
+
+  expect(document.activeElement).toBe(schemas);
+  expect(item.flyoutOpen).toBe(true);
+});
+
+it('keeps the flyout open when Shift+Tab returns from its subnav to its chevron', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const item = await railFixture();
+  const schemas = item.querySelector<HTMLElement>(
+    '[slot="subnav"] craft-nav-item'
+  )!;
+  const chevron = item.shadowRoot!.querySelector<HTMLElement>(
+    '.rail-toggle craft-button'
+  )!;
+  flyoutHoverIntent.reset();
+
+  chevron.focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+  schemas.focus();
+  await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+  await item.updateComplete;
+
+  expect(item.shadowRoot!.activeElement).toBe(chevron);
+  expect(item.flyoutOpen).toBe(true);
+});
+
+it('gives its flyout panel itself no role', async () => {
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  const item = await railFixture();
+  flyoutHoverIntent.reset();
+
+  item
+    .shadowRoot!.querySelector<HTMLElement>('.rail-toggle craft-button')!
+    .focus();
+  await userEvent.keyboard('{Enter}');
+  await item.updateComplete;
+
+  await expect.element(page.getByRole('link', {name: 'Schemas'})).toBeVisible();
+  await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
 });
 
 /** A rail holding the page itself, with no subnav, beside a branch it's in. */
@@ -597,11 +666,11 @@ it('keeps its flyout’s and tooltip’s events inside the item', async () => {
     const branch = await railFixture();
     branch.flyoutOpen = true;
     await expect
-      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.opened)
+      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.open)
       .toBe(true);
     branch.flyoutOpen = false;
     await expect
-      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.opened)
+      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.open)
       .toBe(false);
 
     const leaf = document.createElement('craft-nav-item') as CraftNavItem;
@@ -625,4 +694,112 @@ it('keeps its flyout’s and tooltip’s events inside the item', async () => {
   } finally {
     events.forEach((type) => document.removeEventListener(type, record));
   }
+});
+
+async function tabStrip(): Promise<CraftNavItem[]> {
+  document.body.innerHTML = `
+    <craft-nav-list appearance="tabs">
+      <craft-nav-item href="/feeds" active current>Feeds</craft-nav-item>
+      <craft-nav-item href="/logs">Logs</craft-nav-item>
+    </craft-nav-list>
+  `;
+
+  const items = [...document.querySelectorAll<CraftNavItem>('craft-nav-item')];
+  await Promise.all(items.map((item) => item.updateComplete));
+
+  return items;
+}
+
+function row(item: CraftNavItem): HTMLElement {
+  return item.shadowRoot!.querySelector('.nav-item')!;
+}
+
+function label(item: CraftNavItem): HTMLElement {
+  return item.shadowRoot!.querySelector('.nav-item__action-item')!;
+}
+
+it('draws the current tab’s bar across its label and no further', async () => {
+  const items = await tabStrip();
+  const bar = getComputedStyle(row(items[0]!), '::after');
+  const text = label(items[0]!).getBoundingClientRect();
+
+  expect(parseFloat(bar.width)).toBeCloseTo(text.width, 0);
+});
+
+it('leaves a tab unfilled on hover, as a tab strip is', async () => {
+  const items = await tabStrip();
+  const {userEvent} = await import('vite-plus/test/browser');
+  const transparent = 'rgba(0, 0, 0, 0)';
+
+  await userEvent.hover(items[1]!);
+
+  expect(getComputedStyle(row(items[1]!)).backgroundColor).toBe(transparent);
+});
+
+it('keeps a tab’s label at the edge of the strip, padding and all', async () => {
+  const items = await tabStrip();
+
+  items.forEach((item) => {
+    const host = item.getBoundingClientRect();
+    const text = label(item).getBoundingClientRect();
+
+    expect(text.left - host.left).toBeLessThanOrEqual(1);
+    expect(host.right - text.right).toBeLessThanOrEqual(1);
+  });
+});
+
+describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+  async function strip(): Promise<{
+    surface: HTMLElement;
+    items: CraftNavItem[];
+  }> {
+    const surface = document.createElement('div');
+    surface.dataset.theme = theme;
+    surface.style.backgroundColor = 'var(--c-surface-default)';
+    surface.style.padding = '2rem';
+    surface.innerHTML = `
+      <craft-nav-list appearance="tabs">
+        <craft-nav-item href="/feeds" active current>Feeds</craft-nav-item>
+        <craft-nav-item href="/logs">Logs</craft-nav-item>
+      </craft-nav-list>
+    `;
+    document.body.append(surface);
+
+    const items = [...surface.querySelectorAll<CraftNavItem>('craft-nav-item')];
+    await Promise.all(items.map((item) => item.updateComplete));
+
+    return {surface, items};
+  }
+
+  it('marks the current page in a tab strip with a bar at 3:1, and only that page', async () => {
+    const {surface, items} = await strip();
+    const background = getComputedStyle(surface).backgroundColor;
+    const bar = (item: CraftNavItem) =>
+      getComputedStyle(item.shadowRoot!.querySelector('.nav-item')!, '::after');
+
+    await expect.poll(() => items[0]!.getAttribute('appearance')).toBe('tabs');
+
+    const current = bar(items[0]!);
+
+    expect(parseFloat(current.width)).toBeGreaterThan(0);
+    expect(parseFloat(current.height)).toBeGreaterThan(0);
+    expect(
+      contrast(current.backgroundColor, background)
+    ).toBeGreaterThanOrEqual(3);
+    expect(bar(items[1]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('marks the current page in a tab strip by weight as well as color', async () => {
+    const {items} = await strip();
+
+    await expect.poll(() => items[0]!.getAttribute('appearance')).toBe('tabs');
+
+    const weight = (item: CraftNavItem) =>
+      parseFloat(
+        getComputedStyle(item.shadowRoot!.querySelector('.nav-item')!)
+          .fontWeight
+      );
+
+    expect(weight(items[0]!)).toBeGreaterThan(weight(items[1]!));
+  });
 });

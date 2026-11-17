@@ -153,6 +153,8 @@ class EditElementController
             $viewModelClass = $element::editViewModelClass();
 
             $viewModel = new $viewModelClass($element, $this->request, $canSave, $mergeCanonicalChanges);
+            // Slideouts fetch the page without Inertia's router, so nothing would request the deferred tabs.
+            $viewModel->deferHiddenTabs(! $this->request->hasHeader('X-Craft-Container-Id'));
 
             event($event = new ElementEditorPayloadResolving(
                 $element,
@@ -615,12 +617,7 @@ class EditElementController
 
         $settings = $jsSettingsFn();
 
-        if ($this->request->inertia()) {
-            // The Vue slideout builds its own `Craft.ElementEditor`, but can't
-            // receive settings the jQuery way: that script looks the container
-            // up by id and runs before Vue has put the panel in the document.
-            $response->screenData(['elementEditorSettings' => $settings]);
-        } elseif ($this->isSlideout()) {
+        if ($this->isSlideout()) {
             HtmlStack::jsWithVars(fn ($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [

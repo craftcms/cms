@@ -45,6 +45,24 @@ it('registers legacy commands whose options collide with Artisan global options'
         ->and($command->getDefinition()->hasOption('verbose'))->toBeTrue();
 });
 
+it('registers the slash alias of a nested legacy command under its full Yii route', function() {
+    Craft::$app->setModule('demo', [
+        'class' => yii\base\Module::class,
+        'controllerMap' => ['jobs' => ['class' => Command::class, 'queue' => Craft::$app->getQueue()]],
+    ]);
+
+    app()->instance('Craft', Mockery::mock(YiiConsoleApplication::class));
+    app()->detectEnvironment(fn() => 'local');
+    new LegacyCommandCompatibility()->boot();
+    app()->detectEnvironment(fn() => 'testing');
+    Craft::$app->setModule('demo', null);
+
+    $artisan = new Artisan(app(), app('events'), 'testing');
+
+    expect($artisan->has('craft:demo:jobs:run'))->toBeTrue()
+        ->and($artisan->has('craft:demo/jobs/run'))->toBeTrue();
+});
+
 it('maps Artisan global options to their legacy equivalents', function() {
     $app = Mockery::mock(YiiConsoleApplication::class);
     $app->shouldReceive('run')->once()->andReturnUsing(function() {

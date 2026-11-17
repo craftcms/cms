@@ -14,6 +14,7 @@
  *   the item it came from (its `home`), but never beneath another one.
  */
 
+import {uuid} from '@/common/craft/strings';
 import {
   resolveStructureMove,
   type StructureMove,
@@ -261,7 +262,7 @@ export function removeSection(tree: NavNode[], id: string): NavNode[] {
 }
 
 function randomId(): string {
-  return `custom-${crypto.randomUUID().replaceAll('-', '').slice(0, 12)}`;
+  return `custom-${uuid().replaceAll('-', '').slice(0, 12)}`;
 }
 
 function blank(overrides: Partial<NavNode>): NavNode {

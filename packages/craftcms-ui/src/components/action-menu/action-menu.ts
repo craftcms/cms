@@ -1,8 +1,14 @@
-import {css, html, type PropertyValues, render} from 'lit';
+import {
+  css,
+  html,
+  type PropertyValues,
+  type ReactiveElement,
+  render,
+} from 'lit';
 import {property, queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@src/components/action-item/action-item';
-import {uuid} from '@lion/ui/core.js';
 import {t} from '@src/utilities/translate';
+import {uniqueId} from '@src/utilities/unique-id.js';
 import {Variant} from '@src/constants/variants';
 import CraftPopover from '../popover/popover.js';
 import type {
@@ -83,9 +89,6 @@ function styleSeparator(hr: HTMLElement): void {
  *   mode it is the clicked `craft-action-item` element.
  */
 export default class CraftActionMenu extends CraftPopover {
-  /** Lion's cache of the resolved overlay content node; its types leave it out. */
-  declare _cachedOverlayContentNode?: HTMLElement;
-
   static override styles = [
     ...CraftPopover.styles,
     css`
@@ -121,8 +124,8 @@ export default class CraftActionMenu extends CraftPopover {
    */
   @property({attribute: false}) actions?: ActionMenuActions;
 
-  /** Accessible label for the generated default invoker, and for the menu. */
-  @property() override label: string = t('Actions');
+  /** Accessible label for the generated default invoker. */
+  @property() label: string = t('Actions');
 
   /** Icon name for the generated default invoker. */
   @property() icon: string = 'ellipsis';
@@ -154,7 +157,7 @@ export default class CraftActionMenu extends CraftPopover {
   @queryAssignedElements({slot: 'content'})
   protected contentNodes!: HTMLElement[];
 
-  private uid: string = uuid();
+  private uid: string = uniqueId();
 
   /** Generated light-DOM invoker (data-driven mode only). */
   private _generatedInvoker: HTMLElement | null = null;
@@ -184,7 +187,7 @@ export default class CraftActionMenu extends CraftPopover {
   private readonly _onItemClick = (event: Event): void => {
     const item = event.currentTarget as CraftActionItem;
 
-    this.opened = false;
+    this.open = false;
 
     // In data-driven mode the 'craft-select' event is dispatched from _renderItem
     // (which has access to the descriptor). For slot-based mode this is the
@@ -244,16 +247,14 @@ export default class CraftActionMenu extends CraftPopover {
     if (firstInvoker) {
       firstInvoker.setAttribute('id', `invoker-${this.uid}`);
       firstInvoker.setAttribute('aria-controls', `content-${this.uid}`);
-      firstInvoker.setAttribute('aria-haspopup', 'true');
     }
     this._syncInvokerDisabled();
   }
 
   /**
    * Reflect `disabled` onto the current invoker (slotted or generated) as
-   * `aria-disabled`, so Lion's overlay controller (which checks
-   * `invokerNode.disabled || invokerNode.getAttribute('aria-disabled') ===
-   * 'true'` before toggling open) refuses to open the popover, and assistive
+   * `aria-disabled`, so the popover (which checks `disabled` and
+   * `aria-disabled` before toggling open) refuses to open, and assistive
    * tech announces the invoker as disabled. Runs for both slot-based and
    * data-driven modes — a consumer-slotted invoker doesn't otherwise know
    * about the host's `disabled` state.
@@ -266,6 +267,13 @@ export default class CraftActionMenu extends CraftPopover {
       invoker.setAttribute('aria-disabled', 'true');
     } else {
       invoker.removeAttribute('aria-disabled');
+    }
+
+    // An invoker that hasn't rendered yet may write its own `aria-disabled`
+    // when it does, so apply ours again after that.
+    const element = invoker as Partial<ReactiveElement>;
+    if (element.updateComplete && !element.hasUpdated) {
+      void element.updateComplete.then(() => this._syncInvokerDisabled());
     }
   }
 
@@ -286,21 +294,24 @@ export default class CraftActionMenu extends CraftPopover {
     this._wireContentKeydown();
   }
 
-  override _setupOverlayCtrl() {
-    super._setupOverlayCtrl();
-    // The controller dispatches `show` once the overlay is fully visible —
-    // the earliest point the search input can reliably receive focus.
-    this._overlayCtrl.addEventListener('show', this._onOverlayShow);
+  protected override _setupOverlay() {
+    super._setupOverlay();
     this._setupInvoker();
     this._setupContent();
     this._addEventListeners();
   }
 
-  override _teardownOverlayCtrl() {
+  protected override _teardownOverlay() {
     this._contentObserver?.disconnect();
     this._contentObserver = undefined;
-    this._overlayCtrl?.removeEventListener('show', this._onOverlayShow);
-    super._teardownOverlayCtrl();
+    super._teardownOverlay();
+  }
+
+  // The pane can show before this update's `firstUpdated()` or `updated()`
+  // adds the search input, so focus waits for the update to finish.
+  protected override _overlayShown() {
+    super._overlayShown();
+    void this.updateComplete.then(this._onOverlayShow);
   }
 
   override firstUpdated(changed: PropertyValues) {
@@ -319,8 +330,8 @@ export default class CraftActionMenu extends CraftPopover {
   /**
    * Generate/refresh the light-DOM invoker + content before each render when in
    * data-driven mode. Doing this in `willUpdate` (synchronously, before
-   * `updateComplete` resolves) ensures the nodes exist by the time Lion's
-   * deferred `_setupOverlayCtrl()` runs on first connect.
+   * `updateComplete` resolves) ensures the nodes exist by the time the
+   * popover binds its invoker after the first render.
    */
   protected override willUpdate(changed: PropertyValues): void {
     super.willUpdate(changed);
@@ -328,8 +339,8 @@ export default class CraftActionMenu extends CraftPopover {
     // Prevent opening while disabled, regardless of slot-based vs data-driven
     // mode — a consumer-slotted invoker shouldn't be able to open the menu
     // either.
-    if (changed.has('opened') && this.opened && this.disabled) {
-      this.opened = false;
+    if (changed.has('open') && this.open && this.disabled) {
+      this.open = false;
       return;
     }
 
@@ -339,10 +350,10 @@ export default class CraftActionMenu extends CraftPopover {
       return;
     }
 
-    // Re-evaluate a provider function each time the menu opens (before Lion's
-    // `updated()` shows the overlay), so it can return state-dependent items.
+    // Re-evaluate a provider function each time the menu opens (before the
+    // popover's `updated()` shows it), so it can return state-dependent items.
     const openingWithProvider =
-      changed.has('opened') && this.opened && this._hasActionsProvider();
+      changed.has('open') && this.open && this._hasActionsProvider();
 
     if (
       changed.has('actions') ||
@@ -357,9 +368,9 @@ export default class CraftActionMenu extends CraftPopover {
   }
 
   /**
-   * Re-point the (possibly already-initialized) overlay controller at the
-   * freshly generated light-DOM nodes and re-apply aria wiring + item
-   * listeners. Runs after the light-DOM children are in place.
+   * Re-point the popover at the freshly generated light-DOM nodes and
+   * re-apply aria wiring + item listeners. Runs after the light-DOM children
+   * are in place.
    */
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
@@ -368,7 +379,7 @@ export default class CraftActionMenu extends CraftPopover {
       this._syncInvokerDisabled();
     }
 
-    if (changed.has('opened') && !this.opened && changed.get('opened')) {
+    if (changed.has('open') && !this.open && changed.get('open')) {
       // The menu just closed — clear the search filter for the next open.
       this._resetSearchFilter();
     }
@@ -382,10 +393,9 @@ export default class CraftActionMenu extends CraftPopover {
     }
 
     // After an on-open provider re-evaluation (done in `willUpdate`), the
-    // generated content node is reused (only its children are swapped), so the
-    // overlay controller already points at the right node — we just need to
-    // (re)bind click listeners to the freshly created items.
-    if (changed.has('opened') && this.opened && this._hasActionsProvider()) {
+    // generated content node is reused (only its children are swapped), so we
+    // just need to (re)bind click listeners to the freshly created items.
+    if (changed.has('open') && this.open && this._hasActionsProvider()) {
       this._setupContent();
       this._addEventListeners();
     }
@@ -396,18 +406,12 @@ export default class CraftActionMenu extends CraftPopover {
   }
 
   /**
-   * Re-point the overlay controller at the freshly generated light-DOM nodes
-   * and re-apply aria wiring + item listeners. Shared by the `actions`/`label`/
+   * Re-point the popover at the freshly generated light-DOM nodes and
+   * re-apply aria wiring + item listeners. Shared by the `actions`/`label`/
    * `icon` change path and the on-open provider re-evaluation path.
    */
   private _rewireGeneratedMenu(): void {
-    if (this._overlayCtrl) {
-      this._overlayCtrl.updateConfig({
-        contentNode: this._overlayContentNode,
-        invokerNode: this._overlayInvokerNode,
-      });
-    }
-
+    this._syncInvoker();
     this._setupInvoker();
     this._setupContent();
     this._addEventListeners();
@@ -704,13 +708,6 @@ export default class CraftActionMenu extends CraftPopover {
     if (this._generatedContent) {
       return this._generatedContent;
     }
-    // Once Lion's overlay controller is set up, the slotted content node is
-    // moved inside its content wrapper (a <dialog>) and loses its `slot`
-    // attribute — so prefer the node Lion has already resolved and cached.
-    if (this._cachedOverlayContentNode) {
-      return this._cachedOverlayContentNode;
-    }
-
     return (
       (Array.from(this.children).find((child) => child.slot === 'content') as
         | HTMLElement
@@ -721,8 +718,8 @@ export default class CraftActionMenu extends CraftPopover {
   /**
    * Ensure the search input is (or isn't) the first child of the current
    * content node. The input lives in the *light-DOM* content container —
-   * mirroring how `_renderDataDrivenMenu` manages generated nodes — so Lion's
-   * overlay content handling keeps working in both modes.
+   * mirroring how `_renderDataDrivenMenu` manages generated nodes — so it
+   * works the same in both modes.
    */
   private _syncSearchInput(): void {
     const content = this._getContentNode();
@@ -877,7 +874,7 @@ export default class CraftActionMenu extends CraftPopover {
   /** Clear the search input and un-hide all items (runs when the menu closes). */
   private _resetSearchFilter(): void {
     if (this._searchField) {
-      this._searchField.modelValue = '';
+      this._searchField.value = '';
     }
     const content = this._getContentNode();
     if (content) {
@@ -887,25 +884,39 @@ export default class CraftActionMenu extends CraftPopover {
 
   /**
    * Initial focus once the overlay is fully shown: the search input when
-   * `searchable`, otherwise the first navigable item (APG menu-button
-   * pattern). Escape/outside-click closing restores focus to the invoker via
-   * Lion's `elementToFocusAfterHide` (which defaults to the invoker node).
+   * `searchable`, otherwise the first navigable item. The Disclosure example
+   * leaves focus on the button; moving it in is deliberate, so the arrow keys
+   * work straight away. Closing with focus in the menu returns it to the
+   * invoker.
    */
   private _onOverlayShow = (): void => {
-    if (!this.opened) {
+    if (!this.open) {
       return;
     }
     if (this.searchable) {
       this._searchInput?.focus();
+      return;
+    }
+
+    // Items a provider has just rebuilt have no button to delegate focus to
+    // until they render.
+    const item = this._getNavigableItems()[0];
+    if (item?.hasUpdated === false) {
+      void item.updateComplete.then(() => {
+        if (this.open) {
+          item.focus();
+        }
+      });
     } else {
-      this._getNavigableItems()[0]?.focus();
+      item?.focus();
     }
   };
 
   /**
    * The keyboard-navigable items: `craft-action-item` elements that are not
-   * consumer-hidden (`hidden`), not filtered out (`data-search-hidden`), and
-   * not disabled. Recomputed on every keystroke, since the search filter
+   * consumer-hidden (`hidden`) or filtered out (`data-search-hidden`).
+   * Disabled ones are included, so they're announced as unavailable rather
+   * than passed over. Recomputed on every keystroke, since the search filter
    * changes the set.
    */
   private _getNavigableItems(): CraftActionItem[] {
@@ -917,9 +928,7 @@ export default class CraftActionMenu extends CraftPopover {
       content.querySelectorAll<CraftActionItem>('craft-action-item')
     ).filter(
       (item) =>
-        !item.hasAttribute('hidden') &&
-        !item.hasAttribute('data-search-hidden') &&
-        !(item.disabled || item.hasAttribute('disabled'))
+        !item.hasAttribute('hidden') && !item.hasAttribute('data-search-hidden')
     );
   }
 
@@ -944,8 +953,8 @@ export default class CraftActionMenu extends CraftPopover {
    * - Enter/Space activation is otherwise left to the item's internal native
    *   button; Space on *link* items is wired manually since links don't
    *   activate on Space.
-   * - Escape bubbles to Lion's `hidesOnEsc` handler on the content node,
-   *   which closes the menu and restores focus to the invoker.
+   * - Escape bubbles to the popover, which closes the menu and returns focus
+   *   to the invoker.
    *
    * Keydown events from inside an item's shadow root are composed and
    * retarget to the `craft-action-item` host, so a single listener on the
@@ -991,9 +1000,15 @@ export default class CraftActionMenu extends CraftPopover {
     }
 
     if (event.key === ' ' && !this.searchable && currentItem?.href) {
-      // Links don't activate on Space natively; APG menus do.
+      // Links don't activate on Space natively; APG menus do. The item's `<a>`
+      // is in its shadow root, so a click on the host alone wouldn't follow it.
+      // The link's click still bubbles to the host, where a handler such as
+      // `CpLink`'s can turn it into an Inertia visit instead.
       event.preventDefault();
-      currentItem.click();
+      (
+        currentItem.shadowRoot?.querySelector<HTMLElement>('a[href]') ??
+        currentItem
+      ).click();
       return;
     }
 
@@ -1047,7 +1062,7 @@ export default class CraftActionMenu extends CraftPopover {
   /**
    * When a consumer-slotted invoker arrives (or leaves) after `actions` was
    * set, re-evaluate whether our generated default invoker should exist and
-   * re-point the overlay controller accordingly.
+   * re-point the popover accordingly.
    */
   private _onInvokerSlotChange = (): void => {
     if (this.actions === undefined) {
@@ -1058,10 +1073,8 @@ export default class CraftActionMenu extends CraftPopover {
     this._renderDataDrivenMenu();
     const hasGenerated = !!this._generatedInvoker;
 
-    if (hadGenerated !== hasGenerated && this._overlayCtrl) {
-      this._overlayCtrl.updateConfig({
-        invokerNode: this._overlayInvokerNode,
-      });
+    if (hadGenerated !== hasGenerated) {
+      this._syncInvoker();
       this._setupInvoker();
     }
   };

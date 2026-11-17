@@ -723,12 +723,17 @@ trait QueriesStructures
             return;
         }
 
-        $elementQuery->query->addSelect([
-            'structureelements.root as root',
-            'structureelements.lft as lft',
-            'structureelements.rgt as rgt',
-            'structureelements.level as level',
-        ]);
+        // Only elements built from the default columns get the structure columns, so a custom select stays as written
+        $selectsDefaultColumns = $elementQuery->selectsDefaultColumns ?? in_array('**', $elementQuery->query->columns ?? [], true);
+
+        if ($selectsDefaultColumns) {
+            $elementQuery->query->addSelect([
+                'structureelements.root as root',
+                'structureelements.lft as lft',
+                'structureelements.rgt as rgt',
+                'structureelements.level as level',
+            ]);
+        }
 
         if ($elementQuery->structureId) {
             $elementQuery->query->leftJoin($joinTable, fn (JoinClause $join) => $join
@@ -746,7 +751,7 @@ trait QueriesStructures
                 ->whereNull('dateDeleted');
 
             $elementQuery->query
-                ->addSelect('structureelements.structureId as structureId')
+                ->when($selectsDefaultColumns, fn (Builder $query) => $query->addSelect('structureelements.structureId as structureId'))
                 ->leftJoin($joinTable, fn (JoinClause $join) => $join
                     ->on('structureelements.elementId', '=', 'elements.id')
                     ->whereExists($existsQuery));

@@ -33,7 +33,9 @@ export default css`
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
-    inset-inline-start: calc(var(--c-spacing-lg) * -1);
+    inset-inline-start: calc(
+      var(--c-field-indicator-inset, var(--c-spacing-lg)) * -1
+    );
     width: 2px;
     height: 100%;
     cursor: help;
@@ -63,10 +65,12 @@ export default css`
 
   /* Heading row (the CP's .field > .heading) */
   .form-field__label {
+    --_heading-gap: var(--c-spacing);
+    --_label-text-bearing: calc(var(--c-spacing) * 0.375);
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--_heading-gap);
     align-items: center;
     font-size: var(--c-field-label-font-size, inherit);
     font-weight: var(--c-field-label-font-weight, bold);
@@ -89,24 +93,36 @@ export default css`
     inset-inline-end: 0;
   }
 
+  .field-actions--beside-label {
+    position: static;
+  }
+
+  .field-actions--after-text {
+    margin-inline-start: var(--_label-text-bearing);
+  }
+
   ::slotted([slot='label']) {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--c-spacing-xs);
+    gap: var(--_heading-gap);
     align-items: center;
     line-height: var(--c-field-label-line-height, inherit);
   }
 
-  .read-only-badge {
+  .read-only-badge,
+  ::slotted([slot='label-badge']) {
     font-size: calc(11rem / 16);
     font-weight: normal;
     line-height: 1.45;
     padding-block: 0;
     padding-inline: 0.25em;
-    background-color: var(--gray-100, #e9ebec);
-    color: var(--gray-700, #3f4d5a);
-    border: 1px solid var(--border-hairline, hsl(211deg 20% 44% / 25%));
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-sm, 3px);
+  }
+
+  .read-only-badge {
+    background-color: var(--c-color-neutral-fill-quiet);
+    color: var(--c-color-neutral-on-quiet);
   }
 
   /* Input container (.field > .input in the CP) */

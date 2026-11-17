@@ -180,6 +180,14 @@ it('can get all fields with or without content', function () {
 
     expect($this->fields->getFieldsWithContent())->not()->toBeEmpty();
     expect($this->fields->getFieldsWithoutContent())->toBeEmpty();
+
+    $this->fields->saveField($this->fields->createField(['type' => Matrix::class, 'name' => 'Blocks', 'handle' => 'blocks']));
+    $this->fields->saveField($this->fields->createField(['type' => PlainText::class, 'name' => 'Gone', 'handle' => 'gone']));
+    DB::table(Table::FIELDS)->where('handle', 'gone')->update(['type' => 'some\\unrecognized\\Field']);
+    $this->fields->refreshFields();
+
+    expect($this->fields->getFieldsWithoutContent()->map(fn ($field) => [$field->handle, $field::class])->values()->all())
+        ->toEqualCanonicalizing([['blocks', Matrix::class], ['gone', MissingField::class]]);
 });
 
 it('can get fields by type', function () {
@@ -246,6 +254,41 @@ it('can save a field', function () {
     ])))->toBeTrue();
 
     expect(FieldModel::count())->toBe(1);
+});
+
+it('rejects a field handle that another field in the same context uses', function () {
+    $this->fields->saveField($existing = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+    ]));
+
+    $duplicate = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Other Plain Text',
+        'handle' => 'plainText',
+    ]);
+
+    $resaved = $this->fields->createField([
+        'type' => PlainText::class,
+        'id' => $existing->id,
+        'uid' => $existing->uid,
+        'name' => 'Renamed Plain Text',
+        'handle' => 'plainText',
+    ]);
+
+    $otherContext = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+        'context' => 'matrixBlockType:'.Str::uuid(),
+    ]);
+
+    expect($this->fields->saveField($duplicate))->toBeFalse()
+        ->and($duplicate->errors()->has('handle'))->toBeTrue()
+        ->and($this->fields->saveField($resaved))->toBeTrue()
+        ->and($this->fields->saveField($otherContext))->toBeTrue()
+        ->and(FieldModel::count())->toBe(2);
 });
 
 it('saves a field’s default tip and warning', function () {
@@ -621,6 +664,30 @@ it('returns laravel-style pagination metadata for table data', function () {
         ->and($pagination['next_page_url'])->toBeNull();
 });
 
+it('counts each saved layout that includes a field once in table data', function () {
+    $fieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $unusedFieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $element = fn (FieldModel $field, ?string $handle = null) => [
+        'type' => CustomFieldElement::class,
+        'uid' => Str::uuid()->toString(),
+        'fieldUid' => $field->uid,
+        'handle' => $handle,
+    ];
+    $config = fn (array ...$tabs) => ['tabs' => array_map(fn (array $elements) => ['name' => 'Tab', 'elements' => $elements], $tabs)];
+
+    // Twice in one layout, once in a layout without a provider, and once in a deleted layout
+    FieldLayoutModel::factory()->create(['config' => $config([$element($fieldModel)], [$element($fieldModel, 'again')])]);
+    FieldLayoutModel::factory()->create(['type' => AssetElement::class, 'config' => $config([$element($fieldModel)])]);
+    FieldLayoutModel::factory()->create(['config' => $config([$element($fieldModel), $element($unusedFieldModel)])])->delete();
+    $this->fields->refreshFields();
+
+    [, $tableData] = $this->fields->getTableData(1, 100, null);
+    $usages = array_column($tableData, 'usages', 'id');
+
+    expect($usages[$fieldModel->id])->toBe('2 layouts')
+        ->and($usages[$unusedFieldModel->id])->toBeNull();
+});
+
 test('field layouts', function () {
     $field = FieldModel::factory()->create([
         'name' => 'Plain Text',
@@ -648,4 +715,63 @@ test('field layouts', function () {
 
     expect($savedLayout?->getTabs())->toHaveCount(1)
         ->and($savedLayout?->getTab('Updated'))->toBeInstanceOf(FieldLayoutTab::class);
+});
+
+test('an element type without a saved layout gets the same layout element UIDs in every request', function () {
+    $uids = fn (Fields $fields): array => collect($fields->getLayoutByType(User::class)->getTabs())
+        ->flatMap(fn (FieldLayoutTab $tab) => $tab->getElements())
+        ->pluck('uid')
+        ->all();
+
+    expect($this->fields->getLayoutByType(User::class, false))->toBeNull()
+        ->and($uids($this->fields))->not->toBeEmpty()->each->toBeString()
+        // A new instance has nothing cached, like the next request.
+        ->and($uids(app()->build(Fields::class)))->toBe($uids($this->fields));
+});
+
+it('knows the field handles that saved layouts give fields', function () {
+    $field = FieldModel::factory()->create([
+        'name' => 'Plain Text',
+        'handle' => 'plainTextHandleSource',
+        'type' => PlainText::class,
+    ]);
+
+    FieldLayoutModel::create([
+        'uid' => (string) Str::uuid(),
+        'type' => EntryElement::class,
+        'config' => [
+            'tabs' => [[
+                'uid' => (string) Str::uuid(),
+                'name' => 'Content',
+                'elements' => [
+                    [
+                        'type' => CustomFieldElement::class,
+                        'uid' => (string) Str::uuid(),
+                        'fieldUid' => $field->uid,
+                        'handle' => 'renamedPlainText',
+                    ],
+                    [
+                        'type' => CustomFieldElement::class,
+                        'uid' => (string) Str::uuid(),
+                        'fieldUid' => (string) Str::uuid(),
+                        'handle' => 'missingFieldHandle',
+                    ],
+                ],
+            ]],
+            'generatedFields' => [[
+                'uid' => (string) Str::uuid(),
+                'name' => 'Summary',
+                'handle' => 'generatedSummary',
+                'template' => '{title}',
+            ]],
+        ],
+    ]);
+    $this->fields->invalidateCaches();
+
+    expect($this->fields->isFieldHandle('plainTextHandleSource'))->toBeTrue()
+        ->and($this->fields->isFieldHandle('renamedPlainText'))->toBeTrue()
+        ->and($this->fields->isFieldHandle('missingFieldHandle'))->toBeFalse()
+        ->and($this->fields->isFieldHandle('generatedSummary'))->toBeFalse()
+        ->and($this->fields->isGeneratedFieldHandle('generatedSummary'))->toBeTrue()
+        ->and($this->fields->isGeneratedFieldHandle('renamedPlainText'))->toBeFalse();
 });

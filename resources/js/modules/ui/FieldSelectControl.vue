@@ -1,8 +1,10 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
   import type {UiControlPayload} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
+  import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
   type FieldSelectProps = {
     limit?: number;
@@ -19,7 +21,7 @@
   }>();
   let headHtml = '';
   let bodyHtml = '';
-  const {host, html} = useServerRenderedControl({
+  const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
     events: ['change'],
@@ -60,8 +62,25 @@
     update: (value) =>
       emit('update:value', value == null ? null : Number(value), 'discrete'),
   });
+
+  /** Choose and Create are hidden once a selection reaches the `limit`. */
+  const placeholderButtons = computed(() => {
+    if (props.value != null && props.control.props.limit) {
+      return 0;
+    }
+
+    return props.control.props.create && props.editable ? 2 : 1;
+  });
 </script>
 
 <template>
-  <div ref="host" v-html="html"></div>
+  <ServerRenderedControlFrame
+    :status="status"
+    :has-html="Boolean(html)"
+    :chips="value == null ? 0 : 1"
+    :buttons="placeholderButtons"
+    @retry="retry"
+  >
+    <div ref="host" v-html="html"></div>
+  </ServerRenderedControlFrame>
 </template>

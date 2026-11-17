@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Cp as CpHelper;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
@@ -58,6 +59,14 @@ class Cp extends Component
     public function getTheme(): string
     {
         return Theme::forUser(currentUserElement())->value;
+    }
+
+    /**
+     * Returns the control panel icon’s HTML, or `null` if neither the `cpIconPath` nor the `cpIconUrl` setting is set.
+     */
+    public function iconHtml(): ?string
+    {
+        return CpHelper::iconHtml();
     }
 
     /**
@@ -354,6 +363,16 @@ class Cp extends Component
     }
 
     /**
+     * The control panel's JavaScript config, which `_layouts/base` writes into its document as `window.Craft`.
+     *
+     * @return array<string, mixed>
+     */
+    public function config(): array
+    {
+        return CpHelper::config()->all();
+    }
+
+    /**
      * The layout `_layouts/cp` should extend for this render.
      *
      * `_layouts/basecp.twig` — the document — unless the response layer has
@@ -368,6 +387,20 @@ class Cp extends Component
     }
 
     /**
+     * Whether this render is handing its fragments to the Inertia shell rather
+     * than building a document of its own.
+     *
+     * What the shell draws for itself, the screen leaves out — its save
+     * controls above all, which the shell renders in the content footer.
+     *
+     * @see LegacyScreenFragments
+     */
+    public function collectsScreenFragments(): bool
+    {
+        return app(LegacyScreenFragments::class)->enabled();
+    }
+
+    /**
      * The marker `_layouts/elementindex` puts in its own content block.
      *
      * @see BridgedScreen::CONTENT_SENTINEL
@@ -375,20 +408,6 @@ class Cp extends Component
     public function elementIndexSentinel(): string
     {
         return BridgedScreen::CONTENT_SENTINEL;
-    }
-
-    /**
-     * Whether this render is collecting fragments rather than drawing a page.
-     *
-     * A layout asks when the answer changes what it should render — an element
-     * index skips the legacy toolbar and boot JS when the control panel shell
-     * is going to supply its own.
-     *
-     * @see LegacyScreenFragments
-     */
-    public function screenCollecting(): bool
-    {
-        return app(LegacyScreenFragments::class)->enabled();
     }
 
     /**

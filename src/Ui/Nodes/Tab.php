@@ -21,6 +21,8 @@ class Tab extends Container
 
     private bool $sidebar = false;
 
+    private bool $deferred = false;
+
     /** @param list<Node> $children */
     private function __construct(
         string $uid,
@@ -73,6 +75,16 @@ class Tab extends Container
         return $this;
     }
 
+    /**
+     * Whether the tab is sent without its children, which the client fetches once the page has loaded.
+     */
+    public function deferred(bool $deferred = true): static
+    {
+        $this->deferred = $deferred;
+
+        return $this;
+    }
+
     public function component(): string
     {
         return 'craft:tab';
@@ -84,6 +96,7 @@ class Tab extends Container
             'label' => $this->label,
             'icon' => $this->icon,
             'sidebar' => $this->sidebar ?: null,
+            'deferred' => $this->deferred ?: null,
         ], fn (string|bool|null $value): bool => $value !== null);
     }
 }

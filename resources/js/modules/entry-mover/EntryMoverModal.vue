@@ -106,14 +106,14 @@
     <craft-radio-group
       v-else
       :label="t('Section')"
-      .modelValue="sectionId"
-      @model-value-changed="sectionId = $event.target.modelValue || null"
+      .value="sectionId ?? ''"
+      @change="sectionId = $event.currentTarget.value || null"
     >
       <craft-radio
         v-for="section in sections"
         :key="section.id"
         :label="section.label"
-        .choiceValue="String(section.id)"
+        .value="String(section.id)"
         .checked="sectionId === String(section.id)"
       ></craft-radio>
     </craft-radio-group>

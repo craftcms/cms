@@ -20,6 +20,7 @@ readonly class ControlPayload implements JsonSerializable
      * @param  list<string>  $path
      * @param  list<string>  $deltaGroup
      * @param  list<NestedUiPayload>  $uis
+     * @param  list<string>  $valueProps
      */
     public function __construct(
         public string $type,
@@ -34,6 +35,10 @@ readonly class ControlPayload implements JsonSerializable
         public mixed $emptyValue = null,
         public bool $nestsUis = false,
         public bool $omitNullValue = false,
+        public bool $readable = false,
+        public bool $writable = false,
+        public array $valueProps = [],
+        public ?string $valueScope = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -50,6 +55,10 @@ readonly class ControlPayload implements JsonSerializable
             + ($this->emptyValue === null ? [] : ['emptyValue' => $this->emptyValue])
             + ($this->nestsUis ? ['nestsUis' => true] : [])
             + ($this->omitNullValue ? ['omitNullValue' => true] : [])
+            + ($this->readable ? ['readable' => true] : [])
+            + ($this->writable ? ['writable' => true] : [])
+            + ($this->valueProps === [] ? [] : ['valueProps' => $this->valueProps])
+            + ($this->valueScope === null ? [] : ['valueScope' => $this->valueScope])
             + ($this->uis === [] ? [] : ['uis' => array_map(
                 fn (NestedUiPayload $ui): array => $ui->jsonSerialize(),
                 $this->uis,

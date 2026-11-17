@@ -69,7 +69,8 @@ Set `data-color` on the chip to override that. Because the attribute lands on th
 
 ## Sizing
 
-`size` sets how much room the chip gives its contents — the padding around the label, and the thumbnail in the prefix:
+`size` sets how much room the chip gives its contents — the padding around the label, and the thumbnail in the prefix.
+`xsmall` is as tall as a labeled [Badge](?path=/docs/components-badge--docs), with its smaller text, for a chip set among badges:
 
 <Canvas of={ChipStories.Sizes} sourceState="shown" />
 
@@ -91,10 +92,18 @@ An explicit `size` still wins, so a large thumbnail can sit in a chip with a sma
 
 <Canvas of={ChipStories.ThumbSizeOverride} sourceState="shown" />
 
+## Rounded
+
+`rounded` rounds the chip's ends fully, like a badge's, and its thumbnail with them.
+Combined with `size="xsmall"`, a chip sits among badges as one of them:
+
+<Canvas of={ChipStories.Rounded} sourceState="shown" />
+
 ## Prefix Placement
 
 `prefix-placement` sets which side of the label the prefix sits on.
 The default, `inline-start`, puts it before the label. `block-start` stacks it above the label, centered, for a tile in a grid; the checkbox and suffix then share a row along the top.
+A `full-width` stacked chip too narrow for its thumbnail steps it down to the next `thumb-size` that fits.
 Element indexes draw their thumbnail tiles this way, at every `thumb-size`:
 
 <Canvas of={ChipStories.Stacked} sourceState="shown" />

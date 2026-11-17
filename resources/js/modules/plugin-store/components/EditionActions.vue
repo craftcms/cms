@@ -217,6 +217,12 @@
           name="version"
           :value="`^${plugin.latestCompatibleVersion}`"
         />
+        <input
+          v-if="plugin.requiresYii2Adapter"
+          type="hidden"
+          name="requiresYii2Adapter"
+          value="1"
+        />
         <craft-button
           type="submit"
           :variant="installButton.primary ? 'primary' : 'outline'"

@@ -99,6 +99,8 @@ it('runs a standalone plugin suite without changing workbench files', function (
                     'TESTBENCH_WORKING_PATH' => $package,
                     'TESTBENCH_APP_BASE_PATH' => $package.'/laravel',
                     'APP_BASE_PATH' => false,
+                    // Plugin suites don't get core's phpunit.xml.dist environment
+                    'AUTH_MODEL' => false,
                     'TEST_TOKEN' => false,
                     'LARAVEL_PARALLEL_TESTING' => false,
                 ],

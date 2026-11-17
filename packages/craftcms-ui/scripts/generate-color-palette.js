@@ -55,8 +55,9 @@ function printStyles() {
   lines.push(staticColors);
   lines.push('}\n');
   lines.push(
-    "/* What's in a black card, (filled) chip, or badge is themed dark, so it holds\n" +
-      '   up against the dark fill. (The element itself keeps its own colors.) */'
+    "/* What's in a black card, (filled) chip, badge, or tooltip is themed dark, so\n" +
+      '   it holds up against the dark fill. (The element itself keeps its own\n' +
+      '   colors.) */'
   );
   lines.push(`[data-theme='dark'],\n${BLACK_CONTENTS_SELECTOR} {`);
   lines.push(darkColors);

@@ -18,6 +18,9 @@ use RuntimeException;
  */
 class Env extends \Illuminate\Support\Env
 {
+    /** @var array<class-string, array<string, string>> */
+    private static array $configEnvNames = [];
+
     /**
      * Returns whether an environment variable is defined within a given environment file.
      */
@@ -229,8 +232,8 @@ class Env extends \Illuminate\Support\Env
     {
         $prefix = when(is_null($prefix), '', Str::finish($prefix, '_'));
 
-        return Utils::getPublicReflectionProperties($class)
-            ->mapWithKeys(function (ReflectionProperty $property) use ($prefix) {
+        $envNames = self::$configEnvNames[$class] ??= Utils::getPublicReflectionProperties($class)
+            ->mapWithKeys(function (ReflectionProperty $property) {
                 $envName = str($property->getName())->snake()->upper()->value();
 
                 if ($attribute = Arr::first($property->getAttributes(EnvName::class))) {
@@ -238,9 +241,20 @@ class Env extends \Illuminate\Support\Env
                     $envName = $envName->name;
                 }
 
-                return [$property->getName() => self::get($prefix.$envName)];
+                return [$property->getName() => $envName];
             })
-            ->reject(fn (mixed $value): bool => is_null($value))
             ->all();
+
+        $config = [];
+
+        foreach ($envNames as $property => $envName) {
+            $value = self::get($prefix.$envName);
+
+            if ($value !== null) {
+                $config[$property] = $value;
+            }
+        }
+
+        return $config;
     }
 }

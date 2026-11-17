@@ -131,6 +131,17 @@ test('getPasswordResetUrl', function () {
     expect($this->users->getPasswordResetUrl($user))->toBeUrl();
 });
 
+test('getPasswordResetUrl links console requests to the control panel for users with control panel access', function () {
+    Edition::set(Edition::Pro);
+    $setPasswordPath = Cms::config()->getSetPasswordPath();
+
+    expect($this->users->getPasswordResetUrl(UserModel::factory()->createElement()))
+        ->toContain("/$setPasswordPath?code=")
+        ->not->toContain('/admin/')
+        ->and($this->users->getPasswordResetUrl(UserModel::factory()->admin()->createElement()))
+        ->toContain('/admin/set-password?code=');
+});
+
 test('removeCredentials', function () {
     $userElement = UserModel::factory()->createElement();
 
@@ -658,4 +669,18 @@ test('destroyOtherSessions preserves the current session', function () {
     $this->users->destroyOtherSessions($user);
 
     expect(DB::table(Table::SESSIONS)->where('user_id', $user->id)->pluck('id')->all())->toBe([$currentSessionId]);
+});
+
+test('a user model’s element follows changes to the model and its element record', function () {
+    $model = UserModel::findOrFail(UserModel::factory()->create(['firstName' => 'Ada'])->id);
+
+    expect($model->asElement()->firstName)->toBe('Ada');
+
+    $model->element->enabled = false;
+
+    expect($model->asElement()->enabled)->toBeFalse();
+
+    $model->firstName = 'Grace';
+
+    expect($model->asElement()->firstName)->toBe('Grace');
 });

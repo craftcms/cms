@@ -2,9 +2,18 @@
 
 {% set id = id ?? "elementselect#{random()}" -%}
 {% set elements = elements ?? [] -%}
-{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set jsClass = jsClass ?? null -%}
 {% set inputClass = inputClass ?? null -%}
-{% set customElement = customElement ?? 'craft-element-select-input' -%}
+{# The core input classes have their own elements; any other class is a plugin's, booted by name #}
+{% set coreElements = {
+    'Craft.BaseElementSelectInput': 'craft-element-select-input',
+    'Craft.EntrySelectInput': 'craft-entry-select-input',
+    'Craft.AssetSelectInput': 'craft-asset-select-input',
+} -%}
+{% if jsClass and coreElements[jsClass] is not defined %}
+    {% set inputClass = inputClass ?? jsClass -%}
+{% endif %}
+{% set customElement = customElement ?? coreElements[jsClass] ?? 'craft-element-select-input' -%}
 {% set sources = sources ?? null -%}
 {% set condition = condition ?? null -%}
 {% set criteria = criteria ?? null -%}
@@ -22,7 +31,7 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set maintainHierarchy = maintainHierarchy ?? false %}
 {% set registerJs = registerJs ?? true %}
-{% set useCustomElement = useCustomElement ?? false %}
+{% set useCustomElement = useCustomElement ?? (registerJs and jsClass is not same as(false) and not disabled) %}
 {% set context = context ?? 'field' %}
 
 {% set allowAdd = allowAdd ?? true %}
@@ -150,9 +159,3 @@
         <craft-spinner class="spinner hidden"></craft-spinner>
     </div>
 {% endtag %}
-
-{% if not useCustomElement and not disabled and registerJs %}
-    {% js %}
-        new {{ jsClass }}({{ jsSettings|json_encode|raw }});
-    {% endjs %}
-{% endif %}

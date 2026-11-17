@@ -153,7 +153,7 @@
   <section v-if="canShowActions" class="workflow-user-review-actions">
     <craft-callout
       v-if="canReview"
-      :title="t('Your input is needed')"
+      :label="t('Your input is needed')"
       variant="info"
       icon="user-group"
     >

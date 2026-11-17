@@ -17,7 +17,7 @@ export default css`
 
   /* What's in a tinted card takes the card's color rather than gray, as its
      body does: neutral controls and hairlines, the selected tab's indicator,
-     form control and checkbox borders, and UI text. */
+     form control and checkbox borders, UI text, and input placeholders. */
   ${tintedHost()} ::slotted(*) {
     --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
     --c-color-neutral-fill-normal: var(--_colorable-fill-normal);
@@ -36,6 +36,7 @@ export default css`
       var(--_colorable-on-quiet) 75%,
       var(--_colorable-fill-quiet)
     );
+    --c-form-control-placeholder: var(--c-text-quiet);
   }
 
   /* A neutral card re-resolves the tokens a tinted card recolors (see
@@ -98,6 +99,8 @@ export default css`
     box-sizing: border-box;
     height: 100%;
     overflow: clip;
+    /* Sizes the body's padding to the card. */
+    container: card / inline-size;
   }
 
   /* Without a color, a card has no fill of its own: its border and text come
@@ -279,17 +282,18 @@ export default css`
     gap: var(--c-spacing-sm);
   }
 
-  /* The body matches the CP's container padding, and falls back to the same
-     value outside the CP, where nothing defines it. */
+  /* The body's padding grows with the card: 16px up to 400px wide, 24px
+     from 800px. */
   .card-body {
-    --_body-padding-inline: var(
-      --c-card-padding-inline,
-      var(--cp-container-padding, var(--c-spacing-lg))
+    --_body-padding: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
     );
-    --_body-padding-block: var(
-      --c-card-padding-block,
-      var(--cp-container-padding, var(--c-spacing-lg))
-    );
+    --_body-padding-inline: var(--c-card-padding-inline, var(--_body-padding));
+    --_body-padding-block: var(--c-card-padding-block, var(--_body-padding));
+    /* Fields in the card mark changes along its edge. */
+    --c-field-indicator-inset: var(--_body-padding-inline);
     gap: var(--c-spacing-md);
     padding-inline: var(--_body-padding-inline);
     padding-block: var(--_body-padding-block);

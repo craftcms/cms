@@ -32,29 +32,19 @@
   import AssistantApprovals, {
     type AssistantApproval,
   } from './AssistantApprovals.vue';
-  import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import ElementChips, {
-    type ChipElement,
-  } from '@/modules/elements/components/ElementChips.vue';
-  import {useSelectable} from '@/common/composables/useSelectable';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import MessageBubble from '@/common/components/MessageBubble.vue';
   import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
   import CommentField from '@/common/components/CommentField.vue';
-  import {
-    createElementActionMenu,
-    type ElementActionMenuItem,
-  } from '@/modules/elements/composables/useElementActionMenu';
   import AssistantChipStatus from './AssistantChipStatus.vue';
   import AssistantMentionHighlights from './AssistantMentionHighlights.vue';
   import AssistantContextPicker from './AssistantContextPicker.vue';
   import AssistantProposals from './AssistantProposals.vue';
-  import {
-    AssistantRequestError,
-    assistantConnection,
-    renderMarkdown,
-  } from './assistant';
+  import AssistantShownElements, {
+    type ShownElement,
+  } from './AssistantShownElements.vue';
+  import {AssistantRequestError} from './assistant';
+  import {assistantConnection, renderMarkdown} from './chat';
   import {
     assistantFieldUrl,
     contextRequest,
@@ -346,7 +336,7 @@
         ? [
             {
               id: interrupt.interruptId,
-              tool: mcpToolName(metadata.toolName ?? ''),
+              tool: metadata.toolName ?? '',
               reason: interrupt.message ?? null,
               input: metadata.input ?? {},
             },
@@ -414,11 +404,6 @@
     }
   }
 
-  /** A tool’s name as Craft’s MCP server knows it, such as `elements.get`. */
-  function mcpToolName(name: string): string {
-    return name.replaceAll('_', '.');
-  }
-
   /**
    * The assistant’s own tools, rather than the MCP server’s: their icons, and
    * what they say they did or are doing.
@@ -484,12 +469,6 @@
     return ownTools[name]?.icon ?? 'wrench';
   }
 
-  /** An element a `show_elements` call showed, with what its chip’s menu offers. */
-  type ShownElement = ChipElement & {actions?: ElementActionMenuItem[]};
-
-  /** One dispatcher for every shown element’s menu. */
-  const toActionItems = createElementActionMenu();
-
   /** The elements a `show_elements` call showed, as chips draw them. */
   function elementsOf(output: unknown): ShownElement[] {
     const elements = (resultOf(output) as {elements?: unknown} | null)
@@ -503,6 +482,13 @@
     return (resultOf(output) as {view?: unknown} | null)?.view === 'cards'
       ? 'cards'
       : 'list';
+  }
+
+  /** The thumbnail size a `show_elements` call’s elements were drawn at. */
+  function thumbSizeOf(output: unknown): string | null {
+    const size = (resultOf(output) as {thumbSize?: unknown} | null)?.thumbSize;
+
+    return typeof size === 'string' ? size : null;
   }
 
   /** A setting a `show_components` call showed, as its chip draws it. */
@@ -622,9 +608,6 @@
     }
   }
 
-  /** Shown elements can’t be selected. */
-  const noSelection = useSelectable<number>({ids: [], enabled: false});
-
   /** What a tool call did, is doing, or is waiting to do. */
   function toolActivity(part: {
     id: string;
@@ -634,18 +617,19 @@
     approval?: {approved?: boolean};
   }): string {
     const own = ownTools[part.name];
-    const tool = mcpToolName(part.name);
+    const tool = part.name;
 
     if ((part.approval?.approved ?? decisions.value[part.id]) === false) {
       return t('Denied {tool}', {tool});
     }
 
-    if (part.output !== undefined) {
-      return own ? own.done(part.output) : t('Used {tool}', {tool});
-    }
-
+    // Before the output, as failed calls have their error as their output.
     if (part.state === 'error') {
       return t('Didn’t finish using {tool}', {tool});
+    }
+
+    if (part.output !== undefined) {
+      return own ? own.done(part.output) : t('Used {tool}', {tool});
     }
 
     if (
@@ -681,7 +665,7 @@
     return {
       approval: {
         id: part.id,
-        tool: mcpToolName(part.name),
+        tool: part.name,
         reason: null,
         input: resultOf(part.arguments ?? '{}') ?? {},
       },
@@ -712,7 +696,7 @@
 
   /**
    * The images replies show inline: those Craft made for the conversation with
-   * `assets.transform-url`. Any other image could be on a server that a reply
+   * `assets_transform_url`. Any other image could be on a server that a reply
    * steered by injected content sends data to, so it’s a link.
    */
   const inlineImages = computed(
@@ -721,8 +705,7 @@
         messages.value.flatMap((message) =>
           message.parts.flatMap((part) => {
             const url =
-              part.type === 'tool-call' &&
-              mcpToolName(part.name) === 'assets.transform-url'
+              part.type === 'tool-call' && part.name === 'assets_transform_url'
                 ? (resultOf(part.output) as {url?: unknown} | null)?.url
                 : null;
 
@@ -810,13 +793,14 @@
                   <craft-chip
                     :icon="item.status ? undefined : item.icon"
                     :show-status="!!item.status || undefined"
-                    size="auto"
+                    size="xsmall"
+                    rounded
                   >
                     <AssistantChipStatus
                       v-if="item.status"
                       :status="item.status"
                     />
-                    {{ item.label }}
+                    <span>{{ item.label }}</span>
                   </craft-chip>
                 </li>
               </ul>
@@ -868,54 +852,16 @@
               :call-id="entry.part.id"
               @status="status = $event"
             />
-            <template
+            <AssistantShownElements
               v-if="
                 entry.part.name === 'show_elements' &&
                 elementsOf(entry.part.output).length
               "
-            >
-              <div
-                v-if="viewOf(entry.part.output) === 'cards'"
-                class="assistant-chat__cards"
-              >
-                <ElementCards
-                  :data="elementsOf(entry.part.output)"
-                  :selection="noSelection"
-                  read-only
-                  single-column
-                  :render-server-actions="false"
-                >
-                  <template #actions="{element}">
-                    <ActionMenu
-                      v-if="(element as ShownElement).actions?.length"
-                      :actions="
-                        toActionItems((element as ShownElement).actions!)
-                      "
-                      :label="
-                        t('Actions for {name}', {name: element?.label ?? ''})
-                      "
-                    />
-                  </template>
-                </ElementCards>
-              </div>
-              <ElementChips
-                v-else
-                class="assistant-chat__cards"
-                :data="elementsOf(entry.part.output)"
-                :selection="noSelection"
-                read-only
-                linked
-              >
-                <template #suffix="{element}">
-                  <ActionMenu
-                    v-if="(element as ShownElement).actions?.length"
-                    :actions="toActionItems((element as ShownElement).actions!)"
-                    :label="t('Actions for {name}', {name: element.label})"
-                    flush="inline-start"
-                  />
-                </template>
-              </ElementChips>
-            </template>
+              class="assistant-chat__cards"
+              :elements="elementsOf(entry.part.output)"
+              :view="viewOf(entry.part.output)"
+              :thumb-size="thumbSizeOf(entry.part.output)"
+            />
             <ul
               v-if="
                 entry.part.name === 'show_components' &&
@@ -1043,6 +989,8 @@
             <craft-chip
               :icon="item.status() ? undefined : item.icon"
               :show-status="!!item.status() || undefined"
+              size="xsmall"
+              rounded
             >
               <AssistantChipStatus
                 v-if="item.status()"
@@ -1053,12 +1001,13 @@
                 :editor="elementContextEditor(item)!"
                 :label="item.label"
               />
-              <template v-else>{{ item.label }}</template>
+              <span v-else>{{ item.label }}</span>
               <craft-button
                 slot="suffix"
+                class="assistant-chat__remove-context"
                 type="button"
                 icon
-                size="small"
+                size="xsmall"
                 variant="plain"
                 flush="inline-start"
                 @click="assistantApi.removeContext(item.ref)"
@@ -1267,10 +1216,6 @@
     color: var(--c-text-quiet);
   }
 
-  .assistant-chat__icon craft-icon {
-    font-size: var(--c-text-base);
-  }
-
   .assistant-chat__reply {
     display: flex;
     flex-direction: column;
@@ -1315,8 +1260,12 @@
     padding: var(--c-spacing-lg);
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
-      var(--c-surface-default) var(--c-spacing-lg)
+      color-mix(
+        in srgb,
+        var(--cp-details-bg, var(--c-surface-default)) 0%,
+        transparent
+      ),
+      var(--cp-details-bg, var(--c-surface-default)) var(--c-spacing-lg)
     );
   }
 
@@ -1330,8 +1279,8 @@
     border: var(--c-form-control-border-width) solid
       var(--c-form-control-border-color);
     border-radius: var(--c-radius-lg);
-    background-color: var(--c-surface-white);
-    box-shadow: var(--c-shadow-md);
+    background-color: var(--c-input-fill, var(--c-form-control-fill));
+    box-shadow: var(--c-input-shadow, 0 0 transparent);
   }
 
   .assistant-chat__card {
@@ -1415,11 +1364,29 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: var(--c-spacing-xs);
+    /* In a prompt's bubble, which sizes it to its content, it'd otherwise be
+       as wide as its longest chip's label. */
+    max-inline-size: 100%;
 
     & > li {
       min-inline-size: 0;
       max-inline-size: 100%;
     }
+  }
+
+  /* Square, and as tall as the context picker beside it (a line of the
+     chip's text, plus a border taken back the same way), and round in the
+     rounded chip. Pulled into the chip's end padding, so its hover fill is
+     as far from the chip's end as from its top and bottom. */
+  .assistant-chat__remove-context {
+    --_size: calc(1lh + 2px);
+
+    font-size: inherit;
+    inline-size: var(--_size);
+    block-size: var(--_size);
+    margin-block: -1px;
+    margin-inline-end: -2px;
+    border-radius: var(--c-radius-full);
   }
 
   .assistant-chat__card > .assistant-chat__chips {

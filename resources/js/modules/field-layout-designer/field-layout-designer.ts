@@ -7,10 +7,12 @@ import {
 } from '@craftcms/garnish';
 // Listbox was migrated out of `@craftcms/garnish` into the app.
 import {Listbox} from '@/modules/listbox/listbox';
+import {Grid} from '@/modules/grid/grid';
 import {Tab} from './tab';
 import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {
+  cvdData,
   fldElementData,
   fldTabData,
   htmlToElement,
@@ -21,12 +23,8 @@ import {
 import type {FieldLayoutConfig, FieldLayoutDesignerSettings} from './types';
 import {ButtonVariant, t} from '@craftcms/ui';
 import {openSlideout} from '@/common/slideouts';
-
-// `Craft` and jQuery (`$`) are still globals on the page. FLD is native; `$` is
-// used ONLY at the Craft-interop seams (Craft.ui/Grid/listbox/Slideout return or
-// require jQuery). Everywhere else FLD uses native DOM.
-declare const Craft: any;
-declare const $: any;
+import {getCpUrl} from '@/common/craft/url';
+import {escapeHtml} from '@/common/craft/attributes';
 
 /**
  * Field Layout Designer — a port of the legacy `Craft.FieldLayoutDesigner` onto
@@ -40,6 +38,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     customizableTabs: true,
     customizableUi: true,
     withCardViewDesigner: false,
+    cardViewDesignerOutlet: null,
     alwaysShowThumbAlignmentBtns: false,
     readOnly: false,
   };
@@ -66,7 +65,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   $createFieldBtn: any = null;
 
   libraryPicker: Listbox | null = null;
-  tabGrid: any = null;
+  tabGrid: Grid | null = null;
   /** Keeps the workspace a whole number of grid cells tall. */
   workspaceHeightObserver: ResizeObserver | null = null;
   sidebarTabHeightObserver: ResizeObserver | null = null;
@@ -98,6 +97,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this._config = JSON.parse(this.$configInput.value);
     if (!this._config!.tabs) {
       this._config!.tabs = [];
+    }
+
+    // Found now, while it's still beside the designer, as it can move out
+    // before the designer finishes initializing (see `cardViewDesignerOutlet`).
+    if (this.settings!.withCardViewDesigner) {
+      this.$cvd = this.$container
+        .closest('.fld-cvd')
+        ?.querySelector('.card-view-designer');
     }
 
     this.$innerContainer = this.$container.querySelector(
@@ -134,25 +141,27 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
-    // `typeof` rather than a bare `$`: until the legacy bundle loads there is no
-    // global to reference at all, and an undeclared identifier throws a
-    // ReferenceError instead of evaluating falsy — which `deferUntil` would
-    // surface as a rejected promise that never polls again.
-    void deferUntil(
-      () =>
-        !!Craft?.Grid &&
-        typeof $ === 'function' &&
-        !!this.$fieldLibrary.querySelector('craft-input-search input')
-    ).then(() => {
-      this.$fieldSearch = this.$fieldLibrary.querySelector(
-        'craft-input-search input'
-      );
-      this.deferredInit();
-    });
+    // The search field's inner input renders once its custom element connects,
+    // which usually happens right after this designer is created, since
+    // connected callbacks run parent first. So check again after a microtask
+    // before polling: until deferredInit() runs, the tabs' Add buttons and the
+    // New Tab buttons are on screen but do nothing when clicked.
+    void Promise.resolve()
+      .then(() =>
+        deferUntil(
+          () => !!this.$fieldLibrary.querySelector('craft-input-search input')
+        )
+      )
+      .then(() => {
+        this.$fieldSearch = this.$fieldLibrary.querySelector(
+          'craft-input-search input'
+        );
+        this.deferredInit();
+      });
   }
 
   deferredInit(): void {
-    // Set up the layout grids — Craft.Grid is a jQuery seam.
+    // Set up the layout grids.
     // Tabs are 18 cells of the workspace's background grid wide, and each row
     // of them is snapped to a whole number of cells tall, so later rows and
     // the New Tab button land on the grid too.
@@ -161,7 +170,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
         getComputedStyle(this.$contentTabContainer.parentElement).backgroundSize
       ) || 16;
     // Only content tabs wrap into rows; sidebar tabs stack in their column.
-    this.tabGrid = new Craft.Grid($(this.$contentTabContainer), {
+    this.tabGrid = new Grid(this.$contentTabContainer, {
       itemSelector: '.fld-tab',
       minColWidth: gridSize * 18,
       fillMode: 'grid',
@@ -264,10 +273,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     });
 
     // initiate Card Attributes Designer
-    if (this.settings!.withCardViewDesigner) {
-      this.$cvd = this.$container
-        .closest('.fld-cvd')
-        ?.querySelector('.card-view-designer');
+    if (this.$cvd) {
       this.initCvd();
     }
 
@@ -368,13 +374,20 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   initCvd(): void {
     this.cvd = new CardViewDesigner(this, this.$cvd);
 
-    // Add skip link
+    // Found from the designer's root too, as the card view designer can move
+    // out of it (see `cardViewDesignerOutlet`).
+    const root = this.$container.closest('.fld-cvd');
+    if (root) {
+      cvdData.set(root, this.cvd);
+    }
+
+    // Add skip link, unless the card view designer moves to a tab of its own
     const skipLinkAnchor = this.cvd.$container.id;
 
-    if (skipLinkAnchor) {
+    if (skipLinkAnchor && !this.settings!.cardViewDesignerOutlet) {
       const $skipLink = document.createElement('a');
       $skipLink.className = 'skip-link';
-      $skipLink.textContent = Craft.t('app', 'Skip to card view designer');
+      $skipLink.textContent = t('Skip to card view designer');
       $skipLink.href = `#${skipLinkAnchor}`;
 
       this.cvd.$container.setAttribute('tabindex', '-1');
@@ -415,8 +428,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this.libraryPicker?.destroy();
     this.libraryPicker = null;
 
-    // Craft.Grid binds a window `resize` listener — dispose it explicitly.
-    this.tabGrid?.destroy?.();
+    // The grid binds a window `resize` listener — dispose it explicitly.
+    this.tabGrid?.destroy();
     this.tabGrid = null;
 
     // Each tab's HUD lives in <body>, so it won't be GC'd with the detached
@@ -445,11 +458,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
 
     let defaultValue = '';
     if (this.tabElements().length === 0) {
-      defaultValue = Craft.t('app', 'Content');
+      defaultValue = t('Content');
     }
-    const name = Craft.escapeHtml(
-      prompt(Craft.t('app', 'Give your tab a name.'), defaultValue)
-    );
+    const name = escapeHtml(prompt(t('Give your tab a name.'), defaultValue));
 
     if (!name) {
       return;
@@ -481,7 +492,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     } else {
       // Only content tabs wrap into the grid's rows.
       this.$contentTabContainer.appendChild($tab);
-      this.tabGrid.addItems($($tab));
+      this.tabGrid?.addItems($tab);
     }
     this.tabDrag!.addItems($tab);
 
@@ -615,7 +626,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     // place to send focus back to, since the HUD closes below.
     const hud = this.getActiveHud();
 
-    void openSlideout(Craft.getCpUrl('settings/fields/edit'), {
+    void openSlideout(getCpUrl('settings/fields/edit'), {
       opener: hud?.$trigger ?? this.$createFieldBtn,
       onSaved: ({data}) => {
         // add the library selector

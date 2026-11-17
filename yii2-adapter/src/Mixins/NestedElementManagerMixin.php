@@ -9,7 +9,6 @@ use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Cp\Html\ElementIndexHtml;
 
 use function CraftCms\Cms\t;
 

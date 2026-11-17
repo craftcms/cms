@@ -227,8 +227,20 @@ test('translate applies Laravel fallback before debug wrapping', function () {
         ],
     ], 'nl');
 
-    expect(I18N::translate('fallback.message', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel says Rias@')
-        ->and(I18N::translate('fallback.array', category: 'app', locale: 'nl'))->toBe('@fallback.array@');
+    $jsonPath = sys_get_temp_dir().'/craft-i18n-test-'.uniqid();
+    mkdir($jsonPath);
+    file_put_contents("$jsonPath/nl.json", '{"Laravel JSON message for :name": "Laravel JSON zegt :name"}');
+    app(Translator::class)->addJsonPath($jsonPath);
+
+    try {
+        expect(I18N::translate('fallback.message', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel says Rias@')
+            ->and(I18N::translate('fallback.array', category: 'app', locale: 'nl'))->toBe('@fallback.array@')
+            ->and(I18N::translate('Laravel JSON message for :name', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel JSON zegt Rias@')
+            ->and(I18N::translate('Untranslated message for :name', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Untranslated message for Rias@');
+    } finally {
+        unlink("$jsonPath/nl.json");
+        rmdir($jsonPath);
+    }
 });
 
 test('getAllTranslationsForLocale returns translations for registered categories', function () {
@@ -374,4 +386,25 @@ test('getAllTranslationsForLocale returns few or no app translations for English
 
     expect($enCount)->toBeLessThan(50)
         ->and($nlCount)->toBeGreaterThan(500);
+});
+
+test('translate picks up category sources added after a message was looked up', function () {
+    $reader = new class implements MessageReaderInterface
+    {
+        public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
+        {
+            return $this->getMessages($category, $locale)[$id]['message'] ?? null;
+        }
+
+        public function getMessages(string $category, string $locale): array
+        {
+            return ['Save' => ['message' => 'Opslaan']];
+        }
+    };
+
+    expect(I18N::translate('Save', category: 'latecat', locale: 'nl'))->toBe('Save');
+
+    I18N::addCategorySources(new CategorySource('latecat', $reader));
+
+    expect(I18N::translate('Save', category: 'latecat', locale: 'nl'))->toBe('Opslaan');
 });

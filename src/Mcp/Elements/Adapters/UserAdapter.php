@@ -78,7 +78,7 @@ class UserAdapter extends BaseElementAdapter
         return [
             'Listing and reading users requires the viewUsers permission, creating them requires registerUsers, updating them requires editUsers, and deleting them requires deleteUsers.',
             'Only admins may set every attribute. Other users may set names, photoId, affiliatedSiteId, and hasDashboard, plus email and username for new users. Users with administrateUsers may also set email.',
-            'Find a user by username or email with elements.list and the username or email criteria.',
+            'Find a user by username or email with elements_list and the username or email criteria.',
         ];
     }
 

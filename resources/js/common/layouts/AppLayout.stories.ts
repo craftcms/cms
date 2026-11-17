@@ -258,7 +258,7 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #title>
-          <h1 class="text-xl">Summer sale: up to 40% off</h1>
+          <h1 class="cp-h1">Summer sale: up to 40% off</h1>
         </template>
 
         <template #content-toolbar-meta>
@@ -306,7 +306,7 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #error-summary>
-          <craft-callout data-color="error" title="Couldn't save entry">
+          <craft-callout variant="danger" label="Couldn't save entry">
             <ul>
               <li>Slug is already in use by another entry.</li>
             </ul>

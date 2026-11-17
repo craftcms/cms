@@ -428,7 +428,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
 
     public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
     {
-        // Not implemented
+        if ($validator === null) {
+            parent::afterValidate();
+        }
     }
 
     public function validate($attributeNames = null, $clearErrors = true): bool

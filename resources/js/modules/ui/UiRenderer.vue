@@ -32,11 +32,19 @@
     NestedUiPayload,
   } from './types';
   import {UiRendererKey} from './renderer/context';
+  import {
+    controlForSnapshot,
+    readControlValue,
+    type UiValueSnapshot,
+  } from './valueAccess';
+  import {UiFieldOutletsKey, type UiFieldOutlets} from './fieldOutlets';
+  import {createOutletRegistry, UiOutletsKey} from './outlets';
   import {captureControlFocus} from './renderer/controlFocus';
   import {
     cloneRaw,
     disabledNodes,
     isWithin,
+    readOnlyNodes,
     withControl,
     withNestedUi,
     withUis,
@@ -48,6 +56,11 @@
   const props = defineProps<{
     payload: UiPayload;
     disabled?: boolean;
+    /**
+     * Shows every editable control read-only, and takes no changes: for a
+     * form that can be edited, but not yet.
+     */
+    readOnly?: boolean;
     refresh?: (
       values: UiPayload['values'],
       scope?: string[]
@@ -59,6 +72,8 @@
     sidebarTabOutlets?: SidebarTabOutlets;
     /** Where the tab strip renders, rather than above the fields. */
     tabsOutlet?: HTMLElement | null;
+    /** Where each field renders, by layout UID, rather than in its place in the form. */
+    fieldOutlets?: UiFieldOutlets;
   }>();
   const emit = defineEmits<{
     (
@@ -72,8 +87,14 @@
   const slots = useSlots();
   const payload = shallowRef(props.payload);
   const nodes = computed(() =>
-    props.disabled ? disabledNodes(payload.value.nodes) : payload.value.nodes
+    props.disabled
+      ? disabledNodes(payload.value.nodes)
+      : props.readOnly
+        ? readOnlyNodes(payload.value.nodes)
+        : payload.value.nodes
   );
+  /** Whether the form takes no changes for now. */
+  const locked = computed(() => Boolean(props.disabled || props.readOnly));
 
   const root = ref<HTMLElement>();
   let uiValueSource: UiValueSource | undefined;
@@ -84,13 +105,24 @@
   const nativeSubmitting = ref(false);
   const submitting = ref(false);
   let submittedValues: UiValues | undefined;
+  /**
+   * The payload that arrived while a submission was out, with the values the
+   * form held just before it did. That's the submission's response, so once it
+   * succeeds the values it rendered are the ones saved.
+   */
+  let submissionResponse: {payload: UiPayload; held: UiValues} | undefined;
+  /**
+   * What a successful submission sent and held, kept while its response still
+   * holds tabs back: their fields are settled as they arrive.
+   */
+  let deferredSettlement: {submitted: UiValues; held: UiValues} | undefined;
 
   const valueState = useUiValues(props.payload);
   const {values, touchedPaths} = valueState;
   const unregisterValueSource = useUiValueGroup()?.register(values);
   const refresher = useUiRefresh({
     refresh: () => props.refresh,
-    disabled: () => Boolean(props.disabled),
+    disabled: () => locked.value,
     snapshot: (scope) => valueState.snapshot(scope),
     fingerprint: valueState.groupCanonical,
     apply: reconcile,
@@ -106,6 +138,12 @@
   );
   const {effectiveErrors} = errorState;
 
+  provide(UiOutletsKey, createOutletRegistry());
+  // A form nested in this one places its own fields, if anything does.
+  provide(
+    UiFieldOutletsKey,
+    props.fieldOutlets ? (layoutUid) => props.fieldOutlets?.(layoutUid) : null
+  );
   provide(UiRendererKey, {
     fail: invalidate,
     setValue: valueState.write,
@@ -116,7 +154,7 @@
     overrides: slots,
     pending: computed(() =>
       Boolean(
-        props.disabled ||
+        locked.value ||
         nativeSubmitting.value ||
         submitting.value ||
         refresher.refreshingFields.size
@@ -145,7 +183,26 @@
 
   watch(
     () => props.payload,
-    (refreshed) => reconcile(refreshed)
+    (refreshed) => {
+      if (submitting.value) {
+        submissionResponse = {
+          payload: refreshed,
+          held: valueState.snapshot(),
+        };
+      }
+
+      reconcile(refreshed);
+
+      // The host's payload was rendered from the values it carries, which
+      // aren't necessarily the ones this form holds.
+      refresher.seed(
+        refreshed.scope,
+        valueState.groupCanonical(
+          valueAt(refreshed.values, refreshed.scope),
+          refreshed.scope
+        )
+      );
+    }
   );
 
   watch(
@@ -154,10 +211,7 @@
     {flush: 'sync'}
   );
 
-  watch(
-    () => props.disabled,
-    () => emitMutation()
-  );
+  watch(locked, () => emitMutation());
   onMounted(() => {
     uiValueSource = {
       root: root.value!,
@@ -190,7 +244,7 @@
     const scope = change.scope ?? payload.value.scope;
 
     if (
-      props.disabled ||
+      locked.value ||
       valueState.controlAt(change.path)?.mode !== 'editable' ||
       !uiValueSource
     ) {
@@ -247,10 +301,32 @@
     renderError.value = undefined;
     const restoreFocus = captureControlFocus();
 
+    const filled = filledTabs(payload.value.nodes, refreshed.nodes);
+    valueState.adoptDeferred(filled, refreshed.values);
     valueState.adopt(refreshed);
+
+    // Settled before the mutation below, which would otherwise report the
+    // replaced identities in the tabs' fields as an edit, and autosave them.
+    if (deferredSettlement && filled.length) {
+      valueState.settle(
+        {...refreshed, nodes: filled},
+        deferredSettlement.submitted,
+        deferredSettlement.held,
+        true
+      );
+    }
+
     payload.value = pathsMatch(scope, payload.value.scope)
       ? refreshed
       : withNestedUi(payload.value, scope, refreshed);
+
+    if (
+      deferredSettlement &&
+      !payload.value.nodes.some((node) => node.props.deferred)
+    ) {
+      deferredSettlement = undefined;
+    }
+
     emit('update:payload', payload.value);
     emitMutation();
     resetObservedValues(payload.value.nodes);
@@ -258,6 +334,20 @@
     if (restoreFocus) {
       nextTick(restoreFocus);
     }
+  }
+
+  /** The tabs in `refreshed` that are filled in for ones `current` deferred. */
+  function filledTabs(
+    current: UiNodePayload[],
+    refreshed: UiNodePayload[]
+  ): UiNodePayload[] {
+    const deferred = new Set(
+      current.filter((node) => node.props.deferred).map((node) => node.uid)
+    );
+
+    return refreshed.filter(
+      (node) => deferred.has(node.uid) && !node.props.deferred
+    );
   }
 
   /**
@@ -283,6 +373,8 @@
     nativeSubmitting.value = false;
     submitting.value = false;
     submittedValues = undefined;
+    submissionResponse = undefined;
+    deferredSettlement = undefined;
     errorState.restore();
     valueState.reset(source);
     payload.value = source;
@@ -308,8 +400,29 @@
   }
 
   function advanceBaseline(): void {
-    valueState.rebase(submittedValues ?? valueState.snapshot());
+    const submitted = submittedValues ?? valueState.snapshot();
+
+    if (submissionResponse) {
+      valueState.settle(
+        submissionResponse.payload,
+        submitted,
+        submissionResponse.held
+      );
+      resetObservedValues(payload.value.nodes);
+
+      // A successful save takes over from any earlier one still waiting on
+      // its deferred tabs: its response holds back the same tabs, or none.
+      deferredSettlement = payload.value.nodes.some(
+        (node) => node.props.deferred
+      )
+        ? {submitted, held: submissionResponse.held}
+        : undefined;
+    } else {
+      valueState.rebase(submitted);
+    }
+
     submittedValues = undefined;
+    submissionResponse = undefined;
     emitMutation();
   }
 
@@ -327,15 +440,103 @@
     emitMutation();
   }
 
+  /** Sets a control's value from outside it, redefining the control along with it when given one. */
   function setValue(
     path: string[],
     value: UiValue,
-    kind: UiChange['kind'] = 'discrete'
+    kind: UiChange['kind'] = 'discrete',
+    control?: UiControlPayload<object>
   ): void {
     valueState.write(path, value);
-    const change = {kind, path};
+    const change: UiChange = control ? {kind, path, control} : {kind, path};
     recordChange(change);
     publishValueChange(change);
+  }
+
+  type OwnedControl = {
+    control: UiControlPayload;
+    scope: string[];
+    refreshable: boolean;
+  };
+
+  /**
+   * The control at a path, as the form has it now, with the scope and
+   * refreshability of the UI it's in.
+   */
+  function controlAt(path: string[]): OwnedControl | undefined {
+    const find = (
+      nodes: UiNodePayload[],
+      scope: string[],
+      refreshable: boolean
+    ): OwnedControl | undefined => {
+      for (const node of nodes) {
+        if (node.control) {
+          if (pathsMatch(node.control.path, path)) {
+            return {control: node.control, scope, refreshable};
+          }
+
+          for (const ui of node.control.uis ?? []) {
+            const found = find(ui.nodes, ui.scope, ui.refreshable);
+
+            if (found) {
+              return found;
+            }
+          }
+        }
+
+        const found = node.children
+          ? find(node.children, scope, refreshable)
+          : undefined;
+
+        if (found) {
+          return found;
+        }
+      }
+
+      return undefined;
+    };
+
+    return find(
+      payload.value.nodes,
+      payload.value.scope,
+      payload.value.refreshable
+    );
+  }
+
+  /**
+   * The value of the control at a path as it stands, with the props it draws
+   * it with, or `null` when there's no control there that says it can be read.
+   */
+  function readValue(path: string[]): UiValueSnapshot | null {
+    const control = controlAt(path)?.control;
+
+    return control ? readControlValue(control, currentValues()) : null;
+  }
+
+  /**
+   * Gives the control at a path a value read from elsewhere, as if it were
+   * entered there, and reports whether there was a control there that says it
+   * can take one.
+   */
+  function writeValue(path: string[], snapshot: UiValueSnapshot): boolean {
+    const found = controlAt(path);
+
+    if (!found?.control.writable) {
+      return false;
+    }
+
+    valueState.write(path, cloneRaw(snapshot.value));
+    const change: UiChange = {
+      kind: 'discrete',
+      path,
+      control: controlForSnapshot(found.control, snapshot),
+      scope: found.scope,
+      refreshable: found.refreshable && Boolean(found.control.reactive),
+    };
+    recordChange(change);
+    publishValueChange(change);
+
+    return true;
   }
 
   /**
@@ -373,7 +574,12 @@
   }
 
   function setSubmitting(value: boolean): void {
-    if (value && !submitting.value) submittedValues = valueState.snapshot();
+    // What an earlier save still has to settle stays until a later one
+    // succeeds: this one can fail, or be called off.
+    if (value && !submitting.value) {
+      submittedValues = valueState.snapshot();
+    }
+    if (!value) submissionResponse = undefined;
     submitting.value = value;
   }
 
@@ -407,6 +613,8 @@
     resetValues,
     setValue,
     setValues,
+    readValue,
+    writeValue,
     canSubmit: () => !renderError.value,
   });
 

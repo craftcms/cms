@@ -31,6 +31,9 @@ class GqlInputSchema
     /**
      * Returns the JSON schema of the values a GraphQL input type accepts.
      *
+     * Input object fields with an `inputSchema` config value accept the values that schema describes, rather than the
+     * ones their type does.
+     *
      * @param  Type|array<string, mixed>  $definition  A type, or a field definition with a `type` and an optional `description`.
      * @return array<string, mixed>
      */
@@ -72,10 +75,22 @@ class GqlInputSchema
             $required = [];
 
             foreach ($type->getFields() as $field) {
-                $fieldSchema = self::typeSchema($field->getType(), [...$visited, $type->name]);
+                if (isset($field->config['inputSchema'])) {
+                    $fieldSchema = $field->getType() instanceof NonNull
+                        ? self::withoutNull($field->config['inputSchema'])
+                        : self::withNull($field->config['inputSchema']);
+                    $description = implode("\n\n", array_filter(
+                        [$fieldSchema['description'] ?? null, $field->description],
+                        static fn (?string $value): bool => $value !== null && $value !== '',
+                    ));
+                } else {
+                    $fieldSchema = self::typeSchema($field->getType(), [...$visited, $type->name]);
+                    $description = $field->description ?? $fieldSchema['description'] ?? null;
+                }
+
                 $properties[$field->name] = array_filter([
                     ...$fieldSchema,
-                    'description' => $field->description ?? $fieldSchema['description'] ?? null,
+                    'description' => $description,
                 ], static fn (mixed $value): bool => $value !== null && $value !== '') ?: new stdClass;
 
                 if ($field->isRequired()) {

@@ -1,4 +1,9 @@
 import {DragSort} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {isRtl, startSide} from '@/common/craft/direction';
+import {showError, showSuccess} from '@/modules/messages/messages';
+import {QueueService} from '@/modules/queue/queue';
 
 // Keeps the `declare const $` / `declare const Craft` seams: the structural
 // row logic is jQuery-heavy and interops with the still-legacy table view
@@ -7,7 +12,6 @@ import {DragSort} from '@craftcms/garnish';
 // HTMLElement(s) (not jQuery), so those are wrapped with `$(...)` where the
 // legacy jQuery traversal is needed, and findDraggee returns a plain array.
 declare const $: any;
-declare const Craft: any;
 
 const HELPER_MARGIN = 0;
 const LEVEL_INDENT = 44;
@@ -119,17 +123,17 @@ export class ElementTableSorter extends DragSort {
 
       const data = this._getAjaxBaseData($targetItem);
 
-      Craft.sendActionRequest('POST', 'structures/get-element-level-delta', {
-        data,
-      }).then((response: any) => {
-        this._loadingDraggeeLevelDelta = false;
+      void actionClient
+        .post('structures/get-element-level-delta', data)
+        .then((response: any) => {
+          this._loadingDraggeeLevelDelta = false;
 
-        if (this.dragging) {
-          this._draggeeLevelDelta = response.data.delta;
-          this._setTargetLevelBounds();
-          this.drag(false);
-        }
-      });
+          if (this.dragging) {
+            this._draggeeLevelDelta = response.data.delta;
+            this._setTargetLevelBounds();
+            this.drag(false);
+          }
+        });
     }
 
     return $draggee.toArray();
@@ -175,7 +179,7 @@ export class ElementTableSorter extends DragSort {
         this._$titleHelperCell = $helperCell;
         this._titleHelperCellOuterWidth = width;
 
-        $helperCell.children('div').css(`padding-${Craft.left}`, '24px');
+        $helperCell.children('div').css(`padding-${startSide()}`, '24px');
       }
     }
 
@@ -239,13 +243,13 @@ export class ElementTableSorter extends DragSort {
         const newLevel = oldLevel + levelDiff;
         const padding = 24 + this._getLevelIndent(newLevel);
         const $structureTextAlternative = $row.find('[data-text-alternative]');
-        const altText = Craft.t('app', 'Level {num}', {num: newLevel});
+        const altText = t('Level {num}', {num: newLevel});
 
         $row.data('level', newLevel);
         $row.find('.element').data('level', newLevel);
         $row
           .find('> [data-titlecell]:first > div')
-          .css(`padding-${Craft.left}`, padding);
+          .css(`padding-${startSide()}`, padding);
 
         // Update text alternative
         $structureTextAlternative.text(altText);
@@ -301,9 +305,10 @@ export class ElementTableSorter extends DragSort {
         $prevRow = $prevRow.prev();
       }
 
-      Craft.sendActionRequest('POST', 'structures/move-element', {data})
+      actionClient
+        .post('structures/move-element', data)
         .then(() => {
-          Craft.cp.displaySuccess(Craft.t('app', 'New position saved.'));
+          showSuccess(t('New position saved.'));
           this.onPositionChange();
 
           // Were we waiting on this to complete so we can expand the new parent?
@@ -313,10 +318,10 @@ export class ElementTableSorter extends DragSort {
           }
 
           // See if we should run any pending tasks
-          Craft.cp.runQueue();
+          void QueueService.getInstance().runQueue();
         })
         .catch((e: any) => {
-          Craft.cp.displayError(e?.response?.data?.message);
+          showError(e?.response?.data?.message);
           this.tableView.elementIndex.updateElements();
         });
     }
@@ -432,7 +437,7 @@ export class ElementTableSorter extends DragSort {
     let mouseDist = this.realMouseX! - this.mousedownX!;
 
     // Flip that if this is RTL
-    if (Craft.orientation === 'rtl') {
+    if (isRtl()) {
       mouseDist *= -1;
     }
 
@@ -472,7 +477,7 @@ export class ElementTableSorter extends DragSort {
     const closestLevelMagnetIndent =
       this._getLevelIndent(this._targetLevel) + magnetImpact;
     $(this.helpers[0]).css(
-      `margin-${Craft.left}`,
+      `margin-${startSide()}`,
       closestLevelMagnetIndent + this._helperMargin
     );
     this._$titleHelperCell.css(
@@ -573,8 +578,8 @@ export class ElementTableSorter extends DragSort {
           class: 'toggle expanded',
           type: 'button',
           'aria-expanded': 'true',
-          title: Craft.t('app', 'Show/hide children'),
-          'aria-label': Craft.t('app', 'Show {title} children', {
+          title: t('Show/hide children'),
+          'aria-label': t('Show {title} children', {
             title: ancestorTitle,
           }),
         }).insertAfter($ancestor.find('> th .move:first'));

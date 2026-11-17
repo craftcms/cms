@@ -412,7 +412,10 @@ describe('field layouts defined in code', function () {
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('ui.nodes.0.props.label', 'Contact')
                 ->where('ui.nodes.1.props.label', 'Company')
-                ->where('ui.nodes.1.children.1.component', 'craft:callout'));
+                ->where('ui.nodes.1.children', [])
+                ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+                    ->where('deferredTabs.nodes.0.props.label', 'Company')
+                    ->where('deferredTabs.nodes.0.children.1.component', 'craft:callout')));
     });
 
     describe('with a custom field', function () {

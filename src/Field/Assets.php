@@ -13,7 +13,6 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Auth\SessionAuth;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -388,8 +387,8 @@ class Assets extends BaseRelationField
     public function getElementRules(ElementInterface $element): array
     {
         $rules = parent::getElementRules($element);
-        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
-        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQueryInterface|ElementCollection $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQueryInterface|ElementCollection $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
 
         return $rules;
     }
@@ -397,9 +396,9 @@ class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
      *
-     * @param  ElementQuery<Asset>  $value
+     * @param  ElementQueryInterface<Asset>|ElementCollection<int, Asset>  $value
      */
-    public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
+    public function validateFileType(ElementInterface $element, ElementQueryInterface|ElementCollection $value, string $attribute, Validator $validator): void
     {
         $allowedExtensions = $this->_getAllowedExtensions();
 
@@ -423,7 +422,7 @@ class Assets extends BaseRelationField
 
         // Now make sure that they all check out
         foreach ($filenames as $filename) {
-            if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+            if (! $this->isAllowedFilename((string) $filename, $allowedExtensions)) {
                 $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
@@ -436,33 +435,46 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element, string $attribute, Validator $validator): void
     {
-        $maxSize = Cms::config()->maxUploadFileSize;
-
-        $filenames = [];
-
-        // Get any uploaded filenames
-        $uploadedFiles = $this->_getUploadedFiles($element);
-        foreach ($uploadedFiles as $file) {
-            switch ($file['type']) {
-                case 'data':
-                    if (strlen((string) $file['data']) > $maxSize) {
-                        $filenames[] = $file['filename'];
-                    }
-                    break;
-                case 'file':
-                case 'upload':
-                    if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
-                        $filenames[] = $file['filename'];
-                    }
-                    break;
+        foreach ($this->_getUploadedFiles($element) as $file) {
+            if ($this->isTooLarge($file)) {
+                $validator->errors()->add($attribute, t('“{filename}” is too large.', [
+                    'filename' => $file['filename'],
+                ]));
             }
         }
+    }
 
-        foreach ($filenames as $filename) {
-            $validator->errors()->add($attribute, t('“{filename}” is too large.', [
-                'filename' => $filename,
-            ]));
-        }
+    /**
+     * Returns whether any uploaded files would fail {@see validateFileType()} or {@see validateFileSize()}.
+     *
+     * Uploaded files are saved as assets before the element is validated, so they’re checked first, and left in place
+     * for validation to report, rather than leaving assets behind for an element that won’t save.
+     *
+     * @param  list<UploadedFileData>  $files
+     */
+    private function hasInvalidUploadedFiles(array $files): bool
+    {
+        $allowedExtensions = $this->_getAllowedExtensions();
+
+        return array_any($files, fn ($file) => $this->isTooLarge($file) ||
+        (! empty($allowedExtensions) && ! $this->isAllowedFilename($file['filename'], $allowedExtensions)));
+    }
+
+    /** @param  list<string>  $allowedExtensions */
+    private function isAllowedFilename(string $filename, array $allowedExtensions): bool
+    {
+        return in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true);
+    }
+
+    /** @param  UploadedFileData  $file */
+    private function isTooLarge(array $file): bool
+    {
+        $size = match ($file['type']) {
+            'data' => strlen($file['data']),
+            default => file_exists($file['path']) ? filesize($file['path']) : 0,
+        };
+
+        return $size > AssetsHelper::getMaxAssetUploadSize();
     }
 
     #[Override]
@@ -586,7 +598,7 @@ class Assets extends BaseRelationField
                 // Were there any uploaded files?
                 $uploadedFiles = $this->_getUploadedFiles($element);
 
-                if (! empty($uploadedFiles)) {
+                if (! empty($uploadedFiles) && ! $this->hasInvalidUploadedFiles($uploadedFiles)) {
                     $uploadFolderId = $getUploadFolderId();
 
                     // Convert them to assets
@@ -755,10 +767,20 @@ class Assets extends BaseRelationField
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
-        $folder = $this->_uploadFolder($element, false, false);
-        SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+        try {
+            $folder = $this->_uploadFolder($element, false, false);
+            SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // An unconfigured or broken location is reported by uiWarning(), and only matters when it's
+            // the one place assets can be selected from.
+            $folder = null;
+        }
 
         if ($this->restrictLocation) {
+            if (! $folder) {
+                return [];
+            }
+
             if (! $this->showUnpermittedVolumes) {
                 // Make sure they have permission to view the volume
                 // (Use restrictedLocationSource here because the actual folder could belong to a temp volume)
@@ -785,7 +807,8 @@ class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            foreach (ElementSources::getSources(Asset::class) as $source) {
+            // The field context lists every volume, leaving showUnpermittedVolumes to decide below
+            foreach (ElementSources::getSources(Asset::class, ElementSources::CONTEXT_FIELD) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }
@@ -824,15 +847,24 @@ class Assets extends BaseRelationField
      * The same three facts {@see inputTemplateVariables()} hands the legacy
      * Twig input, on the same terms: uploads have to be enabled on the field,
      * there has to be a volume to put them in, and the user needs permission
-     * to save assets there. The upload folder is resolved without creating
-     * dynamic folders — rendering a field should not have the side effect of
-     * creating one — so a field pointed at an as-yet-unmade dynamic subfolder
-     * reports no folder, and the button renders disabled rather than absent.
+     * to save assets there.
+     *
+     * Uploads name the field and element rather than a folder, as the legacy
+     * input's do, so the server resolves the folder itself and holds each file
+     * to the field's selection condition before it's attached.
      */
     #[Override]
     protected function selectControl(FieldContext $context): ElementSelect
     {
-        $control = AssetSelect::make($context->path);
+        $control = AssetSelect::make($context->path)
+            ->showFolders(! $this->restrictLocation || $this->allowSubfolders);
+
+        try {
+            $control->defaultSource(...$this->defaultSourceSettings($context->element));
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // Reported by uiWarning(); the modal opens on its first source instead
+        }
+
         $uploadVolume = $this->_uploadVolume();
 
         $canUpload = (
@@ -846,7 +878,9 @@ class Assets extends BaseRelationField
         }
 
         try {
-            $uploadFolderId = $this->_uploadFolder($context->element, false)->id;
+            // Resolved without creating dynamic folders, since rendering a field
+            // shouldn't create one, only to find out whether there's a location
+            $this->_uploadFolder($context->element, false);
         } catch (InvalidFsException|InvalidSubpathException) {
             // A misconfigured location costs the field its upload affordance,
             // not its ability to relate what's already there. What went wrong
@@ -856,7 +890,11 @@ class Assets extends BaseRelationField
 
         return $control
             ->canUpload()
-            ->uploadFolderId($uploadFolderId);
+            ->uploadParams(array_filter([
+                'fieldId' => $this->id,
+                'elementId' => $context->element?->id,
+                'siteId' => $context->element?->siteId,
+            ]));
     }
 
     /**
@@ -913,23 +951,56 @@ class Assets extends BaseRelationField
             $variables['showSourcePath'] = false;
         }
 
-        if (! $this->restrictLocation || $this->allowSubfolders) {
-            $uploadFolder = $this->_uploadFolder($element, false);
-            if ($uploadFolder->volumeId) {
-                // If the location is restricted, don't go passed the base source folder
-                $baseUploadFolder = $this->restrictLocation ? $this->_uploadFolder($element, false, false) : null;
-                $folders = $this->_folderWithAncestors($uploadFolder, $baseUploadFolder);
-                $variables['defaultSource'] = $this->_sourceKeyByFolder($folders[0]);
-                $variables['defaultSourcePath'] = array_map(fn (VolumeFolder $folder) => $folder->getSourcePathInfo(), $folders);
-            }
-        }
-
-        if (isset($variables['searchCriteria'])) {
-            // Include subfolders in the inline search results
-            $variables['searchCriteria']['includeSubfolders'] = true;
+        [$defaultSource, $defaultSourcePath] = $this->defaultSourceSettings($element);
+        if ($defaultSource !== null) {
+            $variables['defaultSource'] = $defaultSource;
+            $variables['defaultSourcePath'] = $defaultSourcePath;
         }
 
         return $variables;
+    }
+
+    /** @return array<string, mixed>|null */
+    #[Override]
+    protected function searchCriteria(?ElementInterface $element): ?array
+    {
+        $criteria = parent::searchCriteria($element);
+
+        // Include subfolders in the inline search results, if the field allows them
+        if ($criteria === null || ($this->restrictLocation && ! $this->allowSubfolders)) {
+            return $criteria;
+        }
+
+        return [...$criteria, 'includeSubfolders' => true];
+    }
+
+    /**
+     * Returns the source and folder path the selector modal should open in: the upload folder, within the restricted
+     * location if there is one, as in Craft 5. Without subfolders there's only the restricted location to open.
+     *
+     * @return array{0: string|null, 1: list<array<string, mixed>>|null}
+     *
+     * @throws InvalidFsException|InvalidSubpathException if the location is misconfigured
+     */
+    private function defaultSourceSettings(?ElementInterface $element): array
+    {
+        if ($this->restrictLocation && ! $this->allowSubfolders) {
+            return [null, null];
+        }
+
+        $uploadFolder = $this->_uploadFolder($element, false);
+        if (! $uploadFolder->volumeId) {
+            return [null, null];
+        }
+
+        // If the location is restricted, don't go passed the base source folder
+        $baseUploadFolder = $this->restrictLocation ? $this->_uploadFolder($element, false, false) : null;
+        $folders = $this->_folderWithAncestors($uploadFolder, $baseUploadFolder);
+
+        return [
+            $this->_sourceKeyByFolder($folders[0]),
+            array_map(fn (VolumeFolder $folder) => $folder->getSourcePathInfo(), $folders),
+        ];
     }
 
     /** @param array<string, mixed> $variables */

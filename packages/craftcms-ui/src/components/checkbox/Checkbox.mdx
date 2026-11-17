@@ -17,7 +17,7 @@ For a choice where exactly one of several options may be picked, use a [Radio Gr
 
 `indeterminate` renders the third state — neither checked nor unchecked — for a "select all" that reflects a partial selection.
 
-It is presentational: an indeterminate checkbox still posts as unchecked. When you want that state managed for you across a set of children, use [Checkbox Indeterminate](?path=/docs/form-controls-choice-controls-checkbox-indeterminate--docs) rather than driving this property by hand.
+It is presentational: an indeterminate checkbox still posts as unchecked. When you want that state managed for you across a set of options, use [Checkbox Select](?path=/docs/form-controls-choice-controls-checkbox-select--docs) with `all-label` rather than driving this property by hand.
 
 ## Server-Rendered Markup
 
@@ -51,13 +51,13 @@ A native `<input type="checkbox">` outside the component is drawn the same way w
 
 ## Accessibility
 
-Lion wires the label and any validation feedback to the input, so a labeled checkbox is announced with its state and its name.
+The checkbox wires its label and help text to the input, so a labeled checkbox is announced with its state and its name.
 
 Label every checkbox. An unlabeled one is announced only as "checkbox", which tells a person the shape of the control and nothing about what ticking it does. The label should say what checking the box does, and clicking it toggles the box, which also gives pointer users a larger target.
 
 Use `label-sr-only` only when the surrounding content already names the box, such as a checkbox in a table row.
 
-`indeterminate` is announced as "mixed", so keep it in step with the items it stands for. If it summarizes a set of nested checkboxes, use [Checkbox Indeterminate](?path=/docs/form-controls-choice-controls-checkbox-indeterminate--docs), which keeps it in step for you.
+`indeterminate` is announced as "mixed", so keep it in step with the items it stands for. If it summarizes a set of options, use [Checkbox Select](?path=/docs/form-controls-choice-controls-checkbox-select--docs) with `all-label`, which keeps it in step for you.
 
 Write validation messages that say how to fix the choice, not just that it's wrong.
 

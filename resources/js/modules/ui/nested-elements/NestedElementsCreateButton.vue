@@ -2,7 +2,7 @@
   import '@craftcms/ui/components/button/button';
   import {t} from '@craftcms/ui';
   import {useElementSize} from '@vueuse/core';
-  import {computed, nextTick, ref, useId, watch} from 'vue';
+  import {computed, nextTick, ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItems} from '@/common/types';
 
@@ -21,8 +21,6 @@
   const emit = defineEmits<{
     create: [value: T, opener: HTMLElement];
   }>();
-
-  const invokerId = useId();
 
   /**
    * A choice's value as a list key. Matrix offers entry type handles; other
@@ -93,7 +91,7 @@
       type: 'group',
       ...(group === '' ? {} : {heading: group}),
       items: choices.map((choice) => ({
-        label: t('Add {type}', {type: choice.label}),
+        label: choice.label,
         icon: choice.icon ?? 'plus',
         iconColor: choice.color ?? undefined,
         disabled: props.disabled,
@@ -107,7 +105,6 @@
   <div ref="addArea" class="min-w-0">
     <ActionMenu
       v-if="addFromMenu"
-      :for="invokerId"
       :actions="actions"
       :searchable="choices.length > 5"
       :label="label"
@@ -115,7 +112,6 @@
       <template #invoker="{attributes}">
         <craft-button
           v-bind="attributes"
-          :id="invokerId"
           data-create-element
           type="button"
           variant="dashed"

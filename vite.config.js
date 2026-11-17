@@ -257,6 +257,15 @@ export default defineConfig(async ({mode}) => {
             'no-undef': 'off',
             'vue/require-default-prop': 'off',
             'typescript/no-explicit-any': 'off',
+            'no-restricted-properties': [
+              'error',
+              {
+                object: 'crypto',
+                property: 'randomUUID',
+                message:
+                  'Use uuid() from @/common/craft/strings; crypto.randomUUID() only exists in secure contexts.',
+              },
+            ],
           },
           globals: {
             Craft: 'readonly',
@@ -316,7 +325,6 @@ export default defineConfig(async ({mode}) => {
         '!yii2-adapter/resources',
         'yii2-adapter/resources/*',
         '!yii2-adapter/resources/js',
-        'tests-playwright/.authentication.json',
         // Written by `boost:install`
         '.mcp.json',
         'boost.json',
@@ -382,7 +390,10 @@ export default defineConfig(async ({mode}) => {
           extends: true,
           test: {
             name: 'browser',
-            include: ['resources/js/**/*.browser.test.ts'],
+            include: [
+              'resources/js/**/*.browser.test.ts',
+              'yii2-adapter/resources/js/**/*.browser.test.ts',
+            ],
             browser: {
               enabled: true,
               headless: true,
@@ -398,8 +409,8 @@ export default defineConfig(async ({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts`/`cp-module.ts` entries that plugin bundles import through
-        // the import map.
+        // `vue.ts`/`inertia.ts`/`cp-module.ts`/`garnish.ts` entries that plugin bundles
+        // import through the import map.
         preserveEntrySignatures: 'exports-only',
       },
     },
@@ -479,6 +490,8 @@ export default defineConfig(async ({mode}) => {
                   'yii2-adapter/resources/js/cp-compat.ts',
                   'yii2-adapter/resources/js/element-editor.ts',
                   'resources/js/cp-module.ts',
+                  'resources/js/garnish.ts',
+                  'resources/js/inertia.ts',
                   'resources/js/legacy.ts',
                   'resources/js/uploads.ts',
                   'resources/js/vue.ts',

@@ -415,6 +415,36 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
+     * @var AnchorsConfig Settings for the anchor links that the `|anchors` Twig filter and `@anchors` GraphQL directive add to headings.
+     *
+     * Supported settings:
+     *
+     * - `anchorClass` – The class name that should be given to named anchors. (Default is `null`.)
+     * - `anchorLinkPosition` – Where anchor links should be positioned within headings, relative to the heading text (`'before'` or `'after'`). (Default is `'after'`.)
+     * - `anchorLinkClass` – The class name that should be given to anchor links. (Default is `'anchor'`.)
+     * - `anchorLinkText` – The visible text that anchor links should have. (Default is `'#'`.)
+     * - `anchorLinkTitleText` – The title and `aria-label` text that anchor links should have, translated with the `site` category. `{heading}` is replaced with the heading text. (Default is `'Direct link to {heading}'`.)
+     * - `useAdditionalTagToAnchorTo` – Whether to render an empty `<span>` with the anchor `id` before each heading, rather than adding the `id` to the heading itself. (Default is `true`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->anchors(\CraftCms\Cms\Config\AnchorsConfig::create()
+     *     ->anchorLinkText('¶')
+     *     ->useAdditionalTagToAnchorTo(false)
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ANCHORS='{"anchorLinkText":"¶","useAdditionalTagToAnchorTo":false}'
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public AnchorsConfig $anchors;
+
+    /**
      * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
      * ::: code
@@ -603,7 +633,7 @@ class GeneralConfig extends BaseConfig
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
      * ::: code
@@ -667,18 +697,82 @@ class GeneralConfig extends BaseConfig
     public array $cpHeadTags = [];
 
     /**
-     * @var string|null Site icon
+     * @var string|null The server path to the control panel’s icon, shown beside the system name in the global sidebar.
      *
-     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     * This can be set to an aliased path such as `@root/branding/icon.svg`.
+     *
+     * A square SVG file is recommended. It will be displayed at 32px by 32px.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. The selected
+     * theme may differ from the operating system’s, so use the [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark)
+     * CSS function or `currentColor` within the SVG, rather than a `prefers-color-scheme` media query.
+     *
+     * ```xml
+     * <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+     *   <style>.bg { fill: light-dark(#e5422b, #ff7a66); }</style>
+     *   <rect class="bg" width="32" height="32" rx="6"/>
+     * </svg>
+     * ```
+     *
+     * ::: code
+     * ```php Static Config
+     * ->cpIconPath('@root/branding/icon.svg')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CP_ICON_PATH=@root/branding/icon.svg
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public ?string $cpIconPath = null;
+
+    /**
+     * @var string|null The URL to the control panel’s icon.
+     *
+     * ::: warning
+     * This setting is deprecated. Set `cpIconPath` instead, which takes precedence over it.
+     * :::
      *
      * @group System
      */
     public ?string $cpIconUrl = null;
 
     /**
-     * @var string|null Login page logo
+     * @var string|null The server path to the logo shown on the login page and other sign-in screens.
      *
-     * SVG file recommended. The logo will be displayed at 288px wide.
+     * This can be set to an aliased path such as `@root/branding/logo.svg`.
+     *
+     * An SVG file is recommended. It will be displayed at 288px wide.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
+     * [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark) CSS function or
+     * `currentColor` within the SVG, as you would for `cpIconPath`. Once nobody is logged in, sign-in screens
+     * show the theme the last user to sign in on the browser had selected.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->cpLogoPath('@root/branding/logo.svg')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CP_LOGO_PATH=@root/branding/logo.svg
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public ?string $cpLogoPath = null;
+
+    /**
+     * @var string|null The URL to the logo shown on the login page and other sign-in screens.
+     *
+     * ::: warning
+     * This setting is deprecated. Set `cpLogoPath` instead, which takes precedence over it.
+     * :::
      *
      * @group System
      */
@@ -736,22 +830,6 @@ class GeneralConfig extends BaseConfig
      * @since 5.12.0
      */
     public ?string $customIconPath = null;
-
-    /**
-     * @var string The asset transformer to use when none is selected explicitly.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultAssetTransformer('craft')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public string $defaultAssetTransformer = 'craft';
 
     /**
      * @var string The two-letter country code that addresses will be set to by default.
@@ -1023,14 +1101,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      *
-     * ::: code
-     * ```php Static Config
-     * ->devMode(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEV_MODE=true
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `app.debug` or set the `APP_DEBUG` environment variable instead.
      * :::
+     *
+     * ```shell
+     * APP_DEBUG=true
+     * ```
      *
      * @group System
      */
@@ -1182,18 +1259,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
-     * Set to `0` to disable elevated session support.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->elevatedSessionDuration(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ELEVATED_SESSION_DURATION=0
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `auth.password_timeout` instead, in seconds. Set it to `-1` to disable elevated session support.
      * :::
+     *
+     * ```php config/auth.php
+     * 'password_timeout' => -1,
+     * ```
      *
      * @group Security
      *
@@ -2256,19 +2328,6 @@ class GeneralConfig extends BaseConfig
     public bool $preventUserEnumeration = true;
 
     /**
-     * @var array<string, mixed> Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * ```php Static Config
-     * ->previewIframeResizerOptions([
-     *     'autoResize' => false,
-     * ])
-     * ```
-     *
-     * @group System
-     */
-    public array $previewIframeResizerOptions = [];
-
-    /**
      * @var mixed The amount of time content preview tokens can be used before expiring.
      *
      * Defaults to <config5:defaultTokenDuration> value.
@@ -2574,16 +2633,13 @@ class GeneralConfig extends BaseConfig
      *
      * @phpstan-var 'None'|'Lax'|'Strict'|null
      *
-     * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sameSiteCookieValue('Strict')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SAME_SITE_COOKIE_VALUE=Strict
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `session.same_site` or set the `SESSION_SAME_SITE` environment variable instead.
      * :::
+     *
+     * ```shell
+     * SESSION_SAME_SITE=strict
+     * ```
      *
      * @group System
      *
@@ -2628,25 +2684,21 @@ class GeneralConfig extends BaseConfig
     /**
      * @var list<string>|null Lists of headers that are, by default, subject to the trusted host configuration.
      *
-     * See [[\yii\web\Request::secureHeaders]] for more details.
-     *
-     * If not set, the default [[\yii\web\Request::secureHeaders]] value will be used.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->secureHeaders([
-     *     'X-Forwarded-For',
-     *     'X-Forwarded-Host',
-     *     'X-Forwarded-Proto',
-     *     'X-Rewrite-Url',
-     *     'X-Original-Host',
-     *     'CF-Connecting-IP',
-     * ])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SECURE_HEADERS=X-Forwarded-For,X-Forwarded-Host,X-Forwarded-Proto,X-Rewrite-Url,X-Original-Host,CF-Connecting-IP
-     * ```
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead,
+     * passing the headers to trust in `bootstrap/app.php`.
      * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+     *             Request::HEADER_X_FORWARDED_HOST |
+     *             Request::HEADER_X_FORWARDED_PROTO
+     *         );
+     *     })
+     *     // ...
+     * ```
      *
      * @group Security
      */
@@ -2655,22 +2707,17 @@ class GeneralConfig extends BaseConfig
     /**
      * @var array<string, list<string>>|null List of headers to check for determining whether the connection is made via HTTPS.
      *
-     * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     * Requests from trusted proxies are treated as secure when their `X-Forwarded-Proto` header is `https`.
+     * :::
      *
-     * If not set, the default [[\yii\web\Request::secureProtocolHeaders]] value will be used.
-     *
-     * ```php Static Config
-     * ->secureProtocolHeaders([
-     *     'X-Forwarded-Proto' => [
-     *         'https',
-     *     ],
-     *     'Front-End-Https' => [
-     *         'on',
-     *     ],
-     *     'CF-Visitor' => [
-     *         '{\"scheme\":\"https\"}',
-     *     ],
-     * ])
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
+     *     })
+     *     // ...
      * ```
      *
      * @group Security
@@ -2681,20 +2728,24 @@ class GeneralConfig extends BaseConfig
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
      *
      * ::: warning
+     * This setting is deprecated. Configure `app.key` or set the `APP_KEY` environment variable instead.
+     * :::
+     *
+     * ::: warning
      * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
      * :::
      *
-     * In the event that the key is compromised, a new secure key can be generated with the command:
+     * ```shell
+     * APP_KEY=base64:2cf24dba5...
+     * ```
+     *
+     * In the event that the key is compromised, a new key can be generated with the command:
      *
      * ```sh
-     * php craft setup/security-key
+     * php artisan key:generate
      * ```
      *
      * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
-     *
-     * ```php Static Config
-     * ->securityKey('2cf24dba5...')
-     * ```
      *
      * @see https://craftcms.com/knowledge-base/securing-craft
      *
@@ -2704,6 +2755,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool Whether a `Content-Length` header should be sent with responses.
+     *
+     * This only affects template responses rendered through the Yii2 adapter.
      *
      * ::: code
      * ```php Static Config
@@ -2972,6 +3025,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|null The Laravel filesystem disk that should stage upload sessions.
      *
+     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
+     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
+     *
      * @group Assets
      */
     public ?string $uploadSessionDisk = null;
@@ -3057,18 +3113,17 @@ class GeneralConfig extends BaseConfig
     /**
      * @var array<int|string, string|list<string>> The configuration for trusted security-related headers.
      *
-     * See [[\yii\web\Request::trustedHosts]] for more details.
-     *
-     * By default, all hosts are trusted.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->trustedHosts(['trusted-one.foo', 'trusted-two.foo'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TRUSTED_HOSTS=trusted-one.foo,trusted-two.foo
-     * ```
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
      * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
+     *     })
+     *     // ...
+     * ```
      *
      * @group Security
      */
@@ -3112,7 +3167,7 @@ class GeneralConfig extends BaseConfig
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
      *
      * ```bash
-     * php craft utils/update-usernames
+     * php artisan craft:utils:update-usernames
      * ```
      *
      * ::: code
@@ -3157,50 +3212,15 @@ class GeneralConfig extends BaseConfig
     public bool $useIdnaNontransitionalToUnicode = false;
 
     /**
-     * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
-     *
-     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
-     *
-     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will be scrolled rather
-     * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
-     * than the visible portion of the iframe.
-     *
-     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
-     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
-     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
-     * `x-craft-live-preview` query string parameter.
-     *
-     * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->useIframeResizer(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_IFRAME_RESIZER=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $useIframeResizer = false;
-
-    /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
      *
-     * Valid values are `true`, `false`, and `'auto'`. Defaults to `'auto'`, which will set the secure flag if the page you’re currently accessing
-     * is over `https://`. `true` will always set the flag, regardless of protocol and `false` will never automatically set the flag.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->useSecureCookies(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_SECURE_COOKIES=true
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.
      * :::
+     *
+     * ```shell
+     * SESSION_SECURE_COOKIE=true
+     * ```
      *
      * @group Security
      */
@@ -3268,6 +3288,7 @@ class GeneralConfig extends BaseConfig
 
     public function __construct()
     {
+        $this->anchors = AnchorsConfig::create();
         $this->mcp = McpConfig::create();
 
         // (Re-)normalize everything.
@@ -3590,6 +3611,67 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Settings for the anchor links that the `|anchors` Twig filter and `@anchors` GraphQL directive add to headings.
+     *
+     * ```php
+     * ->anchors(\CraftCms\Cms\Config\AnchorsConfig::create()
+     *     ->anchorLinkText('¶')
+     * )
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $anchors
+     *
+     * @param  AnchorsConfig|array<string, mixed>|string  $value
+     */
+    public function anchors(AnchorsConfig|array|string $value): self
+    {
+        $this->anchors = $value instanceof AnchorsConfig ? $value : AnchorsConfig::fromConfig($value);
+
+        return $this;
+    }
+
+    /**
+     * The Laravel authentication guard Craft should use.
+     *
+     * ```php
+     * ->authGuard('craft')
+     * ```
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     * @see $authGuard
+     */
+    public function authGuard(?string $value): self
+    {
+        $this->authGuard = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Laravel password broker Craft should use.
+     *
+     * ```php
+     * ->authPasswordBroker('craft')
+     * ```
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     * @see $authPasswordBroker
+     */
+    public function authPasswordBroker(?string $value): self
+    {
+        $this->authPasswordBroker = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
      * ```php
@@ -3791,7 +3873,7 @@ class GeneralConfig extends BaseConfig
      * Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
      * ```php
@@ -3868,12 +3950,38 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Site icon
+     * The server path to the control panel’s icon, shown beside the system name in the global sidebar.
      *
-     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     * This can be set to an aliased path such as `@root/branding/icon.svg`.
+     *
+     * A square SVG file is recommended. It will be displayed at 32px by 32px.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. The selected
+     * theme may differ from the operating system’s, so use the `light-dark()` CSS function or `currentColor` within
+     * the SVG, rather than a `prefers-color-scheme` media query.
+     *
+     * ```php
+     * ->cpIconPath('@root/branding/icon.svg')
+     * ```
      *
      * @group System
      *
+     * @since 6.0.0
+     * @see $cpIconPath
+     */
+    public function cpIconPath(?string $value): self
+    {
+        $this->cpIconPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URL to the control panel’s icon.
+     *
+     * @group System
+     *
+     * @deprecated in 6.0.0. {@see cpIconPath()} should be used instead.
      * @see $cpIconUrl
      */
     public function cpIconUrl(?string $value): self
@@ -3884,12 +3992,37 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Login page logo
+     * The server path to the logo shown on the login page and other sign-in screens.
      *
-     * SVG file recommended. The logo will be displayed at 288px wide.
+     * This can be set to an aliased path such as `@root/branding/logo.svg`.
+     *
+     * An SVG file is recommended. It will be displayed at 288px wide.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
+     * `light-dark()` CSS function or `currentColor` within the SVG, as you would for {@see cpIconPath()}.
+     *
+     * ```php
+     * ->cpLogoPath('@root/branding/logo.svg')
+     * ```
      *
      * @group System
      *
+     * @since 6.0.0
+     * @see $cpLogoPath
+     */
+    public function cpLogoPath(?string $value): self
+    {
+        $this->cpLogoPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URL to the logo shown on the login page and other sign-in screens.
+     *
+     * @group System
+     *
+     * @deprecated in 6.0.0. {@see cpLogoPath()} should be used instead.
      * @see $cpLogoUrl
      */
     public function cpLogoUrl(?string $value): self
@@ -3946,24 +4079,6 @@ class GeneralConfig extends BaseConfig
     public function customIconPath(?string $value): self
     {
         $this->customIconPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The asset transformer to use when none is selected explicitly.
-     *
-     * @group Assets
-     *
-     * @see $defaultAssetTransformer
-     */
-    public function defaultAssetTransformer(string $value): self
-    {
-        if ($value === '') {
-            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
-        }
-
-        $this->defaultAssetTransformer = $value;
 
         return $this;
     }
@@ -4305,9 +4420,7 @@ class GeneralConfig extends BaseConfig
      * This can also be set to `'*'` to disable **all** plugins.
      *
      * ```php
-     * ->dev([
-     *     'disabledPlugins' => '*',
-     * ])
+     * ->disabledPlugins('*')
      * ```
      *
      * ::: warning
@@ -5582,28 +5695,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * ```php
-     * ->previewIframeResizerOptions([
-     *     'autoResize' => false,
-     * ])
-     * ```
-     *
-     * @group System
-     *
-     * @param  array<string, mixed>  $value
-     *
-     * @see $previewIframeResizerOptions
-     */
-    public function previewIframeResizerOptions(array $value): self
-    {
-        $this->previewIframeResizerOptions = $value;
-
-        return $this;
-    }
-
-    /**
      * The amount of time content preview tokens can be used before expiring.
      *
      * Defaults to <config5:defaultTokenDuration> value.
@@ -5967,6 +6058,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Whether a `Content-Length` header should be sent with responses.
+     *
+     * ```php
+     * ->sendContentLengthHeader(true)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $sendContentLengthHeader
+     */
+    public function sendContentLengthHeader(bool $value = true): self
+    {
+        $this->sendContentLengthHeader = $value;
+
+        return $this;
+    }
+
+    /**
      * Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
@@ -6241,6 +6351,9 @@ class GeneralConfig extends BaseConfig
     /**
      * The Laravel filesystem disk that should stage upload sessions.
      *
+     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
+     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
+     *
      * @group Assets
      */
     public function uploadSessionDisk(?string $value): self
@@ -6378,7 +6491,7 @@ class GeneralConfig extends BaseConfig
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
      *
      * ```bash
-     * php craft utils/update-usernames
+     * php artisan craft:utils:update-usernames
      * ```
      *
      * ```php
@@ -6421,39 +6534,6 @@ class GeneralConfig extends BaseConfig
     public function useIdnaNontransitionalToUnicode(bool $value = false): self
     {
         $this->useIdnaNontransitionalToUnicode = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
-     *
-     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
-     *
-     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will be scrolled rather
-     * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
-     * than the visible portion of the iframe.
-     *
-     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
-     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
-     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
-     * `x-craft-live-preview` query string parameter.
-     *
-     * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
-     * :::
-     *
-     * ```php
-     * ->useIframeResizer(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $useIframeResizer
-     */
-    public function useIframeResizer(bool $value = true): self
-    {
-        $this->useIframeResizer = $value;
 
         return $this;
     }

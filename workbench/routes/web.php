@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Workbench\App\Http\Controllers\ChipsController;
 use Workbench\App\Http\Controllers\ErrorPagesController;
+use Workbench\App\Http\Controllers\HeadingsController;
 use Workbench\App\Http\Controllers\LayoutSlotsDemoController;
 use Workbench\App\Http\Controllers\PortedPagesController;
 use Workbench\App\Http\Controllers\SpecialPagesController;
@@ -47,4 +48,6 @@ Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->name('workbench.ported-pages');
         Route::post('workbench/ported-pages/updater-step/{step}', [PortedPagesController::class, 'updaterStep'])
             ->whereNumber('step');
+        Route::get('workbench/headings', HeadingsController::class)
+            ->name('workbench.headings');
     });

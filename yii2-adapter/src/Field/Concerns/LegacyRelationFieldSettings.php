@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use CraftCms\Cms\Condition\ConditionBuilderRenderer;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\BaseRelationField;
@@ -16,7 +17,6 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
-use function CraftCms\Cms\craftAsset;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -140,11 +140,10 @@ JS, [
         ]))) {
             $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
             app(InternalAssetRegistry::class)->register(CpAsset::class);
-            $baseIconsUrl = craftAsset('legacy/cp/dist/images/view-modes');
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']) .
-                    Html::img("$baseIconsUrl/$key.svg", '', [
+                    Html::img(Cp::publicAssetUrl("images/view-modes/$key.svg"), '', [
                         'class' => 'mb-xs',
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,

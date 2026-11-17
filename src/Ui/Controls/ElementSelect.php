@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -20,10 +21,13 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -32,9 +36,9 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class ElementSelect extends Control
+class ElementSelect extends Control implements ReadableValueControl, WritableValueControl
 {
-    #[\Override]
+    #[Override]
     protected mixed $value = [];
 
     /** @var class-string<ElementInterface>|null */
@@ -62,6 +66,15 @@ class ElementSelect extends Control
 
     /** @var array<string, mixed>|null */
     private ?array $selectionCondition = null;
+
+    /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
+    private ?array $referenceElement = null;
+
+    /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
+    private ?array $search = null;
+
+    /** @var list<int> */
+    private array $disabledElementIds = [];
 
     /**
      * The view modes a relation field can be set to, mirroring
@@ -97,6 +110,16 @@ class ElementSelect extends Control
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
+            // The modal only needs the reference element's IDs, so pass them through rather than loading it again
+            'jsSettings' => $control->props['referenceElement'] ?? [],
+            // Sent by AssetSelect, as the Vue control passes them to the selector modal
+            'modalSettings' => array_filter([
+                'indexSettings' => isset($control->props['showFolders'])
+                    ? ['showFolders' => (bool) $control->props['showFolders']]
+                    : null,
+                'defaultSource' => $control->props['defaultSource'] ?? null,
+                'defaultSourcePath' => $control->props['defaultSourcePath'] ?? null,
+            ], fn (mixed $setting) => $setting !== null),
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
@@ -110,6 +133,26 @@ class ElementSelect extends Control
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
         ]));
+    }
+
+    /**
+     * The chips draw from the presentations of the elements the control was rendered with, so its value is read along
+     * with them.
+     *
+     * @return list<string>
+     */
+    #[Override]
+    public function valueProps(): array
+    {
+        // The element type too, so the elements can be drawn again once copied.
+        return ['elements', 'elementType'];
+    }
+
+    /** Elements are only copied between controls that select the same element type, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->elementType;
     }
 
     public function component(): string
@@ -225,6 +268,47 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * Sets the element the selection condition is evaluated against, such as the element being edited, for rules
+     * that refer to it.
+     */
+    public function referenceElement(?ElementInterface $element): static
+    {
+        $this->referenceElement = $element?->id ? [
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+            'referenceElementSiteId' => $element->siteId,
+        ] : null;
+
+        return $this;
+    }
+
+    /**
+     * Shows a search input that relates the elements matching `$criteria` it finds, in the site `$siteId`. `null`
+     * criteria hide it.
+     *
+     * @param  array<string, mixed>|null  $criteria
+     */
+    public function search(?array $criteria, ?int $siteId = null): static
+    {
+        $this->search = $criteria === null ? null : ['criteria' => $criteria, 'siteId' => $siteId];
+
+        return $this;
+    }
+
+    /**
+     * Sets the elements that can’t be selected, such as the element being edited when the field doesn’t allow self
+     * relations.
+     *
+     * @param  list<int>  $ids
+     */
+    public function disabledElementIds(array $ids): static
+    {
+        $this->disabledElementIds = $ids;
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -299,7 +383,7 @@ class ElementSelect extends Control
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function props(mixed $value = null): array
     {
         if ($this->elementType === null) {
@@ -314,6 +398,7 @@ class ElementSelect extends Control
             'customElement' => self::customElement($this->elementType),
             'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode, $thumbSize), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
+            'elementPluralDisplayName' => $this->elementType::pluralLowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
             'context' => $this->context,
@@ -326,6 +411,9 @@ class ElementSelect extends Control
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
+            ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
+            ...($this->search !== null ? ['search' => $this->search] : []),
+            ...($this->disabledElementIds !== [] ? ['disabledElementIds' => $this->disabledElementIds] : []),
         ];
     }
 

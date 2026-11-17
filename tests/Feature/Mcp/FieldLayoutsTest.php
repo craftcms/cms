@@ -11,8 +11,10 @@ use CraftCms\Cms\Mcp\Capabilities\Users;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigPaths;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 
@@ -46,13 +48,14 @@ it('selects user custom fields while retaining the public account attribute allo
     actingAs($actor);
     app(Request::class)->setUserResolver(static fn (): User => $actor);
     $field = Field::factory()->create(['handle' => 'profileSummary', 'type' => PlainText::class]);
+    Fields::refreshFields();
     $layout = FieldLayout::factory()->forField($field)->create();
     $users = app(Users::class);
     $users->updateFieldLayout($layout->config);
     app(ElementCapabilities::class)->update('users', id: $actor->id, fields: ['profileSummary' => 'A public profile']);
 
-    expect(app(ElementCapabilities::class)->list('users', ['id' => $actor->id])->structuredContent['elements'][0])->not->toHaveKey('profileSummary')
-        ->and(app(ElementCapabilities::class)->list('users', ['id' => $actor->id], fields: ['profileSummary'])->structuredContent['elements'][0]['profileSummary'])->toBe('A public profile')
+    expect(app(ElementCapabilities::class)->list(McpRequest::context('elements_list'), 'users', ['id' => $actor->id])->structuredContent['elements'][0])->not->toHaveKey('profileSummary')
+        ->and(app(ElementCapabilities::class)->list(McpRequest::context('elements_list'), 'users', ['id' => $actor->id], fields: ['profileSummary'])->structuredContent['elements'][0]['profileSummary'])->toBe('A public profile')
         ->and(app(ElementCapabilities::class)->get('users', id: $actor->id)['element']['profileSummary'])->toBe('A public profile');
 
     app()->instance(Settings::class, new Settings([

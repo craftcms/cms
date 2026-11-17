@@ -3,15 +3,18 @@
   import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/pane/pane';
   import '@craftcms/ui/components/select/select';
+  import '@craftcms/ui/components/tooltip/tooltip';
   import CraftSwitch from '@craftcms/ui/components/switch/switch';
-  import {actionClient} from '@craftcms/ui';
+  import {actionClient, ButtonVariant} from '@craftcms/ui';
   import {t} from '@craftcms/ui/utilities/translate';
   import {router} from '@inertiajs/vue3';
   import {computed, ref, useId, useTemplateRef} from 'vue';
   import {destroyForSite} from '@/actions/CraftCms/Cms/Http/Controllers/Elements/DeleteElementController';
   import {useSlideout} from '@/common/slideouts/useSlideout';
   import type {UiControlPayload} from './types';
-  import {ignoreModelValueInitialization, inputName} from './runtime';
+  import {inputName} from './runtime';
+  import {showError} from '@/modules/messages/messages';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
 
   type Site = {
     id: number;
@@ -19,6 +22,8 @@
     url: string | null;
     current: boolean;
     removable: boolean;
+    /** The Compare screen for this site's version and the current site's. */
+    compareUrl?: string | null;
   };
 
   type AdditionalSite = {
@@ -124,16 +129,11 @@
   }
 
   function onStatusChanged(siteId: number, event: Event): void {
-    ignoreModelValueInitialization((event) => {
-      if (!(event.target instanceof CraftSwitch)) {
-        throw new TypeError('Expected a switch event target.');
-      }
+    if (!(event.currentTarget instanceof CraftSwitch)) {
+      throw new TypeError('Expected a switch event target.');
+    }
 
-      // Setting `checked` programmatically fires the event too
-      if (event.target.checked !== Boolean(statuses.value[siteId])) {
-        setStatus(siteId, event.target.checked);
-      }
-    })(event);
+    setStatus(siteId, event.currentTarget.checked);
   }
 
   function addSite(event: Event): void {
@@ -191,7 +191,7 @@
       });
     } catch (error: any) {
       deleting.value = null;
-      window.Craft?.cp?.displayError(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
       return;
@@ -264,10 +264,34 @@
             icon="xmark-large"
             variant="plain"
             size="small"
+            :flush="
+              control.props.withStatuses || site.compareUrl
+                ? undefined
+                : 'inline-end'
+            "
             :aria-label="t('Remove {name}', {name: site.name})"
             .loading="deleting === site.id"
             @click="deleteSite(site)"
           ></craft-button>
+          <template v-if="site.compareUrl">
+            <CpButtonLink
+              :id="`${rowId(site)}-compare`"
+              :href="site.compareUrl"
+              icon=""
+              size="small"
+              :flush="control.props.withStatuses ? undefined : 'inline-end'"
+              :variant="ButtonVariant.Plain"
+            >
+              <craft-icon
+                name="code-compare"
+                class="element-sites__compare"
+                :label="`${t('Compare changes')} ${site.name}`"
+              ></craft-icon>
+            </CpButtonLink>
+            <craft-tooltip :for="`${rowId(site)}-compare`">{{
+              t('Compare changes')
+            }}</craft-tooltip>
+          </template>
           <craft-switch
             v-if="control.props.withStatuses"
             :name="editable ? `${name}[${site.id}]` : ''"
@@ -275,7 +299,7 @@
             size="small"
             :labelled-by="nameId(site)"
             .disabled="!editable"
-            @model-value-changed="onStatusChanged(site.id, $event)"
+            @change="onStatusChanged(site.id, $event)"
           ></craft-switch>
         </div>
       </template>
@@ -294,6 +318,7 @@
           icon="xmark-large"
           variant="plain"
           size="small"
+          :flush="control.props.withStatuses ? undefined : 'inline-end'"
           :aria-label="t('Remove {name}', {name: site.name})"
           @click="removeStatus(site.id)"
         ></craft-button>
@@ -303,7 +328,7 @@
           .checked="Boolean(statuses[site.id])"
           size="small"
           :labelled-by="nameId(site)"
-          @model-value-changed="onStatusChanged(site.id, $event)"
+          @change="onStatusChanged(site.id, $event)"
         ></craft-switch>
       </div>
 
@@ -353,6 +378,10 @@
     position: relative;
     flex-grow: 1;
     padding-inline-start: var(--element-sites-indent);
+  }
+
+  .element-sites__compare {
+    color: var(--c-field-modified-indicator);
   }
 
   .element-sites__check {

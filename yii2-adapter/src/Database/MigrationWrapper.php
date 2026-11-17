@@ -2,7 +2,9 @@
 
 namespace CraftCms\Yii2Adapter\Database;
 
+use craft\db\Migration as LegacyMigration;
 use CraftCms\Cms\Database\Migration;
+use RuntimeException;
 
 class MigrationWrapper extends Migration
 {
@@ -18,31 +20,39 @@ class MigrationWrapper extends Migration
 
     public function up(): void
     {
-        if (!method_exists($this->migration, 'up')) {
-            return;
-        }
-
-        ob_start();
-
-        $this->migration->up();
-
-        $output = ob_get_clean();
-
-        $this->output->write($output);
+        $this->run('up');
     }
 
     public function down(): void
     {
-        if (!method_exists($this->migration, 'down')) {
+        $this->run('down');
+    }
+
+    /**
+     * Runs the wrapped migration’s `up()` or `down()` method.
+     *
+     * Yii migrations catch their own exceptions and return `false` instead, so
+     * this rethrows them to stop Laravel’s migrator from logging the migration
+     * as successful.
+     */
+    private function run(string $method): void
+    {
+        if (!method_exists($this->migration, $method)) {
             return;
         }
 
         ob_start();
 
-        $this->migration->down();
+        try {
+            $result = $this->migration instanceof LegacyMigration
+                ? $this->migration->$method(true)
+                : $this->migration->$method();
+        } finally {
+            $this->output->write(ob_get_clean());
+        }
 
-        $output = ob_get_clean();
-
-        $this->output->write($output);
+        if ($result === false) {
+            throw new RuntimeException(sprintf('Migration %s::%s() failed.', $this->migration::class, $method));
+        }
     }
 }

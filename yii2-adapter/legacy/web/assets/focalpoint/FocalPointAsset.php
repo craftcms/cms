@@ -8,16 +8,11 @@
 namespace craft\web\assets\focalpoint;
 
 use craft\web\AssetBundle;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
  * Asset bundle for the Focal Point class.
- * @deprecated 6.0.0
+ * @deprecated 6.0.0 The focal point editor is part of the control panel's image previews, so this registers nothing.
  */
 class FocalPointAsset extends AssetBundle
 {
-    public function registerAssetFiles($view)
-    {
-        app(InternalAssetRegistry::class)->register(\CraftCms\Cms\View\LegacyAssets\FocalPointAsset::class);
-    }
 }

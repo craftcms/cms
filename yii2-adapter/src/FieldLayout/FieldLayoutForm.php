@@ -40,6 +40,7 @@ class FieldLayoutForm extends Component
             $element,
             new UiContext(
                 namespace: $namespace,
+                errors: $element?->uiErrors() ?? [],
                 mode: $static ? ControlMode::ReadOnly : ControlMode::Editable,
             ),
         );

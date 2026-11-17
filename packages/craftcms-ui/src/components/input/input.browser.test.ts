@@ -91,6 +91,23 @@ describe('craft-input maxlength sizing', () => {
   });
 });
 
+describe('craft-input value', () => {
+  it('keeps a value set before insertion within the bounds also set then', async () => {
+    const element = document.createElement('craft-input') as CraftInput;
+    element.label = 'Width';
+    element.type = 'range';
+    element.min = 100;
+    element.max = 1000;
+    element.step = 50;
+    element.value = '550';
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(element.querySelector('input')!.value).toBe('550');
+    expect(element.value).toBe('550');
+  });
+});
+
 describe('craft-input placeholder', () => {
   it.each(['light', 'dark'])(
     'sets the placeholder at 4.5:1 against the surface in the %s theme',
@@ -113,6 +130,36 @@ describe('craft-input placeholder', () => {
 
       expect(placeholder.opacity).toBe('1');
       expect(contrast(placeholder.color, surface)).toBeGreaterThanOrEqual(4.5);
+    }
+  );
+});
+
+describe('craft-input prefix and suffix', () => {
+  it.each(['prefix', 'suffix'])(
+    'shows a %s slotted after the first render, and drops its wrapper once removed',
+    async (slot) => {
+      const element = document.createElement('craft-input') as CraftInput;
+      element.setAttribute('aria-label', 'Slug');
+      document.body.append(element);
+      await element.updateComplete;
+
+      const button = document.createElement('craft-button');
+      button.slot = slot;
+      button.textContent = 'Refresh';
+      element.append(button);
+      await new Promise((resolve) => setTimeout(resolve));
+      await element.updateComplete;
+
+      const wrapper = () =>
+        element.shadowRoot!.querySelector(`.input-group__${slot}`);
+      expect(wrapper()).not.toBeNull();
+      expect(button.getBoundingClientRect().width).toBeGreaterThan(0);
+
+      button.remove();
+      await new Promise((resolve) => setTimeout(resolve));
+      await element.updateComplete;
+
+      expect(wrapper()).toBeNull();
     }
   );
 });

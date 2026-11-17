@@ -6,14 +6,17 @@ namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\InputMoney;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Arr;
+use Override;
 
 /**
  * @since 6.0.0
  */
-class Money extends Control
+class Money extends Control implements ReadableValueControl, WritableValueControl
 {
     private string $currency = 'USD';
 
@@ -58,6 +61,13 @@ class Money extends Control
     public function component(): string
     {
         return 'craft:money';
+    }
+
+    /** Amounts are only copied between controls in the same currency, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->currency;
     }
 
     public function currency(string $currency): static
@@ -109,7 +119,7 @@ class Money extends Control
         return $this;
     }
 
-    #[\Override]
+    #[Override]
     public function props(mixed $value = null): array
     {
         return Arr::whereNotNull([

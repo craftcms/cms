@@ -15,12 +15,9 @@ readonly class AssetTransformDriverDefinition
     /**
      * @param  array<string, non-empty-list<string|Stringable>>  $parameterRules
      * @param  array<string, Field>  $parameterFields
-     * @param  list<Field>  $settingsFields
      */
     public function __construct(
-        public string $name,
         public array $parameterRules = [],
         public array $parameterFields = [],
-        public array $settingsFields = [],
     ) {}
 }

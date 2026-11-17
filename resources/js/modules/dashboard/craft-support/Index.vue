@@ -1,153 +1,123 @@
 <script setup lang="ts">
-  import {computed, nextTick, ref, shallowRef} from 'vue';
+  import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import SupportSearch from './SupportSearch.vue';
-  import SupportForm from './SupportForm.vue';
-  import type {SupportData} from './types';
+  import useCraftData from '@/common/composables/useCraftData';
+  import {useAssistantPanel} from '@/modules/ai/assistant/assistant';
+  import {useWidgetColor} from '../useWidgetColor';
 
+  /** Links to Craft's documentation, support, GitHub, and community. */
   defineProps<{
-    id: number;
-    data: SupportData;
+    data: {
+      links: Array<{
+        url: string;
+        label: string;
+        icon: string;
+        /** Such as `brands`, for a brand's icon. */
+        iconFamily?: string;
+      }>;
+    };
   }>();
 
-  const screen = ref<'home' | 'help' | 'feedback'>('home');
-  const support = ref(false);
-  const message = ref('');
-  const home = ref<HTMLElement>();
-  const sending = shallowRef(false);
-  const cardHeading = computed(() => {
-    if (support.value) return t('Contact Developer Support');
+  const color = useWidgetColor();
+  const {currentUser} = useCraftData();
+  const assistant = useAssistantPanel();
 
-    return screen.value === 'help'
-      ? t('Ask on Stack Exchange')
-      : t('Post on GitHub');
-  });
-
-  async function cancel() {
-    if (sending.value) return;
-
-    const previous = screen.value;
-    screen.value = 'home';
-    support.value = false;
-
-    await nextTick();
-    home.value
-      ?.querySelector<HTMLButtonElement>(`[data-screen="${previous}"]`)
-      ?.focus();
-  }
+  /** Whether the user can use the AI assistant, which the widget can open. */
+  const assistantEnabled = computed(
+    () => currentUser.value?.aiAssistant ?? false
+  );
 </script>
 
 <template>
-  <div @keydown.esc.stop="support && !sending ? (support = false) : cancel()">
+  <craft-card :data-color="color">
     <slot name="header" />
-    <div v-show="screen === 'home'" ref="home" class="support-tiles">
+    <div class="body">
+      <ul class="support-links">
+        <li v-for="link in data.links" :key="link.url">
+          <a
+            :href="link.url"
+            target="_blank"
+            rel="noopener"
+            class="support-link"
+          >
+            <craft-icon
+              :name="link.icon"
+              :family="link.iconFamily"
+              class="support-link__icon"
+            ></craft-icon>
+            <span class="support-link__label">{{ link.label }}</span>
+            <craft-icon
+              name="arrow-up-right-from-square"
+              class="support-link__external"
+              :label="t('Opens in a new window')"
+            ></craft-icon>
+          </a>
+        </li>
+      </ul>
       <craft-button
+        v-if="assistantEnabled"
         type="button"
-        variant="fill"
-        class="support-tile"
-        data-screen="help"
-        @click="screen = 'help'"
+        icon="sparkles"
+        class="support-ask-ai"
+        @click="assistant.show()"
+        >{{ t('Ask AI') }}</craft-button
       >
-        <span class="support-tile-content">
-          <craft-icon name="life-ring" class="support-tile-icon"></craft-icon>
-          <span>{{ t('Get help') }}</span>
-          <span class="support-tile-description">{{
-            t('How-to’s and other questions')
-          }}</span>
-        </span>
-      </craft-button>
-      <craft-button
-        type="button"
-        variant="fill"
-        class="support-tile"
-        data-screen="feedback"
-        @click="screen = 'feedback'"
-      >
-        <span class="support-tile-content">
-          <craft-icon name="bullhorn" class="support-tile-icon"></craft-icon>
-          <span>{{ t('Give feedback') }}</span>
-          <span class="support-tile-description">{{
-            t('Bug reports and feature requests')
-          }}</span>
-        </span>
-      </craft-button>
     </div>
-    <craft-card data-color="gray" v-show="screen !== 'home'">
-      <h2 slot="label" class="text-sm">{{ cardHeading }}</h2>
-      <div v-show="screen !== 'home'" class="space-y-4">
-        <SupportSearch
-          v-show="!support"
-          v-model="message"
-          :active="screen !== 'home' && !support"
-          :screen="screen"
-          :data="data"
-          @contact-support="support = true"
-        />
-        <SupportForm
-          v-show="support"
-          v-model="message"
-          v-model:sending="sending"
-          :active="screen !== 'home' && support"
-          :id="id"
-          :data="data"
-          :screen="screen"
-        />
-        <craft-button type="button" .disabled="sending" @click="cancel">{{
-          t('Cancel')
-        }}</craft-button>
-      </div>
-    </craft-card>
-  </div>
+  </craft-card>
 </template>
 
 <style scoped>
-  .support-tiles {
-    border-radius: var(--c-card-radius, var(--c-radius-md));
-    box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
-  }
-  .support-tile {
-    --c-color-fill-normal: color-mix(
-      var(--c-color-gray-fill-quiet),
-      transparent 70%
-    );
-    display: flex;
-    width: 100%;
-    min-height: 150px;
-    padding-block: 24px;
-    padding-inline: 16px;
-    border: var(--c-card-border-width, 1px) solid
-      var(--c-color-gray-border-quiet);
-    border-radius: 0;
-    white-space: normal;
-  }
-  .support-tile:first-child {
-    border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-start-end-radius: var(--c-card-radius, var(--c-radius-md));
-  }
-  .support-tile:last-child {
-    border-end-start-radius: var(--c-card-radius, var(--c-radius-md));
-    border-end-end-radius: var(--c-card-radius, var(--c-radius-md));
-  }
-  .support-tile + .support-tile {
-    border-block-start-width: 0;
-  }
-  .support-tile:focus-visible {
-    position: relative;
-    z-index: 1;
-  }
-  .support-tile-content {
+  .support-links {
     display: flex;
     flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Each row reaches past the list's sides by its own padding, so its hover
+     fill lines its text up with the rest of the card. */
+  .support-link {
+    display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--c-spacing-md);
+    margin-inline: calc(var(--c-spacing-sm) * -1);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-sm);
+    border-radius: var(--c-radius-md);
+    color: inherit;
+    /* Only the label is underlined, as links are elsewhere: on hover, or
+       always with the “Underline links” preference. */
+    text-decoration: none;
+
+    &:hover {
+      background-color: color-mix(in oklab, currentColor 6%, transparent);
+    }
+
+    &:hover .support-link__label {
+      text-decoration-line: var(--c-link-decoration-hover);
+    }
   }
-  .support-tile-icon {
-    font-size: 48px;
-    opacity: 0.3;
-    margin-block-end: 4px;
+
+  .support-link__icon {
+    flex: none;
+    color: var(--c-color-fill-loud, var(--c-text-link));
   }
-  .support-tile-description {
-    font-size: var(--c-text-sm);
-    color: var(--c-color-neutral-on-quiet);
+
+  .support-link__label {
+    flex: 1;
+    color: var(--c-text-link);
+    text-decoration-line: var(--c-link-decoration);
+  }
+
+  .support-link__external {
+    --c-icon-size: var(--c-size-icon-sm);
+    flex: none;
+    opacity: 0.5;
+  }
+
+  .support-ask-ai {
+    margin-block-start: var(--c-spacing-md);
+    width: 100%;
   }
 </style>

@@ -7,6 +7,7 @@ namespace CraftCms\Yii2Adapter\Ui;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\InputNamespace;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
@@ -225,7 +226,59 @@ class LegacyHtml
             $this->append($values, $name, $value);
         }
 
+        // Editable tables render their inputs client-side, so their values come from the UI payload
+        $tables = $xpath->query('//*[@id="legacy-html-root"]//craft-table-ui[@name][@data-payload]');
+
+        foreach ($tables ?: [] as $table) {
+            if ($table instanceof DOMElement) {
+                $this->appendTableValues($values, $table->getAttribute('name'), Json::decode($table->getAttribute('data-payload')));
+            }
+        }
+
         return $values;
+    }
+
+    /**
+     * @param  array<string, string|list<string>>  $values
+     * @param  array<string, mixed>  $payload
+     */
+    private function appendTableValues(array &$values, string $name, array $payload): void
+    {
+        $control = $payload['nodes'][0]['control'] ?? [];
+        $rows = $payload['values'] ?? [];
+
+        foreach ($control['path'] ?? [] as $segment) {
+            $rows = $rows[$segment] ?? [];
+        }
+
+        $columns = array_filter(
+            $control['props']['columns'] ?? [],
+            fn(array $column): bool => !($column['html'] ?? false) && !in_array($column['type'] ?? null, ['heading', 'html'], true),
+        );
+
+        foreach (is_array($rows) ? $rows : [] as $rowKey => $row) {
+            foreach (array_keys($columns) as $columnKey) {
+                $this->appendNested($values, "{$name}[$rowKey][$columnKey]", $row[$columnKey] ?? null);
+            }
+        }
+    }
+
+    /** @param array<string, string|list<string>> $values */
+    private function appendNested(array &$values, string $name, mixed $value): void
+    {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $this->appendNested($values, "{$name}[$key]", $item);
+            }
+
+            return;
+        }
+
+        $this->append($values, $name, match (true) {
+            $value === null, $value === false => '',
+            $value === true => '1',
+            default => (string) $value,
+        });
     }
 
     /**

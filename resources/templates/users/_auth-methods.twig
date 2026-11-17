@@ -38,14 +38,19 @@
               <craft-icon class="auth-method-active-icon" name="check"></craft-icon>
               <div class="smalltext">{{ 'Active'|t('app') }}</div>
             </div>
-            {{ disclosureMenu(actionMenuItems, {
-              buttonAttributes: {
-                class: ['auth-method-action-btn', 'action-btn', 'hairline'],
+            {{ create('CraftCms\\Cms\\Cp\\Components\\ActionMenu')
+              .menuItems(actionMenuItems)
+              .invoker(tag('craft-button', {
+                type: 'button',
+                variant: 'plain',
+                size: 'small',
+                icon: true,
+                html: tag('craft-icon', {name: 'ellipsis'}),
                 title: 'Actions'|t('app'),
                 'aria-label': 'Actions'|t('app'),
                 'aria-describedby': headingId,
-              },
-            }) }}
+              }))
+              .toHtml()|raw }}
           </div>
         {% endif %}
       </div>

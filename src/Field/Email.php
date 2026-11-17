@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -30,7 +28,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
+class Email extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -98,20 +96,6 @@ class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         return $value !== null ? Str::idnToUtf8Email($value) : null;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return FormFields::textHtml([
-            'type' => 'email',
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'inputmode' => 'email',
-            'placeholder' => t($this->placeholder, category: 'site'),
-            'value' => $value,
-        ]);
     }
 
     #[Override]

@@ -12,6 +12,7 @@ import {showUploadDuplicates} from './upload-notification';
 import {imageCompletionData} from './image-completion-data';
 import {namePastedFiles} from './pasted-files';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 
@@ -98,7 +99,7 @@ export class Uploader extends BaseUploader {
     }));
     picker.on('restriction-failed', (_file, error) => {
       if (!this.destroyed) {
-        Craft.cp.displayError(error.message);
+        showError(error.message);
       }
     });
     picker.on('files-added', (files) => {
@@ -115,7 +116,7 @@ export class Uploader extends BaseUploader {
       } finally {
         this.selectionCount = 0;
         if (this.rejectedFiles.length) {
-          Craft.cp.displayError(
+          showError(
             t(
               this.rejectedFiles.length === 1
                 ? 'The file {files} could not be uploaded, because the field limit has been reached.'

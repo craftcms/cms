@@ -68,9 +68,13 @@ const context: PluginStoreContext = {
   canTestEditions: true,
   phpVersion: '8.4.0',
   composerPhpVersion: '8.2.0',
+  yii2AdapterRequired: false,
   allowUpdates: true,
+  allowPurchases: true,
   cmsLicenseKey: null,
   craftIdEndpoint: 'https://console.craftcms.com',
+  pluginInstallCommand: 'php artisan craft:plugin:install',
+  composerExecutable: 'composer',
 };
 
 function resolve(overrides: Partial<EditionActionsInput>) {
@@ -160,8 +164,41 @@ describe('resolveEditionActions', () => {
     },
     {
       name: 'nothing is offered when updates are disallowed and it isn’t installed',
-      input: {context: {...context, allowUpdates: false}},
+      input: {
+        context: {...context, allowUpdates: false, allowPurchases: false},
+      },
       purchase: null,
+      install: null,
+    },
+    {
+      name: 'a license can be bought without enabling package installation',
+      input: {context: {...context, allowUpdates: false}},
+      purchase: {kind: 'add-to-cart', disabled: false},
+      install: null,
+    },
+    {
+      name: 'an installed trial can be licensed without Composer',
+      input: {
+        context: {...context, allowUpdates: false},
+        licenseInfo: makeInfo({licensedEdition: null, isTrial: true}),
+      },
+      purchase: {kind: 'add-to-cart', disabled: false},
+      install: {kind: 'installed-trial'},
+    },
+    {
+      name: 'an installed license can be upgraded without Composer',
+      input: {
+        context: {...context, allowUpdates: false},
+        licenseInfo: makeInfo(),
+        edition: pro,
+      },
+      purchase: {kind: 'add-to-cart', disabled: false},
+      install: {kind: 'try', method: 'switch', primary: false, disabled: false},
+    },
+    {
+      name: 'the cart remains reachable without Composer',
+      input: {context: {...context, allowUpdates: false}, inCart: true},
+      purchase: {kind: 'in-cart'},
       install: null,
     },
   ])('$name', ({input, purchase, install}) => {

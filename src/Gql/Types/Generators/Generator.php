@@ -9,6 +9,7 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
+use CraftCms\Cms\Gql\GqlHelper;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\Type;
@@ -43,9 +44,22 @@ abstract class Generator
 
         foreach ($layout->getCustomFields() as $contentField) {
             /** @var Field $contentField */
-            if ($contentField->includeInGqlSchema($schema)) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            if (! $contentField->includeInGqlSchema($schema)) {
+                continue;
             }
+
+            $definition = $contentField->getContentGqlType();
+
+            // Respect field layout conditions for schemas authenticated as a user
+            if ($schema->user) {
+                if (! GqlHelper::isFieldVisibleToUser($contentField, $schema->user)) {
+                    continue;
+                }
+
+                $definition = GqlHelper::guardContentFieldDefinition($contentField, $definition);
+            }
+
+            $contentFieldGqlTypes[$contentField->handle] = $definition;
         }
 
         foreach ($layout->getGeneratedFields() as $generatedField) {

@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementEditorActions;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
@@ -51,6 +52,8 @@ use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Override;
 use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
 
 use function CraftCms\Cms\currentUser;
@@ -82,7 +85,7 @@ class ElementEditViewModel extends ViewModel
      * when there are more. Drafts are listed in full: they're the ones still
      * being worked on, and there's no drafts index to link out to.
      */
-    private const int MAX_CONTEXT_MENU_REVISIONS = 5;
+    private const int MAX_CONTEXT_MENU_REVISIONS = 10;
 
     use EditsElement;
 
@@ -93,6 +96,9 @@ class ElementEditViewModel extends ViewModel
     }
 
     private ?UiPayload $ui = null;
+
+    /** @var list<string>|null The tabs {@see deferHiddenTabs()} leaves out of {@see ui()} */
+    private ?array $deferredTabs = null;
 
     private ?ElementPreview $elementPreview = null;
 
@@ -547,7 +553,8 @@ class ElementEditViewModel extends ViewModel
      *
      * "View in a new tab" is dropped once preview targets exist, since the
      * preview control already covers it, and "Edit" never appears — this screen
-     * is the edit screen.
+     * is the edit screen. "Compare changes" leads, whenever there's something
+     * to compare with.
      *
      * @return list<ActionItem|array<string, mixed>>
      */
@@ -558,13 +565,37 @@ class ElementEditViewModel extends ViewModel
         }
 
         $hidesView = $this->elementPreview()->targets() !== [];
+        $compareUrl = $this->compareChangesUrl();
 
-        return array_values(array_filter(
-            $this->element->actionMenuDescriptors(ElementActionContext::Editor),
-            fn (array $item): bool => ! (
-                $hidesView && ($item['behavior']['type'] ?? null) === 'link'
-            ),
-        ));
+        return [
+            ...($compareUrl ? [[
+                'label' => t('Compare changes'),
+                'icon' => 'code-compare',
+                'color' => '--c-field-modified-indicator',
+                'behavior' => ['type' => 'link', 'href' => $compareUrl],
+            ]] : []),
+            ...array_values(array_filter(
+                $this->element->actionMenuDescriptors(ElementActionContext::Editor),
+                fn (array $item): bool => ! (
+                    $hidesView && ($item['behavior']['type'] ?? null) === 'link'
+                ),
+            )),
+        ];
+    }
+
+    /**
+     * The Compare screen comparing the version being viewed with what it was based on: a draft or the user's unsaved
+     * edits with the current element, a revision with the revision before it, and the current element with the
+     * revision before its own. Not for an element nested in another, or when there's nothing before it. It leads the
+     * action menu, and the notice for the user's unsaved changes offers it too.
+     */
+    public function compareChangesUrl(): ?string
+    {
+        $element = $this->element;
+
+        return $element->getRootOwner() === $element
+            ? app(FieldChangeComparisons::class)->compareUrl($element)
+            : null;
     }
 
     /**
@@ -610,6 +641,8 @@ class ElementEditViewModel extends ViewModel
         }
 
         $formatter = I18N::getFormatter();
+        // Each version links to the Compare screen, comparing it with what it was based on.
+        $comparisons = app(FieldChangeComparisons::class);
         $baseParams = Arr::except($this->request->query(), ['draftId', 'revisionId', 'siteId', 'fresh']);
         $cpEditUrl = Url::cpUrl($element->getCpEditUrl(), ['draftId' => null, 'revisionId' => null]);
         $isDraft = $this->element->getIsDraft() && ! $this->element->isProvisionalDraft;
@@ -631,12 +664,16 @@ class ElementEditViewModel extends ViewModel
                 : t('Last saved {timestamp}', ['timestamp' => $currentTimestamp]),
             'href' => $cpEditUrl,
             'selected' => ! $isDraft && ! $isRevision,
+            // Compared with the revision before its own, once there is one.
+            'compareHref' => $comparisons->compareUrl($element->getCanonical(true)),
         ]];
 
         if ($drafts !== []) {
             $items[] = ['type' => 'heading', 'label' => t('Drafts')];
 
             foreach ($drafts as $draft) {
+                // They're all drafts of the same entry, in its site, so needn't each look it up to link a comparison.
+                $draft->setCanonical($element->getCanonical(true));
                 $creator = $draft->getDraftCreator();
                 $timestamp = $formatter->asTimestamp($draft->dateUpdated, Locale::LENGTH_SHORT, true);
 
@@ -648,12 +685,17 @@ class ElementEditViewModel extends ViewModel
                         : t('Last saved {timestamp}', ['timestamp' => $timestamp]),
                     'href' => Url::urlWithParams($cpEditUrl, [...$baseParams, 'draftId' => $draft->draftId]),
                     'selected' => $draft->id === $this->element->id,
+                    'compareHref' => $comparisons->compareUrl($draft),
                 ];
             }
         }
 
         if ($revisions->isNotEmpty()) {
             $items[] = ['type' => 'heading', 'label' => t('Recent Revisions')];
+
+            // Each listed revision has an earlier one to compare with, so needn't look for it, but maybe not the
+            // oldest: that's the first one recorded, unless older ones were pruned.
+            $oldest = $revisions->sortBy('dateCreated')->first();
 
             foreach ($revisions as $revision) {
                 $creator = $revision->getRevisionCreator();
@@ -667,6 +709,7 @@ class ElementEditViewModel extends ViewModel
                         : t('Saved {timestamp}', ['timestamp' => $timestamp]),
                     'href' => Url::urlWithParams($cpEditUrl, [...$baseParams, 'revisionId' => $revision->revisionId]),
                     'selected' => $revision->id === $this->element->id,
+                    'compareHref' => $comparisons->compareUrl($revision, hasBase: $revision !== $oldest ? true : null),
                 ];
             }
         }
@@ -714,21 +757,29 @@ class ElementEditViewModel extends ViewModel
             return false;
         }
 
-        return ($this->revisionQuery($element)->getCountForPagination() - 1) > 0;
+        // The newest revision is the current element's, which isn't listed as a revision. The count ignores the
+        // query's limit, so it's of every revision.
+        return $this->revisionQuery($element)->getCountForPagination() - 1 > $this->revisionLimit();
+    }
+
+    /** How many revisions the context menu lists, besides the current element's. */
+    private function revisionLimit(): int
+    {
+        $maxRevisions = Cms::config()->maxRevisions;
+
+        return $maxRevisions
+            ? min($maxRevisions - 1, self::MAX_CONTEXT_MENU_REVISIONS)
+            : self::MAX_CONTEXT_MENU_REVISIONS;
     }
 
     private function revisionQuery(ElementInterface $element): ElementQueryInterface
     {
-        $maxRevisions = Cms::config()->maxRevisions;
-
         return $element::find()
             ->revisionOf($element)
             ->siteId($element->siteId)
             ->status(null)
             ->offset(1)
-            ->limit($maxRevisions
-                ? min($maxRevisions - 1, self::MAX_CONTEXT_MENU_REVISIONS)
-                : self::MAX_CONTEXT_MENU_REVISIONS)
+            ->limit($this->revisionLimit())
             ->orderByDesc('dateCreated')
             ->with(['revisionCreator']);
     }
@@ -1003,15 +1054,67 @@ class ElementEditViewModel extends ViewModel
         }
 
         $this->uiResolved = true;
+
+        if ($this->deferredTabs === null) {
+            return $this->ui = $this->compileUi();
+        }
+
+        $eagerTabs = collect($this->element->getFieldLayout()?->getTabs() ?? [])
+            ->pluck('uid')
+            ->filter()
+            ->diff($this->deferredTabs)
+            ->values()
+            ->all();
+
+        return $this->ui = $this->compileUi($eagerTabs, deferOthers: true);
+    }
+
+    /**
+     * Sends the field layout tabs that don't show as the page loads in a deferred `deferredTabs` prop, which the page
+     * requests once it's loaded, so it has only the first tab's fields to compile and render before it's usable.
+     *
+     * Layouts with errors are sent whole, so every tab can show its errors as the page loads. Takes an argument, so
+     * {@see ViewModel} leaves it out of the payload.
+     */
+    public function deferHiddenTabs(bool $defer = true): static
+    {
+        $this->deferredTabs = null;
+        $fieldLayout = $this->element->getFieldLayout();
+
+        if ($defer && ! $this->uiResolved && $fieldLayout !== null && $this->element->uiErrors() === []) {
+            $this->deferredTabs = app(FieldLayoutCompiler::class)->deferrableTabs($fieldLayout, $this->element) ?: null;
+        }
+
+        return $this;
+    }
+
+    #[Override]
+    protected function arrayMethodClosures(): array
+    {
+        $closures = parent::arrayMethodClosures();
+
+        if ($this->deferredTabs !== null) {
+            $tabs = $this->deferredTabs;
+            $closures['deferredTabs'] = fn () => Inertia::defer(fn (): ?UiPayload => $this->compileUi($tabs));
+        }
+
+        return $closures;
+    }
+
+    /**
+     * @param  list<string>|null  $tabs
+     */
+    private function compileUi(?array $tabs = null, bool $deferOthers = false): ?UiPayload
+    {
         $fieldLayout = $this->element->getFieldLayout();
 
         if ($fieldLayout === null) {
-            return $this->ui = null;
+            return null;
         }
 
         // Delta tracking stays active so the compiled payload carries the same
         // initial values the autosave path compares against later in the stack.
-        return $this->ui = DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
+        return DeltaRegistry::withActive(true, fn () => app(FieldLayoutCompiler::class)->compile(
             $fieldLayout,
             $this->element,
             new UiContext(
@@ -1020,6 +1123,8 @@ class ElementEditViewModel extends ViewModel
                 mode: $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly,
                 refreshable: true,
             ),
+            $tabs,
+            $deferOthers,
         ));
     }
 

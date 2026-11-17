@@ -30,7 +30,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -88,7 +87,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
+abstract class BaseRelationField extends Field implements EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
     /** The source key meaning “every source, including ones added later”. */
     public const string ALL_SOURCES = '*';
@@ -267,16 +266,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $sources = $this->allowMultipleSources ? $this->sources : $this->source;
-        $sources = $sources === '*' ? null : $sources;
+        $sources = $this->getInputSources($context->element);
+        $sources = $sources === '*' || $sources === [null] ? null : $sources;
         $sources = is_string($sources) ? [$sources] : $sources;
         $value = $context->value === null
             ? []
             : $this->serializeValue($context->value, $context->element);
+        $searchCriteria = $this->searchCriteria($context->element);
 
         return $this->selectControl($context)
             ->elementType(static::elementType())
             ->sources($sources)
+            ->criteria($this->getInputSelectionCriteria())
+            ->selectionCondition($this->getSelectionCondition())
+            ->referenceElement($context->element)
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)
@@ -285,6 +288,11 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->thumbSize($this->thumbSize)
             ->maintainHierarchy($this->maintainHierarchy)
             ->branchLimit($this->branchLimit)
+            ->search($searchCriteria, $searchCriteria !== null ? $this->targetSiteId($context->element) : null)
+            ->disabledElementIds($this->disabledElementIds($context->element))
+            // Which elements can be selected can depend on the field’s settings, such as its selectable element
+            // condition, so values are only copied between instances of this field.
+            ->valueScope($this->uid ?? static::class)
             ->value($value);
     }
 
@@ -849,10 +857,19 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /**
-     * Ensure only one structured source is selected when maintainHierarchy is true.
+     * Ensure the selected sources exist, and only one structured source is selected when maintainHierarchy is true.
      */
     public function validateSources(): void
     {
+        $attribute = $this->allowMultipleSources ? 'sources' : 'source';
+        $sourceKeys = array_column($this->getSourceOptions(), 'value');
+
+        foreach ((array) $this->$attribute as $source) {
+            if ($source !== self::ALL_SOURCES && ! in_array($source, $sourceKeys, true)) {
+                $this->errors()->add($attribute, t('Source “{source}” doesn’t exist.', ['source' => $source]));
+            }
+        }
+
         if (! $this->maintainHierarchy) {
             return;
         }
@@ -1666,7 +1683,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         return Collection::make($this->availableSources())
             ->map(fn ($s) => [
-                'label' => $s['label'],
+                'label' => $s['label'] ?? '',
                 'value' => $s['key'],
                 'data' => [
                     'structure-id' => $s['structureId'] ?? null,
@@ -1741,26 +1758,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $selectionCriteria = $this->getInputSelectionCriteria();
         $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
-        $disabledElementIds = [];
-
-        if (! $this->allowSelfRelations && $element) {
-            if ($element->id) {
-                $disabledElementIds[] = $element->getCanonicalId();
-            }
-            if ($element instanceof NestedElementInterface) {
-                $el = $element;
-                do {
-                    try {
-                        $el = $el->getOwner();
-                        if ($el) {
-                            $disabledElementIds[] = $el->getCanonicalId();
-                        }
-                    } catch (RuntimeException) {
-                        break;
-                    }
-                } while ($el instanceof NestedElementInterface);
-            }
-        }
+        $disabledElementIds = $this->disabledElementIds($element);
 
         $selectionCondition = $this->getSelectionCondition();
         if ($selectionCondition instanceof ElementCondition) {
@@ -1768,14 +1766,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         $sources = $this->getInputSources($element);
-        $searchCriteria = null;
-
-        if ($this->showSearchInput($element)) {
-            $source = ElementSources::findSource($elementType, reset($sources), ElementSources::CONTEXT_FIELD);
-            if (! empty($source['criteria'])) {
-                $searchCriteria = $source['criteria'];
-            }
-        }
+        $searchCriteria = $this->searchCriteria($element);
 
         $targetSiteId = $this->_targetSiteId();
 
@@ -1811,6 +1802,62 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
                 'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
+    }
+
+    /**
+     * Returns the IDs of elements the field can’t relate to `$element`: the element itself and its owners, unless
+     * self relations are allowed.
+     *
+     * @return list<int>
+     */
+    protected function disabledElementIds(?ElementInterface $element): array
+    {
+        $disabledElementIds = [];
+
+        if (! $this->allowSelfRelations && $element) {
+            if ($element->id) {
+                $disabledElementIds[] = $element->getCanonicalId();
+            }
+            if ($element instanceof NestedElementInterface) {
+                $el = $element;
+                do {
+                    try {
+                        $el = $el->getOwner();
+                        if ($el) {
+                            $disabledElementIds[] = $el->getCanonicalId();
+                        }
+                    } catch (RuntimeException) {
+                        break;
+                    }
+                } while ($el instanceof NestedElementInterface);
+            }
+        }
+
+        return $disabledElementIds;
+    }
+
+    /**
+     * Returns the criteria the search input finds elements with: its one source’s, with the field’s selection criteria
+     * over them as the selector modal applies them, or `null` when it isn’t shown.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function searchCriteria(?ElementInterface $element): ?array
+    {
+        if (! $this->showSearchInput($element)) {
+            return null;
+        }
+
+        $sources = $this->getInputSources($element);
+        $sourceKey = is_array($sources) ? reset($sources) : $sources;
+
+        if (! is_string($sourceKey)) {
+            return null;
+        }
+
+        $source = ElementSources::findSource(static::elementType(), $sourceKey, ElementSources::CONTEXT_FIELD);
+
+        return empty($source['criteria']) ? null : [...$source['criteria'], ...$this->getInputSelectionCriteria()];
     }
 
     /**

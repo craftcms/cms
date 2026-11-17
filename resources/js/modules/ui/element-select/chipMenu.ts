@@ -2,6 +2,10 @@ import {t} from '@craftcms/ui';
 import type {ActionItem} from '@/common/types';
 import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 import type {ElementPresentation} from './types';
+import {
+  copyElements,
+  type CopiedElementInfo,
+} from '@/modules/elements/clipboard';
 
 /**
  * The menus an element-select field offers: one per chip or card, and one for
@@ -9,14 +13,7 @@ import type {ElementPresentation} from './types';
  * item does comes from the caller.
  */
 
-/** What `Craft.cp.copyElements()` wants for one element. */
-type CopyDescriptor = {
-  type: string;
-  id: string | number;
-  siteId?: number | null;
-  draftId?: number | null;
-  revisionId?: number | null;
-};
+type CopyDescriptor = CopiedElementInfo;
 
 function copyDescriptor(
   element: ElementPresentation,
@@ -76,9 +73,7 @@ function elementActions(
     actions.push({
       icon: 'custom-icons/clone-dashed',
       label: t('Copy {type}', {type: field.elementDisplayName}),
-      // `Craft.cp` owns the clipboard, including its confirmation toast.
-      onClick: () =>
-        Craft.cp?.copyElements?.([copyDescriptor(element, field.elementType)]),
+      onClick: () => copyElements([copyDescriptor(element, field.elementType)]),
     });
   }
 
@@ -179,7 +174,7 @@ export function selectionMenu(
       icon: 'custom-icons/clone-dashed',
       label: t('Copy selected'),
       onClick: () =>
-        Craft.cp?.copyElements?.(
+        copyElements(
           copyable.map((element) => copyDescriptor(element, field.elementType))
         ),
     });

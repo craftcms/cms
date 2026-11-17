@@ -5,6 +5,7 @@ import type {
   AdminTablePage,
   AdminTableRequest,
 } from '@/modules/admin-table/types';
+import {pageParam} from '@/common/craft/url';
 import type {TableNodePayload, TableRow} from './table-types';
 
 export function useInertiaTable(getNode: () => TableNodePayload) {
@@ -37,12 +38,12 @@ export function useInertiaTable(getNode: () => TableNodePayload) {
     signal: AbortSignal
   ): Promise<AdminTablePage<TableRow>> {
     signal.throwIfAborted();
-    const pageParam = Craft.pageTrigger ?? 'page';
+    const pageKey = pageParam();
     const url = new URL(page.url, location.origin);
     const query = Object.fromEntries(url.searchParams);
     for (const key of Object.keys(query)) {
       if (
-        key === pageParam ||
+        key === pageKey ||
         key === 'per_page' ||
         key === 'search' ||
         key === 'status' ||
@@ -64,7 +65,7 @@ export function useInertiaTable(getNode: () => TableNodePayload) {
         url.pathname,
         {
           ...query,
-          [pageParam]: request.page,
+          [pageKey]: request.page,
           per_page: request.perPage,
           ...(request.search ? {search: request.search} : {}),
           ...(request.status ? {status: request.status} : {}),

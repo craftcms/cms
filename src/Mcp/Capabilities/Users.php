@@ -23,7 +23,7 @@ use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
 
 /**
- * User-specific MCP capabilities. Users are listed and managed through the `elements.*` tools.
+ * User-specific MCP capabilities. Users are listed and managed through the `elements_*` tools.
  *
  * @since 6.0.0
  */
@@ -39,7 +39,7 @@ readonly class Users
 
     /** @return array{fieldLayout: array<string, mixed>} */
     #[McpTool(
-        name: 'users.field-layout.get',
+        name: 'users_field_layout_get',
         description: 'Gets the Craft CMS user field layout.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -60,7 +60,7 @@ readonly class Users
      * @return array{fieldLayout: array<string, mixed>}
      */
     #[McpTool(
-        name: 'users.field-layout.update',
+        name: 'users_field_layout_update',
         description: 'Updates the Craft CMS user field layout.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]

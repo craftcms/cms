@@ -17,6 +17,7 @@ export type TableControlProps = {
   minRows?: number;
   maxRows?: number;
   keyed?: boolean;
+  rowOrder?: string[];
   rowIdPrefix?: string;
   hiddenRows?: string[];
   defaultValues?: UiValues;

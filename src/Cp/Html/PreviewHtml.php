@@ -65,9 +65,8 @@ readonly class PreviewHtml
                 'variant' => 'plain',
                 'data' => [
                     'other' => Json::encode($otherHtml),
+                    'preview-count-badge' => 'thumbs',
                 ],
-                'onkeydown' => 'Craft.cp.previewCountBadge(event, this, true)', // have to use keydown or the page will scroll
-                'onclick' => 'Craft.cp.previewCountBadge(event, this, true)',
             ]);
         } // .inline-chips
 
@@ -100,9 +99,8 @@ readonly class PreviewHtml
                 'variant' => 'plain',
                 'data' => [
                     'other' => Json::encode($otherHtml),
+                    'preview-count-badge' => true,
                 ],
-                'onkeydown' => 'Craft.cp.previewCountBadge(event, this, false)', // have to use keydown or the page will scroll
-                'onclick' => 'Craft.cp.previewCountBadge(event, this, false)',
             ]);
         } // .inline-chips
 

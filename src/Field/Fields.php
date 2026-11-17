@@ -57,10 +57,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
+use Ramsey\Uuid\Uuid;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -123,6 +123,14 @@ class Fields
      */
     private ?MemoizableArray $_layouts = null;
 
+    /**
+     * The layouts made for element types that don’t have one saved, so each type’s is the same one every time it’s
+     * asked for.
+     *
+     * @var array<class-string<ElementInterface>, FieldLayout>
+     */
+    private array $_defaultLayouts = [];
+
     /** @var array<string, FieldInterface> */
     private array $_savingFields = [];
 
@@ -156,15 +164,22 @@ class Fields
             return $this->_allFieldHandles;
         }
 
+        // Read from the stored rows rather than the fields and layouts they configure: building every one of those
+        // costs far more than any page that checks whether a property is a field handle.
         $handles = [];
+        $fieldUids = [];
 
-        foreach ($this->getAllFields(false) as $field) {
-            $handles[$field->handle] = true;
+        foreach ($this->_fields(false)->raw() as $row) {
+            $handles[$row->handle] = true;
+            $fieldUids[$row->uid] = true;
         }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getCustomFields() as $field) {
-                $handles[$field->handle] = true;
+        // The same pass finds the generated field handles, so save them too
+        [$layoutFieldHandles, $this->_allGeneratedFieldHandles] = $this->_layoutHandles();
+
+        foreach ($layoutFieldHandles as [$handle, $fieldUid]) {
+            if (isset($fieldUids[$fieldUid])) {
+                $handles[$handle] = true;
             }
         }
 
@@ -182,17 +197,40 @@ class Fields
             return $this->_allGeneratedFieldHandles;
         }
 
-        $handles = [];
+        return $this->_allGeneratedFieldHandles = $this->_layoutHandles()[1];
+    }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            foreach ($layout->getGeneratedFields() as $generatedField) {
+    /**
+     * Reads the layouts’ handles in one pass: the custom field elements’ handle overrides with their field UIDs, which
+     * [[allFieldHandles()]] matches against the fields, and the generated field handles.
+     *
+     * A stored element without a handle override has `"handle":null`, so a layout whose JSON has no `handle` key with
+     * another value has neither, and isn’t decoded.
+     *
+     * @return array{list<array{mixed, mixed}>, array<string, bool>}
+     */
+    private function _layoutHandles(): array
+    {
+        $fieldHandles = [];
+        $generatedHandles = [];
+
+        foreach ($this->_layoutConfigs('/"handle"\s*:(?!\s*null)/') as $config) {
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    if (isset($element['handle']) && is_a($element['type'] ?? '', CustomField::class, true)) {
+                        $fieldHandles[] = [$element['handle'], $element['fieldUid'] ?? ''];
+                    }
+                }
+            }
+
+            foreach ($config['generatedFields'] ?? [] as $generatedField) {
                 if (! empty($generatedField['handle'])) {
-                    $handles[$generatedField['handle']] = true;
+                    $generatedHandles[$generatedField['handle']] = true;
                 }
             }
         }
 
-        return $this->_allGeneratedFieldHandles = $handles;
+        return [$fieldHandles, $generatedHandles];
     }
 
     /**
@@ -455,8 +493,16 @@ class Fields
      */
     public function getFieldsWithoutContent(mixed $context = null): Collection
     {
-        return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field::dbType() === null);
+        $fields = $this->_fields($context);
+
+        // Check the stored types rather than the fields, so only the fields that match get built.
+        // Types that no longer exist become missing fields, which don't store content either.
+        $types = array_filter(
+            array_unique(array_column($fields->raw(), 'type')),
+            fn (string $type) => ! is_subclass_of($type, FieldInterface::class) || $type::dbType() === null,
+        );
+
+        return $fields->whereIn('type', array_values($types), true)->collect();
     }
 
     /**
@@ -798,7 +844,16 @@ class Fields
             return new Collection;
         }
 
-        return $this->getAllLayouts()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
+        // Only build the layouts whose stored config mentions the field
+        $layoutIds = [];
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+            if (str_contains(is_string($config) ? $config : JsonHelper::encode($config), $field->uid)) {
+                $layoutIds[] = $row->id;
+            }
+        }
+
+        return $this->_layouts()->whereIn('id', $layoutIds, true)->collect()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
             $layout->isFieldIncluded(fn (BaseField $layoutField) => (
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
@@ -910,23 +965,47 @@ class Fields
     }
 
     /**
-     * @return array<int,FieldLayout[]>
+     * Returns how many saved field layouts include each field, by field ID.
+     *
+     * Reads the layouts’ stored configs rather than building every layout, applying the same filters a built layout’s
+     * custom fields would: the element must be a custom field, from an enabled plugin if any, for a field that exists.
+     *
+     * @return array<int,int>
      */
-    private function allFieldUsages(): array
+    private function fieldUsageCounts(): array
     {
-        $usages = [];
+        $fieldIdsByUid = [];
+        foreach ($this->_fields(false)->raw() as $row) {
+            $fieldIdsByUid[$row->uid] = (int) $row->id;
+        }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            $uniqueFieldIds = [];
-            foreach ($layout->getCustomFields() as $field) {
-                $uniqueFieldIds[$field->id] = true;
+        $isIncluded = [];
+        $counts = [];
+
+        foreach ($this->_layoutConfigs() as $config) {
+            $layoutFieldIds = [];
+
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    $type = $element['type'] ?? null;
+                    $fieldId = $fieldIdsByUid[$element['fieldUid'] ?? ''] ?? null;
+
+                    if (! is_string($type) || $fieldId === null) {
+                        continue;
+                    }
+
+                    if ($isIncluded[$type] ??= is_a($type, CustomField::class, true) && ComponentHelper::validateComponentClass($type)) {
+                        $layoutFieldIds[$fieldId] = true;
+                    }
+                }
             }
-            foreach (array_keys($uniqueFieldIds) as $fieldId) {
-                $usages[$fieldId][] = $layout;
+
+            foreach (array_keys($layoutFieldIds) as $fieldId) {
+                $counts[$fieldId] = ($counts[$fieldId] ?? 0) + 1;
             }
         }
 
-        return $usages;
+        return $counts;
     }
 
     // Layouts
@@ -959,6 +1038,25 @@ class Fields
         );
 
         return $this->_layouts = $layouts;
+    }
+
+    /**
+     * Returns the saved field layouts' configs, without building the layouts.
+     *
+     * @param  string|null  $pattern  A regular expression that a config stored as JSON must match to be decoded and returned
+     * @return iterable<array<string, mixed>>
+     */
+    private function _layoutConfigs(?string $pattern = null): iterable
+    {
+        foreach ($this->_layouts()->raw() as $row) {
+            $config = $row->config ?? null;
+
+            if (is_string($config) && $pattern !== null && ! preg_match($pattern, $config)) {
+                continue;
+            }
+
+            yield is_string($config) ? JsonHelper::decode($config) : (array) $config;
+        }
     }
 
     /** @param array<string, mixed> $config */
@@ -1038,7 +1136,31 @@ class Fields
         $layout = $this->_layouts()->firstWhere('type', $type);
 
         if (! $layout && $create) {
-            return new FieldLayout(['type' => $type]);
+            return $this->_defaultLayouts[$type] ??= $this->defaultLayout($type);
+        }
+
+        return $layout;
+    }
+
+    /**
+     * Returns a layout for an element type that doesn’t have one saved. Its UIDs are derived from the type and their
+     * positions, so they’re the same in every request, and one version of an element can be paired with another
+     * field by field.
+     *
+     * @param  class-string<ElementInterface>  $type
+     */
+    private function defaultLayout(string $type): FieldLayout
+    {
+        $layout = new FieldLayout(['type' => $type]);
+        $uid = fn (string $name): string => Uuid::uuid5(Uuid::NAMESPACE_URL, "craft:default-field-layout:$type$name")->toString();
+        $layout->uid = $uid('');
+
+        foreach ($layout->getTabs() as $tabIndex => $tab) {
+            $tab->uid = $uid(":$tabIndex");
+
+            foreach ($tab->getElements() as $elementIndex => $element) {
+                $element->uid = $uid(":$tabIndex:$elementIndex");
+            }
         }
 
         return $layout;
@@ -1519,7 +1641,7 @@ class Fields
         $result = $paginator->getCollection();
 
         $tableData = [];
-        $usages = $this->allFieldUsages();
+        $usageCounts = $this->fieldUsageCounts();
 
         foreach ($result as $item) {
             $field = $this->createField((array) $item);
@@ -1538,9 +1660,9 @@ class Fields
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
                     'icon' => $field instanceof Iconic ? Icons::resolveIconData($field->getIcon()) : null,
                 ],
-                'usages' => isset($usages[$field->id])
+                'usages' => isset($usageCounts[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [
-                        'count' => count($usages[$field->id]),
+                        'count' => $usageCounts[$field->id],
                     ])
                     : null,
             ];
@@ -1619,7 +1741,7 @@ class Fields
      */
     private function hasTipAndWarningColumns(): bool
     {
-        return Schema::hasColumn(Table::FIELDS, 'tip');
+        return DB::getReadSchemaBuilder()->hasColumn(Table::FIELDS, 'tip');
     }
 
     private function _createLayoutQuery(bool $withTrashed = false): Builder

@@ -106,6 +106,13 @@ describe('CoreTwigExtension', function () {
         ]),
     ]);
 
+    it('converts hexadecimal strings to decimals with |hexdec, also when sandboxed', function (Closure $render) {
+        expect($render('{% set c = "#1A2b3c" %}{{ c[1:2]|hexdec }},{{ c[3:2]|hexdec }},{{ c[5:2]|hexdec }},{{ "ff"|hexdec + 1 }}'))->toBe('26,43,60,256');
+    })->with([
+        'renderString()' => fn (string $template) => Template::renderString($template),
+        'renderSandboxedString()' => fn (string $template) => Template::renderSandboxedString($template),
+    ]);
+
     it('allows create() again once a string template has finished rendering', function () {
         try {
             Template::renderObjectTemplate('{{ create("stdClass") }}', new stdClass);

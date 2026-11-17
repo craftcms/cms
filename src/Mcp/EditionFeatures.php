@@ -18,9 +18,9 @@ readonly class EditionFeatures
 
     /** @var list<array{feature: string, edition: Edition, tools: string}> */
     private const array Features = [
-        ['feature' => 'Releases', 'edition' => Edition::Pro, 'tools' => 'releases.*'],
-        ['feature' => 'Editorial workflows', 'edition' => Edition::Pro, 'tools' => 'configuration.* with type: workflows'],
-        ['feature' => 'Custom user groups and user permissions', 'edition' => Edition::Pro, 'tools' => 'configuration.* with type: user-groups, user-permissions.*'],
+        ['feature' => 'Releases', 'edition' => Edition::Pro, 'tools' => 'releases_*'],
+        ['feature' => 'Editorial workflows', 'edition' => Edition::Pro, 'tools' => 'configuration_* with type: workflows'],
+        ['feature' => 'Custom user groups and user permissions', 'edition' => Edition::Pro, 'tools' => 'configuration_* with type: user-groups, user_permissions_*'],
     ];
 
     /** @return list<array{feature: string, requiredEdition: string, tools: string}> */
@@ -39,7 +39,7 @@ readonly class EditionFeatures
             $features[] = [
                 'feature' => "More than $maxUsers ".($maxUsers === 1 ? 'user' : 'users'),
                 'requiredEdition' => self::name($upgrade),
-                'tools' => 'elements.create with type: users',
+                'tools' => 'elements_create with type: users',
             ];
         }
 

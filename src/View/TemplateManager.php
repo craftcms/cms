@@ -6,7 +6,6 @@ namespace CraftCms\Cms\View;
 
 use Closure;
 use CraftCms\Cms\Blade\BladeRenderer;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\Contracts\TwigRendererInterface;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Twig\TwigRenderer;
@@ -15,8 +14,8 @@ use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
-use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Log;
@@ -33,6 +32,13 @@ use function Illuminate\Support\enum_value;
 #[Scoped]
 class TemplateManager extends Manager
 {
+    /**
+     * Legacy assets to register on site pages loaded in Live Preview.
+     *
+     * @var list<class-string<LegacyAssetInterface>>
+     */
+    protected array $livePreviewAssets = [];
+
     private ?string $renderingTemplate = null;
 
     private bool $isRenderingPageTemplate = false;
@@ -315,17 +321,23 @@ class TemplateManager extends Manager
     }
 
     /**
-     * Lets Live Preview size its iframe to the page, when that's enabled.
+     * Registers the scripts Live Preview needs on the previewed page, if any.
      */
     private function registerLivePreviewAssets(TemplateMode $templateMode): void
     {
         if (
-            $templateMode === TemplateMode::Site &&
-            Cms::config()->useIframeResizer &&
-            request()->query('x-craft-live-preview') !== null &&
-            request()->isPreview()
+            $templateMode !== TemplateMode::Site ||
+            $this->livePreviewAssets === [] ||
+            request()->query('x-craft-live-preview') === null ||
+            ! request()->isPreview()
         ) {
-            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
+            return;
+        }
+
+        $registry = app(InternalAssetRegistry::class);
+
+        foreach ($this->livePreviewAssets as $asset) {
+            $registry->register($asset);
         }
     }
 

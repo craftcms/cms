@@ -13,7 +13,9 @@
     </craft-button>
 {% endif %}
 
-<div id="{{ containerId }}" class="asset-image-preview relative">
+<div id="{{ containerId }}" class="asset-image-preview relative"
+    {%- if enableFocalPoint %} data-focal-point="{{ editFocal ? 'edit' : 'view' }}"{% endif %}
+    {%- if editFocal %} data-focal-point-toggle="{{ toggleId }}"{% endif %}>
     {{ tag('img', {
         src: url,
         width: asset.width,
@@ -31,21 +33,3 @@
         onload: "this.style.background = ''; setTimeout(Craft.PreviewFileModal.resizePreviewImage, 100)",
     }) }}
 </div>
-
-{% do registerLegacyAsset("CraftCms\\Cms\\View\\LegacyAssets\\FocalPointAsset") %}
-
-{% if enableFocalPoint %}
-  {% js %}
-    (() => {
-      if (window.imageFocalPoint) {
-        window.imageFocalPoint.destruct();
-        delete window.imageFocalPoint;
-      }
-
-      const $container = $('#{{ containerId }}');
-      if ($container.length) {
-        window.imageFocalPoint = new Craft.FocalPoint($container, $('#{{ toggleId }}'), {{ editFocal ? 'true' : 'false' }});
-      }
-    })();
-  {% endjs %}
-{% endif %}

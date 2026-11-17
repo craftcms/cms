@@ -2,9 +2,11 @@
   import {t} from '@craftcms/ui';
   import {onMounted, useTemplateRef} from 'vue';
   import ModalForm from '@/common/components/ModalForm.vue';
+  import type {ModalWidth} from '@/common/components/modal';
   import UiRenderer from './UiRenderer.vue';
   import {useUiForm, type UiFormResponse} from './useUiForm';
   import type {UiValues} from './types';
+  import {showNotice} from '@/modules/messages/messages';
 
   export type UiModalResponse = UiFormResponse;
 
@@ -18,7 +20,7 @@
       title?: string;
       /** Used when the server doesn't send a submit label. */
       submitLabel?: string;
-      width?: string;
+      width?: ModalWidth;
     }>(),
     {
       params: () => ({}),
@@ -63,7 +65,7 @@
     }
 
     if (typeof data.message === 'string') {
-      Craft.cp?.displayNotice?.(data.message);
+      showNotice(data.message);
     }
 
     emit('submitted', data);

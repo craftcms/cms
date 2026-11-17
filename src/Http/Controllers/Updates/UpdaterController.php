@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Override;
@@ -54,7 +55,20 @@ class UpdaterController extends BaseUpdaterController
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
 
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
-            abort_unless($request->craftUser()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+            $this->requirePerformUpdates();
+        }
+
+        $action = $request->route()->getActionMethod();
+
+        if (
+            in_array($action, ['composerInstall', 'composerRemove', 'revert'], true) &&
+            (! $generalConfig->allowUpdates || ! $generalConfig->allowAdminChanges)
+        ) {
+            abort(403, 'Updates are disabled.');
+        }
+
+        if ($action === 'revert' && $this->legacyData) {
+            $this->requirePerformUpdates();
         }
     }
 
@@ -99,6 +113,10 @@ class UpdaterController extends BaseUpdaterController
 
     public function revert(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_REVERT));
+        }
+
         $output = '';
 
         try {
@@ -251,6 +269,10 @@ class UpdaterController extends BaseUpdaterController
             ];
         }
 
+        if (! empty($this->data['install']) && ! $this->composer->getIsAvailable()) {
+            return $this->noComposerState();
+        }
+
         // If there's anything to install, make sure we can find composer.json
         if (! empty($this->data['install']) && ! $this->ensureComposerJson()) {
             return $this->noComposerJsonState();
@@ -309,6 +331,15 @@ class UpdaterController extends BaseUpdaterController
     {
         // Disable maintenance mode
         app()->maintenanceMode()->deactivate();
+
+        // Composer installs files with their commit's mtime, so compiled views can be newer than their updated sources
+        try {
+            CompiledViews::clear();
+        } catch (Throwable $e) {
+            Log::error('Could not delete compiled views: '.$e->getMessage(), [__METHOD__]);
+
+            report($e);
+        }
 
         return parent::sendFinished($state);
     }

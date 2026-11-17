@@ -30,12 +30,13 @@
       return props.modelValue.toString();
     },
     set(newValue) {
-      if (
-        normalizedOptions.value.some(
-          (option) => String(option.value) === String(newValue)
-        )
-      ) {
-        emit('update:modelValue', newValue);
+      // Hand back the option's own value, so numeric options stay numbers.
+      const option = normalizedOptions.value.find(
+        (option) => String(option.value) === String(newValue)
+      );
+
+      if (option) {
+        emit('update:modelValue', option.value);
       }
 
       // The parent may decline the change, which leaves `modelValue` as it was
@@ -57,7 +58,7 @@
 </script>
 
 <template>
-  <CraftSelect v-model="modelProxy" v-bind="$attrs">
+  <CraftSelect v-model="modelProxy" v-bind="$attrs" :error="error">
     <select ref="nativeSelect" slot="input">
       <option
         v-for="option in normalizedOptions"
@@ -67,16 +68,12 @@
         <slot
           name="option-label"
           :option="option"
-          :selected="option.value === modelProxy"
+          :selected="String(option.value) === modelProxy"
         >
           {{ option.label }}
         </slot>
       </option>
     </select>
-
-    <ul class="error-list" v-if="error" slot="feedback">
-      <li>{{ error }}</li>
-    </ul>
   </CraftSelect>
 </template>
 

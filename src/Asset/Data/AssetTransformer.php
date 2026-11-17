@@ -4,55 +4,27 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Validation\Rules\HandleRule;
-use Override;
-
 /**
+ * A transform driver and its inline settings, as configured by a disk’s `asset_transformer` key or passed to
+ * `transform()`.
+ *
  * @since 6.0.0
  */
-class AssetTransformer extends Component
+readonly class AssetTransformer
 {
-    public ?string $uid = null;
+    /**
+     * @param  string  $driver  The registered driver name.
+     * @param  array<string, mixed>  $settings  Inline settings, which the driver merges over its own config.
+     */
+    public function __construct(
+        public string $driver,
+        public array $settings = [],
+    ) {}
 
-    public string $name = '';
-
-    public string $handle = '';
-
-    public string $driver = '';
-
-    /** @var array<string, mixed> */
-    public array $settings = [];
-
-    /** @return array{name:string,handle:string,driver:string,settings:array<string,mixed>} */
-    public function getConfig(): array
-    {
-        return [
-            'name' => $this->name,
-            'handle' => $this->handle,
-            'driver' => $this->driver,
-            'settings' => $this->settings,
-        ];
-    }
-
-    #[Override]
-    public function getRules(): array
-    {
-        return [
-            'uid' => ['nullable', 'uuid'],
-            'name' => ['required', 'string', 'max:255'],
-            'handle' => ['required', 'string', 'max:255', new HandleRule],
-            'driver' => ['required', 'string'],
-            'settings' => ['array'],
-        ];
-    }
-
+    /** @return array{driver: string, settings: string} */
     public function __debugInfo(): array
     {
         return [
-            'uid' => $this->uid,
-            'name' => $this->name,
-            'handle' => $this->handle,
             'driver' => $this->driver,
             'settings' => '[redacted]',
         ];

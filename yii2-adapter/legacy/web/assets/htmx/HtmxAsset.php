@@ -8,7 +8,7 @@
 namespace craft\web\assets\htmx;
 
 use craft\web\AssetBundle;
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 
 /**
  * Htmx asset bundle.
@@ -33,6 +33,6 @@ class HtmxAsset extends AssetBundle
 {
     public function registerAssetFiles($view): void
     {
-        Deprecator::log('HtmxAsset', 'craft\\web\\assets\\htmx\\HtmxAsset is deprecated. Craft 6 no longer bundles htmx, so nothing is registered — a plugin relying on htmx should bundle its own copy.');
+        LegacyUsage::record('HtmxAsset', 'craft\\web\\assets\\htmx\\HtmxAsset is deprecated. Craft 6 no longer bundles htmx, so nothing is registered — a plugin relying on htmx should bundle its own copy.');
     }
 }

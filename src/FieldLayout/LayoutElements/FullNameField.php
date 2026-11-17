@@ -76,15 +76,26 @@ class FullNameField extends TextField
             : null;
 
         return Group::make($this->uid, [
-            Field::make(t('First Name'), Text::make('firstName')->value($element->firstName ?? null))
+            Field::make(t('First Name'), Text::make('firstName')
+                ->value($element->firstName ?? null)
+                ->autocomplete($this->belongsToCurrentUser($element) ? 'given-name' : false))
                 ->required(! $static && $this->required)
                 ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
-            Field::make(t('Last Name'), Text::make('lastName')->value($element->lastName ?? null))
+            Field::make(t('Last Name'), Text::make('lastName')
+                ->value($element->lastName ?? null)
+                ->autocomplete($this->belongsToCurrentUser($element) ? 'family-name' : false))
                 ->required(! $static && $this->required)
                 ->showStatus($this->showStatus())
                 ->status($status, $statusLabel),
         ]);
+    }
+
+    /** @return array<string, string|array<string, string>> */
+    #[Override]
+    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        return $this->belongsToCurrentUser($element) ? ['autocomplete' => 'name'] : [];
     }
 
     #[Override]

@@ -54,17 +54,6 @@
 
   const baseName = computed(() => props.name?.replace(/\[\]$/, ''));
 
-  /** The element, for its own events — not its checkboxes', which bubble. */
-  function element(event: Event): CraftCheckboxSelect | null {
-    const target = event.currentTarget;
-    return event.target === target &&
-      target instanceof HTMLElement &&
-      target.localName === 'craft-checkbox-select'
-      ? // SAFETY: Checked by tag name above.
-        (target as CraftCheckboxSelect)
-      : null;
-  }
-
   /** Adding an option or moving one changes the order too. */
   function emitOrder(select: CraftCheckboxSelect): void {
     const byValue = new Map(
@@ -79,14 +68,10 @@
     }
   }
 
-  function onValueChanged(event: Event): void {
-    const select = element(event);
-    if (!select) {
-      return;
-    }
-
+  function onChange(event: Event): void {
+    const select = event.currentTarget as CraftCheckboxSelect;
     emitOrder(select);
-    emit('update:modelValue', select.modelValue);
+    emit('update:modelValue', select.value);
   }
 </script>
 
@@ -100,7 +85,7 @@
     :all-label="allowSelectAll ? t('All') : null"
     all-mode="each-value"
     .options="elementOptions"
-    .modelValue="value"
-    @model-value-changed="onValueChanged"
+    .value="value"
+    @change="onChange"
   />
 </template>

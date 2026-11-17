@@ -7,6 +7,7 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\ResponseHeaders as ResponseHeaderAccumulator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
@@ -202,6 +203,22 @@ it('applies request-scoped no-cache settings', function () {
     $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
 
     expect($response->headers->hasCacheControlDirective('no-cache'))->toBeTrue();
+});
+
+it('applies request-scoped headers and cache settings to JSON responses', function () {
+    Route::get('/test-json-response-headers', function () {
+        ResponseHeaders::add('Access-Control-Allow-Origin', '*');
+        ResponseHeaders::setCache(60);
+
+        return new JsonResponse(['ok' => true]);
+    })->middleware(SetHeaders::class);
+
+    $response = $this->get('/test-json-response-headers')
+        ->assertOk()
+        ->assertHeader('Access-Control-Allow-Origin', '*')
+        ->assertHeader('Pragma', 'cache');
+
+    expect($response->baseResponse->getMaxAge())->toBe(60);
 });
 
 it('isolates facade state across long-lived request scopes', function () {

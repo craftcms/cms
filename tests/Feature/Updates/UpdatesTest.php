@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Models\Info;
@@ -32,6 +33,17 @@ beforeEach(function () {
 it('is a singleton', function () {
     expect($this->updates)->toBe(app(Updates::class));
 });
+
+it('explains why package commands cannot run without Composer', function (string $command, array $arguments) {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    $this->artisan($command, $arguments)
+        ->expectsOutput('Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->assertExitCode(1);
+})->with([
+    'update' => ['craft:update', ['handle' => ['craft'], '--force' => true]],
+    'install' => ['craft:update:composer-install', []],
+]);
 
 it('can check if update info is cached', function () {
     expect($this->updates->isUpdateInfoCached())->toBe(false);
@@ -87,6 +99,25 @@ it('can get updates', function () {
     expect($this->updates->totalAvailableUpdates())->toBe(0);
 });
 
+it('records when it fetched updates, and passes it to the Updates widget', function () {
+    $this->freezeSecond();
+    $this->mock(Api::class)->shouldReceive('getUpdates')->andReturn(['cms' => ['status' => 'eligible'], 'plugins' => []]);
+    app()->forgetInstance(Updates::class);
+    $updates = app(Updates::class);
+
+    expect(app(UpdatesWidget::class)->props()['dateFetched'])->toBeNull();
+
+    expect($updates->getUpdates(true)->dateFetched?->getTimestamp())->toBe(now()->getTimestamp())
+        ->and(app(UpdatesWidget::class)->props()['dateFetched'])->toBe(now()->format(DATE_ATOM));
+});
+
+it('leaves out when it fetched updates that it couldn’t fetch', function () {
+    $this->mock(Api::class)->shouldReceive('getUpdates')->andThrow(new RuntimeException('Offline'));
+    app()->forgetInstance(Updates::class);
+
+    expect(app(Updates::class)->getUpdates(true)->dateFetched)->toBeNull();
+});
+
 it('can return if a craft update is pending', function () {
     expect($this->updates->isCraftUpdatePending())->toBe(false);
 
@@ -134,7 +165,7 @@ it('formats CLI updates with the original package and selected version', functio
     $this->partialMock(Plugins::class)->shouldReceive('getPluginInfo')->with('example')->andReturn([
         'isInstalled' => true, 'version' => '1.0.0', 'packageName' => 'old/package',
     ]);
-    $this->mock(Composer::class)->shouldReceive('install')->times($info ? 0 : 1)
+    $this->partialMock(Composer::class)->shouldReceive('install')->times($info ? 0 : 1)
         ->with(['new/package' => "^$target", 'old/package' => false], Mockery::type('callable'));
     $this->mock(Updates::class)->shouldReceive('getUpdates')->with(true)->andReturn(new UpdatesData);
     Process::fake();

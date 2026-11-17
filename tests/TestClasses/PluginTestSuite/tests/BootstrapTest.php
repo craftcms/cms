@@ -28,6 +28,12 @@ it('installs Craft and the plugin with its install migration', function () {
         ->assertOk()->assertJson(['plugin' => 'bootstrap-plugin']);
 });
 
+it('renders control panel pages', function () {
+    $this->actingAs(User::find()->admin()->one())
+        ->get(route('craft.cp.dashboard'))
+        ->assertOk();
+});
+
 it('saves and queries elements', function () {
     $user = User::find()->one();
     $user->email = 'plugin-tester@example.com';

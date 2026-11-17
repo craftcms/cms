@@ -144,7 +144,6 @@ describe('ActionMenu', () => {
       expect(invoker.tagName).toBe('CRAFT-BUTTON');
       expect(invoker.id).toMatch(/^invoker-/);
       expect(invoker.getAttribute('aria-controls')).toMatch(/^content-/);
-      expect(invoker.getAttribute('aria-haspopup')).toBe('true');
       expect(invoker.getAttribute('aria-expanded')).toBe('false');
 
       return invoker;
@@ -166,6 +165,29 @@ describe('ActionMenu', () => {
 
       expect(invoker.textContent).toBe('Custom');
     });
+  });
+
+  it('keeps the default invoker’s label up to date', async () => {
+    const label = ref('Actions for Lighthouses');
+    const container = document.createElement('div');
+    document.body.append(container);
+    const app = createApp({
+      render: () => h(ActionMenu, {actions: [], label: label.value}),
+    });
+    app.mount(container);
+    teardown = () => {
+      app.unmount();
+      container.remove();
+    };
+
+    label.value = 'Actions for Lighthouses of Maine';
+    await nextTick();
+
+    expect(
+      container
+        .querySelector('craft-action-menu > [slot="invoker"]')
+        ?.getAttribute('aria-label')
+    ).toBe('Actions for Lighthouses of Maine');
   });
 
   it('renders a display item as its component', async () => {

@@ -2,6 +2,10 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, nextTick} from 'vue';
 import AssetUploadButton from './AssetUploadButton.vue';
 import {Uploader} from '@/modules/uploader/uploader';
+
+vi.mock('@/modules/queue/queue', () => ({
+  QueueService: {getInstance: () => ({runQueue: vi.fn(async () => {})})},
+}));
 vi.mock('@/modules/uploader/uploader', () => ({Uploader: vi.fn()}));
 import {assetUploadQueue} from '@/modules/uploader/asset-upload-queue';
 
@@ -65,10 +69,6 @@ beforeEach(() => {
   Object.assign(globalThis, {
     $: vi.fn((value) => value),
     Craft: {
-      cp: {
-        displayError: vi.fn(),
-        runQueue: vi.fn(),
-      },
       t: (_category: string, message: string) => message,
     },
   });
@@ -108,6 +108,27 @@ it('opens the file picker and configures uploads for the selected folder', async
 
   app.unmount();
   expect(destroy).toHaveBeenCalledOnce();
+});
+
+it('uploads with destination params in place of a folder', async () => {
+  const app = createApp({
+    render: () =>
+      h(AssetUploadButton, {
+        canUpload: true,
+        params: {fieldId: 3, elementId: 8, siteId: 2},
+      }),
+  });
+
+  app.mount(container);
+  await nextTick();
+
+  expect(setParams).toHaveBeenCalledWith({fieldId: 3, elementId: 8, siteId: 2});
+  expect(
+    container.querySelector<HTMLElement & {disabled: boolean}>('craft-button')!
+      .disabled
+  ).toBe(false);
+
+  app.unmount();
 });
 
 it('captures the background destination before the picker is destroyed', () => {

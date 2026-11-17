@@ -1,5 +1,4 @@
 import {afterAll, afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
-import $ from 'jquery';
 import {Base} from '@craftcms/garnish';
 import {CardViewDesigner} from './card-view-designer';
 import {FieldLayoutDesigner} from './field-layout-designer';
@@ -8,7 +7,7 @@ const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
 
 vi.mock('@/common/slideouts', () => ({openSlideout}));
 
-// `craft-select-color` renders a form-associated `craft-select-rich`, which
+// `craft-select-color` is a form-associated `craft-select-rich`, which
 // calls attachInternals(), which happy-dom doesn't implement. Same stub
 // UiRenderer.test.ts uses, kept for the whole file because the element
 // renders after the test that creates it returns.
@@ -38,20 +37,12 @@ afterAll(() => {
 
 afterEach(() => {
   delete window.Craft;
-  delete window.$;
   vi.clearAllMocks();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
-it('waits for the jQuery seam before initializing', async () => {
-  vi.useFakeTimers();
-  window.Craft = Object.assign(Object.create(null), {Grid: class {}});
-  delete window.$;
-
-  const deferredInit = vi
-    .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
-    .mockImplementation(() => {});
+function designerFixture(): HTMLDivElement {
   const container = document.createElement('div');
   container.innerHTML = `
     <input data-config-input value='{"tabs":[]}'>
@@ -69,11 +60,11 @@ it('waits for the jQuery seam before initializing', async () => {
     </div>
   `;
 
-  const designer = new FieldLayoutDesigner(container);
-  await vi.advanceTimersByTimeAsync(100);
+  return container;
+}
 
-  expect(deferredInit).not.toHaveBeenCalled();
-
+/** Adds the field search, as `craft-input-search` does when it connects. */
+function addFieldSearch(container: HTMLElement): HTMLInputElement {
   const field = document.createElement('craft-input-search');
   const search = document.createElement('input');
   field.append(search);
@@ -81,9 +72,48 @@ it('waits for the jQuery seam before initializing', async () => {
   if (!library) throw new Error('Expected the field library fixture.');
   library.prepend(field);
 
-  window.$ = $;
+  return search;
+}
+
+it('waits for the field search, not jQuery, before initializing', async () => {
+  vi.useFakeTimers();
+
+  const deferredInit = vi
+    .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
+    .mockImplementation(() => {});
+  const container = designerFixture();
+
+  const designer = new FieldLayoutDesigner(container);
   await vi.advanceTimersByTimeAsync(100);
 
+  expect(deferredInit).not.toHaveBeenCalled();
+
+  const search = addFieldSearch(container);
+
+  await vi.advanceTimersByTimeAsync(100);
+
+  expect(deferredInit).toHaveBeenCalledOnce();
+  expect(designer.$fieldSearch).toBe(search);
+});
+
+// The field search connects right after the designer boots from its host's
+// connected callback. Waiting on a timer for it leaves the tabs' buttons
+// clickable but inert in the meantime.
+it('initializes without a timer once the field search connects', async () => {
+  vi.useFakeTimers();
+
+  const deferredInit = vi
+    .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
+    .mockImplementation(() => {});
+  const container = designerFixture();
+
+  const designer = new FieldLayoutDesigner(container);
+  const search = addFieldSearch(container);
+  for (let i = 0; i < 10; i++) {
+    await Promise.resolve();
+  }
+
+  expect(vi.getTimerCount()).toBe(0);
   expect(deferredInit).toHaveBeenCalledOnce();
   expect(designer.$fieldSearch).toBe(search);
 });
@@ -166,9 +196,7 @@ it('adds a field returned by the field editor slideout', () => {
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = addLibraryElementToActiveTab;
   designer.getActiveHud = vi.fn(() => undefined);
-  window.Craft = Object.assign(Object.create(null), {
-    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  });
+  window.Craft = Object.assign(Object.create(null), {baseCpUrl: '/admin'});
 
   designer.createField();
 
@@ -213,9 +241,7 @@ it('opens the field editor from the library HUD trigger and closes the HUD', () 
   designer.initLibraryElements = vi.fn();
   designer.addLibraryElementToActiveTab = vi.fn();
   designer.getActiveHud = vi.fn(() => ({$trigger, hide}));
-  window.Craft = Object.assign(Object.create(null), {
-    getCpUrl: vi.fn(() => '/admin/settings/fields/edit'),
-  });
+  window.Craft = Object.assign(Object.create(null), {baseCpUrl: '/admin'});
 
   designer.createField();
 
@@ -231,7 +257,7 @@ it('opens the field editor from the library HUD trigger and closes the HUD', () 
   panel.remove();
 });
 
-it('gives the card preview the owner’s name, color, and icon', () => {
+it('gives the card preview the owner’s name, color, and icon', async () => {
   document.body.innerHTML = `
     <form>
       <craft-input data-ui-control-path='["name"]'></craft-input>
@@ -245,12 +271,12 @@ it('gives the card preview the owner’s name, color, and icon', () => {
       </div>
     </form>`;
   const control = (key: string) =>
-    document.querySelector<HTMLElement & {modelValue: string}>(
+    document.querySelector<HTMLElement & {value: string}>(
       `[data-ui-control-path='["${key}"]']`
     )!;
-  control('name').modelValue = 'Article';
-  control('color').modelValue = 'rose';
-  control('icon').modelValue = 'newspaper';
+  control('name').value = 'Article';
+  control('color').value = 'rose';
+  control('icon').value = 'newspaper';
 
   // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
   const designer = Object.create(
@@ -275,8 +301,8 @@ it('gives the card preview the owner’s name, color, and icon', () => {
   expect(chip.querySelector('craft-icon')).toBeNull();
   expect(chip.textContent).toBe('Title');
 
-  control('color').modelValue = '';
-  control('icon').modelValue = '';
+  control('color').value = '';
+  control('icon').value = '';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);
@@ -284,11 +310,83 @@ it('gives the card preview the owner’s name, color, and icon', () => {
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
 
-  control('color').modelValue = '__blank__';
+  control('color').value = '__blank__';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);
   expect(chip.hasAttribute('data-color')).toBe(false);
 
   document.body.innerHTML = '';
+});
+
+it('keeps the icon thumb source until the Icon control renders without an icon', async () => {
+  document.body.innerHTML = '<form><div class="cvd"></div></form>';
+  const iconOption = {label: 'Entry type icon', value: 'entryTypeIcon'};
+  const thumbSources = {
+    options: [iconOption],
+    value: ['entryTypeIcon'],
+    addOption: vi.fn(),
+    removeOption: vi.fn((value: string) => {
+      thumbSources.options = thumbSources.options.filter(
+        (option) => option.value !== value
+      );
+      thumbSources.value = thumbSources.value.filter((v) => v !== value);
+    }),
+  };
+  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
+  const designer = Object.create(
+    CardViewDesigner.prototype
+  ) as CardViewDesigner;
+  Object.assign(designer, {
+    $container: document.querySelector('.cvd')!,
+    $previewContainer: null,
+    $thumbSources: thumbSources,
+    iconThumbOption: iconOption,
+  });
+  const manageThumbnails = vi.fn();
+  designer.manageThumbnails = manageThumbnails;
+
+  designer.syncIconThumbOption();
+  designer.observeAppearanceControls();
+
+  expect(thumbSources.value).toEqual(['entryTypeIcon']);
+  expect(manageThumbnails).not.toHaveBeenCalled();
+
+  document.querySelector('form')!.insertAdjacentHTML(
+    'beforeend',
+    `<craft-input data-ui-control-path='["name"]'></craft-input>
+      <craft-select-color data-ui-control-path='["color"]'></craft-select-color>
+      <craft-input data-ui-control-path='["icon"]'></craft-input>`
+  );
+  await Promise.resolve();
+
+  expect(thumbSources.value).toEqual([]);
+  expect(manageThumbnails).toHaveBeenCalledOnce();
+  expect(designer.appearanceControlObserver).toBeNull();
+
+  document.body.innerHTML = '';
+});
+
+it('adds no tab when the name prompt is cancelled', () => {
+  const designer = Object.create(
+    FieldLayoutDesigner.prototype
+  ) as FieldLayoutDesigner;
+  const container = document.createElement('div');
+  const content = document.createElement('div');
+  content.className = 'fld-tabs__content';
+  container.append(content);
+  document.body.append(container);
+
+  Object.assign(designer, {
+    settings: {customizableTabs: true},
+    $tabContainer: container,
+    $contentTabContainer: content,
+  });
+
+  vi.stubGlobal('prompt', () => null);
+  designer.addTab('content');
+  vi.unstubAllGlobals();
+
+  expect(designer.tabElements()).toEqual([]);
+  container.remove();
 });

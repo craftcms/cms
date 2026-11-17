@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * Example:
  * ```
- * php craft project-config:set some.nested.key
+ * php artisan craft:project-config:set some.nested.key
  * ```
  *
  * See [get](#project-config-get) for the accepted key formats.

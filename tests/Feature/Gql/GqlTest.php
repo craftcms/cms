@@ -151,6 +151,24 @@ it('executes a query through the new service', function () {
         ->toBe(['data' => ['ping' => 'pong']]);
 });
 
+it('shows resolver error details only when debug mode is enabled', function () {
+    Cms::config()->devMode = false;
+    app(GqlQueries::class)->register(ThrowingMockQuery::class);
+    $firstError = fn (bool $debug) => app(Gql::class)->executeQuery(
+        app(Gql::class)->getPublicSchema(),
+        '{throwingQuery}',
+        debugMode: $debug,
+    )['errors'][0];
+
+    config()->set('app.debug', true);
+    expect($firstError(true))->toHaveKey('extensions.debugMessage', 'Internal resolver failure');
+
+    config()->set('app.debug', false);
+    expect($firstError(false))
+        ->toHaveKey('message', 'Something went wrong when processing the GraphQL query.')
+        ->not->toHaveKey('extensions.debugMessage');
+});
+
 it('allows pre-execution listeners to short-circuit query execution', function () {
     $schema = app(Gql::class)->getPublicSchema();
 
@@ -468,3 +486,17 @@ it('exposes the expected element arguments and fields', function () {
 
     expect(json_encode($snapshot, JSON_PRETTY_PRINT))->toMatchSnapshot();
 });
+
+class ThrowingMockQuery extends BaseQuery
+{
+    public static function getQueries(bool $checkToken = true): array
+    {
+        return [
+            'throwingQuery' => [
+                'type' => Type::string(),
+                'args' => [],
+                'resolve' => static fn () => throw new RuntimeException('Internal resolver failure'),
+            ],
+        ];
+    }
+}

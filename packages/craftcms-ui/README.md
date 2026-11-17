@@ -4,7 +4,7 @@ Web Components library for Craft CMS Control Panel UI.
 
 ## Features
 
-- Built with [Lit](https://lit.dev/) and [@lion/ui](https://lion-web.netlify.app/)
+- Built with [Lit](https://lit.dev/)
 - Comprehensive set of accessible, themeable UI components
 - TypeScript support with full type definitions
 - Storybook integration for component development

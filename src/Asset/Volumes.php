@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
@@ -176,7 +177,6 @@ class Volumes
             $volumeModel->fs = $data['fs'] ?? null;
             $volumeModel->hasUrls = $data['hasUrls'] ?? false;
             $volumeModel->subpath = $data['subpath'] ?? null;
-            $volumeModel->assetTransformer = $data['assetTransformer'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
             $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -255,7 +255,7 @@ class Volumes
                 ->where('assets.deletedWithVolume', true)
                 ->all();
 
-            Elements::restoreElements($assets);
+            VolumeOperation::for($volumeModel->id, $volumeModel->name)->scope(fn () => Elements::restoreElements($assets));
         }
 
         if ($propagateAssets) {
@@ -348,11 +348,13 @@ class Volumes
                 ->status(null)
                 ->all();
 
-            foreach ($assets as $asset) {
-                $asset->deletedWithVolume = true;
-                $asset->keepFileOnDelete = true;
-                Elements::deleteElement($asset);
-            }
+            VolumeOperation::for($volumeModel->id, $volumeModel->name)->scope(function () use ($assets): void {
+                foreach ($assets as $asset) {
+                    $asset->deletedWithVolume = true;
+                    $asset->keepFileOnDelete = true;
+                    Elements::deleteElement($asset);
+                }
+            });
 
             if ($volumeModel->fieldLayoutId) {
                 app(Fields::class)->deleteLayoutById($volumeModel->fieldLayoutId);

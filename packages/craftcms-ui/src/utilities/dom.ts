@@ -10,7 +10,16 @@ type AssetDetails = {
   value: string;
 };
 
-const ownedAssets = new Map<string, OwnedAsset>();
+/**
+ * Registry of the stylesheets and scripts appended here, shared through the
+ * global object because the control panel's bundles (the Vue app, the legacy
+ * `Craft` global, legacy HTML controls) each bundle their own copy of this
+ * module. A per-copy registry would let one copy skip an asset another copy
+ * owns without taking a reference, and lose it when that copy disposes it.
+ */
+const ownedAssets: Map<string, OwnedAsset> = ((globalThis as any)[
+  Symbol.for('craft.ownedAssets')
+] ??= new Map<string, OwnedAsset>());
 
 /**
  * Disposer returned from {@link appendHeadHtml} / {@link appendBodyHtml}.
@@ -89,6 +98,7 @@ export async function appendElementHtml(
       } else {
         // Just inserted into `parent`, so it's a child node.
         appended.push(node as ChildNode);
+        await runNestedScripts(node, rejectOnError);
       }
 
       if (loaded) {
@@ -101,6 +111,31 @@ export async function appendElementHtml(
     dispose();
 
     throw error;
+  }
+}
+
+/**
+ * Scripts nested in a wrapper clone as already started, so they're inert once
+ * the wrapper is inserted. Recreate them one at a time, waiting for each
+ * external script to load, so they run in order, as jQuery's `.html()` did.
+ */
+async function runNestedScripts(
+  node: Node,
+  rejectOnError: boolean
+): Promise<void> {
+  if (!(node instanceof Element)) {
+    return;
+  }
+
+  for (const inert of node.querySelectorAll('script')) {
+    const script = cloneNode(inert) as HTMLScriptElement;
+    const loaded = script.src ? waitForScript(script, script.src) : null;
+
+    inert.replaceWith(script);
+
+    if (loaded) {
+      await awaitAsset(loaded, rejectOnError);
+    }
   }
 }
 
@@ -229,27 +264,14 @@ export function isVisible(el: HTMLElement): boolean {
 }
 
 /**
- * A custom element that carries form state on the host (e.g. Lion-based
- * controls like `craft-select-rich` that have no light-DOM posting input).
+ * A custom element that carries form state on the host, with no light-DOM
+ * input posting for it.
  */
 interface FormValueHost extends HTMLElement {
   name?: unknown;
   disabled?: unknown;
-  modelValue?: unknown;
-  serializedValue?: unknown;
+  checked?: unknown;
   value?: unknown;
-}
-
-/** Lion choice-input model shape (`craft-checkbox`, `craft-option`, …). */
-function isChoiceModelValue(
-  modelValue: unknown
-): modelValue is {value: unknown; checked: boolean} {
-  return (
-    typeof modelValue === 'object' &&
-    modelValue !== null &&
-    'checked' in modelValue &&
-    typeof (modelValue as {checked: unknown}).checked === 'boolean'
-  );
 }
 
 /**
@@ -257,8 +279,8 @@ function isChoiceModelValue(
  * string, mirroring jQuery's `.serialize()` semantics (unchecked checkboxes
  * and radios, disabled controls, and buttons/files are omitted).
  *
- * Custom elements that hold their value on the host (a `name` plus a Lion
- * `modelValue`/`serializedValue`, or a `value` property) are serialized too —
+ * Custom elements that hold their value on the host (a `name` plus a `value`
+ * property, and a `checked` one for a choice) are serialized too —
  * unless their light DOM contains a named native control, in which case that
  * control is the posting surface and already covered (the SSR pattern used by
  * `craft-checkbox`, `craft-switch`, etc.).
@@ -314,7 +336,7 @@ function collectFormInputs(
 
   for (const control of controls) {
     // Like native form submission, skip controls with an empty name — e.g.
-    // the native input of a Lion field (`craft-input`) without a name.
+    // the native input of a `craft-input` without a name.
     if (control.disabled || !control.name || exclude?.contains(control)) {
       continue;
     }
@@ -362,15 +384,15 @@ function collectFormInputs(
       continue;
     }
 
-    if (isChoiceModelValue(host.modelValue)) {
-      if (host.modelValue.checked) {
-        params.append(name, String(host.modelValue.value ?? ''));
+    if (typeof host.checked === 'boolean') {
+      if (host.checked) {
+        params.append(name, String(host.value ?? ''));
       }
 
       continue;
     }
 
-    const value = host.serializedValue ?? host.value;
+    const value = host.value;
 
     if (value === undefined || value === null) {
       continue;

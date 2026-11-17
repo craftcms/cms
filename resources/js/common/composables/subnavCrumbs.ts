@@ -72,8 +72,11 @@ export function withSubnavCrumbs(
     return crumbs;
   }
 
+  // A grouped nav's trail starts at the group, so the page's crumb can match
+  // any level of it, not just the first.
   const last = crumbs.at(-1);
-  const overlaps = last != null && last.label === derived[0]!.label;
+  const overlaps =
+    last != null && derived.some((crumb) => crumb.label === last.label);
 
   return [...(overlaps ? crumbs.slice(0, -1) : crumbs), ...derived];
 }
@@ -260,4 +263,25 @@ export function withNavCrumbMenus(
 
     return level ? {...crumb, items: navItemActions(level)} : crumb;
   });
+}
+
+/**
+ * Drops a trail that's nothing but the page you're on: a lone crumb with no
+ * switcher repeats the page's heading and goes nowhere.
+ *
+ * @param url The page being shown.
+ */
+export function withoutLoneCurrentCrumb(
+  crumbs: Array<BreadcrumbItem>,
+  url: string
+): Array<BreadcrumbItem> {
+  const [only] = crumbs;
+
+  if (crumbs.length !== 1 || !only || only.items?.length || only.html) {
+    return crumbs;
+  }
+
+  const href = only.href ?? only.url ?? null;
+
+  return href === null || samePath(href, url) ? [] : crumbs;
 }

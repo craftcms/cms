@@ -41,7 +41,11 @@ use Symfony\Component\Process\Process;
 | components can't be drift-checked against a stale manifest. Manual regen:
 | cd packages/craftcms-ui && npm run build:manifest
 | The checked-in ROOT packages/craftcms-ui/custom-elements.json is stale; do not use it.
+| Fork PRs can't generate it in CI (no Font Awesome token), so on a cache miss
+| laravel-ci.yml excludes this file's group.
 */
+
+pest()->group('custom-elements-manifest');
 
 /**
  * Path to the generated Custom Elements Manifest. Resolved relative to this
@@ -182,12 +186,24 @@ function cpDriftInvokeProtected(ViewComponent $component, string $method): mixed
 function cpDriftWcOnlyAllowlist(): array
 {
     return [
-        // Inherited from <craft-popover>: it stops the overlay writing
-        // `aria-expanded` onto its invoker, for a consumer whose invoker is a
-        // positioning anchor rather than the control. Only something composing
-        // the element in the client can know that, so there's nothing for a
-        // server-rendered menu to set.
-        'craft-action-menu' => ['without-invoker-aria'],
+        // Inherited from <craft-popover>. `without-invoker-aria` is for a
+        // consumer whose invoker is a positioning anchor rather than the
+        // control, which only client-side composition can know. `opened` is
+        // runtime state, and `manual` would stop a menu opening on click.
+        'craft-action-menu' => ['without-invoker-aria', 'open', 'manual'],
+        // The reveal toggle owns `type`, switching it between password and
+        // text, so the server leaves it to the component.
+        'craft-input-password' => ['type'],
+        // How far a textarea grows before it scrolls is a client-side limit;
+        // server-rendered textareas use the default.
+        'craft-textarea' => ['max-rows'],
+        // `opened` and `focused` are runtime state. `invalid` follows a
+        // validation response, which the client renders.
+        'craft-combobox' => ['invalid', 'open'],
+        // The server checks the selected option rather than setting `value`.
+        // `opened` is runtime state, and the builder has no required or
+        // invalid state to pass on.
+        'craft-select-rich' => ['required', 'invalid', 'open', 'value'],
     ];
 }
 

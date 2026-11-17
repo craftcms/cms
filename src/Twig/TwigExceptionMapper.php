@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Facades\Twig;
+use Error;
 use Exception;
 use ReflectionProperty;
 use Throwable;
@@ -48,11 +49,18 @@ readonly class TwigExceptionMapper
             $trace = $trace->slice($viewIndex + 1);
         }
 
-        $trace = $trace->all();
+        // `Exception` and `Error` each declare their own private properties.
+        $baseClass = $exception instanceof Exception ? Exception::class : Error::class;
+        new ReflectionProperty($baseClass, 'trace')->setValue($exception, $trace->all());
 
-        if ($exception instanceof Exception) {
-            $traceProperty = new ReflectionProperty('Exception', 'trace');
-            $traceProperty->setValue($exception, $trace);
+        $location = $this->resolveTemplatePathAndLine($exception->getFile(), $exception->getLine());
+
+        if ($location !== false) {
+            new ReflectionProperty($baseClass, 'file')->setValue($exception, $location[0]);
+
+            if ($location[1] !== null) {
+                new ReflectionProperty($baseClass, 'line')->setValue($exception, $location[1]);
+            }
         }
 
         return $exception;

@@ -27,13 +27,20 @@ class ElementResponse
 {
     use RespondsWithFlash;
 
-    /** @param array<string, mixed> $data */
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  string|null  $redirect  Where to go when the request doesn’t say.
+     * @param  bool  $overridePostedRedirect  Whether to go to `$redirect` even when the request says where to go, as
+     *                                        when what was saved isn’t what the request expected, and there’s more to
+     *                                        do there.
+     */
     public function success(
         ElementInterface $element,
         string $message,
         array $data = [],
         bool $supportsAddAnother = false,
         ?string $redirect = null,
+        bool $overridePostedRedirect = false,
     ): Response {
         // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
         $data += [
@@ -41,7 +48,11 @@ class ElementResponse
             'element' => $element->toArray($element->attributes()),
         ];
 
-        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element) ?? $redirect, [
+        $redirect = $overridePostedRedirect && $redirect !== null
+            ? $redirect
+            : ($this->getPostedRedirectUrl($element) ?? $redirect);
+
+        $response = $this->asSuccess($message, $data, $redirect, [
             'details' => ! $element->dateDeleted
                 ? app(ElementHtml::class)->elementChipHtml($element, ['hyperlink' => true])
                 : null,

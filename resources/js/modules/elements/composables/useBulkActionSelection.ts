@@ -85,11 +85,8 @@ export function useBulkActionSelection(options: {
   }
 
   /**
-   * Copy mirrors Craft 5: the selection is handed to the legacy
-   * `Craft.cp.copyElements()`, which stores it in localStorage (for paste
-   * targets like nested element managers), shows the persistent "copied"
-   * notification, and broadcasts to other tabs. Nothing changes server-side,
-   * so no refresh/`performed` is emitted.
+   * Copy puts the selection on the element clipboard. Nothing changes
+   * server-side, so no refresh/`performed` is emitted.
    */
   onOwnedEvent('craft:copy-elements', (event) => {
     const detail = event.detail ?? {};

@@ -203,7 +203,7 @@ it('rechecks permissions before resuming an upload', function () {
         'filename' => 'example.txt', 'size' => 3, 'folderId' => $this->folder->id,
     ])->assertCreated()->json();
 
-    Gate::partialMock()->shouldReceive('authorize')->andThrow(new AuthorizationException);
+    Gate::before(fn ($user, string $ability) => $ability === 'uploadAsset' ? false : null);
 
     $this->getJson($session['urls']['status'])->assertForbidden();
     $this->head($session['urls']['transfer'], ['Tus-Resumable' => '1.0.0'])->assertForbidden();

@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
@@ -86,7 +87,7 @@ class Install extends Migration
     public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error Run `composer install` or remove your `config/craft/project/` folder and try again.";
+            $message = "Project config validation failed: $error Run `".app(TerminalCommands::class)->composer('install').'` or remove your `config/craft/project/` folder and try again.';
 
             error($message);
             error('Aborting install.');
@@ -156,6 +157,7 @@ class Install extends Migration
             $table->string('subjectId')->nullable();
             $table->unsignedBigInteger('siteId')->nullable();
             $table->unsignedBigInteger('rootEventId')->nullable();
+            $table->string('operationId')->nullable();
             $table->jsonb('payload');
             $table->dateTime('occurredAt');
         });
@@ -305,7 +307,6 @@ class Install extends Migration
         Schema::create(Table::IMAGETRANSFORMINDEX, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('assetId');
-            $table->string('transformer')->default(null)->nullable();
             $table->string('filename')->nullable();
             $table->string('format')->nullable();
             $table->string('transformString');
@@ -1042,7 +1043,6 @@ class Install extends Migration
             $table->string('fs');
             $table->boolean('hasUrls')->default(false);
             $table->string('subpath')->nullable();
-            $table->string('assetTransformer')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
@@ -1075,6 +1075,7 @@ class Install extends Migration
             $table->string('type');
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->tinyInteger('colspan')->nullable();
+            $table->string('color')->nullable()->default('gray');
             $table->jsonb('settings')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -1101,6 +1102,7 @@ class Install extends Migration
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['operationId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);

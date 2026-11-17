@@ -76,7 +76,7 @@ function background(element: HTMLElement, popup: HTMLElement): string {
 
 describe('semantics', () => {
   it('exposes each option with its selected state', async () => {
-    await openCombobox((c) => (c.modelValue = 'cherry'));
+    await openCombobox((c) => (c.value = 'cherry'));
 
     await expect
       .element(page.getByRole('option', {name: /^Cherry/, selected: true}))
@@ -95,7 +95,7 @@ describe('semantics', () => {
     options[1]!.click();
     await settle();
 
-    expect(control.modelValue).toBe('');
+    expect(control.value).toBe('');
   });
 
   it('takes its name from its content, then its hint, then its suffix, leaving out an unlabeled icon', async () => {
@@ -125,7 +125,7 @@ describe('visual', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it('draws the label at 4.5:1 and the hint at 4.5:1, at rest, hovered, highlighted and selected', async () => {
       const {options, popup} = await openCombobox(
-        (c) => (c.modelValue = 'cherry'),
+        (c) => (c.value = 'cherry'),
         theme
       );
       const [apple, , cherry] = options;
@@ -159,9 +159,7 @@ describe('visual', () => {
   });
 
   it('marks only the selected option with a check mark, hidden from assistive technology', async () => {
-    const {control, options} = await openCombobox(
-      (c) => (c.modelValue = 'cherry')
-    );
+    const {control, options} = await openCombobox((c) => (c.value = 'cherry'));
     const [apple, , cherry] = options;
     const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check');
 
@@ -177,7 +175,7 @@ describe('visual', () => {
       .not.toBeInTheDocument();
     expect(apple!.shadowRoot!.querySelector('.check')).toBeNull();
 
-    control.modelValue = 'apple';
+    control.value = 'apple';
     await settle();
 
     expect(apple!.shadowRoot!.querySelector('.check')).not.toBeNull();
@@ -187,7 +185,7 @@ describe('visual', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it('fills the highlighted option at 3:1 against the rest, but not the selected one, whose check mark reaches 3:1', async () => {
       const {options, popup} = await openCombobox(
-        (c) => (c.modelValue = 'cherry'),
+        (c) => (c.value = 'cherry'),
         theme
       );
       const [apple, , cherry] = options;
@@ -228,9 +226,7 @@ describe('visual', () => {
     await cdp().send('Emulation.setEmulatedMedia', {
       features: [{name: 'forced-colors', value: 'active'}],
     });
-    const {options, popup} = await openCombobox(
-      (c) => (c.modelValue = 'cherry')
-    );
+    const {options, popup} = await openCombobox((c) => (c.value = 'cherry'));
     const [apple, , cherry] = options;
     await userEvent.keyboard('{ArrowDown}');
     await settle();

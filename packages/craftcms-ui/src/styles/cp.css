@@ -6,6 +6,23 @@
 @import './shared/colorable.css' layer(theme);
 @import './shared/base.css' layer(base);
 @import './shared/choice-inputs.css' layer(base);
+@import './shared/kbd.css' layer(base);
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/InterVariable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fonts/InterVariable-Italic.woff2') format('woff2');
+}
 
 .resizable-container {
   border: 2px solid;
@@ -199,7 +216,7 @@ craft-card > [data-cover]:not([data-cover='body']) {
     margin: 0;
   }
 
-  :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'] {
+  craft-checkbox > input[type='checkbox'] {
     box-shadow: 0 0 0 1px var(--_cover-backing, transparent);
   }
 }
@@ -207,7 +224,7 @@ craft-card > [data-cover]:not([data-cover='body']) {
 /* Blurred like a label bar, which a backed header doesn't have, so a busy
    image doesn't show through the backing. */
 craft-card > [data-cover='backed'] {
-  :is(craft-checkbox, craft-checkbox-indeterminate) > input[type='checkbox'],
+  craft-checkbox > input[type='checkbox'],
   craft-button[variant~='plain'] {
     backdrop-filter: blur(var(--blur-md, 12px));
   }

@@ -1934,7 +1934,7 @@ return [
     'Try again' => 'Try again',
     'Try another way' => 'Try another way',
     'Try for free' => 'Try for free',
-    'Try running `composer install` from your terminal to resolve.' => 'Try running `composer install` from your terminal to resolve.',
+    'Try running `{command}` from your terminal to resolve.' => 'Try running `{command}` from your terminal to resolve.',
     'Try' => 'Try',
     'Trying again…' => 'Trying again…',
     'Two-Step Verification Setup' => 'Two-Step Verification Setup',

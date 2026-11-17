@@ -55,7 +55,12 @@ readonly class TrackSessionActivity
 
     private function savesSession(Request $request): bool
     {
+        $route = $request->route();
+
         return $request->hasSession()
-            && ! in_array(StartSession::class, $request->route()?->excludedMiddleware() ?? [], true);
+            && (
+                ! in_array(StartSession::class, $route?->excludedMiddleware() ?? [], true)
+                || StartLazySession::isAppliedTo($route)
+            );
     }
 }

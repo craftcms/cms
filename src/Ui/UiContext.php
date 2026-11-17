@@ -18,6 +18,8 @@ readonly class UiContext
      * @param  array<string, mixed>  $values
      * @param  array<string, string|list<string>>  $errors
      * @param  list<string>  $globalErrors
+     * @param  bool  $preview  Whether the UI previews values on their own, such as “Compare changes” and the AI
+     *                         assistant’s proposed changes, rather than being part of a form.
      */
     public function __construct(
         public string|array $namespace = [],
@@ -26,6 +28,7 @@ readonly class UiContext
         public array $globalErrors = [],
         ControlMode|string $mode = ControlMode::Editable,
         public bool $refreshable = false,
+        public bool $preview = false,
     ) {
         $this->mode = is_string($mode) ? ControlMode::from($mode) : $mode;
     }

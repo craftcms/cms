@@ -25,8 +25,8 @@ readonly class ComponentTypes
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'component-types.list',
-        description: 'Lists the available types of an extendable component kind, such as field types, workflow stage types, asset transform drivers, field layout elements, or condition rules, including those plugins add. Omit kind to list the kinds. Call component-types.get for a type’s settings schema before configuring it.',
+        name: 'component_types_list',
+        description: 'Lists the available types of an extendable component kind, such as field types, workflow stage types, asset transform drivers, field layout elements, or condition rules, including those plugins add. Omit kind to list the kinds. Call component_types_get for a type’s settings schema before configuring it.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresAdmin]
@@ -50,17 +50,17 @@ readonly class ComponentTypes
     }
 
     /**
-     * @param  string  $type  A type from component-types.list.
+     * @param  string  $type  A type from component_types_list.
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'component-types.get',
+        name: 'component_types_get',
         description: 'Returns a component type’s settings as JSON Schema, with each setting’s label, instructions, accepted values, and default. Settings it can’t describe in detail note the control panel control that sets them.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresAdmin]
     public function get(
-        #[Schema(description: 'A kind handle from component-types.list, such as field.')]
+        #[Schema(description: 'A kind handle from component_types_list, such as field.')]
         string $kind,
         string $type,
         #[Schema(description: 'Required by kinds that list a scope, such as the element type for field-layout-element.')]
@@ -71,7 +71,7 @@ readonly class ComponentTypes
         $listed = array_column($this->call(fn (): array => $componentKind->types($scope)), null, 'type');
 
         if (! isset($listed[$type])) {
-            throw new ToolCallException("Unknown $kind type [$type]. Call component-types.list for the available types.");
+            throw new ToolCallException("Unknown $kind type [$type]. Call component_types_list for the available types.");
         }
 
         return [
@@ -117,7 +117,7 @@ readonly class ComponentTypes
 
         if (is_string($conditionClass)) {
             unset($schema['x-craft-condition-class']);
-            $hint = "component-types.list with kind: condition-rule and scope: $conditionClass lists the rule types it accepts.";
+            $hint = "component_types_list with kind: condition-rule and scope: $conditionClass lists the rule types it accepts.";
             $schema['description'] = isset($schema['description']) ? "{$schema['description']} $hint" : $hint;
         }
 

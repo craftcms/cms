@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
@@ -11,46 +12,25 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Ui\Controls\Combobox;
-use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Nodes\Field;
-use Illuminate\Support\Facades\Context;
-
-use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
  */
 class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTransforms
 {
-    public const string IMMEDIATE_TRANSFORMS_CONTEXT = self::class.'.immediateTransforms';
+    /**
+     * @deprecated in 6.0.0. [[AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT]] should be used instead.
+     */
+    public const string IMMEDIATE_TRANSFORMS_CONTEXT = AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT;
 
     public function __construct(private readonly ImageTransformer $imageTransformer) {}
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition(t('Craft'), settingsFields: [
-            Field::make(t('Output Disk'), Combobox::make('disk')
-                ->value(null)
-                ->options([
-                    ['label' => t('Same as source'), 'value' => ''],
-                    ...SelectOptions::getDiskOptions(),
-                    ...SelectOptions::getEnvSuggestions(),
-                ])),
-            Field::make(t('Transforms have public URLs'), Lightswitch::make('hasUrls'))
-                ->instructions(t('Whether Craft should generate public URLs for transforms stored on a custom output disk.')),
-            Field::make(t('Output Subpath'), Combobox::make('subpath')
-                ->value('')
-                ->options(SelectOptions::getEnvSuggestions(true))),
-            Field::make(
-                t('Generate Transforms Before Page Load'),
-                Lightswitch::make('generateTransformsBeforePageLoad'),
-            )->instructions(t('Whether image transforms should be generated before the page loads.')),
-        ]);
+        return new AssetTransformDriverDefinition;
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -59,10 +39,9 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
             throw new NotSupportedException('The Asset cannot be manipulated as an image.');
         }
 
-        $transform = ImageTransform::fromParameters($request->parameters);
-        $immediately = Context::hasHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT)
-            ? Context::getHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT) === true
-            : ($request->transformer->settings['generateTransformsBeforePageLoad'] ?? false) === true;
+        $transform = $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
+        $immediately = $request->immediately
+            ?? ($request->transformer->settings['generate_transforms_before_page_load'] ?? false) === true;
         try {
             $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $immediately, $request->transformer);
         } catch (ImageTransformException $exception) {
@@ -95,12 +74,12 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         );
     }
 
+    /**
+     * @deprecated in 6.0.0. [[AssetTransformers::withImmediateTransforms()]] should be used instead.
+     */
     public function withImmediateTransforms(callable $callback): mixed
     {
-        return Context::scope(
-            $callback,
-            hidden: [self::IMMEDIATE_TRANSFORMS_CONTEXT => true],
-        );
+        return app(AssetTransformers::class)->withImmediateTransforms($callback);
     }
 
     public function preloadAssetTransforms(array $requests): void
@@ -108,14 +87,13 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         $groups = [];
 
         foreach ($requests as $request) {
-            $key = $request->transformer->uid.':'.serialize($request->parameters);
-            $groups[$key]['transform'] ??= ImageTransform::fromParameters($request->parameters);
-            $groups[$key]['transformer'] ??= $request->transformer;
+            $key = $request->namedTransform?->handle.':'.serialize($request->parameters);
+            $groups[$key]['transform'] ??= $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
             $groups[$key]['assets'][$request->asset->id] = $request->asset;
         }
 
         foreach ($groups as $group) {
-            $this->imageTransformer->eagerLoadTransforms([$group['transform']], array_values($group['assets']), $group['transformer']);
+            $this->imageTransformer->eagerLoadTransforms([$group['transform']], array_values($group['assets']));
         }
     }
 }

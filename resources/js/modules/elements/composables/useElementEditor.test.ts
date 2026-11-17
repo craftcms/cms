@@ -30,6 +30,41 @@ import {registerUiComponents} from '@/modules/ui/register';
 import type {UiPayload} from '@/modules/ui/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+const broadcasts = vi.hoisted(() => ({
+  handlers: new Map<string, Set<(message: any) => void>>(),
+}));
+vi.mock('@/common/craft/broadcast', () => ({
+  onBroadcast: (event: string, handler: (message: any) => void) => {
+    const handlers = broadcasts.handlers.get(event) ?? new Set();
+    handlers.add(handler);
+    broadcasts.handlers.set(event, handlers);
+    return () => handlers.delete(handler);
+  },
+}));
+const refreshPreviews = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/live-preview/previews', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  refreshPreviews,
+}));
+
+/** A broadcast from another control panel tab. */
+function fromOtherTab(message: Record<string, unknown>): void {
+  broadcasts.handlers.get(message.event as string)?.forEach((h) => h(message));
+}
+
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
 
 function deferred<T>() {
@@ -194,6 +229,9 @@ describe('useElementEditor', () => {
                   ref: editor.renderer as any,
                   payload: editor.uiPayload.value,
                   errors: editor.errors.value,
+                  refresh: editor.uiPayload.value.refreshable
+                    ? editor.refreshLayout
+                    : undefined,
                   'onUpdate:mutation': editor.onMutation,
                 })
               : null,
@@ -271,10 +309,37 @@ describe('useElementEditor', () => {
     }
   );
 
+  it('only submits Cmd+S on a draft in review once editing it is started', async () => {
+    const {editor} = mount(
+      payload({
+        workflow: {
+          current: {
+            status: 'pending',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+    const shortcut = () =>
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
+      );
+
+    shortcut();
+    expect(save.calls()).toBe(0);
+
+    editor.startEditingDraft();
+    await nextTick();
+    shortcut();
+    expect(save.calls()).toBe(1);
+  });
+
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',
-      cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+      cp: {},
     });
     onTestFinished(() => {
       vi.unstubAllGlobals();
@@ -442,14 +507,18 @@ describe('useElementEditor', () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
       vi.stubGlobal('Craft', {
         systemUid: 'test',
-        cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+        cp: {},
       });
       const components = createCpComponentRegistry();
       registerUiComponents(components);
       defineEntryFieldLayoutUiHost(components);
       vi.stubGlobal('Cp', {$components: components});
-      vi.resetModules();
-      await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+      // A fresh copy of the legacy script, registering into these components.
+      // Only that module: resetting them all would hand the lazily loaded
+      // controls a second copy of the renderer they render inside.
+      await import(
+        /* @vite-ignore */ `../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js?flat=${flat}`
+      );
       onTestFinished(() => {
         vi.unstubAllGlobals();
       });
@@ -546,6 +615,7 @@ describe('useElementEditor', () => {
         'craft-legacy-html-control'
       ) as HTMLElement & {ready: Promise<void>};
       await legacy.ready;
+      await vi.dynamicImportSettled();
       await nextTick();
       const host = container!.querySelector('craft-entry-field-layout-ui')!;
       const input = container!.querySelector<HTMLInputElement>(
@@ -1032,6 +1102,47 @@ describe('useElementEditor', () => {
     expect(requestSignal?.aborted).toBe(true);
   });
 
+  it('saves a draft once when the layout refresh for the same edit lands first', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const reactiveLayout = (title: string): UiPayload => {
+      const layout = fieldLayout(title);
+      layout.nodes[0]!.control!.reactive = true;
+
+      return {...layout, refreshable: true};
+    };
+    const savedDraft = deferred<{data: Record<string, unknown>}>();
+    postSpy.mockImplementation((url: string) =>
+      url.includes('save-draft')
+        ? savedDraft.promise
+        : Promise.resolve({data: {ui: reactiveLayout('Edited')}})
+    );
+    mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        isProvisionalDraft: true,
+        ui: reactiveLayout('Original'),
+      })
+    );
+
+    await typeTitle('Edited');
+    // Both wait out the same pause in typing; the refresh answers first, and
+    // the renderer re-applies the edit it was asked to render.
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(500);
+    savedDraft.resolve({data: {draftId: 7, ui: reactiveLayout('Edited')}});
+    await vi.advanceTimersByTimeAsync(2000);
+
+    const saves = postSpy.mock.calls.filter(([url]) =>
+      String(url).includes('save-draft')
+    );
+    expect(saves).toHaveLength(1);
+    expect(saves[0]?.[1]).toMatchObject({title: 'Edited'});
+  });
+
   it('generates an empty entry slug from its title until the slug is edited', async () => {
     vi.stubGlobal('Craft', {
       ...(globalThis as any).Craft,
@@ -1245,11 +1356,39 @@ describe('useElementEditor', () => {
 
     expect(editor.activity.isStale.value).toBe(false);
 
-    // Something that changes it afterwards is still someone else's edit.
+    // Something that changes it afterwards is still someone else's edit,
+    // even when it redraws the nested element it saved.
     serverStamp = 3;
+    await editor.nestedOwnerEditor.refresh!({changedElsewhere: true});
     await editor.activity.poll();
 
     expect(editor.activity.isStale.value).toBe(true);
+  });
+
+  it('refreshes once for nested fields that hear of the same saves elsewhere', async () => {
+    postSpy.mockImplementation(async () => ({
+      data: {ui: fieldLayout('Original title')},
+    }));
+    const {editor} = mount(payload({ui: fieldLayout('Original title')}));
+    postSpy.mockClear();
+
+    const fieldHears = () =>
+      new Promise<void>((resolve) =>
+        setTimeout(
+          () =>
+            void editor.nestedOwnerEditor.refresh!({
+              changedElsewhere: true,
+            }).then(resolve),
+          50
+        )
+      );
+    await Promise.all([fieldHears(), fieldHears()]);
+
+    expect(
+      postSpy.mock.calls.filter(([url]) =>
+        String(url).includes('update-field-layout')
+      )
+    ).toHaveLength(1);
   });
 
   it('doesn’t report a discarded draft as someone else’s edit', async () => {
@@ -1396,9 +1535,26 @@ describe('useElementEditor', () => {
     expect(editor.uiPayload.value?.values).toEqual({title: 'Saved title'});
   });
 
+  it('leaves the layout to the renderer when a refresh lands during a save', async () => {
+    const {editor} = mount(
+      payload({canAutosave: false, ui: fieldLayout('Original title')})
+    );
+    const save = interceptSave();
+    editor.save();
+    postSpy.mockResolvedValue({data: {ui: fieldLayout('Unsaved title')}});
+
+    const refreshed = await editor.refreshLayout({}, []);
+    await nextTick();
+
+    expect(refreshed.values).toEqual({title: 'Unsaved title'});
+    expect(editor.uiPayload.value?.values).toEqual({
+      title: 'Original title',
+    });
+
+    save.restore();
+  });
+
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     mount(payload({draftId: 7}), slideout);
     await nextTick();
@@ -1407,26 +1563,16 @@ describe('useElementEditor', () => {
       {canonicalId: 12, draftId: 8},
       {canonicalId: 13, draftId: 7},
     ]) {
-      broadcaster.dispatchEvent(
-        new MessageEvent('message', {
-          data: {event: 'reorderNestedElements', ...data},
-        })
-      );
+      fromOtherTab({event: 'reorderNestedElements', ...data});
     }
     expect(slideout.reload).not.toHaveBeenCalled();
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     expect(slideout.reload).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
   });
 
   it('defers a matching reorder reload while a slideout has unsaved changes', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     const {editor} = mount(
       payload({
@@ -1438,11 +1584,7 @@ describe('useElementEditor', () => {
     );
     await typeTitle('Unsaved title');
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     await nextTick();
 
     expect(slideout.reload).not.toHaveBeenCalled();
@@ -1452,8 +1594,6 @@ describe('useElementEditor', () => {
   });
 
   it('defers a matching reorder reload until the latest autosave is acknowledged', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     const {editor} = mount(
       payload({
@@ -1468,11 +1608,7 @@ describe('useElementEditor', () => {
     await editor.autosave.save();
     await typeTitle('Pending title');
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     await nextTick();
 
     expect(editor.autosave.status.value).toBe('saved');
@@ -2199,6 +2335,50 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('waits for a draft write already on its way, and applies the draft it creates', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+    const response = deferred<{data: Record<string, unknown>}>();
+    let requestSignal: AbortSignal | undefined;
+    postSpy.mockImplementationOnce(
+      (_url: string, _data: unknown, {signal}: {signal: AbortSignal}) => {
+        requestSignal = signal;
+
+        return response.promise;
+      }
+    );
+
+    await typeTitle('First edit');
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    await typeTitle('Second edit');
+
+    const save = interceptSave();
+    onTestFinished(() => save.restore());
+    editor.save();
+
+    expect(save.calls()).toBe(0);
+    expect(requestSignal?.aborted).toBe(false);
+
+    response.resolve({data: {draftId: 7}});
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/elements/apply-draft');
+    expect(save.last().data).toMatchObject({draftId: 7, provisional: 1});
+    expect(JSON.stringify(save.last().data)).toContain('Second edit');
+    // The edit made while the draft write was out goes with the submission,
+    // not with a draft write of its own.
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+  });
+
   /**
    * Saving before the debounce has run leaves a save armed against the draft
    * the submission is about to consume. It describes values this save is
@@ -2233,6 +2413,126 @@ describe('useElementEditor', () => {
 
     save.restore();
     vi.useRealTimers();
+  });
+
+  it('holds a save, and the action it was for, until beforeSave settles the edits still on the autosave debounce', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    // The way the Compare screen waits for its other side to settle its edits.
+    let allow!: (proceed: boolean) => void;
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')}),
+      null,
+      {
+        beforeSave: () =>
+          new Promise<boolean>((resolve) => {
+            allow = resolve;
+          }),
+      }
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    await typeTitle('Edited title');
+    editor.submitAction({
+      label: 'Save and add another',
+      actionUrl: '/actions/entries/save-and-add-another',
+      params: {addAnother: 1},
+      redirect: null,
+    });
+    await nextTick();
+
+    expect(save.calls()).toBe(0);
+    expect(await editor.settleChanges()).toBe(true);
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({title: 'Edited title'});
+
+    allow(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/entries/save-and-add-another');
+    expect(save.last().data).toMatchObject({addAnother: 1});
+  });
+
+  it('submits once when saved again while beforeSave still waits', async () => {
+    let allow!: (proceed: boolean) => void;
+    const beforeSave = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          allow = resolve;
+        })
+    );
+    const {editor} = mount(payload({}), null, {beforeSave});
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    editor.save();
+    editor.save();
+    allow(true);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(beforeSave).toHaveBeenCalledOnce();
+    expect(save.calls()).toBe(1);
+  });
+
+  it('drops a save still waiting on beforeSave once the editor is removed', async () => {
+    let allow!: (proceed: boolean) => void;
+    const {editor} = mount(payload({}), null, {
+      beforeSave: () =>
+        new Promise<boolean>((resolve) => {
+          allow = resolve;
+        }),
+    });
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    editor.save();
+    app!.unmount();
+    app = undefined;
+    allow(true);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(save.calls()).toBe(0);
+  });
+
+  it('doesn’t report its edits settled while one made during their autosave is still pending', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    let respond!: () => void;
+    postSpy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          respond = () => resolve({data: {draftId: 7}});
+        })
+    );
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+
+    await typeTitle('Edited title');
+    const settled = editor.settleChanges();
+    await typeTitle('Edited title again');
+    respond();
+
+    expect(await settled).toBe(false);
+  });
+
+  it('doesn’t report its edits settled while its own save is still submitting', async () => {
+    const {editor} = mount(payload({}));
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    // Another submission now would cancel this one before its result lands.
+    editor.save();
+
+    expect(await editor.settleChanges()).toBe(false);
   });
 
   it('starts a workflow draft when Save beats the autosave debounce', async () => {
@@ -2703,8 +3003,7 @@ describe('useElementEditor', () => {
     });
 
     it('announces invalid nested elements when a save fails', async () => {
-      const displayError = vi.fn();
-      vi.stubGlobal('Craft', {cp: {displayError}});
+      vi.stubGlobal('Craft', {cp: {}});
       const root = document.createElement('div');
       document.body.append(root);
       const listener = vi.fn();
@@ -2736,23 +3035,53 @@ describe('useElementEditor', () => {
       expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
         ids: [5],
       });
-      expect(displayError).toHaveBeenCalledWith('Couldn’t save entry.');
+      expect(messages.showError).toHaveBeenCalledWith('Couldn’t save entry.');
       root.remove();
     });
 
-    it('announces a finished save to the rest of the CP', async () => {
-      const displaySuccess = vi.fn();
-      const postMessage = vi.fn();
-      const refresh = vi.fn();
-      vi.stubGlobal('Craft', {
-        cp: {displaySuccess},
-        broadcaster: {
-          postMessage,
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn(),
+    /**
+     * Applying the provisional draft deletes it, so a panel opened for just
+     * the draft would reload a draft that no longer exists. Saving it as a
+     * draft instead keeps the panel on that draft, not the canonical element.
+     */
+    it.each([
+      {
+        saved: {id: 12},
+        query: {elementType: 'Entry', siteId: '2', elementId: '12'},
+      },
+      {
+        saved: {id: 30, canonicalId: 12, draftId: 9, isProvisionalDraft: false},
+        query: {
+          elementType: 'Entry',
+          siteId: '2',
+          elementId: '12',
+          draftId: '9',
         },
-        Preview: {refresh},
-      });
+      },
+    ])(
+      'reloads a kept-open panel as what its draft was saved as (%o)',
+      async ({saved, query}) => {
+        stubSaveRequest(() => Promise.resolve({data: {element: saved}}));
+        const slideout = handledSlideout();
+        const instance = Object.assign(slideout.instance, {
+          href: 'https://example.test/actions/elements/edit?elementType=Entry&draftId=7&provisional=1&siteId=2',
+        });
+        const {editor} = mount(
+          payload({draftId: 7, isProvisionalDraft: true}),
+          slideout
+        );
+
+        editor.save({redirect: false});
+
+        await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalled());
+        expect(slideout.reload).toHaveBeenCalledWith({preserveState: true});
+        expect(Object.fromEntries(new URL(instance.href).searchParams)).toEqual(
+          query
+        );
+      }
+    );
+
+    it('refreshes previews after a finished save', async () => {
       stubSaveRequest(() =>
         Promise.resolve({
           data: {message: 'Entry saved.', element: {id: 12}},
@@ -2762,13 +3091,9 @@ describe('useElementEditor', () => {
 
       editor.save();
 
-      await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
-      expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
-      expect(postMessage).toHaveBeenCalledWith({
-        event: 'saveElement',
-        id: 12,
-      });
-      expect(refresh).toHaveBeenCalled();
+      await vi.waitFor(() => expect(messages.showSuccess).toHaveBeenCalled());
+      expect(messages.showSuccess.mock.calls[0]![0]).toBe('Entry saved.');
+      expect(refreshPreviews).toHaveBeenCalled();
     });
   });
 });

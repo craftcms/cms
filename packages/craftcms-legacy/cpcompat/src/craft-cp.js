@@ -1,0 +1,2365 @@
+/** global: Craft */
+/** global: Garnish */
+/** global: $ */
+/** global: jQuery */
+
+/**
+ * CP class
+ */
+Craft.CP = Garnish.Base.extend(
+  {
+    _elementThumbLoader: null,
+    animationBlocker: null,
+
+    $nav: null,
+    $navToggle: null,
+    $globalSkipLinkList: null,
+    $globalSidebar: null,
+    $globalContainer: null,
+    $mainContainer: null,
+    $pageContainer: null,
+    $alerts: null,
+    $crumbs: null,
+    $crumbList: null,
+    $crumbItems: null,
+    $crumbMenuTriggerItem: null,
+    $crumbMenu: null,
+    $crumbMenuList: null,
+    $crumbMenuItems: null,
+    $notificationContainer: null,
+    $notificationHeading: null,
+    $main: null,
+    $primaryForm: null,
+    $headerContainer: null,
+    $header: null,
+    $mainContent: null,
+    $details: null,
+    $detailsToggle: null,
+    $detailsSkipLink: null,
+    $sidebarContainer: null,
+    $sidebarToggle: null,
+    $sidebar: null,
+    $contentContainer: null,
+    $edition: null,
+
+    $confirmUnloadForms: null,
+    $deltaForms: null,
+    $collapsibleTables: null,
+
+    isMobile: null,
+    fixedHeader: false,
+
+    tabManager: null,
+
+    enableQueue: true,
+    totalJobs: 0,
+    displayedJobInfo: null,
+    displayedJobInfoUnchanged: 1,
+    trackJobProgressTimeout: null,
+    trackingJobProgress: false,
+    jobProgressIcon: null,
+
+    checkingForUpdates: false,
+    forcingRefreshOnUpdatesCheck: false,
+    includingDetailsOnUpdatesCheck: false,
+    checkForUpdatesCallbacks: null,
+    checkForUpdatesFailureCallbacks: null,
+
+    copyElementCallbacks: null,
+
+    resizeTimeout: null,
+
+    // Lazy so this bundle doesn't need its own copy of the queue service.
+    // `Craft.QueueService` is assigned by the Vite-side `modules/queue` shim,
+    // whose deferred module scripts run after this bundle evaluates but before
+    // anything can call the queue delegates — every caller fires on user
+    // interaction or later.
+    get QueueService() {
+      if (!Craft.QueueService) {
+        throw new Error(
+          'Craft.QueueService is not available. The queue service is provided by the modern CP bundle (modules/queue).'
+        );
+      }
+      return Craft.QueueService.getInstance();
+    },
+
+    get elementThumbLoader() {
+      if (!this._elementThumbLoader) {
+        this._elementThumbLoader = new Craft.ElementThumbLoader();
+      }
+      return this._elementThumbLoader;
+    },
+
+    init: function () {
+      // Find all the key elements
+      this.$nav = $('#nav');
+      this.$navToggle = $('#primary-nav-toggle');
+      this.$globalSkipLinkList = $('#global-skip-links');
+      this.$globalSidebar = $('#global-sidebar');
+      this.$globalContainer = $('#global-container');
+      this.$mainContainer = $('#main-container');
+      this.$pageContainer = $('#page-container');
+      this.$alerts = $('#alerts');
+      this.$crumbs = $('#crumbs');
+      this.$crumbList = $('#crumb-list');
+      this.$crumbItems = this.$crumbList.children('li');
+      this.$notificationContainer = $('#notifications');
+      this.$notificationHeading = $('#cp-notification-heading');
+      this.$main = $('#main');
+      this.$primaryForm = $('#main-form');
+      this.$headerContainer = $('#header-container');
+      this.$header = $('#header');
+      this.$mainContent = $('#main-content');
+      this.$details = $('#details');
+      this.$detailsToggle = $('#details-toggle');
+      this.$detailsSkipLink = $('[href="#details-container"]');
+      this.$detailsContainer = $('#details-container');
+      this.$sidebarContainer = $('#sidebar-container');
+      this.$sidebarToggle = $('#sidebar-toggle');
+      this.$sidebar = $('#sidebar');
+      this.$contentContainer = $('#content-container');
+      this.$collapsibleTables = $('table.collapsible');
+
+      this.isMobile = Garnish.isMobileBrowser();
+
+      //this.updateContentHeading();
+
+      if (!this.isMobile && this.$header.length) {
+        this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+        this.updateFixedHeader();
+      }
+
+      Garnish.$doc.ready(() => {
+        // Update responsive tables on window resize
+        this.addListener(Garnish.$win, 'resize', (ev) => {
+          // Ignore element resizes
+          if (ev.target === window) {
+            this.handleWindowResize();
+
+            clearTimeout(this.resizeTimeout);
+            var cp = this;
+            this.resizeTimeout = setTimeout(function () {
+              cp.setSidebarNavAttributes();
+            }, 100);
+          }
+        });
+        this.handleWindowResize();
+        this.setSidebarNavAttributes();
+
+        // Wait a frame before initializing any confirm-unload forms,
+        // so other JS that runs on ready() has a chance to initialize
+        Garnish.requestAnimationFrame(this.initSpecialForms.bind(this));
+      });
+
+      // Alerts
+      if (this.$alerts.length) {
+        this.initAlerts();
+      }
+
+      // Global Animation Blocker
+      this.animationBlocker = new Craft.AnimationBlocker();
+
+      // Toggles
+      this.addListener(this.$navToggle, 'click', 'toggleNav');
+      this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Update skip link target when details are opened/closed
+      this.addListener(this.$detailsToggle, 'open', () => {
+        this.$detailsSkipLink.attr('href', '#details-container');
+      });
+
+      this.addListener(this.$detailsToggle, 'close', () => {
+        this.$detailsSkipLink.attr('href', '#details-toggle-wrapper');
+      });
+
+      // Does this page have a primary form?
+      if (!this.$primaryForm.length) {
+        this.$primaryForm = $('form[data-saveshortcut]:first');
+      }
+
+      // Does the primary form support the save shortcut?
+      if (
+        this.$primaryForm.length &&
+        Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')
+      ) {
+        let shortcuts = [];
+        let actions = this.$primaryForm.data('actions');
+        if (typeof actions === 'undefined') {
+          shortcuts.push([
+            {
+              keyCode: Garnish.S_KEY,
+              ctrl: true,
+              description: Craft.t('app', 'Save'),
+              group: Craft.t('app', 'Forms'),
+            },
+            {
+              redirect: this.$primaryForm.data('saveshortcut-redirect'),
+              retainScroll: Garnish.hasAttr(
+                this.$primaryForm,
+                'saveshortcut-scroll'
+              ),
+            },
+          ]);
+        } else {
+          for (let i = 0; i < actions.length; i++) {
+            let action = actions[i];
+            if (!action.shortcut) {
+              continue;
+            }
+            shortcuts.push([
+              {
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+                shift: !!action.shift,
+                description: action.label || Craft.t('app', 'Save'),
+                group: Craft.t('app', 'Forms'),
+              },
+              {
+                action: action.action,
+                redirect: action.redirect,
+                confirm: action.confirm,
+                params: action.params,
+                data: action.data,
+                retainScroll: action.retainScroll,
+              },
+            ]);
+          }
+        }
+        for (let i = 0; i < shortcuts.length; i++) {
+          Garnish.uiLayerManager.registerShortcut(shortcuts[i][0], () => {
+            this.submitPrimaryForm(shortcuts[i][1]);
+          });
+        }
+      }
+
+      Garnish.$doc.ready(() => {
+        this.initTabs();
+
+        if (this.tabManager) {
+          if (window.LOCATION_HASH) {
+            const $tab = this.tabManager.$tabs.filter(
+              `[href="#${window.LOCATION_HASH}"]`
+            );
+            if ($tab.length) {
+              this.tabManager.selectTab($tab);
+            }
+          }
+        }
+      });
+
+      // Should we match the previous scroll position?
+      let scrollY;
+      const location = document.location;
+      const params = new URLSearchParams(location.search);
+      if (params.has('scrollY')) {
+        scrollY = params.get('scrollY');
+        params.delete('scrollY');
+        Craft.setUrl(
+          Craft.getUrl(
+            `${location.origin}${location.pathname}${location.hash}`,
+            params.toString()
+          )
+        );
+      } else {
+        scrollY = Craft.getLocalStorage('scrollY');
+        if (scrollY !== undefined) {
+          Craft.removeLocalStorage('scrollY');
+        }
+      }
+      if (scrollY !== undefined) {
+        Garnish.$doc.ready(() => {
+          Garnish.requestAnimationFrame(() => {
+            window.scrollTo(0, scrollY);
+          });
+        });
+      }
+
+      if ($.isTouchCapable()) {
+        this.$mainContainer.on(
+          'focus',
+          'input, textarea, .focusable-input',
+          this._handleInputFocus.bind(this)
+        );
+        this.$mainContainer.on(
+          'blur',
+          'input, textarea, .focusable-input',
+          this._handleInputBlur.bind(this)
+        );
+      }
+
+      // Add .stuck class to #footer when stuck
+      // h/t https://stackoverflow.com/a/61115077/1688568
+      const footer = document.getElementById('footer');
+      if (footer) {
+        const observer = new IntersectionObserver(
+          ([ev]) => {
+            ev.target.classList.toggle('stuck', ev.intersectionRatio < 1);
+          },
+          {
+            rootMargin: '0px 0px -1px 0px',
+            threshold: [1],
+          }
+        );
+        observer.observe(footer);
+      }
+
+      const loadElementThumbs = () => {
+        this.elementThumbLoader.load(this.$pageContainer);
+      };
+      if (Craft.ElementThumbLoader) {
+        loadElementThumbs();
+      } else {
+        window.addEventListener(
+          'craft:element-thumb-loader-ready',
+          loadElementThumbs,
+          {once: true}
+        );
+      }
+
+      // Add notification close listeners
+      this.on('notificationClose', () => {
+        this.updateNotificationHeadingDisplay();
+      });
+
+      // Held until the element clipboard module takes over the clipboard methods
+      this.copyElementCallbacks = [];
+    },
+
+    get $contentHeader() {
+      const $contentHeader = $('#content-header');
+      if ($contentHeader.length) {
+        return $contentHeader;
+      }
+      return $('<header/>', {
+        id: 'content-header',
+        class: 'pane-header',
+      }).prependTo($('#content'));
+    },
+
+    get $noticeContainer() {
+      const $noticeContainer = $('#content-notice');
+      if ($noticeContainer.length) {
+        return $noticeContainer;
+      }
+      return $('<div id="content-notice"/>')
+        .attr('role', 'status')
+        .prependTo(this.$contentHeader);
+    },
+
+    get notificationCount() {
+      return this.$notificationContainer.find('.notification').length;
+    },
+
+    initSpecialForms: function () {
+      // Look for forms that we should watch for changes on
+      this.$confirmUnloadForms = $('form[data-confirm-unload]');
+      this.$deltaForms = $('form[data-delta]');
+
+      if (!this.$confirmUnloadForms.length) {
+        return;
+      }
+
+      const $forms = this.$confirmUnloadForms.add(this.$deltaForms);
+
+      for (let i = 0; i < $forms.length; i++) {
+        const $form = $forms.eq(i);
+        if (!$form.data('initialSerializedValue')) {
+          const serializer =
+            $form.data('serializer') || (() => $form.serialize());
+          $form.data('initialSerializedValue', serializer());
+        }
+        this.addListener($form, 'submit', function (ev) {
+          if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+            this.removeListener(Garnish.$win, 'beforeunload');
+          }
+          if (Garnish.hasAttr($form, 'data-delta')) {
+            ev.preventDefault();
+            const serializer =
+              $form.data('serializer') || (() => $form.serialize());
+            const data = Craft.findDeltaData(
+              $form.data('initialSerializedValue'),
+              serializer(),
+              $form.data('delta-names'),
+              null,
+              $form.data('initial-delta-values'),
+              $form.data('modified-delta-names')
+            );
+            Craft.createForm(data).appendTo(Garnish.$bod).submit();
+          }
+        });
+      }
+
+      this.addListener(Garnish.$win, 'beforeunload', function (ev) {
+        let confirmUnload = false;
+        for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+          const $form = this.$confirmUnloadForms.eq(i);
+          let serialized;
+          if (typeof $form.data('serializer') === 'function') {
+            serialized = $form.data('serializer')();
+          } else {
+            serialized = $form.serialize();
+          }
+          if ($form.data('initialSerializedValue') !== serialized) {
+            confirmUnload = true;
+            break;
+          }
+        }
+
+        if (confirmUnload) {
+          var message = Craft.t(
+            'app',
+            'Any changes will be lost if you leave this page.'
+          );
+
+          if (ev) {
+            ev.originalEvent.returnValue = message;
+          } else {
+            window.event.returnValue = message;
+          }
+
+          return message;
+        }
+      });
+    },
+
+    _handleInputFocus: function () {
+      this.updateFixedHeader();
+    },
+
+    _handleInputBlur: function () {
+      this.updateFixedHeader();
+    },
+
+    /**
+     * Submits a form.
+     * @param {Object} [options]
+     * @param {string} [options.action] The `action` param value override
+     * @param {string} [options.redirect] The `redirect` param value override
+     * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+     * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+     * @param {Object} [options.data] Additional data to be passed to the submit event
+     * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
+     */
+    submitPrimaryForm: function (options) {
+      // Give other stuff on the page a chance to prepare
+      this.trigger('beforeSaveShortcut');
+
+      if (typeof options !== 'object' || !$.isPlainObject(options)) {
+        options = {};
+      }
+
+      if (!options.redirect) {
+        options.redirect = this.$primaryForm.data('saveshortcut-redirect');
+      }
+
+      if (!options.data) {
+        options.data = {};
+      }
+      options.data.saveShortcut = true;
+
+      Craft.submitForm(this.$primaryForm, options);
+    },
+
+    toggleNav: function () {
+      const isExpanded = this.navIsExpanded();
+
+      if (isExpanded === null) return;
+
+      if (isExpanded) {
+        this.disableGlobalSidebar();
+        this.$navToggle.focus();
+        this.$navToggle.attr('aria-expanded', 'false');
+        Garnish.$bod.removeClass('showing-nav');
+      } else {
+        this.enableGlobalSidebar();
+        this.$globalSidebar.find(':focusable')[0].focus();
+        this.$navToggle.attr('aria-expanded', 'true');
+        Garnish.$bod.addClass('showing-nav');
+      }
+    },
+
+    /**
+     * Makes the global sidebar navigable by screen reader and keyboard users
+     **/
+    enableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'false');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '0');
+    },
+
+    /**
+     * Hides the global sidebar from screen reader and keyboard users
+     **/
+    disableGlobalSidebar: function () {
+      this.$globalSidebar.attr('aria-hidden', 'true');
+      this.$globalSidebar.find(':focusable').attr('tabindex', '-1');
+    },
+
+    setSidebarNavAttributes: function () {
+      const isExpanded = this.navIsExpanded();
+
+      if (isExpanded === null) return;
+
+      if (!isExpanded) {
+        this.disableGlobalSidebar();
+      } else {
+        this.enableGlobalSidebar();
+      }
+    },
+
+    navIsExpanded: function () {
+      if (!this.$globalSidebar[0]) return null;
+
+      const isAlwaysVisible = getComputedStyle(this.$globalSidebar[0])
+        .getPropertyValue('--is-always-visible')
+        .trim();
+
+      return (
+        this.$navToggle.attr('aria-expanded') === 'true' ||
+        isAlwaysVisible === 'true'
+      );
+    },
+
+    toggleSidebar: function () {
+      const expanded = this.$sidebarToggle.attr('aria-expanded') === 'true';
+      const newState = expanded ? 'false' : 'true';
+      this.$sidebarToggle.attr('aria-expanded', newState);
+      Garnish.$bod.toggleClass('showing-sidebar');
+    },
+
+    initTabs: function () {
+      if (this.tabManager) {
+        this.tabManager.destroy();
+        this.tabManager = null;
+      }
+
+      const $tabs = $('#tabs');
+      if (!$tabs.length) {
+        return;
+      }
+
+      this.tabManager = new Craft.Tabs($tabs, {
+        handleCtrlClicks: true,
+      });
+
+      this.tabManager.on('selectTab', (ev) => {
+        const href = ev.$tab.attr('href');
+
+        // Show its content area
+        if (href && href.charAt(0) === '#') {
+          $(href).removeClass('hidden');
+        }
+
+        // Trigger a resize event to update any UI components that are listening for it
+        Garnish.$win.trigger('resize');
+
+        // Fixes Redactor fixed toolbars on previously hidden panes
+        Garnish.$doc.trigger('scroll');
+
+        // If there is a site crumb menu or context menu, set their links to this tab ID
+        if (href && href.charAt(0) === '#') {
+          const contextLinks = document.querySelectorAll(
+            '#site-crumb-menu a[href], #context-menu a[href]'
+          );
+          for (const link of contextLinks) {
+            link.href = link.href.match(/^[^#]*/)[0] + href;
+          }
+        }
+
+        if (typeof history !== 'undefined') {
+          // Delay changing the hash so it doesn't cause the browser to jump on page load
+          Garnish.requestAnimationFrame(() => {
+            history.replaceState(undefined, undefined, href);
+          });
+        }
+      });
+
+      this.tabManager.on('deselectTab', (ev) => {
+        const href = ev.$tab.attr('href');
+        if (href && href.charAt(0) === '#') {
+          // Hide its content area
+          $(ev.$tab.attr('href')).addClass('hidden');
+        }
+      });
+    },
+
+    updateTabs: function (tabs) {
+      if (tabs) {
+        const $tabContainer = $(tabs).attr('id', 'tabs');
+        if (this.tabManager) {
+          this.tabManager.$container.replaceWith($tabContainer);
+        } else {
+          $tabContainer.appendTo(this.$contentHeader);
+        }
+        this.initTabs();
+      } else if (this.tabManager) {
+        if (this.tabManager.$container.siblings().length) {
+          this.tabManager.$container.remove();
+        } else {
+          this.tabManager.$container.parent().remove();
+        }
+        this.tabManager.destroy();
+        this.tabManager = null;
+      }
+    },
+
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabsContainer() {
+      return this.tabManager ? this.tabManager.$container : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabsList() {
+      return this.tabManager ? this.tabManager.$tablist : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $tabs() {
+      return this.tabManager ? this.tabManager.$tablist.find('> a') : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $selectedTab() {
+      return this.tabManager ? this.tabManager.$selectedTab : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get selectedTabIndex() {
+      return this.tabManager
+        ? this.tabManager.$tabs.index(this.tabManager.$selectedTab)
+        : undefined;
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    get $focusableTab() {
+      return this.tabManager ? this.tabManager.$focusableTab : undefined;
+    },
+    /**
+     * @param {(jQuery|HTMLElement|string)} tab
+     * @deprecated in 3.7.0
+     */
+    selectTab: function (tab) {
+      if (this.tabManager) {
+        this.tabManager.selectTab(tab);
+      }
+    },
+    /**
+     * @deprecated in 3.7.0
+     */
+    deselectTab: function () {
+      if (this.tabManager) {
+        this.tabManager.deselectTab();
+      }
+    },
+
+    handleSkipLinkVisibility: function () {
+      if (!this.$globalSkipLinkList.length) return;
+
+      const $links = this.$globalSkipLinkList.find('a');
+
+      $links.each((i, link) => {
+        const $link = $(link);
+        const $target = $($link.attr('href'));
+
+        if ($target.length) {
+          $link.removeClass('hidden');
+        } else {
+          $link.addClass('hidden');
+        }
+      });
+    },
+
+    handleBreadcrumbVisibility: function () {
+      if (!this.$crumbItems.length) {
+        return;
+      }
+
+      if (this.$crumbMenuItems) {
+        // put everything back
+        this.$crumbItems.css('max-width', '');
+        this.$crumbMenuItems.insertAfter(this.$crumbMenuTriggerItem);
+        this.$crumbMenuTriggerItem.detach();
+        this.$crumbMenuItems = null;
+      }
+
+      const maxWidth = Math.ceil(
+        this.$crumbs[0].getBoundingClientRect().width -
+          this.$navToggle[0].getBoundingClientRect().width
+      );
+      const itemWidths = [];
+
+      for (let i = 0; i < this.$crumbItems.length; i++) {
+        const $crumb = this.$crumbItems.eq(i);
+        itemWidths[i] = $crumb[0].getBoundingClientRect().width;
+      }
+
+      const totalWidth = itemWidths.reduce((sum, width) => sum + width, 0);
+
+      if (totalWidth > maxWidth) {
+        // add the menu trigger
+        if (!this.$crumbMenuTriggerItem) {
+          this.$crumbMenuTriggerItem = $('<li/>', {
+            class: 'crumb',
+          }).prependTo(this.$crumbList);
+          const $labelContainer = $('<div/>', {
+            class: 'crumb-label',
+          }).appendTo(this.$crumbMenuTriggerItem);
+          const $trigger = $('<button/>', {
+            id: 'crumb-menu-trigger',
+            'data-icon': 'ellipsis',
+            'data-disclosure-trigger': 'true',
+            'aria-controls': 'crumb-menu',
+            'aria-haspopup': 'true',
+            'aria-label': Craft.t('app', 'More…'),
+            title: Craft.t('app', 'More…'),
+          }).appendTo($labelContainer);
+
+          this.$crumbMenu = $('<div/>', {
+            id: 'crumb-menu',
+            class: 'menu menu--disclosure',
+            'data-disclosure-menu': 'true',
+          }).appendTo($labelContainer);
+          this.$crumbMenuList = $('<ul/>').appendTo(this.$crumbMenu);
+
+          $trigger.disclosureMenu();
+        } else {
+          this.$crumbMenuTriggerItem.prependTo(this.$crumbList);
+        }
+
+        // see how many crumbs we can include, starting at the end
+        let visibleTotalWidth =
+          this.$crumbMenuTriggerItem[0].getBoundingClientRect().width;
+
+        for (let i = this.$crumbItems.length - 1; i >= 0; i--) {
+          if (visibleTotalWidth + itemWidths[i] > maxWidth) {
+            this.$crumbMenuItems = this.$crumbItems.slice(0, i + 1);
+            this.$crumbMenuItems.appendTo(this.$crumbMenuList);
+            break;
+          }
+
+          visibleTotalWidth += itemWidths[i];
+        }
+      }
+    },
+
+    handleWindowResize: function () {
+      this.updateResponsiveTables();
+      this.handleBreadcrumbVisibility();
+      this.handleSkipLinkVisibility();
+    },
+
+    updateResponsiveTables: function () {
+      for (
+        this.updateResponsiveTables._i = 0;
+        this.updateResponsiveTables._i < this.$collapsibleTables.length;
+        this.updateResponsiveTables._i++
+      ) {
+        this.updateResponsiveTables._$table = this.$collapsibleTables.eq(
+          this.updateResponsiveTables._i
+        );
+        this.updateResponsiveTables._containerWidth =
+          this.updateResponsiveTables._$table.parent().width();
+        this.updateResponsiveTables._check = false;
+
+        if (this.updateResponsiveTables._containerWidth > 0) {
+          // Is this the first time we've checked this table?
+          if (
+            typeof this.updateResponsiveTables._$table.data(
+              'lastContainerWidth'
+            ) === 'undefined'
+          ) {
+            this.updateResponsiveTables._check = true;
+          } else {
+            this.updateResponsiveTables._isCollapsed =
+              this.updateResponsiveTables._$table.hasClass('collapsed');
+
+            // Getting wider?
+            if (
+              this.updateResponsiveTables._containerWidth >
+              this.updateResponsiveTables._$table.data('lastContainerWidth')
+            ) {
+              if (this.updateResponsiveTables._isCollapsed) {
+                this.updateResponsiveTables._$table.removeClass('collapsed');
+                this.updateResponsiveTables._check = true;
+              }
+            } else if (!this.updateResponsiveTables._isCollapsed) {
+              this.updateResponsiveTables._check = true;
+            }
+          }
+
+          // Are we checking the table width?
+          if (this.updateResponsiveTables._check) {
+            if (
+              this.updateResponsiveTables._$table.width() - 30 >
+              this.updateResponsiveTables._containerWidth
+            ) {
+              this.updateResponsiveTables._$table.addClass('collapsed');
+            }
+          }
+
+          // Remember the container width for next time
+          this.updateResponsiveTables._$table.data(
+            'lastContainerWidth',
+            this.updateResponsiveTables._containerWidth
+          );
+        }
+      }
+    },
+
+    updateFixedHeader: function () {
+      // Checking if the sidebar toggle is visible
+      // https://stackoverflow.com/a/21696585
+      if (
+        this.isMobile ||
+        (this.$sidebarToggle?.length &&
+          this.$sidebarToggle[0].offsetParent !== null)
+      ) {
+        return;
+      }
+
+      // Have we scrolled passed the top of #main?
+      if (
+        this.$main.length &&
+        this.$headerContainer[0].getBoundingClientRect().top < 0
+      ) {
+        const headerHeight = this.$headerContainer.height();
+        const headerWidth = this.$header.width();
+        if (!this.fixedHeader) {
+          // Hard-set the minimum content container height
+          this.$contentContainer.css(
+            'min-height',
+            'calc(100vh - ' + (headerHeight + 14 + 48 - 1) + 'px)'
+          );
+
+          // Hard-set the header container height
+          this.$headerContainer.height(headerHeight);
+          this.$header.width(headerWidth);
+          Garnish.$bod.addClass('fixed-header');
+
+          this.fixedHeader = true;
+        }
+
+        this._setFixedTopPos(this.$sidebar, headerHeight);
+        this.$detailsContainer.css('top', headerHeight + 14);
+      } else if (this.fixedHeader) {
+        this.$headerContainer.height('auto');
+        this.$header.width('auto');
+        Garnish.$bod.removeClass('fixed-header');
+        this.$contentContainer.css('min-height', '');
+        this.$sidebar.removeClass('fixed').css('top', '');
+        this.$detailsContainer.css('top', '');
+        this.fixedHeader = false;
+      }
+    },
+
+    /**
+     * Lays out the notifications as a stack, newest nearest the screen edge,
+     * the way Sonner does.
+     *
+     * Each notification gets its position in the stack (`--cp-message-index`,
+     * 0 for the newest), how far it sits from the edge when the stack is
+     * spread out (`--cp-message-offset`, the heights of the ones in front of
+     * it; the stylesheet adds the gaps), `data-stack-behind` unless it's
+     * the newest, and `data-stack-hidden` beyond the newest
+     * `Craft.CP.Notification.visibleCount`. CSS does the rest.
+     */
+    // `<cp-messages>` manages the stack, legacy notifications included
+    updateNotificationStack() {
+      this.$notificationContainer[0]?.updateStack?.();
+    },
+
+    notificationTimersPaused() {
+      return !!this.$notificationContainer[0]?.timersPaused?.();
+    },
+
+    clearNotifications() {
+      this.$notificationContainer[0]?.clear?.();
+    },
+
+    updateNotificationHeadingDisplay() {},
+
+    _setFixedTopPos: function ($element, headerHeight) {
+      if (!$element.length || !this.$contentContainer.length) {
+        return;
+      }
+
+      if ($element.outerHeight() >= this.$contentContainer.outerHeight()) {
+        $element.removeClass('fixed').css('top', '');
+        return;
+      }
+
+      $element
+        .addClass('fixed')
+        .css(
+          'top',
+          Math.min(
+            headerHeight + 14,
+            Math.max(
+              this.$mainContent[0].getBoundingClientRect().top,
+              document.documentElement.clientHeight - $element.outerHeight()
+            )
+          ) + 'px'
+        );
+    },
+
+    // Replaced by the announcer module (common/announcer) as it loads
+    announce: function () {},
+
+    /**
+     * Displays a notification.
+     *
+     * @param {string|Craft.CP.Notification} type `notice`, `success`, or `error`
+     * @param {string} [message]
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @returns {Object} The notification
+     */
+    displayNotification: function (type, message, settings) {
+      let notification;
+      if (type instanceof Craft.CP.Notification) {
+        notification = type;
+      } else {
+        notification = new Craft.CP.Notification(type, message, settings);
+      }
+
+      notification.show().then(() => {
+        this.trigger('displayNotification', {
+          notificationType: notification.type,
+          message: notification.message,
+          notification,
+        });
+
+        this.updateNotificationHeadingDisplay();
+      });
+
+      return notification;
+    },
+
+    /**
+     * Displays a notice.
+     *
+     * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @returns {Object} The notification
+     */
+    displayNotice: function (message, settings) {
+      return this.displayNotification(
+        'notice',
+        message,
+        Object.assign(
+          {
+            icon: 'info',
+            iconLabel: Craft.t('app', 'Notice'),
+          },
+          settings
+        )
+      );
+    },
+
+    /**
+     * Displays a success notification.
+     *
+     * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @returns {Object} The notification
+     */
+    displaySuccess: function (message, settings) {
+      return this.displayNotification(
+        'success',
+        message,
+        Object.assign(
+          {
+            icon: 'check',
+            iconLabel: Craft.t('app', 'Success'),
+          },
+          settings
+        )
+      );
+    },
+
+    /**
+     * Displays an error.
+     *
+     * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @returns {Object} The notification
+     */
+    displayError: function (message, settings) {
+      if (!message || typeof message === 'object') {
+        settings = message;
+        message = Craft.t('app', 'A server error occurred.');
+      }
+
+      return this.displayNotification(
+        'error',
+        message,
+        Object.assign(
+          {
+            icon: 'alert',
+            iconLabel: Craft.t('app', 'Error'),
+          },
+          settings
+        )
+      );
+    },
+
+    // The element clipboard module (modules/elements/clipboard) replaces these
+    // with the real thing as it loads.
+    onCopyElements: function (callback) {
+      this.copyElementCallbacks.push(callback);
+    },
+
+    getCopiedElements: function () {
+      return [];
+    },
+
+    fetchAlerts: function () {
+      return Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            const data = {
+              path: Craft.path,
+            };
+            Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
+              .then(({data}) => {
+                resolve(data.alerts);
+              })
+              .catch(reject);
+          })
+      );
+    },
+
+    displayAlerts: async function (alerts, animate = true) {
+      this.$alerts.remove();
+
+      if (Array.isArray(alerts) && alerts.length) {
+        this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
+
+        for (let alert of alerts) {
+          if (!$.isPlainObject(alert)) {
+            alert = {
+              content: alert,
+              showIcon: true,
+            };
+          }
+          let content = alert.content;
+          if (alert.showIcon) {
+            content = `<span data-icon="alert" aria-label="${Craft.t(
+              'app',
+              'Error'
+            )}"></span> ${content}`;
+          }
+          $(`<li><div>${content}</div></li>`).appendTo(this.$alerts);
+        }
+
+        if (animate) {
+          const height = this.$alerts.outerHeight();
+          this.$alerts.css('margin-top', -height);
+          await Craft.animate(this.$alerts, {
+            'margin-top': 0,
+          });
+        }
+
+        this.initAlerts();
+      }
+    },
+
+    initAlerts: function () {
+      // Are there any shunnable alerts?
+      var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
+
+      for (var i = 0; i < $shunnableAlerts.length; i++) {
+        this.addListener($shunnableAlerts[i], 'click', (ev) => {
+          ev.preventDefault();
+
+          Craft.queue.push(
+            () =>
+              new Promise((resolve, reject) => {
+                const $link = $(ev.currentTarget);
+                const data = {
+                  message: $link.prop('className').substring(5),
+                };
+                Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
+                  .then(() => {
+                    $link.parent().remove();
+                    resolve();
+                  })
+                  .catch(({response}) => {
+                    this.displayError(response.data.message);
+                    reject();
+                  });
+              })
+          );
+        });
+      }
+
+      const $resolvableButtonsContainer = this.$alerts.find(
+        '.resolvable-alert-buttons'
+      );
+      if ($resolvableButtonsContainer.length) {
+        const $refreshBtn = $('<craft-button/>', {
+          type: 'button',
+          text: Craft.t('app', 'Refresh'),
+        }).appendTo($resolvableButtonsContainer);
+        $refreshBtn.on('click', async () => {
+          $refreshBtn.prop('loading', true);
+          try {
+            await Craft.sendApiRequest('GET', 'ping');
+            const alerts = await this.fetchAlerts();
+            this.displayAlerts(alerts, false);
+          } finally {
+            $refreshBtn.prop('loading', false);
+          }
+        });
+      }
+    },
+
+    updateContext: function (label, description) {
+      const contextBtnLabel = document.querySelector(
+        '#context-menu-container > span'
+      );
+      if (contextBtnLabel) {
+        contextBtnLabel.textContent = label;
+      }
+
+      const menuItem = document.querySelector('#context-menu a.sel');
+      if (menuItem) {
+        const labelEl = menuItem.querySelector('.menu-item-label');
+        labelEl.textContent = label;
+
+        let descriptionEl = menuItem.querySelector('.menu-item-description');
+        if (description) {
+          if (!descriptionEl) {
+            descriptionEl = document.createElement('div');
+            descriptionEl.className = 'menu-item-description smalltext light';
+            menuItem.append(descriptionEl);
+          }
+          descriptionEl.textContent = description;
+        } else if (descriptionEl) {
+          descriptionEl.remove();
+        }
+      }
+    },
+
+    showSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.remove('hidden');
+        const group = li.closest('.menu-group');
+        if (group) {
+          group.classList.remove('hidden');
+        }
+      }
+    },
+
+    hideSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.add('hidden');
+        const group = li.closest('.menu-group');
+        if (group && !group.querySelector('li:not(.hidden)')) {
+          group.classList.add('hidden');
+        }
+      }
+    },
+
+    setSiteCrumbMenuItemStatus: function (siteId, status) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        let statusEl = menuItem.querySelector('.status');
+
+        if (status) {
+          if (!statusEl) {
+            statusEl = document.createElement('div');
+            menuItem.prepend(statusEl);
+          }
+          statusEl.className = `status ${status}`;
+        } else if (statusEl) {
+          statusEl.remove();
+        }
+      }
+    },
+
+    checkForUpdates: async function (
+      forceRefresh,
+      includeDetails,
+      onSuccess,
+      onFailure
+    ) {
+      // Make 'includeDetails' optional
+      if (typeof includeDetails === 'function') {
+        onFailure = onSuccess;
+        onSuccess = includeDetails;
+        includeDetails = false;
+      }
+
+      // If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
+      // then just set a new callback that re-checks for updates when the current one is done.
+      if (
+        this.checkingForUpdates &&
+        ((forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) ||
+          (includeDetails === true && !this.includingDetailsOnUpdatesCheck))
+      ) {
+        const realOnSuccess = onSuccess;
+        const realOnFailure = onFailure;
+        onSuccess = () => {
+          this.checkForUpdates(
+            forceRefresh,
+            includeDetails,
+            realOnSuccess,
+            realOnFailure
+          );
+        };
+      }
+
+      // Callback functions?
+      if (typeof onSuccess === 'function') {
+        if (!Array.isArray(this.checkForUpdatesCallbacks)) {
+          this.checkForUpdatesCallbacks = [];
+        }
+        this.checkForUpdatesCallbacks.push(onSuccess);
+      }
+      if (typeof onFailure === 'function') {
+        if (!Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+          this.checkForUpdatesFailureCallbacks = [];
+        }
+        this.checkForUpdatesFailureCallbacks.push(onFailure);
+      }
+
+      if (!this.checkingForUpdates) {
+        this.checkingForUpdates = true;
+        this.forcingRefreshOnUpdatesCheck = forceRefresh === true;
+        this.includingDetailsOnUpdatesCheck = includeDetails === true;
+
+        let info;
+
+        try {
+          info = await this._checkForUpdates(forceRefresh, includeDetails);
+        } catch (e) {
+          this.checkingForUpdates = false;
+
+          if (Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+            const callbacks = this.checkForUpdatesFailureCallbacks;
+            this.checkForUpdatesFailureCallbacks = null;
+
+            for (const callback of callbacks) {
+              callback();
+            }
+          }
+
+          return;
+        }
+
+        this.updateUtilitiesBadge();
+        this.checkingForUpdates = false;
+
+        if (Array.isArray(this.checkForUpdatesCallbacks)) {
+          const callbacks = this.checkForUpdatesCallbacks;
+          this.checkForUpdatesCallbacks = null;
+
+          for (const callback of callbacks) {
+            callback(info);
+          }
+        }
+
+        this.trigger('checkForUpdates', {
+          updateInfo: info,
+        });
+      }
+    },
+
+    _checkForUpdates: function (forceRefresh, includeDetails) {
+      return new Promise((resolve, reject) => {
+        if (!forceRefresh) {
+          this._checkForCachedUpdates(includeDetails)
+            .then((info) => {
+              if (info.cached) {
+                resolve(info);
+                return;
+              }
+
+              this._getUpdates(includeDetails)
+                .then((info) => {
+                  resolve(info);
+                })
+                .catch(reject);
+            })
+            .catch(reject);
+        } else {
+          this._getUpdates(includeDetails).then(resolve).catch(reject);
+        }
+      });
+    },
+
+    _checkForCachedUpdates: function (includeDetails) {
+      return new Promise(function (resolve, reject) {
+        var data = {
+          onlyIfCached: true,
+          includeDetails: includeDetails,
+        };
+
+        Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
+          .then(({data}) => {
+            resolve(data);
+          })
+          .catch(() => {
+            resolve({cached: false});
+          });
+      });
+    },
+
+    _getUpdates: function (includeDetails) {
+      return new Promise((resolve, reject) => {
+        Craft.sendApiRequest('GET', 'updates')
+          .then((updates) => {
+            this._cacheUpdates(updates, includeDetails)
+              .then((data) => {
+                resolve(data);
+              })
+              .catch(reject);
+          })
+          .catch(reject);
+      });
+    },
+
+    _cacheUpdates: function (updates, includeDetails) {
+      return new Promise((resolve, reject) => {
+        const data = {
+          updates,
+          includeDetails,
+        };
+
+        Craft.sendActionRequest('POST', 'app/cache-updates', {data})
+          .then(({data}) => {
+            resolve(data);
+          })
+          .catch(reject);
+      });
+    },
+
+    /**
+     * Refreshes the nav's badge counts: the Utilities item's, and each
+     * utility's. The Inertia nav takes them from a `craft:nav-badges` event;
+     * the legacy sidebar, where it's drawn, has its indicators set here.
+     */
+    updateUtilitiesBadge: function () {
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
+              .then(({data}) => {
+                const badgeCounts = data.badgeCounts ?? {};
+
+                for (const link of document.querySelectorAll(
+                  '#global-sidebar craft-nav-item[id^="nav-utilities"][id$="-link"]'
+                )) {
+                  link.toggleAttribute(
+                    'indicator',
+                    (badgeCounts[link.id.slice(0, -'-link'.length)] ?? 0) > 0
+                  );
+                }
+
+                window.dispatchEvent(
+                  new CustomEvent('craft:nav-badges', {detail: badgeCounts})
+                );
+
+                resolve();
+              })
+              .catch(reject);
+          })
+      );
+    },
+
+    /** @deprecated since 6.0. */
+    runQueue: function () {
+      if (Craft.runQueueAutomatically) {
+        Craft.queue.push(() => this.QueueService.runQueue());
+      } else {
+        this.QueueService.startTracking(false, true);
+      }
+    },
+
+    /** @deprecated since 6.0. Use QueueService.startTracking() instead */
+    trackJobProgress: function (delay, force) {
+      this.QueueService.startTracking(delay, force);
+    },
+
+    /** @deprecated since 6.0. Use QueueService.setJobData() instead */
+    setJobData: function (data) {
+      this.QueueService.setJobData(data);
+    },
+
+    get jobInfo() {
+      return this.QueueService.jobInfo;
+    },
+
+    /** @deprecated since 6.0. Use QueueService.setJobData() instead */
+    setJobInfo: function (jobInfo) {
+      this.QueueService.setJobData({
+        jobs: jobInfo,
+        total: jobInfo.length,
+      });
+
+      // Fire a setJobInfo event
+      this.trigger('setJobInfo');
+    },
+
+    /** @deprecated since 6.0. Use QueueService.stopTracking() instead */
+    cancelJobTracking: function () {
+      this.QueueService.stopTracking();
+    },
+
+    /**
+     * Returns info for the job that should be displayed in the control panel sidebar
+     * @deprecated since 6.0.
+     */
+    getDisplayedJobInfo: function () {
+      if (!this.enableQueue) {
+        return null;
+      }
+
+      // Set the status preference order
+      var statuses = [
+        Craft.CP.JOB_STATUS_RESERVED,
+        Craft.CP.JOB_STATUS_FAILED,
+        Craft.CP.JOB_STATUS_WAITING,
+      ];
+
+      for (var i = 0; i < statuses.length; i++) {
+        for (var j = 0; j < this.jobInfo.length; j++) {
+          if (
+            this.jobInfo[j].status === statuses[i] &&
+            (statuses[i] !== Craft.CP.JOB_STATUS_WAITING ||
+              !this.jobInfo[j].delay)
+          ) {
+            return this.jobInfo[j];
+          }
+        }
+      }
+
+      return null;
+    },
+
+    /** @deprecated since 6.0. */
+    updateJobIcon: function () {
+      console.warn('craft.cp.updateJobIcon is deprecated in 6.0.');
+      if (!this.enableQueue || !this.$nav.length) {
+        return;
+      }
+
+      if (this.displayedJobInfo) {
+        if (!this.jobProgressIcon) {
+          this.jobProgressIcon = new JobProgressIcon();
+        }
+
+        if (
+          this.displayedJobInfo.status === Craft.CP.JOB_STATUS_RESERVED ||
+          this.displayedJobInfo.status === Craft.CP.JOB_STATUS_WAITING
+        ) {
+          this.jobProgressIcon.hideFailMode();
+          this.jobProgressIcon.setDescription(
+            this.displayedJobInfo.description,
+            this.displayedJobInfo.progressLabel
+          );
+          this.jobProgressIcon.setProgress(this.displayedJobInfo.progress);
+        } else if (
+          this.displayedJobInfo.status === Craft.CP.JOB_STATUS_FAILED
+        ) {
+          if (Craft.canAccessQueueManager) {
+            this.jobProgressIcon.showFailMode(Craft.t('app', 'Failed'));
+          } else {
+            this.jobProgressIcon.$a.remove();
+            this.jobProgressIcon.destroy();
+          }
+        }
+      } else {
+        if (this.jobProgressIcon) {
+          this.jobProgressIcon.hideFailMode();
+          this.jobProgressIcon.complete();
+          delete this.jobProgressIcon;
+        }
+      }
+    },
+
+    /**
+     * Returns the active site for the control panel
+     *
+     * @returns {number}
+     */
+    getSiteId: function () {
+      // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
+      let siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
+      if (typeof siteId !== 'undefined') {
+        Craft.removeLocalStorage('BaseElementIndex.siteId');
+        try {
+          this.setSiteId(siteId);
+        } catch (e) {}
+      }
+      return Craft.siteId;
+    },
+
+    /**
+     * Sets the active site for the control panel
+     * @param {number} siteId
+     */
+    setSiteId: function (siteId) {
+      const site = Craft.sites.find((s) => s.id === siteId);
+
+      if (!site) {
+        throw `Invalid site ID: ${siteId}`;
+      }
+
+      Craft.siteId = siteId;
+
+      // update the base URLs used get Craft.getUrl(), etc.
+      Craft.actionUrl = Craft.getUrl(Craft.actionUrl, {site: site.handle});
+      if (Craft.baseCpUrl) {
+        Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      }
+      Craft.baseUrl = Craft.getUrl(Craft.baseUrl, {site: site.handle});
+
+      // update the current URL
+      const url = Craft.getUrl(document.location.href, {site: site.handle});
+      history.replaceState({}, '', url);
+
+      // update the site--x body class
+      for (const className of document.body.classList) {
+        if (className.match(/^site--/)) {
+          document.body.classList.remove(className);
+        }
+      }
+      document.body.classList.add(`site--${site.handle}`);
+
+      // update other URLs on the page
+      $('a').each(function () {
+        if (
+          Craft.cpTrigger &&
+          this.hostname.length &&
+          this.hostname === location.hostname &&
+          this.href.indexOf(Craft.cpTrigger) !== -1
+        ) {
+          this.href = Craft.getUrl(this.href, {site: site.handle});
+        }
+      });
+    },
+
+    previewCountBadge: function (event, item, thumbLoader = true) {
+      let e = event || window.event;
+
+      if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
+        // prevent e.g. the space key from scrolling the page too
+        e.preventDefault();
+        // Get the previous item so we can use that to figure out where to focus after removing the expand button
+        const $prevElement = $(e.target).prev();
+
+        // get the item's parent so that the thumb loader can work as expected
+        const parent = $(item).parent();
+
+        let r = $(item).data('other');
+        if (r) {
+          r = JSON.parse(r);
+          $(item).replaceWith(r);
+
+          if (thumbLoader) {
+            this.elementThumbLoader.load(parent);
+          }
+        }
+
+        // Find element to focus
+        const $nextFocusable = Garnish.firstFocusableElement(
+          $prevElement.next()
+        );
+        $nextFocusable.trigger('focus');
+      }
+    },
+  },
+  {
+    /**
+     * @deprecated in 4.2.0. Use Craft.notificationDuration instead.
+     */
+    notificationDuration: 5000,
+
+    JOB_STATUS_WAITING: 1,
+    JOB_STATUS_RESERVED: 2,
+    JOB_STATUS_DONE: 3,
+    JOB_STATUS_FAILED: 4,
+  }
+);
+
+Craft.CP.Notification = Garnish.Base.extend(
+  {
+    type: null,
+    message: null,
+    settings: null,
+    closing: false,
+    closeTimeout: null,
+    _preventDelayedClose: false,
+    $container: null,
+    $innerContainer: null,
+    $closeBtn: null,
+    $main: null,
+    $message: null,
+    $detailsContainer: null,
+    originalActiveElement: null,
+
+    init: function (type, message, settings = {}) {
+      this.type = type;
+      this.message = message;
+      this.setSettings(settings, Craft.CP.Notification.defaults);
+    },
+
+    show: async function () {
+      this.$container = $('<div/>', {
+        class: 'notification',
+        'data-type': this.type,
+      });
+
+      if (this.settings.class) {
+        this.$container.addClass(this.settings.class);
+      }
+
+      this.$innerContainer = $('<div/>', {
+        class: 'notification-inner',
+      }).appendTo(this.$container);
+
+      const $body = $('<div class="notification-body"/>').appendTo(
+        this.$innerContainer
+      );
+
+      // `app/icon-svg` resolves legacy icon names and custom icons;
+      // `<craft-icon>` sizes the SVG and makes it an image or decorative
+      // depending on whether it has a label.
+      const icon = document.createElement('craft-icon');
+      icon.className = 'notification-icon';
+      if (this.settings.iconLabel) {
+        icon.setAttribute('label', this.settings.iconLabel);
+      }
+      const {data} = await Craft.sendActionRequest('POST', 'app/icon-svg', {
+        data: {icon: this.settings.icon},
+      });
+      icon.innerHTML = data.iconSvg;
+      $body.append(icon);
+
+      this.$main = $('<div class="notification-main"/>').appendTo($body);
+
+      this.$message = $('<div/>', {
+        class: 'notification-message',
+        text: this.message,
+      }).appendTo(this.$main);
+
+      const $closeBtnContainer = $('<div/>').appendTo(this.$innerContainer);
+      this.$closeBtn = this.createCloseButton().appendTo($closeBtnContainer);
+
+      const details = await this.getDetails();
+      if (details) {
+        this.$detailsContainer = $('<div class="notification-details"/>')
+          .append(details)
+          .appendTo(this.$main);
+
+        if (this.$detailsContainer.find('button,input').length) {
+          this.originalActiveElement = document.activeElement;
+          this.$container.attr('tabindex', '-1').focus();
+          this.addListener(this.$container, 'keydown', (ev) => {
+            if (ev.keyCode === Garnish.ESC_KEY) {
+              this.close();
+            }
+          });
+        }
+      }
+
+      Craft.initUiElements(this.$innerContainer);
+      this.addListener(this.$closeBtn, 'click', () => {
+        this.handleCloseButtonClick();
+      });
+
+      this.$container
+        .data('notification', this)
+        .attr('data-shown-at', Date.now())
+        .toggleClass('notification--entering', this._animate())
+        .appendTo(this._region());
+      Craft.cp.updateNotificationStack();
+
+      if (this._animate()) {
+        // Let the entering state render before transitioning out of it.
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        this.$container.removeClass('notification--entering');
+        await this._waitForTransition();
+      }
+
+      if (this.$detailsContainer) {
+        Craft.cp.elementThumbLoader.load(this.$detailsContainer);
+      }
+
+      if (
+        Craft.CP.Notification.autoClose &&
+        Craft.notificationDuration &&
+        !this.settings.persist &&
+        !this._staysUntilDismissed()
+      ) {
+        this._remaining = Craft.notificationDuration;
+        this.resumeTimer();
+      }
+
+      this._initSwipe();
+
+      this.trigger('show');
+    },
+
+    createCloseButton() {
+      return Craft.CP.Notification.createIconButton(Craft.t('app', 'Close'));
+    },
+
+    updateMessage(message) {
+      this.message = message;
+      this.$message.text(message);
+    },
+
+    getDetails: async function () {
+      return this.settings.details;
+    },
+
+    /**
+     * Errors, and notifications with something to act on in their details,
+     * stay until they're dismissed.
+     */
+    _staysUntilDismissed: function () {
+      return (
+        this.type === 'error' ||
+        !!this.$detailsContainer?.find(
+          'a[href], button, input, select, textarea, craft-button'
+        ).length
+      );
+    },
+
+    /**
+     * Starts (or restarts) the countdown to closing itself, with whatever time
+     * it had left, unless the stack is holding timers.
+     */
+    resumeTimer: function () {
+      if (
+        this._remaining == null ||
+        this._preventDelayedClose ||
+        this.closing ||
+        this.closeTimeout ||
+        Craft.cp.notificationTimersPaused()
+      ) {
+        return;
+      }
+
+      this._timerStartedAt = Date.now();
+      this.closeTimeout = setTimeout(() => this.close(), this._remaining);
+    },
+
+    pauseTimer: function () {
+      if (!this.closeTimeout) {
+        return;
+      }
+
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+      this._remaining = Math.max(
+        this._remaining - (Date.now() - this._timerStartedAt),
+        0
+      );
+    },
+
+    /**
+     * Swipe toward the screen edge to dismiss, as in Sonner: past 45px, or
+     * fast enough, and it goes; otherwise it springs back. Movement in any
+     * other direction is damped.
+     */
+    _initSwipe: function () {
+      const element = this.$container[0];
+      const towardEdge = () =>
+        Craft.notificationPosition.startsWith('start-') ? -1 : 1;
+      let start = null;
+
+      const reset = () => {
+        start = null;
+        element.removeAttribute('data-swiping');
+        element.style.removeProperty('--swipe-amount');
+      };
+
+      element.addEventListener('pointerdown', (ev) => {
+        if (
+          ev.button !== 0 ||
+          this.closing ||
+          ev.target.closest('button, a, input, textarea, select, craft-button')
+        ) {
+          return;
+        }
+        start = {y: ev.clientY, time: Date.now()};
+        element.setPointerCapture?.(ev.pointerId);
+      });
+
+      element.addEventListener('pointermove', (ev) => {
+        if (!start) {
+          return;
+        }
+        const delta = ev.clientY - start.y;
+        // Full movement toward the edge, heavily damped away from it.
+        const amount =
+          Math.sign(delta) === towardEdge()
+            ? delta
+            : delta / (1.5 + Math.abs(delta) / 20);
+        if (Math.abs(delta) > 2) {
+          element.setAttribute('data-swiping', '');
+        }
+        element.style.setProperty('--swipe-amount', `${amount}px`);
+      });
+
+      const end = (ev) => {
+        if (!start) {
+          return;
+        }
+        const delta = (ev.clientY - start.y) * towardEdge();
+        const velocity = Math.abs(delta) / (Date.now() - start.time || 1);
+        if (delta >= 45 || (delta > 0 && velocity > 0.11)) {
+          element.setAttribute('data-swipe-out', '');
+          start = null;
+          element.removeAttribute('data-swiping');
+          this.close();
+          return;
+        }
+        reset();
+      };
+
+      element.addEventListener('pointerup', end);
+      element.addEventListener('pointercancel', reset);
+    },
+
+    /**
+     * The live region to add the notification to: errors are announced
+     * assertively, everything else politely. Falls back to the container
+     * itself for layouts that don't provide the regions.
+     */
+    _region: function () {
+      const $container = Craft.cp.$notificationContainer;
+      const $region = $container.find(
+        `.message-region[role="${this.type === 'error' ? 'alert' : 'status'}"]`
+      );
+
+      return $region.length ? $region : $container;
+    },
+
+    _animate: function () {
+      return (
+        this.settings.animate &&
+        !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      );
+    },
+
+    /**
+     * Resolves once the notification's enter/leave transition has finished,
+     * or straight away when it isn't animated.
+     */
+    _waitForTransition: function () {
+      if (!this._animate()) {
+        return Promise.resolve();
+      }
+
+      return new Promise((resolve) => {
+        const element = this.$container[0];
+        const done = (ev) => {
+          if (ev && ev.target !== element) {
+            return;
+          }
+          element.removeEventListener('transitionend', done);
+          clearTimeout(timeout);
+          resolve();
+        };
+        const timeout = setTimeout(done, 500);
+        element.addEventListener('transitionend', done);
+      });
+    },
+
+    handleCloseButtonClick: function () {
+      this.close();
+    },
+
+    close: async function () {
+      if (this.closing) {
+        return;
+      }
+
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout);
+        this.closeTimeout = null;
+      }
+
+      this.closing = true;
+
+      if (
+        this.originalActiveElement &&
+        document.activeElement &&
+        (document.activeElement === this.$container[0] ||
+          $.contains(this.$container[0], document.activeElement))
+      ) {
+        $(this.originalActiveElement).focus();
+      }
+
+      this.$container.addClass('notification--leaving');
+      Craft.cp.updateNotificationStack();
+      await this._waitForTransition();
+
+      this.destroy();
+      Craft.cp.updateNotificationStack();
+      Craft.cp.trigger('notificationClose');
+    },
+
+    /**
+     * @deprecated Notifications time themselves; see `resumeTimer()`.
+     */
+    delayedClose: function () {
+      this._remaining ??= Craft.notificationDuration;
+      this.resumeTimer();
+    },
+
+    /**
+     * Stops the notification from closing itself.
+     */
+    preventDelayedClose: function () {
+      this._preventDelayedClose = true;
+      this.pauseTimer();
+    },
+
+    destroy: function () {
+      this.$container.remove();
+      this.base();
+    },
+  },
+  {
+    /**
+     * Whether notifications close on their own after
+     * `Craft.notificationDuration` (paused while the stack is expanded,
+     * pressed, or the page is hidden). Errors and notifications with actions
+     * always stay until dismissed.
+     */
+    autoClose: true,
+
+    /**
+     * How many of the newest notifications are shown. Older ones are hidden
+     * until newer ones close.
+     */
+    visibleCount: 5,
+
+    defaults: {
+      icon: 'info',
+      iconLabel: null,
+      details: null,
+      persist: false,
+      class: null,
+      animate: true,
+    },
+
+    /**
+     * An icon-only `<craft-button>` with an `xmark`, labelled `label`.
+     */
+    createIconButton: function (label) {
+      const button = document.createElement('craft-button');
+      button.className = 'notification-close-btn';
+      button.setAttribute('type', 'button');
+      button.setAttribute('variant', 'plain');
+      button.setAttribute('size', 'small');
+      button.setAttribute('icon', '');
+      const icon = document.createElement('craft-icon');
+      icon.setAttribute('name', 'xmark-large');
+      icon.setAttribute('label', label);
+      button.append(icon);
+
+      return $(button);
+    },
+  }
+);
+
+Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
+  elementInfo: null,
+  elementType: null,
+  loaded: false,
+  $copiedElements: null,
+
+  init: function (elementInfo, settings = {}) {
+    this.elementInfo = elementInfo;
+    if (!this.elementInfo?.length) {
+      throw 'No elements are copied.';
+    }
+
+    this.elementType = this.elementInfo[0].type;
+    const message = this.getMessage();
+
+    this.base(
+      'notice',
+      message,
+      Object.assign(
+        {
+          icon: 'clone-dashed',
+          //iconLabel: Craft.t('app', 'Notice'), // todo
+          persist: true,
+          class: 'copied-elements-notification',
+        },
+        settings
+      )
+    );
+  },
+
+  createCloseButton() {
+    return Craft.CP.Notification.createIconButton(Craft.t('app', 'Cancel'));
+  },
+
+  getMessage() {
+    return this.elementInfo.length === 1
+      ? Craft.t('app', '{type} copied.', {
+          type: Craft.elementTypeNames[this.elementType][0],
+        })
+      : Craft.uppercaseFirst(
+          Craft.t('app', '{total, number} {type} copied.', {
+            total: this.elementInfo.length,
+            type: Craft.elementTypeNames[this.elementType][3],
+          })
+        );
+  },
+
+  getDetails: async function () {
+    const {data} = await Craft.sendActionRequest(
+      'POST',
+      'app/render-elements',
+      {
+        data: {
+          elements: this.elementInfo.map((e) => ({
+            type: e.type,
+            id: e.id,
+            siteId: e.siteId,
+            revisionId: e.revisionId ?? null,
+            instances: [
+              {
+                ui: 'chip',
+                hyperlink: false,
+              },
+            ],
+          })),
+        },
+      }
+    );
+
+    if (!$.isPlainObject(data.elements)) {
+      Craft.cp.clearCopiedElements();
+      return;
+    }
+
+    setTimeout(async () => {
+      await Craft.appendHeadHtml(data.headHtml);
+      await Craft.appendBodyHtml(data.bodyHtml);
+    }, 1);
+
+    const gap = 4;
+    this.$copiedElements = $('<div class="copied-elements"/>');
+    let $chips = $();
+
+    for (const elementInfo of this.elementInfo) {
+      for (const chip of data.elements[elementInfo.id] || []) {
+        $chips = $chips.add(chip);
+      }
+    }
+
+    const filteredElementInfo = [];
+
+    for (let i = 0; i < this.elementInfo.length; i++) {
+      const element = this.elementInfo[i];
+      const $chip = $chips.filter(
+        `[data-id=${element.id}][data-site-id=${element.siteId}]:first`
+      );
+      if ($chip.length) {
+        element.data = $chip.data();
+        $chip
+          .css('z-index', this.elementInfo.length - i)
+          .addClass('copied-element-chip')
+          .appendTo(this.$copiedElements);
+
+        // overlay opacities: 0, .4, .55, .7, .85
+        if (i !== 0) {
+          $chip.css({
+            'inset-block-start': i * gap,
+            'inset-inline-start': i * gap,
+            '--overlay-opacity': Math.min(0.25 + 0.15 * i, 1),
+          });
+        }
+        filteredElementInfo.push(element);
+      }
+    }
+
+    if (filteredElementInfo.length !== this.elementInfo.length) {
+      this.elementInfo = filteredElementInfo;
+      this.updateMessage(this.getMessage());
+    }
+
+    this.loaded = true;
+
+    return this.$copiedElements;
+  },
+
+  handleCloseButtonClick: function () {
+    Craft.cp.clearCopiedElements();
+  },
+});
+
+Garnish.$scrollContainer = Garnish.$win;
+Craft.cp = new Craft.CP();
+
+/**
+ * Job progress icon class
+ * @deprecated since 6.0. Use <cp-queue-indicator> component instead.
+ */
+var JobProgressIcon = Garnish.Base.extend({
+  $li: null,
+  $container: null,
+  $a: null,
+  $label: null,
+  $progressLabel: null,
+  $tooltip: $(),
+
+  progress: null,
+  failMode: false,
+
+  _$bgCanvas: null,
+  _$staticCanvas: null,
+  _$hoverCanvas: null,
+  _$failCanvas: null,
+
+  _staticCtx: null,
+  _hoverCtx: null,
+  _canvasSize: null,
+  _arcPos: null,
+  _arcRadius: null,
+  _lineWidth: null,
+
+  _arcStartPos: 0,
+  _arcEndPos: 0,
+  _arcStartStepSize: null,
+  _arcEndStepSize: null,
+  _arcStep: null,
+  _arcStepTimeout: null,
+  _arcAnimateCallback: null,
+
+  _progressBar: null,
+
+  init: function () {
+    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$container = $('<div/>', {
+      class: 'nav-item nav-item--job',
+    }).appendTo(this.$li);
+    this.$a = $('<a/>', {
+      id: 'job-icon',
+      class: 'sidebar-action sidebar-action--job',
+      href: Craft.canAccessQueueManager
+        ? Craft.getUrl('utilities/queue-manager')
+        : null,
+    }).appendTo(this.$container);
+    const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
+    this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
+      $prefixContainer
+    );
+    $prefixContainer.appendTo(this.$a);
+
+    const $labelContainer = $('<span class="sidebar-action__label">');
+    $labelContainer.appendTo(this.$a);
+    this.$label = $('<span class="label"/>').appendTo($labelContainer);
+    this.$progressLabel = $('<span class="progress-label"/>')
+      .appendTo($labelContainer)
+      .hide();
+
+    // If the sidebar is collapsed, make sure to add a tooltip.
+    // <cp-global-sidebar> removes it and adds it back on expand/contract
+    if (Garnish.$bod.data('sidebar') === 'collapsed') {
+      this.$tooltip = $('<craft-tooltip/>', {
+        placement: 'right',
+        'self-managed': true,
+        'aria-label': this.$label.text(),
+      }).appendTo(this.$a);
+    }
+
+    let m = window.devicePixelRatio > 1 ? 2 : 1;
+    this._canvasSize = 18 * m;
+    this._arcPos = this._canvasSize / 2;
+    this._arcRadius = 7 * m;
+    this._lineWidth = 3 * m;
+
+    this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
+    this._$staticCanvas = this._createCanvas(
+      'static',
+      this.$container.css('color')
+    );
+    this._$hoverCanvas = this._createCanvas(
+      'hover',
+      this.$container.css('color')
+    );
+    this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
+
+    this._staticCtx = this._$staticCanvas[0].getContext('2d');
+    this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
+
+    this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
+    this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
+  },
+
+  setDescription: function (description, progressLabel) {
+    this.$label.text(description);
+    if (progressLabel) {
+      this.$progressLabel.text(progressLabel).show();
+    } else {
+      this.$progressLabel.hide();
+    }
+
+    if (this.$tooltip.length) {
+      this.$tooltip.attr('aria-label', description);
+    }
+  },
+
+  setProgress: function (progress) {
+    if (progress == 0) {
+      this._$staticCanvas.hide();
+      this._$hoverCanvas.hide();
+    } else {
+      this._$staticCanvas.show();
+      this._$hoverCanvas.show();
+      if (this.progress && progress > this.progress) {
+        this._animateArc(0, progress / 100);
+      } else {
+        this._setArc(0, progress / 100);
+      }
+    }
+
+    this.progress = progress;
+  },
+
+  complete: function () {
+    this._animateArc(0, 1, () => {
+      this._$bgCanvas.velocity('fadeOut');
+
+      this._animateArc(1, 1, () => {
+        this.$li.remove();
+        this.destroy();
+      });
+    });
+  },
+
+  showFailMode: function (message) {
+    if (this.failMode) {
+      return;
+    }
+
+    this.failMode = true;
+    this.progress = null;
+
+    this._$bgCanvas.hide();
+    this._$staticCanvas.hide();
+    this._$hoverCanvas.hide();
+    this._$failCanvas.show();
+
+    this.setDescription(message);
+  },
+
+  hideFailMode: function () {
+    if (!this.failMode) {
+      return;
+    }
+
+    this.failMode = false;
+
+    this._$bgCanvas.show();
+    this._$staticCanvas.show();
+    this._$hoverCanvas.show();
+    this._$failCanvas.hide();
+  },
+
+  _createCanvas: function (id, color) {
+    var $canvas = $(
+        '<canvas id="job-icon-' +
+          id +
+          '" width="' +
+          this._canvasSize +
+          '" height="' +
+          this._canvasSize +
+          '"/>'
+      ).appendTo(this.$canvasContainer),
+      ctx = $canvas[0].getContext('2d');
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = this._lineWidth;
+    ctx.lineCap = 'round';
+    return $canvas;
+  },
+
+  _setArc: function (startPos, endPos) {
+    this._arcStartPos = startPos;
+    this._arcEndPos = endPos;
+
+    this._drawArc(this._staticCtx, startPos, endPos);
+    this._drawArc(this._hoverCtx, startPos, endPos);
+  },
+
+  _drawArc: function (ctx, startPos, endPos) {
+    ctx.clearRect(0, 0, this._canvasSize, this._canvasSize);
+    ctx.beginPath();
+    ctx.arc(
+      this._arcPos,
+      this._arcPos,
+      this._arcRadius,
+      (1.5 + startPos * 2) * Math.PI,
+      (1.5 + endPos * 2) * Math.PI
+    );
+    ctx.stroke();
+    ctx.closePath();
+  },
+
+  _animateArc: function (targetStartPos, targetEndPos, callback) {
+    if (this._arcStepTimeout) {
+      clearTimeout(this._arcStepTimeout);
+    }
+
+    this._arcStep = 0;
+    this._arcStartStepSize = (targetStartPos - this._arcStartPos) / 10;
+    this._arcEndStepSize = (targetEndPos - this._arcEndPos) / 10;
+    this._arcAnimateCallback = callback;
+    this._takeNextArcStep();
+  },
+
+  _takeNextArcStep: function () {
+    this._setArc(
+      this._arcStartPos + this._arcStartStepSize,
+      this._arcEndPos + this._arcEndStepSize
+    );
+
+    this._arcStep++;
+
+    if (this._arcStep < 10) {
+      this._arcStepTimeout = setTimeout(this._takeNextArcStep.bind(this), 50);
+    } else if (this._arcAnimateCallback) {
+      this._arcAnimateCallback();
+    }
+  },
+});

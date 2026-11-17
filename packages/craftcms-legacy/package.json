@@ -17,9 +17,7 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/playwright": "workspace:*",
     "@craftcms/webpack": "workspace:*",
-    "@playwright/test": "catalog:",
     "vite-plus": "catalog:",
     "webpack": "catalog:",
     "webpack-dev-server": "catalog:",
@@ -42,15 +40,13 @@
     "blueimp-file-upload": "^10.32.0",
     "codemirror": "^5.65.21",
     "d3": "catalog:",
-    "iframe-resizer": "^4.4.5",
     "inputmask": "catalog:",
     "jquery": "catalog:",
-    "jquery-ui": "^1.14.2",
+    "jquery-ui": "catalog:",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "catalog:",
     "timepicker": "^1.14.1",
-    "ttf2woff2": "^5.0.0",
     "typescript": "catalog:legacy",
     "velocity-animate": "^1.5.2",
     "vue": "catalog:legacy",
@@ -61,6 +57,6 @@
     "yii2-pjax": "~2.0.8"
   },
   "optionalDependencies": {
-    "@awesome.me/kit-ddaed3f5c5": "^1.0.81"
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.110"
   }
 }

@@ -40,34 +40,27 @@ describe('craft-input-money', () => {
     const element = document.createElement('craft-input-money');
     element.label = 'Price';
     const inputEvents: Event[] = [];
-    const userChanges: Event[] = [];
     element.addEventListener('input', (event) => inputEvents.push(event));
-    element.addEventListener('model-value-changed', (event) => {
-      if ((event as CustomEvent).detail?.isTriggeredByUser) {
-        userChanges.push(event);
-      }
-    });
 
     document.body.append(element);
-    element.modelValue = '1234.56';
+    element.value = '1234.56';
     element.locale = 'de_DE';
     element.currency = 'EUR';
     await element.updateComplete;
 
     expect(inputEvents).toEqual([]);
-    expect(userChanges).toEqual([]);
   });
 
   it('clears its value', async () => {
     const element = await createInputMoney();
-    element.modelValue = '12,50';
+    element.value = '12,50';
     await element.updateComplete;
 
     const button = element.shadowRoot?.querySelector<HTMLElement>('.clear');
     button?.click();
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('');
+    expect(element.value).toBe('');
     expect(button?.hidden).toBe(true);
   });
 
@@ -104,7 +97,7 @@ describe('craft-input-money', () => {
     const element = await createInputMoney();
     element.setAttribute('show-currency', 'false');
     element.setAttribute('clearable', 'false');
-    element.modelValue = '12,50';
+    element.value = '12,50';
     await element.updateComplete;
 
     expect(element.showCurrency).toBe(false);

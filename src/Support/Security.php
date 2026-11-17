@@ -72,10 +72,10 @@ class Security
      */
     public function isSystemDir(string $path): bool
     {
-        $path = File::absolutePath($path, '/');
+        $path = File::absolutePath($path, ds: '/');
 
         foreach (Path::system() as $dir) {
-            $dir = File::absolutePath($dir, '/');
+            $dir = File::absolutePath($dir, ds: '/');
 
             if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
                 return true;
@@ -90,7 +90,7 @@ class Security
      */
     public function isRestrictedDir(string $path): bool
     {
-        $path = File::absolutePath($path, '/');
+        $path = File::absolutePath($path, ds: '/');
 
         // is it located within a Craft-specific system directory
         if ($this->isSystemDir($path)) {

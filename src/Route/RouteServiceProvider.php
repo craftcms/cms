@@ -30,8 +30,10 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
+use CraftCms\Cms\Http\Middleware\StartLazySession;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
 use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
@@ -66,6 +68,7 @@ class RouteServiceProvider extends ServiceProvider
     public function register(): void
     {
         CraftMaintenanceMiddleware::registerRouteMacro();
+        StartLazySession::registerRouteMacro();
 
         /**
          * These middleware must run before all others
@@ -73,10 +76,11 @@ class RouteServiceProvider extends ServiceProvider
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
-        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class], PreventStaleDatabaseReads::class);
+        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class, StartLazySession::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
@@ -101,6 +105,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Event::listen(RouteMatched::class, function (RouteMatched $event): void {
             MatchedElement::set(null);
+            StartLazySession::applyTo($event->route);
 
             if (Cms::isInstalled() && $event->request->isSiteRequest() && ! $event->request->isActionRequest() && ! Cms::config()->headlessMode) {
                 $event->route->middleware([ResolveSite::class, ResolveElementRoute::class]);
@@ -122,25 +127,21 @@ class RouteServiceProvider extends ServiceProvider
             $this->bootRequestForgeryExceptions();
         }
 
-        $this->app->booted(function () use ($routes, $router): void {
+        $this->app->booted(function (): void {
             // Project routes are registered at runtime so cached routes cannot retain stale project config.
             if (! Cms::isInstalled() || $this->app->runningConsoleCommand('route:cache')) {
                 return;
             }
 
-            $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router
-                    ->view($route->getUri(), $route->template)
-                    ->middleware(['craft', 'craft.web']),
-            );
+            $this->app->make(ProjectConfigRoutes::class)->register();
         });
 
-        Event::listen(SiteDeleted::class, function (SiteDeleted $event) use ($routes): void {
+        Event::listen(SiteDeleted::class, function (SiteDeleted $event): void {
             if (ProjectConfig::isApplyingExternalChanges()) {
                 return;
             }
 
-            $routes->handleDeletedSite($event);
+            $this->app->make(Routes::class)->handleDeletedSite($event);
         });
 
         RateLimiter::for('password-reset', function ($request) {
@@ -213,6 +214,8 @@ class RouteServiceProvider extends ServiceProvider
             RequireCpRequest::class,
             AuthenticateCraftSession::class,
             CheckRequirements::class,
+            // Outside `HandleInertiaRequests`, so it sees what the page delivered.
+            SendBroadcasts::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
             HandleTemplateRequest::class,

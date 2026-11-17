@@ -11,10 +11,8 @@ use CraftCms\Cms\Support\Json;
  * paired with a native color-picker swatch and an optional preset datalist, the
  * modern replacement for the legacy `Craft.ColorInput` JS.
  *
- * It's an {@see Input} whose tag is fixed to craft-input-color. Like
- * {@see InputPassword}, the element extends LionInput directly (not craft-input),
- * so only the Lion-pushed control props live on the host; the value is stored as
- * bare hex (the component renders its own leading `#`). Presets are passed as a
+ * It's an {@see Input} whose tag is fixed to craft-input-color. The value is
+ * stored as bare hex (the component renders its own leading `#`). Presets are passed as a
  * JSON array attribute the component parses into its picker datalist.
  *
  *     InputColor::make()
@@ -67,8 +65,8 @@ class InputColor extends Input
     {
         $attributes = parent::hostAttributes();
 
-        // Drop `type`: the component pairs its own text field with a native
-        // colour swatch. The slotted native input still carries it via
+        // No `type` on the host: the component pairs its own text field with a
+        // native colour swatch. The slotted native input still carries it via
         // Input::inputHtml().
 
         $presets = array_values(array_filter($this->presets));

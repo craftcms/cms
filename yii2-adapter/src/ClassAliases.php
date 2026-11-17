@@ -370,7 +370,7 @@ class ClassAliases
         class_alias(Link::class, \craft\fields\Url::class);
         class_alias(\CraftCms\Cms\Field\Conditions\FieldConditionRuleTrait::class, FieldConditionRuleTrait::class);
         class_alias(\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface::class, FieldConditionRuleInterface::class);
-        class_alias(\CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface::class, CrossSiteCopyableFieldInterface::class);
+        class_alias(\CraftCms\Yii2Adapter\Field\Contracts\LegacyCrossSiteCopyableField::class, CrossSiteCopyableFieldInterface::class);
         class_alias(\CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface::class, EagerLoadingFieldInterface::class);
         class_alias(\CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface::class, ElementContainerFieldInterface::class);
         class_alias(LegacyField::class, FieldInterface::class);

@@ -4,7 +4,7 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import type {AssistantApi} from '@/bootstrap/assistant';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
-import type {Router} from '@inertiajs/core';
+import type {Page, Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 import type {UiValueChangeDetail, uiValues} from '@/modules/ui/ui-values';
@@ -34,32 +34,13 @@ interface LegacyModalInstance {
 }
 
 // Set up interfaces and types
-interface ProgressBarInterface {
-  // oxlint-disable-next-line @typescript-eslint/no-misused-new
-  new (
-    $element: JQuery,
-    displaySteps?: boolean,
-    settings?: LegacyWidgetSettings
-  ): ProgressBarInterface;
-
-  $progressBar: JQuery;
-
-  setItemCount(count: number): void;
-
-  setProcessedItemCount(count: number): void;
-
-  updateProgressBar(): void;
-
-  showProgressBar(): void;
-}
-
 interface IntervalManagerInterface {
   // oxlint-disable-next-line @typescript-eslint/no-misused-new
   new (settings?: LegacyWidgetSettings): IntervalManagerInterface;
 
   stop(): void;
 
-  start(): void;
+  start(page?: Page): void;
 }
 
 type Site = {
@@ -139,9 +120,9 @@ interface ElementSelectorModalSettings {
 }
 
 interface CraftStatic {
+  autofocusPreferred?: boolean;
   csrfTokenName?: string;
   csrfTokenValue?: string;
-  ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: LegacyWidgetSettings, category?: string): string;
   sendActionRequest(
@@ -159,13 +140,6 @@ interface CraftStatic {
   openCustomizeSourcesModal(
     options: import('@/modules/customize-sources').CustomizeSourcesModalOptions
   ): Promise<void>;
-  commandPalette: Pick<
-    typeof import('@/modules/command-palette/registry'),
-    'registerProvider' | 'registerActions' | 'registerView'
-  > & {
-    open: typeof import('@/modules/command-palette/registry').openCommandPalette;
-    close: typeof import('@/modules/command-palette/registry').closeCommandPalette;
-  };
   expandPostArray(arr: FormData | URLSearchParams): LegacyWidgetSettings;
   escapeHtml(str: string);
   sites: Site[];
@@ -192,17 +166,6 @@ interface CraftStatic {
     trigger?: (event: string, data?: LegacySettingValue) => void;
     $notificationContainer?: {length: number};
     $notificationHeading?: {length: number};
-    copyElements?: (
-      elementInfo: Array<{
-        type: string;
-        id: string | number;
-        siteId?: number | null;
-        draftId?: number | null;
-        revisionId?: number | null;
-        fieldId?: number | null;
-        ownerId?: number | null;
-      }>
-    ) => void;
     displayNotification: (
       type: any,
       message?: string,
@@ -295,9 +258,10 @@ declare global {
   interface Window {
     bootedCallbacks: Array<(craft: CraftStatic) => void>;
     bootingCallbacks: Array<(craft: CraftStatic) => void>;
-    CpConfig: LegacyWidgetSettings;
+    CpPage: Page;
     Cp: CpStatic;
-    Craft: CraftStatic;
+    // Untyped until CraftStatic covers what's still reached through it
+    Craft: any;
     $?: JQueryStatic;
     jQuery?: JQueryStatic;
     Garnish: GarnishStatic;

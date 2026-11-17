@@ -6,6 +6,28 @@ import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+  // `craft-icon`s fetch their SVGs; left in flight they're aborted at
+  // teardown and reported as unhandled errors.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response('<svg></svg>'))
+  );
+});
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 const TextControl = defineComponent({
   props: ['value'],
   render() {
@@ -29,6 +51,7 @@ describe('FieldNode generated values', () => {
       deltaGroup: ['editor', 'alt'],
       mode: 'editable',
       props: {},
+      writable: true,
     },
     children: [
       {
@@ -56,12 +79,16 @@ describe('FieldNode generated values', () => {
     ],
   } as UiNodePayload;
 
-  function mount(values: UiValues, onChange: (change: UiChange) => void) {
+  function mount(
+    values: UiValues,
+    onChange: (change: UiChange) => void,
+    fieldNode: UiNodePayload = node
+  ) {
     app = createApp({
       setup() {
         return () =>
           h(FieldNode, {
-            node,
+            node: fieldNode,
             values,
             errors: [],
             touchedPaths: new Set<string>(),
@@ -95,7 +122,7 @@ describe('FieldNode generated values', () => {
     container = document.createElement('div');
     document.body.append(container);
     window.Craft = {
-      cp: {displayNotice: vi.fn(), displayError: vi.fn()},
+      cp: {},
     } as never;
   });
 
@@ -129,9 +156,7 @@ describe('FieldNode generated values', () => {
     expect(
       container.querySelector('craft-field')!.getAttribute('aria-busy')
     ).toBeNull();
-    expect(window.Craft.cp!.displayNotice).toHaveBeenCalledWith(
-      'Alt text generated.'
-    );
+    expect(messages.showNotice).toHaveBeenCalledWith('Alt text generated.');
   });
 
   it('marks the field busy while generating, and reports errors', async () => {
@@ -153,7 +178,7 @@ describe('FieldNode generated values', () => {
     reject(new Error('Network down'));
 
     await vi.waitFor(() =>
-      expect(window.Craft.cp!.displayError).toHaveBeenCalledWith(
+      expect(messages.showError).toHaveBeenCalledWith(
         'Couldn’t generate a value for this field.'
       )
     );
@@ -163,5 +188,31 @@ describe('FieldNode generated values', () => {
     expect(
       container.querySelector('craft-field')!.getAttribute('aria-busy')
     ).toBeNull();
+  });
+
+  it('offers no generated value to a field whose control can’t be given one', async () => {
+    const values = reactive<UiValues>({editor: {alt: 'Kept'}});
+    const changed = vi.fn<(change: UiChange) => void>();
+    mount(values, changed, {
+      ...node,
+      control: {...node.control!, writable: undefined},
+    });
+    await nextTick();
+
+    expect(container.querySelector('craft-action-menu')).toBeNull();
+
+    window.dispatchEvent(
+      new CustomEvent('craft:generate-field-value', {
+        detail: {
+          trigger: container.querySelector('[data-text-control]'),
+          url: '/actions/assets/generate-alt-text',
+          params: {},
+        },
+      })
+    );
+    await nextTick();
+
+    expect(post).not.toHaveBeenCalled();
+    expect(changed).not.toHaveBeenCalled();
   });
 });

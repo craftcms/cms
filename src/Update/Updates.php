@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -87,7 +88,7 @@ class Updates
         }
 
         try {
-            $updatesData = UpdatesData::fromArray($this->api->getUpdates());
+            $updatesData = UpdatesData::fromArray($this->api->getUpdates(), now());
         } catch (Throwable $e) {
             Log::warning("Couldn't get updates: {$e->getMessage()}", [__METHOD__]);
 
@@ -222,6 +223,15 @@ class Updates
             File::cleanDirectory(Path::compiledTemplates(create: false));
         } catch (Throwable $e) {
             Log::error('Could not delete compiled templates: '.$e->getMessage());
+
+            report($e);
+        }
+
+        // Delete all compiled Blade views, which can be newer than the updated views they were compiled from
+        try {
+            CompiledViews::clear();
+        } catch (Throwable $e) {
+            Log::error('Could not delete compiled views: '.$e->getMessage());
 
             report($e);
         }

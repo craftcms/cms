@@ -31,7 +31,6 @@ use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
-use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
@@ -39,7 +38,7 @@ use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
-use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CompareFieldChangesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementsController;
@@ -289,7 +288,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
         Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
-        Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
+        Route::post('elements/compare-field-changes', CompareFieldChangesController::class);
 
         // AI assistant
         Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
@@ -407,9 +406,9 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
         Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
         Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
+        Route::post('dashboard/change-widget-color', [WidgetsController::class, 'updateColor']);
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
-        Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data'])->middleware('can:viewUsers');
 
         // Volumes

@@ -60,7 +60,7 @@ class SendUserReviewNotifications
             $recipients,
             'workflow_approved',
             t('Draft approved'),
-            t('“{entry}” completed its approval workflow.', ['entry' => $event->draft->title]),
+            t('“{entry}” completed its approval workflow.', ['entry' => $event->draft->getUiLabel()]),
         );
     }
 
@@ -72,7 +72,7 @@ class SendUserReviewNotifications
             collect([$event->run->author]),
             'workflow_changes_requested',
             t('Changes requested'),
-            t('{user} requested changes to “{entry}”.', ['user' => $this->actorName($event), 'entry' => $event->draft->title]),
+            t('{user} requested changes to “{entry}”.', ['user' => $this->actorName($event), 'entry' => $event->draft->getUiLabel()]),
         );
     }
 
@@ -92,7 +92,7 @@ class SendUserReviewNotifications
             'workflow_review_requested',
             t('Review requested'),
             t('“{entry}” is awaiting your approval in {stage}.', [
-                'entry' => $event->draft->title,
+                'entry' => $event->draft->getUiLabel(),
                 'stage' => t($stage->name),
             ]),
         );
@@ -110,7 +110,7 @@ class SendUserReviewNotifications
             $recipients,
             'workflow_review_commented',
             t('New review comment'),
-            t('{user} commented on the review for “{entry}”.', ['user' => $this->actorName($event), 'entry' => $event->draft->title]),
+            t('{user} commented on the review for “{entry}”.', ['user' => $this->actorName($event), 'entry' => $event->draft->getUiLabel()]),
         );
     }
 
@@ -122,7 +122,7 @@ class SendUserReviewNotifications
             collect([$event->run->author]),
             'workflow_invalidated',
             t('Approval reset'),
-            t('The review for “{entry}” was reset because its workflow changed.', ['entry' => $event->draft->title]),
+            t('The review for “{entry}” was reset because its workflow changed.', ['entry' => $event->draft->getUiLabel()]),
         );
     }
 
@@ -171,7 +171,7 @@ class SendUserReviewNotifications
             title: $title,
             message: $message,
             workflowName: (string) $event->run->activityRootEvent->data['workflow']['name'],
-            entryTitle: (string) $event->draft->title,
+            entryTitle: $event->draft->getUiLabel(),
             entryUrl: Uri::of($event->draft->getCpEditUrl())->withFragment('workflow')->value(),
             stageName: $stage === null ? null : t($stage->name),
             note: $event->note,

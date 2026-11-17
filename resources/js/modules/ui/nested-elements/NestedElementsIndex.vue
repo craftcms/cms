@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type {Selectable} from '@/common/composables/useSelectable';
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {
@@ -139,7 +141,9 @@
   canInteractWithOrder = computed(
     () => canReorder.value && !busy.value && !loading.value
   );
-  const {selection, selectedIds, clearSelection} = queryState.selection;
+  const {selectedIds, clearSelection} = queryState.selection;
+  // Nested elements always have numeric ids.
+  const selection = queryState.selection.selection as Selectable<number>;
 
   operations = useNestedElementOperations({
     elements,
@@ -158,6 +162,11 @@
     busy,
     error,
     ownerId: preparedOwnerId,
+  });
+
+  usePasteElementsShortcut(container, {
+    canPaste: () => operations.canPaste.value,
+    paste: () => operations.paste(),
   });
   const actions = useNestedElementActions({
     elements,

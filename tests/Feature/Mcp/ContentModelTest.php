@@ -94,5 +94,5 @@ it('says how images missing alt text can be filled in', function () {
     config(['ai.providers' => ['openai' => ['driver' => 'openai', 'key' => 'sk-test']]]);
     app()->instance(Settings::class, new Settings(['defaults' => ['text' => ['provider' => 'openai']]]));
 
-    expect($note())->toContain('`assets.analyze`', 'craft:altText');
+    expect($note())->toContain('`assets_analyze`', 'craft:altText');
 });

@@ -106,6 +106,18 @@ it('gives single-line columns a one-row textarea that keeps its value on one lin
         ->and($control->props)->toBe(['rows' => 1, 'monospace' => true, 'singleLine' => true]);
 });
 
+it('sends the row order of keyed tables whose keys JSON objects would reorder', function () {
+    $resolve = fn (array $value) => app(UiResolver::class)->resolve(Ui::make([
+        Field::make('Rows', Table::make('rows')->keyed()->columns([
+            'name' => ['heading' => 'Name', 'type' => 'singleline'],
+        ])->value($value)),
+    ]), new UiContext)->nodes[0]->control->props;
+
+    expect($resolve(['2' => ['name' => 'Tue'], '0' => ['name' => 'Sun'], 'x' => ['name' => 'Other']])['rowOrder'])
+        ->toBe(['2', '0', 'x'])
+        ->and($resolve(['row7' => ['name' => 'Ada']]))->not->toHaveKey('rowOrder');
+});
+
 it('applies table modes to concrete cells and reusable row templates', function (ControlMode $mode) {
     $ui = Ui::make([
         Field::make('Rows', Table::make('rows')->columns([

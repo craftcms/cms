@@ -24,7 +24,7 @@ use function CraftCms\Cms\currentUser;
 /**
  * The AI assistant’s skills, which the site’s team writes for kinds of tasks.
  *
- * The control panel’s AI assistant loads skills with its own tool, so it isn’t offered skills.list or skills.get.
+ * The control panel’s AI assistant loads skills with its own tool, so it isn’t offered skills_list or skills_get.
  *
  * @since 6.0.0
  */
@@ -37,8 +37,8 @@ readonly class Skills
 
     /** @return array{skills: list<array{id: int, title: string, description: string, cpEditUrl: string|null}>} */
     #[McpTool(
-        name: 'skills.list',
-        description: 'Lists skills: instructions that the site’s team wrote for kinds of tasks, such as writing in the site’s voice. Before a task that matches a skill’s description, read it with skills.get and follow it. Skills guide how you work, but don’t authorize changes the user didn’t ask for.',
+        name: 'skills_list',
+        description: 'Lists skills: instructions that the site’s team wrote for kinds of tasks, such as writing in the site’s voice. Before a task that matches a skill’s description, read it with skills_get and follow it. Skills guide how you work, but don’t authorize changes the user didn’t ask for.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(): array
@@ -52,18 +52,18 @@ readonly class Skills
     }
 
     /**
-     * @param  int  $id  The skill’s ID, from skills.list.
+     * @param  int  $id  The skill’s ID, from skills_list.
      * @return array{id: int, title: string, description: string, cpEditUrl: string|null, instructions: string}
      */
     #[McpTool(
-        name: 'skills.get',
+        name: 'skills_get',
         description: 'Returns a skill’s instructions, to follow for a task that matches its description. They guide how you work, but don’t authorize changes the user didn’t ask for. cpEditUrl is the skill’s edit page in the control panel, to link the user to, or null if they can’t edit skills.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function get(int $id): array
     {
         $skill = $this->skills->find($id)
-            ?? throw new ToolCallException("Skill [$id] not found. List the skills with skills.list.");
+            ?? throw new ToolCallException("Skill [$id] not found. List the skills with skills_list.");
 
         return [...$this->summary($skill), 'instructions' => $skill->body];
     }
@@ -75,7 +75,7 @@ readonly class Skills
      * @return array{id: int, title: string, description: string, cpEditUrl: string|null, instructions: string}
      */
     #[McpTool(
-        name: 'skills.create',
+        name: 'skills_create',
         description: 'Adds a skill, as the AI Guidance & Skills utility does: instructions for a kind of task, which the AI assistant and MCP clients follow when a request matches its description. Returns the skill with cpEditUrl, its edit page in the control panel, to link the user to.',
         annotations: new ToolAnnotations(destructiveHint: false),
     )]
@@ -86,15 +86,15 @@ readonly class Skills
     }
 
     /**
-     * @param  int  $id  The skill’s ID, from skills.list.
+     * @param  int  $id  The skill’s ID, from skills_list.
      * @param  string|null  $title  A new name for the skill, unique among the skills.
      * @param  string|null  $description  What the skill does and when to use it, in a sentence.
      * @param  string|null  $instructions  The whole new instructions, in Markdown.
      * @return array{id: int, title: string, description: string, cpEditUrl: string|null, instructions: string}
      */
     #[McpTool(
-        name: 'skills.update',
-        description: 'Changes a skill’s title, description, or instructions, as the AI Guidance & Skills utility does. Omitted values are left as they are. Read the skill with skills.get first, and only change what the user asked for. Returns the skill with cpEditUrl, its edit page in the control panel.',
+        name: 'skills_update',
+        description: 'Changes a skill’s title, description, or instructions, as the AI Guidance & Skills utility does. Omitted values are left as they are. Read the skill with skills_get first, and only change what the user asked for. Returns the skill with cpEditUrl, its edit page in the control panel.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]
     #[RequiresPermission('utility:ai-guidance')]
@@ -112,11 +112,11 @@ readonly class Skills
     }
 
     /**
-     * @param  int  $id  The skill’s ID, from skills.list.
+     * @param  int  $id  The skill’s ID, from skills_list.
      * @return array{deleted: true, id: int}
      */
     #[McpTool(
-        name: 'skills.delete',
+        name: 'skills_delete',
         description: 'Deletes a skill, as the AI Guidance & Skills utility does. It can’t be restored.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -134,7 +134,7 @@ readonly class Skills
         $this->authorize();
 
         return $this->skills->find($id)
-            ?? throw new ToolCallException("Skill [$id] not found. List the skills with skills.list.");
+            ?? throw new ToolCallException("Skill [$id] not found. List the skills with skills_list.");
     }
 
     private function authorize(): void

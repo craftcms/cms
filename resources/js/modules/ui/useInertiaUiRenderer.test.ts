@@ -3,6 +3,7 @@ import {
   createApp,
   defineComponent,
   nextTick,
+  reactive,
   ref,
   type ComputedRef,
   type ShallowRef,
@@ -106,6 +107,36 @@ describe('useInertiaUiRenderer', () => {
 
     expect(form.data().settings).toEqual({});
     expect(form.isDirty).toBe(false);
+  });
+
+  it('takes a payload whose values hold reactive objects, as one merged from Inertia’s props does', async () => {
+    const currentPayload = ref<UiPayload>(rootPayload);
+    const errors: unknown[] = [];
+    let integration!: TestIntegration;
+
+    mount(() => {
+      integration = useInertiaUiRenderer(
+        useForm({title: 'Example', enabled: true}),
+        currentPayload
+      );
+    }, errors);
+
+    // A plain object over values copied out of reactive props, as merging the
+    // deferred tabs into the page's form builds.
+    currentPayload.value = {
+      ...rootPayload,
+      values: {
+        title: 'Merged',
+        fields: reactive({summary: 'From a deferred tab'}),
+      },
+    };
+    await nextTick();
+
+    expect(errors).toEqual([]);
+    expect(integration.values.value).toEqual({
+      title: 'Merged',
+      fields: {summary: 'From a deferred tab'},
+    });
   });
 
   it('advances the renderer and Inertia baselines together', async () => {
@@ -450,7 +481,7 @@ describe('useInertiaUiRenderer', () => {
     });
   });
 
-  function mount(setup: () => void): void {
+  function mount(setup: () => void, errors?: unknown[]): void {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp(
@@ -462,6 +493,9 @@ describe('useInertiaUiRenderer', () => {
         },
       })
     );
+    if (errors) {
+      app.config.errorHandler = (error) => void errors.push(error);
+    }
     app.mount(container);
   }
 });

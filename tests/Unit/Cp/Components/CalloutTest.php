@@ -12,7 +12,7 @@ it('renders attributes', function () {
     $html = Callout::make()
         ->variant('warning')
         ->appearance('plain')
-        ->title('Heads up')
+        ->label('Heads up')
         ->icon('lightbulb')
         ->rounded('none')
         ->inline()
@@ -21,7 +21,8 @@ it('renders attributes', function () {
     expect($html)->toStartWith('<craft-callout')
         ->and($html)->toContain('variant="warning"')
         ->and($html)->toContain('appearance="plain"')
-        ->and($html)->toContain('title="Heads up"')
+        ->and($html)->toContain('label="Heads up"')
+        ->and($html)->not->toContain('title=')
         ->and($html)->toContain('icon="lightbulb"')
         ->and($html)->toContain('rounded="none"')
         ->and($html)->toContain(' inline');

@@ -99,10 +99,10 @@ class EntryAdapter extends BaseElementAdapter
     protected function notes(): array
     {
         return [
-            'elements.create with asUnpublishedDraft: true saves a new entry as an unpublished draft instead of a live entry, optionally named with draftName and draftNotes. The result sets savedAsDraft and explains the next step.',
+            'elements_create with asUnpublishedDraft: true saves a new entry as an unpublished draft instead of a live entry, optionally named with draftName and draftNotes. The result sets savedAsDraft and explains the next step.',
             'In a section with an approval workflow, saving an enabled entry creates a draft. The result then sets savedAsDraft and suggests the next tool call.',
-            'elements.get/update/field-schema load canonical entries and saved drafts by their own element ID or UID, excluding provisional drafts and revisions. A canonical ID selects the original entry; a draft ID selects that draft. Updating a draft saves only the draft and leaves the canonical entry unchanged until the draft is applied with drafts.apply. To find drafts of an entry, use drafts.list with the canonical ID.',
-            'For editorial changes, inspect the saved draft with workflows.review, submit when its actions permit, and follow the returned review state. Use the draft element ID for workflow transitions and drafts.apply. Refresh review state before decisions or applying; the tool schemas identify the run and stage values to send. Approval does not publish; drafts.apply updates the canonical entry separately. Inspect the resulting status to confirm publication.',
+            'elements_get, elements_update, and elements_field_schema load canonical entries and saved drafts by their own element ID or UID, excluding provisional drafts and revisions. A canonical ID selects the original entry; a draft ID selects that draft. Updating a draft saves only the draft and leaves the canonical entry unchanged until the draft is applied with drafts_apply. To find drafts of an entry, use drafts_list with the canonical ID.',
+            'For editorial changes, inspect the saved draft with workflows_review, submit when its actions permit, and follow the returned review state. Use the draft element ID for workflow transitions and drafts_apply. Refresh review state before decisions or applying; the tool schemas identify the run and stage values to send. Approval does not publish; drafts_apply updates the canonical entry separately. Inspect the resulting status to confirm publication.',
             'Duplicating defaults to the unpublished mode, which creates an unpublished draft. The canonical mode uses Craft’s normal enabled-state behavior. Revisions and provisional drafts cannot be duplicated, and nested entries keep their owner.',
         ];
     }
@@ -287,18 +287,18 @@ class EntryAdapter extends BaseElementAdapter
         if (! $this->workflows->requiresApproval($draft)) {
             return [
                 ...$result,
-                'instructions' => "{$summary} Use the draft ID with elements.get, elements.update, and the drafts.* tools. Publish it with drafts.apply when it is ready.",
+                'instructions' => "{$summary} Use the draft ID with elements_get, elements_update, and the drafts_* tools. Publish it with drafts_apply when it is ready.",
             ];
         }
 
-        $result['instructions'] = "{$summary} Use the draft ID with elements.get, elements.update, and the drafts.* and workflows.* tools. "
+        $result['instructions'] = "{$summary} Use the draft ID with elements_get, elements_update, and the drafts_* and workflows_* tools. "
             .($suggestSubmit
-                ? 'Submit the draft for review with workflows.submit, then publish it with drafts.apply once it is approved.'
-                : 'Check its review state with workflows.review, and publish it with drafts.apply once it is approved.');
+                ? 'Submit the draft for review with workflows_submit, then publish it with drafts_apply once it is approved.'
+                : 'Check its review state with workflows_review, and publish it with drafts_apply once it is approved.');
 
         if ($suggestSubmit) {
             $result['nextToolCall'] = [
-                'name' => 'workflows.submit',
+                'name' => 'workflows_submit',
                 'arguments' => ['type' => self::handle(), 'id' => $draft->id, 'siteId' => $draft->siteId],
             ];
         }

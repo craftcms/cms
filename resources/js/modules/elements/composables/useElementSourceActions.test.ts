@@ -85,14 +85,14 @@ describe('useElementSourceActions', () => {
 
     blog.onClick!(new MouseEvent('click', {cancelable: true}));
 
-    // The source list and the publishable sections don't change when the
-    // source does, so they're left out rather than the whole page re-fetched.
+    // The source list doesn't change when the source does, so it's left out
+    // rather than the whole page re-fetched.
     const [url, data, options] = router.get.mock.calls[0]!;
 
     expect(url).toBe('/admin/entries?source=section:blog');
     expect(data).toEqual({});
     expect(options).toMatchObject({
-      except: ['sources', 'publishableSections'],
+      except: ['sources'],
       preserveState: true,
       preserveScroll: true,
     });

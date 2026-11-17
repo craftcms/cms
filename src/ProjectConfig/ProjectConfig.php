@@ -94,8 +94,6 @@ class ProjectConfig
 
     public const string PATH_AI = 'ai';
 
-    public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
-
     public const string PATH_CP_NAV = 'cpNav';
 
     public const string PATH_DATE_MODIFIED = 'dateModified';
@@ -493,6 +491,10 @@ class ProjectConfig
 
             $newValue = $this->get($path, $this->isApplyingExternalChanges);
 
+            if ($newValue === null && $child->newValue !== null) {
+                $newValue = [];
+            }
+
             if (is_array($newValue)) {
                 // The containing value may be stale; merge the child's new value before processing it.
                 $relative = array_slice(ProjectConfigHelper::pathSegments($child->path), count(ProjectConfigHelper::pathSegments($path)));
@@ -767,7 +769,17 @@ class ProjectConfig
         }
     }
 
-    private function acquireLock(): void
+    /**
+     * Acquires the lock that project config changes take, and holds it until modified config data is saved.
+     *
+     * Call it before reading values that a change depends on, so no other process can change them in between.
+     *
+     * @throws BusyResourceException if a lock could not be acquired
+     * @throws StaleResourceException if the loaded project config is out-of-date
+     *
+     * @since 6.0.0
+     */
+    public function acquireLock(): void
     {
         if ($this->lock !== null) {
             return;

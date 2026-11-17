@@ -1,7 +1,7 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {FormAssociated} from '@src/mixins/FormAssociated';
+import {FormAssociated, type FormValue} from '@src/mixins/FormAssociated';
 import {t} from '@src/utilities/translate';
 import styles from './slide-rule.styles.js';
 
@@ -65,14 +65,14 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
 
   /** Whether the control responds to input. */
   get #editable(): boolean {
-    return !this.disabled;
+    return !this.disabled && !this._formDisabled;
   }
 
-  override _formValue(): string | null {
-    return this.name ? String(this.value) : null;
+  override _formValue(): string {
+    return String(this.value);
   }
 
-  override _restoreFormValue(value: string | null): void {
+  override _restoreFormValue(value: FormValue): void {
     this.value = Math.min(Math.max(Number(value ?? 0), this.min), this.max);
   }
 
@@ -408,7 +408,7 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
         aria-valuemax=${this.max}
         aria-valuenow=${this.value}
         aria-valuetext=${this.#valueText(this.value)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-disabled=${this.#editable ? 'false' : 'true'}
         @keydown=${this.#handleKeyDown}
         @pointerdown=${this.#handlePointerDown}
         @pointermove=${this.#handlePointerMove}

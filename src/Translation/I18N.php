@@ -64,6 +64,20 @@ class I18N
      */
     private array $registeredCategories = [];
 
+    /**
+     * @var array<string, string> Translations of messages without parameters, by category, locale and message
+     *
+     * @see translate()
+     */
+    private array $translations = [];
+
+    /**
+     * @var array<string, array<string, string>> Laravel's JSON translations, by locale
+     *
+     * @see mayHaveLaravelTranslation()
+     */
+    private array $laravelJsonTranslations = [];
+
     public function __construct(
         private readonly Translator $translator,
     ) {}
@@ -372,20 +386,11 @@ class I18N
 
         $locale ??= str_replace('_', '-', app()->getLocale());
 
-        $translation = $this->translator->translate($message, $parameters, $category, $locale);
-
-        /**
-         * If we don't have a translation for the message.
-         * Translate it using Laravel's translations.
-         */
-        if ($translation === (string) $message) {
-            $result = __($message, $parameters, $locale);
-
-            // We're dealing with a message that's equal to a translation file (for example 'site')
-            if (! is_array($result)) {
-                $translation = $result;
-            }
-        }
+        // Looking a message up costs more than most callers expect, mostly in walking the locale fallbacks of
+        // messages that have no translation, so messages without parameters are looked up once.
+        $translation = $parameters === []
+            ? $this->translations["$category\0$locale\0$message"] ??= $this->lookUp($message, [], $category, $locale)
+            : $this->lookUp($message, $parameters, $category, $locale);
 
         if (Cms::config()->translationDebugOutput) {
             $char = match ($category) {
@@ -400,8 +405,54 @@ class I18N
         return $translation;
     }
 
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    private function lookUp(string|Stringable $message, array $parameters, ?string $category, string $locale): string
+    {
+        $translation = $this->translator->translate($message, $parameters, $category, $locale);
+
+        /**
+         * If we don't have a translation for the message.
+         * Translate it using Laravel's translations.
+         */
+        if ($translation === (string) $message && $this->mayHaveLaravelTranslation((string) $message, $parameters, $locale)) {
+            $result = __($message, $parameters, $locale);
+
+            // We're dealing with a message that's equal to a translation file (for example 'site')
+            if (! is_array($result)) {
+                $translation = $result;
+            }
+        }
+
+        return $translation;
+    }
+
+    /**
+     * Returns whether Laravel's translator can return anything other than the message itself.
+     *
+     * It can when the message is a key in the locale's JSON translations, or when it names an item in a group file,
+     * after a dot. It also fills `:placeholder` parameters in a message it has no translation for. Asking it about
+     * any other message would have it look for a group file named after the whole message, once per message, only
+     * to return the message itself.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    private function mayHaveLaravelTranslation(string $message, array $parameters, string $locale): bool
+    {
+        if (preg_match('/\.(?!$)/', $message) || ($parameters !== [] && str_contains($message, ':'))) {
+            return true;
+        }
+
+        $this->laravelJsonTranslations[$locale] ??= app(\Illuminate\Contracts\Translation\Translator::class)->getLoader()->load($locale, '*', '*');
+
+        return isset($this->laravelJsonTranslations[$locale][$message]);
+    }
+
     public function addCategorySources(CategorySource ...$categories): void
     {
+        $this->translations = [];
+
         foreach ($categories as $category) {
             $this->registeredCategories[$category->getName()][] = $category;
         }

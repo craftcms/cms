@@ -66,7 +66,7 @@ readonly class ElementCriteria
             }
 
             throw new ToolCallException(
-                "Unsupported public query criterion [$name] for element type [$type->name]. Use craft-context-get for supported criteria.",
+                "Unsupported public query criterion [$name] for element type [$type->name]. Use craft_context_get for supported criteria.",
             );
         }
     }

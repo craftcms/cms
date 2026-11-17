@@ -38,8 +38,8 @@ readonly class Utilities
 
     /** @return array{caches: list<array{key: string, label: string, info: string|null}>} */
     #[McpTool(
-        name: 'caches.list',
-        description: 'Lists the caches that caches.clear can clear, with what each one holds.',
+        name: 'caches_list',
+        description: 'Lists the caches that caches_clear can clear, with what each one holds.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresPermission('utility:clear-caches')]
@@ -55,12 +55,12 @@ readonly class Utilities
     }
 
     /**
-     * @param  list<string>|null  $caches  Keys from caches.list. Omit to clear every cache.
+     * @param  list<string>|null  $caches  Keys from caches_list. Omit to clear every cache.
      * @return array{cleared: list<string>}
      */
     #[McpTool(
-        name: 'caches.clear',
-        description: 'Clears Craft caches, as the Caches utility does. Pass keys from caches.list, or omit them to clear every cache.',
+        name: 'caches_clear',
+        description: 'Clears Craft caches, as the Caches utility does. Pass keys from caches_list, or omit them to clear every cache.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]
     #[RequiresPermission('utility:clear-caches')]
@@ -72,7 +72,7 @@ readonly class Utilities
             $unknown = array_diff($caches, array_column(ClearCaches::cacheOptions(), 'key'));
 
             if ($unknown !== []) {
-                throw new ToolCallException('Unknown cache keys: '.implode(', ', $unknown).'. Call caches.list for the available keys.');
+                throw new ToolCallException('Unknown cache keys: '.implode(', ', $unknown).'. Call caches_list for the available keys.');
             }
         }
 
@@ -84,7 +84,7 @@ readonly class Utilities
      * @return array{total: int, jobs: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'queue.status',
+        name: 'queue_status',
         description: 'Lists the jobs in the queue, with their status and progress.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -104,7 +104,7 @@ readonly class Utilities
      * @return array{remaining: int}
      */
     #[McpTool(
-        name: 'queue.run',
+        name: 'queue_run',
         description: 'Runs pending queue jobs until the queue is empty or maxSeconds have passed, then reports how many jobs remain.',
         annotations: new ToolAnnotations(destructiveHint: false),
     )]
@@ -131,7 +131,7 @@ readonly class Utilities
 
     /** @return array{retried: true} */
     #[McpTool(
-        name: 'queue.retry-all',
+        name: 'queue_retry_all',
         description: 'Moves every failed queue job back into the queue to run again.',
         annotations: new ToolAnnotations(destructiveHint: false),
     )]
@@ -147,7 +147,7 @@ readonly class Utilities
 
     /** @return array{released: true} */
     #[McpTool(
-        name: 'queue.release-all',
+        name: 'queue_release_all',
         description: 'Releases every job in the queue, removing pending and failed jobs without running them.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -169,7 +169,7 @@ readonly class Utilities
      * @return array{volumes: list<string>, output: string}
      */
     #[McpTool(
-        name: 'asset-indexes.update',
+        name: 'asset_indexes_update',
         description: 'Re-indexes the files in asset volumes, as the Asset Indexes utility does. Large volumes can take a while.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]

@@ -30,6 +30,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -167,7 +168,6 @@ class DatabaseSeeder extends Seeder
                     'fsHandle' => 'assets',
                     'hasUrls' => true,
                     'subpath' => $handle,
-                    'assetTransformer' => 'craft',
                 ]);
 
                 if (! Volumes::saveVolume($volume)) {
@@ -198,10 +198,28 @@ class DatabaseSeeder extends Seeder
             }
         });
 
+        $linkField = null;
+        $this->components->task('Creating Link field', function () use (&$linkField): void {
+            $linkField = Fields::createField([
+                'type' => Link::class,
+                'name' => 'Link',
+                'handle' => 'linkField',
+                'settings' => [
+                    'types' => ['url', 'entry', 'email', 'tel'],
+                    'showLabelField' => true,
+                    'advancedFields' => ['target', 'urlSuffix', 'title'],
+                ],
+            ]);
+
+            if (! Fields::saveField($linkField)) {
+                throw new RuntimeException('Failed to create the Link field.');
+            }
+        });
+
         Fields::refreshFields();
 
         $fieldLayout = null;
-        $this->components->task('Creating field layout', function () use (&$fieldLayout, $markdownField) {
+        $this->components->task('Creating field layout', function () use (&$fieldLayout, $markdownField, $linkField) {
             $fieldLayout = FieldLayout::create([
                 'uid' => Str::uuid()->toString(),
                 'type' => Entry::class,
@@ -220,6 +238,11 @@ class DatabaseSeeder extends Seeder
                                     'uid' => Str::uuid()->toString(),
                                     'type' => CustomField::class,
                                     'fieldUid' => $markdownField->uid,
+                                ],
+                                [
+                                    'uid' => Str::uuid()->toString(),
+                                    'type' => CustomField::class,
+                                    'fieldUid' => $linkField->uid,
                                 ],
                             ],
                         ],
@@ -339,6 +362,8 @@ MARKDOWN,
         $user = User::query()->firstOrFail();
         $editor = UserFactory::new()->admin()->createElement([
             'fullName' => 'Ada Lovelace',
+            'firstName' => 'Ada',
+            'lastName' => 'Lovelace',
             'username' => 'ada',
             'email' => 'ada@example.com',
         ]);

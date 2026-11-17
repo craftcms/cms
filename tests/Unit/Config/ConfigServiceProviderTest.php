@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Config\McpConfig;
@@ -22,7 +24,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -156,6 +158,30 @@ it('materializes array configuration through fluent setters', function () {
         ->and(app(ConfigRepository::class)->get('craft.general'))->toBe($config);
 });
 
+it('applies configured aliases and removes aliases with null paths', function (bool $fluent) {
+    Aliases::set('@configExisting', '/previous');
+    Aliases::set('@configReplaced', '/previous');
+
+    $aliases = [
+        '@configMissing' => null,
+        '@configExisting' => null,
+        '@configReplaced' => '/replacement',
+        '@configEmpty' => '',
+    ];
+    app(ConfigRepository::class)->set('craft.general', $fluent
+        ? GeneralConfig::create()->aliases($aliases)
+        : ['aliases' => $aliases]);
+    app()->forgetInstance(GeneralConfig::class);
+
+    new ConfigServiceProvider(app())->register();
+    app(GeneralConfig::class);
+
+    expect(Aliases::get('@configMissing', false))->toBeFalse()
+        ->and(Aliases::get('@configExisting', false))->toBeFalse()
+        ->and(Aliases::get('@configReplaced'))->toBe('/replacement')
+        ->and(Aliases::get('@configEmpty'))->toBe('');
+})->with(['array' => false, 'fluent' => true]);
+
 it('applies environment overrides when resolved', function () {
     app(ConfigRepository::class)->set('craft.general', [
         'cpTrigger' => 'control',
@@ -180,6 +206,21 @@ it('materializes typed MCP configuration from JSON environment overrides', funct
     expect($config->mcp)->toBeInstanceOf(McpConfig::class)
         ->and($config->mcp->instructions)->toBe('Be brief.')
         ->and($config->mcp->middleware)->toBe(['throttle:mcp']);
+});
+
+it('materializes anchors configuration from general.php and JSON environment overrides', function () {
+    app(ConfigRepository::class)->set('craft.general', ['anchors' => ['anchorLinkText' => '¶']]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_ANCHORS'] = '{"anchorLinkPosition":"before","useAdditionalTagToAnchorTo":"false"}';
+
+    new ConfigServiceProvider(app())->register();
+
+    $anchors = app(GeneralConfig::class)->anchors;
+
+    expect($anchors)->toBeInstanceOf(AnchorsConfig::class)
+        ->and($anchors->anchorLinkText)->toBe('#')
+        ->and($anchors->anchorLinkPosition)->toBe(AnchorsConfig::POS_BEFORE)
+        ->and($anchors->useAdditionalTagToAnchorTo)->toBeFalse();
 });
 
 it('extends the default Twig sandbox allowlist with project entries', function () {

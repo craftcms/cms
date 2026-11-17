@@ -104,7 +104,7 @@ export interface CommandPaletteRegistration {
  * each time the palette opens, so it can read the page's current state.
  *
  * ```js
- * const {unregister} = Craft.commandPalette.registerActions(() => [...]);
+ * const {unregister} = CommandPalette.registerActions(() => [...]);
  * ```
  */
 export function registerActions(

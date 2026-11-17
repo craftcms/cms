@@ -182,3 +182,18 @@ export async function revealElement(
       : 'smooth',
   });
 }
+
+/** An element's content box size, without padding, like jQuery's `width()`/`height()`. */
+export function contentSize(el: HTMLElement): {width: number; height: number} {
+  const style = getComputedStyle(el);
+  return {
+    width:
+      el.clientWidth -
+      parseFloat(style.paddingLeft || '0') -
+      parseFloat(style.paddingRight || '0'),
+    height:
+      el.clientHeight -
+      parseFloat(style.paddingTop || '0') -
+      parseFloat(style.paddingBottom || '0'),
+  };
+}

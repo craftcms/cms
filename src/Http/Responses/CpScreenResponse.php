@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\ActionMenu;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Data\ActionItem;
@@ -21,8 +20,6 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
-use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyReadyShim;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Arrayable;
@@ -1034,14 +1031,6 @@ class CpScreenResponse implements Responsable
             if ($this->redirectUrl) {
                 $content .= Html::redirectInput($this->redirectUrl);
             }
-        }
-
-        // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
-        if (
-            $request->input('x-craft-live-preview') !== null &&
-            Cms::config()->useIframeResizer
-        ) {
-            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
         }
 
         $templateProps = [

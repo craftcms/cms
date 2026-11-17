@@ -13,7 +13,10 @@
    * ```
    */
   import {computed, onBeforeUnmount, onMounted, useId, watch} from 'vue';
-  import {useScreenPanels} from '@/common/composables/screenPanels';
+  import {
+    useScreenPanels,
+    type ScreenPanels,
+  } from '@/common/composables/screenPanels';
   import DetailsPanelContent from './DetailsPanelContent.vue';
   import type {DetailsPanel, DetailsPanelStatus} from './detailsPanels';
 
@@ -22,6 +25,8 @@
     id: string;
     label: string;
     icon: string;
+    /** See {@link DetailsPanel.iconSvg}. */
+    iconSvg?: string;
     /** Show the label's first letter instead of the icon. */
     initialIcon?: boolean;
     /** Where the panel goes in the rail. Lower comes first. */
@@ -35,11 +40,20 @@
     initialFocus?: () => HTMLElement | null | undefined;
     /** See {@link DetailsPanel.unlistedInPalette}. */
     unlistedInPalette?: boolean;
+    /**
+     * The screen to add it to, rather than the nearest one, or `null` for
+     * none, which keeps its content mounted but out of every rail. The panel
+     * moves when it changes, keeping its content's state.
+     */
+    screen?: ScreenPanels | null;
   }>();
 
-  const panels = useScreenPanels();
+  const nearest = useScreenPanels();
+  const panels = computed(() =>
+    props.screen === undefined ? nearest : props.screen
+  );
 
-  if (import.meta.env.DEV && !panels) {
+  if (import.meta.env.DEV && props.screen === undefined && !nearest) {
     console.warn(
       `[ScreenPanel] “${props.id}” isn't inside a screen, so nothing will show it.`
     );
@@ -52,6 +66,7 @@
     label: props.label,
     headingId,
     icon: props.icon,
+    iconSvg: props.iconSvg,
     initialIcon: props.initialIcon,
     order: props.order,
     statusData: props.status ?? null,
@@ -65,21 +80,30 @@
   // screen, which would otherwise re-render while this is still mounting.
   onMounted(() => {
     watch(
-      descriptor,
-      (panel, previous) => {
-        if (previous && previous.id !== panel.id) {
-          panels?.unregister(previous.id);
+      [descriptor, panels],
+      ([panel, screen], [previous, previousScreen]) => {
+        if (
+          previous &&
+          (previous.id !== panel.id || previousScreen !== screen)
+        ) {
+          previousScreen?.unregister(previous.id);
         }
 
-        panels?.register(panel);
+        screen?.register(panel);
       },
       {immediate: true}
     );
   });
 
-  onBeforeUnmount(() => panels?.unregister(props.id));
+  onBeforeUnmount(() => panels.value?.unregister(props.id));
 
-  const section = computed(() => panels?.sections.get(props.id) ?? null);
+  const section = computed(() => panels.value?.sections.get(props.id) ?? null);
+  const active = computed(() => panels.value?.openPanelId.value === props.id);
+
+  defineSlots<{
+    default?(props: {active: boolean}): unknown;
+    'header-actions'?(): unknown;
+  }>();
 </script>
 
 <template>
@@ -90,7 +114,7 @@
         <template #header-actions>
           <slot name="header-actions"></slot>
         </template>
-        <slot></slot>
+        <slot :active="active"></slot>
       </DetailsPanelContent>
     </Teleport>
   </div>

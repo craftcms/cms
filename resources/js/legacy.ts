@@ -10,6 +10,7 @@
  * barrel belongs here instead, so there is one Lit instance and one set of
  * element definitions on every CP page.
  */
+import './bootstrap/seed-translations';
 import '@craftcms/ui';
 import '../css/legacy.css';
 
@@ -38,7 +39,9 @@ import {defineLayoutComponentSettingsUiHost} from './modules/ui/layout-component
 import './modules/listbox/index';
 import './modules/field-layout-designer/index';
 import './modules/sortable-checkbox-select/index';
-import './modules/editable-table/index';
+import './modules/fields';
+import './modules/elements/element-action-events';
+import './common/craft/preview-count-badge';
 import './modules/grouped-entry-type-manager/index';
 import './modules/queue/index';
 import './modules/slideout/index';
@@ -54,32 +57,25 @@ import './modules/entry-mover/index';
 import './modules/prompt-handler/index';
 import './modules/link-field/index';
 import './modules/cp-modal/index';
-import './modules/tabs/index';
 import './modules/grid/index';
-import './modules/chart/index';
-import './modules/data-table-sorter/index';
-import './modules/element-action-trigger/index';
 import './modules/element-thumb-loader/index';
-import './modules/element-table-sorter/index';
 import './modules/asset-mover/index';
 import './modules/element-selector-modal/index';
 import './modules/element-select-input/index';
 import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
 import './modules/element-deletion-manager/index';
-import './modules/uploader/index';
-import './modules/ui/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 
 window.Cp = Cp;
 
-// Legacy-rendered pages don't go through `app.blade.php`'s
-// `Cp.config(CpConfig); Cp.start()` boot, so initialize the modern services
-// here from `window.Craft` — the same `Cp::config()` payload, emitted by the
-// CpAsset bootstrap — or modules that rely on them (the action client,
-// elevated sessions, the queue) have no config on these pages. `init()`
-// only: `start()` mounts the Inertia app, which legacy pages must not do.
+// Legacy-rendered pages don't go through `app.blade.php`'s `Cp.start()` boot,
+// so initialize the modern services here from `window.Craft` — the same
+// `Cp::config()` payload, which `_layouts/base` writes — or modules that rely
+// on them (the action client, elevated sessions, the queue) have no config on
+// these pages. `init()` only: `start()` mounts the Inertia app, which legacy
+// pages must not do.
 Cp.config(window.Craft ?? {});
 Cp.init();
 

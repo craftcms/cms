@@ -27,6 +27,8 @@ function control(props: Props = {}): UiControlPayload<any> {
       sources: null,
       criteria: {},
       selectionLabel: 'Add an entry',
+      elementDisplayName: 'entry',
+      elementPluralDisplayName: 'entries',
       limit: null,
       showSiteMenu: false,
       ...props,
@@ -60,6 +62,8 @@ const ASSET_PROPS: Props = {
   elementType: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
   customElement: 'craft-asset-select-input',
   selectionLabel: 'Add an asset',
+  elementDisplayName: 'asset',
+  elementPluralDisplayName: 'assets',
 };
 
 const meta = {
@@ -140,14 +144,14 @@ export const AssetsWithoutUpload: Story = {
 
 /**
  * An asset field that can upload: `AssetSelect` sends `canUpload`,
- * `uploadFolderId`, and the header gains the upload button.
+ * `uploadParams`, and the header gains the upload button.
  */
 export const AssetsWithUpload: Story = {
   args: {
     ...withElements(['seascape.jpg', 'brochure.pdf'], {
       ...ASSET_PROPS,
       canUpload: true,
-      uploadFolderId: 1,
+      uploadParams: {fieldId: 1},
     }),
     editable: true,
   },
@@ -159,7 +163,7 @@ export const AssetsWithUploadEmpty: Story = {
     control: control({
       ...ASSET_PROPS,
       canUpload: true,
-      uploadFolderId: 1,
+      uploadParams: {fieldId: 1},
     }),
     value: [],
     editable: true,

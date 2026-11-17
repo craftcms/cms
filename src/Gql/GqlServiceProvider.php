@@ -13,6 +13,7 @@ use CraftCms\Cms\Gql\Commands\CreateTokenCommand;
 use CraftCms\Cms\Gql\Commands\DumpSchemaCommand;
 use CraftCms\Cms\Gql\Commands\ListSchemasCommand;
 use CraftCms\Cms\Gql\Commands\PrintSchemaCommand;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -52,7 +53,9 @@ class GqlServiceProvider extends ServiceProvider
             }
 
             $actionTrigger = trim(Cms::config()->actionTrigger, '/');
-            $resourceUrl = action_url('graphql/api');
+            // Action URLs carry over the request’s site and preview tokens, which must stay out of public discovery
+            // metadata and the resource’s identifier
+            $resourceUrl = Url::stripQueryString(action_url('graphql/api'));
             $path = "/$actionTrigger/graphql/api";
             $baseUrl = str_ends_with($resourceUrl, $path) ? Str::beforeLast($resourceUrl, $path) : (string) config('app.url');
 

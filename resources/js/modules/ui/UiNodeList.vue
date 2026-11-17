@@ -3,10 +3,28 @@
   import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/icon/icon';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, ref, watch} from 'vue';
+  import {
+    computed,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    shallowRef,
+    watch,
+    inject,
+  } from 'vue';
   import {useIsSlideout} from '@/common/composables/screen';
   import UiNode from './UiNode.vue';
-  import {uiTabPanelId, pathsMatch} from './runtime';
+  import {UiFieldOutletsKey} from './fieldOutlets';
+  import {
+    fieldId,
+    inputId,
+    nodeHasErrors,
+    routeErrorsToOutlets,
+    scopedId,
+    UiFieldIdScope,
+    uiTabPanelId,
+    visitControls,
+  } from './runtime';
   import {
     isSidebarTab,
     forSidebar,
@@ -32,6 +50,7 @@
    * tabs leave the hash alone.
    */
   const isSlideout = useIsSlideout();
+  const idScope = inject(UiFieldIdScope, undefined);
 
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
@@ -40,12 +59,39 @@
     props.nodes.filter(
       (
         node
-      ): node is UiNodePayload<{label: string; icon?: string}> & {
+      ): node is UiNodePayload<{
+        label: string;
+        icon?: string;
+        deferred?: boolean;
+      }> & {
         uid: string;
       } =>
         node.component === 'craft:tab' && node.uid != null && !inSidebar(node)
     )
   );
+
+  /**
+   * The first of the sidebar tabs shown as ordinary ones, after the others,
+   * which starts their group at the end of the strip.
+   */
+  const firstSidebarTabUid = computed(
+    () =>
+      tabs.value.find(
+        (tab, index) =>
+          index > 0 &&
+          isSidebarTab(tab) &&
+          !isSidebarTab(tabs.value[index - 1]!)
+      )?.uid
+  );
+
+  const fieldOutlets = inject(UiFieldOutletsKey, null);
+
+  /** Where a field renders instead of here, if anywhere. */
+  function fieldOutlet(node: UiNodePayload): HTMLElement | null | undefined {
+    return fieldOutlets && node.control
+      ? fieldOutlets(String(node.props.layoutUid ?? node.uid))
+      : undefined;
+  }
 
   function inSidebar(node: UiNodePayload): node is SidebarTabNode {
     return Boolean(props.sidebarTabOutlets) && isSidebarTab(node);
@@ -66,8 +112,143 @@
     {immediate: true}
   );
 
+  /**
+   * The tabs whose fields have been rendered. Rendering every tab's fields up
+   * front is most of what opening a form with several tabs costs, so only the
+   * selected tab's are rendered at first. The rest follow one at a time while
+   * the browser is idle, or as soon as they're needed: when the tab is
+   * selected, when its fields have errors, so the error summary can link to
+   * them, and when it holds the field the URL fragment points at. Once
+   * rendered, a tab's fields stay, so what they hold survives switching away.
+   *
+   * Values don't depend on it: the renderer holds them, so a tab that's never
+   * rendered still submits its fields' values.
+   */
+  const renderedTabs = shallowRef(new Set<string>());
+  let idleRender: number | undefined;
+
+  function renderTab(uid: string): void {
+    if (!renderedTabs.value.has(uid)) {
+      renderedTabs.value = new Set([...renderedTabs.value, uid]);
+    }
+  }
+
+  function isDeferred(node: UiNodePayload): boolean {
+    return (
+      tabs.value.length > 1 &&
+      node.component === 'craft:tab' &&
+      node.uid != null &&
+      !renderedTabs.value.has(node.uid)
+    );
+  }
+
+  /** Tabs the server held back have nothing to render until they arrive. */
+  function nextUnrenderedTab(): string | undefined {
+    return tabs.value.find(
+      (tab) => !renderedTabs.value.has(tab.uid) && !tab.props.deferred
+    )?.uid;
+  }
+
+  function renderNextTabWhenIdle(): void {
+    if (idleRender !== undefined || !nextUnrenderedTab()) {
+      return;
+    }
+
+    idleRender = whenIdle(() => {
+      idleRender = undefined;
+      const uid = nextUnrenderedTab();
+
+      if (uid) {
+        renderTab(uid);
+      }
+    });
+  }
+
+  /** Without `requestIdleCallback`, the next task stands in for idle time. */
+  function whenIdle(callback: () => void): number {
+    return typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback(callback)
+      : window.setTimeout(callback);
+  }
+
+  function cancelIdle(handle: number): void {
+    if (typeof window.cancelIdleCallback === 'function') {
+      window.cancelIdleCallback(handle);
+    } else {
+      window.clearTimeout(handle);
+    }
+  }
+
+  /** Whether a node holds the field, or the input, `id` names. */
+  function nodeHolds(node: UiNodePayload, id: string): boolean {
+    let found = false;
+
+    visitControls([node], (control) => {
+      found ||=
+        scopedId(idScope, fieldId(control.path)) === id ||
+        scopedId(idScope, inputId(control.path)) === id;
+    });
+
+    return found;
+  }
+
+  function fragmentId(): string {
+    try {
+      return decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return '';
+    }
+  }
+
+  watch(
+    activeTab,
+    (uid) => {
+      if (uid) {
+        renderTab(uid);
+      }
+    },
+    {immediate: true}
+  );
+
+  /** The errors each tab is flagged for, with the ones shown in outlets moved there. */
+  const tabErrors = computed(() =>
+    routeErrorsToOutlets(props.nodes, props.errors)
+  );
+
+  function tabHasErrors(tab: UiNodePayload): boolean {
+    return nodeHasErrors(tab, tabErrors.value.errors, tabErrors.value.outlets);
+  }
+
+  watch(
+    () => tabs.value.filter(tabHasErrors).map((tab) => tab.uid),
+    (uids) => uids.forEach(renderTab),
+    {immediate: true}
+  );
+
+  const fragment = fragmentId();
+
+  // Watched, as a deferred tab only holds the field once it arrives.
+  if (fragment) {
+    watch(
+      tabs,
+      (currentTabs) =>
+        currentTabs
+          .filter((tab) => nodeHolds(tab, fragment))
+          .forEach((tab) => renderTab(tab.uid)),
+      {immediate: true}
+    );
+  }
+
+  onMounted(renderNextTabWhenIdle);
+  watch([renderedTabs, tabs], renderNextTabWhenIdle, {flush: 'post'});
+  onBeforeUnmount(() => {
+    if (idleRender !== undefined) {
+      cancelIdle(idleRender);
+    }
+  });
+
   function tabPanelId(tab: (typeof tabs.value)[number]): string {
-    return uiTabPanelId(tab.uid, props.scope);
+    return scopedId(idScope, uiTabPanelId(tab.uid, props.scope));
   }
 
   function panelAttributes(node: UiNodePayload): {id?: string} {
@@ -75,26 +256,9 @@
       return {};
     }
 
-    return {id: `${uiTabPanelId(node.uid, props.scope)}-tab`};
-  }
-
-  function nodeHasErrors(node: UiNodePayload): boolean {
-    const controlPath = node.control?.path;
-
-    if (
-      controlPath &&
-      props.errors.some((error) => pathsMatch(error.path, controlPath))
-    ) {
-      return true;
-    }
-
-    if (node.children?.some(nodeHasErrors)) {
-      return true;
-    }
-
-    return Boolean(
-      node.control?.uis?.some((ui) => ui.nodes.some(nodeHasErrors))
-    );
+    return {
+      id: `${scopedId(idScope, uiTabPanelId(node.uid, props.scope))}-tab`,
+    };
   }
 
   /**
@@ -128,15 +292,19 @@
         slot="tab"
         :key="tab.uid"
         :controls="`${tabPanelId(tab)}-tab`"
+        :class="{
+          'ui-node-list__tab--sidebar-start': tab.uid === firstSidebarTabUid,
+        }"
       >
         <craft-icon
           v-if="tab.props.icon"
           :name="tab.props.icon"
           slot="prefix"
+          class="ui-node-list__tab-icon"
         ></craft-icon>
         {{ tab.props.label }}
         <craft-icon
-          v-if="nodeHasErrors(tab)"
+          v-if="tabHasErrors(tab)"
           name="circle-exclamation"
           :label="t('Errors')"
           slot="suffix"
@@ -167,12 +335,30 @@
         />
       </div>
     </Teleport>
+    <!-- Fields render in place until their outlet exists, then move there
+      without remounting. -->
+    <Teleport
+      v-else-if="fieldOutlets && node.control"
+      :to="fieldOutlet(node) ?? 'body'"
+      :disabled="!fieldOutlet(node)"
+    >
+      <UiNode
+        :node="node"
+        :values="values"
+        :errors="errors"
+        :touched-paths="touchedPaths"
+        :scope="scope"
+        :refreshable="refreshable"
+        @change="emit('change', $event)"
+      />
+    </Teleport>
     <UiNode
       v-else
       :node="node"
       :initially-hidden="
         node.component === 'craft:tab' && node.uid !== activeTab
       "
+      :deferred="isDeferred(node)"
       v-bind="panelAttributes(node)"
       :values="values"
       :errors="errors"
@@ -185,9 +371,18 @@
 </template>
 
 <style scoped>
+  .ui-node-list__tab--sidebar-start {
+    margin-inline-start: auto;
+  }
+
+  .ui-node-list__tabs {
+    /* A page's main column sets this (see PageScreen.vue). */
+    --c-tabs-gap: var(--cp-content-tabs-gap, var(--c-spacing-lg));
+  }
+
   .ui-node-list__tabs::part(strip) {
     box-sizing: border-box;
-    block-size: var(--cp-header-height);
+    block-size: calc(var(--cp-header-height) + 1px);
     align-items: stretch;
   }
 
@@ -198,5 +393,15 @@
   .ui-node-list__tabs craft-tab {
     align-items: center;
     padding-block: 0;
+  }
+
+  /* A step back from the label, but the selected tab's icon keeps its color. */
+  .ui-node-list__tab-icon {
+    --c-icon-size: var(--cp-chrome-icon-size);
+    color: var(--color-slate-700);
+  }
+
+  craft-tab[selected] .ui-node-list__tab-icon {
+    color: inherit;
   }
 </style>

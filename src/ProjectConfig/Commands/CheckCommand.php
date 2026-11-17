@@ -6,6 +6,7 @@ namespace CraftCms\Cms\ProjectConfig\Commands;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Console\Command;
@@ -81,7 +82,7 @@ class CheckCommand extends Command
                 ]));
             }
 
-            $this->components->warn('Try running `composer install` from your terminal to resolve.');
+            $this->components->warn('Try running `'.app(TerminalCommands::class)->composer('install').'` from your terminal to resolve.');
 
             return self::FAILURE;
         }

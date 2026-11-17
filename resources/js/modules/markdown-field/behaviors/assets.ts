@@ -34,6 +34,13 @@ interface AssetCriteria {
   [key: string]: AssetCriteriaValue;
 }
 
+/** The element the asset condition is evaluated against, such as the one being edited. */
+export type AssetReferenceElement = {
+  referenceElementId: number;
+  referenceElementOwnerId: number | null;
+  referenceElementSiteId: number | null;
+};
+
 export type AssetController = {
   open: () => void | Promise<void>;
 };
@@ -43,19 +50,35 @@ export function createAssetController(
   assetCriteria: AssetCriteria,
   assetCondition: Record<string, unknown> | null,
   assetSources: string[],
-  preview: PreviewController
+  preview: PreviewController,
+  getAssetReferenceElement: () => AssetReferenceElement | null = () => null
 ): AssetController {
   let assetSelectorModal: ElementSelectorModalHandle | null = null;
+  let modalReferenceKey: string | null = null;
 
   async function open(): Promise<void> {
+    // Autosave can turn the edited element into a new draft after the modal
+    // was built, so it's rebuilt for whichever element is being edited now.
+    const assetReferenceElement = getAssetReferenceElement();
+    const referenceKey = JSON.stringify(assetReferenceElement);
+
+    if (assetSelectorModal && modalReferenceKey !== referenceKey) {
+      assetSelectorModal.destroy();
+      assetSelectorModal = null;
+    }
+
     if (!assetSelectorModal) {
+      modalReferenceKey = referenceKey;
       assetSelectorModal = await createElementSelectorModal(
         ASSET_ELEMENT_TYPE,
         {
           closeOtherModals: false,
           condition: assetCondition,
+          ...assetReferenceElement,
           criteria: assetCriteria,
           hideOnSelect: true,
+          // Lets the chooser list folders so subfolders can be browsed
+          indexSettings: {showFolders: true},
           modalTitle: t('Choose an asset'),
           multiSelect: false,
           onSelect: (assets: AssetInfo[]) => {

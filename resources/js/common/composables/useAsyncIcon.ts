@@ -1,15 +1,11 @@
 import {ref, watch, toValue, type MaybeRefOrGetter} from 'vue';
-
-// `Craft.ui` is part of the legacy `Craft.UI` global and isn't described by the
-// ambient `CraftStatic` type, so narrow it locally the same way the legacy
-// field-layout-designer modules do.
-declare const Craft: any;
+import {iconSvg} from '@/common/craft/icon-svg';
 
 export type IconState = 'idle' | 'success' | 'error' | 'fetching';
 
 /**
- * Reactively resolves an icon's SVG markup via the global `Craft.ui.icon`
- * function (which fetches from `app/icon-svg` and caches per-name).
+ * Reactively resolves an icon's SVG markup, fetched from `app/icon-svg` and
+ * cached per name.
  *
  * The source is watched, so changing the bound icon name refetches the markup.
  * When the name is empty/null/undefined no fetch happens and the state resets to
@@ -37,7 +33,7 @@ export function useAsyncIcon(
       state.value = 'fetching';
 
       try {
-        const el = await Craft.ui.icon(name);
+        const el = await iconSvg(name);
 
         // Race-guard: a newer request superseded this one while awaiting.
         if (toValue(icon) !== name) {

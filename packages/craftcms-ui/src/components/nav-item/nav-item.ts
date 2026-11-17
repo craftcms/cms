@@ -10,6 +10,7 @@ import '../popover/popover.js';
 import '../tooltip/tooltip.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
+import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {isExternalUrl, newTabCue} from '@src/utilities/external-links.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {
@@ -18,6 +19,10 @@ import {
 } from '@src/controllers/LightDomController.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
+import {
+  NavAppearance,
+  type NavAppearanceValue,
+} from '@src/constants/nav-appearances';
 import {
   flyoutHoverIntent,
   type HoverIntentMember,
@@ -42,6 +47,15 @@ import {
  * @slot - The item's label.
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
+ *
+ * @cssproperty [--c-nav-item-size=--c-size-touch-target] - The row's height,
+ *   and its width too when it's `icon-only`.
+ * @cssproperty [--c-nav-item-color=inherit] - The label's color while the
+ *   item isn't hovered or `current`, which take the row's own color.
+ * @cssproperty [--c-nav-item-icon-color=inherit] - The icon's color while the
+ *   item isn't `active` or hovered, which take the row's own color.
+ * @cssproperty [--c-nav-item-border-active=--c-color-accent-fill-loud] - Color
+ *   of the bar marking the current page in a `tabs` strip.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = [visuallyHiddenStyles, styles];
@@ -105,6 +119,17 @@ export default class CraftNavItem extends LitElement {
   /** Whether the subnav starts open or closed. Active items always start open. */
   @property({reflect: true, attribute: 'initial-state'})
   initialState: 'open' | 'closed' = 'closed';
+
+  /**
+   * How the row is drawn: `list` (the default), a row in a column of them, or
+   * `tabs`, one of a horizontal strip, marked by a bar along the strip's rule
+   * rather than by a fill.
+   *
+   * Set by the `craft-nav-list` the item is in, which owns the layout the two
+   * halves have to agree on; see its `appearance`.
+   */
+  @property({reflect: true}) appearance: NavAppearanceValue =
+    NavAppearance.List;
 
   /**
    * Renders the item as a non-collapsible semantic group. When it has a
@@ -369,9 +394,7 @@ export default class CraftNavItem extends LitElement {
    * narrows the focus case.
    */
   #scheduleFlyoutClose = (event: Event) => {
-    const moved = (event as FocusEvent).relatedTarget;
-
-    if (moved instanceof Node && (moved === this || this.contains(moved))) {
+    if (focusStaysWithin(event as FocusEvent, this)) {
       return;
     }
 
@@ -380,12 +403,15 @@ export default class CraftNavItem extends LitElement {
 
   // The overlay closes itself on Escape and outside clicks; follow it, or the
   // state would say open and the next hover wouldn't reopen it.
-  #onFlyoutOpenedChanged = (event: Event) => {
-    const opened = (event.target as {opened?: boolean}).opened === true;
+  #onFlyoutToggle = (event: Event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
 
-    this.flyoutOpen = opened;
+    this.#stopOverlayEvent(event);
+    this.flyoutOpen = event.type === 'craft-show';
 
-    if (!opened) {
+    if (!this.flyoutOpen) {
       flyoutHoverIntent.notifyClosed(this.#hoverIntent);
     }
   };
@@ -496,6 +522,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item': true,
           'nav-item--icon': true,
           'nav-item--static': this.isStatic(useFlyout),
+          'nav-item--flyout-open': useFlyout && this.flyoutOpen,
         })}"
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
@@ -551,10 +578,9 @@ export default class CraftNavItem extends LitElement {
         for="${this.itemId}"
         placement="right-start"
         without-invoker-aria
-        .opened="${this.flyoutOpen}"
-        @opened-changed="${this.#onFlyoutOpenedChanged}"
-        @craft-show=${this.#stopOverlayEvent}
-        @craft-hide=${this.#stopOverlayEvent}
+        .open="${this.flyoutOpen}"
+        @craft-show=${this.#onFlyoutToggle}
+        @craft-hide=${this.#onFlyoutToggle}
         @craft-after-show=${this.#stopOverlayEvent}
         @craft-after-hide=${this.#stopOverlayEvent}
       >
@@ -731,6 +757,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
           'nav-item--static': this.isStatic(useFlyout),
+          'nav-item--flyout-open': useFlyout && this.flyoutOpen,
         })}"
         id="${this.itemId}"
       >

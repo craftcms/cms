@@ -1,15 +1,12 @@
 <script setup lang="ts">
+  import {isMobileBrowser} from '@craftcms/garnish';
   import CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/text-expander/text-expander';
-  import {useId} from 'vue';
+  import {computed, onMounted, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
 
-  defineProps<{
+  const props = defineProps<{
     control: UiControlPayload<TextControlProps>;
     value: unknown;
     label?: string;
@@ -30,36 +27,81 @@
     return value === true ? 'on' : 'off';
   }
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftInput)) {
+  const input = useTemplateRef<CraftInput>('input');
+
+  // Respect the user's "Disable autofocus" accessibility preference, and don't pop up
+  // the on-screen keyboard on mobile and tablet browsers.
+  const autofocus = computed(
+    () =>
+      props.control.props.autofocus === true &&
+      window.Craft?.autofocusPreferred === true &&
+      !isMobileBrowser(true)
+  );
+
+  // The browser only autofocuses on page load, so a control rendered later (such as in a
+  // modal or slideout) focuses itself.
+  onMounted(() => {
+    if (!autofocus.value) {
+      return;
+    }
+
+    requestAnimationFrame(async () => {
+      await input.value?.updateComplete;
+      nativeInput()?.focus();
+    });
+  });
+
+  function nativeInput(): HTMLInputElement | HTMLTextAreaElement | null {
+    return (
+      input.value?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+        'input, textarea'
+      ) ?? null
+    );
+  }
+
+  // Only the input itself selects, not a suffix button.
+  function onFocusIn(event: FocusEvent): void {
+    if (
+      props.control.props.selectOnFocus === true &&
+      event.target === nativeInput()
+    ) {
+      nativeInput()?.select();
+    }
+  }
+
+  function onInput(event: Event): void {
+    const target = event.currentTarget;
+    if (!(target instanceof CraftInput)) {
       throw new TypeError('Expected a craft input event target.');
     }
 
     emit(
       'update:value',
-      String(event.target.modelValue ?? ''),
+      target.value,
       ['text', 'email', 'url', 'tel', 'password', 'number'].includes(
-        String(event.target.type)
+        target.type ?? 'text'
       )
         ? 'typing'
         : 'discrete'
     );
-  });
+  }
 </script>
 
 <template>
   <craft-input
+    ref="input"
+    @focusin="onFocusIn"
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
     :type="control.props.inputType ?? 'text'"
-    .modelValue="String(value ?? '')"
+    .value="String(value ?? '')"
     :min="control.props.min"
     :max="control.props.max"
     :step="control.props.step"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
     .inputMode="control.props.inputMode"
-    .autofocus="control.props.autofocus === true"
+    .autofocus="autofocus"
     .autocomplete="autocompleteValue(control.props.autocomplete)"
     .autoCorrect="control.props.autocorrect ?? true"
     .autoCapitalize="control.props.autocapitalize ?? true"
@@ -72,8 +114,8 @@
       control.mode === 'disabled' ||
       (control.mode === 'readOnly' && control.props.inputType === 'range')
     "
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    :invalid="invalid"
+    @input="onInput"
   >
     <input :id="inputId" slot="input" />
     <slot name="suffix">

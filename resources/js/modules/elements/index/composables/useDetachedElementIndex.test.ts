@@ -16,7 +16,7 @@ afterEach(() => {
 it.each(['earlier first', 'latest first'])(
   'keeps the latest detached response and loading state when responses arrive %s',
   async (order) => {
-    vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+    vi.stubGlobal('Craft', {systemUid: 'test'});
     const first = deferred<ContentIndexData>();
     const second = deferred<ContentIndexData>();
     const fetch = vi
@@ -73,7 +73,7 @@ it('requests the rows a payload left out, for the view mode it shows', async () 
 });
 
 it('keeps the loading state off for a thumb size change', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
   const response = deferred<ContentIndexData>();
   const fetch = vi.fn().mockReturnValueOnce(response.promise);
   scope = effectScope();
@@ -138,7 +138,7 @@ it('gives a source switch the new source’s own mode and thumbnail size', async
 
 it('uses the new source default when clearing a search without a saved sort', async () => {
   vi.useFakeTimers();
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
   const source = {type: 'native' as const, key: 'section:news', label: 'News'};
   const score = [{field: 'score', direction: 'desc' as const}];
   const fetch = vi
@@ -166,6 +166,7 @@ it('uses the new source default when clearing a search without a saved sort', as
 
   expect(fetch).toHaveBeenLastCalledWith({
     source: 'section:news',
+    viewMode: 'table',
     sort: [],
   });
   expect(index.view.elementIndex.sort).toEqual([
@@ -309,6 +310,36 @@ it('selects every result, counting pages not loaded, less those deselected', asy
   selection.onToggleAllSelected(false);
   expect(selectAll.active.value).toBe(false);
   expect(selectAll.count.value).toBe(0);
+});
+
+it('reloads rows saved in another tab in place, once inline editing ends', async () => {
+  vi.stubGlobal('Craft', {systemUid: 'test'});
+  const response = deferred<ContentIndexData>();
+  const fetch = vi.fn().mockReturnValueOnce(response.promise);
+  scope = effectScope();
+  const index = scope.run(() =>
+    useDetachedElementIndex({
+      initial: indexData(1),
+      fetch,
+      inlineEditing: {load: vi.fn(), save: vi.fn()},
+    })
+  )!;
+  const otherTab = new BroadcastChannel('CraftCMS:');
+  index.view.inlineEditing!.active.value = true;
+
+  otherTab.postMessage({event: 'saveElement', id: 1});
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  expect(fetch).not.toHaveBeenCalled();
+
+  index.view.inlineEditing!.active.value = false;
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  // Without the loading state, the rows aren't swapped for placeholders.
+  expect(index.view.loading.value).toBe(false);
+  response.resolve(indexData(2));
+  await vi.waitFor(() =>
+    expect(index.view.elementIndex.data.map(({id}) => id)).toEqual([2])
+  );
+  otherTab.close();
 });
 
 function deferred<Value>() {

@@ -47,7 +47,7 @@
       :allow-select-all="true"
     />
 
-    <h2 class="text-sm mb-2 mt-6">{{ t('Options') }}</h2>
+    <h2 class="cp-h4 mb-2 mt-6">{{ t('Options') }}</h2>
     <div class="grid gap-3">
       <template v-if="!isEphemeral">
         <craft-switch

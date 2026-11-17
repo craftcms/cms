@@ -11,9 +11,9 @@ use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
-use CraftCms\Cms\Http\Responses\CpErrorPage;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -48,11 +48,13 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Octane\Events\RequestReceived;
+use Laravel\Octane\Events\TaskReceived;
+use Laravel\Octane\Events\TickReceived;
 use Override;
 use ReflectionClass;
 use RuntimeException;
 use stdClass;
-use Throwable;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\craftAuth;
@@ -75,12 +77,20 @@ class AppServiceProvider extends ServiceProvider
         $this->registerMacros();
         $this->registerSerializableClasses();
         $this->registerThrottleExceptionHandler();
+
+        // Inertia DevTools records every request in local environments unless told otherwise, which adds hundreds of
+        // milliseconds to control panel requests, so it's opt-in. Set before providers boot, when DevTools checks it.
+        $this->app->booting(function () {
+            if (config('inertia.devtools.enabled') === null) {
+                config()->set('inertia.devtools.enabled', false);
+            }
+        });
     }
 
     public function boot(): void
     {
-        // The control panel sets this one from JavaScript, so it can't be encrypted.
-        EncryptCookies::except(Theme::COOKIE);
+        // The control panel sets these from JavaScript, so they can't be encrypted.
+        EncryptCookies::except([Theme::COOKIE, Theme::PREFERENCE_COOKIE]);
 
         AuthenticationException::redirectUsing(function () {
             $loginPath = Cms::config()->getLoginPath();
@@ -91,6 +101,12 @@ class AppServiceProvider extends ServiceProvider
 
             return Url::cpUrl(CpAuthPath::Login->value);
         });
+
+        // After every provider has booted, so it runs after Octane's own listeners give services the new sandbox.
+        $this->app->booted(fn () => Event::listen(
+            [RequestReceived::class, TaskReceived::class, TickReceived::class],
+            PrepareCraftForNextOperation::class,
+        ));
 
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
@@ -284,8 +300,6 @@ class AppServiceProvider extends ServiceProvider
                     return back();
                 }
             });
-
-            $handler->renderable(fn (Throwable $e, Request $request) => CpErrorPage::render($e, $request));
         });
     }
 }

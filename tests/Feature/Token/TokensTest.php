@@ -12,6 +12,8 @@ beforeEach(function () {
 });
 
 it('can create tokens', function () {
+    $this->freezeSecond();
+
     $token = $this->tokens->createToken('do/stuff', 1, $expiryDate = now()->addDay());
 
     $tokenModel = RouteToken::where('token', $token)->firstOrFail();
@@ -19,7 +21,7 @@ it('can create tokens', function () {
     expect($tokenModel->route)->toBe('do/stuff');
     expect($tokenModel->usageLimit)->toBe(1);
     expect($tokenModel->usageCount)->toBe(0);
-    expect($tokenModel->expiryDate->isSameDay($expiryDate))->toBeTrue();
+    expect($tokenModel->expiryDate->timestamp)->toBe($expiryDate->timestamp);
     expect(strlen((string) $token))->toBe(32);
 });
 
@@ -35,7 +37,7 @@ it('can create a preview token', function () {
 it('creates tokens with config defaults', function () {
     Cms::config()->defaultTokenDuration = 10000;
 
-    $expiryDate = now()->addSeconds(10000);
+    $this->freezeSecond();
 
     $token = $this->tokens->createToken('do/stuff');
 
@@ -45,7 +47,7 @@ it('creates tokens with config defaults', function () {
 
     expect($model->usageLimit)->toBeNull();
     expect($model->usageCount)->toBeNull();
-    expect($model->expiryDate->isSameMinute($expiryDate))->toBeTrue();
+    expect($model->expiryDate->timestamp)->toBe(now()->addSeconds(10000)->timestamp);
 });
 
 it('can get a token route', function () {
