@@ -52,3 +52,48 @@ it('introspects the read connection unless the connection reads from the write c
         array_map(unlink(...), $databases);
     }
 });
+
+it('commits transactions that were not committed implicitly', function () {
+    config()->set('database.connections.implicit_commit_test', ['driver' => 'sqlite', 'database' => ':memory:']);
+
+    try {
+        $connection = DB::connection('implicit_commit_test');
+        $connection->statement('create table implicit_commit_test (id integer)');
+
+        $connection->beginTransaction();
+        $connection->table('implicit_commit_test')->insert(['id' => 1]);
+        $connection->commitSchemaChanges();
+
+        expect($connection->transactionLevel())->toBe(0)
+            ->and($connection->getPdo()->inTransaction())->toBeFalse()
+            ->and($connection->table('implicit_commit_test')->count())->toBe(1);
+    } finally {
+        DB::purge('implicit_commit_test');
+    }
+});
+
+it('completes the commit when the transaction was committed implicitly', function () {
+    config()->set('database.connections.implicit_commit_test', ['driver' => 'sqlite', 'database' => ':memory:']);
+
+    try {
+        $connection = DB::connection('implicit_commit_test');
+        $callbacks = [];
+
+        $connection->beginTransaction();
+        $connection->afterCommit(function () use (&$callbacks) {
+            $callbacks[] = 'commit';
+        });
+        $connection->afterRollBack(function () use (&$callbacks) {
+            $callbacks[] = 'rollBack';
+        });
+        $connection->getPdo()->commit();
+
+        $connection->commitSchemaChanges();
+
+        expect($connection->transactionLevel())->toBe(0)
+            ->and($connection->getPdo()->inTransaction())->toBeFalse()
+            ->and($callbacks)->toBe(['commit']);
+    } finally {
+        DB::purge('implicit_commit_test');
+    }
+});

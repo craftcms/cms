@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => 'Το Composer δεν μπόρεσε να εγκαταστήσει τις ενημερώσεις.',
     'Composer was unable to remove the plugin.' => 'Το Composer δεν μπόρεσε να αφαιρέσει το πρόσθετο.',
     'Composer was unable to revert the updates.' => 'Το Composer δεν μπόρεσε να αναιρέσει τις ενημερώσεις.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Συμπιεσμένο',
     'Condition {num, number}' => 'Συνθήκη {num, number}',
     'Configure the category group’s site-specific settings.' => 'Ρυθμίστε τις ρυθμίσεις ανά ιστότοπο για την ομάδα κατηγοριών.',

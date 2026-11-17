@@ -530,14 +530,7 @@ class Plugins
 
                 $plugin->install();
 
-                try {
-                    DB::commit();
-                } catch (PDOException $e) {
-                    // The transaction could be implicitly committed by Mysql
-                    if ($e->getMessage() !== 'There is no active transaction') {
-                        throw $e;
-                    }
-                }
+                DB::commitSchemaChanges();
             } catch (Throwable $e) {
                 try {
                     DB::rollBack();
@@ -640,14 +633,7 @@ class Plugins
                     ->where('track', "plugin:$handle")
                     ->delete();
 
-                try {
-                    DB::commit();
-                } catch (PDOException $e) {
-                    // The transaction could be implicitly committed by Mysql
-                    if ($e->getMessage() !== 'There is no active transaction') {
-                        throw $e;
-                    }
-                }
+                DB::commitSchemaChanges();
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;

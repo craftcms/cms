@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Database;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Site\Data\Site;
@@ -352,11 +352,16 @@ class ElementRelationParamFilter
                     return false;
                 }
 
-                if ($fieldModel instanceof BaseRelationField) {
-                    // We'll deal with normal relation fields all together
-                    $relationFieldIds[] = $fieldModel->id;
-                } elseif ($fieldModel instanceof TracksReferencesFieldInterface) {
-                    $referenceFieldIds[] = $fieldModel->id;
+                if ($fieldModel instanceof RelationalFieldInterface || $fieldModel instanceof TracksReferencesFieldInterface) {
+                    // We'll deal with relation fields, and other fields that store relations or references, all together.
+                    // Some fields store both, such as Table fields with relation and Link columns.
+                    if ($fieldModel instanceof RelationalFieldInterface) {
+                        $relationFieldIds[] = $fieldModel->id;
+                    }
+
+                    if ($fieldModel instanceof TracksReferencesFieldInterface) {
+                        $referenceFieldIds[] = $fieldModel->id;
+                    }
                 } elseif ($fieldModel instanceof Matrix) {
                     $nestedFieldIds = [];
 

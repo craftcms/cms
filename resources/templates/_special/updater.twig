@@ -1,8 +1,0 @@
-{% extends "_layouts/basecp" %}
-
-{% block body %}
-    <div data-updater="{{ actionPrefix }}" data-updater-state="{{ state|json_encode }}">
-        <div id="graphic" class="spinner big over-bg"></div>
-        <div id="status"></div>
-    </div>
-{% endblock %}

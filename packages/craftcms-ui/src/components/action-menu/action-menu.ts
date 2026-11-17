@@ -344,6 +344,18 @@ export default class CraftActionMenu extends CraftPopover {
       return;
     }
 
+    // Before the popover's `updated()` shows and positions the pane. Items in
+    // any of its content slots may be waiting; nested menus render their own.
+    if (changed.has('open') && this.open) {
+      this.querySelectorAll<CraftActionItem>('craft-action-item').forEach(
+        (item) => {
+          if (item.closest('craft-action-menu') === this) {
+            item.renderNow?.();
+          }
+        }
+      );
+    }
+
     if (this.actions === undefined) {
       // Slot-based mode — tear down anything we previously generated.
       this._removeGeneratedNodes();
