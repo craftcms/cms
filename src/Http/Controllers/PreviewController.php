@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
@@ -94,7 +95,9 @@ readonly class PreviewController
 
                 if (! $existing) {
                     try {
-                        return $tokens->createPreviewToken($route, token: $token);
+                        // In its own transaction, so a conflict only rolls back to a savepoint when nested,
+                        // rather than aborting an enclosing Postgres transaction
+                        return DB::transaction(fn () => $tokens->createPreviewToken($route, token: $token));
                     } catch (UniqueConstraintViolationException) {
                         // Another request created it after this one's lock expired
                         $existing = RouteTokenModel::where('token', $token)->firstOrFail();
