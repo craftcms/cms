@@ -25,8 +25,6 @@ use function Laravel\Prompts\select;
 
 trait IndexesAssets
 {
-    private bool $cacheRemoteImages;
-
     private bool $deleteEmptyFolders;
 
     private bool $deleteMissingAssets;
@@ -46,7 +44,6 @@ trait IndexesAssets
     /** @param list<Volume> $volumes */
     protected function indexAssets(array $volumes, string $path = '', int $startAt = 0): void
     {
-        $this->cacheRemoteImages = $this->parseBooleanOption($this->option('cacheRemoteImages'));
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));
         $this->deleteMissingAssets = $this->parseBooleanOption($this->option('deleteMissingAssets'));
         $this->createMissingAssets = $this->parseBooleanOption($this->option('createMissingAssets'));
@@ -56,7 +53,6 @@ trait IndexesAssets
 
         $session = AssetIndexer::createIndexingSession(
             volumeList: $volumes,
-            cacheRemoteImages: $this->cacheRemoteImages,
             isCli: true,
             listEmptyFolders: $this->deleteEmptyFolders,
             analyzeImages: $this->analyzeImages,
@@ -163,7 +159,7 @@ trait IndexesAssets
             try {
                 $item->getIsDir()
                     ? AssetIndexer::indexFolderByListing($volume, $item, $session->id, $this->createMissingAssets)
-                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets, $this->analyzeImages);
+                    : AssetIndexer::indexFileByListing($volume, $item, $session->id, $this->createMissingAssets, $this->analyzeImages);
             } catch (MissingAssetException|MissingVolumeFolderException $e) {
                 $missingRecords->add($e);
 
@@ -287,7 +283,7 @@ trait IndexesAssets
                             'dateUpdated' => Query::prepareDateForDb(now()),
                         ]);
 
-                    AssetIndexer::indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false, $this->analyzeImages);
+                    AssetIndexer::indexFileByEntry($e->indexEntry, false, $this->analyzeImages);
                 }
             );
         }

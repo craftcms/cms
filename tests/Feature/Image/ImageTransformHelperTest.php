@@ -5,18 +5,20 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Image\Images;
+use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
-
-use function Pest\Laravel\mock;
 
 beforeEach(function () {
     Storage::extend('image-transform-helper-test-fake-remote', function ($app, array $config) {
@@ -37,6 +39,52 @@ beforeEach(function () {
 
     File::deleteDirectory(Path::assetSources());
 });
+
+test('uses original remote sources for transforms and editor previews, then deletes them', function (bool $existingSource) {
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $this->volume->id,
+        'folderId' => $this->folder->id,
+        'filename' => 'original-source.png',
+        'kind' => 'image',
+        'width' => 1200,
+        'height' => 700,
+    ]);
+    $image = imagecreatetruecolor(1200, 700);
+    ob_start();
+    imagepng($image);
+    $original = ob_get_clean();
+    $disk = $asset->getVolume()->sourceDisk();
+    $disk->put($asset->getPath(), $original);
+    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
+    $sourcePath = $asset->getImageTransformSourcePath();
+    if ($existingSource) {
+        file_put_contents($sourcePath, $original);
+    }
+
+    $transformPath = ImageTransformHelper::generateTransform($asset, new ImageTransform([
+        'width' => 80,
+        'height' => 35,
+        'mode' => 'stretch',
+    ]));
+    $this->beforeApplicationDestroyed(fn () => File::delete($transformPath));
+
+    expect(array_slice(getimagesize($transformPath), 0, 2))->toBe([80, 35])
+        ->and(file_get_contents($sourcePath))->toBe($original);
+
+    $this->actingAs(User::findOne());
+    Assets::partialMock()->shouldReceive('getImagePreviewUrl')->andThrow(new NotSupportedException);
+    $response = app(ImageEditorController::class)->editImage(Request::create('/', 'GET', [
+        'assetId' => $asset->id,
+        'size' => 500,
+    ]));
+
+    expect(file_get_contents($response->getFile()->getPathname()))->toBe($original);
+
+    app()->terminate();
+
+    expect(is_file($sourcePath))->toBeFalse()
+        ->and($disk->get($asset->getPath()))->toBe($original);
+})->with(['downloaded' => false, 'previously cached' => true]);
 
 test('re-downloads the cached source file when the remote object has changed since it was cached', function () {
     $unrelatedPath = Path::temp('get-local-image-source-test.delimiter.unrelated.jpg');
@@ -107,7 +155,6 @@ test('cleans its staging file when downloading or storing the source fails', fun
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($asset->getPath(), $failure === 'empty' ? '' : 'image bytes');
 
-    Cms::config()->maxCachedCloudImageSize = $failure === 'resize' ? 100 : 0;
     $exception = new RuntimeException('Download failed');
 
     if ($failure === 'download') {
@@ -119,17 +166,13 @@ test('cleans its staging file when downloading or storing the source fails', fun
         Storage::set('image-transform-helper-test-remote-disk', $remoteDisk);
     } elseif ($failure === 'copy') {
         File::makeDirectory($sourcePath);
-    } elseif ($failure === 'resize') {
-        $images = mock(Images::class);
-        $images->shouldReceive('getSupportedImageFormats')->andReturn(['jpg']);
-        $images->shouldReceive('loadImage')->once()->with($tempFilePath)->andThrow($exception);
     }
 
     try {
         ImageTransformHelper::getLocalImageSource($asset);
         test()->fail('Expected source staging to fail.');
     } catch (Throwable $caught) {
-        if (in_array($failure, ['download', 'resize'], true)) {
+        if ($failure === 'download') {
             expect($caught)->toBe($exception, $caught->getMessage());
         } else {
             expect($caught)->toBeInstanceOf($failure === 'empty' ? FilesystemException::class : ErrorException::class);
@@ -137,10 +180,9 @@ test('cleans its staging file when downloading or storing the source fails', fun
     }
 
     expect(is_file($tempFilePath))->toBeFalse();
-})->with(['empty', 'download', 'copy', 'resize']);
+})->with(['empty', 'download', 'copy']);
 
 test('interleaved downloads keep each others staging files', function () {
-    Cms::config()->maxCachedCloudImageSize = 0;
     $assets = collect(['first', 'second'])->map(fn (string $folder) => AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id, 'path' => $folder.'/'])->id,
@@ -180,15 +222,4 @@ test('interleaved downloads keep each others staging files', function () {
     expect($tempPaths)->toHaveCount(2);
     expect($tempPaths[0])->not->toBe($tempPaths[1]);
     expect(is_file($tempPaths[0]))->toBeFalse();
-});
-
-test('storeLocalSource resizes the source in place when no destination is given', function () {
-    $path = Path::temp('store-local-source-in-place.png');
-    $this->beforeApplicationDestroyed(fn () => File::delete($path));
-    imagepng(imagecreatetruecolor(200, 100), $path);
-    Cms::config()->maxCachedCloudImageSize = 50;
-
-    ImageTransformHelper::storeLocalSource($path);
-
-    expect(getimagesize($path))->toMatchArray([0 => 50, 1 => 25]);
 });

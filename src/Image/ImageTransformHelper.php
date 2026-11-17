@@ -177,19 +177,16 @@ class ImageTransformHelper
                         }
 
                         self::storeLocalSource($tempFilePath, $imageSourcePath);
-
-                        // And delete it after the request, if nobody wants it.
-                        if (Cms::config()->maxCachedCloudImageSize === 0) {
-                            app()->terminating(function () use ($imageSourcePath) {
-                                File::delete($imageSourcePath);
-                            });
-                        }
                     } finally {
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
                     }
                 }
+
+                app()->terminating(function () use ($imageSourcePath) {
+                    File::delete($imageSourcePath);
+                });
             }
         } catch (AssetException) {
             // Make sure we throw a new exception
@@ -338,22 +335,7 @@ class ImageTransformHelper
      */
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
-        if (! $destination) {
-            $destination = $source;
-        }
-
-        $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;
-
-        // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && ImageHelper::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
-            $image = app(Images::class)->loadImage($source);
-
-            if ($image instanceof Raster) {
-                $image->setQuality(100);
-            }
-
-            $image->scaleToFit($maxCachedImageSize, $maxCachedImageSize, false)->saveAs($destination);
-        } elseif ($source !== $destination) {
+        if ($destination !== '' && $source !== $destination) {
             copy($source, $destination);
         }
     }

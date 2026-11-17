@@ -22,7 +22,6 @@
 
   const form = reactive({
     volumes: ['*', ...props.volumeOptions.map((v) => v.value)],
-    cacheImages: false,
     listEmptyFolders: false,
     analyzeImages: false,
   });
@@ -48,17 +47,6 @@
 
     <h2 class="cp-h4 mb-2 mt-6">{{ t('Options') }}</h2>
     <div class="grid gap-3">
-      <craft-switch
-        name="cacheImages"
-        :label="t('Cache remote images')"
-        .checked="form.cacheImages"
-        @change="form.cacheImages = ($event.target as HTMLInputElement).checked"
-      >
-        <div slot="help-text">
-          {{ t('Download copies of remote images to the local filesystem.') }}
-        </div>
-      </craft-switch>
-
       <craft-switch
         name="listEmptyFolders"
         :label="t('List empty folders')"

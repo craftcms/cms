@@ -1771,22 +1771,6 @@ class GeneralConfig extends BaseConfig
     public mixed $logoutPath = 'logout';
 
     /**
-     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxCachedCloudImageSize(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=0
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public int $maxCachedCloudImageSize = 0;
-
-    /**
      * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
      *
      *  ::: code
@@ -4826,24 +4810,6 @@ class GeneralConfig extends BaseConfig
     public function logoutPath(mixed $value): self
     {
         $this->logoutPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
-     *
-     * ```php
-     * ->maxCachedCloudImageSize(0)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $maxCachedCloudImageSize
-     */
-    public function maxCachedCloudImageSize(int $value): self
-    {
-        $this->maxCachedCloudImageSize = $value;
 
         return $this;
     }
