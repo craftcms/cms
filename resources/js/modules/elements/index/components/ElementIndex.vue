@@ -47,6 +47,8 @@
       offersSelectAll?: boolean;
       itemBehavior?: ElementIndexItemBehavior;
       showSites?: boolean;
+      /** Whether rows can be selected. */
+      selectable?: boolean;
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
       /**
@@ -65,6 +67,7 @@
     }>(),
     {
       contained: false,
+      selectable: true,
       footerActive: false,
       offersSelectAll: false,
       enableAdjustPageSize: false,
@@ -158,7 +161,9 @@
       !selection.readOnly.value &&
       editableRows.value.length > 0
   );
-  const selectable = computed(() => !isInlineEditing.value);
+  const rowsSelectable = computed(
+    () => props.selectable && !isInlineEditing.value
+  );
   /** Single-select lists get no select-all checkbox. */
   const multiSelect = computed(
     () => props.view.table.options.enableMultiRowSelection !== false
@@ -472,7 +477,7 @@
           :selection="selection.selection"
           :read-only="selection.readOnly.value"
           :data="data"
-          :selectable="selectable"
+          :selectable="rowsSelectable"
           :select-all="multiSelect"
           :loading="loading"
           :placeholders="placeholderCount(8)"
@@ -501,7 +506,7 @@
           :selection="selection.selection"
           :read-only="selection.readOnly.value"
           :data="data"
-          :selectable="selectable"
+          :selectable="rowsSelectable"
           :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
@@ -524,7 +529,7 @@
           v-else
           :table="table"
           :selection="selection"
-          :selectable="selectable"
+          :selectable="rowsSelectable"
           :loading="loading"
           :placeholder-rows="placeholderCount(5)"
           :spacing="TableSpacing.Spacious"

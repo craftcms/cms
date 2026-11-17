@@ -7,6 +7,7 @@ use CraftCms\Cms\Dashboard\Widgets\NewUsers;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Models\UserGroup;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -52,4 +53,13 @@ it('only shows New Users to users who can view users', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('widgets', 0)
             ->where('widgetTypes', fn ($types) => $types[NewUsers::class]['selectable'] === false));
+});
+
+it('names its user group for its total, singularized for a single user', function () {
+    $group = UserGroup::factory()->create(['name' => 'Members']);
+
+    expect(new NewUsers(['userGroupId' => $group->id])->props())
+        ->toMatchArray(['userGroupName' => 'members', 'userGroupNameSingular' => 'member'])
+        ->and((new NewUsers)->props())
+        ->toMatchArray(['userGroupName' => null, 'userGroupNameSingular' => null]);
 });

@@ -9,6 +9,7 @@ vi.mock('./chart', async () => {
   return {
     ...actual,
     Area: class {
+      static defaults = actual.Area.defaults;
       draw = state.draw;
       getXFormatter = () => (date: Date) =>
         `${date.getMonth() + 1}/${date.getDate()}`;

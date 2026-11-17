@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
@@ -517,8 +518,15 @@ it('performs an action on every listed element but the deselected ones from a qu
 
     $enabledIds = Entry::find()->id($entries->pluck('id')->all())->status('live')->ids();
 
+    // Each batch runs as its own queue job, but they all share one operation
+    $operationIds = ActivityEvent::query()
+        ->whereIn('subjectId', $entries->skip(1)->pluck('uid')->all())
+        ->pluck('operationId');
+
     expect(array_map(intval(...), $enabledIds))->toBe([$kept->id])
-        ->and(auth()->id())->toBe(User::findOne()->id);
+        ->and(auth()->id())->toBe(User::findOne()->id)
+        ->and($operationIds)->toHaveCount(ElementActions::SYNC_LIMIT + 1)
+        ->and($operationIds->unique()->sole())->toBeString();
 });
 
 it('refuses an action that can’t be queued on more elements than the sync limit', function () {

@@ -23,6 +23,9 @@
     /** Picks folders rather than elements; see `useModalElementIndex`. */
     selectFolders?: boolean;
     disabledFolderIds?: number[];
+    /** Lists elements without selecting them, with no source sidebar. */
+    readOnly?: boolean;
+    storageKey?: string;
   }>();
 
   const emit = defineEmits<{
@@ -36,6 +39,8 @@
     (event: 'site-change', siteId: number | null): void;
     /** The trail from the volume root to the folder on screen. */
     (event: 'folder-path-change', path: FolderCrumb[]): void;
+    /** A request for the index failed. */
+    (event: 'error', cause: unknown): void;
     /** The buttons plugins add for the folder on screen. */
     (event: 'folder-actions-change', actions: ActionItemButton[]): void;
   }>();
@@ -47,6 +52,9 @@
     disabledElementIds: () => props.disabledElementIds ?? [],
     selectFolders: props.selectFolders,
     disabledFolderIds: () => props.disabledFolderIds ?? [],
+    readOnly: props.readOnly,
+    storageKey: props.storageKey,
+    onError: props.readOnly ? (cause) => emit('error', cause) : undefined,
   });
 
   const {selectedElements, hasSelection, clearSelection, folderBreadcrumbs} =
@@ -133,7 +141,9 @@
     refresh: (selectId?: number) => index.refresh({selectId}),
   });
 
-  const showSidebar = computed(() => elementIndex.sources.length > 1);
+  const showSidebar = computed(
+    () => !props.readOnly && elementIndex.sources.length > 1
+  );
 </script>
 
 <template>
@@ -142,6 +152,7 @@
       'modal-element-index': true,
       'modal-element-index--sidebar': showSidebar,
       'modal-element-index--folders': selectFolders,
+      'modal-element-index--embedded': readOnly,
     }"
   >
     <nav
@@ -160,7 +171,9 @@
       <ElementIndex
         :view="index.view"
         :item-behavior="index.itemBehavior"
-        contained
+        :contained="!readOnly"
+        :selectable="!readOnly"
+        :toolbar-as-form="!readOnly"
         :show-sites="!selectFolders"
         @site-change="index.changeSite"
         @dblclick="onDblClick"
@@ -208,6 +221,17 @@
   .modal-element-index {
     display: grid;
     height: 100%;
+  }
+
+  // Embedded in a screen rather than a modal: the index flows with the page,
+  // and a table wider than the screen scrolls within it.
+  .modal-element-index--embedded {
+    height: auto;
+
+    .modal-element-index__main {
+      overflow-x: auto;
+      background: none;
+    }
   }
 
   .modal-element-index--sidebar {
