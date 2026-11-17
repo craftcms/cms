@@ -12,10 +12,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Updates;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
 use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Contracts\View\View;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +21,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -53,8 +51,6 @@ abstract class BaseUpdaterController
 
     /** @var array<string, mixed> The data associated with the current update */
     protected array $data = [];
-
-    protected bool $usesStepUrls = true;
 
     /**
      * Whether the request’s data was encrypted with the app key rather than the updater key.
@@ -107,20 +103,17 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(): Response|View
+    public function index(): Response
     {
-        // Its styles; the updater itself starts from legacy.ts
-        app(InternalAssetRegistry::class)->register(UpdaterAsset::class);
-
         $this->data = $this->initialData();
         $state = $this->realInitialState();
         $state['data'] = $this->hashedData();
 
-        return view('_special/updater', [
+        return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
-            'actionPrefix' => implode('/', $this->request->actionSegments()),
-            'state' => $state,
-        ]);
+            'initialState' => $this->clientState($state),
+            'returnUrl' => $this->returnUrl(),
+        ])->toResponse($this->request);
     }
 
     public function precheck(): Response
@@ -380,10 +373,6 @@ abstract class BaseUpdaterController
     {
         // Encode and hash the data
         $state['data'] = $this->hashedData();
-
-        if (! $this->usesStepUrls) {
-            return new JsonResponse($state);
-        }
 
         return new JsonResponse($this->clientState($state)->toArray());
     }

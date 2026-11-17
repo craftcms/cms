@@ -681,6 +681,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
 .cp-table--editable {
   --_input-padding-inline: var(--_cell-spacing-inline);
+  --_input-padding-block: 7px;
   table-layout: auto;
   border: 1px solid var(--c-color-border-quiet);
   border-radius: var(--c-radius-sm);
@@ -785,6 +786,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     --c-input-radius: 0px;
     --c-input-shadow: none;
     --c-focus-outline-offset: -2px;
+    --c-textarea-spacing-block: var(--_input-padding-block);
   }
 
   /*
@@ -863,7 +865,7 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     border: none;
     box-shadow: none;
     border-radius: 0;
-    padding-block: 7px;
+    padding-block: var(--_input-padding-block);
     padding-inline: var(--_input-padding-inline);
     line-height: 20px;
     background-color: transparent;

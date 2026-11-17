@@ -12,6 +12,7 @@
  */
 import './bootstrap/seed-translations';
 import '@craftcms/ui';
+import '../css/legacy.css';
 
 // We need to globally register these for the moment because an
 // elevated session modal can be called from pretty much anywhere
@@ -26,8 +27,6 @@ import {
   mountSessionTimeoutHost,
 } from './modules/auth/session-timeout';
 import {installMessages} from './modules/messages';
-import {bootUpdater} from './modules/updater/updater';
-import {bootLicensingIssues} from './modules/licensing/licensing-issues';
 import {defineDashboardWidgetSettingsUiHost} from './modules/ui/dashboard-widget-settings-ui-host';
 import {defineConditionBuilderHost} from './modules/conditions/condition-builder-host';
 import {defineEntryFieldLayoutUiHost} from './modules/ui/entry-field-layout-ui-host';
@@ -93,8 +92,6 @@ defineFieldSettingsUiHost(Cp.$components);
 defineLayoutComponentSettingsUiHost(Cp.$components);
 
 mountElevatedSessionHost();
-bootUpdater();
-bootLicensingIssues();
 installSessionTimeout();
 mountSessionTimeoutHost();
 
