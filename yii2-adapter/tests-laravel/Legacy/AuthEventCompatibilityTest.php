@@ -93,6 +93,17 @@ it('takes a user it set off the Craft guard when the web identity is cleared', f
         ->and(craftAuth()->user())->toBeNull();
 });
 
+it('leaves a user that replaced the one it set on the Craft guard when the web identity is cleared', function() {
+    $this->legacyUser->setIdentity(new UserElement(['id' => 42]));
+    $user = new UserElement(['id' => 43]);
+    craftAuth()->setUser($user);
+
+    $this->legacyUser->setIdentity(null);
+
+    expect($this->legacyUser->getIdentity())->toBeNull()
+        ->and(craftAuth()->user())->toBe($user);
+});
+
 it('leaves a user it did not set on the Craft guard when the web identity is cleared', function() {
     $user = new UserElement(['id' => 42]);
     craftAuth()->setUser($user);

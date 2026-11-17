@@ -18,9 +18,9 @@ class User extends \yii\web\User
     private IdentityInterface|false|null $_identity = false;
 
     /**
-     * Whether [[setIdentity()]] put the current user on the Craft guard, so clearing the identity should take it off.
+     * The user [[setIdentity()]] put on the Craft guard, which clearing the identity takes off while it's still there.
      */
-    private bool $_setGuardUser = false;
+    private ?UserElement $_guardUser = null;
 
     private ?AuthManager $_illuminateAuthManager = null;
 
@@ -61,15 +61,19 @@ class User extends \yii\web\User
             // Setting the guard's user fires `Authenticated`, whose adapter listener comes back here.
             if (craftAuth()->id() !== $user->getAuthIdentifier()) {
                 craftAuth()->setUser($user);
-                $this->_setGuardUser = true;
+                $this->_guardUser = $user;
             }
-        } elseif ($identity === null && $this->_setGuardUser) {
-            // Go back to the session's user, if there is one, the next time the identity is read.
-            craftAuth()->forgetUser();
-            $this->_setGuardUser = false;
-            $this->_identity = false;
+        } elseif ($identity === null && $this->_guardUser !== null) {
+            $guardUser = $this->_guardUser;
+            $this->_guardUser = null;
 
-            return;
+            if (craftAuth()->hasUser() && craftAuth()->user() === $guardUser) {
+                // Go back to the session's user, if there is one, the next time the identity is read.
+                craftAuth()->forgetUser();
+                $this->_identity = false;
+
+                return;
+            }
         }
 
         $this->_identity = $identity;
