@@ -10,7 +10,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
@@ -219,8 +218,6 @@ class Html
             ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            ResponseHeaders::noCache();
-
             return (string) csrf_field();
         }
 

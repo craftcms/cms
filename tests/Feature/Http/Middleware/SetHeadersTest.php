@@ -8,6 +8,8 @@ use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\ResponseHeaders as ResponseHeaderAccumulator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\View\TemplateManager;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -248,6 +250,29 @@ it('isolates facade state across long-lived request scopes', function () {
     app()->forgetScopedInstances();
 
     $this->get('/test-response-headers?value=second')->assertHeader('X-Test', 'second');
+});
+
+it('sets no-cache headers for responses that contain the CSRF token', function (string $template) {
+    TemplateMode::set(TemplateMode::Site);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('csrf-page', fn () => app(TemplateManager::class)->renderString($template));
+
+    $response = $this->get('/csrf-page')->assertOk();
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
+})->with([
+    'csrfInput() before expires' => '{{ csrfInput() }}{% expires in 1 hour %}',
+    'csrf_token() before expires' => '<meta name="csrf-token" content="{{ csrf_token() }}">{% expires in 1 hour %}',
+]);
+
+it('keeps cache headers for responses without the CSRF token', function () {
+    TemplateMode::set(TemplateMode::Site);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('cached-page', fn () => app(TemplateManager::class)->renderString('{{ csrfInput({async: true}) }}{% expires in 1 hour %}'));
+
+    $response = $this->get('/cached-page')->assertOk();
+
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=3600, public');
 });
 
 it('sets no-cache headers for site token requests', function () {

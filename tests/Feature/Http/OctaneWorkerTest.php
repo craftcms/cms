@@ -110,6 +110,7 @@ it('includes the legacy asset bundles on every control panel page', function () 
 it('drops cache headers queued before an exception on every request', function () {
     Route::middleware(['web', 'craft'])->get('/octane-error', function () {
         ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-Test', 'value');
 
         abort(500);
     });
@@ -121,6 +122,7 @@ it('drops cache headers queued before an exception on every request', function (
 
     foreach ($responses as $response) {
         expect($response->getStatusCode())->toBe(500)
-            ->and($response->headers->get('Cache-Control'))->toBe('no-cache, private');
+            ->and($response->headers->has('X-Test'))->toBeFalse()
+            ->and($response->headers->hasCacheControlDirective('public'))->toBeFalse();
     }
 });

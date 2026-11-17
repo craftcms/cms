@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
- * action, preview, and site token requests.
+ * action, preview, and site token requests, and for responses that contain the session’s CSRF token.
  *
  * @since 6.0.0
  */
@@ -64,7 +64,8 @@ class SetHeaders
             $request->isCpRequest() ||
             $request->isActionRequest() ||
             $hasPreviewParam ||
-            Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
+            Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
+            $this->containsCsrfToken($request, $response)
         ) {
             $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
         }
@@ -72,6 +73,30 @@ class SetHeaders
         $this->setPoweredByHeader($response);
 
         return $response;
+    }
+
+    /**
+     * Whether the response contains the session’s CSRF token, which no cache may store, as it’s only valid for
+     * this visitor’s session.
+     */
+    private function containsCsrfToken(Request $request, SymfonyResponse $response): bool
+    {
+        $token = $request->hasSession() ? $request->session()->token() : null;
+
+        if (! is_string($token) || $token === '') {
+            return false;
+        }
+
+        $content = $response->getContent();
+
+        if (is_string($content) && str_contains($content, $token)) {
+            return true;
+        }
+
+        return array_any(
+            $response->headers->allPreserveCaseWithoutCookies(),
+            fn (array $values) => array_any($values, fn ($value) => is_string($value) && str_contains($value, $token)),
+        );
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void

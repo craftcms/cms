@@ -107,7 +107,7 @@ it('drops cache headers queued before an exception', function (bool $debug) {
         ->assertInternalServerError()
         ->assertHeaderMissing('X-Test');
 
-    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
+    expect($response->headers->hasCacheControlDirective('public'))->toBeFalse();
 })->with([
     'debug mode off' => false,
     'debug mode on' => true,
