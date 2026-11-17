@@ -82,8 +82,8 @@
 - The `updates/check` action’s response now includes `dateFetched`, when the updates were last fetched.
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
-- Responses to token and site token requests now have no-cache headers, so shared caches and browsers don’t store them.
-- Fixed a bug where error pages were sent with the cache headers and other response headers queued by the template or controller that threw the exception.
+- Responses to token and site token requests now have no-cache headers, so shared caches and browsers don’t store them. ([#20751](https://github.com/craftcms/cms/pull/20751))
+- Fixed a bug where error pages were sent with the cache headers and other response headers queued by the template or controller that threw the exception. ([#20751](https://github.com/craftcms/cms/pull/20751))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where control panel screens, such as section settings, failed to load when the control panel was served over plain HTTP from a hostname other than `localhost`. ([#20680](https://github.com/craftcms/cms/issues/20680), [#20695](https://github.com/craftcms/cms/pull/20695))
