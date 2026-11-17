@@ -45,6 +45,20 @@ const waitingItems = new Set<CraftActionItem>();
 /** The idle callback that renders {@link waitingItems}. */
 let renderWaitingHandle: number | undefined;
 
+function queueFirstRender(item: CraftActionItem): void {
+  waitingItems.add(item);
+  renderWaitingHandle ??= whenIdle(renderWaitingItems);
+}
+
+/** Leaves an item out of idle rendering, as when it's rendered or removed. */
+function unqueueFirstRender(item: CraftActionItem): void {
+  waitingItems.delete(item);
+  if (!waitingItems.size && renderWaitingHandle !== undefined) {
+    cancelIdle(renderWaitingHandle);
+    renderWaitingHandle = undefined;
+  }
+}
+
 /**
  * Renders waiting items until the idle period runs out, then waits for the
  * next one. Rendering them together, rather than one per idle callback, lets
@@ -206,6 +220,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     super.connectedCallback();
     this.addEventListener('click', this._blockDisabledClick, {capture: true});
     this.addEventListener('click', this);
+    // Picks up the first render it was waiting for when it was removed.
+    if (this.#releaseFirstRender) {
+      queueFirstRender(this);
+    }
   }
 
   override disconnectedCallback() {
@@ -215,6 +233,8 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     });
     this.removeEventListener('click', this);
     this._clearResetStateTimeout();
+    // Its first render still waits, but not on idle time while it's out of the page.
+    unqueueFirstRender(this);
   }
 
   /**
@@ -253,15 +273,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     return new Promise<void>((resolve) => {
       this.#releaseFirstRender = () => {
         this.#releaseFirstRender = null;
-        waitingItems.delete(this);
-        if (!waitingItems.size && renderWaitingHandle !== undefined) {
-          cancelIdle(renderWaitingHandle);
-          renderWaitingHandle = undefined;
-        }
+        unqueueFirstRender(this);
         resolve();
       };
-      waitingItems.add(this);
-      renderWaitingHandle ??= whenIdle(renderWaitingItems);
+      queueFirstRender(this);
     }).then(() => super.scheduleUpdate());
   }
 

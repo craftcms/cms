@@ -2,6 +2,7 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
 import type CraftButton from '../button/button.js';
+import type CraftActionItem from '../action-item/action-item.js';
 import type CraftActionMenu from './action-menu.js';
 import './action-menu.js';
 import '../action-item/action-item.js';
@@ -242,6 +243,55 @@ it('renders its items when it opens before the browser has been idle', async () 
     await expect
       .element(page.getByRole('link', {name: 'Settings'}))
       .toBeVisible();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
+
+it('renders only the items still in the page once the browser is idle', async () => {
+  const idleCallbacks = new Map<number, IdleRequestCallback>();
+  let nextHandle = 1;
+  vi.stubGlobal('requestIdleCallback', (callback: IdleRequestCallback) => {
+    idleCallbacks.set(nextHandle, callback);
+    return nextHandle++;
+  });
+  vi.stubGlobal('cancelIdleCallback', (handle: number) =>
+    idleCallbacks.delete(handle)
+  );
+  const runIdleCallbacks = () => {
+    const callbacks = [...idleCallbacks.values()];
+    idleCallbacks.clear();
+    callbacks.forEach((callback) =>
+      callback({didTimeout: false, timeRemaining: () => 50})
+    );
+  };
+
+  try {
+    const menu = await renderMenu(`
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <craft-action-item>Kept</craft-action-item>
+          <craft-action-item>Removed</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+    const [kept, removed] =
+      menu.querySelectorAll<CraftActionItem>('craft-action-item');
+    await Promise.resolve();
+
+    removed!.remove();
+    runIdleCallbacks();
+
+    await kept!.updateComplete;
+    expect(kept!.hasUpdated).toBe(true);
+    expect(removed!.hasUpdated).toBe(false);
+
+    menu.querySelector('[slot="content"]')!.append(removed!);
+    runIdleCallbacks();
+
+    await removed!.updateComplete;
+    expect(removed!.hasUpdated).toBe(true);
   } finally {
     vi.unstubAllGlobals();
   }
