@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Types;
 
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Table as TableField;
+use CraftCms\Cms\Field\TableCells\BaseRelationCell;
 use CraftCms\Cms\Field\TableCellTypes;
+use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\OutputType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -24,8 +27,19 @@ class TableRow extends ObjectType
     protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = $resolveInfo->fieldName;
+        $value = $source[$fieldName];
 
-        return $source[$fieldName];
+        if (! $value instanceof ElementQueryInterface) {
+            return $value;
+        }
+
+        /** @var array<string, TableColumn> $columns */
+        $columns = $this->config['columns'] ?? [];
+        $column = $columns[$fieldName] ?? Arr::first($columns, fn (array $column) => ($column['handle'] ?? null) === $fieldName);
+        $cell = $column !== null ? app(TableCellTypes::class)->create($column) : null;
+
+        // Relation cells return only the elements the schema allows
+        return $cell instanceof BaseRelationCell ? $cell->gqlValue($value, $resolveInfo, is_array($context) ? $context : null) : [];
     }
 
     /**
