@@ -517,6 +517,20 @@ class App
     }
 
     /**
+     * Returns whether the `CRAFT_EPHEMERAL` environment variable is enabled.
+     *
+     * @return bool
+     * @since 3.4.0
+     * @deprecated 6.0.0 Craft no longer changes its behavior based on `CRAFT_EPHEMERAL`. Check whether the path you write to is writable instead.
+     */
+    public static function isEphemeral(): bool
+    {
+        LegacyUsage::record(__METHOD__, '`craft\\helpers\\App::isEphemeral()` is deprecated. Craft no longer changes its behavior based on `CRAFT_EPHEMERAL`, so check whether the path you write to is writable instead.');
+
+        return Env::parseBoolean('$CRAFT_EPHEMERAL') === true;
+    }
+
+    /**
      * Returns whether Craft is running in a [DDEV](https://ddev.com) project.
      *
      * @since 5.13.0
