@@ -1291,7 +1291,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return match (true) {
             $status !== self::STATUS_ENABLED => $status,
             $this->suspended => self::STATUS_SUSPENDED,
-            $this->archived => self::STATUS_ARCHIVED,
             $this->pending => self::STATUS_PENDING,
             $this->active => self::STATUS_ACTIVE,
             default => self::STATUS_INACTIVE,

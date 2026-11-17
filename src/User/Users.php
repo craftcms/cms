@@ -556,36 +556,40 @@ class Users
      */
     public function handleInvalidLogin(User $user): void
     {
-        $userModel = UserModel::findOrFail($user->id);
-        $now = now('UTC');
-        $changes = ['lastInvalidLoginDate' => $now];
+        // Lock the row while counting, so parallel failed attempts can't each read the same count
+        [$changes, $alreadyLocked, $indexAttributesChanged] = DB::transaction(function () use ($user): array {
+            $userModel = UserModel::query()->lockForUpdate()->findOrFail($user->id);
+            $now = now('UTC');
+            $changes = ['lastInvalidLoginDate' => $now];
 
-        if (Cms::config()->storeUserIps) {
-            $changes['lastLoginAttemptIp'] = request()->ip();
-        }
-
-        $maxInvalidLogins = Cms::config()->maxInvalidLogins;
-        $alreadyLocked = $user->locked;
-
-        if ($maxInvalidLogins) {
-            if ($this->isUserInsideInvalidLoginWindow($userModel)) {
-                $changes['invalidLoginCount'] = $userModel->invalidLoginCount + 1;
-
-                if ($changes['invalidLoginCount'] >= $maxInvalidLogins) {
-                    $changes += [
-                        'locked' => true,
-                        'invalidLoginWindowStart' => null,
-                        'lockoutDate' => $now,
-                    ];
-                    $changes['invalidLoginCount'] = null;
-                }
-            } else {
-                $changes['invalidLoginWindowStart'] = $now;
-                $changes['invalidLoginCount'] = 1;
+            if (Cms::config()->storeUserIps) {
+                $changes['lastLoginAttemptIp'] = request()->ip();
             }
-        }
 
-        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+            $maxInvalidLogins = Cms::config()->maxInvalidLogins;
+            $alreadyLocked = (bool) $userModel->locked;
+
+            if ($maxInvalidLogins) {
+                if ($this->isUserInsideInvalidLoginWindow($userModel)) {
+                    $changes['invalidLoginCount'] = $userModel->invalidLoginCount + 1;
+
+                    if ($changes['invalidLoginCount'] >= $maxInvalidLogins) {
+                        $changes += [
+                            'locked' => true,
+                            'invalidLoginWindowStart' => null,
+                            'lockoutDate' => $now,
+                        ];
+                        $changes['invalidLoginCount'] = null;
+                    }
+                } else {
+                    $changes['invalidLoginWindowStart'] = $now;
+                    $changes['invalidLoginCount'] = 1;
+                }
+            }
+
+            return [$changes, $alreadyLocked, $this->saveUserChanges($user, $userModel, $changes)];
+        });
+
         $this->applyUserChanges($user, $changes);
 
         if (! $alreadyLocked && $user->locked) {
