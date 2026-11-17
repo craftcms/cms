@@ -14,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
@@ -172,6 +173,27 @@ it('loads descendant values over stale scalar ancestor rows', function (string $
 
     expect($projectConfig->get('legacyOverlap'))->toBe(['deep' => ['value' => 1]]);
 })->with(['string' => '"obsolete"', 'integer' => '1', 'boolean' => 'false']);
+
+it('reloads a cached key after another process changes the config or the key is evicted', function (bool $evicted) {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->upsert([['path' => 'system.name', 'value' => '"Before"']], ['path'], ['value']);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $projectConfig->reset();
+    expect($projectConfig->get('system.name'))->toBe('Before');
+
+    DB::table(Table::PROJECTCONFIG)->where('path', 'system.name')->update(['value' => '"After"']);
+
+    if ($evicted) {
+        Cache::forget(ProjectConfig::STORED_CACHE_KEY.':system');
+    } else {
+        Info::fetch()->update(['configVersion' => Str::random(12)]);
+    }
+
+    $projectConfig->reset();
+
+    expect($projectConfig->get('system.name'))->toBe('After')
+        ->and($projectConfig->get()['system']['name'])->toBe('After');
+})->with(['config changed' => false, 'key evicted' => true]);
 
 it('replays forced external changes against the original config', function (bool $changed) {
     $original = ['value' => 'old'];

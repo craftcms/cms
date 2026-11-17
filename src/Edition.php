@@ -51,7 +51,7 @@ enum Edition: int implements Arrayable
             return $edition;
         }
 
-        $edition = Env::get('CRAFT_EDITION', ProjectConfig::get('system.edition'));
+        $edition = Env::get('CRAFT_EDITION', fn () => ProjectConfig::get('system.edition'));
         $edition = $edition ? self::fromHandle($edition) : self::Solo;
 
         Context::addHidden(self::class, $edition);

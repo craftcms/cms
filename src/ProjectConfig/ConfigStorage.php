@@ -13,7 +13,6 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
@@ -36,40 +35,121 @@ class ConfigStorage
         return new CallbackDependency(static fn () => Info::fetch()->configVersion);
     }
 
-    /** @return array<string|int, mixed> */
+    /**
+     * Returns the whole stored config.
+     *
+     * The cache holds an index of the top-level keys plus one entry per top-level key, each tagged with the
+     * `configVersion` it was built from, so a request can load only the keys it reads.
+     *
+     * @return array<string|int, mixed>
+     */
     public function readDatabase(?int $cacheDuration): array
     {
         if (! Cms::isInstalled()) {
             return [];
         }
 
-        return DependencyCache::remember(ProjectConfig::STORED_CACHE_KEY, $cacheDuration, function (): array {
-            $data = [];
+        $version = Info::fetch()->configVersion;
+        $index = Cache::get(ProjectConfig::STORED_CACHE_KEY);
 
-            // Paths only need parent-before-child ordering, not locale-aware sorting.
-            $orderBy = DB::connection()->isPgsql() ? new Expression('path COLLATE "C"') : 'path';
+        if (($index['version'] ?? null) !== $version) {
+            return $this->rebuildCache($version, $cacheDuration);
+        }
 
-            foreach (DB::table(Table::PROJECTCONFIG)->orderBy($orderBy)->pluck('value', 'path') as $path => $value) {
-                $value = Json::decode(Str::decdec($value));
-                $segments = ProjectConfigHelper::pathSegments($path);
-                $cursor = &$data;
+        $entries = $index['roots'] === [] ? [] : Cache::many(array_map($this->rootCacheKey(...), $index['roots']));
+        $data = [];
 
-                foreach ($segments as $segment) {
-                    // Older config data can contain a scalar at a path that also has descendants.
-                    if (! is_array($cursor)) {
-                        $cursor = [];
-                    }
+        foreach ($index['roots'] as $root) {
+            $entry = $entries[$this->rootCacheKey($root)] ?? null;
 
-                    $cursor[$segment] ??= [];
-                    $cursor = &$cursor[$segment];
-                }
-
-                $cursor = $value;
-                unset($cursor);
+            if (($entry['version'] ?? null) !== $version) {
+                return $this->rebuildCache($version, $cacheDuration);
             }
 
-            return ProjectConfigHelper::cleanupConfig($data);
-        }, $this->dependency());
+            $data[$root] = $entry['value'];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Returns the stored config for the given top-level keys, omitting keys that have no value.
+     *
+     * @param  list<string>  $roots
+     * @return array<string|int, mixed>
+     */
+    public function readRoots(array $roots, ?int $cacheDuration): array
+    {
+        if (! Cms::isInstalled()) {
+            return [];
+        }
+
+        $version = Info::fetch()->configVersion;
+        $entries = Cache::many([ProjectConfig::STORED_CACHE_KEY, ...array_map($this->rootCacheKey(...), $roots)]);
+        $index = $entries[ProjectConfig::STORED_CACHE_KEY];
+        $data = [];
+
+        if (($index['version'] ?? null) !== $version) {
+            return array_intersect_key($this->rebuildCache($version, $cacheDuration), array_flip($roots));
+        }
+
+        foreach (array_intersect($roots, $index['roots']) as $root) {
+            $entry = $entries[$this->rootCacheKey($root)] ?? null;
+
+            if (($entry['version'] ?? null) !== $version) {
+                return array_intersect_key($this->rebuildCache($version, $cacheDuration), array_flip($roots));
+            }
+
+            $data[$root] = $entry['value'];
+        }
+
+        return $data;
+    }
+
+    /** @return array<string|int, mixed> */
+    private function rebuildCache(string $version, ?int $cacheDuration): array
+    {
+        $data = [];
+
+        // Paths only need parent-before-child ordering, not locale-aware sorting.
+        $orderBy = DB::connection()->isPgsql() ? new Expression('path COLLATE "C"') : 'path';
+
+        foreach (DB::table(Table::PROJECTCONFIG)->orderBy($orderBy)->pluck('value', 'path') as $path => $value) {
+            $value = Json::decode(Str::decdec($value));
+            $segments = ProjectConfigHelper::pathSegments($path);
+            $cursor = &$data;
+
+            foreach ($segments as $segment) {
+                // Older config data can contain a scalar at a path that also has descendants.
+                if (! is_array($cursor)) {
+                    $cursor = [];
+                }
+
+                $cursor[$segment] ??= [];
+                $cursor = &$cursor[$segment];
+            }
+
+            $cursor = $value;
+            unset($cursor);
+        }
+
+        $data = ProjectConfigHelper::cleanupConfig($data);
+        $roots = array_map(strval(...), array_keys($data));
+        $entries = [ProjectConfig::STORED_CACHE_KEY => ['version' => $version, 'roots' => $roots]];
+
+        foreach ($roots as $root) {
+            $entries[$this->rootCacheKey($root)] = ['version' => $version, 'value' => $data[$root]];
+        }
+
+        // A TTL lets stores write every entry in one batch; a null TTL writes them one at a time.
+        Cache::putMany($entries, $cacheDuration ?? ProjectConfig::CACHE_DURATION);
+
+        return $data;
+    }
+
+    private function rootCacheKey(string $root): string
+    {
+        return ProjectConfig::STORED_CACHE_KEY.':'.$root;
     }
 
     /** @param list<array{added?: array<string, mixed>, removed?: array<string, mixed>, message?: string}> $changes */

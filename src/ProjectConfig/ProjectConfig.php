@@ -43,9 +43,11 @@ class ProjectConfig
     public const string CACHE_KEY = 'projectConfig:files';
 
     /**
-     * The cache key that is used to store the loaded project config data.
+     * The cache key that is used to store the index of the loaded project config data.
+     *
+     * Each top-level key is stored under this key, followed by `:` and the top-level key.
      */
-    public const string STORED_CACHE_KEY = 'projectConfig:internal';
+    public const string STORED_CACHE_KEY = 'projectConfig:index';
 
     /**
      * The cache key that is used to store whether there were any issues writing the project config files out.
@@ -143,6 +145,18 @@ class ProjectConfig
     public const string PATH_WORKFLOWS = 'workflows';
 
     /**
+     * Top-level keys that nearly every request reads, which are loaded together with the first one requested.
+     */
+    private const array BOOT_ROOTS = [
+        self::PATH_DATE_MODIFIED,
+        'mcp',
+        self::PATH_PLUGINS,
+        self::PATH_ROUTES,
+        self::PATH_SYSTEM,
+        self::PATH_USERS,
+    ];
+
+    /**
      * @var bool Whether project config changes should be written to YAML files automatically.
      *
      * If set to `false`, you can manually write out project config YAML files using the `craft:project-config/write` command.
@@ -206,8 +220,15 @@ class ProjectConfig
      */
     public private(set) bool $isApplyingExternalChanges = false;
 
-    /** @var array<string|int, mixed>|null */
+    /**
+     * @var array<string|int, mixed>|null The whole working config, once something needs all of it.
+     */
     private ?array $current = null;
+
+    /**
+     * @var array<string|int, mixed> Top-level keys loaded on their own before [[$current]] is, with `null` for missing keys.
+     */
+    private array $roots = [];
 
     /** @var array<string|int, mixed>|null */
     private ?array $external = null;
@@ -279,6 +300,7 @@ class ProjectConfig
     public function reset(): void
     {
         $this->current = null;
+        $this->roots = [];
         $this->external = null;
         $this->original = null;
         $this->changes = [];
@@ -336,7 +358,26 @@ class ProjectConfig
      */
     public function get(?string $path = null, bool $getFromExternalConfig = false): mixed
     {
-        $this->current ??= $this->storage->readDatabase($this->cacheDuration);
+        if ($path !== null && ! $getFromExternalConfig && $this->current === null) {
+            $root = ProjectConfigHelper::pathSegments($path)[0];
+
+            if (! array_key_exists($root, $this->roots)) {
+                $roots = $this->roots === [] ? array_values(array_unique([...self::BOOT_ROOTS, $root])) : [$root];
+                $values = $this->storage->readRoots($roots, $this->cacheDuration);
+
+                foreach ($roots as $loadedRoot) {
+                    $this->roots[$loadedRoot] = $values[$loadedRoot] ?? null;
+                }
+            }
+
+            return ProjectConfigHelper::traverseDataArray($this->roots, $path);
+        }
+
+        if ($this->current === null) {
+            $this->current = $this->storage->readDatabase($this->cacheDuration);
+            $this->roots = [];
+        }
+
         $this->original ??= $this->current;
         $data = $this->current;
 
@@ -594,6 +635,8 @@ class ProjectConfig
     /** @param array<string|int, mixed>|null $previousConfig */
     private function commit(string $path, mixed $value, ?string $message = null, bool $force = false, bool $triggerUpdate = false, ?array $previousConfig = null): void
     {
+        // Changes are made to the whole working config, so load it before anything changes.
+        $this->get();
         $oldValue = $previousConfig === null ? $this->get($path) : ProjectConfigHelper::traverseDataArray($previousConfig, $path);
         $changed = $triggerUpdate || ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($value)
             || ($this->forceUpdate && ($oldValue !== null || $value !== null));
@@ -908,8 +951,6 @@ class ProjectConfig
         }
 
         if (array_filter($this->getPendingChanges())) {
-            Cache::forget(self::STORED_CACHE_KEY);
-
             return true;
         }
 

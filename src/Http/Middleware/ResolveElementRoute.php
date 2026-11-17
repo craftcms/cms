@@ -13,15 +13,19 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Route\ElementRoute;
 use CraftCms\Cms\Route\MatchedElement;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @since 6.0.0
  */
 readonly class ResolveElementRoute
 {
+    private const string DESTINATIONS_CACHE_KEY = 'elementRouteDestinations';
+
     public function __construct(
         private Elements $elements,
         private Sites $sites,
@@ -56,15 +60,42 @@ readonly class ResolveElementRoute
     }
 
     /**
-     * Checks cached project config first so ordinary site routes avoid an element URI lookup.
+     * Checks the configured route destinations first so ordinary site routes avoid an element URI lookup.
      */
     private function hasConfiguredDestination(Route $route, string $siteUid): bool
     {
-        foreach ($this->projectConfig->get(ProjectConfig::PATH_SECTIONS) ?? [] as $section) {
-            $settings = $section['siteSettings'][$siteUid] ?? [];
-
-            if (! empty($settings['hasUrls']) && ! empty($settings['route']) && new ElementRoute($settings['route'])->matches($route)) {
+        foreach ($this->destinations()[$siteUid] ?? [] as $destination) {
+            if (new ElementRoute($destination)->matches($route)) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the route destinations that sections and Matrix fields configure, by site UID.
+     *
+     * They’re cached on their own, so site requests don’t load the sections and fields config to find them.
+     *
+     * @return array<string, list<string>>
+     */
+    private function destinations(): array
+    {
+        $version = Info::fetch()->configVersion;
+        $cached = Cache::get(self::DESTINATIONS_CACHE_KEY);
+
+        if (($cached['version'] ?? null) === $version) {
+            return $cached['destinations'];
+        }
+
+        $destinations = [];
+
+        foreach ($this->projectConfig->get(ProjectConfig::PATH_SECTIONS) ?? [] as $section) {
+            foreach ($section['siteSettings'] ?? [] as $siteUid => $settings) {
+                if (! empty($settings['hasUrls']) && ! empty($settings['route'])) {
+                    $destinations[$siteUid][] = $settings['route'];
+                }
             }
         }
 
@@ -74,13 +105,17 @@ readonly class ResolveElementRoute
             }
 
             $settings = ProjectConfigHelper::unpackAssociativeArrays($field['settings'] ?? []);
-            $destination = $settings['siteSettings'][$siteUid]['route'] ?? null;
 
-            if ($destination && new ElementRoute($destination)->matches($route)) {
-                return true;
+            foreach ($settings['siteSettings'] ?? [] as $siteUid => $siteSettings) {
+                if (! empty($siteSettings['route'])) {
+                    $destinations[$siteUid][] = $siteSettings['route'];
+                }
             }
         }
 
-        return false;
+        $destinations = array_map(fn (array $routes): array => array_values(array_unique($routes)), $destinations);
+        Cache::put(self::DESTINATIONS_CACHE_KEY, ['version' => $version, 'destinations' => $destinations], ProjectConfig::CACHE_DURATION);
+
+        return $destinations;
     }
 }
