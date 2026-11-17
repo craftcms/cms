@@ -83,7 +83,13 @@
     );
   });
 
-  watch(settings, (open) => emit('settings', open), {immediate: true});
+  // Loading settings counts as open, so a reload doesn't remount the widget
+  // and lose them before they show.
+  watch(
+    () => settings.value || settingsLoading.value,
+    (open) => emit('settings', open),
+    {immediate: true}
+  );
 
   onBeforeUnmount(() => {
     emit('settings', false);

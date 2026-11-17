@@ -16,9 +16,6 @@
 
   const color = useWidgetColor();
 
-  // The total is the widget's title
-  const {titleId} = useWidgetHeader({ownTitle: true});
-
   const props = defineProps<{
     data: {
       dateRange: string;
@@ -36,6 +33,15 @@
   const loading = ref(true);
   const chart = shallowRef<{data: ChartData; scale: ChartScale}>();
   let request: AbortController | undefined;
+
+  /** Whether the chart is shown, with the total as the widget's title. */
+  const showsChart = computed(
+    () => !!chart.value && !loading.value && !error.value
+  );
+
+  // The total is the widget's title while it's shown. Until then, or if the
+  // chart can't load, the dashboard shows the widget's own.
+  const {titleId} = useWidgetHeader({ownTitle: () => showsChart.value});
 
   /** The new users across the whole range. */
   const total = computed(() =>
@@ -129,7 +135,7 @@
         t('Loading…')
       }}</craft-spinner>
       <SparklineStat
-        v-if="chart && !loading && !error"
+        v-if="showsChart && chart"
         :title="totalLabel"
         :heading-id="titleId"
         :caption="data.dateRangeLabel"

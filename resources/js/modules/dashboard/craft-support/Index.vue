@@ -86,6 +86,8 @@
     padding-inline: var(--c-spacing-sm);
     border-radius: var(--c-radius-md);
     color: inherit;
+    /* Only the label is underlined, as links are elsewhere: on hover, or
+       always with the “Underline links” preference. */
     text-decoration: none;
 
     &:hover {
@@ -93,7 +95,7 @@
     }
 
     &:hover .support-link__label {
-      text-decoration: underline;
+      text-decoration-line: var(--c-link-decoration-hover);
     }
   }
 
@@ -105,6 +107,7 @@
   .support-link__label {
     flex: 1;
     color: var(--c-text-link);
+    text-decoration-line: var(--c-link-decoration);
   }
 
   .support-link__external {

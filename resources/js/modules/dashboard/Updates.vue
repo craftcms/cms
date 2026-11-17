@@ -36,7 +36,8 @@
       });
 
       total.value = data.total;
-      dateFetched.value = data.dateFetched ?? new Date().toISOString();
+      // Left out when the updates couldn't be fetched
+      dateFetched.value = data.dateFetched ?? null;
       router.reload({only: ['craft']});
     } catch {
       error.value = t('Unable to fetch updates at this time.');

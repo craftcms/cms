@@ -93,3 +93,18 @@ it('checks again from the button it adds to its header', async () => {
   expect(state.post.mock.lastCall![1]).toEqual({forceRefresh: true});
   expect(body()).toContain('1 update available');
 });
+
+it('says nothing about when it checked, when the updates couldn’t be fetched', async () => {
+  vi.useFakeTimers({now: new Date('2026-11-16T12:00:00Z')});
+  // The server answers without a fetch date when its request for updates fails.
+  state.post.mockResolvedValue({data: {total: 0, dateFetched: null}});
+  mount({cached: true, total: 0, dateFetched: '2026-11-15T12:00:00Z'});
+
+  host
+    .querySelector<HTMLElement>('.header-actions craft-button')!
+    .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  await vi.waitFor(() => expect(state.post).toHaveBeenCalled());
+  await nextTick();
+
+  expect(body()).not.toContain('Checked');
+});

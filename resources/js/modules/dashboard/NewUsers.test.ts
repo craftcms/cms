@@ -150,3 +150,32 @@ it.each([
     expect(tooltip('11/4', 1)).toBe(one);
   }
 );
+
+it('leaves the widget’s own title until its total shows', async () => {
+  let respond!: (value: unknown) => void;
+  state.post
+    .mockReturnValueOnce(new Promise((resolve) => (respond = resolve)))
+    .mockRejectedValueOnce(new Error('offline'));
+  const props = reactive({data: {dateRange: 'd7', userGroupId: null}});
+  let header!: ReturnType<typeof provideWidgetHeader>;
+  host = document.createElement('div');
+  document.body.append(host);
+  app = createApp({
+    setup() {
+      header = provideWidgetHeader('widget-heading-5');
+      return () => h(NewUsers, props);
+    },
+  });
+  app.mount(host);
+
+  // Loading: the dashboard's title stays.
+  expect(header.ownTitles.value).toBe(0);
+
+  respond({data: {dataTable: table(1), scale: 'day'}});
+  await vi.waitFor(() => expect(header.ownTitles.value).toBe(1));
+  expect(host.querySelector('#widget-heading-5')).not.toBeNull();
+
+  // A reload that fails shows its error, under the dashboard's title again.
+  props.data = {dateRange: 'd7', userGroupId: null};
+  await vi.waitFor(() => expect(header.ownTitles.value).toBe(0));
+});
