@@ -41,7 +41,7 @@ beforeEach(function () {
     File::deleteDirectory(Path::assetSources());
 });
 
-test('uses original remote sources for transforms and editor previews, then deletes them', function (bool $existingSource) {
+test('uses original remote sources for transforms and editor previews, then deletes them', function (bool $oldCachedSource) {
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,
@@ -57,9 +57,10 @@ test('uses original remote sources for transforms and editor previews, then dele
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($asset->getPath(), $original);
     touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
-    $sourcePath = $asset->getImageTransformSourcePath();
-    if ($existingSource) {
-        file_put_contents($sourcePath, $original);
+    if ($oldCachedSource) {
+        ob_start();
+        imagepng(imagecreatetruecolor(600, 350));
+        file_put_contents($asset->getImageTransformSourcePath(), ob_get_clean());
     }
 
     $transformPath = ImageTransformHelper::generateTransform($asset, new ImageTransform([
@@ -68,6 +69,7 @@ test('uses original remote sources for transforms and editor previews, then dele
         'mode' => 'stretch',
     ]));
     $this->beforeApplicationDestroyed(fn () => File::delete($transformPath));
+    $sourcePath = ImageTransformHelper::getLocalImageSource($asset);
 
     expect(array_slice(getimagesize($transformPath), 0, 2))->toBe([80, 35])
         ->and(file_get_contents($sourcePath))->toBe($original);
@@ -85,12 +87,13 @@ test('uses original remote sources for transforms and editor previews, then dele
 
     expect(is_file($sourcePath))->toBeFalse()
         ->and($disk->get($asset->getPath()))->toBe($original);
-})->with(['downloaded' => false, 'previously cached' => true]);
+})->with(['downloaded' => false, 'ignoring a downscaled copy an earlier version cached' => true]);
 
-test('re-downloads the cached source file when the remote object has changed since it was cached', function () {
-    $unrelatedPath = Path::temp('get-local-image-source-test.delimiter.unrelated.jpg');
-    file_put_contents($unrelatedPath, 'unrelated download');
-    $this->beforeApplicationDestroyed(fn () => File::delete($unrelatedPath));
+test('downloads remote sources once per request, command, or queued job, into files of their own', function () {
+    // Another request's download of a file with the same name
+    $otherDownload = Path::temp('get-local-image-source-test.delimiter.other.jpg');
+    file_put_contents($otherDownload, 'other download');
+    $this->beforeApplicationDestroyed(fn () => File::delete($otherDownload));
 
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
@@ -98,56 +101,33 @@ test('re-downloads the cached source file when the remote object has changed sin
         'filename' => 'get-local-image-source-test.jpg',
         'kind' => 'image',
     ]);
-
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($asset->getPath(), 'original bytes');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
-
-    $sourcePath = ImageTransformHelper::getLocalImageSource($asset);
-
-    expect(file_get_contents($sourcePath))->toBe('original bytes');
-
-    $disk->put($asset->getPath(), 'updated bytes');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() + 100);
-
-    $sourcePath = ImageTransformHelper::getLocalImageSource($asset);
-
-    expect(file_get_contents($sourcePath))->toBe('updated bytes');
-    expect(file_get_contents($unrelatedPath))->toBe('unrelated download');
-    expect(glob(Path::temp('get-local-image-source-test.delimiter.*.jpg')))->toBe([$unrelatedPath]);
-});
-
-test('does not re-download the cached source file when the remote object is unchanged', function () {
-    $asset = AssetModel::factory()->createElement([
-        'volumeId' => $this->volume->id,
-        'folderId' => $this->folder->id,
-        'filename' => 'get-local-image-source-unchanged-test.jpg',
-        'kind' => 'image',
-    ]);
-
-    $disk = $asset->getVolume()->sourceDisk();
-    $disk->put($asset->getPath(), 'original bytes');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
 
     $firstSourcePath = ImageTransformHelper::getLocalImageSource($asset);
+    $disk->put($asset->getPath(), 'modified bytes');
 
-    $disk->put($asset->getPath(), 'this should not be downloaded');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 50);
+    expect(ImageTransformHelper::getLocalImageSource($asset))->toBe($firstSourcePath)
+        ->and(file_get_contents($firstSourcePath))->toBe('original bytes');
+
+    app(DeferredCallbackCollection::class)->invoke();
+    app()->forgetScopedInstances();
 
     $secondSourcePath = ImageTransformHelper::getLocalImageSource($asset);
 
-    expect($secondSourcePath)->toBe($firstSourcePath)
-        ->and(file_get_contents($secondSourcePath))->toBe('original bytes');
+    expect(is_file($firstSourcePath))->toBeFalse()
+        ->and($secondSourcePath)->not->toBe($firstSourcePath)
+        ->and(file_get_contents($secondSourcePath))->toBe('modified bytes')
+        ->and(file_get_contents($otherDownload))->toBe('other download');
 });
 
-test('cleans its staging file when downloading or storing the source fails', function (string $failure) {
+test('deletes its download when downloading the source fails', function (string $failure) {
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,
         'filename' => 'failed-source.jpg',
         'kind' => 'image',
     ]);
-    $sourcePath = $asset->getImageTransformSourcePath();
     $tempFilePath = Path::temp('failed-source.delimiter.owned.jpg');
     $paths = Mockery::mock(Path::getFacadeRoot())->makePartial();
     $paths->shouldReceive('temp')->with(Mockery::type('string'))->andReturn($tempFilePath);
@@ -165,25 +145,23 @@ test('cleans its staging file when downloading or storing the source fails', fun
             throw $exception;
         });
         Storage::set('image-transform-helper-test-remote-disk', $remoteDisk);
-    } elseif ($failure === 'copy') {
-        File::makeDirectory($sourcePath);
     }
 
     try {
         ImageTransformHelper::getLocalImageSource($asset);
-        test()->fail('Expected source staging to fail.');
+        test()->fail('Expected the download to fail.');
     } catch (Throwable $caught) {
         if ($failure === 'download') {
             expect($caught)->toBe($exception, $caught->getMessage());
         } else {
-            expect($caught)->toBeInstanceOf($failure === 'empty' ? FilesystemException::class : ErrorException::class);
+            expect($caught)->toBeInstanceOf(FilesystemException::class);
         }
     }
 
     expect(is_file($tempFilePath))->toBeFalse();
-})->with(['empty', 'download', 'copy']);
+})->with(['empty', 'download']);
 
-test('interleaved downloads keep each others staging files', function () {
+test('interleaved downloads keep each others files', function () {
     $assets = collect(['first', 'second'])->map(fn (string $folder) => AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id, 'path' => $folder.'/'])->id,
@@ -211,7 +189,7 @@ test('interleaved downloads keep each others staging files', function () {
 
         expect(file_get_contents($secondSource))->toBe('second image');
         expect(file_get_contents($tempPaths[0]))->toBe('partial first image');
-        expect(is_file($tempPaths[1]))->toBeFalse();
+        expect($secondSource)->toBe($tempPaths[1]);
 
         return $disk->readStream($assets[0]->getPath());
     });
@@ -219,8 +197,8 @@ test('interleaved downloads keep each others staging files', function () {
 
     $firstSource = ImageTransformHelper::getLocalImageSource($assets[0]);
 
-    expect(file_get_contents($firstSource))->toBe('first image');
-    expect($tempPaths)->toHaveCount(2);
-    expect($tempPaths[0])->not->toBe($tempPaths[1]);
-    expect(is_file($tempPaths[0]))->toBeFalse();
+    expect($firstSource)->toBe($tempPaths[0])
+        ->and(file_get_contents($firstSource))->toBe('first image')
+        ->and(file_get_contents($tempPaths[1]))->toBe('second image')
+        ->and($tempPaths)->toHaveCount(2);
 });
