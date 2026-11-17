@@ -58,7 +58,9 @@ test('uses original remote sources for transforms and editor previews, then dele
     touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
     $sourcePath = $asset->getImageTransformSourcePath();
     if ($existingSource) {
-        file_put_contents($sourcePath, $original);
+        ob_start();
+        imagepng(imagecreatetruecolor(600, 350));
+        file_put_contents($sourcePath, ob_get_clean());
     }
 
     $transformPath = ImageTransformHelper::generateTransform($asset, new ImageTransform([
@@ -84,7 +86,7 @@ test('uses original remote sources for transforms and editor previews, then dele
 
     expect(is_file($sourcePath))->toBeFalse()
         ->and($disk->get($asset->getPath()))->toBe($original);
-})->with(['downloaded' => false, 'previously cached' => true]);
+})->with(['downloaded' => false, 'previously cached downscaled' => true]);
 
 test('re-downloads the cached source file when the remote object has changed since it was cached', function () {
     $unrelatedPath = Path::temp('get-local-image-source-test.delimiter.unrelated.jpg');
@@ -130,7 +132,7 @@ test('does not re-download the cached source file when the remote object is unch
 
     $firstSourcePath = ImageTransformHelper::getLocalImageSource($asset);
 
-    $disk->put($asset->getPath(), 'this should not be downloaded');
+    $disk->put($asset->getPath(), 'not downloaded');
     touch($this->remoteRoot.'/'.$asset->getPath(), time() - 50);
 
     $secondSourcePath = ImageTransformHelper::getLocalImageSource($asset);

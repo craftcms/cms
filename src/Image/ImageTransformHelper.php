@@ -143,18 +143,18 @@ class ImageTransformHelper
 
             if (! $isLocalFs) {
                 // This is a non-local fs
-                $remoteDateModified = null;
+                $sourceIsStale = false;
                 if (is_file($imageSourcePath) && filesize($imageSourcePath) !== 0) {
                     try {
-                        $remoteDateModified = $disk->lastModified($asset->getPath());
+                        // Stale if it isn't the same size as the remote object, such as a copy an earlier
+                        // version downscaled, or the remote object has been modified more recently.
+                        $sourceIsStale = filesize($imageSourcePath) !== $disk->size($asset->getPath())
+                            || filemtime($imageSourcePath) < $disk->lastModified($asset->getPath());
                     } catch (Throwable) {
                         // Can't tell whether the cache is still fresh; assume it is rather than
                         // re-downloading on every request just because the fs is being flaky.
                     }
                 }
-
-                // Stale if the remote object has been modified more recently than our local copy.
-                $sourceIsStale = $remoteDateModified !== null && filemtime($imageSourcePath) < $remoteDateModified;
 
                 if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0 || $sourceIsStale) {
                     if (is_file($imageSourcePath)) {
