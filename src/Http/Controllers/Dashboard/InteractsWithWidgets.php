@@ -6,7 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Data\WidgetData;
+use CraftCms\Cms\Dashboard\Widgets\Custom;
+use CraftCms\Cms\Dashboard\Widgets\MissingWidget;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -15,6 +18,18 @@ use CraftCms\Cms\View\HtmlStack;
 
 trait InteractsWithWidgets
 {
+    /**
+     * Returns whether the current user is allowed to use an existing widget.
+     */
+    protected function canUseWidget(WidgetInterface $widget): bool
+    {
+        // Missing widgets are still shown, so they can be deleted.
+        // Custom widgets are available to everyone, and render nothing once their definition is gone.
+        return $widget instanceof MissingWidget
+            || $widget instanceof Custom
+            || app(Dashboard::class)->isWidgetTypeAvailable($widget::class);
+    }
+
     protected function getWidgetData(WidgetInterface $widget): WidgetData|false
     {
         $htmlStack = app(HtmlStack::class);

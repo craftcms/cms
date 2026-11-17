@@ -94,6 +94,8 @@ readonly class WidgetsController
 
         $widget = $this->dashboard->getWidgetById($request->integer('widgetId'));
 
+        abort_unless($this->canUseWidget($widget), 403, 'User not authorized to use this widget.');
+
         // Create a new widget model with the new settings
         $settings = $widget instanceof Custom
             ? $widget->getSettings()
@@ -121,16 +123,16 @@ readonly class WidgetsController
         ]);
         $type = (string) $data['type'];
 
-        $widgetType = $this->widgetTypes->types()->first(fn (string $widgetType): bool => $widgetType === $type);
-
-        if ($widgetType === null) {
+        // Settings are refreshed for new and existing widgets alike, so ignore whether the user already has one
+        if (! $this->dashboard->isWidgetTypeAvailable($type)) {
             throw ValidationException::withMessages([
                 'type' => 'Invalid widget type.',
             ]);
         }
 
+        /** @var class-string<WidgetInterface> $type */
         $widget = $this->dashboard->createWidget([
-            'type' => $widgetType,
+            'type' => $type,
             'settings' => $data['settings'] ?? [],
         ]);
 

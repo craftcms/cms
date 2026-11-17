@@ -38,10 +38,17 @@ use function CraftCms\Cms\currentUser;
  * @since 6.0.0
  */
 #[Singleton]
-readonly class Dashboard
+class Dashboard
 {
+    /**
+     * The widget type that {@see doesUserHaveWidget()} reports the user doesn’t have,
+     * while {@see isWidgetTypeAvailable()} checks it.
+     */
+    private ?string $availabilityCheckType = null;
+
     public function __construct(
-        private CustomWidgets $customWidgets,
+        private readonly CustomWidgets $customWidgets,
+        private readonly WidgetTypes $widgetTypes,
     ) {}
 
     /**
@@ -81,6 +88,33 @@ readonly class Dashboard
     }
 
     /**
+     * Returns whether the current user is allowed to use widgets of the given type.
+     *
+     * The type must be registered with {@see WidgetTypes}, and selectable for the current user.
+     * Unlike calling `isSelectable()` directly, this ignores whether the user already has a widget of that type,
+     * so it can be used to check the user’s existing widgets.
+     *
+     * @param  string  $type  The widget type
+     */
+    public function isWidgetTypeAvailable(string $type): bool
+    {
+        /** @var class-string<WidgetInterface>|null $widgetType */
+        $widgetType = $this->widgetTypes->types()->first(fn (string $registered) => $registered === $type);
+
+        if ($widgetType === null) {
+            return false;
+        }
+
+        $this->availabilityCheckType = $widgetType;
+
+        try {
+            return $widgetType::isSelectable();
+        } finally {
+            $this->availabilityCheckType = null;
+        }
+    }
+
+    /**
      * Returns whether the current user has a widget of the given type.
      *
      * @param  class-string<WidgetInterface>  $type  The widget type
@@ -88,6 +122,10 @@ readonly class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
+        if ($type === $this->availabilityCheckType) {
+            return false;
+        }
+
         $widgets = $this->getUserWidgets();
 
         if ($widgets === false) {

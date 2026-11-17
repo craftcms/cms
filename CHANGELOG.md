@@ -102,6 +102,8 @@
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT` should be used instead. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Fixed a bug where element selector modals showed structure elements at the same level as their parents in the “Display in a structured table” view mode. ([#20664](https://github.com/craftcms/cms/pull/20664))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Added `CraftCms\Cms\Dashboard\Dashboard::isWidgetTypeAvailable()`.
 
 ## 6.0.0-beta.1 - 2026-11-10
 
