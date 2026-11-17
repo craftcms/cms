@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Http\BufferedSessionHandler;
 use CraftCms\Cms\Http\Events\LazySessionSaved;
-use CraftCms\Cms\Support\Facades\ResponseHeaders;
+use CraftCms\Cms\Http\ResponseHeaders;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Cookie\QueueingFactory;
 use Illuminate\Http\Request;
@@ -16,7 +16,6 @@ use Illuminate\Routing\Router;
 use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\SessionManager;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -30,9 +29,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * can store them. Requests that arrive with a session cookie are handled by
  * {@see StartSession} as usual.
  *
- * Responses that save or refresh the session get no-cache headers, through
- * {@see \CraftCms\Cms\Http\ResponseHeaders::noCache()}. When a request without a
- * session cookie saves one, {@see LazySessionSaved} reports why.
+ * Responses that save or refresh the session get no-cache headers, replacing any
+ * cache headers the page set. When a request without a session cookie saves one,
+ * {@see LazySessionSaved} reports why.
  *
  * Routes opt in with `Route::withLazySession()`, which replaces
  * {@see StartSession} with this middleware. If the route's middleware includes a
@@ -148,15 +147,15 @@ readonly class StartLazySession
             }, ...$parameters);
 
             // Checked on the final response, in case a host `StartSession` subclass adds the token to it.
-            $token = $this->findToken($response, $session->token());
+            $tokenLocation = $this->findTokenLocation($response, $session->token());
         } finally {
             $session->setHandler($handler);
         }
 
-        if ($regenerated || $keys !== [] || $token !== null) {
+        if ($regenerated || $keys !== [] || $tokenLocation !== null) {
             $bufferedHandler->flush();
             $this->preventCaching($response);
-            $this->report($request, $response, $keys, $regenerated, $token);
+            $this->report($request, $response, $keys, $regenerated, $tokenLocation);
         } elseif ($response instanceof Response) {
             // `StartSession` and `PreventRequestForgery` add these to every response.
             $response->headers->removeCookie($config['cookie'], $config['path'], $config['domain']);
@@ -169,17 +168,13 @@ readonly class StartLazySession
     /**
      * Keeps browsers and shared caches from storing a response that saves or refreshes the session.
      *
-     * The headers are set on the response, for routes without {@see SetHeaders}, and queued, so they also replace
-     * cache headers the page queued for {@see SetHeaders} to apply afterward.
+     * Set on the response rather than queued with {@see ResponseHeaders}, as {@see SetHeaders} has already
+     * applied the queue, and so routes without {@see SetHeaders} are covered too.
      */
     private function preventCaching(mixed $response): mixed
     {
-        ResponseHeaders::noCache();
-
         if ($response instanceof Response) {
-            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-            $response->headers->set('Pragma', 'no-cache');
-            $response->headers->set('Expires', '0');
+            $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
         }
 
         return $response;
@@ -255,7 +250,10 @@ readonly class StartLazySession
      * Returns where the session's CSRF token was put in the response, which only works if the session is saved:
      * `body`, `header`, or `cookie`. Streamed responses are assumed to contain it in their body, as it can't be checked.
      */
-    private function findToken(mixed $response, mixed $token): ?string
+    /**
+     * @return 'body'|'header'|'cookie'|null
+     */
+    private function findTokenLocation(mixed $response, mixed $token): ?string
     {
         if (! $response instanceof Response || ! is_string($token)) {
             return null;
@@ -297,22 +295,18 @@ readonly class StartLazySession
      *
      * @param  list<string>  $keys
      */
-    private function report(Request $request, mixed $response, array $keys, bool $regenerated, ?string $token): void
+    private function report(Request $request, mixed $response, array $keys, bool $regenerated, ?string $tokenLocation): void
     {
-        event(new LazySessionSaved($request, $keys, $regenerated, $token));
+        event(new LazySessionSaved($request, $keys, $regenerated, $tokenLocation));
 
-        $reason = implode('; ', array_filter([
+        if (! $response instanceof Response || ! app()->hasDebugModeEnabled()) {
+            return;
+        }
+
+        $response->headers->set('X-Craft-Session-Saved', implode('; ', array_filter([
             $keys !== [] ? 'keys='.implode(',', $keys) : null,
             $regenerated ? 'regenerated' : null,
-            $token !== null ? "token=$token" : null,
-        ]));
-
-        Log::debug("Saved a session for a request without one ($reason).", [
-            'url' => $request->fullUrl(),
-        ]);
-
-        if ($response instanceof Response && app()->hasDebugModeEnabled()) {
-            $response->headers->set('X-Craft-Session-Saved', $reason);
-        }
+            $tokenLocation !== null ? "token=$tokenLocation" : null,
+        ])));
     }
 }

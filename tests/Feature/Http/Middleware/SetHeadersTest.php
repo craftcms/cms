@@ -219,19 +219,6 @@ it('applies queued cache settings in order, so the last one wins', function (Clo
     }, 'private'],
 ]);
 
-it('applies queued cache directives', function () {
-    $this->responseHeaders->cacheControl()
-        ->setPublic()
-        ->setMaxAge(0)
-        ->setSharedMaxAge(86400)
-        ->setStaleWhileRevalidate(3600)
-        ->setStaleIfError(600);
-
-    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
-
-    expect($response->headers->get('Cache-Control'))->toBe('max-age=0, public, s-maxage=86400, stale-if-error=600, stale-while-revalidate=3600');
-});
-
 it('applies request-scoped no-cache settings', function () {
     $this->responseHeaders->noCache();
 

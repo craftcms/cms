@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\SessionTimeout;
 use CraftCms\Cms\Http\Events\LazySessionSaved;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Tests\TestClasses\Http\HostStartSession;
 use CraftCms\Cms\Tests\TestClasses\Http\HostTokenStartSession;
 use CraftCms\Cms\User\Elements\User;
@@ -166,15 +167,29 @@ it('saves the session for streamed responses', function () {
         ->assertCookie(config('session.cookie'));
 });
 
-it('prevents caching responses that save or refresh the session', function () {
-    expect(get('/cached-reads')->assertCookieMissing(config('session.cookie'))->headers->get('Cache-Control'))
-        ->toBe('max-age=3600, public');
+it('sets cache headers by whether the session is saved', function (string $path, bool $hasSessionCookie, string $cacheControl) {
+    if ($hasSessionCookie) {
+        $this->withCookie(config('session.cookie'), Str::random(40));
+    }
 
-    expect(get('/cached-writes')->assertCookie(config('session.cookie'))->headers->get('Cache-Control'))
-        ->toBe('must-revalidate, no-cache, no-store, private');
+    expect(get($path)->headers->get('Cache-Control'))->toBe($cacheControl);
+})->with([
+    'reads the session' => ['/cached-reads', false, 'max-age=3600, public'],
+    'writes the session' => ['/cached-writes', false, 'must-revalidate, no-cache, no-store, private'],
+    'arrives with a session cookie' => ['/cached-reads', true, 'must-revalidate, no-cache, no-store, private'],
+]);
 
-    expect($this->withCookie(config('session.cookie'), Str::random(40))->get('/cached-reads')->headers->get('Cache-Control'))
-        ->toBe('must-revalidate, no-cache, no-store, private');
+it('saves the session when a queued header contains the CSRF token', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('header-token', function () {
+        ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-CSRF-Token', csrf_token());
+
+        return 'page';
+    });
+
+    $response = get('/header-token')->assertCookie(config('session.cookie'));
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
 });
 
 it('prevents caching responses that save the session on routes without Craft’s middleware', function () {
@@ -195,6 +210,6 @@ it('reports why a lazy session was saved', function () {
     get('/writes')->assertHeader('X-Craft-Session-Saved', 'keys=_flash,notice');
     get('/form')->assertHeader('X-Craft-Session-Saved', 'token=body');
 
-    Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === ['_flash', 'notice'] && $event->token === null);
-    Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === [] && $event->token === 'body');
+    Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === ['_flash', 'notice'] && $event->tokenLocation === null);
+    Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === [] && $event->tokenLocation === 'body');
 });

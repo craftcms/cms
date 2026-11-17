@@ -77,8 +77,6 @@ class RouteServiceProvider extends ServiceProvider
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
-        // Outside the session middleware, so headers it queues, such as for a saved session, are applied.
-        $kernel->addToMiddlewarePriorityBefore(StartSession::class, SetHeaders::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
