@@ -18,6 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
+use craft\i18n\Formatter;
 use craft\models\VolumeFolder;
 use DateTime;
 use Throwable;
@@ -266,9 +267,16 @@ class AssetUploadHandler implements UploadHandlerInterface
         $filename = Assets::prepareAssetName($upload->filename);
         Craft::$app->getAssets()->replaceAssetFile($asset, $this->localCopy($upload), $filename);
 
+        // The same data as the assets/replace-file action
         return [
             'assetId' => $asset->id,
             'filename' => $asset->getFilename(),
+            'formattedSize' => $asset->getFormattedSize(0),
+            'formattedSizeInBytes' => $asset->getFormattedSizeInBytes(false),
+            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($asset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT, true),
+            'dimensions' => $asset->getDimensions(),
+            'updatedTimestamp' => $asset->dateUpdated->getTimestamp(),
+            'resultingUrl' => $asset->getUrl(),
         ];
     }
 

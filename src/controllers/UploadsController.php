@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\filters\IpRateLimitIdentity;
+use craft\helpers\UrlHelper;
 use craft\uploads\AssetUploadHandler;
 use craft\web\Controller;
 use yii\filters\RateLimiter;
@@ -93,6 +94,10 @@ class UploadsController extends Controller
                     'headers' => (object)$upload['headers'],
                 ],
             ],
+            'urls' => [
+                'complete' => UrlHelper::actionUrl('uploads/complete', ['id' => $upload['id']]),
+                'cancel' => UrlHelper::actionUrl('uploads/cancel', ['id' => $upload['id']]),
+            ],
             'expiresAt' => $upload['expiresAt'],
         ]);
     }
@@ -134,7 +139,7 @@ class UploadsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        return $this->asJson(Craft::$app->getUploads()->complete($this->request->getRequiredBodyParam('id')));
+        return $this->asJson(Craft::$app->getUploads()->complete($this->request->getRequiredParam('id')));
     }
 
     /**
@@ -145,7 +150,7 @@ class UploadsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        Craft::$app->getUploads()->cancel($this->request->getRequiredBodyParam('id'));
+        Craft::$app->getUploads()->cancel($this->request->getRequiredParam('id'));
 
         return $this->asSuccess();
     }
