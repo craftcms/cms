@@ -1034,6 +1034,12 @@ class ExtensionTest extends TestCase
             {
                 return 'SECRET_GETTER';
             }
+
+            // Reads $priv without exposing it, so static analysis keeps the property
+            public function privLength(): int
+            {
+                return strlen($this->priv);
+            }
         };
         $secrets = ['pub' => 'SECRET_PUB', 'prot' => 'SECRET_PROT', 'priv' => 'SECRET_PRIV', 'secret' => 'SECRET_GETTER'];
         $inputs = [$obj, [$obj], ['k' => $obj], ['data' => ['k' => $obj]]];
@@ -1062,11 +1068,10 @@ class ExtensionTest extends TestCase
             return null;
         };
         $fingerprint = function(mixed $value) use (&$fingerprint): string {
-            return match (true) {
-                is_object($value) => 'object#' . spl_object_id($value),
-                is_array($value) => '[' . implode(',', array_map(fn($k) => "$k:" . $fingerprint($value[$k]), array_keys($value))) . ']',
-                default => var_export($value, true),
-            };
+            if (is_array($value)) {
+                return '[' . implode(',', array_map(fn($k) => "$k:" . $fingerprint($value[$k]), array_keys($value))) . ']';
+            }
+            return is_object($value) ? 'object#' . spl_object_id($value) : var_export($value, true);
         };
 
         $failures = [];
