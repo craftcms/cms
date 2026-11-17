@@ -28,7 +28,8 @@ readonly class LazySessionSaved
          */
         public bool $regenerated,
         /**
-         * Where the session’s CSRF token was found in the response, if it was.
+         * Where the session’s CSRF token was found in the response, if it was. Streamed responses are reported as
+         * `body`, as their content can’t be checked.
          *
          * @var 'body'|'header'|'cookie'|null
          */

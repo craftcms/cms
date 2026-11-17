@@ -14,7 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
  * such as templates.
  *
  * Everything queued is applied in order by {@see SetHeaders}, so when two calls set the same header, the
- * last one wins.
+ * last one wins. Directives set with {@see cacheControl()} combine with earlier ones instead, so they don’t
+ * override an earlier {@see noCache()}.
  *
  * @since 6.0.0
  */
