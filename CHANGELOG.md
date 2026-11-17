@@ -84,6 +84,7 @@
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
+- Fixed a bug where the `siblingOf`, `prevSiblingOf`, and `nextSiblingOf` element query params, and elements’ `getPrevSibling()` and `getNextSibling()` methods, didn’t return the siblings of elements that have a parent. ([#20748](https://github.com/craftcms/cms/issues/20748))
 - Fixed a bug where control panel screens, such as section settings, failed to load when the control panel was served over plain HTTP from a hostname other than `localhost`. ([#20680](https://github.com/craftcms/cms/issues/20680), [#20695](https://github.com/craftcms/cms/pull/20695))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes on legacy control panel screens. ([#20613](https://github.com/craftcms/cms/issues/20613))
