@@ -34,7 +34,11 @@ readonly class CheckRequirements
             return $next($request);
         }
 
-        if (Cache::get('basePath') === base_path()) {
+        // Keyed by base path, so a moved install is checked again, and installs at different paths that share a cache,
+        // such as during a rolling deploy, don't overwrite each other's result
+        $cacheKey = sprintf('requirementsChecked:%s', md5(base_path()));
+
+        if (Cache::has($cacheKey)) {
             return $next($request);
         }
 
@@ -43,8 +47,8 @@ readonly class CheckRequirements
         $reqCheck->checkCraft();
 
         if ($reqCheck->result['summary']['errors'] === 0) {
-            // Cache the base path. A `cacheDuration` of 0 caches it indefinitely.
-            Cache::put('basePath', base_path(), $this->generalConfig->cacheDuration ?: null);
+            // A `cacheDuration` of 0 caches it indefinitely
+            Cache::put($cacheKey, true, $this->generalConfig->cacheDuration ?: null);
 
             return $next($request);
         }
