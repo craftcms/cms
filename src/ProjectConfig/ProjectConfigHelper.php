@@ -11,7 +11,7 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
+use CraftCms\DependencyAwareCache\Dependency\AnyDependency;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Log;
@@ -567,7 +567,7 @@ class ProjectConfigHelper
             }
 
             return Diff::diff($currentConfig, $pendingConfig);
-        }, new AllDependencies([
+        }, new AnyDependency([
             $projectConfig->getCacheDependency(),
             new CallbackDependency(fn (): string => md5(JsonHelper::encode(app(ProjectConfig::class)->get(null, true)))),
         ]));

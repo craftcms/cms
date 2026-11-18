@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Queue\Listeners\StoreCompleted;
 use CraftCms\Cms\Queue\Listeners\StoreFailed;
 use CraftCms\Cms\Queue\Listeners\StoreJob;
@@ -13,6 +14,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\Events\JobRetryRequested;
+use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -50,5 +52,8 @@ class QueueServiceProvider extends ServiceProvider
         Event::listen(JobProcessing::class, StoreReserved::class);
         Event::listen(JobProcessed::class, StoreCompleted::class);
         Event::listen(JobFailed::class, StoreFailed::class);
+
+        // Queue workers are long-lived, so they load project config again before each job, like Octane does per request
+        Event::listen(Looping::class, fn () => $this->app->make(ProjectConfig::class)->reset());
     }
 }

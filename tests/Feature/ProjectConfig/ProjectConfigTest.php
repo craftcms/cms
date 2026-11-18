@@ -14,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
@@ -22,6 +23,8 @@ use Illuminate\Cache\Events\RetrievingManyKeys;
 use Illuminate\Cache\Events\WritingKey;
 use Illuminate\Cache\Events\WritingManyKeys;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Queue\Events\Looping;
+use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -558,3 +561,51 @@ it('starts each config application with fresh path claims', function (bool $fail
     expect($projectConfig->claimPath(ProjectConfig::PATH_FIELDS, true))->toBeTrue();
     expect(new ProjectConfig(Cms::config())->claimPath(ProjectConfig::PATH_FIELDS, true))->toBeTrue();
 })->with([false, true]);
+
+it('refreshes the cached diff when only the YAML changes', function () {
+    Cache::forget(ProjectConfig::DIFF_CACHE_KEY);
+    $projectConfig = getFakeProjectConfig(['f' => 'stored'], ['f' => 'firstYaml']);
+
+    expect(ProjectConfigHelper::diff())->toContain('firstYaml');
+
+    new ReflectionClass($projectConfig)->getProperty('external')->setValue($projectConfig, ['f' => 'secondYaml']);
+
+    expect(ProjectConfigHelper::diff())->toContain('secondYaml')->not->toContain('firstYaml');
+});
+
+it('writes the rebuilt cache in batches of at most 25 entries', function () {
+    $rows = [];
+
+    for ($i = 0; $i < 30; $i++) {
+        $rows[] = ['path' => "batchRoot$i.value", 'value' => '"x"'];
+    }
+
+    DB::table(Table::PROJECTCONFIG)->insert($rows);
+    Info::fetch()->update(['configVersion' => Str::random(12)]);
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->cacheDuration = 3600;
+    $projectConfig->reset();
+    $batches = [];
+    Event::listen(WritingManyKeys::class, function (WritingManyKeys $event) use (&$batches) {
+        $batches[] = count($event->keys);
+    });
+
+    expect($projectConfig->get('batchRoot29.value'))->toBe('x')
+        ->and(array_sum($batches))->toBeGreaterThan(30)
+        ->and(max($batches))->toBeLessThanOrEqual(25);
+});
+
+it('loads changed project config before each queued job', function () {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->upsert([['path' => 'system.name', 'value' => '"Before"']], ['path'], ['value']);
+    Info::fetch()->update(['configVersion' => Str::random(12)]);
+    $projectConfig->reset();
+    expect($projectConfig->get('system.name'))->toBe('Before');
+
+    // Another process changes the config while the worker waits
+    DB::table(Table::PROJECTCONFIG)->where('path', 'system.name')->update(['value' => '"After"']);
+    Info::fetch()->update(['configVersion' => Str::random(12)]);
+    event(new Looping('database', 'default', new WorkerOptions));
+
+    expect($projectConfig->get('system.name'))->toBe('After');
+});

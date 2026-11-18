@@ -234,7 +234,10 @@ class ConfigStorage
                     'roots' => array_map(strval(...), array_keys($data)),
                     'boot' => $boot,
                 ];
-                Cache::putMany($entries, $cacheDuration);
+                // DynamoDB writes at most 25 items per batch
+                foreach (array_chunk($entries, 25, true) as $chunk) {
+                    Cache::putMany($chunk, $cacheDuration);
+                }
             }
         } finally {
             $lock->release();
