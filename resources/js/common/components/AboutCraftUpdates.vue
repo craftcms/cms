@@ -225,9 +225,10 @@
         class="about-craft-row__link about-craft-updates__go"
         >{{ t('Go to Updates') }}</craft-button
       >
-      <!-- Spins in place while it checks, keeping its size and focus. Once
-           there are updates, they're the next step, so it goes, handing its
-           focus to their link. -->
+      <!-- Spins in place while it checks again, keeping its size and focus.
+           Before there's a result, the row's icon spins instead, so there's
+           one spinner. Once there are updates, they're the next step, so it
+           goes, handing its focus to their link. -->
       <craft-button
         v-else
         ref="checkButton"
@@ -237,7 +238,7 @@
         flush
         class="about-craft-updates__check"
         :aria-label="t('Check for updates')"
-        .loading="checking"
+        .loading="checking && known"
         @click="check()"
       ></craft-button>
     </template>

@@ -125,6 +125,8 @@ it('checks when shown, if the updates weren’t fetched lately', async () => {
 
   // With no result yet, it doesn't claim to be up to date
   expect(row()).toContain('Checking for updates…');
+  expect(host.querySelectorAll('craft-spinner')).toHaveLength(1);
+  expect(checkButton().loading).toBe(false);
   expect(state.post.mock.lastCall![1]).toEqual({forceRefresh: false});
 
   respond({data: {total: 2, dateFetched: '2026-11-16T12:00:00Z'}});
