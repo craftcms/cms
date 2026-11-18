@@ -27,6 +27,11 @@ describe('attributes', function () {
         expect(Button::make()->inherit()->toHtml())->toContain('inherit');
     });
 
+    it('renders the tint flag when set', function () {
+        expect(Button::make()->toHtml())->not->toContain('tint');
+        expect(Button::make()->tint()->toHtml())->toContain('tint');
+    });
+
     it('always renders an explicit type', function () {
         expect(Button::make()->toHtml())->toContain('type="button"');
 
