@@ -506,7 +506,7 @@ class OAuth extends Component
             $path = Craft::getAlias($value, false);
             if ($path === false || !is_readable(preg_replace('~^file://~', '', $path))) {
                 $path = $path ?: $value;
-                throw new InvalidConfigException("The OAuth $type key file “{$path}” doesn’t exist or isn’t readable. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.");
+                throw new InvalidConfigException("The OAuth $type key file “{$path}” doesn’t exist or isn’t readable. Run `" . App::craftCommand('oauth/generate-keys') . "`, or set the `{$type}Key` OAuth config setting.");
             }
             $value = $path;
         }
@@ -514,7 +514,7 @@ class OAuth extends Component
         try {
             return new CryptKey($value);
         } catch (LogicException $e) {
-            throw new InvalidConfigException("The OAuth $type key isn’t valid: {$e->getMessage()}. Run `php craft oauth/generate-keys`, or set the `{$type}Key` OAuth config setting.", previous: $e);
+            throw new InvalidConfigException("The OAuth $type key isn’t valid: {$e->getMessage()}. Run `" . App::craftCommand('oauth/generate-keys') . "`, or set the `{$type}Key` OAuth config setting.", previous: $e);
         }
     }
 

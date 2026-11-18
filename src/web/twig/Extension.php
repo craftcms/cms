@@ -1664,6 +1664,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('collect', [$this, 'collectFunction']),
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('configure', [Craft::class, 'configure']),
+            new TwigFunction('craftCommand', [App::class, 'craftCommand']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('create', [$this, 'createFunction']),
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),

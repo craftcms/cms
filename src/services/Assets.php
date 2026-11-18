@@ -303,18 +303,42 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
-        $descendantFolders = $this->getAllDescendantFolders($folder);
+        $oldFolderPath = $folder->path;
+        $volume->renameDirectory(rtrim($oldFolderPath, '/'), $newName);
 
-        foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^' . $folder->path . '#', $newFolderPath, $descendantFolder->path);
-            $this->storeFolderRecord($descendantFolder);
-        }
-
-        // Now change the affected folder
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
+
+        // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder's
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            $childFolders = $this->findFolders(['parentId' => $parentIds]);
+            $parentIds = array_keys($childFolders);
+
+            foreach ($childFolders as $childFolder) {
+                $oldChildPath = $childFolder->path;
+                // Take the prefix by path segment, since case variants can differ in length
+                $oldPrefix = implode('/', array_slice(explode('/', $oldChildPath), 0, substr_count($oldFolderPath, '/'))) . '/';
+                if (mb_convert_case($oldPrefix, MB_CASE_FOLD) !== mb_convert_case($oldFolderPath, MB_CASE_FOLD)) {
+                    continue;
+                }
+
+                // Keep the rest of the path as stored, so it still matches the directories below the renamed one
+                $newChildPath = $newFolderPath . substr($oldChildPath, strlen($oldPrefix));
+
+                // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
+                if (
+                    $oldPrefix !== $oldFolderPath &&
+                    (!$volume->directoryExists(rtrim($newChildPath, '/')) || $volume->directoryExists(rtrim($oldChildPath, '/')))
+                ) {
+                    continue;
+                }
+
+                $childFolder->path = $newChildPath;
+                $this->storeFolderRecord($childFolder);
+            }
+        }
 
         return $newName;
     }

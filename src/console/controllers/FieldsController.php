@@ -14,6 +14,7 @@ use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\InvalidFieldException;
 use craft\fields\BaseRelationField;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -191,19 +192,19 @@ EOD,
             $this->mergeFields($persistingField, $field, $layoutsByField[$field->handle], $migrationPaths);
         }
 
-        $this->success(<<<EOD
+        $this->success(sprintf(<<<EOD
 Fields merged. Commit the new content migrations and your project config changes,
-and run `craft up` on other environments for the changes to take effect.
-EOD);
+and run `%s` on other environments for the changes to take effect.
+EOD, App::craftCommand('up')));
 
         if ($mergingRelationFields) {
             $this->warning(sprintf(<<<MD
 Be sure to run this command on other environments **before** deploying these changes:
 
 ```
-php craft resave/all --with-fields=%s
+%s
 ```
-MD, $fields->keys()->join(',')));
+MD, App::craftCommand(sprintf('resave/all --with-fields=%s', $fields->keys()->join(',')))));
         }
 
         return ExitCode::OK;
@@ -345,19 +346,19 @@ MD, $fields->keys()->join(',')));
         }
 
         if (!empty($migrationPaths)) {
-            $this->success(<<<EOD
+            $this->success(sprintf(<<<EOD
 Fields merged. Commit the new content migrations and your project config changes,
-and run `craft up` on other environments for the changes to take effect.
-EOD);
+and run `%s` on other environments for the changes to take effect.
+EOD, App::craftCommand('up')));
 
             if (!empty($relationFieldHandles)) {
                 $this->warning(sprintf(<<<MD
 Be sure to run this command on other environments **before** deploying these changes:
 
 ```
-php craft resave/all --with-fields=%s
+%s
 ```
-MD, implode(',', $relationFieldHandles)));
+MD, App::craftCommand(sprintf('resave/all --with-fields=%s', implode(',', $relationFieldHandles)))));
             }
         } else {
             $this->failure('No fields merged.');

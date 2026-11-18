@@ -1,2 +1,5 @@
+{% if currentUser.can('performUpdates') and craft.app.composer.getUnavailableReason(true) %}
+  <p class="warning">{{ craft.app.composer.getUnavailableReason(true) }}</p>
+{% endif %}
 <div id="graphic" class="spinner big"></div>
 <div id="status">{{ "Checking for updates…"|t('app') }}</div>
