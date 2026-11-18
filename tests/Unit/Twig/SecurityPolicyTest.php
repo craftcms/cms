@@ -200,7 +200,14 @@ it('doesn’t let allowed filters and functions expose object data the sandbox d
                 continue;
             }
 
-            $call = function (mixed ...$args) use ($callable, $twig): mixed {
+            $fn = $callable->getCallable();
+
+            if (is_array($fn) && is_string($fn[0]) && ! new ReflectionMethod($fn[0], $fn[1])->isStatic()) {
+                // Twig calls non-static callbacks on the class’s runtime, e.g. EscaperRuntime::escape()
+                $fn = [$twig->getRuntime($fn[0]), $fn[1]];
+            }
+
+            $call = function (mixed ...$args) use ($callable, $fn, $twig): mixed {
                 $prefix = array_filter([
                     $callable->needsCharset() ? ['UTF-8'] : null,
                     $callable->needsEnvironment() ? [$twig] : null,
@@ -209,7 +216,7 @@ it('doesn’t let allowed filters and functions expose object data the sandbox d
                 ]);
 
                 try {
-                    return ($callable->getCallable())(...array_merge(...$prefix), ...$args);
+                    return $fn(...array_merge(...$prefix), ...$args);
                 } catch (Throwable) {
                     return 'error';
                 }

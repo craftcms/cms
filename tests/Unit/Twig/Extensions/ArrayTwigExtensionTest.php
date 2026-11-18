@@ -230,6 +230,7 @@ describe('ArrayTwigExtension', function () {
             'group with an arrow function returning an object that can’t be a string' => ['{{ [1]|group(i => stringable)|keys|first }}'],
             'column with an index that can’t be a string' => ['{{ [1]|column(v => 1, v => stringable)|keys|first }}'],
             'multisort with a sort key that can’t be a string' => ['{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}'],
+            'multisort with an array sort key containing an object that can’t be a string' => ['{{ [1, 2]|multisort(v => [stringable])|length }}'],
         ])->throws(TwigError::class);
 
         // group used to render property names as object templates in the site template mode’s environment

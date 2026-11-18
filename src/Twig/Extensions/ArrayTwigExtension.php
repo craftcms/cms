@@ -415,7 +415,8 @@ class ArrayTwigExtension extends AbstractExtension
         return function (mixed ...$args) use ($read, $sandbox): mixed {
             $value = $read(...$args);
 
-            return is_object($value) ? $sandbox->ensureToStringAllowed($value) : $value;
+            // Comparisons also call __toString() on objects nested in arrays
+            return $sandbox->ensureToStringAllowed($value);
         };
     }
 
