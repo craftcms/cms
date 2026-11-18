@@ -210,6 +210,9 @@ it('reports a Yii cache component until a Laravel cache store is configured', fu
         Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\caching\\FileCache', 'cachePath' => '/mnt/shared/cache']]]);
         $withSharedFileCache = $finding();
 
+        Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\caching\\FileCache', 'cachePath' => '@runtime/cache']]]);
+        $withDefaultPathFileCache = $finding();
+
         Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\redis\\Cache']]]);
         file_put_contents("$configPath/cache.php", '<?php return [];');
         $withConfigFile = $finding();
@@ -224,6 +227,7 @@ it('reports a Yii cache component until a Laravel cache store is configured', fu
         ->and($withYiiFileCache)->toBeNull()
         ->and($withWebCache?->detail)->toBe('`yii\\caching\\MemCache`')
         ->and($withSharedFileCache?->detail)->toBe('`yii\\caching\\FileCache`')
+        ->and($withDefaultPathFileCache)->toBeNull()
         ->and($withConfigFile)->toBeNull();
 });
 

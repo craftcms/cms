@@ -236,7 +236,7 @@ class LooseEndsChecks
                 $cacheClass = is_string($cache) ? $cache : (is_array($cache) ? ($cache['class'] ?? $cache['__class'] ?? null) : null);
                 $isDefaultFileCache = is_string($cacheClass) &&
                     is_a($cacheClass, FileCache::class, true) &&
-                    !isset($cache['cachePath']);
+                    in_array($cache['cachePath'] ?? '@runtime/cache', ['@runtime/cache', '@runtime/cache/'], true);
 
                 if ($cache !== null && !$isDefaultFileCache) {
                     [$yiiCache, $class] = [$cache, $cacheClass];
