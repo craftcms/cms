@@ -108,12 +108,12 @@
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
-- Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819))
-- Fixed a bug where the web installer showed “[object Object]” rather than the error message when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819))
-- Fixed a bug where the web installer’s “Language” options didn’t include the languages’ names. ([#20818](https://github.com/craftcms/cms/issues/20818))
-- Fixed a bug where the web installer’s fields extended past the right edge of the installer, and later steps kept the height of the license screen. ([#20817](https://github.com/craftcms/cms/issues/20817))
-- Fixed an error that occurred when installing Craft from the web installer with a blank Base URL.
-- Fixed a bug where the web installer’s primary buttons were gray.
+- Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed a bug where the web installer showed “[object Object]” rather than the error message when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed a bug where the web installer’s “Language” options didn’t include the languages’ names. ([#20818](https://github.com/craftcms/cms/issues/20818), [#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed a bug where the web installer’s fields extended past the right edge of the installer, and later steps kept the height of the license screen. ([#20817](https://github.com/craftcms/cms/issues/20817), [#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed an error that occurred when installing Craft from the web installer with a blank Base URL. ([#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed a bug where the web installer’s primary buttons were gray. ([#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed an error that occurred when batched queue jobs, such as resaving or propagating elements, queued their next batch on non-sync queues. ([#20791](https://github.com/craftcms/cms/issues/20791), [#20812](https://github.com/craftcms/cms/pull/20812))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
