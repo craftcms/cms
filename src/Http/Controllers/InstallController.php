@@ -238,7 +238,7 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
+        if ($siteUrl && ! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
                 $siteUrl = '$APP_URL';
