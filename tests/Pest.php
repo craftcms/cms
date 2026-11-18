@@ -231,21 +231,36 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
 }
 
 /**
- * Asserts axe finds no serious or critical accessibility issues on the page. Links in running text are told apart
- * from it by color alone unless the user turns on the “Underline links” preference, so axe's `link-in-text-block`
- * rule is off, as it is in Storybook. Axe takes longer than the usual assertion timeout on large pages, such as
- * project config with the workbench content, so it gets 30 seconds.
+ * Asserts axe finds no accessibility issues on the page, down to minor ones.
+ *
+ * Axe's WCAG rules all run. Of its best-practice rules, only those that check a requirement in
+ * `.github/instructions/a11y.instructions.md` run: heading order, content inside landmarks, one main landmark, an
+ * `h1`, and a working skip link. The others are advice that the control panel's layout doesn't always follow on
+ * purpose, such as a details column nested in an editor pane.
+ *
+ * Links in running text are told apart from it by color alone unless the user turns on the “Underline links”
+ * preference, so axe's `link-in-text-block` rule is off, as it is in Storybook. Axe takes longer than the usual
+ * assertion timeout on large pages, such as project config with the workbench content, so it gets 30 seconds.
  */
 function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
 {
     $page->script((string) file_get_contents(InstalledVersions::getInstallPath('pestphp/pest-plugin-browser').'/resources/js/axe.min.js'));
-    $page->script("axe.configure({rules: [{id: 'link-in-text-block', enabled: false}]})");
+    $page->script(<<<'JS'
+        (bestPractices => axe.configure({
+            rules: [
+                ...axe.getRules(['best-practice'])
+                    .filter(rule => ! bestPractices.includes(rule.ruleId))
+                    .map(rule => ({id: rule.ruleId, enabled: false})),
+                {id: 'link-in-text-block', enabled: false},
+            ],
+        }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'])
+        JS);
 
     $timeout = Playwright::timeout();
     Playwright::setTimeout(30_000);
 
     try {
-        return $page->assertNoAccessibilityIssues();
+        return $page->assertNoAccessibilityIssues(3);
     } finally {
         Playwright::setTimeout($timeout);
     }
