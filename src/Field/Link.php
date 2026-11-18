@@ -7,9 +7,12 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -25,6 +28,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -33,17 +37,28 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\Type;
 use Override;
+use ReflectionMethod;
+use WeakReference;
 
 use function CraftCms\Cms\t;
 
 /**
  * Link represents a Link field.
  *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
+ *
  * @since 6.0.0
  */
-class Link extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
+class Link extends Field implements EagerLoadingFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
+
+    /**
+     * @var array<class-string<BaseLinkType>, bool> Whether each link type’s elements can be eager-loaded
+     *
+     * @see canEagerLoad()
+     */
+    private static array $eagerLoadableTypes = [];
 
     #[Override]
     public static function displayName(): string
@@ -260,7 +275,145 @@ class Link extends Field implements InlineEditableFieldInterface, InputSchemaFie
             return $resolver->localize($value, $element);
         }
 
-        return $resolver->normalize($value);
+        $link = $resolver->normalize($value);
+
+        if ($link !== null && $link !== $value && $element !== null && isset($this->id, $this->handle) && self::canEagerLoad($link)) {
+            $this->setEagerLoader($link, $element, $this->id, $this->handle);
+        }
+
+        return $link;
+    }
+
+    /**
+     * Fetches the link’s element together with the elements this field links to on the other elements from the same
+     * query, the first time it’s needed.
+     */
+    private function setEagerLoader(LinkData $link, ElementInterface $element, int $fieldId, string $handle): void
+    {
+        $owner = WeakReference::create($element);
+
+        $link->setEagerLoader(static function () use ($owner, $fieldId, $handle): void {
+            $element = $owner->get();
+
+            if (! isset($element->elementQueryResult)) {
+                return;
+            }
+
+            $valuesByType = [];
+            foreach ($element->elementQueryResult as $sibling) {
+                if ($sibling->getFieldLayout()?->getFieldByHandle($handle)?->id !== $fieldId) {
+                    continue;
+                }
+
+                $link = $sibling->getFieldValue($handle);
+
+                if ($link instanceof LinkData && self::canEagerLoad($link)) {
+                    $valuesByType[self::types()[$link->getType()]][] = $link->serialize()['value'] ?? '';
+                }
+            }
+
+            foreach ($valuesByType as $type => $values) {
+                /** @var class-string<BaseElementLinkType> $type */
+                $type::preloadElements($values);
+            }
+        });
+    }
+
+    /**
+     * @param  list<ElementInterface>  $sourceElements
+     * @return list<EagerLoadingMap>|false
+     */
+    public function getEagerLoadingMap(array $sourceElements): array|false
+    {
+        $valuesByType = [];
+        foreach ($sourceElements as $sourceElement) {
+            $link = $sourceElement->getFieldValue((string) $this->handle);
+
+            if ($link instanceof LinkData && self::canEagerLoad($link)) {
+                $valuesByType[self::types()[$link->getType()]][$sourceElement->id] = $link->serialize()['value'] ?? '';
+            }
+        }
+
+        $maps = [];
+        foreach ($valuesByType as $type => $values) {
+            /** @var class-string<BaseElementLinkType> $type */
+            array_push($maps, ...$type::eagerLoadingMaps($values));
+        }
+
+        return $maps ?: false;
+    }
+
+    /**
+     * Sets eager-loaded elements on the Link field values they were eager-loaded for, rather than on the elements,
+     * so the field values remain links.
+     *
+     * Plans that could load other elements than the links resolve to are discarded, see loadsLinkedElement().
+     *
+     * @internal
+     */
+    public static function handleSetEagerLoadedElements(SetEagerLoadedElements $event): void
+    {
+        $handle = Str::after((string) $event->plan->handle, ':');
+
+        if (! $event->element->getFieldLayout()?->getFieldByHandle($handle) instanceof self) {
+            return;
+        }
+
+        $event->handled = true;
+
+        if ($event->elements === []) {
+            return;
+        }
+
+        $link = $event->element->getFieldValue($handle);
+
+        if ($link instanceof LinkData && self::loadsLinkedElement($event->plan, $link)) {
+            $link->setEagerLoadedElement($event->elements[0]);
+        }
+    }
+
+    /**
+     * Returns whether the plan loads the element the link resolves to.
+     *
+     * Plans with an alias, extra criteria or a query callback could load other elements. Plans limited to some sites,
+     * such as GraphQL’s, only keep links to a specific site, as the sites could change which site a link without one
+     * resolves to.
+     */
+    private static function loadsLinkedElement(EagerLoadPlan $plan, LinkData $link): bool
+    {
+        if (
+            $plan->alias !== $plan->handle ||
+            $plan->configureQuery !== null ||
+            array_diff(array_keys($plan->criteria), ['status', 'drafts', 'revisions', 'withTransforms']) !== []
+        ) {
+            return false;
+        }
+
+        if ($plan->siteIds === null) {
+            return true;
+        }
+
+        $type = self::types()[$link->getType()] ?? null;
+
+        return is_subclass_of($type, BaseElementLinkType::class) && $type::referencesSite($link->serialize()['value'] ?? '');
+    }
+
+    /**
+     * Returns whether the link’s element can be eager-loaded, which requires an element link type that fetches
+     * elements the default way.
+     */
+    private static function canEagerLoad(LinkData $link): bool
+    {
+        $type = self::types()[$link->getType()] ?? null;
+
+        if ($type === null) {
+            return false;
+        }
+
+        return self::$eagerLoadableTypes[$type] ??= is_subclass_of($type, BaseElementLinkType::class) &&
+            new ReflectionMethod($type, 'element')->class === BaseElementLinkType::class &&
+            new ReflectionMethod($type, 'elementQuery')->class === BaseElementLinkType::class &&
+            new ReflectionMethod($type, 'referencedElementsQuery')->class === BaseElementLinkType::class;
     }
 
     #[Override]

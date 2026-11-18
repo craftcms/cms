@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Field\Commands\DeleteFieldsCommand;
 use CraftCms\Cms\Field\Commands\FieldsAutoMergeCommand;
 use CraftCms\Cms\Field\Commands\FieldsMergeCommand;
@@ -27,6 +28,7 @@ class FieldsServiceProvider extends ServiceProvider
         ]);
 
         Event::subscribe(FieldReferenceEventSubscriber::class);
+        Event::listen(SetEagerLoadedElements::class, Link::handleSetEagerLoadedElements(...));
 
         $this->registerIdeHelperListeners($projectConfig);
     }
