@@ -25,7 +25,6 @@
       type="button"
       size="small"
       variant="plain"
-      tint
     >
       <span class="about-craft-trigger__content">
         <EditionBadge :edition="info.edition" />
