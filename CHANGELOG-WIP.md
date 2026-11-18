@@ -186,7 +186,7 @@
 - Relational fields now have a “Thumb Size” setting, like element index View menus, with “Small”, “Medium”, and “Large” options for the List and Inline list view modes, plus “XL” and “2XL” for the Thumbs view mode. ([#20257](https://github.com/craftcms/cms/pull/20257))
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Markdown field layout elements’ content is now translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
-- Link fields can now be eager-loaded, including nested paths such as `linkField.image`. Without eager-loading, the linked elements of all elements from the same query are now fetched together the first time one is needed. ([#PR_NUMBER](https://github.com/craftcms/cms/pull/PR_NUMBER))
+- Link fields can now be eager-loaded, including nested paths such as `linkField.image`. Without eager-loading, the linked elements of all elements from the same query are now fetched together the first time one is needed. ([#20841](https://github.com/craftcms/cms/pull/20841))
 
 ### Mail
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
