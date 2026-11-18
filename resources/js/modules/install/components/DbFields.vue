@@ -75,7 +75,6 @@
         name="port"
         id="db-port"
         v-model="port"
-        size="7"
         :placeholder="currentDefaults.port ?? undefined"
         :error="errors?.port"
       />
@@ -132,7 +131,6 @@
         id="db-prefix"
         v-model="prefix"
         maxlength="5"
-        size="7"
         :error="errors?.prefix"
       />
     </div>

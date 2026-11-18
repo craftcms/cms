@@ -51,7 +51,7 @@
       driver: DbDriver;
     };
     dbDefaults: Record<DbDriver, DbDefaults>;
-    localeOptions?: Array<{id: string; name: string; selected: boolean}>;
+    localeOptions?: Array<{id: string; value: string; label: string}>;
     licenseHtml?: string;
     defaultSystemName: string;
     defaultSiteUrl: string;
@@ -68,14 +68,6 @@
     goToPrevious,
     isCurrent,
   } = useInstall({showDbScreen: () => props.showDbScreen});
-
-  const siteLocaleOptions = computed(() =>
-    (props.localeOptions ?? []).map((option) => ({
-      id: option.id,
-      label: option.name,
-      value: option.id,
-    }))
-  );
 
   function beginInstall() {
     goTo('license');
@@ -115,6 +107,16 @@
       baseUrl: props.defaultSiteUrl,
       language: props.defaultSiteLanguage,
     },
+  });
+
+  /**
+   * Leaves out the database settings when the database screen was skipped
+   * because the configured connection already works, so the install keeps it.
+   */
+  const installData = computed(() => {
+    const {account, db, site} = formData.data();
+
+    return props.showDbScreen ? {account, db, site} : {account, site};
   });
 
   const modalActive = computed(() => !isCurrent('start'));
@@ -159,7 +161,7 @@
       <craft-button
         type="button"
         @click="beginInstall"
-        variant="accent"
+        variant="primary"
         class="begin-button"
       >
         {{ t('Install Craft CMS') }}
@@ -171,6 +173,7 @@
       :is-active="modalActive"
       :label="t('Install Craft CMS')"
       :overlay="false"
+      :hold-height="false"
       width="2xl"
     >
       <!-- License screen -->
@@ -193,7 +196,7 @@
           <div slot="actions" class="flex justify-center w-full">
             <craft-button
               type="button"
-              variant="accent"
+              variant="primary"
               @click="goTo('account')"
             >
               {{ t('Got it') }}
@@ -204,7 +207,7 @@
 
       <!-- Installing -->
       <template v-else-if="isCurrent('installing')">
-        <InstallingScreen :data="formData" @success="goToNext()" />
+        <InstallingScreen :data="installData" @success="goToNext()" />
       </template>
 
       <!-- Form screens -->
@@ -264,7 +267,7 @@
                   v-model:name="formData.site.name"
                   v-model:base-url="formData.site.baseUrl"
                   v-model:language="formData.site.language"
-                  :locale-options="siteLocaleOptions"
+                  :locale-options="localeOptions ?? []"
                   :errors="errors.site"
                 />
               </Deferred>
@@ -300,7 +303,7 @@
               <craft-button
                 class="justify-self-end"
                 type="submit"
-                variant="accent"
+                variant="primary"
                 .loading="formData.processing"
               >
                 {{ current.submitLabel ?? t('Next') }}
