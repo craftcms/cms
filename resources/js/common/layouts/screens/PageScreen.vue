@@ -381,6 +381,7 @@
 
                         <div
                           id="content-main"
+                          tabindex="-1"
                           class="cp-content__main"
                           :style="contentMainStyle"
                         >

@@ -30,8 +30,11 @@ it('focuses the skip link first', function () {
         ->assertScript('document.activeElement.textContent.trim()', 'Skip to main section');
 });
 
-it('moves focus to the main section from the skip link', function () {
-    visitCp('dashboard')
+it('moves focus to the main section from the skip link', function (string $path, string $target) {
+    visitCp($path)
         ->keys('role=link[name="Skip to main section"]', 'Enter')
-        ->assertScript('document.activeElement.id', 'main');
-});
+        ->assertScript('document.activeElement.id', $target);
+})->with([
+    'without a secondary navigation' => ['dashboard', 'main'],
+    'past the secondary navigation' => ['settings/users', 'content-main'],
+]);
