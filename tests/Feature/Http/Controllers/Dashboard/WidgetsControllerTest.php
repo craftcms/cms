@@ -10,7 +10,9 @@ use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Tests\TestClasses\Dashboard\AdminOnlyWidget;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
@@ -290,6 +292,63 @@ it('rejects adding another instance of a singleton widget', function () {
         ->assertJsonValidationErrorFor('type');
 
     expect(WidgetModel::query()->count())->toBe(1);
+});
+
+it('rejects updating a widget the user can no longer use', function () {
+    app(WidgetTypes::class)->register(AdminOnlyWidget::class);
+    $user = UserModel::factory()->active()->withPermissions(['accessCp'])->create(['hasDashboard' => true]);
+    $widget = WidgetModel::query()->create([
+        'userId' => $user->id,
+        'type' => AdminOnlyWidget::class,
+        'settings' => [],
+        'sortOrder' => 1,
+    ]);
+    actingAs($user->asElement());
+
+    postJson(action([WidgetsController::class, 'update']), ['widgetId' => $widget->id])
+        ->assertForbidden()
+        ->assertDontSee(AdminOnlyWidget::HTML);
+});
+
+it('rejects refreshing settings for a widget type the user can’t select', function (bool $useSavedWidget) {
+    app(WidgetTypes::class)->register(AdminOnlyWidget::class);
+    $user = UserModel::factory()->active()->withPermissions(['accessCp'])->create(['hasDashboard' => true]);
+    actingAs($user->asElement());
+
+    $input = ['namespace' => 'widget-settings'];
+
+    if ($useSavedWidget) {
+        $widget = WidgetModel::query()->create([
+            'userId' => $user->id,
+            'type' => AdminOnlyWidget::class,
+            'settings' => [],
+            'sortOrder' => 1,
+        ]);
+        $input['widgetId'] = $widget->id;
+    } else {
+        $input['type'] = AdminOnlyWidget::class;
+    }
+
+    postJson(action([WidgetsController::class, 'refreshSettings']), $input)
+        ->assertJsonValidationErrorFor('type');
+})->with([
+    'new widget type' => [false],
+    'saved widget' => [true],
+]);
+
+it('refreshes settings for an existing singleton widget', function () {
+    UserModel::query()->whereKey(Auth::id())->update(['hasDashboard' => true]);
+    app(Dashboard::class)->saveWidget(app(Dashboard::class)->createWidget(Updates::class));
+
+    expect(Updates::isSelectable())->toBeFalse();
+
+    postJson(action([WidgetsController::class, 'refreshSettings']), [
+        'type' => Updates::class,
+        'namespace' => 'widget1-settings',
+    ])->assertOk();
+
+    // The availability check doesn’t leak into later selectability checks
+    expect(Updates::isSelectable())->toBeFalse();
 });
 
 it('returns a saved widget’s settings UI with its saved settings', function () {
