@@ -200,7 +200,7 @@ trait QueriesNestedElements
      * | - | -
      * | `'foo'` | in a field with a handle of `foo`.
      * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
-     * | a [[craft\fields\Matrix]] object | in a field represented by the object.
+     * | a [[\CraftCms\Cms\Field\Matrix]] object | in a field represented by the object.
      *
      * ---
      *

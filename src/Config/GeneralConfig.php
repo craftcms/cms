@@ -1211,7 +1211,7 @@ class GeneralConfig extends BaseConfig
      * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is automatically invalidated any time
      * an element is saved, the site structure is updated, or a GraphQL schema is saved.
      *
-     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide its own
+     * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
      * caching logic and setting the `result` property.
      *
      * ::: code
@@ -1297,7 +1297,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var array<string, array<string, mixed>> List of additional file kinds Craft should support. This array will get merged with the one defined in
-     *                                          `\craft\helpers\Assets::_buildFileKinds()`.
+     *                                          `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()`.
      *
      * ```php Static Config
      * ->extraFileKinds([
@@ -2005,8 +2005,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The path within the `templates` folder where element partial templates will live.
      *
-     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * Partial templates are used to render elements when calling [[\CraftCms\Cms\Element\Queries\ElementQuery::render()]],
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\CraftCms\Cms\Element\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -4234,7 +4234,7 @@ class GeneralConfig extends BaseConfig
      * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is automatically invalidated any time
      * an element is saved, the site structure is updated, or a GraphQL schema is saved.
      *
-     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide its own
+     * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
      * caching logic and setting the `result` property.
      *
      * ```php
@@ -4346,7 +4346,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * List of additional file kinds Craft should support. This array will get merged with the one defined in
-     * `\craft\helpers\Assets::_buildFileKinds()`.
+     * `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()`.
      *
      * ```php
      * ->extraFileKinds([
@@ -5083,8 +5083,8 @@ class GeneralConfig extends BaseConfig
     /**
      * The path within the `templates` folder where element partial templates will live.
      *
-     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * Partial templates are used to render elements when calling [[\CraftCms\Cms\Element\Queries\ElementQuery::render()]],
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\CraftCms\Cms\Element\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
