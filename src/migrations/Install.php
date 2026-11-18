@@ -874,6 +874,7 @@ class Install extends Migration
      */
     public function createIndexes(): void
     {
+        $this->createIndex(null, Table::ADDRESSES, ['primaryOwnerId']);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
