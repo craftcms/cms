@@ -48,22 +48,16 @@ it('replaces Updates widgets with About Craft CMS widgets in their place, for an
         ->and(Widget::query()->where('userId', $user->id)->count())->toBe(3);
 });
 
-it('adds the About Craft CMS widget to the end of the saved dashboards of admins without an Updates widget', function () {
+it('leaves dashboards without an Updates widget as they are', function () {
     $admin = User::factory()->admin()->create(['hasDashboard' => true]);
     addWidgetForUser($admin->id, Feed::class, 1);
-    addWidgetForUser($admin->id, Feed::class, 4);
-    $adminWithoutDashboard = User::factory()->admin()->create(['hasDashboard' => false]);
     $user = User::factory()->create(['hasDashboard' => true]);
     addWidgetForUser($user->id, Feed::class, 1);
 
     runReplaceUpdatesWidgetMigration();
 
-    $added = Widget::query()->where('userId', $admin->id)->where('type', AboutCraft::class)->sole();
-
-    expect($added->sortOrder)->toBe(5)
-        ->and($added->color)->toBe('gray')
-        ->and(Widget::query()->where('userId', $adminWithoutDashboard->id)->exists())->toBeFalse()
-        ->and(Widget::query()->where('userId', $user->id)->where('type', AboutCraft::class)->exists())->toBeFalse();
+    expect(Widget::query()->where('type', AboutCraft::class)->exists())->toBeFalse()
+        ->and(Widget::query()->whereIn('userId', [$admin->id, $user->id])->count())->toBe(2);
 });
 
 it('drops an Updates widget beside an existing About Craft CMS widget', function () {
