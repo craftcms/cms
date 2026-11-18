@@ -115,7 +115,7 @@ class ConfigStorage
         $data = [];
 
         foreach ($index['roots'] as $root) {
-            if (array_key_exists($root, $index['boot'])) {
+            if (array_key_exists((string) $root, $index['boot'])) {
                 $data[$root] = $index['boot'][$root];
 
                 continue;
