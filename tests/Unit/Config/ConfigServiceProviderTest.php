@@ -24,7 +24,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -221,6 +221,35 @@ it('materializes anchors configuration from general.php and JSON environment ove
         ->and($anchors->anchorLinkText)->toBe('#')
         ->and($anchors->anchorLinkPosition)->toBe(AnchorsConfig::POS_BEFORE)
         ->and($anchors->useAdditionalTagToAnchorTo)->toBeFalse();
+});
+
+it('merges per-setting environment overrides into nested config objects', function () {
+    app(ConfigRepository::class)->set('craft.general', ['mcp' => ['instructions' => 'From general.php.']]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MCP'] = '{"instructions":"From JSON.","middleware":["throttle:mcp"]}';
+    $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'From a single variable.';
+    $_SERVER['CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO'] = 'false';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class);
+
+    expect($config->mcp)->toBeInstanceOf(McpConfig::class)
+        ->and($config->mcp->instructions)->toBe('From a single variable.')
+        ->and($config->mcp->middleware)->toBe(['throttle:mcp'])
+        ->and($config->anchors->useAdditionalTagToAnchorTo)->toBeFalse();
+});
+
+it('does not change a cached config’s nested objects when applying environment overrides', function () {
+    $cached = GeneralConfig::create();
+    app(ConfigRepository::class)->set('craft.general', $cached);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
+
+    new ConfigServiceProvider(app())->register();
+
+    expect(app(GeneralConfig::class)->mcp->instructions)->toBe('Be brief.')
+        ->and($cached->mcp->instructions)->toBe('');
 });
 
 it('extends the default Twig sandbox allowlist with project entries', function () {

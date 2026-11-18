@@ -495,6 +495,55 @@ describe('CommandPalette', () => {
     expect(document.activeElement).toBe(button);
   });
 
+  it('keeps the top result selected when results that rank above it come in', async () => {
+    const entries = deferred();
+    get.mockImplementation(async (url: string) =>
+      url === '/palette/entries'
+        ? entries.promise
+        : ({
+            data: {
+              providers: [{handle: 'entries', label: 'Entries'}],
+              actions: [
+                serverAction(
+                  'enable-maintenance-mode',
+                  'Enable maintenance mode'
+                ),
+              ],
+            },
+          } as never)
+    );
+    const input = await open();
+    await type(input, 'maintenance');
+    expect(selected(input)).toBe('Enable maintenance mode');
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    entries.resolve({
+      data: {results: [serverAction('entry-maintenance', 'Maintenance')]},
+    });
+    await flush();
+
+    const options = [...document.querySelectorAll('[role="option"]')].map(
+      (option) => option.textContent?.trim()
+    );
+    expect(options.indexOf('Maintenance')).toBeLessThan(
+      options.findIndex((label) => label?.startsWith('Enable maintenance mode'))
+    );
+    expect(selected(input)).toBe('Enable maintenance mode');
+  });
+
+  it('scrolls back to the top result when the query changes', async () => {
+    const input = await open();
+    await type(input, 'mode');
+    const results = document.querySelector<HTMLElement>(
+      '.command-palette__results'
+    )!;
+    results.scrollTop = 300;
+
+    await type(input, 'maintenance mode');
+
+    expect(results.scrollTop).toBe(0);
+  });
+
   it('moves focus to the search box when the result whose actions have it goes', async () => {
     const page = serverAction('entry-maintenance', 'Maintenance page', {
       actions: [

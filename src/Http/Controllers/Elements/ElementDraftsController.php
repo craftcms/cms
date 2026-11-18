@@ -32,6 +32,7 @@ use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\Workflows;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -89,7 +90,11 @@ class ElementDraftsController
             abort(403, 'User not authorized to save this element.');
         }
 
+        $provisionalDraftLock = null;
+
         if (! $element->getIsDraft() && $provisional) {
+            $provisionalDraftLock = $this->lockProvisionalDraft($element, $this->request->craftUser()?->getCraftUserId());
+
             // Make sure a provisional draft doesn't already exist for this element/user combo
             $existingProvisionalDraft = $element::find()
                 ->provisionalDrafts()
@@ -177,6 +182,8 @@ class ElementDraftsController
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
+        } finally {
+            $provisionalDraftLock?->release();
         }
 
         if ($applyWithoutReview) {
@@ -297,30 +304,50 @@ class ElementDraftsController
 
         Gate::authorize('createDrafts', $element);
 
-        // Make sure a provisional draft doesn't already exist for this element/user combo
-        $provisionalId = $element::find()
-            ->provisionalDrafts()
-            ->draftOf($element->id)
-            ->draftCreator($this->request->craftUser()?->getCraftUserId())
-            ->site('*')
-            ->status(null)
-            ->ids()[0] ?? null;
+        $userId = $this->request->craftUser()?->getCraftUserId();
+        $lock = $this->lockProvisionalDraft($element, $userId);
 
-        if ($provisionalId) {
-            return $this->asSuccess(data: [
-                'elementId' => $provisionalId,
-            ]);
+        try {
+            // Make sure a provisional draft doesn't already exist for this element/user combo
+            $provisionalId = $element::find()
+                ->provisionalDrafts()
+                ->draftOf($element->id)
+                ->draftCreator($userId)
+                ->site('*')
+                ->status(null)
+                ->ids()[0] ?? null;
+
+            if ($provisionalId) {
+                return $this->asSuccess(data: [
+                    'elementId' => $provisionalId,
+                ]);
+            }
+
+            $draft = $this->drafts->createDraft(
+                canonical: $element,
+                creatorId: $userId,
+                provisional: true,
+            );
+        } finally {
+            $lock->release();
         }
-
-        $draft = $this->drafts->createDraft(
-            canonical: $element,
-            creatorId: $this->request->craftUser()?->getCraftUserId(),
-            provisional: true,
-        );
 
         return $this->asSuccess(data: [
             'elementId' => $draft->id,
         ]);
+    }
+
+    /**
+     * Locks a user's provisional draft of an element until the caller releases it.
+     *
+     * Without it, two requests can both find no provisional draft and create one each.
+     */
+    private function lockProvisionalDraft(ElementInterface $element, ?int $userId): Lock
+    {
+        $lock = Cache::lock("provisional-draft:$element->id:$userId", 15);
+        $lock->block(5);
+
+        return $lock;
     }
 
     public function apply(): Response

@@ -8,7 +8,7 @@ on:
       - 'routes/**'
       - 'composer.lock'
       - 'tests/Benchmark/**'
-      - 'phpbench.json'
+      - 'tally.php'
       - 'scripts/benchmark*'
       - 'workbench/**'
 
@@ -59,24 +59,28 @@ jobs:
           git clone --depth 1 --branch 6.x https://github.com/craftcms/cms-assets.git "$RUNNER_TEMP/cms-assets"
           cp -rn "$RUNNER_TEMP/cms-assets/resources/." cms-assets/resources/
 
-      # Both are measured on the same runner, so the comparison isn't thrown off by differences between machines. The
-      # base runs its own benchmarks and seed, so a change to either shows from the next pull request on.
+      # Both are measured on the same runner. Tally counts instructions, cycles and memory under a CPU simulation rather
+      # than timing them, so the numbers hardly move between runs. The base runs its own benchmarks and seed, so a
+      # change to either shows from the next pull request on.
       - name: Benchmark the base branch
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           git checkout --force "$BASE_SHA"
-          if [ ! -f phpbench.json ]; then
-            echo "The base branch has no benchmarks."
+          if [ ! -f tally.php ]; then
+            echo "The base branch has no Tally benchmarks."
             exit 0
           fi
           composer config version "6.x-dev"
           composer install --no-interaction --no-progress
           scripts/benchmark-setup.sh
-          scripts/benchmark.sh --progress=none --dump-file="$RUNNER_TEMP/base.xml" \
-            || echo "::warning::The base branch's benchmarks failed, so there's nothing to compare with."
+          GITHUB_ACTIONS=false vendor/bin/tally run --output="$RUNNER_TEMP/base" \
+            || echo "::warning::Some of the base branch's benchmarks failed, so they have nothing to compare with."
 
+      # `tally accept` writes the base's numbers into the pull request's benchmarks as their expected numbers, so
+      # `tally run` compares the two. Benchmarks that only one side has are left out of the comparison or reported as new.
       - name: Benchmark the pull request
+        id: benchmarks
         env:
           HEAD_SHA: ${{ github.sha }}
         run: |
@@ -84,15 +88,31 @@ jobs:
           composer config version "6.x-dev"
           composer install --no-interaction --no-progress
           scripts/benchmark-setup.sh
-          scripts/benchmark.sh --report=aggregate --dump-file="$RUNNER_TEMP/pr.xml" \
-            || echo "::warning::Some benchmarks failed."
+          if [ -d "$RUNNER_TEMP/base" ]; then
+            vendor/bin/tally accept "$RUNNER_TEMP/base"
+          fi
 
+          # The job summary goes to the report rather than to this job. Tally's annotations are left out because they
+          # point to lines of the benchmarks with the base's numbers written into them.
+          set -o pipefail
+          status=0
+          GITHUB_STEP_SUMMARY="$RUNNER_TEMP/tally.md" vendor/bin/tally run | sed '/^::/d' || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      # Tally's report suggests commands that reproduce or accept numbers committed to the benchmarks, which they
+      # aren't here, so those sections are left out. The benchmarks' namespace is too, to keep the tables narrow.
       - name: Write the report
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           mkdir -p "$RUNNER_TEMP/benchmarks"
-          php scripts/benchmark-report.php "$RUNNER_TEMP/pr.xml" "$RUNNER_TEMP/base.xml" > "$RUNNER_TEMP/benchmarks/report.md"
+          {
+            printf '<!-- craft-benchmarks -->\n### Benchmarks\n\n'
+            awk '/^### (Reproduce locally|Accept the new numbers|Expected numbers of the new benchmarks)$/ { skip = 1; next }
+              /^(### |<details>)/ { skip = 0 }
+              !skip' "$RUNNER_TEMP/tally.md" | sed -e 's/^## /#### /' -e 's/CraftCms\\Cms\\Tests\\Benchmark\\//g'
+            printf '\n<sub>Expected is the base branch and measured is this pull request, both counted in this job by [Tally](https://github.com/phpstan/tally) under a CPU simulation.</sub>\n'
+          } > "$RUNNER_TEMP/benchmarks/report.md"
           echo "$PR_NUMBER" > "$RUNNER_TEMP/benchmarks/pr-number"
           cat "$RUNNER_TEMP/benchmarks/report.md" >> "$GITHUB_STEP_SUMMARY"
 
@@ -102,3 +122,9 @@ jobs:
           name: benchmarks
           path: ${{ runner.temp }}/benchmarks
           retention-days: 7
+
+      - name: Fail on slower or failed benchmarks
+        if: steps.benchmarks.outputs.status != '0'
+        run: |
+          echo "::error::Some benchmarks are slower than on the base branch or failed. See the job summary."
+          exit 1

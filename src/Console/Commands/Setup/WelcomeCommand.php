@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Console\Commands\Setup;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Override;
@@ -38,7 +39,7 @@ class WelcomeCommand extends Command
         }
 
         if (! $this->input->isInteractive() || ! confirm('Are you ready to begin the setup?')) {
-            info('Run the following command if you want to setup Craft from your terminal: `<fg=cyan>php craft setup</>`');
+            info('Run the following command if you want to setup Craft from your terminal: `<fg=cyan>'.app(TerminalCommands::class)->craft('setup').'</>`');
 
             return;
         }

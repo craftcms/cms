@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -117,7 +118,7 @@ class FieldsAutoMergeCommand extends Command
                 $this->components->warn('Merging relation fields should only be done after all elements using them have been resaved.');
 
                 if (confirm('Resave them now?')) {
-                    $this->components->info(sprintf('Running `resave/all --with-fields=%s`', implode(',', $handles)));
+                    $this->components->info(sprintf('Running `resave:all --with-fields=%s`', implode(',', $handles)));
 
                     $this->call('craft:resave:all', [
                         '--with-fields' => $handles,
@@ -152,19 +153,19 @@ class FieldsAutoMergeCommand extends Command
         }
 
         if (! empty($migrationPaths)) {
-            $this->components->success(<<<'EOD'
+            $this->components->success(sprintf(<<<'EOD'
             Fields merged. Commit the new content migrations and your project config changes,
-            and run `craft up` on other environments for the changes to take effect.
-            EOD);
+            and run `%s` on other environments for the changes to take effect.
+            EOD, app(TerminalCommands::class)->craft('up')));
 
             if (! empty($relationFieldHandles)) {
                 $this->components->warn(sprintf(<<<'MD'
                 Be sure to run this command on other environments **before** deploying these changes:
                 
                 ```
-                php craft resave:all --with-fields=%s
+                %s
                 ```
-                MD, implode(',', $relationFieldHandles)));
+                MD, app(TerminalCommands::class)->craft('resave:all --with-fields='.implode(',', $relationFieldHandles))));
             }
         } else {
             $this->components->info('No fields merged.');

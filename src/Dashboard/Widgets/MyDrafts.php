@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Ui;
@@ -67,12 +67,19 @@ class MyDrafts extends Widget
         return 'craft:widget-my-drafts';
     }
 
-    /** @return array{drafts: list<array{id: int, html: string}>} */
+    /** @return array{drafts: list<array{id: int|null, url: string|null, title: string, thumbHtml: string|null, draftName: string|null, section: string|null}>} */
     public function props(): array
     {
         return ['drafts' => $this->getDrafts()->map(fn (Entry $draft): array => [
             'id' => $draft->id,
-            'html' => app(ElementHtml::class)->elementChipHtml($draft, ['hyperlink' => true]),
+            'url' => $draft->getCpEditUrl(),
+            'title' => $draft->getUiLabel(),
+            'thumbHtml' => $draft->getThumbHtml(40, ImageTransformMode::Crop),
+            // Named drafts of published entries, as their chips label them, rather than new entries’ drafts.
+            'draftName' => ! $draft->isProvisionalDraft && ! $draft->getIsUnpublishedDraft()
+                ? ($draft->draftName ?: t('Draft'))
+                : null,
+            'section' => ($section = $draft->getSection()) ? t($section->name, category: 'site') : null,
         ])->values()->all()];
     }
 
@@ -84,6 +91,8 @@ class MyDrafts extends Widget
             ->status(null)
             ->draftCreator(currentUser()?->getCraftUserId())
             ->section('*')
+            // Not drafts in sections the user can no longer view, which wouldn’t open.
+            ->editable()
             ->site('*')
             ->unique()
             ->orderByDesc('dateUpdated')

@@ -374,6 +374,15 @@ export default css`
     text-decoration-line: var(--c-link-decoration);
   }
 
+  /* A label in a link or a span is a flex item of the body, which the
+     body's own ellipsis doesn't reach, so it truncates itself. */
+  .cp-chip__body::slotted(a),
+  .cp-chip__body::slotted(span) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .cp-chip__body::slotted(a:hover) {
     text-decoration-line: var(--c-link-decoration-hover);
   }
@@ -381,7 +390,7 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
-    margin-inline-start: calc(var(--c-spacing-xs) - var(--_chip-gap));
+    margin-inline-start: calc(var(--c-spacing) * 1.5 - var(--_chip-gap));
     padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;
@@ -554,10 +563,16 @@ export default css`
    *
    * The palette is repointed too, for controls that inherit it, like the
    * action menu's button, whose hover tints from --c-color-fill-quiet.
+   *
+   * The fill is a surface of its own, so the default text color and the
+   * status dot's ring are the page's again, rather than ones a surrounding
+   * surface set for itself, such as a highlighted craft-option.
    */
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
+    --c-text-default: var(--color-slate-900);
+    --c-indicator-ring: initial;
     --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-white));
     --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     background-color: var(--c-chip-fill, var(--c-surface-white));

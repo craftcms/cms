@@ -11,7 +11,7 @@ import {
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {broadcast} from '@/common/craft/broadcast';
 import {useDashboard} from './useDashboard';
-import type {DashboardWidget} from './types';
+import type {DashboardWidget, WidgetType} from './types';
 
 const state = vi.hoisted(() => ({
   post: vi.fn(),
@@ -62,7 +62,7 @@ function widget(id: number): DashboardWidget {
     subtitle: null,
     name: 'Example',
     settings: {limit: id},
-    settingsUi: null,
+    hasSettings: false,
     component: null,
     data: null,
     fragment: {html: '', headHtml: '', bodyHtml: ''},
@@ -79,8 +79,11 @@ const WidgetFrame = defineComponent({
   },
 });
 
-function mount(widgets: DashboardWidget[]) {
-  const props = reactive({widgets, widgetTypes: {}});
+function mount(
+  widgets: DashboardWidget[],
+  widgetTypes: Record<string, WidgetType> = {}
+) {
+  const props = reactive({widgets, widgetTypes});
   host = document.createElement('div');
   document.body.append(host);
   app = createApp(
@@ -167,6 +170,25 @@ it('shows a widget’s new color while it saves, and its saved color again if sa
   expect(messages.error).toHaveBeenLastCalledWith('Couldn’t save widget.');
 });
 
+it('shows widgets in their new order while it saves, and the saved order again if saving fails', async () => {
+  mount([widget(1), widget(2), widget(3)]);
+  let fail!: (error: Error) => void;
+  state.post.mockReturnValue(
+    new Promise((_, reject) => {
+      fail = reject;
+    })
+  );
+
+  const saving = dashboard.reorder(2, 0);
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([3, 1, 2]);
+
+  fail(new Error('offline'));
+  await saving;
+
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1, 2, 3]);
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
+});
+
 it('announces where a widget moved once the new order is saved', async () => {
   mount([widget(1), widget(2), widget(3)]);
   state.post.mockResolvedValue({data: {}});
@@ -176,6 +198,44 @@ it('announces where a widget moved once the new order is saved', async () => {
   expect(useAnnouncer().announcement.value).toBe(
     'Moved Widget 3 to position 1'
   );
+});
+
+const exampleType: WidgetType = {
+  iconSvg: null,
+  name: 'Example',
+  maxColspan: 2,
+  selectable: true,
+  hasSettings: true,
+};
+
+it('loads a new widget’s settings UI before showing it with its settings open', async () => {
+  mount([widget(1)], {Example: exampleType});
+  const ui = {scope: ['newwidget1-settings'], nodes: [], values: {}};
+  state.post.mockResolvedValueOnce({data: {ui}});
+
+  await dashboard.actions.value[0]!.onClick();
+
+  expect(state.post).toHaveBeenCalledWith(expect.any(String), {
+    type: 'Example',
+    namespace: 'newwidget1-settings',
+  });
+  expect(dashboard.widgets.value.at(-1)).toMatchObject({
+    id: -1,
+    type: 'Example',
+    hasSettings: true,
+    settingsUi: ui,
+  });
+});
+
+it('adds no widget when its settings UI can’t be loaded', async () => {
+  mount([widget(1)], {Example: exampleType});
+  state.post.mockRejectedValueOnce(new Error('offline'));
+
+  await dashboard.actions.value[0]!.onClick();
+
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1]);
+  expect(messages.error).toHaveBeenCalledWith('Couldn’t load widget settings.');
+  expect(dashboard.busy.value).toBe(false);
 });
 
 it('undo restores a deleted widget at the end', async () => {

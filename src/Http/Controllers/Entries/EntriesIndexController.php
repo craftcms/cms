@@ -20,10 +20,6 @@ readonly class EntriesIndexController
     {
         $slug = ElementSources::pageSlug($elementSources->getFirstPage(Entry::class) ?? 'entries');
 
-        if ($sectionHandle === 'singles') {
-            return cp_redirect("content/$slug/singles");
-        }
-
         if ($sectionHandle !== null) {
             $redirect = Sections::getSectionByHandle($sectionHandle)?->getCpIndexUri();
 

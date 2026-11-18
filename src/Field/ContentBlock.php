@@ -535,8 +535,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             if (count($sameSiteElements) > 1) {
                 $query = ContentBlockElement::find()
                     ->fieldId($this->id)
-                    ->ownerId(array_map(fn (ElementInterface $e) => $e->id, $sameSiteElements))
-                    ->siteId($element->siteId)
+                    ->owner($sameSiteElements)
                     ->indexBy('ownerId');
 
                 // If the owner element is a revision, allow revision content blocks to be returned as
@@ -553,16 +552,17 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
-                    if ($contentBlock) {
-                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
-                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan(
                         handle: $handle,
                     ));
                 }
 
-                /** @phpstan-ignore-next-line */
-                return $element->getEagerLoadedElements($handle)?->first() ?? $this->createContentBlockElement($element);
+                // a clone isn't among the queried elements, so the batch load won't have set its content block
+                $eagerLoadedContentBlocks = $element->getEagerLoadedElements($handle);
+                if ($eagerLoadedContentBlocks !== null) {
+                    /** @phpstan-ignore-next-line */
+                    return $eagerLoadedContentBlocks->first() ?? $this->createContentBlockElement($element);
+                }
             }
         }
 

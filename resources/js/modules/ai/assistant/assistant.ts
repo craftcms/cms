@@ -1,8 +1,12 @@
 import {isCancel, isHttpError} from '@craftcms/ui';
+import {uuid} from '@/common/craft/strings';
 import {createGlobalState} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
-import {computed} from 'vue';
-import {screenPanels} from '@/common/composables/screenPanels';
+import {computed, shallowReactive} from 'vue';
+import {
+  screenPanels,
+  type ScreenPanels,
+} from '@/common/composables/screenPanels';
 import type {CraftData} from '@/common/composables/useCraftData';
 import {useSessionStorage} from '@/common/composables/useStorage';
 
@@ -15,6 +19,62 @@ export const ASSISTANT_TOGGLE_ID = 'cp-assistant-toggle';
 /** An error response from the assistant’s endpoint, with the message the server gave. */
 export class AssistantRequestError extends Error {}
 
+/** A screen an element editor is shown in. */
+interface AssistantScreen {
+  panels: () => ScreenPanels | null;
+  /** Whether the assistant can work with its editor’s element. */
+  hasElement: boolean;
+}
+
+/** The screens element editors are shown in, in the order they were opened. */
+const screens = shallowReactive<AssistantScreen[]>([]);
+
+/**
+ * Registers the screen an element editor is shown in, such as a slideout or
+ * Live Preview’s pane, whose details column then shows the assistant’s panel
+ * while it’s the latest one open. `hasElement` is false for an editor the
+ * assistant can’t work with, such as a revision’s, so the assistant has no
+ * open element while it’s in front, rather than one behind it. Returns a
+ * function that unregisters it.
+ */
+export function registerAssistantScreen(
+  panels: () => ScreenPanels | null,
+  hasElement: boolean
+): () => void {
+  const screen: AssistantScreen = {panels, hasElement};
+  screens.push(screen);
+
+  return () => {
+    const index = screens.indexOf(screen);
+
+    if (index !== -1) {
+      screens.splice(index, 1);
+    }
+  };
+}
+
+/** The latest open editor’s screen, which the assistant’s panel is in. */
+const currentScreen = computed(
+  () => screens.filter((screen) => screen.panels() !== null).at(-1) ?? null
+);
+
+/**
+ * The panels of the screen the assistant’s panel is in: the latest open
+ * editor’s, or else the page’s. There’s one chat, which moves between them,
+ * so a reply on its way carries on.
+ */
+export const assistantScreenPanels = computed<ScreenPanels>(
+  () => currentScreen.value?.panels() ?? screenPanels
+);
+
+/**
+ * Whether the assistant’s panel is in the screen of an editor it can’t work
+ * with, such as a revision’s, so no element is open for it.
+ */
+export const assistantScreenLacksElement = computed(
+  () => currentScreen.value?.hasElement === false
+);
+
 /**
  * The AI assistant’s panel, one of the shell’s details panels. It’s there
  * while the chat is open, and beside a page’s own panels. The chat stays open
@@ -26,12 +86,12 @@ export const useAssistantPanel = createGlobalState(() => {
   /** Whether it was opened in this browser tab, and hasn’t been closed. */
   const opened = useSessionStorage('aiAssistant.opened', false);
   const isOpen = computed(
-    () => screenPanels.openPanelId.value === ASSISTANT_PANEL_ID
+    () => assistantScreenPanels.value.openPanelId.value === ASSISTANT_PANEL_ID
   );
 
   function show(): void {
     opened.value = true;
-    screenPanels.open(ASSISTANT_PANEL_ID);
+    assistantScreenPanels.value.open(ASSISTANT_PANEL_ID);
   }
 
   return {
@@ -42,7 +102,9 @@ export const useAssistantPanel = createGlobalState(() => {
     /** Opens the panel, or folds it while keeping focus where it is. */
     toggle(): void {
       if (isOpen.value) {
-        screenPanels.close(ASSISTANT_PANEL_ID, {returnFocus: false});
+        assistantScreenPanels.value.close(ASSISTANT_PANEL_ID, {
+          returnFocus: false,
+        });
       } else {
         show();
       }
@@ -55,7 +117,7 @@ export const useAssistantThread = createGlobalState(() => {
   const userId =
     usePage<{craft?: CraftData}>().props.craft?.currentUser?.id ?? 0;
 
-  return useSessionStorage(`aiAssistant.thread.${userId}`, crypto.randomUUID());
+  return useSessionStorage(`aiAssistant.thread.${userId}`, uuid());
 });
 
 /**

@@ -16,6 +16,10 @@ module.exports = getConfig({
         __dirname,
         '../../../yii2-adapter/resources/js/dashboard.js'
       ),
+      'publishable-sections': require('path').resolve(
+        __dirname,
+        '../../../yii2-adapter/resources/js/publishable-sections.js'
+      ),
       'cp-compat': './cp-compat.js',
       'legacy-html-control': './legacy-html-control.js',
       'assets-field-settings': './assets-field-settings.js',

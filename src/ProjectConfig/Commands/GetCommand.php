@@ -15,7 +15,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * Example:
  * ```
- * php craft project-config:get system.edition
+ * php artisan craft:project-config:get system.edition
  * ```
  *
  * The “path” syntax used here may be composed of directory and filenames (within your `config/project` folder), YAML object keys (including UUIDs for many Craft resources), and integers (referencing numerically-indexed arrays), joined by a dot (`.`): `path.to.nested.array.0.property`.

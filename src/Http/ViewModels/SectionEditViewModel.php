@@ -262,7 +262,7 @@ class SectionEditViewModel extends ViewModel
             ? t('Leave blank if the entry doesn’t have a URL')
             : t('Leave blank if entries don’t have URLs');
         // The URI and Route columns share the remaining width equally
-        $uriWidth = $this->headlessMode ? [] : ['width' => 50];
+        $uriWidth = $this->headlessMode ? [] : ['width' => '50%'];
 
         return Table::make('sites')
             ->keyed()
@@ -299,7 +299,7 @@ class SectionEditViewModel extends ViewModel
                 ]),
                 'destination' => $show(! $this->headlessMode, [
                     ...ElementSiteSettings::destinationColumn(EntryElement::class),
-                    'width' => 50,
+                    'width' => '50%',
                 ]),
                 'enabledByDefault' => $show(! $single, ['heading' => t('Default Status'), 'type' => 'lightswitch', 'class' => 'thin centered']),
             ]);

@@ -288,6 +288,19 @@ it('applies parent changes after processing descendants', function (array $incom
     'removals' => [['test' => ['nested' => ['keep' => true]]]],
 ]);
 
+it('fires parent handlers when a nested value creates the parent', function () {
+    $projectConfig = getFakeProjectConfig();
+    $handled = [];
+    $projectConfig->onAdd('demo', function (ConfigEvent $event) use (&$handled) {
+        $handled[] = [$event->oldValue, $event->newValue];
+    });
+
+    $projectConfig->set('demo.child.key', 1);
+
+    expect($handled)->toBe([[null, ['child' => ['key' => 1]]]])
+        ->and($projectConfig->get('demo'))->toBe(['child' => ['key' => 1]]);
+});
+
 it('ignores parent handlers for unrelated event types when applying sibling changes', function () {
     $incoming = ['test' => ['one' => ['value' => 2], 'two' => ['value' => 2]]];
     $projectConfig = getFakeProjectConfig([

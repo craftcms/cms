@@ -12,6 +12,7 @@ use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Elements\User;
@@ -114,6 +115,21 @@ it('sends requests to a shared endpoint by whether they carry a bearer token', f
     Passport::actingAs(UserModel::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
     Route::getRoutes()->getByName('craft.mcp.server')->flushController();
     expect($tools(['Authorization' => 'Bearer token']))->toContain('elements_list')->not->toContain('craft_context_get');
+});
+
+it('rejects access tokens of users suspended after the token was issued', function (): void {
+    $key = passportKey();
+    openssl_pkey_export($key, $privateKey);
+    config()->set('passport.private_key', $privateKey);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    enableMcp();
+    $user = UserModel::factory()->create(['admin' => true]);
+    Users::suspendUser($user->asElement());
+
+    Passport::actingAs($user->fresh(), ['mcp:read'], 'craft-mcp');
+
+    postJson('/mcp', McpRequest::payload('tools/list'), [...McpRequest::headers('tools/list'), 'Authorization' => 'Bearer token'])
+        ->assertUnauthorized();
 });
 
 it('stores public MCP settings in project config', function (): void {

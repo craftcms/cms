@@ -93,7 +93,7 @@ readonly class PluginStoreController
     /**
      * What the store needs to know about this install to decide which plugins it can offer.
      *
-     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, yii2AdapterRequired: bool, allowUpdates: bool, allowPurchases: bool, cmsLicenseKey: string|null, craftIdEndpoint: string, craftExecutable: string, composerExecutable: string}
+     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, yii2AdapterRequired: bool, allowUpdates: bool, allowPurchases: bool, cmsLicenseKey: string|null, craftIdEndpoint: string, pluginInstallCommand: string, composerExecutable: string}
      */
     private function context(): array
     {
@@ -115,8 +115,8 @@ readonly class PluginStoreController
             // Ties cart items to this install's license, and checkout hands the cart to Craft Console.
             'cmsLicenseKey' => app(License::class)->key(),
             'craftIdEndpoint' => Api::craftIdEndpoint(),
-            // Installation instructions use the local development environment’s wrappers, such as `ddev craft`.
-            'craftExecutable' => $terminalCommands->craftExecutable(),
+            // Installation instructions use the local development environment’s wrappers, such as `ddev artisan`.
+            'pluginInstallCommand' => $terminalCommands->craft('plugin:install'),
             'composerExecutable' => $terminalCommands->composerExecutable(),
         ];
     }

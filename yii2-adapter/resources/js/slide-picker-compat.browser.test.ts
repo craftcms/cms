@@ -1,5 +1,4 @@
 import '@craftcms/ui/components/slide-picker/slide-picker';
-import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
 import $ from 'jquery';
 import {afterEach, beforeAll, expect, it} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
@@ -11,7 +10,6 @@ beforeAll(async () => {
   legacyWindow.jQuery = legacyWindow.$ = $;
   legacyWindow.Craft = {t: (_category: string, message: string) => message};
   await import('../../../packages/craftcms-legacy/cpcompat/src/cp-compat.js');
-  await import('../../../packages/craftcms-legacy/cpcompat/src/ui.js');
 });
 
 afterEach(() => {
@@ -82,44 +80,4 @@ it('keeps a read-only Craft.SlidePicker from changing', async () => {
 
   await expect.element(slider).toHaveAttribute('aria-valuenow', '2');
   expect(changes).toEqual([]);
-});
-
-it('names the slider after its field label and describes it with the instructions', async () => {
-  const $field = legacyWindow.Craft.ui.createSlidePickerField({
-    id: 'widget-width',
-    label: 'Width',
-    instructions: 'How many columns the widget spans.',
-    min: 1,
-    max: 4,
-    step: 1,
-    value: 2,
-  });
-  $(document.body).append($field);
-  await document.querySelector<CraftSlidePicker>('craft-slide-picker')!
-    .updateComplete;
-
-  const slider = page.getByRole('slider');
-
-  await expect.element(slider).toHaveAccessibleName('Width');
-  await expect
-    .element(slider)
-    .toHaveAccessibleDescription('How many columns the widget spans.');
-});
-
-it('builds a slider named after the field’s label, even when asked for a button', async () => {
-  const $field = legacyWindow.Craft.ui.createSlidePickerField({
-    id: 'field-width',
-    label: 'Width',
-    button: true,
-    min: 25,
-    max: 100,
-    step: 25,
-    value: 50,
-  });
-  $(document.body).append($field);
-  await document.querySelector<CraftSlidePicker>('craft-slide-picker')!
-    .updateComplete;
-
-  await expect.element(page.getByRole('slider')).toHaveAccessibleName('Width');
-  await expect.element(page.getByRole('button')).not.toBeInTheDocument();
 });

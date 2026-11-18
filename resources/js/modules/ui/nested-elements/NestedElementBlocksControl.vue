@@ -138,7 +138,11 @@
       props.editable,
     ])
   );
-  const {setRevealing} = useScrollHold(key, matrixHost);
+  const {setRevealing} = useScrollHold(
+    key,
+    matrixHost,
+    () => props.value.sortOrder
+  );
   const {highlightBlock, isHighlighted} = useBlockHighlight();
 
   const {

@@ -17,7 +17,7 @@ feature's edges:
   the neighboring UI and text inside that padding.
 
 Both use the same setup and isolation. `scripts/` holds the page helper
-(`shot.js`) and the capture, matte and preview helpers.
+(`shot.js`) and the capture, hover, matte and preview helpers.
 
 ## Setup
 
@@ -32,6 +32,18 @@ captures at the display's pixel density, so Retina shots come out at 2×.
 
    ```js
    (0, eval)(localStorage.__shotCode)
+   ```
+
+   While the Vite dev server runs, load the helper from it instead of pasting
+   it:
+
+   ```js
+   const vite = new URL(document.querySelector('script[src*="/@vite/client"]').src).origin;
+   const {default: code} = await import(
+     `${vite}/.agents/skills/feature-screenshots/scripts/shot.js?raw`
+   );
+   (0, eval)(code);
+   __shot.set({theme: 'light'});
    ```
 
 2. Size the window so its page area is a consistent 16:9, e.g. 1408×792 on a
@@ -132,6 +144,20 @@ page again.
 - For a state that only shows on hover, such as a nav flyout, set the
   component's state instead of hovering, since hovering draws the
   extension's cursor: `navItem.flyoutOpen = true` on a `craft-nav-item`.
+- When the shot needs real `:hover` styles, such as a button's hover fill
+  with its tooltip, move the system pointer with `scripts/hover.sh <x> <y>`,
+  in screen points. The page gets real pointer events, the extension draws
+  no cursor, and `screencapture -x` leaves the system pointer out. The hover
+  holds while JavaScript switches `bg` between the two captures. Afterwards,
+  move the pointer off the region, e.g. `scripts/hover.sh 150 900`.
+- Open popovers and menus from JavaScript, not with the extension's clicks,
+  which leave its cursor behind: click the invoker inside the component's
+  shadow root, e.g. `picker.shadowRoot.querySelector('craft-button').click()`,
+  and close it with `popover.open = false`.
+- To move a popover that sits against the window's edge, translate its
+  popup part: `__shot.set({css: '#id::part(popup) { translate: -300px 160px; }'})`.
+  Popovers nested in it follow, since they position from their invoker's
+  rect.
 - For one-off rules, pass `css`: `__shot.set({css: '…'})`.
 
 ### Keep the extension's overlays out
@@ -149,8 +175,9 @@ within the top's glow. A region that takes in any of it gives a tinted
 background, or faint alpha around the edges of a transparent PNG.
 
 - Before every capture, hover somewhere outside the capture region, such as
-  the inset margin's bottom-right corner, unless you're showing a hover
-  state. Clicking or hovering moves the drawn cursor there.
+  the inset margin's bottom-right corner, including after a click that
+  navigated to the page. Clicking or hovering moves the drawn cursor there.
+  Show hover states with `scripts/hover.sh` instead.
 - Keep the capture region at least 96px clear of the window's edges. For a
   feature that sits against an edge, such as a slideout, a sidebar or the
   header, move it in for the shot and capture it there:
@@ -195,7 +222,10 @@ the difference. Shadows come out as real partial transparency.
 
    Without a crop, the result is trimmed to the visible pixels plus 8px. For a
    set, work out the crop once and pass it to every shot, so they're all the
-   same size.
+   same size. Capture every shot in the set from the same region, and take
+   the crop from the union of the `visible:` bounds `matte.sh` prints for
+   each, plus 8px: a state with an open popover is often larger than the
+   rest.
 
    `matte.sh` prints the highest alpha on each edge. All four must be 0.
    Anything higher means the region cut something off, or took in the

@@ -432,7 +432,7 @@ describe('NestedElementsControl', () => {
 
       const target =
         presentation === 'menu'
-          ? action('Add Quote')!
+          ? action('Quote')!
           : [
               ...root.querySelectorAll<HTMLElement>('[data-create-element]'),
             ].find((button) => button.textContent?.trim() === 'Add Quote')!;

@@ -4,7 +4,6 @@ import {
   createSwitch as uiCreateSwitch,
   createInputColor as uiCreateInputColor,
   createInputPassword as uiCreateInputPassword,
-  createSlidePicker as uiCreateSlidePicker,
   createTextInput as uiCreateTextInput,
 } from '../../../../resources/js/modules/ui/legacy';
 import {showCopyTextPrompt} from '@craftcms/ui/utilities/copy-text-prompt';
@@ -633,37 +632,6 @@ Craft.ui = {
     return this.createField(this.createIconPicker(config), config).addClass(
       'iconpicker-field'
     );
-  },
-
-  createSlidePicker: function (config) {
-    // Delegates to @craftcms/ui's createSlidePicker; jQuery-wraps for legacy
-    // callers.
-    return $(uiCreateSlidePicker(config));
-  },
-
-  createSlidePickerField: function (config) {
-    if (!config.id) {
-      config.id = 'slidepicker' + Math.floor(Math.random() * 1000000000);
-    }
-    if (!config.labelId) {
-      config.labelId = `${config.id}-label`;
-    }
-    if (!config.labelledBy) {
-      config.labelledBy = config.labelId;
-    }
-    if (!config.describedBy) {
-      config.describedBy = this.getDescribedByValue(config);
-    }
-
-    // A field gets a full-size picker, which the field's label names, so it
-    // doesn't get one of its own. Slide picker buttons are for dense rows,
-    // such as dashboard widgets and field layout elements, not fields.
-    return this.createField(
-      this.createSlidePicker(
-        $.extend({}, config, {label: null, button: false})
-      ),
-      config
-    ).addClass('slidepicker-field');
   },
 
   createColorInput: function (config) {

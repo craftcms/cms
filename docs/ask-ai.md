@@ -1,6 +1,6 @@
 # Ask AI
 
-**Ask AI** is the control panel’s AI chat. It opens from the header bar in a panel beside the screen, and answers the user’s questions about the site’s content and settings. It looks things up with Craft’s [MCP tools](mcp.md), as the user, so it can only see and change what they can.
+**Ask AI** is the control panel’s AI chat. It opens from the header bar in a panel beside the screen, or from the details rail of an element editor slideout or Live Preview, which it moves into while they’re open, and answers the user’s questions about the site’s content and settings. It looks things up with Craft’s [MCP tools](mcp.md), as the user, so it can only see and change what they can.
 
 The chat runs as the `craft:assistant` [AI task](ai.md), which needs a model with tool calling, and it’s shown to users with the **Use the AI assistant** permission (`useAiAssistant`) while that task is available. Conversations are stored with `laravel/ai`’s conversation tables, one user each.
 

@@ -1,7 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {
   createSwitch,
-  createSlidePicker,
   createInputColor,
   createInputPassword,
   createTextInput,
@@ -20,7 +19,6 @@ it('leaves custom element registration to the application entry', () => {
     'craft-input-copy',
     'craft-input-password',
     'craft-slide-picker',
-    'craft-slide-picker-button',
     'craft-switch',
     'craft-textarea',
   ]) {
@@ -105,81 +103,6 @@ describe('createSwitch', () => {
     const button = el.querySelector('craft-switch-button');
     expect(button?.classList.contains('fieldtoggle')).toBe(true);
     expect(button?.getAttribute('data-target')).toBe('target');
-  });
-});
-
-describe('createSlidePicker', () => {
-  it('sets the numeric props and posts under its name', () => {
-    const el = createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 25,
-      value: 50,
-      name: 'cols',
-    });
-
-    expect(el.tagName.toLowerCase()).toBe('craft-slide-picker');
-    expect(el.min).toBe(0);
-    expect(el.max).toBe(100);
-    expect(el.step).toBe(25);
-    expect(el.value).toBe(50);
-    expect(el.name).toBe('cols');
-  });
-
-  it('resolves function min/max', () => {
-    const el = createSlidePicker({min: () => 10, max: () => 90, step: 20});
-    expect(el.min).toBe(10);
-    expect(el.max).toBe(90);
-  });
-
-  it('builds a button that opens a picker, named by its labels, with button', () => {
-    const el = createSlidePicker({
-      button: true,
-      label: 'Columns',
-      itemLabel: 'News',
-      labelledBy: 'width-label',
-      min: 1,
-      max: 3,
-      step: 1,
-      value: 2,
-      name: 'colspan',
-      readOnly: true,
-    });
-
-    expect(el.tagName.toLowerCase()).toBe('craft-slide-picker-button');
-    expect(el.sliderLabel).toBe('Columns');
-    expect(el.itemLabel).toBe('News');
-    expect(el.hasAttribute('labelled-by')).toBe(false);
-    expect([el.min, el.max, el.step, el.value]).toEqual([1, 3, 1, 2]);
-    expect(el.name).toBe('colspan');
-    expect(el.readonly).toBe(true);
-  });
-
-  it('references the elements that label and describe it', () => {
-    const el = createSlidePicker({
-      labelledBy: 'width-label',
-      describedBy: 'width-instructions',
-    });
-
-    expect(el.getAttribute('labelled-by')).toBe('width-label');
-    expect(el.getAttribute('described-by')).toBe('width-instructions');
-  });
-
-  it.each([{button: true}, {button: false}])(
-    'formats the value with valueUnit, leaving no valueLabel to override it (button: $button)',
-    ({button}) => {
-      const el = createSlidePicker({button, valueUnit: '% width'});
-
-      expect(el.valueUnit).toBe('% width');
-      expect(el.valueLabel).toBeUndefined();
-    }
-  );
-
-  it('formats the value with valueLabel when given one', () => {
-    const columns = (value: number) => `${value} columns`;
-    const el = createSlidePicker({button: true, valueLabel: columns});
-
-    expect(el.valueLabel).toBe(columns);
   });
 });
 

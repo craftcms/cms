@@ -540,6 +540,22 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     }
 
     /**
+     * Returns the settings of a Table column that relates this field type’s elements: which elements can be
+     * selected, and how many.
+     *
+     * @see TableCells\BaseRelationCell
+     */
+    public function tableCellSettingsUi(): Ui
+    {
+        return Ui::make(array_values(array_filter([
+            $this->sourcesField(),
+            $this->selectionConditionField(),
+            ...$this->limitFields(),
+            $this->selectionLabelField(),
+        ])));
+    }
+
+    /**
      * Returns the “Sources” (or “Source”) setting.
      *
      * Mirrors the `sourcesField` block of Craft 5’s `elementfieldsettings.twig`.
@@ -1683,7 +1699,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     {
         return Collection::make($this->availableSources())
             ->map(fn ($s) => [
-                'label' => $s['label'],
+                'label' => $s['label'] ?? '',
                 'value' => $s['key'],
                 'data' => [
                     'structure-id' => $s['structureId'] ?? null,

@@ -9,8 +9,16 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Money;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
@@ -67,6 +75,17 @@ it('can find nested source configs by key path', function () {
         'type' => ElementSources::TYPE_CUSTOM,
         'keyPath' => 'custom:parent/custom:child',
     ]);
+});
+
+it('puts sources that aren’t saved on the first page with an enabled source', function () {
+    $channel = Section::factory()->create(['type' => SectionType::Channel]);
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Archive', 'page' => 'Archive'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:archive', 'label' => 'Archive', 'page' => 'Archive', 'disabled' => true],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+    ]);
+
+    expect($this->elementSources->findSource(Entry::class, "section:$channel->uid")['page'] ?? null)->toBe('Entries');
 });
 
 it('limits sources to their page when the first source is disabled', function () {
@@ -224,4 +243,46 @@ it('rejects invalid custom source conditions before writing project config', fun
         ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:test', 'condition' => $condition],
     ]))->toThrow(ValidationException::class);
     expect(app(ProjectConfig::class)->get($path))->toBe($original);
+});
+
+it('aligns field columns to the end for quantities', function () {
+    $fields = collect([
+        'plainText' => [PlainText::class, []],
+        'quantity' => [Number::class, []],
+        'code' => [Number::class, ['previewFormat' => Number::FORMAT_NONE]],
+        'price' => [Money::class, []],
+        'rating' => [Range::class, []],
+    ])->map(function (array $config, string $handle) {
+        [$type, $settings] = $config;
+        $field = Fields::createField([
+            'type' => $type,
+            'name' => $handle,
+            'handle' => $handle,
+            'settings' => $settings,
+        ]);
+        expect(Fields::saveField($field))->toBeTrue();
+
+        return $field;
+    });
+
+    $layout = FieldLayout::createFromConfig([
+        'type' => Entry::class,
+        'tabs' => [[
+            'name' => 'Content',
+            'elements' => $fields
+                ->map(fn ($field) => ['type' => CustomField::class, 'fieldUid' => $field->uid])
+                ->values()
+                ->all(),
+        ]],
+    ]);
+
+    $attributes = $this->elementSources->getTableAttributesForFieldLayouts([$layout]);
+
+    expect($fields->map(fn ($field) => $attributes["field:$field->uid"]['align'])->all())->toBe([
+        'plainText' => 'start',
+        'quantity' => 'end',
+        'code' => 'start',
+        'price' => 'end',
+        'rating' => 'end',
+    ]);
 });

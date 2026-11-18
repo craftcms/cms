@@ -414,7 +414,7 @@
 
   .slideout-screen__header {
     border-block-end: 1px solid var(--c-color-border-quiet);
-    min-height: var(--cp-header-height);
+    min-height: calc(var(--cp-header-height) + 1px);
     display: grid;
     align-items: center;
   }
@@ -466,8 +466,8 @@
     display: grid;
     align-content: center;
     border-block-start: 1px solid var(--c-color-border-quiet);
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
   }
 </style>

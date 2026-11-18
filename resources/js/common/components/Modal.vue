@@ -216,6 +216,12 @@
 </template>
 
 <style scoped>
+  /* Back to the CP's default, since a modal opened from a page's main column
+     would otherwise inherit that column's wider, fluid gutters. */
+  .cp-modal {
+    --cp-container-padding: var(--c-spacing-lg);
+  }
+
   /* A column flex box so slotted content can grow into a height the floor is
    holding open, instead of sitting at its natural height with a gap below. */
   .content {
@@ -230,6 +236,7 @@
     border-radius: var(--c-modal-radius);
     position: relative;
     overflow-y: scroll;
+    overscroll-behavior: contain;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
@@ -256,6 +263,7 @@
   .content > :slotted(form > craft-pane)::part(footer) {
     box-sizing: border-box;
     min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
   }
 

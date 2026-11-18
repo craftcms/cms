@@ -42,12 +42,12 @@ trait CraftUserTrait
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPasswordNotification($token));
+        $this->notify(new ResetPasswordNotification($token, $this));
     }
 
     public function sendActivationNotification(string $token): void
     {
-        $this->notify(new ActivationNotification($token));
+        $this->notify(new ActivationNotification($token, $this));
     }
 
     public function hasVerifiedEmail(): bool
@@ -79,7 +79,7 @@ trait CraftUserTrait
 
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this->asElement()), $this->getEmailForVerification()));
+        $this->notify(new VerifyEmailNotification(Users::setVerificationCodeOnUser($this->asElement()), $this, $this->getEmailForVerification()));
     }
 
     public function getEmailForVerification(): string

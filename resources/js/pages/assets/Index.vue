@@ -14,6 +14,7 @@
   import type {ConflictResolution} from '@/modules/assets/assetMover';
   import '@/modules/assets/asset-conflict-resolution.ce';
   import AssetUploadButton from './AssetUploadButton.vue';
+  import type {ActionItemButton} from '@/common/types';
   import {useAssetUploadRefresh} from '@/modules/uploader/useAssetUploadRefresh';
   import {useAssetFolderActions} from '@/modules/assets/composables/useAssetFolderActions';
   import {useAssetFileActions} from '@/modules/assets/composables/useAssetFileActions';
@@ -141,6 +142,7 @@
       :source-href="sourceHref"
       :item-behavior="itemBehavior"
       customizable-sources
+      :menu-actions="page.props.folderActions as ActionItemButton[]"
     >
       <template #search-options>
         <craft-checkbox
@@ -159,7 +161,7 @@
           <Breadcrumbs :items="breadcrumbs" />
         </div>
       </template>
-      <template #toolbar-actions>
+      <template #primary-action>
         <AssetUploadButton
           variant="primary"
           v-bind="uploadSource"

@@ -1,4 +1,4 @@
-import {markRaw, reactive, shallowReadonly} from 'vue';
+import {markRaw, nextTick, reactive, shallowReadonly} from 'vue';
 import {
   closestComposed,
   focusReturnFor,
@@ -13,6 +13,7 @@ import {fetchSlideoutPage, type SlideoutPage} from './request';
 import type {
   OpenSlideoutOptions,
   SlideoutInstance,
+  SlideoutReloadOptions,
   SlideoutSaveResult,
 } from './types';
 import type {ScreenPageProps} from '@/common/composables/screen';
@@ -306,12 +307,15 @@ export function notifySlideoutSaved(
   return true;
 }
 
-export async function reloadSlideout(id: string): Promise<void> {
+export async function reloadSlideout(
+  id: string,
+  options?: SlideoutReloadOptions
+): Promise<void> {
   const panel = findSlideout(id);
 
   // Local panels (see openSlideoutWith) have nothing to re-fetch.
   if (panel && panel.href) {
-    await loadInto(panel);
+    await loadInto(panel, options);
   }
 }
 
@@ -419,7 +423,22 @@ export function closeAllSlideouts(): void {
 }
 
 /** Fetches a panel's screen into it, as opening or reloading it does. */
-export async function loadInto(panel: SlideoutInstance): Promise<void> {
+export async function loadInto(
+  panel: SlideoutInstance,
+  {preserveState = false}: SlideoutReloadOptions = {}
+): Promise<void> {
+  // Without the spinner, which takes the screen's place and unmounts it.
+  if (preserveState) {
+    const page = await loadSlideoutPage(panel.href, panel.containerId);
+
+    panel.component = markRaw(page.component);
+    panel.props = page.props;
+    // Resolves once the screen has rendered them.
+    await nextTick();
+
+    return;
+  }
+
   panel.loading = true;
   panel.error = null;
 

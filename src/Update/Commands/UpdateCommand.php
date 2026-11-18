@@ -124,7 +124,7 @@ class UpdateCommand extends Command
                 $this->components->task('Clearing compiled views', CompiledViews::clear(...));
             } catch (Throwable $e) {
                 report($e);
-                $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `php artisan view:clear` manually.');
+                $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `'.app(TerminalCommands::class)->artisan('view:clear').'` manually.');
             }
         }
 
@@ -137,7 +137,7 @@ class UpdateCommand extends Command
         );
 
         if (! $refreshed) {
-            $this->components->warn('Run `'.app(TerminalCommands::class)->craft('update/info').'` to retry the license refresh.');
+            $this->components->warn('Run `'.app(TerminalCommands::class)->craft('update:info').'` to retry the license refresh.');
         }
 
         $this->components->success('Update complete!');

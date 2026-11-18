@@ -167,6 +167,8 @@ class ConfigServiceProvider extends ServiceProvider
             $this->applyGeneralConfigSetting($config, $setting, $value);
         }
 
+        $this->applyNestedEnvironmentOverrides($config);
+
         foreach ($config->aliases as $name => $value) {
             if ($value === null) {
                 Aliases::remove($name);
@@ -178,6 +180,41 @@ class ConfigServiceProvider extends ServiceProvider
         $repository->set('craft.general', $config);
 
         return $config;
+    }
+
+    /**
+     * Applies `CRAFT_{SETTING}_{NESTED_SETTING}` environment variables to settings that hold config objects, such as
+     * `CRAFT_MCP_INSTRUCTIONS` for `mcp.instructions`. Craft applies them after a whole-object variable such as
+     * `CRAFT_MCP`, so they override it.
+     */
+    private function applyNestedEnvironmentOverrides(GeneralConfig $config): void
+    {
+        foreach (get_object_vars($config) as $setting => $nested) {
+            if (! $nested instanceof BaseConfig) {
+                continue;
+            }
+
+            $envConfig = Env::config($nested::class, 'CRAFT_'.str($setting)->snake()->upper()->value());
+
+            if ($envConfig === []) {
+                continue;
+            }
+
+            Typecast::properties($nested::class, $envConfig);
+
+            // A cached config may share its nested objects with another copy, so change a clone
+            $nested = clone $nested;
+
+            foreach ($envConfig as $property => $value) {
+                if (method_exists($nested, $property)) {
+                    $nested->{$property}($value);
+                } else {
+                    $nested->{$property} = $value;
+                }
+            }
+
+            $config->{$setting} = $nested;
+        }
     }
 
     private function applyGeneralConfigSetting(GeneralConfig $config, string $setting, mixed $value): void

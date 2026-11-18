@@ -231,7 +231,7 @@ class ProjectConfig extends Component
     /**
      * @var bool Whether project config changes should be written to YAML files automatically.
      *
-     * If set to `false`, you can manually write out project config YAML files using the `project-config/write` command.
+     * If set to `false`, you can manually write out project config YAML files using the `project-config:write` command.
      *
      * ::: warning
      * If this is set to `false`, Craft won’t have a strong grasp of whether the YAML files or database contain the most relevant

@@ -10,6 +10,8 @@ use CraftCms\Cms\Element\Events\ElementTableAttributesResolving;
 use CraftCms\Cms\Element\Queries\ExcludeDescendantIdsExpression;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
@@ -102,8 +104,9 @@ describe('defaultTableAttributes', function () {
         expect($attributes)->toContain('link');
     });
 
-    test('returns default attributes for singles source', function () {
-        $attributes = Entry::defaultTableAttributes('singles');
+    test('returns default attributes for a single’s source', function () {
+        $single = Section::factory()->create(['type' => SectionType::Single]);
+        $attributes = Entry::defaultTableAttributes("section:$single->uid");
         expect($attributes)->toBeArray();
         expect($attributes)->toContain('status');
         expect($attributes)->not->toContain('section');

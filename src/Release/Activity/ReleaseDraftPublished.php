@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Release\Activity;
 
 use CraftCms\Cms\Activity\ActivityEventType;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Site\Data\Site;
@@ -17,15 +18,13 @@ use function CraftCms\Cms\t;
 /**
  * A draft applied by publishing the content release it belongs to.
  *
+ * Releases now record {@see DraftApplied} as part of a {@see ReleaseOperation}. This type remains so that
+ * events recorded before that change still display.
+ *
  * @since 6.0.0
  */
 class ReleaseDraftPublished extends ActivityEventType
 {
-    /**
-     * Hidden context key holding the `{id, name}` of the release being published.
-     */
-    public const string ContextRelease = 'craft.activity.release';
-
     protected const string LABEL = 'Published with release';
 
     protected const string ICON = 'check';
