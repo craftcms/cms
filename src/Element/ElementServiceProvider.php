@@ -19,6 +19,9 @@ use CraftCms\Cms\Element\Commands\RestoreCommand;
 use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
+use Illuminate\Queue\Events\JobExceptionOccurred;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -43,6 +46,13 @@ class ElementServiceProvider extends ServiceProvider
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
         app()->terminating(fn () => app(BulkOpDeferrals::class)->persistPending());
+
+        // A queue worker only terminates when it stops, and a bulk op can end in a job on another worker.
+        Event::listen([JobProcessed::class, JobExceptionOccurred::class], function (JobProcessed|JobExceptionOccurred $event): void {
+            if (! $event->job instanceof SyncJob) {
+                app(BulkOpDeferrals::class)->persistPending();
+            }
+        });
 
         if (! $this->app->runningInConsole()) {
             return;

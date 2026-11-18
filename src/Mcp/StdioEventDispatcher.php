@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Activity\ActivityEventRecorder;
+use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Facades\Context;
@@ -15,7 +17,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Handles each stdio request in a fresh request scope, with Craft's state reset as for an Octane request, and saves
- * project config changes before each response is sent.
+ * project config changes, pending bulk op events and deprecation warnings before each response is sent.
  *
  * Over HTTP, each request gets its own scope, and changes are saved as it ends. The stdio server is one long-running
  * command, so without this, requests would share state, and changes would only be saved when it stops, with nothing
@@ -36,6 +38,8 @@ class StdioEventDispatcher implements EventDispatcherInterface
 
         if ($event instanceof ResponseEvent || $event instanceof ErrorEvent) {
             app(ProjectConfig::class)->flushChanges();
+            app(BulkOpDeferrals::class)->persistPending();
+            app(Deprecator::class)->storeLogs();
         }
 
         return $event;

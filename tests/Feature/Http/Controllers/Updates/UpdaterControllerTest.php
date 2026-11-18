@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Context;
@@ -86,6 +87,39 @@ test('finish requires encrypted update data', function () {
         ->assertJsonValidationErrors(['data']);
 
     get('/')->assertServiceUnavailable();
+});
+
+test('finish only turns off maintenance mode that an update turned on', function (bool $turnedOnByAdmin) {
+    $maintenance = app(Maintenance::class);
+    $turnedOnByAdmin ? $maintenance->set(true, 60) : $maintenance->startUpdate();
+    auth()->logout();
+
+    // The index hands out data anonymously
+    $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');
+    postJson(action([UpdaterController::class, 'finish']), compact('data'))->assertOk();
+
+    expect($maintenance->isEnabled())->toBe($turnedOnByAdmin);
+
+    if ($turnedOnByAdmin) {
+        expect(app()->maintenanceMode()->data()['retry'])->toBe(60);
+    }
+})->with([
+    'turned on by an admin' => [true],
+    'turned on by an update' => [false],
+]);
+
+test('a forced update leaves maintenance mode turned on by an admin as it was', function () {
+    $maintenance = app(Maintenance::class);
+    $maintenance->set(true, 60);
+    $data = Crypt::encrypt(Json::encode([
+        'migrate' => ['craft'],
+    ]));
+
+    postJson(action([UpdaterController::class, 'forceUpdate']), compact('data'))->assertOk();
+    postJson(action([UpdaterController::class, 'finish']), compact('data'))->assertOk();
+
+    expect($maintenance->isEnabled())->toBeTrue()
+        ->and(app()->maintenanceMode()->data()['retry'])->toBe(60);
 });
 
 test('index returns Inertia Updater page', function () {

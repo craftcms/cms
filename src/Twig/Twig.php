@@ -74,6 +74,26 @@ class Twig
     }
 
     /**
+     * Uses a Twig environment for a template mode while the callback runs, then puts the previous one back.
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $callback
+     * @return TReturn
+     */
+    public function with(Environment $twig, TemplateMode $mode, callable $callback): mixed
+    {
+        $previous = $this->get($mode);
+        $this->set($twig, $mode);
+
+        try {
+            return $callback();
+        } finally {
+            $this->set($previous, $mode);
+        }
+    }
+
+    /**
      * Creates a fresh Twig environment for the current template mode.
      */
     public function create(): Environment

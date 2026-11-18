@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Enums\UserAccountTransition;
 use CraftCms\Cms\User\Events\DefaultUserGroupsResolving;
 use CraftCms\Cms\User\Events\UserActivated;
 use CraftCms\Cms\User\Events\UserActivating;
@@ -71,6 +72,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -349,9 +351,8 @@ class Users
     public function removeCredentials(User $user): void
     {
         $userModel = UserModel::findOrFail($user->id);
-        $userModel->active = false;
-        $userModel->pending = false;
-        $userModel->password = null;
+        $changes = UserAccountTransition::RemoveCredentials->changes($userModel);
+        $userModel->forceFill($changes);
 
         $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
 
@@ -359,9 +360,7 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $user->active = false;
-        $user->pending = false;
-        $user->password = null;
+        $this->applyUserChanges($user, $changes);
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -531,6 +530,8 @@ class Users
      */
     public function handleValidLogin(User $user): void
     {
+        $this->unlockIfCooldownEnded($user);
+
         $changes = [
             'lastLoginDate' => now('UTC')->toDateTime(),
             'invalidLoginWindowStart' => null,
@@ -556,36 +557,38 @@ class Users
      */
     public function handleInvalidLogin(User $user): void
     {
-        $userModel = UserModel::findOrFail($user->id);
-        $now = now('UTC');
-        $changes = ['lastInvalidLoginDate' => $now];
+        // Clear an expired lockout first, so failed logins count from zero again
+        $this->unlockIfCooldownEnded($user);
 
-        if (Cms::config()->storeUserIps) {
-            $changes['lastLoginAttemptIp'] = request()->ip();
-        }
+        // Lock the row while counting, so parallel failed attempts can't each read the same count
+        [$changes, $alreadyLocked, $indexAttributesChanged] = DB::transaction(function () use ($user): array {
+            $userModel = UserModel::query()->lockForUpdate()->findOrFail($user->id);
+            $now = now('UTC');
+            $changes = ['lastInvalidLoginDate' => $now];
 
-        $maxInvalidLogins = Cms::config()->maxInvalidLogins;
-        $alreadyLocked = $user->locked;
-
-        if ($maxInvalidLogins) {
-            if ($this->isUserInsideInvalidLoginWindow($userModel)) {
-                $changes['invalidLoginCount'] = $userModel->invalidLoginCount + 1;
-
-                if ($changes['invalidLoginCount'] >= $maxInvalidLogins) {
-                    $changes += [
-                        'locked' => true,
-                        'invalidLoginWindowStart' => null,
-                        'lockoutDate' => $now,
-                    ];
-                    $changes['invalidLoginCount'] = null;
-                }
-            } else {
-                $changes['invalidLoginWindowStart'] = $now;
-                $changes['invalidLoginCount'] = 1;
+            if (Cms::config()->storeUserIps) {
+                $changes['lastLoginAttemptIp'] = request()->ip();
             }
-        }
 
-        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+            $maxInvalidLogins = Cms::config()->maxInvalidLogins;
+            $alreadyLocked = (bool) $userModel->locked;
+
+            if ($maxInvalidLogins) {
+                if ($this->isUserInsideInvalidLoginWindow($userModel)) {
+                    $changes['invalidLoginCount'] = $userModel->invalidLoginCount + 1;
+
+                    if ($changes['invalidLoginCount'] >= $maxInvalidLogins) {
+                        $changes = UserAccountTransition::Lock->changes($userModel, $now) + $changes;
+                    }
+                } else {
+                    $changes['invalidLoginWindowStart'] = $now;
+                    $changes['invalidLoginCount'] = 1;
+                }
+            }
+
+            return [$changes, $alreadyLocked, $this->saveUserChanges($user, $userModel, $changes)];
+        });
+
         $this->applyUserChanges($user, $changes);
 
         if (! $alreadyLocked && $user->locked) {
@@ -612,20 +615,12 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $changes = [
-            'active' => true,
-            'pending' => false,
-            'locked' => false,
-            'suspended' => false,
-            'invalidLoginWindowStart' => null,
-            'invalidLoginCount' => null,
-            'lastInvalidLoginDate' => null,
-            'lockoutDate' => null,
-        ];
+        $userModel = UserModel::findOrFail($user->id);
+        $changes = UserAccountTransition::Activate->changes($userModel);
         $this->validateUserChanges($user, $changes);
         $changes += $this->emailVerificationChanges($user);
 
-        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
+        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, $userModel, $changes));
         $this->applyUserChanges($user, $changes);
 
         event(new UserActivated($user));
@@ -651,18 +646,7 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $changes = [
-            'active' => false,
-            'pending' => false,
-            'locked' => false,
-            'suspended' => false,
-            'invalidLoginWindowStart' => null,
-            'invalidLoginCount' => null,
-            'lastInvalidLoginDate' => null,
-            'lockoutDate' => null,
-        ];
-        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
-        $this->applyUserChanges($user, $changes);
+        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Deactivate);
 
         event(new UserDeactivated($user));
 
@@ -682,6 +666,7 @@ class Users
     {
         $userModel = UserModel::findOrFail($user->id);
         $changes = $this->emailVerificationChanges($user);
+        $this->ensureCredentialsAvailable($user, $changes);
         $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
         $this->applyUserChanges($user, $changes);
 
@@ -719,14 +704,7 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $changes = [
-            'locked' => false,
-            'invalidLoginCount' => null,
-            'invalidLoginWindowStart' => null,
-            'lockoutDate' => null,
-        ];
-        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
-        $this->applyUserChanges($user, $changes);
+        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Unlock);
 
         event(new UserUnlocked($user));
 
@@ -750,9 +728,7 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $changes = ['suspended' => true];
-        $indexAttributesChanged = $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes);
-        $this->applyUserChanges($user, $changes);
+        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Suspend);
 
         // Destroy all sessions for this user
         DB::table(Table::SESSIONS)
@@ -764,6 +740,31 @@ class Users
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
         }
+    }
+
+    /**
+     * Clears a lockout whose cooldown has ended. `unlockUser()` fires the unlock events.
+     */
+    private function unlockIfCooldownEnded(User $user): void
+    {
+        if ($user->locked && ! $user->isLocked()) {
+            $this->unlockUser($user);
+        }
+    }
+
+    /**
+     * Saves a transition's changes to the user's row and element.
+     *
+     * @return bool whether any attributes shown in element indexes changed
+     */
+    private function transitionUser(User $user, UserAccountTransition $transition): bool
+    {
+        $userModel = UserModel::findOrFail($user->id);
+        $changes = $transition->changes($userModel);
+        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, $userModel, $changes));
+        $this->applyUserChanges($user, $changes);
+
+        return $indexAttributesChanged;
     }
 
     /** @param array<string, mixed> $changes */
@@ -805,6 +806,31 @@ class Users
     {
         foreach (Arr::except($changes, ['invalidLoginWindowStart']) as $attribute => $value) {
             $user->$attribute = $value;
+        }
+    }
+
+    /**
+     * Throws if another account took the user's new email or username since they requested it.
+     *
+     * @param  array<string, mixed>  $changes
+     *
+     * @throws InvalidElementException
+     */
+    private function ensureCredentialsAvailable(User $user, array $changes): void
+    {
+        $credentials = Arr::only($changes, ['email', 'username']);
+        $rules = [];
+
+        foreach (array_keys($credentials) as $column) {
+            $rules[$column] = [UserRules::unique($column, $user->id)];
+        }
+
+        $validator = Validator::make($credentials, $rules);
+
+        if ($validator->fails()) {
+            $user->errors()->merge($validator->errors());
+
+            throw new InvalidElementException($user);
         }
     }
 
@@ -878,9 +904,7 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $changes = ['suspended' => false];
-        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes));
-        $this->applyUserChanges($user, $changes);
+        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Unsuspend);
 
         event(new UserUnsuspended($user));
 
@@ -953,7 +977,7 @@ class Users
     public function setVerificationCodeOnUser(User $user): string
     {
         $userModel = UserModel::findOrFail($user->id);
-        $changes = ['pending' => $userModel->active ? $userModel->pending : true];
+        $changes = UserAccountTransition::SendVerification->changes($userModel);
         $this->validateUserChanges($user, $changes);
 
         /** @var PasswordBroker $broker */

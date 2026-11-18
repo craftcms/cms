@@ -131,6 +131,22 @@ test('store renders the email-taken page when the new email can’t be verified'
         ->where('email', 'taken@example.com'));
 });
 
+test('store refuses an email address another account has taken', function () {
+    $other = UserModel::factory()->createElement(['active' => true]);
+    $user = UserModel::factory()->createElement(['active' => true, 'pending' => false]);
+    $code = Users::setVerificationCodeOnUser($user);
+    UserModel::where('id', $user->id)->update(['unverifiedEmail' => $other->email]);
+
+    postJson(action([VerifyEmailController::class, 'store']), [
+        'uid' => $user->uid,
+        'code' => $code,
+    ])->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('auth/EmailTaken')
+        ->where('email', $other->email));
+
+    expect(UserModel::whereKey($user->id)->value('email'))->toBe($user->email);
+});
+
 test('store activates user when pending with no unverified email', function () {
     $userModel = UserModel::factory()->create([
         'active' => false,

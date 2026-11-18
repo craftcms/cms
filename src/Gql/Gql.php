@@ -771,8 +771,12 @@ class Gql
 
             $muteEvents = $this->projectConfig->muteEvents;
             $this->projectConfig->muteEvents = false;
-            $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
-            $this->projectConfig->muteEvents = $muteEvents;
+
+            try {
+                $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
+            } finally {
+                $this->projectConfig->muteEvents = $muteEvents;
+            }
         }
 
         $this->_saveTokenInternal($token);

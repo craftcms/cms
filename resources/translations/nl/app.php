@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer kan de updates niet installeren.',
     'Composer was unable to remove the plugin.' => 'Composer kan de invoegtoepassing niet verwijderen.',
     'Composer was unable to revert the updates.' => 'Composer kan de updates niet ongedaan maken.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Gecomprimeerd',
     'Condition {num, number}' => 'Conditie {num, number}',
     'Configure the category group’s site-specific settings.' => 'Configureer de websitespecifieke instellingen van de categoriegroep.',
