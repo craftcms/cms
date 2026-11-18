@@ -83,7 +83,7 @@ it('builds a field layout with a new tab', function () {
         ->click('.fld-library .fld-field[data-attribute="summary"]')
         ->assertPresent('#main .fld-tab .fld-field[data-attribute="summary"]');
 
-    assertNoAccessibilityIssues($page)
+    assertNoAccessibilityIssues($page, outsideLandmarks: ['.fld-library-hud'])
         ->keys('.fld-library >> role=textbox[name="Search"]', 'Escape')
         ->assertMissing('.fld-library');
 

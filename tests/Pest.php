@@ -12,6 +12,7 @@ use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
@@ -247,19 +248,27 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
  * appearing, text has less contrast than it will have, and axe reports it. Scroll-driven animations and the
  * navigation progress bar's script animation aren't waited for. Axe takes longer than the usual
  * assertion timeout on large pages, such as project config with the workbench content, so it gets 30 seconds.
+ *
+ * `$outsideLandmarks` names popups that legacy code attaches to `<body>`, outside every landmark, such as the field
+ * layout designer's field library. The landmark check skips them; every other rule still checks them.
+ *
+ * @param  list<string>  $outsideLandmarks
  */
-function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
+function assertNoAccessibilityIssues(AwaitableWebpage $page, array $outsideLandmarks = []): AwaitableWebpage
 {
     $page->script((string) file_get_contents(InstalledVersions::getInstallPath('pestphp/pest-plugin-browser').'/resources/js/axe.min.js'));
-    $page->script(<<<'JS'
-        (bestPractices => axe.configure({
+    $page->script(sprintf(<<<'JS'
+        ((bestPractices, outsideLandmarks) => axe.configure({
             rules: [
                 ...axe.getRules(['best-practice'])
                     .filter(rule => ! bestPractices.includes(rule.ruleId))
                     .map(rule => ({id: rule.ruleId, enabled: false})),
+                ...outsideLandmarks.length
+                    ? [{id: 'region', selector: `body *:not(${outsideLandmarks.map(s => `${s}, ${s} *`).join(', ')})`}]
+                    : [],
             ],
-        }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'])
-        JS);
+        }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'], %s)
+        JS, Json::encode($outsideLandmarks)));
     $page->script(<<<'JS'
         Promise.all(document.getAnimations()
             .filter(animation => (animation instanceof CSSTransition || animation instanceof CSSAnimation)
