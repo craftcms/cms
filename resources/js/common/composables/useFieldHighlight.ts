@@ -38,7 +38,7 @@ export async function highlightField(field: HTMLElement): Promise<void> {
  * which doesn't re-evaluate `:target`, and the field doesn't exist yet at the
  * moment the URL changes.
  *
- * Only fields are highlighted. The shell's own skip links point at `#main`,
+ * Only fields are highlighted. The shell's own skip links point at
  * `#content-main` and `#content-sidebar`, and flashing the whole main column when someone uses one
  * would be worse than doing nothing.
  */

@@ -12,13 +12,9 @@
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }>();
 
-  // `#main` holds the secondary navigation before the content, so with a
-  // sidebar, the main section link skips past it to the content itself.
+  // Pages that take over `page-main` give their own `<main>` this id too.
   const skipLinks = computed(() => [
-    {
-      label: t('Skip to main section'),
-      url: props.hasSidebar ? '#content-main' : '#main',
-    },
+    {label: t('Skip to main section'), url: '#content-main'},
     ...(props.hasSidebar
       ? [{label: t('Skip to secondary navigation'), url: '#content-sidebar'}]
       : []),

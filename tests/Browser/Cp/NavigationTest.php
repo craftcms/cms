@@ -35,6 +35,7 @@ it('moves focus to the main section from the skip link', function (string $path,
         ->keys('role=link[name="Skip to main section"]', 'Enter')
         ->assertScript('document.activeElement.id', $target);
 })->with([
-    'without a secondary navigation' => ['dashboard', 'main'],
+    'without a secondary navigation' => ['dashboard', 'content-main'],
     'past the secondary navigation' => ['settings/users', 'content-main'],
+    'on a page with its own main landmark' => ['graphql/explore', 'content-main'],
 ]);

@@ -324,7 +324,9 @@
               sits in the panel. -->
               <div class="cp-body__panel">
                 <slot name="page-main">
-                  <main id="main" tabindex="-1">
+                  <!-- `#main` is what legacy `Craft.cp.$main` looks for. The landmark is `#content-main`, so the
+                  secondary nav and details beside it are landmarks of their own. -->
+                  <div id="main">
                     <form
                       method="post"
                       accept-charset="UTF-8"
@@ -379,7 +381,7 @@
                           </LayoutSlotOutlet>
                         </div>
 
-                        <div
+                        <main
                           id="content-main"
                           tabindex="-1"
                           class="cp-content__main"
@@ -500,7 +502,7 @@
                               </ContentFooter>
                             </div>
                           </div>
-                        </div>
+                        </main>
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
                         <ContentDetailsAside
                           ref="detailsAside"
@@ -518,7 +520,7 @@
                         </ContentDetailsAside>
                       </div>
                     </form>
-                  </main>
+                  </div>
                 </slot>
               </div>
               <!-- Holds only the buttons that open each panel, which DetailsPanels teleports in. The panels
@@ -641,7 +643,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     margin-inline-end: 0;
   }
 
-  main,
+  #main,
   .cp-main {
     height: 100%;
   }
