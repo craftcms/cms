@@ -364,7 +364,7 @@ class ImageTransforms
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
         if (!$destination) {
-            $source = $destination;
+            $destination = $source;
         }
 
         $maxCachedImageSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;

@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\elements\Category;
+use craft\events\ConfigEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\ProjectConfigData;
@@ -384,6 +385,23 @@ class ProjectConfigTest extends TestCase
         }
 
         self::assertTrue($handlerWasCalled);
+    }
+
+    public function testParentHandlersFireWhenNestedValueCreatesParent(): void
+    {
+        $projectConfig = new ProjectConfig();
+        $internalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_internalConfig');
+        $internalConfigProperty->setValue($projectConfig, new ReadOnlyProjectConfigData($this->internal, $projectConfig));
+
+        $handled = [];
+        $projectConfig->onAdd('demo', function(ConfigEvent $event) use (&$handled) {
+            $handled[] = [$event->oldValue, $event->newValue];
+        });
+
+        $projectConfig->set('demo.child.key', 1);
+
+        self::assertSame([[null, ['child' => ['key' => 1]]]], $handled);
+        self::assertSame(['child' => ['key' => 1]], $projectConfig->get('demo'));
     }
 
     public function getConfigProvider(): array
