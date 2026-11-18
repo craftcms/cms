@@ -122,7 +122,7 @@ it('compares a draft with the current entry from the Versions panel', function (
         ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
         ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in May');
 
-    assertNoJavaScriptErrors($page);
+    assertNoAccessibilityIssues(assertNoJavaScriptErrors($page));
 });
 
 it('copies a field’s value from the older version, and undoes it', function () {
@@ -387,4 +387,14 @@ it('keeps what keyboard focus moves to clear of the version menus in the stacked
     expect($clearance)->toBeGreaterThanOrEqual(0);
 
     assertNoJavaScriptErrors($page);
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the comparison of a seeded entry', function () {
+        $post = EntryElement::find()->section('posts')->title('Welcome to Craft 6')->one();
+
+        assertCpPageRenders("compare/$post->id", 'Compare Welcome to Craft 6');
+    });
 });

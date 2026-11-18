@@ -57,9 +57,11 @@ it('renames an asset', function () {
     $asset->title = 'Field notes';
     Elements::saveElement($asset);
 
-    visitCp('assets/photos')
+    $page = visitCp('assets/photos')
         ->click('#main tbody >> role=link[name="Field notes"]')
-        ->assertValue('input[name="newFilename"]', 'field-notes.txt')
+        ->assertValue('input[name="newFilename"]', 'field-notes.txt');
+
+    assertNoAccessibilityIssues($page)
         ->type('input[name="newFilename"]', 'trip-notes.txt')
         ->click('#main >> role=button[name="Save"]')
         ->assertVisible('#main tbody >> role=link[name="Field notes"]')
@@ -68,4 +70,15 @@ it('renames an asset', function () {
     expect(AssetElement::find()->id($asset->id)->one()->filename)->toBe('trip-notes.txt')
         ->and(File::exists("$this->root/trip-notes.txt"))->toBeTrue()
         ->and(File::exists("$this->root/field-notes.txt"))->toBeFalse();
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the asset pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'images volume' => ['assets/images', 'Images'],
+        'asset' => [fn () => cpEditPath(AssetElement::find()->volume('images')->one()), 'Showcase image'],
+    ]);
 });

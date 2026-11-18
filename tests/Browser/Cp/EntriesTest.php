@@ -26,9 +26,11 @@ beforeEach(function () {
 });
 
 it('creates an entry', function () {
-    visitCp('content/entries/articles')
+    $page = visitCp('content/entries/articles')
         ->click('#main >> role=link[name="New entry"]')
-        ->assertSeeIn('#main h1', 'Create a new entry')
+        ->assertSeeIn('#main h1', 'Create a new entry');
+
+    assertNoAccessibilityIssues($page)
         ->type('input[name="title"]', 'Hello world')
         ->click('#main >> role=button[name="Create entry"]')
         ->assertSee('Entry created.')
@@ -119,4 +121,23 @@ it('reverts an entry to an earlier revision', function () {
         ->assertQueryStringMissing('revisionId');
 
     expect(EntryElement::find()->id($entry->id)->one()->title)->toBe('Original');
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the entry pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'all entries' => ['content/entries', 'All entries'],
+        'channel' => ['content/entries/posts', 'Posts'],
+        'structure' => ['content/entries/pages', 'Pages'],
+        'structure view' => ['content/entries/pages?viewMode=structure', 'Pages'],
+        'field showcase' => ['content/entries/showcase', 'Field Showcase'],
+        'entry' => [fn () => cpEditPath(EntryElement::find()->section('posts')->title('Welcome to Craft 6')->one()), 'Welcome to Craft 6'],
+        'entry activity' => [fn () => cpEditPath(EntryElement::find()->section('posts')->title('Welcome to Craft 6')->one()).'/activity', 'Activity for “Welcome to Craft 6”'],
+        'field showcase entry' => [fn () => cpEditPath(EntryElement::find()->section('showcase')->slug('kitchen-sink')->one()), 'Kitchen sink'],
+        'field showcase activity' => [fn () => cpEditPath(EntryElement::find()->section('showcase')->slug('kitchen-sink')->one()).'/activity', 'Activity for “Kitchen sink”'],
+        'field showcase revisions' => [fn () => cpEditPath(EntryElement::find()->section('showcase')->slug('kitchen-sink')->one()).'/revisions', 'Revisions for “Kitchen sink”'],
+    ]);
 });

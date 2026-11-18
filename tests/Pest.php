@@ -22,6 +22,7 @@ use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Pest\Browser\Api\AwaitableWebpage;
@@ -32,6 +33,7 @@ use Pest\Browser\Support\PackageJsonDirectory;
 use Pest\Browser\Support\Port;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\DomCrawler\Crawler;
+use Workbench\Database\Seeders\ContentSeeder;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
@@ -264,6 +266,41 @@ function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
     } finally {
         Playwright::setTimeout($timeout);
     }
+}
+
+/**
+ * Seeds the workbench's sample content, as in a site someone has worked on. Each test's database is rolled back but
+ * its files aren't, so the volumes get a disk of their own, removed after the test.
+ */
+function seedWorkbenchContent(): void
+{
+    $root = public_path('test-assets');
+    File::deleteDirectory($root);
+    config()->set('filesystems.disks.assets.root', $root);
+    config()->set('filesystems.disks.assets.url', '/test-assets');
+
+    test()->seed(ContentSeeder::class);
+    test()->beforeApplicationDestroyed(fn () => File::deleteDirectory($root));
+}
+
+/**
+ * The path of an element's edit page, as `visitCp()` takes it.
+ */
+function cpEditPath(?ElementInterface $element): string
+{
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    return ltrim(str_replace("/$cpTrigger/", '/', (string) parse_url((string) $element?->getCpEditUrl(), PHP_URL_PATH)), '/');
+}
+
+/**
+ * Asserts a control panel page renders with the given heading, no JavaScript errors and no accessibility issues.
+ */
+function assertCpPageRenders(string $path, string $heading): void
+{
+    test()->withoutExceptionHandling();
+
+    assertNoAccessibilityIssues(assertNoJavaScriptErrors(visitCp($path))->assertSeeIn('#main h1', $heading));
 }
 
 function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void

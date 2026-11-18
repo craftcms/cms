@@ -8,6 +8,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Models\User;
 
@@ -80,7 +81,9 @@ it('builds a field layout with a new tab', function () {
         ->click('#main .fld-tab >> role=button[name="Add"]')
         ->click('.fld-library .fld-field[data-attribute="body"]')
         ->click('.fld-library .fld-field[data-attribute="summary"]')
-        ->assertPresent('#main .fld-tab .fld-field[data-attribute="summary"]')
+        ->assertPresent('#main .fld-tab .fld-field[data-attribute="summary"]');
+
+    assertNoAccessibilityIssues($page)
         ->keys('.fld-library >> role=textbox[name="Search"]', 'Escape')
         ->assertMissing('.fld-library');
 
@@ -100,5 +103,17 @@ it('builds a field layout with a new tab', function () {
     ])->all())->toBe([
         'Content' => ['title', 'body'],
         'Details' => ['summary'],
+    ]);
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the entry type pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'entry types' => ['settings/entry-types', 'Entry Types'],
+        'new entry type' => ['settings/entry-types/new', 'Create a new entry type'],
+        'entry type' => [fn () => 'settings/entry-types/'.EntryTypes::getEntryTypeByHandle('page')->id, 'Page'],
     ]);
 });

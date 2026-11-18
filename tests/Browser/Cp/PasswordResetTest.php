@@ -11,8 +11,11 @@ it('resets a forgotten password', function () {
     Notification::fake();
     $user = User::factory()->withPermissions(['accessCp'])->create(['username' => 'forgetful', 'email' => 'forgetful@example.com']);
 
-    visitCp('login')
+    $page = visitCp('login')
         ->click('role=button[name="Forgot password?"]')
+        ->assertVisible('role=button[name="Reset password"]');
+
+    assertNoAccessibilityIssues($page)
         ->type('role=textbox[name="Username or Email"]', 'forgetful')
         ->click('role=button[name="Reset password"]')
         ->assertSee('Check your email for instructions to reset your password.');
@@ -24,7 +27,8 @@ it('resets a forgotten password', function () {
         return true;
     });
 
-    visit(parse_url($link, PHP_URL_PATH).'?'.parse_url($link, PHP_URL_QUERY))
+    assertNoAccessibilityIssues(visit(parse_url($link, PHP_URL_PATH).'?'.parse_url($link, PHP_URL_QUERY))
+        ->assertVisible('role=textbox[name="Choose a new password"]'))
         ->type('role=textbox[name="Choose a new password"]', 'a-fresh-start-2026')
         ->click('role=button[name="Set Password"]')
         ->assertPathIs('/');
