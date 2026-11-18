@@ -43,11 +43,7 @@
 </script>
 
 <template>
-  <aside
-    :id="legacyIds ? 'details' : undefined"
-    class="cp-content__details"
-    :aria-label="t('Details')"
-  >
+  <aside :id="legacyIds ? 'details' : undefined" class="cp-content__details">
     <div class="cp-content__details-pane" :class="{details: legacyIds}">
       <ContentDetails ref="column" :resizer="resizer">
         <DetailsPanels
