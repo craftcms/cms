@@ -39,8 +39,6 @@ class Button extends ViewComponent
 
     protected bool $inherit = false;
 
-    protected bool $tint = false;
-
     protected string $type = 'button';
 
     protected ?string $form = null;
@@ -117,17 +115,6 @@ class Button extends ViewComponent
     public function inherit(bool $inherit = true): static
     {
         $this->inherit = $inherit;
-
-        return $this;
-    }
-
-    /**
-     * Tints a plain button with its own color while it's hovered, pressed or
-     * open, rather than filling it. For quiet buttons in a page's chrome.
-     */
-    public function tint(bool $tint = true): static
-    {
-        $this->tint = $tint;
 
         return $this;
     }
@@ -319,7 +306,6 @@ class Button extends ViewComponent
             'form' => $this->form,
             'variant' => $this->getVariant(),
             'inherit' => $this->inherit,
-            'tint' => $this->tint,
             'size' => $this->getSize(),
             'icon' => $icon,
             'icon-position' => $this->iconPosition,

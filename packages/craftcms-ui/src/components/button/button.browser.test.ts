@@ -348,9 +348,9 @@ describe('[inherit]', () => {
   });
 });
 
-describe('[tint]', () => {
-  async function mountTinted(attributes = ''): Promise<CraftButton> {
-    document.body.innerHTML = `<craft-button variant="plain" icon="code" aria-label="Dev Mode" tint style="--c-color-neutral-on-quiet: rgb(200, 100, 0)" ${attributes}></craft-button>`;
+describe('plain', () => {
+  async function mountPlain(attributes = ''): Promise<CraftButton> {
+    document.body.innerHTML = `<craft-button variant="plain" icon="code" aria-label="Dev Mode" style="--c-color-neutral-on-quiet: rgb(200, 100, 0)" ${attributes}></craft-button>`;
     const button = document.querySelector('craft-button') as CraftButton;
     await button.updateComplete;
     return button;
@@ -361,13 +361,13 @@ describe('[tint]', () => {
   }
 
   it('has no fill at rest', async () => {
-    const button = await mountTinted();
+    const button = await mountPlain();
 
     expect(getComputedStyle(button).backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('is tinted with its own color while pressed, keeping its color, with no border', async () => {
-    const button = await mountTinted();
+    const button = await mountPlain();
     button.active = true;
     await button.updateComplete;
     const style = getComputedStyle(button);
@@ -377,20 +377,31 @@ describe('[tint]', () => {
     expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
   });
 
+  it('stays tinted while pressed under the pointer', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const button = await mountPlain();
+    await userEvent.hover(button);
+    button.active = true;
+    await button.updateComplete;
+
+    expect(getComputedStyle(button).backgroundColor).toBe(tint(0.12));
+    await userEvent.unhover(button);
+  });
+
   it('is tinted as much while its popover is open', async () => {
-    const button = await mountTinted('slot="invoker" aria-expanded="true"');
+    const button = await mountPlain('slot="invoker" aria-expanded="true"');
 
     expect(getComputedStyle(button).backgroundColor).toBe(tint(0.12));
   });
 
   it('isn’t tinted while expanded by something other than a popover', async () => {
-    const button = await mountTinted('aria-expanded="true"');
+    const button = await mountPlain('aria-expanded="true"');
 
     expect(getComputedStyle(button).backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('keeps the surrounding text color while pressed, with inherit', async () => {
-    document.body.innerHTML = `<div style="color: rgb(0, 128, 0)"><craft-button variant="plain" icon="code" aria-label="Actions" tint inherit></craft-button></div>`;
+    document.body.innerHTML = `<div style="color: rgb(0, 128, 0)"><craft-button variant="plain" icon="code" aria-label="Actions" inherit></craft-button></div>`;
     const button = document.querySelector('craft-button') as CraftButton;
     button.active = true;
     await button.updateComplete;
@@ -398,8 +409,8 @@ describe('[tint]', () => {
     expect(getComputedStyle(button).color).toBe('rgb(0, 128, 0)');
   });
 
-  it('takes the loud fill while pressed without it', async () => {
-    document.body.innerHTML = `<craft-button variant="plain" icon="code" aria-label="Dev Mode" style="--c-color-neutral-fill-loud: rgb(10, 20, 30)" active></craft-button>`;
+  it('keeps the loud fill while selected, as in a button group', async () => {
+    document.body.innerHTML = `<craft-button variant="plain" icon="code" aria-label="Dev Mode" style="--c-color-neutral-fill-loud: rgb(10, 20, 30)" aria-pressed="true" active></craft-button>`;
     const button = document.querySelector('craft-button') as CraftButton;
     await button.updateComplete;
 

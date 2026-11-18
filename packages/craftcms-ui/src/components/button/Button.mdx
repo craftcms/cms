@@ -19,7 +19,7 @@ A button represents a clickable element that performs an action when activated.
 - `fill` — Soft neutral fill. The default; use for everyday actions.
 - `outline` — Transparent background with a neutral border. Medium emphasis; use for secondary actions alongside a `primary` or `solid` button.
 - `dashed` — Like `outline`, with a dashed border.
-- `plain` — No background or border. Lowest emphasis; use for tertiary actions that shouldn't draw attention on their own.
+- `plain` — No background or border. Lowest emphasis; use for tertiary actions that shouldn't draw attention on their own. It's tinted with its own color while it's hovered, pressed, or open as a popover's invoker, rather than filled, and draws no border or shadow when pressed. A selected one, such as in a button group, still takes the loud fill.
 - `link` — Renders as an inline text hyperlink.
 - `none` — Completely unstyled; provides behavior only.
 
@@ -32,12 +32,6 @@ Add the boolean `inherit` property to a button placed inside a [Colorable](?path
 `primary` and `danger` ignore `inherit` and keep their own colors, so they remain stable inside colorable containers.
 
 <Canvas of={ButtonStories.Inherit} />
-
-## Tint
-
-Add the boolean `tint` property to a `plain` button to tint it with its own color while it's hovered, pressed, or open as a popover's invoker, rather than filling it with the neutral palette. A pressed button draws no border or shadow. Use it for quiet buttons in a page's chrome, such as the icons in the control panel's header, where a gray fill behind a colored icon would look out of place.
-
-<Canvas of={ButtonStories.Tint} />
 
 ## Sizes
 

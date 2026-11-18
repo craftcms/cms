@@ -88,7 +88,6 @@
             icon="chevron-down"
             :aria-label="label"
             inherit
-            tint
           ></craft-button>
         </template>
       </ActionMenu>

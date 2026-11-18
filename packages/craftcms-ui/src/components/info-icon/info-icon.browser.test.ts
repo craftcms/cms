@@ -72,14 +72,3 @@ it('shows the help cursor over its button', async () => {
 
   expect(getComputedStyle(button).cursor).toBe('help');
 });
-
-it('passes tint to its button', async () => {
-  const element = document.createElement('craft-info-icon') as CraftInfoIcon;
-  element.tint = true;
-  document.body.append(element);
-  await element.updateComplete;
-
-  expect(
-    element.shadowRoot!.querySelector('craft-button')!.hasAttribute('tint')
-  ).toBe(true);
-});

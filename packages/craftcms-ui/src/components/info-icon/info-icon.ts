@@ -42,12 +42,6 @@ export default class CraftInfoIcon extends LitElement {
   /** Name of the icon shown on the button. */
   @property() icon = 'circle-info';
 
-  /**
-   * Tints the button with its own color while it's hovered or pressed, as
-   * `craft-button`'s `tint` does.
-   */
-  @property({type: Boolean, reflect: true}) tint = false;
-
   /** Prevents the tooltip from being opened. */
   @property({type: Boolean, reflect: true}) disabled = false;
 
@@ -138,7 +132,6 @@ export default class CraftInfoIcon extends LitElement {
           icon
           size="zero"
           variant="plain"
-          ?tint=${this.tint}
           id="${this.#buttonId}"
         >
           <craft-icon name="${this.icon}" label="${this.label}"></craft-icon>

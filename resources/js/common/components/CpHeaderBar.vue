@@ -97,7 +97,6 @@
               v-if="devMode"
               class="cp-header-bar__mode"
               icon="code"
-              tint
               :label="t('Dev Mode')"
               >{{ t('Dev Mode is enabled') }}</craft-info-icon
             >
@@ -114,7 +113,6 @@
               v-if="maintenanceMode"
               class="cp-header-bar__mode"
               icon="person-digging"
-              tint
               :label="t('Maintenance Mode')"
               >{{ t('Maintenance Mode is enabled') }}</craft-info-icon
             >

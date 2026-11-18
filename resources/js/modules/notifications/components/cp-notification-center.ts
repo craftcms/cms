@@ -141,7 +141,6 @@ class CpNotificationCenter extends LitElement {
           type="button"
           size="small"
           variant="plain"
-          tint
           flush=${this.flush ?? nothing}
           icon
         >

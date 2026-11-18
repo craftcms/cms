@@ -93,30 +93,6 @@ export const Inherit: Story = {
   `,
 };
 
-/**
- * With the `tint` property, a `plain` button is tinted with its own color while
- * it's hovered, pressed or open. Hover or press each one.
- */
-export const Tint: Story = {
-  render: () => html`
-    <div class="flex gap-2 items-center">
-      <craft-button variant="plain" icon="magnifying-glass" tint
-        >Search</craft-button
-      >
-      <craft-button
-        variant="plain"
-        icon="code"
-        tint
-        style="--c-color-neutral-on-quiet: var(--c-color-warning-on-quiet);"
-        >Dev Mode</craft-button
-      >
-      <craft-button variant="plain" icon="bell" tint aria-expanded="true"
-        >Open</craft-button
-      >
-    </div>
-  `,
-};
-
 export const Sizes: Story = {
   args: {},
   render: (args) => html`

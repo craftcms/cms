@@ -564,30 +564,33 @@ export default css`
     color: inherit;
   }
 
-  /* Tint: hovered, pressed (marked active) and, as a popover's invoker, open,
-     a plain button is tinted with its own color rather than filled. */
-  :host([variant~='plain'][tint]) {
+  /* A plain button has no fill of its own, so it's tinted with its own color
+     instead: hovered, pressed (marked active) and, as a popover's invoker,
+     open. A selected one, such as in a button group, keeps the loud fill. */
+  :host([variant~='plain']:not([inherit])),
+  :host([variant~='plain'][inherit]) {
     --c-color-fill-quiet: transparent;
     --c-color-mix-hover: currentColor 5%;
     --c-color-mix-active: currentColor 12%;
+  }
+
+  :host([variant~='plain']:not([aria-pressed='true'])) {
     --c-color-fill-loud: color-mix(in srgb, currentColor 12%, transparent);
     --c-color-on-loud: var(--c-color-on-quiet);
     --c-color-border-loud: transparent;
   }
 
-  :host([variant~='plain'][inherit][tint]) {
+  :host([variant~='plain'][inherit]:not([aria-pressed='true'])) {
     --c-color-on-loud: currentColor;
   }
 
   :host(
-    [variant~='plain'][tint][slot='invoker'][aria-expanded='true']:not(
-      :disabled
-    )
+    [variant~='plain'][slot='invoker'][aria-expanded='true']:not(:disabled)
   ) {
     background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 
-  :host([variant~='plain'][tint]:active) {
+  :host([variant~='plain']:not(:disabled):not(.loading):active) {
     box-shadow: none;
   }
 

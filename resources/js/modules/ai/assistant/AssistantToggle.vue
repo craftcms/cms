@@ -156,7 +156,6 @@
     class="assistant-toggle"
     icon
     :variant="ButtonVariant.Plain"
-    tint
     type="button"
     size="small"
     :aria-expanded="panel.isOpen.value ? 'true' : 'false'"

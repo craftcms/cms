@@ -16,7 +16,6 @@
     class="command-palette-trigger"
     icon="search"
     :variant="ButtonVariant.Plain"
-    tint
     type="button"
     size="small"
     aria-haspopup="dialog"

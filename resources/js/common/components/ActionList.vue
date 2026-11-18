@@ -534,7 +534,6 @@
         size="small"
         :icon="lent.icon"
         variant="plain"
-        tint
         :aria-label="lent.label"
         @click="lent.onClick"
       ></craft-button>
