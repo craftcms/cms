@@ -91,7 +91,7 @@ it('lets action requests through, so the licensing screen’s own requests work'
     putenv('CRAFT_NO_TRIALS=true');
 
     $mockLicense = Mockery::mock(License::class)->makePartial();
-    $mockLicense->shouldReceive('issues')->andReturn([['Issue 1', 'Description 1', 'sku1']]);
+    $mockLicense->shouldReceive('issues')->andReturn([['Issue 1', 'Description 1', ['type' => 'cms-edition', 'edition' => 'pro', 'licenseId' => 1]]]);
     app()->instance(License::class, $mockLicense);
     actingAs(User::findOne());
     $cpTrigger = Cms::config()->cpTrigger;
