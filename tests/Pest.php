@@ -241,7 +241,11 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
  * purpose, such as a details column nested in an editor pane.
  *
  * Links in running text are told apart from it by color alone unless the user turns on the “Underline links”
- * preference, so axe's `link-in-text-block` rule is off, as it is in Storybook. Axe takes longer than the usual
+ * preference, so axe's `link-in-text-block` rule is off, as it is in Storybook.
+ *
+ * Axe runs once the CSS transitions and animations that end have ended. Halfway through a fade, such as a message
+ * appearing, text has less contrast than it will have, and axe reports it. Scroll-driven animations and the
+ * navigation progress bar's script animation aren't waited for. Axe takes longer than the usual
  * assertion timeout on large pages, such as project config with the workbench content, so it gets 30 seconds.
  */
 function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
@@ -256,6 +260,13 @@ function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
                 {id: 'link-in-text-block', enabled: false},
             ],
         }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'])
+        JS);
+    $page->script(<<<'JS'
+        Promise.all(document.getAnimations()
+            .filter(animation => (animation instanceof CSSTransition || animation instanceof CSSAnimation)
+                && animation.timeline === document.timeline
+                && animation.effect?.getComputedTiming().iterations !== Infinity)
+            .map(animation => animation.finished.catch(() => {})))
         JS);
 
     $timeout = Playwright::timeout();
