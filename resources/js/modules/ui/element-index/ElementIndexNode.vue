@@ -43,6 +43,11 @@
   }
 
   const initialSort = normalizedSort(initial.sort);
+  // The screen's `?site=` doesn't reach the requests for later pages, so they
+  // name the site the first page listed until the site menu changes it.
+  const initialSite = initial.sites.find(
+    (site) => site.id === initial.siteId
+  )?.handle;
 
   async function appendPayloadAssets(
     payload: NestedContentIndexData
@@ -55,7 +60,8 @@
 
   const model = useDetachedElementIndex<NestedContentIndexData>({
     initial,
-    storageKey: `embeddedindex.${storageKey ?? elementType}`,
+    initialQuery: initialSite ? {site: initialSite} : {},
+    storageKey: `embeddedindex.${storageKey ?? [elementType, props.node.uid].filter(Boolean).join('.')}`,
     readOnly: true,
     multiSelect: false,
     filterContext: (payload) => ({

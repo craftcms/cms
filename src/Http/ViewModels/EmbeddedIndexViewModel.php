@@ -13,6 +13,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Contracts\EmbeddedIndexScope;
@@ -218,6 +219,42 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     protected function baseCriteria(): array
     {
         return $this->indexSource->criteria;
+    }
+
+    #[Override]
+    protected function applySite(ElementQueryInterface $query): void
+    {
+        if ($this->hasFixedSite()) {
+            $query->siteId($this->indexSource->criteria['siteId']);
+
+            return;
+        }
+
+        parent::applySite($query);
+    }
+
+    #[Override]
+    public function siteId(): int
+    {
+        if ($this->indexSource->owner === null && ! $this->hasFixedSite()) {
+            return $this->site()->id;
+        }
+
+        return parent::siteId();
+    }
+
+    #[Override]
+    public function showSiteMenu(): bool
+    {
+        return ! $this->hasFixedSite() && parent::showSiteMenu();
+    }
+
+    /**
+     * Returns whether an index without an owner was given the site(s) to list in its criteria.
+     */
+    private function hasFixedSite(): bool
+    {
+        return $this->indexSource->owner === null && array_key_exists('siteId', $this->indexSource->criteria);
     }
 
     #[Override]

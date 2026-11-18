@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -109,6 +110,19 @@ readonly class ElementIndexSourceSettings
             fn (mixed $column): mixed => is_array($column) ? ($column[0] ?? null) : $column,
             $config['defaultTableColumns'] ?? [],
         ), is_string(...)));
+
+        if (! $nested && $defaultTableColumns === []) {
+            $defaultTableColumns = ElementSources::getTableAttributes(
+                elementType: $elementType,
+                sourceKey: self::NESTED_KEY,
+                fieldLayouts: $fieldLayouts ?: null,
+            )
+                ->map(fn (array $attribute): string => $attribute[0])
+                ->reject(fn (string $attribute): bool => $attribute === 'title')
+                ->values()
+                ->all();
+        }
+
         $indexState = app(ElementIndexState::class);
         $sortOptions = [];
 
@@ -152,7 +166,9 @@ readonly class ElementIndexSourceSettings
                 // The index query falls back to the source's `status` criteria when no status is picked
                 ...($nested ? [] : ['criteria' => $criteria]),
             ],
-            siteId: (int) ($criteria['siteId'] ?? Sites::getCurrentSite()->id),
+            siteId: is_numeric($criteria['siteId'] ?? null)
+                ? (int) $criteria['siteId']
+                : (app(RequestedSite::class)->get() ?? Sites::getCurrentSite())->id,
             viewModes: array_values(array_filter(
                 $elementType::indexViewModes(),
                 fn (array $mode): bool => $allowedViewModes === [] || in_array($mode['mode'], $allowedViewModes, true),

@@ -1358,10 +1358,7 @@ abstract class ContentIndexViewModel extends ViewModel
         // Applied on top of the filters, which the user can change, so they can't widen what's selectable
         $this->request->selectionCondition()?->modifyQuery($query);
 
-        // Ahead of the source's own criteria, which shouldn't get to override
-        // the site the user picked (the legacy index drops `criteria.siteId`
-        // for the same reason).
-        $query->siteId($this->siteId());
+        $this->applySite($query);
 
         $query->status($this->status() ?: ($this->sourceState()[1]['criteria']['status'] ?? null));
 
@@ -1370,6 +1367,18 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         return $this->query = $query;
+    }
+
+    /**
+     * Limits the index query to the site the index is listing.
+     *
+     * Applied over the source's own criteria, which shouldn't get to override
+     * the site the user picked (the legacy index drops `criteria.siteId` for
+     * the same reason).
+     */
+    protected function applySite(ElementQueryInterface $query): void
+    {
+        $query->siteId($this->siteId());
     }
 
     /**

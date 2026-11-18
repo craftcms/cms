@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use BackedEnum;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Nodes\ElementIndex;
+use DateTimeInterface;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\currentUser;
 
@@ -57,11 +62,36 @@ class EmbeddedElementIndex
     /**
      * Sets the element query criteria that every request is limited to.
      *
+     * Elements are stored as their IDs, dates as ISO 8601 strings and backed enums as their values,
+     * so the criteria can be carried in the index's token.
+     *
      * @param  array<string, mixed>  $criteria
+     *
+     * @throws InvalidArgumentException if a criteria value can't be stored in the token
      */
     public function criteria(array $criteria): static
     {
-        $this->criteria = $criteria;
+        $this->criteria = $this->normalizeCriteria($criteria);
+
+        return $this;
+    }
+
+    /**
+     * Sets the field layouts whose custom fields can be shown as columns, sorted by, and filtered on.
+     *
+     * @param  list<FieldLayout>  $fieldLayouts
+     *
+     * @throws InvalidArgumentException if a field layout hasn’t been saved
+     */
+    public function fieldLayouts(array $fieldLayouts): static
+    {
+        $this->config['fieldLayouts'] = array_map(function (FieldLayout $layout): string {
+            if ($layout->id === null) {
+                throw new InvalidArgumentException('Embedded element indexes only support saved field layouts.');
+            }
+
+            return $layout->uid;
+        }, $fieldLayouts);
 
         return $this;
     }
@@ -135,7 +165,16 @@ class EmbeddedElementIndex
 
     public function sourceSettings(): ElementIndexSourceSettings
     {
-        return ElementIndexSourceSettings::forCriteria($this->elementType, $this->criteria, $this->config);
+        $config = $this->config;
+
+        if (isset($config['fieldLayouts'])) {
+            $config['fieldLayouts'] = array_values(array_filter(array_map(
+                fn (mixed $uid): ?FieldLayout => is_string($uid) ? Fields::getLayoutByUid($uid) : null,
+                $config['fieldLayouts'],
+            )));
+        }
+
+        return ElementIndexSourceSettings::forCriteria($this->elementType, $this->criteria, $config);
     }
 
     /**
@@ -179,6 +218,32 @@ class EmbeddedElementIndex
     public function uiNode(string $uid): ElementIndex
     {
         return ElementIndex::make($uid, $this);
+    }
+
+    /**
+     * Converts criteria values to ones that survive JSON encoding.
+     *
+     * @param  array<array-key, mixed>  $criteria
+     * @return array<array-key, mixed>
+     */
+    private function normalizeCriteria(array $criteria, string $path = ''): array
+    {
+        foreach ($criteria as $key => $value) {
+            $criteria[$key] = match (true) {
+                $value === null, is_scalar($value) => $value,
+                is_array($value) => $this->normalizeCriteria($value, "$path$key."),
+                $value instanceof ElementInterface => $value->id,
+                $value instanceof DateTimeInterface => $value->format(DateTimeInterface::ATOM),
+                $value instanceof BackedEnum => $value->value,
+                default => throw new InvalidArgumentException(sprintf(
+                    'The `%s%s` criteria value can’t be used in an embedded element index.',
+                    $path,
+                    $key,
+                )),
+            };
+        }
+
+        return $criteria;
     }
 
     /** @param  array<string, mixed>  $config */
