@@ -55,15 +55,19 @@ export default css`
   }
 
   /*
-   * The hover fill, like the sidebar nav's: shorter than the tab and centered
-   * in it, so it stays clear of the strip's rule and the selected indicator.
-   * It's drawn on ::before rather than the host's background for that reason.
+   * The hover fill, like the sidebar nav's. It's drawn on ::before rather than
+   * the host's background so it can spill past both sides of the label without
+   * padding, which keeps the labels and the selected indicator lined up with
+   * the content around the strip, and so it can be shorter than the tab,
+   * centered, clear of the strip's rule and the selected indicator.
    */
   @media (hover: hover) {
     :host(:hover:not([selected]):not([disabled]))::before {
       content: '';
       position: absolute;
-      inset-inline: 0;
+      inset-inline: calc(
+        -1 * var(--c-tab-hover-spacing-inline, var(--c-spacing-md))
+      );
       inset-block: 0;
       block-size: var(--c-tab-hover-block-size, calc(30rem / 16));
       margin-block: auto;
