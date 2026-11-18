@@ -240,8 +240,8 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
  * `h1`, and a working skip link. The others are advice that the control panel's layout doesn't always follow on
  * purpose, such as a details column nested in an editor pane.
  *
- * Links in running text are told apart from it by color alone unless the user turns on the “Underline links”
- * preference, so axe's `link-in-text-block` rule is off, as it is in Storybook.
+ * The browser tests turn on the “Underline links” preference (see `BrowserTestCase`), so `link-in-text-block` checks
+ * the case where someone relies on it. Without it, links in running text are told apart by color alone.
  *
  * Axe runs once the CSS transitions and animations that end have ended. Halfway through a fade, such as a message
  * appearing, text has less contrast than it will have, and axe reports it. Scroll-driven animations and the
@@ -257,7 +257,6 @@ function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
                 ...axe.getRules(['best-practice'])
                     .filter(rule => ! bestPractices.includes(rule.ruleId))
                     .map(rule => ({id: rule.ruleId, enabled: false})),
-                {id: 'link-in-text-block', enabled: false},
             ],
         }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'])
         JS);

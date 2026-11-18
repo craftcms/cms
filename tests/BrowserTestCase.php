@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\CmsAssets;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Context;
@@ -25,6 +26,8 @@ use function Orchestra\Testbench\package_path;
  *
  * Testbench's skeleton gets the package's vendor directory, as `testbench serve` gives it, so the app finds the
  * Composer plugin manifest and the workbench content can install the test plugin.
+ *
+ * Users get the “Underline links” preference by default, so axe checks link underlines for the people who need them.
  */
 class BrowserTestCase extends TestCase
 {
@@ -61,6 +64,8 @@ class BrowserTestCase extends TestCase
         }
 
         $this->withVite();
+
+        Cms::config()->accessibilityDefaults['underlineLinks'] = true;
 
         // Testbench reports a console app, which builds URLs from the primary site rather than the request. The
         // browser sends real requests, so they're handled as such once the setup above has run as usual.
