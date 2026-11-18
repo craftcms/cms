@@ -17,12 +17,14 @@ trait ChecksLicense
 {
     protected function checkLicense(): ?int
     {
-        if (app(License::class)->key()) {
+        $license = app(License::class);
+
+        if ($license->key()) {
             return null;
         }
 
-        if (defined('CRAFT_LICENSE_KEY')) {
-            $this->components->error('The license key defined by the CRAFT_LICENSE_KEY PHP constant is invalid.');
+        if ($license->environmentKey() !== null) {
+            $this->components->error('The license key set by CRAFT_LICENSE_KEY is invalid.');
 
             return self::FAILURE;
         }
