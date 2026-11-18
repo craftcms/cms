@@ -521,12 +521,14 @@
                   </main>
                 </slot>
               </div>
-              <aside
+              <!-- Holds only the buttons that open each panel, which DetailsPanels teleports in. The panels
+                themselves are in the details aside. -->
+              <nav
                 v-show="regions.hasDetails()"
                 id="cp-details-rail"
                 class="cp-details-rail"
-                :aria-label="t('Details')"
-              ></aside>
+                :aria-label="t('Panels')"
+              ></nav>
             </div>
           </div>
 

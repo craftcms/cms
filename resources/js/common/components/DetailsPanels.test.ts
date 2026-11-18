@@ -166,7 +166,7 @@ it('puts the triggers in the rail and the panels in place', async () => {
   const rail = document.getElementById('rail')!;
   const group = rail.querySelector('[role="group"]');
 
-  expect(group?.getAttribute('aria-label')).toBe('Details');
+  expect(group?.getAttribute('aria-label')).toBe('Panels');
   expect(
     [...rail.querySelectorAll('craft-disclosure > button')].map((button) =>
       button.getAttribute('aria-controls')
