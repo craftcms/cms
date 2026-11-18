@@ -609,3 +609,14 @@ it('loads changed project config before each queued job', function () {
 
     expect($projectConfig->get('system.name'))->toBe('After');
 });
+
+it('saves a queued job\'s project config changes before loading config for the next job', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->reset();
+    $projectConfig->set('queuedJobRoot.value', 'fromJob');
+
+    event(new Looping('database', 'default', new WorkerOptions));
+
+    expect(DB::table(Table::PROJECTCONFIG)->where('path', 'queuedJobRoot.value')->value('value'))->toBe('"fromJob"')
+        ->and($projectConfig->get('queuedJobRoot.value'))->toBe('fromJob');
+});

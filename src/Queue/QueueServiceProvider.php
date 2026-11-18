@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Queue;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Queue\Listeners\StoreCompleted;
 use CraftCms\Cms\Queue\Listeners\StoreFailed;
@@ -53,7 +54,16 @@ class QueueServiceProvider extends ServiceProvider
         Event::listen(JobProcessed::class, StoreCompleted::class);
         Event::listen(JobFailed::class, StoreFailed::class);
 
-        // Queue workers are long-lived, so they load project config again before each job, like Octane does per request
-        Event::listen(Looping::class, fn () => $this->app->make(ProjectConfig::class)->reset());
+        // Queue workers are long-lived, so they save the last job's project config changes, which would otherwise wait for
+        // the command to finish, and load the config again before each job, like Octane does per request
+        Event::listen(Looping::class, function (): void {
+            if (! Cms::isInstalled()) {
+                return;
+            }
+
+            $projectConfig = $this->app->make(ProjectConfig::class);
+            $projectConfig->flushChanges();
+            $projectConfig->reset();
+        });
     }
 }
