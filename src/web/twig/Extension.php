@@ -1699,7 +1699,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $sandbox = $env->getExtension(SandboxExtension::class);
                 return function(mixed ...$args) use ($k, $sandbox): mixed {
                     $value = $k(...$args);
-                    return is_object($value) ? $sandbox->ensureToStringAllowed($value) : $value;
+                    // Comparisons also call __toString() on objects nested in arrays
+                    return $sandbox->ensureToStringAllowed($value);
                 };
             };
             $key = is_array($key) ? array_map($checkToString, $key) : $checkToString($key);

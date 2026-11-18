@@ -32,6 +32,7 @@ use DateTimeInterface;
 use DirectoryIterator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
+use ReflectionMethod;
 use SimpleXMLElement;
 use stdClass;
 use Throwable;
@@ -1017,6 +1018,7 @@ class ExtensionTest extends TestCase
             'group with an arrow function returning an object that can’t be a string' => ["{{ [1]|group(i => stringable)|keys|first }}"],
             'multisort with a sort key that can’t be a string' => ["{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}"],
             'multisort with sort keys that can’t be strings' => ["{{ [1, 2]|multisort([v => stringable, v => 1], 4, 2)|length }}"],
+            'multisort with an array sort key containing an object that can’t be a string' => ["{{ [1, 2]|multisort(v => [stringable])|length }}"],
             'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
         ];
     }
@@ -1103,7 +1105,13 @@ class ExtensionTest extends TestCase
                     continue;
                 }
 
-                $call = function(mixed ...$args) use ($callable, $twig): mixed {
+                $fn = $callable->getCallable();
+                if (is_array($fn) && is_string($fn[0]) && !(new ReflectionMethod($fn[0], $fn[1]))->isStatic()) {
+                    // Twig calls non-static callbacks on the class’s runtime, e.g. EscaperRuntime::escape()
+                    $fn = [$twig->getRuntime($fn[0]), $fn[1]];
+                }
+
+                $call = function(mixed ...$args) use ($callable, $fn, $twig): mixed {
                     $prefix = array_filter([
                         $callable->needsCharset() ? ['UTF-8'] : null,
                         $callable->needsEnvironment() ? [$twig] : null,
@@ -1111,7 +1119,7 @@ class ExtensionTest extends TestCase
                         $callable->needsIsSandboxed() ? [true] : null,
                     ]);
                     try {
-                        return ($callable->getCallable())(...array_merge(...$prefix), ...$args);
+                        return $fn(...array_merge(...$prefix), ...$args);
                     } catch (Throwable) {
                         return 'error';
                     }
