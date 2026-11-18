@@ -55,6 +55,7 @@
   import ContentToolbar from './page/ContentToolbar.vue';
   import ScreenOverlays from './page/ScreenOverlays.vue';
   import ScreenSkipLinks from './page/ScreenSkipLinks.vue';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {
     ScreenPanelsKey,
     screenPanels,
@@ -519,11 +520,12 @@
                   </main>
                 </slot>
               </div>
-              <div
+              <aside
                 v-show="regions.hasDetails()"
                 id="cp-details-rail"
                 class="cp-details-rail"
-              ></div>
+                :aria-label="t('Details')"
+              ></aside>
             </div>
           </div>
 
