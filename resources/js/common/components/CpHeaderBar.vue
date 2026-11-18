@@ -13,6 +13,7 @@
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
   import AssistantToggle from '@/modules/ai/assistant/AssistantToggle.vue';
+  import AboutCraftMenu from '@/common/components/AboutCraftMenu.vue';
   import CommandPaletteTrigger from '@/modules/command-palette/components/CommandPaletteTrigger.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
@@ -116,6 +117,7 @@
               :label="t('Maintenance Mode')"
               >{{ t('Maintenance Mode is enabled') }}</craft-info-icon
             >
+            <AboutCraftMenu />
             <CommandPaletteTrigger />
             <AssistantToggle v-if="hasAssistant" />
             <cp-notification-center
@@ -243,7 +245,8 @@
     }
   }
 
-  /* A small outlined badge, sized to sit among the header's icons. */
+  /* As tall as the edition badge beside it, with text as large, the same
+     corners, and its text as far from its edges. */
   .cp-header-bar__bridged {
     --c-size-control-xs: 18px;
     --c-text-xs: 10px;
