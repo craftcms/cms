@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Cms\Database\Table;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,19 +36,25 @@ readonly class Sequence
     {
         $name = Str::emojiToShortcodes($name);
 
-        // The update locks the row until the transaction commits, so concurrent callers get distinct numbers.
-        // Only insert when the row is missing: on MySQL, an ignored insert takes a shared lock on the
-        // existing row, and two of those deadlock once both callers try to increment.
-        $next = DB::transaction(function () use ($name) {
-            if (! DB::table(Table::SEQUENCES)->where('name', $name)->increment('next')) {
-                DB::table(Table::SEQUENCES)->insertOrIgnore(['name' => $name, 'next' => 1]);
-                DB::table(Table::SEQUENCES)->where('name', $name)->increment('next');
-            }
+        return Cache::lock('seq--'.str_replace(['/', '\\'], '-', $name), 10)
+            ->block(3, function () use ($name, $length) {
+                $num = self::nextNumber($name);
 
-            return self::nextNumber($name);
-        });
+                if ($num === 1) {
+                    DB::table(Table::SEQUENCES)->insert([
+                        'name' => $name,
+                        'next' => $num + 1,
+                    ]);
 
-        return self::format($next - 1, $length);
+                    return self::format($num, $length);
+                }
+
+                DB::table(Table::SEQUENCES)
+                    ->where('name', $name)
+                    ->increment('next');
+
+                return self::format($num, $length);
+            });
     }
 
     /**
