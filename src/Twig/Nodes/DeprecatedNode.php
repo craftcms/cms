@@ -38,6 +38,7 @@ class DeprecatedNode extends Node
         $compiler->addDebugInfo($this);
 
         $compiler
+            /** @see Deprecator::log() */
             ->write(sprintf('\app(%s::class)->log(\'template:%s\', ', Deprecator::class, Str::random()))
             ->subcompile($this->getNode('expr'))
             ->raw(sprintf(", '%s', %s);\n", $this->getTemplateName() ?: 'template', $this->getTemplateLine() ?: 'null'));
