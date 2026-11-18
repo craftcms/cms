@@ -18,6 +18,8 @@ use CraftCms\Cms\Activity\EventTypes\ElementTrashed;
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Activity\EventTypes\RevisionRestored;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
+use CraftCms\Cms\Ai\Models\AgentSkill;
+use CraftCms\Cms\Ai\Skills\AgentSkills;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
@@ -33,7 +35,15 @@ use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Release\Releases;
+use CraftCms\Cms\Route\Data\Route;
+use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -244,6 +254,52 @@ class ContentSeeder extends Seeder
         $this->seedWorkflow(Sections::getSectionByHandle('posts') ?? throw new RuntimeException('Posts section not found.'));
         $this->call(MatrixPlaygroundSeeder::class);
         $this->call(FieldShowcaseSeeder::class);
+        $this->seedSettings();
+    }
+
+    /**
+     * One of each settings record that otherwise starts out empty, so their edit pages have something to show.
+     */
+    private function seedSettings(): void
+    {
+        $this->components->task('Image transform', function (): void {
+            app(ImageTransforms::class)->saveTransform(new ImageTransform([
+                'name' => 'Card',
+                'handle' => 'card',
+                'width' => 640,
+                'height' => 360,
+            ])) || throw new RuntimeException('Failed to create the Card transform.');
+        });
+
+        $this->components->task('Route', fn () => app(Routes::class)->saveRoute(
+            new Route(['archive/', ['year', '\d{4}']], '_blog/archive'),
+        ));
+
+        $this->components->task('GraphQL schema and token', function (): void {
+            $gql = app(Gql::class);
+            $gql->saveSchema($schema = new GqlSchema([
+                'name' => 'Headless front end',
+                'scope' => ['sections.'.Sections::getSectionByHandle('posts')?->uid.':read'],
+            ])) || throw new RuntimeException('Failed to create the GraphQL schema.');
+            $gql->saveToken(new GqlToken([
+                'name' => 'Front end',
+                'accessToken' => Str::random(32),
+                'schemaId' => $schema->id,
+            ])) || throw new RuntimeException('Failed to create the GraphQL token.');
+        });
+
+        $this->components->task('AI skill', fn () => app(AgentSkills::class)->save(new AgentSkill([
+            'title' => 'House style',
+            'description' => 'Rewrites copy in the site’s house style. Use it when editing entry text.',
+            'body' => "Write in plain US English.\nKeep sentences short, and lead with the point.",
+        ])));
+
+        $this->components->task('Release', fn () => app(Releases::class)->create(
+            'Spring launch',
+            Date::now()->addMonth(),
+            User::query()->firstOrFail(),
+            'Posts and pages going live together.',
+        ));
     }
 
     private function createSampleEntries(Site $site): void
