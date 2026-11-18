@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayAccess;
 use ArrayIterator;
 use ArrayObject;
 use Craft;
@@ -27,15 +28,20 @@ use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use DateTimeInterface;
 use DirectoryIterator;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
+use ReflectionMethod;
 use SimpleXMLElement;
 use stdClass;
+use Throwable;
 use Traversable;
+use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use UnitTester;
 use yii\base\ErrorException;
@@ -949,6 +955,246 @@ class ExtensionTest extends TestCase
             '{{ {x: "y"} has some (v => v is same as("z")) ? "yes" : "no" }}'
         );
         self::assertSame('no', $result);
+    }
+
+    /**
+     * Array filters that read a key from each element must not let sandboxed templates access anything that they
+     * couldn’t access directly, whether via nested key paths or properties the sandbox doesn’t allow.
+     *
+     * @dataProvider sandboxedArrayFilterKeyDataProvider
+     */
+    public function testSandboxedArrayFiltersCheckKeys(string $template, string $templateMode = View::TEMPLATE_MODE_SITE): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $obj = new stdClass();
+        $obj->secret = 'shh';
+        // ArrayAccess objects that aren’t one of Twig’s array-like classes get the same checks as properties
+        $arrayAccess = new class() implements ArrayAccess {
+            public function offsetExists(mixed $offset): bool
+            {
+                return $offset === 'secret';
+            }
+
+            public function offsetGet(mixed $offset): mixed
+            {
+                return 'shh';
+            }
+
+            public function offsetSet(mixed $offset, mixed $value): void
+            {
+            }
+
+            public function offsetUnset(mixed $offset): void
+            {
+            }
+        };
+
+        $stringable = new class() {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
+
+        self::expectException(TwigError::class);
+        $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable], $templateMode);
+    }
+
+    public static function sandboxedArrayFilterKeyDataProvider(): array
+    {
+        return [
+            'index with a key path' => ["{{ [craft]|index(['app', 'config', 'general', 'securityKey'])|keys|first }}"],
+            'index with a group path' => ["{{ [craft]|index(null, [['app', 'config', 'general', 'securityKey']])|keys|first }}"],
+            'index with an object as its groups' => ["{{ [{shh: 'hit'}]|index(null, obj)|keys|first }}"],
+            'column with a key path' => ["{{ [craft]|column(['app', 'config', 'general', 'securityKey'])|first }}"],
+            'multisort with a key path' => ["{{ [craft]|multisort([['app', 'config', 'general', 'securityKey']])|length }}"],
+            'index with a disallowed property' => ["{{ [obj]|index('secret')|keys|first }}"],
+            'where with a disallowed property' => ["{{ [obj]|where('secret', 'shh')|length }}"],
+            'contains with a disallowed property' => ["{{ [obj]|contains('secret', 'shh') }}"],
+            'multisort with a disallowed property' => ["{{ [obj]|multisort('secret')|length }}"],
+            'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
+            // group used to render property names as object templates in the site template mode’s environment
+            'group with a disallowed property in a control panel template' => ["{{ [obj]|group('secret')|keys|first }}", View::TEMPLATE_MODE_CP],
+            'group with an arrow function returning an object that can’t be a string' => ["{{ [1]|group(i => stringable)|keys|first }}"],
+            'multisort with a sort key that can’t be a string' => ["{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}"],
+            'multisort with sort keys that can’t be strings' => ["{{ [1, 2]|multisort([v => stringable, v => 1], 4, 2)|length }}"],
+            'multisort with an array sort key containing an object that can’t be a string' => ["{{ [1, 2]|multisort(v => [stringable])|length }}"],
+            // Comparing objects with strings using == calls __toString()
+            'where comparing an object that can’t be a string with a string' => ["{{ [1]|where(v => stringable, 'shh')|length }}"],
+            'where comparing an array containing an object that can’t be a string with an array' => ["{{ [1]|where(v => [stringable], ['shh'])|length }}"],
+            'contains comparing an object that can’t be a string with a string' => ["{{ [1]|contains(v => stringable, 'shh') ? 'y' : 'n' }}"],
+            'filterByValue comparing an object that can’t be a string with a string' => ["{{ [1]|filterByValue(v => stringable, 'shh')|length }}"],
+            'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
+        ];
+    }
+
+    /**
+     * Calls every filter and function allowed in the sandbox with an object whose properties and methods the sandbox
+     * doesn’t allow, and makes sure none of them expose its data: neither by returning it (or an object the template
+     * couldn’t access), nor by returning different results depending on it. Filters and functions are covered as soon
+     * as they’re added to the sandbox config.
+     */
+    public function testSandboxedCallablesDontExposeDisallowedObjectData(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $twig = $this->view->getTwig();
+        $config = require Craft::getAlias('@app/config/twig-sandbox.php');
+
+        $obj = new class() {
+            public string $pub = 'SECRET_PUB';
+            protected string $prot = 'SECRET_PROT';
+            private string $priv = 'SECRET_PRIV';
+            public ArrayObject $inner;
+
+            public function __construct()
+            {
+                $this->inner = new ArrayObject(['x' => 'SECRET_INNER']);
+            }
+
+            public function getSecret(): string
+            {
+                return 'SECRET_GETTER';
+            }
+
+            // Reads $priv without exposing it, so static analysis keeps the property
+            public function privLength(): int
+            {
+                return strlen($this->priv);
+            }
+        };
+        $secrets = ['pub' => 'SECRET_PUB', 'prot' => 'SECRET_PROT', 'priv' => 'SECRET_PRIV', 'secret' => 'SECRET_GETTER'];
+        $inputs = [$obj, [$obj], ['k' => $obj], ['data' => ['k' => $obj]]];
+        $argSets = [[], ['pub'], ['prot'], ['priv'], ['secret'], ['inner'], ['inner.x'], [['inner', 'x']], [[['inner', 'x']]], [null, ['inner']], [[$obj, 'getSecret']], [$obj]];
+
+        // Returns a description of any secret or new object within the result
+        $findLeak = function(mixed $value, int $depth = 0) use (&$findLeak, $obj): ?string {
+            if (is_string($value)) {
+                return str_contains($value, 'SECRET_') ? $value : null;
+            }
+            if (is_object($value) && $value !== $obj) {
+                if ($value instanceof Markup) {
+                    return $findLeak((string)$value);
+                }
+                if (!$value instanceof Traversable) {
+                    return $value instanceof DateTimeInterface ? null : get_class($value);
+                }
+            }
+            if (is_iterable($value) && $depth < 5) {
+                foreach ($value as $k => $item) {
+                    if ($leak = $findLeak($k) ?? $findLeak($item, $depth + 1)) {
+                        return $leak;
+                    }
+                }
+            }
+            return null;
+        };
+        $fingerprint = function(mixed $value) use (&$fingerprint): string {
+            if (is_array($value)) {
+                return '[' . implode(',', array_map(fn($k) => "$k:" . $fingerprint($value[$k]), array_keys($value))) . ']';
+            }
+            return is_object($value) ? 'object#' . spl_object_id($value) : var_export($value, true);
+        };
+
+        $failures = [];
+        $checker = $twig->getExtension(SandboxExtension::class)->getChecker();
+        $checker->setSandboxed(true);
+
+        try {
+            $callables = [
+                ...array_map(fn($name) => ['filter', $name, $twig->getFilter($name)], array_unique($config['allowedFilters'])),
+                ...array_map(fn($name) => ['function', $name, $twig->getFunction($name)], array_unique($config['allowedFunctions'])),
+            ];
+
+            foreach ($callables as [$type, $name, $callable]) {
+                if (!$callable) {
+                    continue;
+                }
+
+                $fn = $callable->getCallable();
+                if (is_array($fn) && is_string($fn[0]) && !(new ReflectionMethod($fn[0], $fn[1]))->isStatic()) {
+                    // Twig calls non-static callbacks on the class’s runtime, e.g. EscaperRuntime::escape()
+                    $fn = [$twig->getRuntime($fn[0]), $fn[1]];
+                }
+
+                $call = function(mixed ...$args) use ($callable, $fn, $twig): mixed {
+                    $prefix = array_filter([
+                        $callable->needsCharset() ? ['UTF-8'] : null,
+                        $callable->needsEnvironment() ? [$twig] : null,
+                        $callable->needsContext() ? [[]] : null,
+                        $callable->needsIsSandboxed() ? [true] : null,
+                    ]);
+                    try {
+                        return $fn(...array_merge(...$prefix), ...$args);
+                    } catch (Throwable) {
+                        return 'error';
+                    }
+                };
+
+                foreach ($inputs as $i => $input) {
+                    foreach ($argSets as $j => $args) {
+                        if ($leak = $findLeak($call($input, ...$args))) {
+                            $failures["$type $name"] ??= "input $i, args $j: $leak";
+                        }
+                    }
+
+                    // The result must not depend on whether a value matches a secret
+                    foreach ($secrets as $key => $secret) {
+                        [$a, $b, $c] = array_map(fn($value) => $fingerprint($call($input, $key, $value)), [$secret, 'SECRET_X', 'SECRET_Y']);
+                        if ($b === $c && $a !== $b) {
+                            $failures["$type $name"] ??= "input $i: reveals whether \"$key\" matches";
+                        }
+                    }
+                }
+            }
+        } finally {
+            $checker->setSandboxed(false);
+        }
+
+        self::assertSame([], $failures);
+    }
+
+    /**
+     * Passing a single non-traversable object to an array filter in the sandbox must not enumerate its public
+     * properties, while legitimate array filter usages still work.
+     */
+    public function testSandboxedArrayFiltersWork(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $obj = new stdClass();
+        $obj->secret = 'shh';
+
+        self::assertSame('ok', $this->view->renderSandboxedString(
+            "{{ obj|column(v => v is same as('shh') ? 'leaked' : 'ok')|join }}",
+            ['obj' => $obj],
+        ));
+
+        // Comparisons that don’t cast objects to strings still work with objects that can’t be strings
+        $stringable = new class() {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
+        self::assertSame('0|1', $this->view->renderSandboxedString(implode('|', [
+            "{{ [1]|where(v => stringable, 'shh', true)|length }}",
+            '{{ [1]|where(v => stringable)|length }}',
+        ]), ['stringable' => $stringable]));
+
+        self::assertSame('x,y|1,2|1|2,4|x,y', $this->view->renderSandboxedString(implode('|', [
+            "{{ [{a: 'x'}, {a: 'y'}]|index('a')|keys|join(',') }}",
+            "{{ [{a: 2}, {a: 1}]|multisort('a')|column('a')|join(',') }}",
+            "{{ [{a: 1}, {a: 2}]|where(i => i.a, 2)|length }}",
+            "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
+            "{{ [{a: 'x'}, {a: 'y'}, {a: 'x'}]|group('a')|keys|join(',') }}",
+        ])));
+        self::assertSame('x', $this->view->renderSandboxedString("{{ [{a: 'x'}]|group('a')|keys|first }}", templateMode: View::TEMPLATE_MODE_CP));
+
+        // Twig allows offset reads on its array-like classes, e.g. `row[0]`
+        self::assertSame('7,8|1|7', $this->view->renderSandboxedString(implode('|', [
+            "{{ rows|column(0)|join(',') }}",
+            '{{ rows|where(0, 8)|length }}',
+            '{{ rows|index(0)|keys|first }}',
+        ]), ['rows' => [new ArrayObject([7]), new ArrayObject([8])]]));
     }
 
     /**
