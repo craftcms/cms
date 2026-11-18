@@ -1,4 +1,4 @@
-import {Base, HUD} from '@craftcms/garnish';
+import {Base} from '@craftcms/garnish';
 import {FieldLayoutDesigner} from './field-layout-designer';
 import {openLayoutComponentSettings} from './settings-slideout';
 import {Element as FldElement} from './element';
@@ -30,7 +30,7 @@ export class Tab extends Base {
   $container: any = null;
   $addBtn: any = null;
   $actionBtn: any = null;
-  hud: any = null;
+  hud: HTMLElementTagNameMap['craft-popover'] | null = null;
   destroyed = false;
 
   constructor(designer: FieldLayoutDesigner, $container: any) {
@@ -70,42 +70,37 @@ export class Tab extends Base {
 
     this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
 
-    const hud = (this.hud = new HUD(this.$addBtn, {
-      hudClass: 'hud fld-library-hud',
-      listenToMainResize: false,
-      showOnInit: false,
-      orientations: ['right', 'bottom', 'left'],
-    }));
-    // The legacy HUD stored itself via jQuery `.data('hud', this)`; mirror that
-    // with the FLD WeakMap so `designer.getActiveHud()` can find it.
-    if (
-      !(hud.$hud instanceof Element) ||
-      !(hud.$trigger instanceof HTMLElement)
-    ) {
-      throw new Error('Field layout HUD requires a trigger and container.');
-    }
-    hud.$hud.setAttribute('role', 'dialog');
-    hud.$hud.setAttribute('aria-label', t('Add a field'));
-    hudData.set(hud.$hud, {
-      $trigger: hud.$trigger,
-      hide: () => hud.hide(),
+    // The library opens in a popover anchored to the button. It sits beside the tabs rather than in this one,
+    // so the designer's lookups of the fields in its tabs don't find the library's, and it stays inside the
+    // page's main landmark. The library itself is shared, and moves into whichever tab's popover opens.
+    const popover = (this.hud = document.createElement('craft-popover'));
+    popover.classList.add('fld-library-hud');
+    popover.anchor = this.$addBtn;
+    popover.placement = isRtl() ? 'left-start' : 'right-start';
+    const $popoverContent = document.createElement('div');
+    $popoverContent.slot = 'content';
+    $popoverContent.className = 'fld-library-hud__content';
+    popover.appendChild($popoverContent);
+    this.designer.$innerContainer.appendChild(popover);
+    // `getActiveHud()` finds the popover holding the library through this.
+    hudData.set(popover, {
+      $trigger: this.$addBtn,
+      hide: () => void popover.hide(),
     });
-    hud.on('show', () => {
-      hud.$main!.appendChild(this.designer.$libraryContainer);
+    popover.addEventListener('craft-show', (ev) => {
+      if (ev.target !== popover) {
+        return;
+      }
+      $popoverContent.appendChild(this.designer.$libraryContainer);
       this.designer.libraryPicker?.select(0);
-      // Garnish emits `show` before it moves the HUD into place, so focusing
-      // normally would scroll the page to wherever the HUD was last (the top,
-      // for a new tab's).
-      this.designer.$fieldSearch.focus({preventScroll: true});
       this.designer.clearSearch();
+    });
+    popover.addEventListener('craft-after-show', (ev) => {
+      if (ev.target !== popover) {
+        return;
+      }
       this.designer.$fieldLibrary.scrollTop = 0;
-    });
-    hud.on('hide', () => {
-      this.$addBtn.focus();
-    });
-
-    this.addListener(this.$addBtn, 'activate', () => {
-      hud.show();
+      this.designer.$fieldSearch.focus({preventScroll: true});
     });
 
     const $elements = Array.from($tabContent.children).filter(
@@ -486,9 +481,8 @@ export class Tab extends Base {
   /**
    * Release this tab's controller resources for a designer reboot (host innerHTML
    * swap). Unlike {@link destroy}, this does NOT mutate the config, move focus, or
-   * remove DOM — it only disposes what outlives the detached tab subtree: the HUD
-   * (lives in `<body>`). Detached-node listeners are
-   * released by `super.destroy()` / GC.
+   * remove DOM, except the library popover, which sits outside the tab. Detached-node
+   * listeners are released by `super.destroy()` / GC.
    */
   dispose(): void {
     if (this.destroyed) {
@@ -496,7 +490,7 @@ export class Tab extends Base {
     }
 
     this.destroyed = true;
-    this.hud?.destroy();
+    this.hud?.remove();
     super.destroy();
   }
 
@@ -534,6 +528,7 @@ export class Tab extends Base {
     this.designer.tabGrid?.removeItems(this.$container);
     this.designer.tabDrag!.removeItems(this.$container);
     this.$container.remove();
+    this.hud?.remove();
     this.designer.refreshSelectedFields();
 
     super.destroy();

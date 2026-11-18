@@ -409,8 +409,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   /**
    * Tear the designer down so it can be re-booted when Inertia replaces the host's
    * innerHTML after a save. Cascades to the CVD and disposes resources that outlive
-   * the detached FLD subtree: drag controllers, library picker, Craft.Grid (binds a
-   * window `resize`), and every tab's HUD (lives in `<body>`). Detached-DOM
+   * the detached FLD subtree: drag controllers, library picker and Craft.Grid (binds a
+   * window `resize`). Detached-DOM
    * listeners and their WeakMaps are released by `super.destroy()` / GC.
    */
   override destroy(): void {
@@ -432,8 +432,8 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this.tabGrid?.destroy();
     this.tabGrid = null;
 
-    // Each tab's HUD lives in <body>, so it won't be GC'd with the detached
-    // subtree — dispose every tab.
+    // Release each tab's listeners, and remove its library popover, which sits
+    // beside the tabs.
     if (this.$tabContainer) {
       this.tabElements().forEach((tabEl) => fldTabData.get(tabEl)?.dispose());
     }
@@ -619,11 +619,9 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   }
 
   createField(): void {
-    // The library lives in a HUD that `HUD.show()` re-parents to <body>, so
-    // `$createFieldBtn` sits outside the panel DOM. Opening from it would read
-    // as coming from the base page and close the panel we're inside; the HUD's
-    // trigger is the button in the tab, which stays put. It's also the right
-    // place to send focus back to, since the HUD closes below.
+    // The library's popover closes below, taking `$createFieldBtn` out of
+    // view, so the slideout opens from the popover's trigger, the button in
+    // the tab, which stays put and takes focus back.
     const hud = this.getActiveHud();
 
     void openSlideout(getCpUrl('settings/fields/edit'), {
@@ -649,7 +647,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       },
     });
 
-    // Close the library popup now the editor is open — the HUD only hides, so
+    // Close the library popup now the editor is open — the popover only hides, so
     // `getActiveHud()` still resolves it for the save handler above.
     hud?.hide();
   }

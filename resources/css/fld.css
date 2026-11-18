@@ -764,13 +764,15 @@ body:not(.dragging) .fld-element {
   display: none;
 }
 
-.fld-library-hud {
-  width: 287px;
-  max-width: 100%;
+.fld-library-hud__content {
+  inline-size: 287px;
+  max-inline-size: 100%;
+  padding: 14px;
 }
 
-.fld-library-hud .main {
-  padding: 14px;
+/* The library is hidden where it starts out, in the designer, and shown in the popover it moves into. */
+.fld-container .fld-library-hud__content .fld-library {
+  display: flex;
 }
 
 /* Element settings (slideout) */

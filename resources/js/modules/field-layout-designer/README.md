@@ -24,7 +24,7 @@ jQuery (`$`) survives **only** at the boundary with Craft's still-jQuery widgets
 - **Object back-references** (legacy `$.data` cache) → module-level `WeakMap`s in
   `support.ts`, mirroring how `@craftcms/garnish` itself replaced `$.data`:
   `fldTabData` (`fld-tab`), `fldElementData` (`fld-element`), `hudData` (`hud`,
-  keyed on `hud.$hud`), `cvdData` (`cvd`). The drag midpoints
+  keyed on the tab's library popover), `cvdData` (`cvd`). The drag midpoints
   (`$item.data('midpoint')`) use a `WeakMap` local to `drags.ts`.
 - **Plain `data-*` reads** (`uid`, `id`, `attribute`, `default-handle`, `type`,
   `ui-label`, `library`, `value`) → `element.dataset.*`.
@@ -79,5 +79,5 @@ to the `@craftcms/garnish` package.
 ## Deferred
 
 Behavioral/browser verification (rendering the FLD in the CP and exercising
-tabs, drag-sort, the field-library HUD, settings HUDs, and the card view
+tabs, drag-sort, the field library popover, settings HUDs, and the card view
 designer) is left to manual testing.
