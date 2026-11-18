@@ -39,7 +39,7 @@ export async function highlightField(field: HTMLElement): Promise<void> {
  * moment the URL changes.
  *
  * Only fields are highlighted. The shell's own skip links point at `#main` and
- * `#secondary-nav`, and flashing the whole main column when someone uses one
+ * `#content-sidebar`, and flashing the whole main column when someone uses one
  * would be worse than doing nothing.
  */
 export function useFieldHighlight(): void {

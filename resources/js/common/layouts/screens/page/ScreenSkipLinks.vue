@@ -15,7 +15,7 @@
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},
     ...(props.hasSidebar
-      ? [{label: t('Skip to secondary navigation'), url: '#secondary-nav'}]
+      ? [{label: t('Skip to secondary navigation'), url: '#content-sidebar'}]
       : []),
     ...(props.additionalSkipLinks ?? []),
   ]);
