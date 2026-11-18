@@ -203,7 +203,7 @@
 - Fixed a bug where element index status menus showed custom statuses defined with a label and color, such as `['label' => 'Archived', 'color' => Color::Red]`, as JSON and without their color. ([#20736](https://github.com/craftcms/cms/pull/20736))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)
 - Added `CraftCms\Cms\Dashboard\Dashboard::isWidgetTypeAvailable()`.
 
 ## 6.0.0-beta.1 - 2026-11-10
