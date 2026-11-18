@@ -167,7 +167,7 @@ class Api
         // Craft license
         $headers['X-Craft-License'] = match (true) {
             ! is_null($this->license->key()) => $this->license->key(),
-            defined('CRAFT_LICENSE_KEY') => '__INVALID__',
+            ! is_null($this->license->environmentKey()) => '__INVALID__',
             $user && $allowAdminChanges => '__REQUEST__',
             default => null,
         };
