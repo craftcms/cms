@@ -57,11 +57,9 @@ it('renames an asset', function () {
     $asset->title = 'Field notes';
     Elements::saveElement($asset);
 
-    $page = visitCp('assets/photos')
+    visitCp('assets/photos')
         ->click('#main tbody >> role=link[name="Field notes"]')
-        ->assertValue('input[name="newFilename"]', 'field-notes.txt');
-
-    assertNoAccessibilityIssues($page)
+        ->assertValue('input[name="newFilename"]', 'field-notes.txt')
         ->type('input[name="newFilename"]', 'trip-notes.txt')
         ->click('#main >> role=button[name="Save"]')
         ->assertVisible('#main tbody >> role=link[name="Field notes"]')

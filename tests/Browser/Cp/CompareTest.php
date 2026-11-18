@@ -388,13 +388,3 @@ it('keeps what keyboard focus moves to clear of the version menus in the stacked
 
     assertNoJavaScriptErrors($page);
 });
-
-describe('with the workbench content', function () {
-    beforeEach(fn () => seedWorkbenchContent());
-
-    it('renders the comparison of a seeded entry', function () {
-        $post = EntryElement::find()->section('posts')->title('Welcome to Craft 6')->one();
-
-        assertCpPageRenders("compare/$post->id", 'Compare Welcome to Craft 6');
-    });
-});

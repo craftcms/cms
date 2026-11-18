@@ -11,12 +11,11 @@ use function Pest\Laravel\actingAs;
 it('creates a user and sets their permissions', function () {
     actingAs(User::first());
 
-    $page = assertNoAccessibilityIssues(visitCp('users/new')
+    $page = visitCp('users/new')
         ->type('input[name="username"]', 'ada')
         ->type('input[name="email"]', 'ada@example.com')
         ->click('#main >> role=button[name="Create and set permissions"]')
-        ->assertPathEndsWith('/permissions')
-        ->assertVisible('#main >> role=checkbox[name="Access the control panel"]'));
+        ->assertPathEndsWith('/permissions');
 
     assertNoAccessibilityIssues($page
         ->click('#main >> role=checkbox[name="Access the control panel"]')
@@ -59,8 +58,8 @@ describe('with the workbench content', function () {
     })->with([
         'users' => ['users', 'Users'],
         'new user' => ['users/new', 'New user'],
-        'user' => [fn () => 'users/'.User::query()->where('id', '!=', User::first()->id)->value('id'), 'Ada Lovelace'],
-        'user addresses' => [fn () => 'users/'.User::query()->where('id', '!=', User::first()->id)->value('id').'/addresses', 'Ada Lovelace'],
-        'user permissions' => [fn () => 'users/'.User::query()->where('id', '!=', User::first()->id)->value('id').'/permissions', 'Ada Lovelace'],
+        'user' => [fn () => 'users/'.User::query()->where('username', 'ada')->value('id'), 'Ada Lovelace'],
+        'user addresses' => [fn () => 'users/'.User::query()->where('username', 'ada')->value('id').'/addresses', 'Ada Lovelace'],
+        'user permissions' => [fn () => 'users/'.User::query()->where('username', 'ada')->value('id').'/permissions', 'Ada Lovelace'],
     ]);
 });

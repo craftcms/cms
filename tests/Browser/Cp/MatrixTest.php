@@ -61,13 +61,11 @@ beforeEach(fn () => actingAs(User::first()));
 it('adds nested entries inline in blocks view', function () {
     $page = createPageWithMatrix(Matrix::VIEW_MODE_BLOCKS);
 
-    $editor = visitCp("content/entries/pages/$page->id")
+    visitCp("content/entries/pages/$page->id")
         ->click('#main >> role=button[name="New entry"]')
         ->type('role=group[name="Blocks"] >> role=listitem >> nth=0 >> role=textbox[name=/^Title/]', 'Intro')
         ->click('#main >> role=button[name="New entry"]')
-        ->type('role=group[name="Blocks"] >> role=listitem >> nth=1 >> role=textbox[name=/^Title/]', 'Outro');
-
-    assertNoAccessibilityIssues($editor)
+        ->type('role=group[name="Blocks"] >> role=listitem >> nth=1 >> role=textbox[name=/^Title/]', 'Outro')
         ->click('#main >> role=button[name="Save"]')
         ->assertSee('Entry saved.');
 

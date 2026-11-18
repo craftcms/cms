@@ -297,11 +297,11 @@ function seedWorkbenchContent(): void
 /**
  * The path of an element's edit page, as `visitCp()` takes it.
  */
-function cpEditPath(?ElementInterface $element): string
+function cpEditPath(ElementInterface $element): string
 {
     $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
 
-    return ltrim(str_replace("/$cpTrigger/", '/', (string) parse_url((string) $element?->getCpEditUrl(), PHP_URL_PATH)), '/');
+    return ltrim(str_replace("/$cpTrigger/", '/', (string) parse_url((string) $element->getCpEditUrl(), PHP_URL_PATH)), '/');
 }
 
 /**

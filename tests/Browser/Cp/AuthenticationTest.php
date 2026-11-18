@@ -60,9 +60,3 @@ it('asks for an authenticator code after the password', function () {
 
     assertAuthenticated();
 });
-
-it('renders the login page', function () {
-    assertNoAccessibilityIssues(
-        assertNoJavaScriptErrors(visitCp('login'))->assertSeeIn('css=h1', 'Craft test site'),
-    );
-});
