@@ -3,12 +3,9 @@
    * The palette’s “About Craft CMS” view. Craft’s version and edition come
    * with the page; its trials and updates are fetched, as they aren’t.
    */
-  import {actionClient} from '@craftcms/ui';
-  import {onMounted, ref} from 'vue';
-  import AboutCraftController from '@actions/App/AboutCraftController';
+  import {onMounted} from 'vue';
   import AboutCraft from '@/common/components/AboutCraft.vue';
-  import type {AboutCraftInfo} from '@/common/components/about-craft';
-  import useCraftData from '@/common/composables/useCraftData';
+  import useAboutCraftInfo from '@/common/composables/useAboutCraftInfo';
   import type {CommandPaletteViewProps} from '../types';
 
   defineProps<Partial<CommandPaletteViewProps>>();
@@ -17,25 +14,9 @@
     (event: 'back'): void;
   }>();
 
-  const {app} = useCraftData();
+  const {info, load} = useAboutCraftInfo();
 
-  const info = ref<AboutCraftInfo>({
-    version: app.value.version,
-    edition: app.value.edition.name,
-    trial: null,
-    updates: null,
-  });
-
-  onMounted(async () => {
-    try {
-      const {data} = await actionClient.get<AboutCraftInfo>(
-        AboutCraftController.url()
-      );
-      info.value = data;
-    } catch {
-      // The version and edition are already showing, without the trials.
-    }
-  });
+  onMounted(load);
 </script>
 
 <template>

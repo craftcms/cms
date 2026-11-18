@@ -45,6 +45,19 @@ readonly class AboutCraft
     }
 
     /**
+     * Whether the “About Craft CMS” view has something to act on: updates for a user who can update Craft, or
+     * trials to buy. Only what’s cached is considered, so this never checks for updates or fetches license info.
+     */
+    public function needsAttention(): bool
+    {
+        if ($this->license->trialInfo() !== null) {
+            return true;
+        }
+
+        return currentUser()?->can('performUpdates') && $this->updates->totalAvailableUpdates() > 0;
+    }
+
+    /**
      * Whether updates are available, as far as Craft knows. If they haven’t been fetched lately, the UI checks.
      *
      * @return array{cached: bool, total: int, dateFetched: string|null}

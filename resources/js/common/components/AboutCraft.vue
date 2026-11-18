@@ -12,6 +12,7 @@
   import AboutCraftRow from './AboutCraftRow.vue';
   import AboutCraftUpdates from './AboutCraftUpdates.vue';
   import CraftCmsMark from './CraftCmsMark.vue';
+  import EditionBadge from './EditionBadge.vue';
 
   const props = defineProps<{
     info: AboutCraftInfo;
@@ -48,13 +49,7 @@
       <div>
         <p class="about-craft__app cp-h3">
           <span lang="en">Craft CMS</span>{{ ' ' }}
-          <span class="about-craft__edition">
-            <span aria-hidden="true">{{ info.edition }}</span
-            >{{ ' ' }}
-            <span class="sr-only">{{
-              t('{edition} edition', {edition: info.edition})
-            }}</span>
-          </span>
+          <EditionBadge :edition="info.edition" class="about-craft__edition" />
         </p>
         <p class="about-craft__version">{{ info.version }}</p>
       </div>
@@ -120,20 +115,6 @@
     margin: 0;
     color: var(--c-text-quiet);
     font-size: var(--c-text-sm);
-  }
-
-  .about-craft__edition {
-    display: inline-flex;
-    padding-block: 3px;
-    padding-inline: 5px 3px;
-    border: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
-    border-radius: var(--c-radius-sm);
-    font-size: 11px;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 1.7px;
-    text-transform: uppercase;
-    user-select: none;
   }
 
   /* Each section has a line above it, with even space on either side. */

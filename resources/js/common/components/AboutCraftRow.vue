@@ -74,6 +74,10 @@
     margin-inline-start: calc((1em - 1.25em) / 2);
   }
 
+  .about-craft-row__icon :slotted(craft-spinner) {
+    --size: var(--c-size-icon-sm);
+  }
+
   .about-craft-row__body {
     flex: 1 1 10rem;
     min-inline-size: 0;
