@@ -582,6 +582,36 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Returns the key reader a filter should use when comparing what it reads with a value using `==`.
+     *
+     * PHP calls `__toString()` on an object when comparing it with a string, and on objects nested in an array when
+     * comparing the array with another array. Twig’s own `==` operator requires those objects to be allowed to be cast
+     * to strings in a sandboxed environment, so the values read for those comparisons must be too.
+     *
+     * @param TwigEnvironment $env
+     * @param bool $isSandboxed
+     * @param mixed $key The key reader returned by sandboxKey()
+     * @param mixed $value The value that each read value will be compared with
+     * @param bool $strict Whether the values will be compared using `===` instead
+     * @return mixed
+     */
+    private function checkLooseComparison(TwigEnvironment $env, bool $isSandboxed, mixed $key, mixed $value, bool $strict): mixed
+    {
+        if (!$isSandboxed || $strict || !$key instanceof Closure || (!is_string($value) && !is_array($value))) {
+            return $key;
+        }
+
+        $sandbox = $env->getExtension(SandboxExtension::class);
+        return function(mixed ...$args) use ($key, $value, $sandbox): mixed {
+            $read = $key(...$args);
+            if (is_string($value) ? is_object($read) : is_array($read)) {
+                $sandbox->ensureToStringAllowed($read);
+            }
+            return $read;
+        };
+    }
+
+    /**
      * @param bool $isSandboxed
      * @param mixed $array
      * @param mixed $name
@@ -610,6 +640,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = $this->sandboxItems($isSandboxed, $array);
         $key = $this->sandboxKey($env, $isSandboxed, $key, 'contains');
+        $key = $this->checkLooseComparison($env, $isSandboxed, $key, $value, $strict);
         return ArrayHelper::contains($array, $key, $value, $strict);
     }
 
@@ -626,6 +657,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = $this->sandboxItems($isSandboxed, $array);
         $key = $this->sandboxKey($env, $isSandboxed, $key, 'firstWhere');
+        $key = $this->checkLooseComparison($env, $isSandboxed, $key, $value, $strict);
         return ArrayHelper::firstWhere($array, $key, $value, $strict);
     }
 
@@ -886,6 +918,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = $this->sandboxItems($isSandboxed, $array);
         $key = $this->sandboxKey($env, $isSandboxed, $key, 'where');
+        $key = $this->checkLooseComparison($env, $isSandboxed, $key, $value, $strict);
         return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
     }
 
@@ -1434,6 +1467,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = $this->sandboxItems($isSandboxed, $array);
         $key = $this->sandboxKey($env, $isSandboxed, $key, 'filterByValue');
+        $key = $this->checkLooseComparison($env, $isSandboxed, $key, $value, $strict);
         return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
     }
 

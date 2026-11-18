@@ -1019,6 +1019,11 @@ class ExtensionTest extends TestCase
             'multisort with a sort key that can’t be a string' => ["{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}"],
             'multisort with sort keys that can’t be strings' => ["{{ [1, 2]|multisort([v => stringable, v => 1], 4, 2)|length }}"],
             'multisort with an array sort key containing an object that can’t be a string' => ["{{ [1, 2]|multisort(v => [stringable])|length }}"],
+            // Comparing objects with strings using == calls __toString()
+            'where comparing an object that can’t be a string with a string' => ["{{ [1]|where(v => stringable, 'shh')|length }}"],
+            'where comparing an array containing an object that can’t be a string with an array' => ["{{ [1]|where(v => [stringable], ['shh'])|length }}"],
+            'contains comparing an object that can’t be a string with a string' => ["{{ [1]|contains(v => stringable, 'shh') ? 'y' : 'n' }}"],
+            'filterByValue comparing an object that can’t be a string with a string' => ["{{ [1]|filterByValue(v => stringable, 'shh')|length }}"],
             'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
         ];
     }
@@ -1162,6 +1167,18 @@ class ExtensionTest extends TestCase
             "{{ obj|column(v => v is same as('shh') ? 'leaked' : 'ok')|join }}",
             ['obj' => $obj],
         ));
+
+        // Comparisons that don’t cast objects to strings still work with objects that can’t be strings
+        $stringable = new class() {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
+        self::assertSame('0|1', $this->view->renderSandboxedString(implode('|', [
+            "{{ [1]|where(v => stringable, 'shh', true)|length }}",
+            '{{ [1]|where(v => stringable)|length }}',
+        ]), ['stringable' => $stringable]));
 
         self::assertSame('x,y|1,2|1|2,4|x,y', $this->view->renderSandboxedString(implode('|', [
             "{{ [{a: 'x'}, {a: 'y'}]|index('a')|keys|join(',') }}",
