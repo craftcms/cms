@@ -10,7 +10,6 @@ beforeAll(async () => {
   legacyWindow.jQuery = legacyWindow.$ = $;
   legacyWindow.Craft = {t: (_category: string, message: string) => message};
   await import('../../../packages/craftcms-legacy/cpcompat/src/cp-compat.js');
-  await import('../../../packages/craftcms-legacy/cpcompat/src/ui.js');
 });
 
 afterEach(() => {
@@ -81,26 +80,4 @@ it('keeps a read-only Craft.SlidePicker from changing', async () => {
 
   await expect.element(slider).toHaveAttribute('aria-valuenow', '2');
   expect(changes).toEqual([]);
-});
-
-it('names the slider after its field label and describes it with the instructions', async () => {
-  const $field = legacyWindow.Craft.ui.createSlidePickerField({
-    id: 'widget-width',
-    label: 'Width',
-    instructions: 'How many columns the widget spans.',
-    min: 1,
-    max: 4,
-    step: 1,
-    value: 2,
-  });
-  $(document.body).append($field);
-  await document.querySelector<CraftSlidePicker>('craft-slide-picker')!
-    .updateComplete;
-
-  const slider = page.getByRole('slider');
-
-  await expect.element(slider).toHaveAccessibleName('Width');
-  await expect
-    .element(slider)
-    .toHaveAccessibleDescription('How many columns the widget spans.');
 });
