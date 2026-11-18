@@ -132,41 +132,44 @@
 
 <template>
   <Teleport to="body">
-    <form
+    <div
+      role="dialog"
+      :aria-label="t('Filter results')"
       class="filter-hud fixed z-50 overflow-y-auto"
       :style="position"
-      @submit.prevent.stop="handleSubmit"
     >
-      <craft-pane appearance="raised" padding="lg" class="w-full min-h-20">
-        <craft-spinner v-if="http.processing"></craft-spinner>
-        <template v-else-if="builder">
-          <ConditionBuilder
-            ref="editor"
-            slot="body"
-            class="filter-condition-builder"
-            :payload="builder"
-            @change="draft = $event"
-            @valid="valid = $event"
-          />
+      <form @submit.prevent.stop="handleSubmit">
+        <craft-pane appearance="raised" padding="lg" class="w-full min-h-20">
+          <craft-spinner v-if="http.processing"></craft-spinner>
+          <template v-else-if="builder">
+            <ConditionBuilder
+              ref="editor"
+              slot="body"
+              class="filter-condition-builder"
+              :payload="builder"
+              @change="draft = $event"
+              @valid="valid = $event"
+            />
 
-          <craft-button
-            slot="secondary-action"
-            type="button"
-            :variant="ButtonVariant.Fill"
-            @click="clearOrClose"
-            >{{ conditions ? t('Clear') : t('Cancel') }}</craft-button
-          >
+            <craft-button
+              slot="secondary-action"
+              type="button"
+              :variant="ButtonVariant.Fill"
+              @click="clearOrClose"
+              >{{ conditions ? t('Clear') : t('Cancel') }}</craft-button
+            >
 
-          <craft-button
-            slot="primary-action"
-            type="submit"
-            .disabled="!valid"
-            :variant="ButtonVariant.Primary"
-            >{{ t('Apply') }}</craft-button
-          >
-        </template>
-      </craft-pane>
-    </form>
+            <craft-button
+              slot="primary-action"
+              type="submit"
+              .disabled="!valid"
+              :variant="ButtonVariant.Primary"
+              >{{ t('Apply') }}</craft-button
+            >
+          </template>
+        </craft-pane>
+      </form>
+    </div>
   </Teleport>
 </template>
 
