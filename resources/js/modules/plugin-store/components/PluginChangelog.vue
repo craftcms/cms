@@ -44,7 +44,9 @@
           {{ formatDate(apiDate(release.date)) }}
         </div>
         <div v-if="release.critical">
-          <craft-badge fill="red" size="small">{{ t('Critical') }}</craft-badge>
+          <craft-badge color="red" size="small">{{
+            t('Critical')
+          }}</craft-badge>
         </div>
       </div>
       <!-- Release notes are HTML the Plugin Store renders from the changelog's Markdown. -->

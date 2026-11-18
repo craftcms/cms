@@ -1032,7 +1032,7 @@
               class="compare__tab-changed"
             >
               <craft-indicator
-                fill="var(--c-field-modified-indicator)"
+                color="var(--c-field-modified-indicator)"
                 :label="t('Changed')"
               ></craft-indicator>
             </span>

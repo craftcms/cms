@@ -35,10 +35,10 @@ export interface ComboboxOptionData {
   hint?: string;
   /**
    * Renders a `craft-indicator` before the label, and on the option's
-   * `multiple` token. `fill` takes what the component's own does: a
+   * `multiple` token. `color` takes what the component's own does: a
    * status variant, a palette swatch, or any color.
    */
-  indicator?: {fill?: string; appearance?: string} & Record<string, unknown>;
+  indicator?: {color?: string; appearance?: string} & Record<string, unknown>;
   /**
    * Name of a `craft-icon` rendered before the label, and while this option is
    * selected, in the textbox or on its `multiple` token.
@@ -1035,7 +1035,7 @@ export default class CraftCombobox extends FormAssociated(
   #decorationTemplate(data: ComboboxOptionData) {
     return html`${data.indicator
       ? html`<craft-indicator
-          fill=${data.indicator.fill ?? nothing}
+          color=${data.indicator.color ?? nothing}
           appearance=${data.indicator.appearance ?? nothing}
         ></craft-indicator>`
       : nothing}${data.icon
@@ -1163,7 +1163,7 @@ export default class CraftCombobox extends FormAssociated(
             : indicator
               ? html`<span class="prefix prefix--indicator">
                   <craft-indicator
-                    fill=${indicator.fill ?? nothing}
+                    color=${indicator.color ?? nothing}
                     appearance=${indicator.appearance ?? nothing}
                   ></craft-indicator>
                 </span>`

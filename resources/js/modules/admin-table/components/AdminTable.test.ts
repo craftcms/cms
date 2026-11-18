@@ -136,9 +136,9 @@ it('preserves status colors in bulk-action menus after selecting a row', async (
       (item) =>
         (
           item.querySelector('craft-indicator[slot="icon"]') as HTMLElement & {
-            fill: string;
+            color: string;
           }
-        )?.fill
+        )?.color
     )
   ).toEqual(['sky', 'green']);
 });

@@ -424,11 +424,11 @@
 
         <div slot="content">
           <craft-action-item @click="setStatus('enabled')">
-            <craft-indicator fill="success"></craft-indicator>
+            <craft-indicator color="success"></craft-indicator>
             {{ t('Enabled') }}
           </craft-action-item>
           <craft-action-item @click="setStatus('disabled')">
-            <craft-indicator fill="danger"></craft-indicator>
+            <craft-indicator color="danger"></craft-indicator>
             {{ t('Disabled') }}
           </craft-action-item>
         </div>

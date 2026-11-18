@@ -88,7 +88,7 @@ describe('craft-dialog', () => {
   it('renders no header with neither a label nor a close button', async () => {
     // Nothing to put in it — the row would just be padding above the body.
     const dialog = document.createElement('craft-dialog') as CraftDialog;
-    dialog.setAttribute('no-close', '');
+    dialog.setAttribute('hide-close', '');
     dialog.append(document.createElement('p'));
     document.body.append(dialog);
     await dialog.updateComplete;
@@ -99,7 +99,7 @@ describe('craft-dialog', () => {
   });
 
   it('keeps a labeled header when the close button is dropped', async () => {
-    const dialog = await createDialog((d) => d.setAttribute('no-close', ''));
+    const dialog = await createDialog((d) => d.setAttribute('hide-close', ''));
 
     expect(shadow(dialog, '.title')!.textContent!.trim()).toBe('Test Dialog');
     expect(shadow(dialog, '.close')).toBeNull();
@@ -119,15 +119,15 @@ describe('craft-dialog', () => {
     );
   });
 
-  it('drops the header under no-header', async () => {
-    const dialog = await createDialog((dialog) => (dialog.noHeader = true));
+  it('drops the header under hide-header', async () => {
+    const dialog = await createDialog((dialog) => (dialog.hideHeader = true));
 
     expect(shadow(dialog, '.header')).toBeNull();
     expect(shadow(dialog, '.close')).toBeNull();
   });
 
-  it('still labels the dialog under no-header', async () => {
-    const dialog = await createDialog((dialog) => (dialog.noHeader = true));
+  it('still labels the dialog under hide-header', async () => {
+    const dialog = await createDialog((dialog) => (dialog.hideHeader = true));
     const labelledBy = shadow(dialog, 'dialog')!.getAttribute(
       'aria-labelledby'
     );
@@ -141,7 +141,7 @@ describe('craft-dialog', () => {
   it('brings the header back when a label is set later', async () => {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
     // No close button either, so the header really is absent to begin with.
-    dialog.setAttribute('no-close', '');
+    dialog.setAttribute('hide-close', '');
     document.body.append(dialog);
     await dialog.updateComplete;
     expect(shadow(dialog, '.header')).toBeNull();

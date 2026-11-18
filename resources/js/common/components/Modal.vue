@@ -189,7 +189,7 @@
       ref="dialog"
       :label="label"
       .open="true"
-      no-header
+      hide-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"
       @craft-before-hide="requestClose"

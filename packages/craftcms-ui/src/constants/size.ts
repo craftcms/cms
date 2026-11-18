@@ -1,4 +1,5 @@
 export const Size = {
+  XSmall: 'xsmall',
   Small: 'small',
   Medium: 'medium',
   Large: 'large',

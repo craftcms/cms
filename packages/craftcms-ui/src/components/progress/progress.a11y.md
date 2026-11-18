@@ -34,4 +34,4 @@ A circular progress indicator drawn on a `<canvas>`, using the WAI-ARIA [`progre
 
 - 1.1.1 (Non-text Content): keep visible text beside the arc that says what is progressing, and whether it failed. See [Accessibility](./Progress.mdx#accessibility).
 - 4.1.3 (Status Messages): announce completion or failure through a live region; the component has none. See [Accessibility](./Progress.mdx#accessibility).
-- 1.4.11 (Non-text Contrast): check custom `color`, `bg-color` and `fail-color` values reach 3:1. See [Accessibility](./Progress.mdx#accessibility).
+- 1.4.11 (Non-text Contrast): check custom `color`, `track-color` and `fail-color` values reach 3:1. See [Accessibility](./Progress.mdx#accessibility).

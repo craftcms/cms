@@ -20,7 +20,7 @@
 <template>
   <craft-button icon="cart-shopping" @click="setOpened(true)">
     {{ t('Cart') }}
-    <craft-badge v-if="count" slot="suffix" size="small" no-prefix>
+    <craft-badge v-if="count" slot="suffix" size="small" hide-prefix>
       {{ count }}
       <span class="sr-only">{{ t('items') }}</span>
     </craft-badge>

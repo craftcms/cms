@@ -232,7 +232,7 @@
                 ? h('span', {class: 'nav-row__sublabel'}, sublabel(row.node)!)
                 : null,
               isConditional(row.node)
-                ? h('craft-badge', {fill: 'blue'}, t('Conditional'))
+                ? h('craft-badge', {color: 'blue'}, t('Conditional'))
                 : null,
             ]
           ),

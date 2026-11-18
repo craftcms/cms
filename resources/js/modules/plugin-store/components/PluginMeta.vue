@@ -93,7 +93,7 @@
           <ul class="plugin-meta__categories">
             <li v-for="category in pluginCategories" :key="category.id">
               <CpLink :href="categoryRoute({id: category.id})">
-                <craft-badge no-prefix>{{ category.title }}</craft-badge>
+                <craft-badge hide-prefix>{{ category.title }}</craft-badge>
               </CpLink>
             </li>
           </ul>

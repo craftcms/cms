@@ -30,8 +30,8 @@ export default class CraftSelect extends NativeField(LitElement) {
     return super._control as HTMLSelectElement | undefined;
   }
 
-  /** Renders the control at a smaller size. */
-  @property({reflect: true, type: Boolean}) small = false;
+  /** Control size. */
+  @property({reflect: true}) size: 'small' | 'medium' = 'medium';
 
   // oxlint-disable-next-line class-methods-use-this
   protected override _inputGroupInputTemplate() {

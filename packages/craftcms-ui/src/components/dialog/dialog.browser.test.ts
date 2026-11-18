@@ -93,7 +93,7 @@ it('moves focus into the dialog on open', async () => {
 
 it('draws no focus ring around the dialog when it takes focus itself', async () => {
   const dialog = await openDialog((dialog) => {
-    dialog.noHeader = true;
+    dialog.hideHeader = true;
   });
   const native = shadow<HTMLDialogElement>(dialog, 'dialog');
 
@@ -487,7 +487,7 @@ it('leaves Escape to content that claims it', async () => {
 
 it('lets the keyboard reach a scrolling body with nothing focusable', async () => {
   const dialog = await openDialog((dialog) => {
-    dialog.noClose = true;
+    dialog.hideClose = true;
     dialog.textContent = longText();
   });
   const body = shadow(dialog, '.body');
@@ -503,7 +503,7 @@ it('contains Tab in a non-modal dialog and releases it on close', async () => {
   const inside = button('Inside');
   const dialog = await openDialog((dialog) => {
     dialog.nonModal = true;
-    dialog.noClose = true;
+    dialog.hideClose = true;
     dialog.append(inside);
   });
   document.body.append(after);
@@ -523,7 +523,7 @@ it('scrolls a focused control clear of the footer', async () => {
   const first = button('First');
   const last = button('Last');
   const dialog = await openDialog((dialog) => {
-    dialog.noClose = true;
+    dialog.hideClose = true;
     dialog.label = '';
     const text = document.createElement('p');
     text.textContent = longText();
@@ -565,9 +565,9 @@ it('gives the close button 24px of vertical room in the header', async () => {
   expect(height).toBeGreaterThan(24);
 });
 
-it('keeps the label as the name under no-header', async () => {
+it('keeps the label as the name under hide-header', async () => {
   const dialog = await openDialog((dialog) => {
-    dialog.noHeader = true;
+    dialog.hideHeader = true;
     dialog.append(button('Inside'));
   });
 

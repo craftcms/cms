@@ -179,7 +179,7 @@ export class ElementDeletionManager extends Base {
   createModal(data: any): void {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
     dialog.classList.add('element-deletion-modal');
-    dialog.setAttribute('no-header', '');
+    dialog.setAttribute('hide-header', '');
     dialog.nonModal = true;
     dialog.resizable = true;
 

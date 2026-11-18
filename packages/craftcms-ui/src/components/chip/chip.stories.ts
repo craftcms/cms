@@ -43,7 +43,6 @@ type Story = StoryObj<any>;
 /** Every `size` value, for the size stories below. */
 const chipSizes = [
   {size: 'xsmall', label: 'X-Small'},
-  {size: 'auto', label: 'Auto'},
   {size: 'small', label: 'Small'},
   {size: 'medium', label: 'Medium'},
   {size: 'large', label: 'Large'},
@@ -384,7 +383,7 @@ export const Rounded: Story = {
         <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
         Showcase image
       </craft-chip>
-      <craft-badge fill="gray" no-prefix>Badge</craft-badge>
+      <craft-badge color="gray" hide-prefix>Badge</craft-badge>
       <craft-chip rounded show-thumb>
         <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
         Small
@@ -511,7 +510,7 @@ export const KitchenSink: Story = {
 
       <craft-chip>
         <craft-badge
-          fill="info"
+          color="info"
           slot="prefix"
           style="margin-inline: var(--_chip-spacing)"
           >Badge</craft-badge
@@ -620,7 +619,7 @@ const stressTestLeads = [
     attrs: {},
     content: () =>
       html`<craft-badge
-        fill="info"
+        color="info"
         slot="prefix"
         style="margin-inline: var(--_chip-spacing)"
         >Badge</craft-badge
@@ -785,7 +784,7 @@ const stressTestGroups: {heading: string; chips: StressTestChip[]}[] = [
       {
         caption: 'Badge in the label',
         chip: stressTestChip(leadNamed('Icon'), {
-          label: html`Homepage <craft-badge fill="amber">Draft</craft-badge>`,
+          label: html`Homepage <craft-badge color="amber">Draft</craft-badge>`,
         }),
       },
       {
@@ -889,7 +888,7 @@ const permutationChip = (
     title="${description}"
   >
     ${has('prefix')
-      ? html`<craft-badge fill="amber" slot="prefix">Badge</craft-badge>`
+      ? html`<craft-badge color="amber" slot="prefix">Badge</craft-badge>`
       : nothing}
     ${has('thumbnail')
       ? html`<img slot="thumbnail" src="${permutationThumb}" alt="" />`

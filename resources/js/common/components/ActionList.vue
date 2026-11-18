@@ -512,7 +512,7 @@
       <craft-indicator
         v-else-if="statusOf(action)"
         slot="icon"
-        :fill="statusOf(action)"
+        :color="statusOf(action)"
       ></craft-indicator>
 
       {{ labelOf(action) }}
@@ -593,13 +593,13 @@
         <craft-indicator
           v-if="action.status"
           slot="icon"
-          :fill="action.status"
+          :color="action.status"
         ></craft-indicator>
         {{ action.label }}
         <craft-badge
           v-if="action.badge"
           class="action-list__badge"
-          :fill="action.badge.fill ?? 'gray'"
+          :color="action.badge.fill ?? 'gray'"
           size="small"
         >
           <craft-icon
@@ -621,13 +621,13 @@
         <craft-indicator
           v-if="action.status"
           slot="icon"
-          :fill="action.status"
+          :color="action.status"
         ></craft-indicator>
         {{ action.label }}
         <craft-badge
           v-if="action.badge"
           class="action-list__badge"
-          :fill="action.badge.fill ?? 'gray'"
+          :color="action.badge.fill ?? 'gray'"
           size="small"
         >
           <craft-icon
@@ -649,13 +649,13 @@
         <craft-indicator
           v-if="action.status"
           slot="icon"
-          :fill="action.status"
+          :color="action.status"
         ></craft-indicator>
         {{ action.label }}
         <craft-badge
           v-if="action.badge"
           class="action-list__badge"
-          :fill="action.badge.fill ?? 'gray'"
+          :color="action.badge.fill ?? 'gray'"
           size="small"
         >
           <craft-icon

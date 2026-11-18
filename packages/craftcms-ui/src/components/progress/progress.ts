@@ -56,8 +56,9 @@ export default class CraftProgress extends LitElement {
   /** Color of the progress arc */
   @property({type: String}) color: string = 'currentColor';
 
-  /** Color of the background arc */
-  @property({type: String, attribute: 'bg-color'}) bgColor: string = '#a3afbb';
+  /** Color of the track the arc runs along */
+  @property({type: String, attribute: 'track-color'}) trackColor: string =
+    '#a3afbb';
 
   /** Color of the fail arc */
   @property({type: String, attribute: 'fail-color'}) failColor: string =
@@ -125,7 +126,7 @@ export default class CraftProgress extends LitElement {
       this.#handleProgressChange();
     } else if (
       changedProperties.has('color') ||
-      changedProperties.has('bgColor') ||
+      changedProperties.has('trackColor') ||
       changedProperties.has('failColor') ||
       changedProperties.has('failed')
     ) {
@@ -220,7 +221,7 @@ export default class CraftProgress extends LitElement {
     }
 
     // Background arc
-    this.#drawArc(ctx, this.bgColor, 1, 0);
+    this.#drawArc(ctx, this.trackColor, 1, 0);
 
     // Progress arc
     if (this.#arcEndPos > 0) {

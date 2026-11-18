@@ -12,7 +12,7 @@ interface ModalArgs {
   label: string;
   showTitle: boolean;
   canSubmit: boolean;
-  busy: boolean;
+  submitting: boolean;
   loading: boolean;
   nonModal: boolean;
   fullscreen: boolean;
@@ -65,7 +65,7 @@ const meta = {
     label: 'Choose an entry',
     showTitle: true,
     canSubmit: false,
-    busy: false,
+    submitting: false,
     loading: false,
     nonModal: false,
     fullscreen: false,
@@ -79,7 +79,7 @@ const meta = {
         label=${args.label}
         ?show-title=${args.showTitle}
         ?can-submit=${args.canSubmit}
-        ?busy=${args.busy}
+        ?submitting=${args.submitting}
         ?loading=${args.loading}
         ?non-modal=${args.nonModal}
         ?fullscreen=${args.fullscreen}
@@ -159,7 +159,7 @@ export const WithSelection: Story = {
 
 /** Mid-save: both buttons are out, and the index is inert rather than merely dim. */
 export const Busy: Story = {
-  args: {canSubmit: true, busy: true},
+  args: {canSubmit: true, submitting: true},
 };
 
 export const Loading: Story = {
@@ -194,7 +194,7 @@ export const BoundToAController: Story = {
       showTitle: true,
       hideOnSelect: false,
       loadIndexBody: async () => ({html: '', props: {}}),
-      // Stands in for the opener's async work, so `busy` is observable.
+      // Stands in for the opener's async work, so `submitting` is observable.
       onSelect: () => new Promise<void>((resolve) => setTimeout(resolve, 1200)),
     });
 
@@ -269,13 +269,15 @@ export const BoundToAController: Story = {
     );
     await expect(selectButton.contains(hit) || selectButton === hit).toBe(true);
 
-    // Submitting holds `busy`, which makes the index inert.
+    // Submitting sets `submitting`, which makes the index inert.
     await userEvent.click(selectButton);
-    await waitFor(() => expect(element.busy).toBe(true));
+    await waitFor(() => expect(element.submitting).toBe(true));
     await expect(
       element.shadowRoot!.querySelector('.body')!.hasAttribute('inert')
     ).toBe(true);
 
-    await waitFor(() => expect(element.busy).toBe(false), {timeout: 3000});
+    await waitFor(() => expect(element.submitting).toBe(false), {
+      timeout: 3000,
+    });
   },
 };

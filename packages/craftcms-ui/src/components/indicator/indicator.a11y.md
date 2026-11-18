@@ -20,4 +20,4 @@
 
 - 1.4.1 (Use of Color): pair a meaningful dot with visible text, or vary `appearance`. See [Accessibility](./Indicator.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): set `label` when the dot is the only cue for a status. See [Accessibility](./Indicator.mdx#accessibility).
-- 1.4.11 (Non-text Contrast): check a custom `fill` color reaches 3:1 against its surface. See [Accessibility](./Indicator.mdx#accessibility).
+- 1.4.11 (Non-text Contrast): check a custom `color` reaches 3:1 against its surface. See [Accessibility](./Indicator.mdx#accessibility).

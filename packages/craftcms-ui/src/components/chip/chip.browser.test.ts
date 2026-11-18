@@ -346,7 +346,7 @@ it('keeps a chip with a thumbnail a whole number of pixels tall', async () => {
   }
 });
 
-it('keeps a small chip as tall as its suffix button, unless it is auto', async () => {
+it('keeps a small chip as tall as its suffix button', async () => {
   const height = async (size: string, suffix: boolean) => {
     document.body.innerHTML = `
       <style>:root { --c-size-control-sm: 24px; }</style>
@@ -363,9 +363,6 @@ it('keeps a small chip as tall as its suffix button, unless it is auto', async (
   };
 
   expect(await height('small', false)).toBe(await height('small', true));
-  expect(await height('auto', false)).toBeLessThan(
-    await height('small', false)
-  );
 });
 
 it('makes an xsmall chip as tall as a labeled badge, with its text size', async () => {
@@ -376,7 +373,7 @@ it('makes an xsmall chip as tall as a labeled badge, with its text size', async 
     document.body.innerHTML = `
       <style>:root { --c-size-control-sm: 24px; --c-text-sm: 13px; }</style>
       <div style="display: flex; align-items: start; gap: 8px">
-        <craft-badge fill="gray">Label</craft-badge>
+        <craft-badge color="gray">Label</craft-badge>
         <craft-chip size="xsmall" ${attrs}>${markup}Label</craft-chip>
       </div>`;
     const badge = document.querySelector('craft-badge')!;

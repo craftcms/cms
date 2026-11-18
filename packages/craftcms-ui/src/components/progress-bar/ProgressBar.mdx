@@ -31,9 +31,9 @@ Prefer the count when you have one. It is what the status line can report, and "
 
 `show-status` renders the progress as text alongside the bar. This is the part that makes the component readable without seeing it, so turn it on whenever there is room.
 
-## Pending and Completion
+## Indeterminate and Completion
 
-<Canvas of={ProgressBarStories.Pending} sourceState="shown" />
+<Canvas of={ProgressBarStories.Indeterminate} sourceState="shown" />
 
 <Canvas of={ProgressBarStories.CompleteEvent} sourceState="shown" />
 
@@ -59,7 +59,7 @@ The bar exposes a `progressbar` named by `label`. Set `label` to what is progres
 
 The component has no live region, and a changing value isn't reliably announced. When completion or failure matters, announce it through one — once, at the end, rather than at every step. The `craft-complete` event is a convenient place to do it in item count mode.
 
-If you set `--c-progress-bar-fill-color` or `--c-progress-bar-track-color`, check the fill reaches 3:1 against the surface and the pending stripes.
+If you set `--c-progress-bar-fill-color` or `--c-progress-bar-track-color`, check the fill reaches 3:1 against the surface and the indeterminate stripes.
 
 ## Properties
 

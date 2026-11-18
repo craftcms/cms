@@ -9,13 +9,13 @@ import {Size, type SizeValue} from '@src/constants/size';
 
 /**
  * @summary A colored status pill: a `<craft-indicator>` dot (by default)
- * followed by a label. `fill` sets the badge color from the shared `Color`
+ * followed by a label. `color` sets the badge color from the shared `Color`
  * palette — the surface renders in the quiet tone of that color and the
  * indicator in the loud tone.
  *
  * @slot - The label content shown after the indicator.
  * @slot prefix - The leading content; defaults to a `<craft-indicator>` whose
- * fill is derived from `fill`.
+ * fill is derived from `color`.
  * @slot suffix - The trailing content.
  *
  * @csspart badge - The badge wrapper.
@@ -33,17 +33,18 @@ export default class CraftBadge extends LitElement {
   static override styles: CSSResultGroup = [styles];
 
   /** The badge color — a color value from `Color` (e.g. `red`, `emerald`). */
-  @property({reflect: true}) fill: ColorValue = Color.Gray;
+  @property({reflect: true}) color: ColorValue = Color.Gray;
 
   /** Leaves out the prefix region, default indicator included. */
-  @property({attribute: 'no-prefix', type: Boolean}) noPrefix: boolean = false;
+  @property({attribute: 'hide-prefix', type: Boolean}) hidePrefix: boolean =
+    false;
 
   /**
    * The badge's scale: `small`, `medium` (the default), or `large`. A labeled
    * badge is as tall as a small control, or as an extra-small one (and a
    * checkbox) when `small`.
    */
-  @property() size: SizeValue = Size.Medium;
+  @property() size: Exclude<SizeValue, 'xsmall'> = Size.Medium;
 
   /**
    * Whether the default slot holds a label, as opposed to the badge being a
@@ -105,13 +106,13 @@ export default class CraftBadge extends LitElement {
 
   /** The resolved color value used for the badge fill. */
   private getFill(): ColorValue {
-    return this.fill;
+    return this.color;
   }
 
   protected override willUpdate(changed: PropertyValues<this>): void {
-    // Set the colorable context from `fill` so the badge's own surface/border/
+    // Set the colorable context from `color` so the badge's own surface/border/
     // text colors (which read --c-color-*) reflect the chosen color.
-    if (changed.has('fill')) {
+    if (changed.has('color')) {
       this.dataset.color = this.getFill();
     }
   }
@@ -127,13 +128,13 @@ export default class CraftBadge extends LitElement {
           'badge--labeled': this.hasLabel,
         })}"
       >
-        ${this.noPrefix
+        ${this.hidePrefix
           ? nothing
           : html`<span class="badge__prefix">
               <slot name="prefix" part="prefix">
                 <craft-indicator
                   part="indicator"
-                  fill="${this.getFill()}"
+                  color="${this.getFill()}"
                 ></craft-indicator>
               </slot>
             </span>`}

@@ -753,7 +753,7 @@
               :name="option.icon"
               :style="option.color ? {color: option.color} : undefined"
             />
-            <craft-indicator v-else :fill="option.color" />
+            <craft-indicator v-else :color="option.color" />
             <span v-if="option.labelHtml" v-html="option.labelHtml" />
             <template v-else>{{ option.label }}</template>
           </span>

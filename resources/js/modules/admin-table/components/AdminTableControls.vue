@@ -58,7 +58,9 @@
             v-if="statusOptionFill(option)"
             class="inline-flex items-center gap-md"
           >
-            <craft-indicator :fill="statusOptionFill(option)"></craft-indicator>
+            <craft-indicator
+              :color="statusOptionFill(option)"
+            ></craft-indicator>
             {{ option.label }}
           </span>
           <ElementStatus v-else :label="option.label" value="" />

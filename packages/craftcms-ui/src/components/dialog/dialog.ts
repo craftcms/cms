@@ -64,9 +64,9 @@ function releasePageScroll(): void {
  * `--c-dialog-*` custom properties.
  *
  * The header renders when there is something to put in it — a `label`, a close
- * button, or both. Set `no-close` on a dialog that dismisses itself some other
+ * button, or both. Set `hide-close` on a dialog that dismisses itself some other
  * way; with no label either, the header is dropped rather than left as an empty
- * band of padding. Set `no-header` to drop it outright when the content draws
+ * band of padding. Set `hide-header` to drop it outright when the content draws
  * its own title; the `label` still names the dialog.
  *
  * @slot - The dialog body.
@@ -138,8 +138,8 @@ export default class CraftDialog extends LitElement {
    * a Cancel button in the footer, say — so the header isn't kept alive by a
    * control that isn't there.
    */
-  @property({type: Boolean, attribute: 'no-close', reflect: true})
-  noClose = false;
+  @property({type: Boolean, attribute: 'hide-close', reflect: true})
+  hideClose = false;
 
   /**
    * Drop the header row, close button included.
@@ -149,8 +149,8 @@ export default class CraftDialog extends LitElement {
    * dialog a visible way out — a Cancel button in the footer, say — since the
    * close button goes too.
    */
-  @property({type: Boolean, attribute: 'no-header', reflect: true})
-  noHeader = false;
+  @property({type: Boolean, attribute: 'hide-header', reflect: true})
+  hideHeader = false;
 
   /**
    * Decides where focus goes once the dialog closes.
@@ -298,13 +298,13 @@ export default class CraftDialog extends LitElement {
   /**
    * Whether to render the header at all.
    *
-   * It goes under `no-header`, and when there is nothing to put in it — no
+   * It goes under `hide-header`, and when there is nothing to put in it — no
    * label *and* no close button — because the row is otherwise just a band of
    * padding above the body. A close button on its own is reason enough to keep
    * it; it needs somewhere to live.
    */
   protected get hasHeader(): boolean {
-    return !this.noHeader && (this.label !== '' || !this.noClose);
+    return !this.hideHeader && (this.label !== '' || !this.hideClose);
   }
 
   /**
@@ -328,7 +328,7 @@ export default class CraftDialog extends LitElement {
           : html`<h2 class="title" part="title" id=${this.titleId}>
               ${this.label}
             </h2>`}
-        ${this.noClose
+        ${this.hideClose
           ? nothing
           : html`<craft-button
               type="button"

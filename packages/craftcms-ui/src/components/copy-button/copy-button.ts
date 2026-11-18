@@ -3,12 +3,12 @@ import {property, query, state} from 'lit/decorators.js';
 import {html, LitElement, nothing} from 'lit';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import type {CSSResultGroup} from 'lit';
+import type {SizeValue} from '@src/constants/size';
 import styles from './copy-button.styles.js';
 import '../tooltip/tooltip.js';
 import type CraftTooltip from '../tooltip/tooltip.js';
 import '../button/button.js';
 import {ButtonVariant} from '../button/button.js';
-import type CraftButton from '../button/button.js';
 
 const STATUS_ICONS = {
   rest: 'custom-icons/clone-dashed',
@@ -77,7 +77,7 @@ export default class CraftCopyButton extends LitElement {
   @property() icon: string | null = null;
 
   /** The button's size. */
-  @property({reflect: true}) size: CraftButton['size'] = 'small';
+  @property({reflect: true}) size: SizeValue = 'small';
 
   /** The button's visual style. */
   @property({reflect: true}) variant: ButtonVariant = ButtonVariant.Plain;

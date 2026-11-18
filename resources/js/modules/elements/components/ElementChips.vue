@@ -254,7 +254,7 @@
           ></craft-icon>
           <craft-indicator
             v-else
-            :fill="element.status.fill"
+            :color="element.status.fill"
             :label="`${t('Status:')} ${element.status.label}`"
           ></craft-indicator>
         </div>

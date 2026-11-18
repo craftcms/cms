@@ -16,8 +16,8 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 - [x] The dialog renders as a native `<dialog>`, so it has the `dialog` role, and opening it uses `showModal()`, which makes it modal (`:modal`) and the rest of the page inert. Per WCAG 4.1.2 (Name, Role, Value) and 1.3.1 (Info and Relationships). Verified by `opens a default dialog as modal` in `dialog.browser.test.ts`.
 - [x] A `label` names the dialog through its header heading. Per WCAG 4.1.2 (Name, Role, Value). Verified by `labels the dialog with the title`, `brings the header back when a label is set later`, and `labels the dialog only when there is a label to point at` in `dialog.test.ts`.
-- [x] Under `no-header`, the `label` still names the dialog through a hidden heading that takes no space. Per WCAG 4.1.2 (Name, Role, Value). Verified by `drops the header under no-header` and `still labels the dialog under no-header` in `dialog.test.ts`, and `keeps the label as the name under no-header` in `dialog.browser.test.ts`.
-- [ ] A dialog can be named by an `aria-label` or `aria-labelledby` on the host. Per WCAG 4.1.2 (Name, Role, Value). Known gap: neither reaches the inner `<dialog>`, so `label` is the only way to name it, with `no-header` for a dialog without a visible title.
+- [x] Under `hide-header`, the `label` still names the dialog through a hidden heading that takes no space. Per WCAG 4.1.2 (Name, Role, Value). Verified by `drops the header under hide-header` and `still labels the dialog under hide-header` in `dialog.test.ts`, and `keeps the label as the name under hide-header` in `dialog.browser.test.ts`.
+- [ ] A dialog can be named by an `aria-label` or `aria-labelledby` on the host. Per WCAG 4.1.2 (Name, Role, Value). Known gap: neither reaches the inner `<dialog>`, so `label` is the only way to name it, with `hide-header` for a dialog without a visible title.
 - [x] The header close button is named "Close" (translated) through `aria-label`. Per WCAG 4.1.2 (Name, Role, Value) and 2.5.3 (Label in Name). Verified by `names the close button "Close"` in `dialog.test.ts`.
 
 ### Keyboard and focus

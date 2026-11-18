@@ -11,7 +11,6 @@ namespace CraftCms\Cms\Cp\Enums;
  */
 enum Size: string
 {
-    case Zero = 'zero';
     case XSmall = 'xsmall';
     case Small = 'small';
     case Medium = 'medium';

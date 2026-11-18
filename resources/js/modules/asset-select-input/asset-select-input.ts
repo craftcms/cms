@@ -234,7 +234,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
 
   #progressMessage(): string {
     const bar = this.progressBar;
-    if (!bar || bar.pending || bar.progress === 100) {
+    if (!bar || bar.indeterminate || bar.progress === 100) {
       return t('Processing');
     }
 

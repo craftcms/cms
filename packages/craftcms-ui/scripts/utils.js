@@ -45,7 +45,7 @@ export async function resolveFrom(pattern) {
 export const BLACK_CONTENTS_SELECTOR = `:where(
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *,
+  craft-badge[color='black'] > *,
   craft-tooltip > [slot='content'] > *,
   craft-info-icon > *
 )`;

@@ -66,7 +66,7 @@
       <template v-if="isAnswered(approval)" #badge>
         <craft-badge
           v-if="decisions[approval.id]"
-          fill="success"
+          color="success"
           size="small"
           class="assistant-approvals__decision"
         >
@@ -75,7 +75,7 @@
         </craft-badge>
         <craft-badge
           v-else
-          fill="danger"
+          color="danger"
           size="small"
           class="assistant-approvals__decision"
         >

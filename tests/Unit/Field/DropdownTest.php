@@ -29,7 +29,7 @@ it('offers options with icons or colors in a combobox, grouped as in its setting
             ['label' => 'Plain', 'value' => encodedDropdownValue('plain')],
             ['type' => 'optgroup', 'label' => 'Group', 'options' => [
                 ['label' => 'Icon', 'value' => encodedDropdownValue('icon'), 'data' => ['icon' => 'star', 'color' => '#ff0000']],
-                ['label' => 'Color', 'value' => encodedDropdownValue('color'), 'data' => ['indicator' => ['fill' => '#00ff00']]],
+                ['label' => 'Color', 'value' => encodedDropdownValue('color'), 'data' => ['indicator' => ['color' => '#00ff00']]],
             ]],
         ])
         ->and($control->getValue())->toBeNull();

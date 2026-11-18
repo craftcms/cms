@@ -7,7 +7,7 @@ let teardown: (() => void) | undefined;
 
 type ElementStatusProps = InstanceType<typeof ElementStatus>['$props'];
 
-type Indicator = HTMLElement & {fill: string; appearance?: string};
+type Indicator = HTMLElement & {color: string; appearance?: string};
 
 async function indicatorFor(props: ElementStatusProps): Promise<Indicator> {
   const container = document.createElement('div');
@@ -40,18 +40,18 @@ describe('ElementStatus', () => {
     ['pending', 'sky'],
     ['warning', 'amber'],
   ])('fills a %s dot with its status color, %s', async (value, fill) => {
-    expect((await indicatorFor({value})).fill).toBe(fill);
+    expect((await indicatorFor({value})).color).toBe(fill);
   });
 
   it.each(['success', 'danger', 'info'])(
     'fills a %s dot with that variant',
     async (value) => {
-      expect((await indicatorFor({value})).fill).toBe(value);
+      expect((await indicatorFor({value})).color).toBe(value);
     }
   );
 
   it('fills a palette color status with that color', async () => {
-    expect((await indicatorFor({value: 'orange'})).fill).toBe('orange');
+    expect((await indicatorFor({value: 'orange'})).color).toBe('orange');
   });
 
   it('prefers an explicit color over the value', async () => {
@@ -60,24 +60,24 @@ describe('ElementStatus', () => {
       color: {value: 'violet'},
     });
 
-    expect(indicator.fill).toBe('violet');
+    expect(indicator.color).toBe('violet');
   });
 
   it('draws a disabled status as an empty ring', async () => {
     const indicator = await indicatorFor({value: 'disabled'});
 
     expect(indicator.appearance).toBe('outline');
-    expect(indicator.fill).toBe('var(--c-color-fill-loud)');
+    expect(indicator.color).toBe('var(--c-color-fill-loud)');
   });
 
   it('leaves an unrecognized status on the default fill', async () => {
-    expect((await indicatorFor({value: 'archived'})).fill).toBe(
+    expect((await indicatorFor({value: 'archived'})).color).toBe(
       'var(--c-color-fill-loud)'
     );
   });
 
   it('fills the “all” option with a gradient', async () => {
-    expect((await indicatorFor({value: '', label: 'All'})).fill).toContain(
+    expect((await indicatorFor({value: '', label: 'All'})).color).toContain(
       'linear-gradient'
     );
   });

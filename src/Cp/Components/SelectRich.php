@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Support\Htmlable;
@@ -20,6 +21,7 @@ class SelectRich extends ViewComponent
 {
     use HasDisabled;
     use HasId;
+    use HasSize;
 
     protected ?string $name = null;
 
@@ -31,8 +33,6 @@ class SelectRich extends ViewComponent
     protected ?string $label = null;
 
     protected bool $labelSrOnly = false;
-
-    protected bool $small = false;
 
     protected bool $invalid = false;
 
@@ -81,13 +81,6 @@ class SelectRich extends ViewComponent
         return $this;
     }
 
-    public function small(bool $small = true): static
-    {
-        $this->small = $small;
-
-        return $this;
-    }
-
     /**
      * Marks the value as having failed validation, such as on the server.
      */
@@ -106,7 +99,7 @@ class SelectRich extends ViewComponent
             'name' => $this->name,
             'label' => $this->label,
             'label-sr-only' => $this->labelSrOnly,
-            'small' => $this->small,
+            'size' => $this->getSize(),
             'invalid' => $this->invalid,
             'disabled' => $this->isDisabled(),
         ];

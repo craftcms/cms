@@ -117,9 +117,9 @@ class BooleanMenu extends Combobox
         return $groups;
     }
 
-    /** @return array{fill?: string, appearance?: string} */
+    /** @return array{color?: string, appearance?: string} */
     private static function indicator(bool $enabled): array
     {
-        return $enabled ? ['fill' => 'success'] : ['appearance' => 'outline'];
+        return $enabled ? ['color' => 'success'] : ['appearance' => 'outline'];
     }
 }

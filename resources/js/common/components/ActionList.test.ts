@@ -328,9 +328,9 @@ describe('ActionList', () => {
       const [draft, all] = [...container.querySelectorAll(as)];
       const dot = draft!.querySelector(
         'craft-indicator[slot="icon"]'
-      ) as HTMLElement & {fill?: string};
+      ) as HTMLElement & {color?: string};
 
-      expect(dot.fill).toBe('blue');
+      expect(dot.color).toBe('blue');
       expect(all!.querySelector('craft-indicator')).toBeNull();
     }
   );
@@ -354,11 +354,11 @@ describe('ActionList', () => {
       ...container.querySelectorAll('craft-action-item'),
     ];
     const badge = edited!.querySelector('craft-badge') as HTMLElement & {
-      fill?: string;
+      color?: string;
     };
 
     expect(badge.textContent?.trim()).toBe('Edited');
-    expect(badge.fill).toBe('violet');
+    expect(badge.color).toBe('violet');
     // In the label, not a slot at the item's far end.
     expect(badge.slot).toBe('');
     expect(edited!.textContent?.replace(/\s+/g, ' ').trim()).toBe(

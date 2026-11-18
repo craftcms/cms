@@ -48,7 +48,7 @@ export default css`
     transition: width 0.2s ease-out;
   }
 
-  .progress-bar--pending .progress-bar__fill {
+  .progress-bar--indeterminate .progress-bar__fill {
     --_stripe-size: calc(var(--_height) * 2);
     width: 100%;
     background-color: var(--_track-color);
@@ -62,10 +62,10 @@ export default css`
       transparent 75%
     );
     background-size: var(--_stripe-size) var(--_stripe-size);
-    animation: progress-bar-pending 1s linear infinite;
+    animation: progress-bar-indeterminate 1s linear infinite;
   }
 
-  @keyframes progress-bar-pending {
+  @keyframes progress-bar-indeterminate {
     from {
       background-position: 0 0;
     }
@@ -75,7 +75,7 @@ export default css`
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .progress-bar--pending .progress-bar__fill {
+    .progress-bar--indeterminate .progress-bar__fill {
       animation: none;
     }
 

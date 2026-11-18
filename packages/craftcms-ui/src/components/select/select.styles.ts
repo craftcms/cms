@@ -12,7 +12,7 @@ export default css`
     width: 100%;
   }
 
-  :host([small]) .input-group__input {
+  :host([size='small']) .input-group__input {
     --c-input-height: var(--c-size-control-sm);
   }
 

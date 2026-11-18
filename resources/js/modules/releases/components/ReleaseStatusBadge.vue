@@ -25,5 +25,5 @@
 </script>
 
 <template>
-  <craft-badge :fill="presentation.fill">{{ presentation.label }}</craft-badge>
+  <craft-badge :color="presentation.fill">{{ presentation.label }}</craft-badge>
 </template>

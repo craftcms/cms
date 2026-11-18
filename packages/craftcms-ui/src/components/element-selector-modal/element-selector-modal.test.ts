@@ -236,11 +236,11 @@ describe('unbound (attribute-driven)', () => {
   });
 });
 
-describe('busy', () => {
+describe('submitting', () => {
   it('disables both buttons and marks the index inert', async () => {
     const modal = await createModal((m) => {
       m.canSubmit = true;
-      m.busy = true;
+      m.submitting = true;
     });
 
     expect(button(modal, 'cancel').hasAttribute('disabled')).toBe(true);
@@ -254,7 +254,7 @@ describe('busy', () => {
   it('refuses a Cancel click', async () => {
     const modal = await createModal((m) => {
       m.setAttribute('open', '');
-      m.busy = true;
+      m.submitting = true;
     });
     const seen = vi.fn();
     modal.addEventListener('craft-cancel', seen);

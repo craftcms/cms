@@ -97,7 +97,7 @@ export const Sizes: Story = {
   args: {},
   render: (args) => html`
     <div class="flex gap-2 items-center">
-      ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+      ${['xsmall', 'small', 'medium', 'large'].map(
         (size) => html`<craft-button size="${size}">${size}</craft-button>`
       )}
     </div>
@@ -218,7 +218,7 @@ export const Links: Story = {
         )}
       </div>
       <div class="flex gap-2 items-center">
-        ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+        ${['xsmall', 'small', 'medium', 'large'].map(
           (size) =>
             html`<craft-button href="#" size="${size}">${size}</craft-button>`
         )}
@@ -264,7 +264,7 @@ export const Disabled: Story = {
         <craft-button href="#" disabled>Disabled link</craft-button>
       </div>
       <div class="flex gap-2 items-center flex-wrap">
-        ${['zero', 'xsmall', 'small', 'medium', 'large'].map(
+        ${['xsmall', 'small', 'medium', 'large'].map(
           (size) =>
             html`<craft-button size="${size}" disabled>${size}</craft-button>`
         )}

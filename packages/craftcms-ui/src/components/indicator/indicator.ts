@@ -77,7 +77,7 @@ export default class CraftIndicator extends LitElement {
    * font size — set `font-size` on the host to fine-tune.
    */
   @property()
-  size: 'md' | 'lg' = 'md';
+  size: 'medium' | 'large' = 'medium';
 
   /**
    * The dot's color. A status variant (`success`, `warning`, `danger`,
@@ -88,7 +88,7 @@ export default class CraftIndicator extends LitElement {
    * @phpType {Color|string}
    */
   @property({reflect: true})
-  fill: string = 'var(--c-color-fill-loud)';
+  color: string = 'var(--c-color-fill-loud)';
 
   /**
    * Accessible name, exposed as `aria-label`. Set it whenever the dot is not
@@ -116,30 +116,30 @@ export default class CraftIndicator extends LitElement {
       return this.appearance;
     }
 
-    return this.fill === Color.White || this.fill === Color.Black
+    return this.color === Color.White || this.color === Color.Black
       ? Appearance.OutlineFill
       : Appearance.Solid;
   }
 
   protected getFill() {
     // If the fill is known swatch
-    if ((colors as string[]).includes(this.fill)) {
-      return `var(--c-color-${this.fill}-fill-loud)`;
+    if ((colors as string[]).includes(this.color)) {
+      return `var(--c-color-${this.color}-fill-loud)`;
     }
 
     // If it's a known variant
-    if ((variants as string[]).includes(this.fill)) {
-      return `var(--c-color-${this.fill}-fill-loud)`;
+    if ((variants as string[]).includes(this.color)) {
+      return `var(--c-color-${this.color}-fill-loud)`;
     }
 
-    return this.fill;
+    return this.color;
   }
 
   protected getSize() {
     switch (this.size) {
-      case 'md':
+      case 'medium':
         return '0.6em';
-      case 'lg':
+      case 'large':
         return '1em';
       default:
         return this.size;
@@ -156,8 +156,8 @@ export default class CraftIndicator extends LitElement {
       class="${classMap({
         indicator: true,
         [`indicator--${this.effectiveAppearance}`]: true,
-        'indicator--white': this.fill === Color.White,
-        'indicator--black': this.fill === Color.Black,
+        'indicator--white': this.color === Color.White,
+        'indicator--black': this.color === Color.Black,
       })}"
     ></span>`;
   }

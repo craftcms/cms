@@ -10,16 +10,16 @@ Use it to surface an object's state where it is read at a glance — an entry's 
 
 <Canvas of={BadgeStories.Default} sourceState="shown" />
 
-The label is the default slot, and `fill` sets the color.
+The label is the default slot, and `color` sets the color.
 The badge renders its surface, border, and text in the quiet tone of that color, and the indicator in the loud one, so the pill stays legible against the page while the dot carries the signal.
 
 ## Color
 
-`fill` takes a value from the shared `Color` palette:
+`color` takes a value from the shared `Color` palette:
 
 <Canvas of={BadgeStories.AllColors} sourceState="shown" />
 
-Unlike Indicator, the badge is limited to the palette and does not take arbitrary CSS colors — `fill` is typed as `ColorValue`, so an unknown color fails to type-check rather than rendering as nothing.
+Unlike Indicator, the badge is limited to the palette and does not take arbitrary CSS colors — `color` is typed as `ColorValue`, so an unknown color fails to type-check rather than rendering as nothing.
 
 Setting it reflects the resolved color onto the host's `data-color` attribute, which is what scopes the `--c-color-*` tokens the badge's styles read.
 That is the same mechanism described on the [Colorable](?path=/docs/tokens-colorable--docs) page.
@@ -55,7 +55,7 @@ craft-badge {
 ```
 
 Its colors come from the generic colorable tokens — `--c-color-fill-quiet` for the surface, `--c-color-border-quiet` for the border, `--c-color-on-quiet` for the text.
-Because `fill` scopes those tokens, change a badge's color through `fill` rather than by overriding them.
+Because `color` scopes those tokens, change a badge's color through `color` rather than by overriding them.
 
 Icons slotted into a neutral badge take `--c-badge-icon-color`, which is the text color in the light theme and white in the dark theme and in black badges. Tinted badges' icons take their tint, and an icon with a `color` of its own keeps it.
 

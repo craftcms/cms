@@ -162,7 +162,7 @@ class UiKitchenSinkController
                 ->options($options)
                 ->label('Country')
                 ->labelSrOnly()
-                ->small()
+                ->size('small')
                 ->toHtml().
             Button::make()
                 ->label('Apply')

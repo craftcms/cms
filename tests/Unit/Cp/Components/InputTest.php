@@ -154,14 +154,12 @@ describe('host attributes', function () {
         $html = Input::make()
             ->id('i')
             ->size('small')
-            ->small()
             ->center()
             ->monospace()
             ->hiddenInput()
             ->toHtml();
 
         expect($html)->toContain('size="small"')
-            ->and($html)->toContain(' small')
             ->and($html)->toContain(' center')
             ->and($html)->toContain(' monospace')
             ->and($html)->toContain(' hidden-input');

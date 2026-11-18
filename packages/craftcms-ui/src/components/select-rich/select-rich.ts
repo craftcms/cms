@@ -59,8 +59,8 @@ export default class CraftSelectRich extends FormAssociated(
 ) {
   static override styles = [formControlStyles, layerStyles, styles];
 
-  /** Renders the field at a smaller size. */
-  @property({reflect: true, type: Boolean}) small = false;
+  /** Control size. */
+  @property({reflect: true}) size: 'small' | 'medium' = 'medium';
 
   /** Marks the value as required: sets `aria-required` on the field. */
   @property({type: Boolean}) required = false;

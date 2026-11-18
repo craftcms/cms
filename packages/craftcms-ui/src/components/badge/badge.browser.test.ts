@@ -15,7 +15,7 @@ beforeEach(() => {
 async function render(theme: string, fill: string): Promise<CraftBadge> {
   document.body.innerHTML = `
     <div data-theme="${theme}">
-      <craft-badge fill="${fill}">Label</craft-badge>
+      <craft-badge color="${fill}">Label</craft-badge>
     </div>`;
   const badge = document.querySelector('craft-badge')!;
   await badge.updateComplete;
@@ -76,7 +76,7 @@ it.each([
 ])('makes a %s labeled badge as tall as %s', async (size, token) => {
   document.body.innerHTML = `
     <span class="probe" style="display: block; block-size: var(${token})"></span>
-    <craft-badge size="${size}" no-prefix>3/10</craft-badge>`;
+    <craft-badge size="${size}" hide-prefix>3/10</craft-badge>`;
   const badge = document.querySelector('craft-badge')!;
   await badge.updateComplete;
 
@@ -110,7 +110,7 @@ it('draws icons white in a dark neutral badge, but keeps tints and icon colors',
   const iconColor = async (theme: string, fill: string, style = '') => {
     document.body.innerHTML = `
       <div data-theme="${theme}">
-        <craft-badge fill="${fill}">
+        <craft-badge color="${fill}">
           <craft-icon slot="prefix" style="${style}"></craft-icon>Label
         </craft-badge>
       </div>`;

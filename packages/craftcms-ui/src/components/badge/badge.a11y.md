@@ -13,7 +13,7 @@ A static, non-interactive status pill. It builds on `craft-indicator` for its de
 
 - [x] The default prefix indicator is decorative: it has no role or name, so the badge's status is announced once, by its label. Per WCAG 1.1.1 (Non-text Content). Verified by `leaves the default indicator unnamed, so the label is announced once` in `badge.browser.test.ts`.
 - [x] A slotted `prefix` that says something the label doesn't, such as a labeled `craft-icon`, keeps its own accessible name. Per WCAG 1.1.1 (Non-text Content). Verified by the `CustomPrefix` story's `play()` in `badge.stories.ts`.
-- [x] `no-prefix` removes the indicator from the badge rather than hiding it visually. Per WCAG 1.3.1 (Info and Relationships). Verified by `leaves out the prefix with no-prefix` in `badge.test.ts`.
+- [x] `hide-prefix` removes the indicator from the badge rather than hiding it visually. Per WCAG 1.3.1 (Info and Relationships). Verified by `leaves out the prefix with hide-prefix` in `badge.test.ts`.
 - [x] The label slot renders as soon as text arrives, including text added after the first render, so the status is visible and in the accessibility tree. Per WCAG 1.3.1 (Info and Relationships). Verified by `renders a region once content arrives for it` in `badge.test.ts`.
 - [ ] The badge has no role, takes no focus and exposes no state, so it's read as plain text in place. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 
@@ -32,5 +32,5 @@ A static, non-interactive status pill. It builds on `craft-indicator` for its de
 
 ## Depends on usage
 
-- 1.4.1 (Use of Color): give every badge visible text that names the status, so `fill` only reinforces it. See [Accessibility](./Badge.mdx#accessibility).
+- 1.4.1 (Use of Color): give every badge visible text that names the status, so `color` only reinforces it. See [Accessibility](./Badge.mdx#accessibility).
 - 1.1.1 (Non-text Content): give a slotted `prefix` its own accessible name when it says something the label doesn't. See [Accessibility](./Badge.mdx#accessibility).

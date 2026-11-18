@@ -112,7 +112,7 @@
             }"
           >
             <template v-if="name == 'status'">
-              <craft-badge :fill="jobStatusFill(job.status.value)">
+              <craft-badge :color="jobStatusFill(job.status.value)">
                 {{ job.status.label }}
               </craft-badge>
             </template>

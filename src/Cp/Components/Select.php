@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 
@@ -18,6 +19,7 @@ class Select extends ViewComponent
 {
     use HasDisabled;
     use HasId;
+    use HasSize;
 
     protected ?string $name = null;
 
@@ -34,8 +36,6 @@ class Select extends ViewComponent
     protected bool $labelSrOnly = false;
 
     protected bool $required = false;
-
-    protected bool $small = false;
 
     protected ?string $labelledBy = null;
 
@@ -105,13 +105,6 @@ class Select extends ViewComponent
         return $this;
     }
 
-    public function small(bool $small = true): static
-    {
-        $this->small = $small;
-
-        return $this;
-    }
-
     public function labelledBy(?string $labelledBy): static
     {
         $this->labelledBy = $labelledBy;
@@ -141,7 +134,7 @@ class Select extends ViewComponent
     protected function hostAttributes(): array
     {
         return [
-            'small' => $this->small,
+            'size' => $this->getSize(),
             'label' => $this->label,
             'label-sr-only' => $this->labelSrOnly,
             'name' => $this->name,

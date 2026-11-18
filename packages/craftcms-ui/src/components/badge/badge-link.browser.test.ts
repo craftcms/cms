@@ -22,10 +22,10 @@ function linkColor(): string {
 it('gives a tinted badge’s links its text color and an underline until hovered', async () => {
   document.body.innerHTML = `
     <craft-badge id="default"><a href="#">Default</a></craft-badge>
-    <craft-badge id="slate" fill="slate"><a href="#">Slate</a></craft-badge>
-    <craft-badge id="red" fill="red"><a href="#">Red</a></craft-badge>
-    <craft-badge id="black" fill="black"><a href="#">Black</a></craft-badge>
-    <craft-badge id="white" fill="white"><a href="#">White</a></craft-badge>`;
+    <craft-badge id="slate" color="slate"><a href="#">Slate</a></craft-badge>
+    <craft-badge id="red" color="red"><a href="#">Red</a></craft-badge>
+    <craft-badge id="black" color="black"><a href="#">Black</a></craft-badge>
+    <craft-badge id="white" color="white"><a href="#">White</a></craft-badge>`;
   for (const badge of document.querySelectorAll<CraftBadge>('craft-badge')) {
     await badge.updateComplete;
   }
