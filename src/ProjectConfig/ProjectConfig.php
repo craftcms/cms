@@ -57,7 +57,7 @@ class ProjectConfig
     /**
      * The cache key that is used to store the current project config diff
      */
-    public const string DIFF_CACHE_KEY = 'projectConfig:diff';
+    public const string DIFF_CACHE_KEY = 'projectConfig:diff:v2';
 
     /**
      * The duration that project config caches should be cached, in seconds. Defaults to one year.
@@ -289,6 +289,7 @@ class ProjectConfig
         $this->loggedChanges = 0;
         $this->processedPaths = [];
         $this->timestampUpdated = false;
+        $this->waitingToUpdateParsedConfigTimes = false;
         $this->yamlDirty = false;
         $this->isApplyingExternalChanges = false;
         $this->generation++;
@@ -776,6 +777,7 @@ class ProjectConfig
 
         if ($this->waitingToUpdateParsedConfigTimes) {
             $this->updateParsedConfigTimes();
+            $this->waitingToUpdateParsedConfigTimes = false;
         }
     }
 

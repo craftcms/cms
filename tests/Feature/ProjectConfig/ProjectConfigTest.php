@@ -620,3 +620,13 @@ it('saves a queued job\'s project config changes before loading config for the n
     expect(DB::table(Table::PROJECTCONFIG)->where('path', 'queuedJobRoot.value')->value('value'))->toBe('"fromJob"')
         ->and($projectConfig->get('queuedJobRoot.value'))->toBe('fromJob');
 });
+
+it('stops marking YAML as parsed after saving a queued job’s parsed times', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->reset();
+    $projectConfig->updateParsedConfigTimesAfterRequest();
+
+    event(new Looping('database', 'default', new WorkerOptions));
+
+    expect($projectConfig->waitingToUpdateParsedConfigTimes)->toBeFalse();
+});
