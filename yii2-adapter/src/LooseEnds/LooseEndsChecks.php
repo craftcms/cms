@@ -17,11 +17,13 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Cache as YiiAdapterCache;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
@@ -226,19 +228,25 @@ class LooseEndsChecks
             );
 
             // A Craft 5 cache component only reaches `Craft::$app->cache`; Craft's own caches and locks use Laravel's store,
-            // which is the adapter's `file` default until something sets another one. `app.php` can set the component
-            // for every request, or only for web or console requests. A `FileCache` in its default location matches
-            // Laravel's `file` store, but one with its own `cachePath`, such as a shared mount, doesn't.
+            // which is the adapter's `file` default until something sets another one. Like the bootstrap, this merges the
+            // common config into the web and console configs. The adapter's own `Cache` uses Laravel's store, and a
+            // `FileCache` in the default runtime folder matches Laravel's `file` store, but one elsewhere, such as on a
+            // shared mount, doesn't.
             $yiiCache = $class = null;
 
-            foreach ([$appConfig, $appConfig['web'] ?? [], $appConfig['console'] ?? []] as $config) {
+            foreach (['web', 'console'] as $appType) {
+                $config = Arr::merge(Arr::except($appConfig, ['web', 'console']), $appConfig[$appType] ?? []);
                 $cache = $config['components']['cache'] ?? null;
                 $cacheClass = is_string($cache) ? $cache : (is_array($cache) ? ($cache['class'] ?? $cache['__class'] ?? null) : null);
-                $isDefaultFileCache = is_string($cacheClass) &&
-                    is_a($cacheClass, FileCache::class, true) &&
-                    in_array($cache['cachePath'] ?? '@runtime/cache', ['@runtime/cache', '@runtime/cache/'], true);
+                $matchesLaravel = is_string($cacheClass) && (
+                    is_a($cacheClass, YiiAdapterCache::class, true) || (
+                        is_a($cacheClass, FileCache::class, true) &&
+                        !isset($config['runtimePath']) &&
+                        in_array($cache['cachePath'] ?? '@runtime/cache', ['@runtime/cache', '@runtime/cache/'], true)
+                    )
+                );
 
-                if ($cache !== null && !$isDefaultFileCache) {
+                if ($cache !== null && !$matchesLaravel) {
                     [$yiiCache, $class] = [$cache, $cacheClass];
 
                     break;
