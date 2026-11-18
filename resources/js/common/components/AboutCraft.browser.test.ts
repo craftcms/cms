@@ -170,6 +170,9 @@ describe.each(['light', 'dark'])('in the %s theme', (theme) => {
       const buy = button('.about-craft__buy');
       await go.updateComplete;
       await buy.updateComplete;
+      // The pointer stays where the last test hovered, which may be a link here
+      await userEvent.hover(host, {position: {x: 1, y: 1}});
+      expect(buy.matches(':hover')).toBe(false);
 
       const title = host.querySelector<HTMLElement>(
         '.about-craft-updates .about-craft-row__title'
