@@ -43,7 +43,6 @@ readonly class CheckRequirements
         $reqCheck->checkCraft();
 
         if ($reqCheck->result['summary']['errors'] === 0) {
-            // Cache the base path. A `cacheDuration` of 0 caches it indefinitely.
             Cache::put('basePath', base_path(), $this->generalConfig->cacheDuration ?: null);
 
             return $next($request);
