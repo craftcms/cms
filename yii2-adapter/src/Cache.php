@@ -93,7 +93,9 @@ class Cache extends \yii\caching\Cache
      */
     protected function getValues($keys): iterable
     {
-        return $this->laravelCache->getMultiple($keys, false);
+        // Missing keys must be null rather than false: Yii's multiGet() skips them with isset(),
+        // and unserialize(false) warns on PHP 8.6.
+        return $this->laravelCache->getMultiple($keys);
     }
 
     /**
