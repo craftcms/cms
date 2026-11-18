@@ -16,6 +16,7 @@ use craft\mcp\McpActor;
 use craft\mcp\McpOutputContext;
 use craft\mcp\serializers\ElementSerializer;
 use craft\models\FieldLayout;
+use craft\models\Site;
 use craft\services\Config;
 use Mcp\Exception\ToolCallException;
 use PHPUnit\Framework\TestCase;
@@ -67,6 +68,21 @@ class ElementSerializerTest extends TestCase
         $data = $this->serializer()->serialize($element, data: [], public: true, fields: ['custom']);
 
         self::assertSame(['custom' => ['value' => 'raw', 'public' => true, 'requested' => true]], $data);
+    }
+
+    public function testRootRelativeUrlsAreMadeAbsolute(): void
+    {
+        // Such as the URL of an asset in a volume whose URL is `/uploads`
+        $element = new class(1, [], []) extends TestEntry {
+            public function getSite(): Site
+            {
+                return new Site(['baseUrl' => 'https://site.test/fr/']);
+            }
+        };
+        $serializer = $this->serializer();
+
+        self::assertSame(['url' => 'https://site.test/uploads/a.png'], $serializer->serialize($element, data: ['url' => '/uploads/a.png'], fields: []));
+        self::assertSame(['url' => 'https://cdn.test/a.png'], $serializer->serialize($element, data: ['url' => 'https://cdn.test/a.png'], fields: []));
     }
 
     public function testElementsReturnedByFieldsAreExpandedAsNestedElements(): void
