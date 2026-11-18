@@ -294,6 +294,90 @@ JS, [
      */
     public function elementQuery(?string $value): ?ElementQueryInterface
     {
+        $reference = static::parseReference($value);
+
+        if (!$reference) {
+            return null;
+        }
+
+        $query = static::elementType()::find()->id($reference['id']);
+        Craft::configure($query, static::referencedElementsCriteria($reference['siteId']));
+
+        return $query;
+    }
+
+    /**
+     * Returns the eager-loading maps for the elements linked by the given values, with one map per site.
+     *
+     * @param array<int,string> $valuesBySourceId Link values, indexed by the IDs of the elements that link with them
+     * @return array[]
+     * @since 5.13.0
+     */
+    public static function eagerLoadingMaps(array $valuesBySourceId): array
+    {
+        $mapsBySite = [];
+        foreach ($valuesBySourceId as $sourceId => $value) {
+            $reference = static::parseReference($value);
+
+            if ($reference) {
+                $mapsBySite[$reference['siteId'] ?? 0][] = ['source' => $sourceId, 'target' => $reference['id']];
+            }
+        }
+
+        $maps = [];
+        foreach ($mapsBySite as $siteId => $map) {
+            $maps[] = [
+                'elementType' => static::elementType(),
+                'map' => $map,
+                'criteria' => static::referencedElementsCriteria($siteId ?: null),
+            ];
+        }
+
+        return $maps;
+    }
+
+    /**
+     * Returns whether the element linked by the given value has been fetched.
+     *
+     * @param string $value
+     * @return bool
+     * @internal
+     */
+    public static function hasFetchedElement(string $value): bool
+    {
+        return isset(self::$fetchedElements[$value]);
+    }
+
+    /**
+     * Remembers the element linked by the given value, or that there is none, so element() doesn’t fetch it again.
+     *
+     * @param string $value
+     * @param ElementInterface|null $element
+     * @internal
+     */
+    public static function rememberElement(string $value, ?ElementInterface $element): void
+    {
+        self::$fetchedElements[$value] = $element ?? false;
+    }
+
+    /**
+     * Returns whether the given value links to an element in a specific site.
+     *
+     * @param string $value
+     * @return bool
+     * @internal
+     */
+    public static function referencesSite(string $value): bool
+    {
+        return isset(static::parseReference($value)['siteId']);
+    }
+
+    /**
+     * @param string|null $value
+     * @return array{id:int,siteId:int|null}|null
+     */
+    protected static function parseReference(?string $value): ?array
+    {
         if (
             !$value ||
             !preg_match(sprintf('/^\{%s:(\d+)(?:@(\d+))?:url\}$/', static::elementType()::refHandle()), $value, $match)
@@ -301,25 +385,35 @@ JS, [
             return null;
         }
 
-        $id = $match[1];
-        $siteId = $match[2] ?? null;
+        return [
+            'id' => (int)$match[1],
+            'siteId' => isset($match[2]) ? (int)$match[2] : null,
+        ];
+    }
 
-        $query = static::elementType()::find()
-            ->id((int)$id)
-            ->status(null)
-            ->drafts(null)
-            ->revisions(null);
+    /**
+     * Returns the criteria for fetching linked elements, which ignore their status and include drafts and revisions.
+     *
+     * @param int|null $siteId
+     * @return array
+     */
+    protected static function referencedElementsCriteria(?int $siteId): array
+    {
+        $criteria = [
+            'status' => null,
+            'drafts' => null,
+            'revisions' => null,
+        ];
 
         if ($siteId) {
-            $query->siteId((int)$siteId);
-        } else {
-            $query
-                ->site('*')
-                ->unique()
-                ->preferSites([Craft::$app->getSites()->getCurrentSite()->id]);
+            return $criteria + ['siteId' => $siteId];
         }
 
-        return $query;
+        return $criteria + [
+            'site' => '*',
+            'unique' => true,
+            'preferSites' => [Craft::$app->getSites()->getCurrentSite()->id],
+        ];
     }
 
     /**
