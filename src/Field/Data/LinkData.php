@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Data;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -65,10 +66,37 @@ class LinkData implements Arrayable, Serializable, Stringable
 
     private ?LinkElementLoader $elementLoader = null;
 
+    private ?Closure $eagerLoader = null;
+
+    private ?ElementInterface $eagerLoadedElement = null;
+
     public function __construct(
         private readonly string $value,
         private readonly BaseLinkType $linkType,
     ) {}
+
+    /**
+     * Leaves out the eager loader, which can’t be serialized, so links can be cached before they’re read.
+     *
+     * @return array<string, mixed>
+     */
+    public function __serialize(): array
+    {
+        $data = get_object_vars($this);
+        unset($data['eagerLoader']);
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function __unserialize(array $data): void
+    {
+        foreach ($data as $name => $value) {
+            $this->$name = $value;
+        }
+    }
 
     public function __toString(): string
     {
@@ -91,7 +119,7 @@ class LinkData implements Arrayable, Serializable, Stringable
     public function getValue(): string
     {
         if (! isset($this->renderedValue)) {
-            $this->elementLoader?->load();
+            $this->loadElement();
             $this->renderedValue = $this->linkType->renderValue($this->value);
         }
 
@@ -134,7 +162,7 @@ class LinkData implements Arrayable, Serializable, Stringable
             return $this->label;
         }
 
-        $this->elementLoader?->load();
+        $this->loadElement();
 
         return $this->linkType->linkLabel($this->value);
     }
@@ -159,7 +187,7 @@ class LinkData implements Arrayable, Serializable, Stringable
             return $this->filename;
         }
 
-        $this->elementLoader?->load();
+        $this->loadElement();
 
         return $this->linkType->filename($this->value);
     }
@@ -244,9 +272,9 @@ class LinkData implements Arrayable, Serializable, Stringable
             return null;
         }
 
-        $this->elementLoader?->load();
+        $this->loadElement();
 
-        return $this->linkType->element($this->value);
+        return $this->eagerLoadedElement ?? $this->linkType->element($this->value);
     }
 
     /**
@@ -257,6 +285,43 @@ class LinkData implements Arrayable, Serializable, Stringable
     public function setElementLoader(LinkElementLoader $loader): void
     {
         $this->elementLoader = $loader;
+    }
+
+    /**
+     * Sets the callback that eager-loads this link’s element, together with the elements of the same field on other
+     * elements, the first time it’s needed.
+     *
+     * @internal
+     */
+    public function setEagerLoader(Closure $eagerLoader): void
+    {
+        $this->eagerLoader = $eagerLoader;
+    }
+
+    /**
+     * Sets the element that was eager-loaded for this link.
+     *
+     * @internal
+     */
+    public function setEagerLoadedElement(ElementInterface $element): void
+    {
+        $this->eagerLoader = null;
+        $this->eagerLoadedElement = $element;
+        BaseElementLinkType::rememberElement($this->value, $element);
+    }
+
+    private function loadElement(): void
+    {
+        if ($this->eagerLoader !== null) {
+            $eagerLoader = $this->eagerLoader;
+            $this->eagerLoader = null;
+
+            if (! BaseElementLinkType::hasFetchedElement($this->value)) {
+                $eagerLoader();
+            }
+        }
+
+        $this->elementLoader?->load();
     }
 
     /** @return array{type: string, value?: string, label?: string, urlSuffix?: string, target?: string, title?: string, class?: string, id?: string, rel?: string, ariaLabel?: string, download?: true, filename?: string} */

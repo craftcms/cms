@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -27,6 +28,8 @@ use function CraftCms\Cms\t;
 
 /**
  * Base element link type.
+ *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  *
  * @since 6.0.0
  */
@@ -47,6 +50,36 @@ abstract class BaseElementLinkType extends BaseLinkType
     public static function forgetFetchedElements(): void
     {
         self::$fetchedElements = [];
+    }
+
+    /**
+     * Returns whether the element linked by the given value has been fetched.
+     *
+     * @internal
+     */
+    public static function hasFetchedElement(string $value): bool
+    {
+        return isset(self::$fetchedElements[$value]);
+    }
+
+    /**
+     * Remembers the element linked by the given value, or that there is none, so element() doesn’t fetch it again.
+     *
+     * @internal
+     */
+    public static function rememberElement(string $value, ?ElementInterface $element): void
+    {
+        self::$fetchedElements[$value] = $element ?? false;
+    }
+
+    /**
+     * Returns whether the given value links to an element in a specific site.
+     *
+     * @internal
+     */
+    public static function referencesSite(string $value): bool
+    {
+        return isset(static::parseReference($value)['siteId']);
     }
 
     /**
@@ -427,26 +460,68 @@ abstract class BaseElementLinkType extends BaseLinkType
     }
 
     /**
+     * Returns the eager-loading maps for the elements linked by the given values, with one map per site.
+     *
+     * @param  array<int, string>  $valuesBySourceId  Link values, indexed by the IDs of the elements that link with them
+     * @return list<EagerLoadingMap>
+     */
+    public static function eagerLoadingMaps(array $valuesBySourceId): array
+    {
+        $mapsBySite = [];
+        foreach ($valuesBySourceId as $sourceId => $value) {
+            $reference = static::parseReference($value);
+
+            if ($reference) {
+                $mapsBySite[$reference['siteId'] ?? 0][] = ['source' => $sourceId, 'target' => $reference['id']];
+            }
+        }
+
+        $maps = [];
+        foreach ($mapsBySite as $siteId => $map) {
+            $maps[] = [
+                'elementType' => static::elementType(),
+                'map' => $map,
+                'criteria' => static::referencedElementsCriteria($siteId ?: null),
+            ];
+        }
+
+        return $maps;
+    }
+
+    /**
      * @param  list<int>  $ids
      */
     protected static function referencedElementsQuery(array $ids, ?int $siteId): ElementQueryInterface
     {
-        $query = static::elementType()::find()
-            ->id($ids)
-            ->status(null)
-            ->drafts(null)
-            ->revisions(null);
-
-        if ($siteId) {
-            $query->siteId($siteId);
-        } else {
-            $query
-                ->site('*')
-                ->unique()
-                ->preferSites([Sites::getCurrentSite()->id]);
-        }
+        $query = static::elementType()::find()->id($ids);
+        Typecast::configure($query, static::referencedElementsCriteria($siteId));
 
         return $query;
+    }
+
+    /**
+     * Returns the criteria for fetching linked elements, which ignore their status and include drafts and revisions.
+     *
+     * @return array<string, mixed>
+     */
+    protected static function referencedElementsCriteria(?int $siteId): array
+    {
+        $criteria = [
+            'status' => null,
+            'drafts' => null,
+            'revisions' => null,
+        ];
+
+        if ($siteId) {
+            return [...$criteria, 'siteId' => $siteId];
+        }
+
+        return [
+            ...$criteria,
+            'site' => '*',
+            'unique' => true,
+            'preferSites' => [Sites::getCurrentSite()->id],
+        ];
     }
 
     /**

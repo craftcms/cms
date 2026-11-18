@@ -98,6 +98,7 @@
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element editors, particularly entries with many Matrix blocks. Textareas are sized with CSS where the browser supports it, and work that doesn’t change what’s first shown, such as rendering the items of closed action menus, now waits until the browser is idle. ([#20403](https://github.com/craftcms/cms/pull/20403))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
+- Link fields can now be eager-loaded, including nested paths such as `linkField.image`. Without eager-loading, the linked elements of all elements from the same query are now fetched together the first time one is needed. ([#20841](https://github.com/craftcms/cms/pull/20841))
 - Added the `DB::commitSchemaChanges()` connection macro, which commits the current transaction even if MySQL already committed it implicitly after a schema change, and runs its `afterCommit` callbacks. ([#20784](https://github.com/craftcms/cms/pull/20784))
 - Added `CraftCms\Cms\Database\Claim`, which lets one worker at a time claim a database row. Another worker can take over a claim once it’s older than the claim’s TTL. ([#20792](https://github.com/craftcms/cms/pull/20792))
 - Added `CraftCms\Cms\Asset\Models\AssetIndexData::processingClaim()` and `claim()`, `CraftCms\Cms\Image\ImageTransformer::inProgressClaim()`, and `CraftCms\Cms\Image\Data\ImageTransformIndex::markGenerating()`, `markGenerated()`, and `markFailed()`. ([#20792](https://github.com/craftcms/cms/pull/20792))
@@ -109,6 +110,8 @@
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
+- `CraftCms\Cms\Field\Link` now implements `CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface`. ([#20841](https://github.com/craftcms/cms/pull/20841))
+- Added `CraftCms\Cms\Field\LinkTypes\BaseElementLinkType::eagerLoadingMaps()`. ([#20841](https://github.com/craftcms/cms/pull/20841))
 - Fixed an error that occurred when batched queue jobs, such as resaving or propagating elements, queued their next batch on non-sync queues. ([#20791](https://github.com/craftcms/cms/issues/20791), [#20812](https://github.com/craftcms/cms/pull/20812))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
@@ -259,6 +262,8 @@
 - Fixed a bug where editable table column widths without a unit, such as Table fields’ column widths, weren’t treated as pixels. ([#20781](https://github.com/craftcms/cms/issues/20781), [#20808](https://github.com/craftcms/cms/pull/20808))
 - Fixed a bug where element chips’ labels and status indicators were hard to see in highlighted options, such as in relation fields’ search results. ([#20778](https://github.com/craftcms/cms/issues/20778), [#20807](https://github.com/craftcms/cms/pull/20807))
 - Fixed a bug where PHP scripts that booted Craft with the Yii2 adapter installed exited with status 0 when an exception went uncaught. ([#20822](https://github.com/craftcms/cms/issues/20822), [#20830](https://github.com/craftcms/cms/pull/20830))
+- Fixed a bug where eager-loading a Link field replaced its value with an empty element collection. ([#20841](https://github.com/craftcms/cms/pull/20841))
+- Fixed a bug where only the first eager-loading map was used when a field returned several. ([#20841](https://github.com/craftcms/cms/pull/20841))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

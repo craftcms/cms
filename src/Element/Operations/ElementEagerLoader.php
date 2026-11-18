@@ -490,7 +490,7 @@ readonly class ElementEagerLoader
         $maps = [];
         foreach ($map as $m) {
             if (isset($m['map'])) {
-                $maps += $this->normalizeEagerLoadingMaps($m);
+                array_push($maps, ...$this->normalizeEagerLoadingMaps($m));
             }
         }
 
