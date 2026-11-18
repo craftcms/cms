@@ -255,10 +255,8 @@ class LooseEndsChecks
                     'config.yii-cache',
                     Section::Config,
                     Severity::Breaks,
-                    t('`config/craft/app.php` configures a Yii cache component, which Craft’s own caching doesn’t use.', category: 'yii2-adapter'),
-                    t('Configure the matching Laravel cache store, such as with `CACHE_STORE=redis`, or in `config/cache.php`. Until then, Craft’s own caches and locks use the “{store}” store, while `Craft::$app->cache` uses the Yii component.', [
-                        'store' => Config::get('cache.default'),
-                    ], 'yii2-adapter'),
+                    t('`config/craft/app.php` configures a Yii cache component.', category: 'yii2-adapter'),
+                    t('Configure the matching Laravel cache store, such as with `CACHE_STORE=redis`. Craft uses Laravel’s cache store, not the Yii component.', category: 'yii2-adapter'),
                     detail: is_string($class) ? "`$class`" : null,
                     file: is_file("$configPath/app.php") ? "$configPath/app.php" : null,
                 );
