@@ -176,6 +176,9 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
      *
      * @param  string  $name
      * @param  object|callable  $macro
+     *
+     * @param-closure-this static  $macro
+     *
      * @return void
      */
     public static function macro($name, $macro)
