@@ -137,7 +137,7 @@ class ArrayTwigExtension extends AbstractExtension
             // Lazy, so rows after the first match aren't read
             $match = collect($array)
                 ->lazy()
-                ->map(self::sandboxKey($env, true, $key, 'firstWhere'))
+                ->map(self::checkLooseComparison($env, true, self::sandboxKey($env, true, $key, 'firstWhere'), $value, $strict))
                 ->map(fn (mixed $value) => ['value' => $value])
                 ->where('value', $strict ? '===' : '==', $value)
                 ->keys()
@@ -182,7 +182,7 @@ class ArrayTwigExtension extends AbstractExtension
             // Lazy, so rows after the first match aren't read
             return collect($array)
                 ->lazy()
-                ->map(self::sandboxKey($env, true, $key, 'contains'))
+                ->map(self::checkLooseComparison($env, true, self::sandboxKey($env, true, $key, 'contains'), $value, $strict))
                 ->map(fn (mixed $value) => ['value' => $value])
                 ->contains('value', $strict ? '===' : '==', $value);
         }
@@ -203,7 +203,7 @@ class ArrayTwigExtension extends AbstractExtension
 
         if ($isSandboxed && ! $key instanceof Closure) {
             $matches = collect($array)
-                ->map(self::sandboxKey($env, true, $key, 'where'))
+                ->map(self::checkLooseComparison($env, true, self::sandboxKey($env, true, $key, 'where'), $value, $strict))
                 ->map(fn (mixed $value) => ['value' => $value])
                 ->where('value', $strict ? '===' : '==', $value);
             $filtered = collect($array)->intersectByKeys($matches);
@@ -267,6 +267,39 @@ class ArrayTwigExtension extends AbstractExtension
         $source = new Source('', "$filterName filter");
 
         return fn (mixed $item) => Template::attribute($env, $source, $item, $key, ignoreStrictCheck: true, sandboxed: true);
+    }
+
+    /**
+     * Returns the key reader a filter should use when comparing what it reads with a value using `==`.
+     *
+     * PHP calls `__toString()` on an object when comparing it with a string, and on objects nested in an array when
+     * comparing the array with another array. Twig’s own `==` operator requires those objects to be allowed to be cast
+     * to strings in a sandboxed environment, so the values read for those comparisons must be too.
+     *
+     * @param  mixed  $key  The key reader returned by sandboxKey()
+     * @param  mixed  $value  The value that each read value will be compared with
+     * @param  bool  $strict  Whether the values will be compared using `===` instead
+     * @return ($key is Closure ? Closure(mixed...): mixed : mixed)
+     *
+     * @internal
+     */
+    public static function checkLooseComparison(TwigEnvironment $env, bool $isSandboxed, mixed $key, mixed $value, bool $strict): mixed
+    {
+        if (! $isSandboxed || $strict || ! $key instanceof Closure || (! is_string($value) && ! is_array($value))) {
+            return $key;
+        }
+
+        $sandbox = $env->getExtension(SandboxExtension::class);
+
+        return function (mixed ...$args) use ($key, $value, $sandbox): mixed {
+            $read = $key(...$args);
+
+            if (is_string($value) ? is_object($read) : is_array($read)) {
+                $sandbox->ensureToStringAllowed($read);
+            }
+
+            return $read;
+        };
     }
 
     /**

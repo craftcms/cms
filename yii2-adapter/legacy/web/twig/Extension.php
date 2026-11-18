@@ -115,6 +115,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = ArrayTwigExtension::sandboxItems($isSandboxed, $array);
         $key = ArrayTwigExtension::sandboxKey($env, $isSandboxed, $key, 'filterByValue');
+        $key = ArrayTwigExtension::checkLooseComparison($env, $isSandboxed, $key, $value, $strict);
 
         return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
     }
@@ -126,6 +127,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = ArrayTwigExtension::sandboxItems($isSandboxed, $array);
         $key = ArrayTwigExtension::sandboxKey($env, $isSandboxed, $key, 'firstWhere');
+        $key = ArrayTwigExtension::checkLooseComparison($env, $isSandboxed, $key, $value, $strict);
 
         return ArrayHelper::firstWhere($array, $key, $value, $strict);
     }

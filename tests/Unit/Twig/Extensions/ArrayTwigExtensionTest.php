@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\PageLifecycle;
@@ -21,6 +22,23 @@ class ArrayTwigExtensionTestStaticTarget
         self::$calls++;
 
         return 0;
+    }
+}
+
+class ArrayTwigExtensionTestStringableHolder
+{
+    #[AllowedInSandbox]
+    public object $value;
+
+    public function __construct()
+    {
+        $this->value = new class
+        {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
     }
 }
 
@@ -205,7 +223,7 @@ describe('ArrayTwigExtension', function () {
                     return 'shh';
                 }
             };
-            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable];
+            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable, 'holder' => new ArrayTwigExtensionTestStringableHolder];
             ArrayTwigExtensionTestStaticTarget::$calls = 0;
         });
 
@@ -231,6 +249,9 @@ describe('ArrayTwigExtension', function () {
             'column with an index that can’t be a string' => ['{{ [1]|column(v => 1, v => stringable)|keys|first }}'],
             'multisort with a sort key that can’t be a string' => ['{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}'],
             'multisort with an array sort key containing an object that can’t be a string' => ['{{ [1, 2]|multisort(v => [stringable])|length }}'],
+            // Comparing objects with strings using == calls __toString()
+            'where comparing an object that can’t be a string with a string' => ["{{ [holder]|where('value', 'shh')|length }}"],
+            'contains comparing an object that can’t be a string with a string' => ["{{ [holder]|contains('value', 'shh') ? 'y' : 'n' }}"],
         ])->throws(TwigError::class);
 
         // group used to render property names as object templates in the site template mode’s environment
@@ -240,6 +261,10 @@ describe('ArrayTwigExtension', function () {
             'disallowed property' => ["{{ [inner]|group('secret')|keys|first }}"],
             'Twig tag' => ["{{ [inner]|group('x}{{ object.secret }}{x')|keys|first }}"],
         ])->throws(TwigError::class);
+
+        it('still allows strict comparisons with objects that can’t be strings', function () {
+            expect(app(TemplateManager::class)->renderSandboxedString("{{ [holder]|where('value', 'shh', true)|length }}", $this->variables))->toBe('0');
+        });
 
         it('stops reading rows after firstWhere and contains find a match', function () {
             // Reading the disallowed property on the row after the match would throw
