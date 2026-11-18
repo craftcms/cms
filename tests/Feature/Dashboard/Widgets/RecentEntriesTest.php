@@ -113,5 +113,7 @@ it('credits entries to their authors by name, with title-less thumbnails', funct
 
     expect(array_column($authors, 'name'))->toBe(['Jane Doe'])
         ->and($authors[0]['thumbHtml'])->not->toBeNull()
-        ->and($authors[0]['thumbHtml'])->not->toContain('<title>');
+        ->and($authors[0]['thumbHtml'])->not->toContain('<title>')
+        ->and($authors[0]['thumbHtml'])->not->toContain('role="img"')
+        ->and($authors[0]['thumbHtml'])->toContain('aria-hidden="true"');
 });
