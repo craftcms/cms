@@ -451,8 +451,8 @@ export default css`
   ) {
     background-color: color-mix(
       in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-hover)
+      var(--c-color-mix-hover),
+      transparent
     );
     color: var(--c-color-on-quiet);
   }

@@ -4,8 +4,8 @@ import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 export default css`
   :host {
     display: inline-flex;
-    padding-inline: var(--c-tab-spacing-inline, 0);
-    padding-block: var(--c-tab-spacing-block, 0.5em);
+    padding-inline: var(--c-tab-padding-inline, 0);
+    padding-block: var(--c-tab-padding-block, 0.5em);
     position: relative;
     /* Keeps the hover fill below behind the label, but not behind the page. */
     isolation: isolate;
@@ -43,7 +43,7 @@ export default css`
 
   :host([selected])::after {
     background-color: var(
-      --c-tab-border-active,
+      --c-tab-indicator-fill-active,
       var(--c-color-accent-fill-loud)
     );
   }
@@ -67,21 +67,21 @@ export default css`
       inset-block: 0;
       /* The set height for a one-line label, growing a line at a time as the
          label wraps: the tab's content box less one line is the extra lines. */
-      --_hover-block-size: var(--c-tab-hover-block-size, calc(30em / 14));
+      --_fill-block-size: var(--c-tab-fill-block-size, calc(30em / 14));
       block-size: min(
         100%,
         max(
-          var(--_hover-block-size),
-          100% - 2 * var(--c-tab-spacing-block, 0.5em) - 1lh +
-            var(--_hover-block-size)
+          var(--_fill-block-size),
+          100% - 2 * var(--c-tab-padding-block, 0.5em) - 1lh +
+            var(--_fill-block-size)
         )
       );
       margin-block: auto;
       z-index: -1;
       border-radius: var(--c-radius-md);
       background-color: var(
-        --c-tab-background-hover,
-        color-mix(in srgb, currentColor, transparent 95%)
+        --c-tab-fill-hover,
+        color-mix(in oklab, var(--c-color-mix-hover), transparent)
       );
     }
   }

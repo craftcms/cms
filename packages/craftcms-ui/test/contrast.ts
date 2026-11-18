@@ -42,6 +42,33 @@ export function contrast(
   return (lighter! + 0.05) / (darker! + 0.05);
 }
 
+/**
+ * What's painted behind `element`: every background on its way up the
+ * flattened tree, composited over white, as an `rgb()` string.
+ */
+export function backdropOf(element: Element): string {
+  const layers: string[] = [];
+
+  for (
+    let node: Element | null = element.parentElement ?? null;
+    node;
+    node =
+      node.assignedSlot ??
+      node.parentElement ??
+      ((node.getRootNode() as ShadowRoot).host || null)
+  ) {
+    layers.unshift(getComputedStyle(node).backgroundColor);
+  }
+
+  let backdrop = '#fff';
+
+  for (const layer of layers) {
+    backdrop = `rgb(${paint(layer, backdrop).join(', ')})`;
+  }
+
+  return backdrop;
+}
+
 /** Loads the document-level token stylesheets the components read. */
 export async function loadTokens(): Promise<void> {
   await import('../src/styles/shared/color-palette.css');

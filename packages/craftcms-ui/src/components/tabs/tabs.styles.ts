@@ -27,7 +27,7 @@ export default css`
    * make up for it, so the labels sit only a little further apart.
    */
   :host(:not([appearance='fill'])) {
-    --c-tab-spacing-inline: var(--c-spacing-md);
+    --c-tab-padding-inline: var(--c-spacing-md);
     --c-tabs-tab-gap: var(--c-spacing-md);
   }
 
@@ -261,12 +261,12 @@ export default css`
    */
   :host([appearance='fill']) {
     /* The fill appearance has its own hover state. */
-    --c-tab-background-hover: transparent;
+    --c-tab-fill-hover: transparent;
     --_track-padding: var(--c-spacing-sm);
     --_tab-radius: var(--c-form-control-radius);
-    --c-tab-border-active: transparent;
-    --c-tab-spacing-inline: var(--c-spacing-md);
-    --c-tab-spacing-block: 0.25em;
+    --c-tab-indicator-fill-active: transparent;
+    --c-tab-padding-inline: var(--c-spacing-md);
+    --c-tab-padding-block: 0.25em;
     --c-tabs-tab-gap: var(--_track-padding);
   }
 
