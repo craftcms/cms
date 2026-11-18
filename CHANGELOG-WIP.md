@@ -1139,6 +1139,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\models\EntryType`. `CraftCms\Cms\Entry\Data\EntryType` should be used instead.
 - Deprecated `craft\records\EntryType`. `CraftCms\Cms\Entry\Models\EntryType` should be used instead.
 - Deprecated `craft\records\Entry`. `CraftCms\Cms\Entry\Models\Entry` should be used instead.
+- Deprecated `CraftCms\Cms\Entry\Elements\Entry::metaFieldsHtml()`. `metaFieldsNodes()` should be used instead. Entries’ editor sidebar is built from `metaFieldsNodes()`, and `CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving` (and `craft\elements\Entry::EVENT_DEFINE_META_FIELDS`) listeners get its UI nodes rather than HTML. ([#20846](https://github.com/craftcms/cms/issues/20846))
 - Deprecated `craft\errors\EntryTypeNotFoundException`. `CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException` should be used instead.
 - Deprecated `craft\events\EntryTypeEvent`. One of these should be used instead:
   - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Entry\Events\EntryTypeDeleting`
