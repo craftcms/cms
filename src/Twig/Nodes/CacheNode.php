@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
+use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateCaches;
 use Override;
@@ -26,6 +27,10 @@ class CacheNode extends Node
             ->addDebugInfo($this)
             ->write('$cacheService = app('.TemplateCaches::class."::class);\n")
             ->write("\$request = request();\n")
+            /**
+             * @see RequestMixin::isPreview()
+             * @see RequestMixin::getHadToken()
+             */
             ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getHadToken()");
 
         if ($this->hasNode('conditions')) {

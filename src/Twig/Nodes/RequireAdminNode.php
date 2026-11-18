@@ -11,6 +11,8 @@ use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
+use function CraftCms\Cms\craftAuth;
+
 /**
  * @since 6.0.0
  */
@@ -22,6 +24,7 @@ class RequireAdminNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
+            /** @see craftAuth() */
             ->write("if (! \$user = \\CraftCms\\Cms\\craftAuth()->user()) {\n")
             ->indent()
             ->write('throw new '.AuthenticationException::class."('Unauthenticated.');\n")
