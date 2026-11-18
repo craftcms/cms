@@ -312,10 +312,6 @@
     color: var(--c-color-neutral-on-quiet);
   }
 
-  .command-palette-row__actions craft-icon {
-    font-size: 1em;
-  }
-
   .command-palette-row--danger .command-palette-row__actions {
     color: var(--c-color-danger-on-quiet);
   }

@@ -35,6 +35,10 @@ export const ElementIndexPage = defineAsyncComponent(
   () => import('./modules/elements/index/components/ElementIndexPage.vue')
 );
 
+export const ReadOnlyElementIndex = defineAsyncComponent(
+  () => import('./modules/element-selector-modal/ReadOnlyElementIndex.vue')
+);
+
 export const ElementEditor = defineAsyncComponent(
   () => import('./modules/elements/components/ElementEditor.vue')
 );
@@ -170,6 +174,44 @@ export type {
   ChartData,
   ChartScale,
 } from './modules/chart/types';
+
+/**
+ * Building blocks for a dashboard widget's own component, which a widget names
+ * with its `component()` method and registers with `registerComponent()`. The
+ * component receives the widget's `props()` as `data`, renders the `header`
+ * slot at the top of its card, and colors the card with `useWidgetColor()`.
+ */
+export const EntryList = defineAsyncComponent(
+  () => import('./modules/dashboard/EntryList.vue')
+);
+export const AvatarStack = defineAsyncComponent(
+  () => import('./modules/dashboard/AvatarStack.vue')
+);
+export const TileContent = defineAsyncComponent(
+  () => import('./modules/dashboard/TileContent.vue')
+);
+export const WidgetTile = defineAsyncComponent(
+  () => import('./modules/dashboard/WidgetTile.vue')
+);
+export const SparklineStat = defineAsyncComponent(
+  () => import('./modules/dashboard/SparklineStat.vue')
+);
+export const WidgetHeaderActions = defineAsyncComponent(
+  () => import('./modules/dashboard/WidgetHeaderActions.vue')
+);
+export {
+  isTintedColor,
+  useWidgetColor,
+} from './modules/dashboard/useWidgetColor';
+export {
+  useWidgetHeader,
+  type UseWidgetHeaderOptions,
+} from './modules/dashboard/useWidgetHeader';
+export type {
+  AvatarStackPerson,
+  DashboardWidget,
+  EntryListItem,
+} from './modules/dashboard/types';
 
 /**
  * A screen's details column: an Info panel showing its default slot (sidebar

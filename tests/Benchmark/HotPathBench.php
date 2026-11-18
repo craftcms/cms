@@ -10,7 +10,8 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Once;
-use PhpBench\Attributes as Bench;
+use Tally\Attribute\Before;
+use Tally\Attribute\Warmup;
 
 use function CraftCms\Cms\t;
 
@@ -18,14 +19,9 @@ use function CraftCms\Cms\t;
  * Code that runs on most control panel requests, measured without the noise of booting the application.
  *
  * These are memoized for the rest of a request, so each benchmark clears its memo and measures what the first call
- * in a request costs.
+ * in a request costs. The warmup call loads their classes first, so that isn't counted.
  */
-#[Bench\Revs(20)]
-#[Bench\Iterations(10)]
-#[Bench\Warmup(1)]
-#[Bench\Groups(['hotpath'])]
-#[Bench\OutputTimeUnit('milliseconds', precision: 3)]
-#[Bench\BeforeMethods('boot')]
+#[Warmup(1)]
 class HotPathBench extends BenchCase
 {
     private User $editor;
@@ -33,6 +29,7 @@ class HotPathBench extends BenchCase
     /** @var string[] */
     private array $permissions;
 
+    #[Before]
     public function boot(): void
     {
         $app = $this->createApplication();

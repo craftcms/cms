@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Models\Info;
@@ -96,6 +97,25 @@ it('can get updates', function () {
 
     expect($this->updates->getUpdates(true))->not()->toBe($updatesData);
     expect($this->updates->totalAvailableUpdates())->toBe(0);
+});
+
+it('records when it fetched updates, and passes it to the Updates widget', function () {
+    $this->freezeSecond();
+    $this->mock(Api::class)->shouldReceive('getUpdates')->andReturn(['cms' => ['status' => 'eligible'], 'plugins' => []]);
+    app()->forgetInstance(Updates::class);
+    $updates = app(Updates::class);
+
+    expect(app(UpdatesWidget::class)->props()['dateFetched'])->toBeNull();
+
+    expect($updates->getUpdates(true)->dateFetched?->getTimestamp())->toBe(now()->getTimestamp())
+        ->and(app(UpdatesWidget::class)->props()['dateFetched'])->toBe(now()->format(DATE_ATOM));
+});
+
+it('leaves out when it fetched updates that it couldn’t fetch', function () {
+    $this->mock(Api::class)->shouldReceive('getUpdates')->andThrow(new RuntimeException('Offline'));
+    app()->forgetInstance(Updates::class);
+
+    expect(app(Updates::class)->getUpdates(true)->dateFetched)->toBeNull();
 });
 
 it('can return if a craft update is pending', function () {

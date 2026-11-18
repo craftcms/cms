@@ -82,6 +82,42 @@ it('does not change the loaded plugin collection after enablement changes', func
         ->and($plugins->getPlugin('c-disabled'))->toBeNull();
 });
 
+it('treats a plugin enabled earlier in the same request as enabled', function (string $operation) {
+    $plugins = app(Plugins::class);
+
+    configureLifecyclePlugins($plugins, [
+        'c-disabled' => [DisabledLifecycleTestPlugin::class, false],
+    ]);
+
+    $plugins->loadPlugins();
+    $plugins->enablePlugin('c-disabled');
+
+    expect($plugins->getPluginInfo('c-disabled')['isEnabled'])->toBeTrue();
+
+    $plugins->$operation('c-disabled');
+
+    expect($plugins->isPluginEnabled('c-disabled'))->toBeFalse()
+        ->and($plugins->isPluginInstalled('c-disabled'))->toBe($operation === 'disablePlugin');
+})->with(['disablePlugin', 'uninstallPlugin']);
+
+it('stores the same info for a plugin installed during the request as for a loaded one', function () {
+    $plugins = app(Plugins::class);
+
+    configureLifecyclePlugins($plugins, [
+        'c-disabled' => [DisabledLifecycleTestPlugin::class, false],
+    ]);
+
+    $plugins->loadPlugins();
+    $plugins->uninstallPlugin('c-disabled', true);
+    $plugins->installPlugin('c-disabled');
+    $plugin = $plugins->createPlugin('c-disabled');
+
+    expect($plugins->getStoredPluginInfo('c-disabled'))
+        ->toMatchArray(['handle' => 'c-disabled', 'version' => $plugin->version, 'schemaVersion' => $plugin->schemaVersion, 'enabled' => true])
+        ->and($plugins->isPluginUpdatePending($plugin))->toBeFalse()
+        ->and($plugins->hasPluginVersionNumberChanged($plugin))->toBeFalse();
+});
+
 it('returns null for plugin classes that do not implement the plugin interface', function () {
     $plugins = app(Plugins::class);
 

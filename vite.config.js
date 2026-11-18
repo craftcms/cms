@@ -257,6 +257,15 @@ export default defineConfig(async ({mode}) => {
             'no-undef': 'off',
             'vue/require-default-prop': 'off',
             'typescript/no-explicit-any': 'off',
+            'no-restricted-properties': [
+              'error',
+              {
+                object: 'crypto',
+                property: 'randomUUID',
+                message:
+                  'Use uuid() from @/common/craft/strings; crypto.randomUUID() only exists in secure contexts.',
+              },
+            ],
           },
           globals: {
             Craft: 'readonly',

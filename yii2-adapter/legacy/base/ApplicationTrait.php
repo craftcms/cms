@@ -78,6 +78,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -630,7 +631,7 @@ trait ApplicationTrait
      */
     public function enableMaintenanceMode(): bool
     {
-        app()->maintenanceMode()->activate([]);
+        app(Maintenance::class)->startUpdate();
 
         return true;
     }
@@ -643,7 +644,7 @@ trait ApplicationTrait
      */
     public function disableMaintenanceMode(): bool
     {
-        app()->maintenanceMode()->deactivate();
+        app(Maintenance::class)->finishUpdate();
 
         return true;
     }

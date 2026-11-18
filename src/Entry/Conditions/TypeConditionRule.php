@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -62,8 +63,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        EntryQuery::applyTypeId($query, $this->paramValue(fn ($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
-        ;
+        EntryQuery::applyTypeId($query, $this->paramIds(Table::ENTRYTYPES, fn ($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
     }
 
     public function matchElement(ElementInterface $element): bool

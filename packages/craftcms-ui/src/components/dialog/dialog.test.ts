@@ -230,8 +230,19 @@ describe('craft-dialog', () => {
   });
 
   describe('page scroll', () => {
-    it('holds the page still while open', async () => {
+    const createNonModal = () =>
+      createDialog((d) => d.setAttribute('non-modal', ''));
+
+    it('leaves the page alone when modal', async () => {
       const dialog = await createDialog();
+      dialog.open = true;
+      await dialog.updateComplete;
+
+      expect(document.body.classList.contains('no-scroll')).toBe(false);
+    });
+
+    it('holds the page still while open non-modally', async () => {
+      const dialog = await createNonModal();
       expect(document.body.classList.contains('no-scroll')).toBe(false);
 
       dialog.open = true;
@@ -245,8 +256,8 @@ describe('craft-dialog', () => {
 
     it('hands scrolling back only when the last dialog closes', async () => {
       // Dialogs stack — a selector modal opened from a slideout.
-      const first = await createDialog();
-      const second = await createDialog();
+      const first = await createNonModal();
+      const second = await createNonModal();
       first.open = true;
       second.open = true;
       await first.updateComplete;
@@ -262,7 +273,7 @@ describe('craft-dialog', () => {
     });
 
     it('releases the lock if it is removed while still open', async () => {
-      const dialog = await createDialog();
+      const dialog = await createNonModal();
       dialog.open = true;
       await dialog.updateComplete;
 

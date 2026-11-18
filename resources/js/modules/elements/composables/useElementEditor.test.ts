@@ -1535,6 +1535,25 @@ describe('useElementEditor', () => {
     expect(editor.uiPayload.value?.values).toEqual({title: 'Saved title'});
   });
 
+  it('leaves the layout to the renderer when a refresh lands during a save', async () => {
+    const {editor} = mount(
+      payload({canAutosave: false, ui: fieldLayout('Original title')})
+    );
+    const save = interceptSave();
+    editor.save();
+    postSpy.mockResolvedValue({data: {ui: fieldLayout('Unsaved title')}});
+
+    const refreshed = await editor.refreshLayout({}, []);
+    await nextTick();
+
+    expect(refreshed.values).toEqual({title: 'Unsaved title'});
+    expect(editor.uiPayload.value?.values).toEqual({
+      title: 'Original title',
+    });
+
+    save.restore();
+  });
+
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
     const slideout = slideoutController();
     mount(payload({draftId: 7}), slideout);
@@ -3019,6 +3038,48 @@ describe('useElementEditor', () => {
       expect(messages.showError).toHaveBeenCalledWith('Couldn’t save entry.');
       root.remove();
     });
+
+    /**
+     * Applying the provisional draft deletes it, so a panel opened for just
+     * the draft would reload a draft that no longer exists. Saving it as a
+     * draft instead keeps the panel on that draft, not the canonical element.
+     */
+    it.each([
+      {
+        saved: {id: 12},
+        query: {elementType: 'Entry', siteId: '2', elementId: '12'},
+      },
+      {
+        saved: {id: 30, canonicalId: 12, draftId: 9, isProvisionalDraft: false},
+        query: {
+          elementType: 'Entry',
+          siteId: '2',
+          elementId: '12',
+          draftId: '9',
+        },
+      },
+    ])(
+      'reloads a kept-open panel as what its draft was saved as (%o)',
+      async ({saved, query}) => {
+        stubSaveRequest(() => Promise.resolve({data: {element: saved}}));
+        const slideout = handledSlideout();
+        const instance = Object.assign(slideout.instance, {
+          href: 'https://example.test/actions/elements/edit?elementType=Entry&draftId=7&provisional=1&siteId=2',
+        });
+        const {editor} = mount(
+          payload({draftId: 7, isProvisionalDraft: true}),
+          slideout
+        );
+
+        editor.save({redirect: false});
+
+        await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalled());
+        expect(slideout.reload).toHaveBeenCalledWith({preserveState: true});
+        expect(Object.fromEntries(new URL(instance.href).searchParams)).toEqual(
+          query
+        );
+      }
+    );
 
     it('refreshes previews after a finished save', async () => {
       stubSaveRequest(() =>

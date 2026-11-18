@@ -7,9 +7,9 @@ export default css`
     padding-inline: 0;
   }
 
-  /* The move icon reads small next to other icons at craft-icon's 0.8em */
+  /* The move icon reads small at a small button's icon size */
   craft-icon {
-    font-size: 1.2em;
+    --c-icon-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 
   /* Between the reorder actions and the moves. */

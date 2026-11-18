@@ -212,47 +212,6 @@ trait HasControlPanelUI
     {
         $items = [];
 
-        // Validate
-        if (
-            ! $this->getIsRevision() &&
-            ! request()->headers->has('X-Craft-Container-Id') &&
-            app()->resolved(ElementRequest::class) &&
-            app(ElementRequest::class)->element === $this
-        ) {
-            $validateId = sprintf('action-validate-%s', mt_rand());
-            $items[] = [
-                'id' => $validateId,
-                'icon' => 'circle-check',
-                'label' => t('Validate {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-
-            HtmlStack::jsWithVars(fn ($id, $elementId) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  btn.on('activate', () => {
-    const elementId = $elementId;
-    const form = Craft.createForm()
-      .addClass('hidden')
-      .append(Craft.getCsrfInput())
-      .appendTo(Garnish.\$bod);
-
-    Craft.submitForm(form, {
-      action: 'elements/validate',
-      retainScroll: true,
-      params: {
-        elementId,
-      },
-    });
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($validateId),
-                $this->id,
-            ]);
-        }
-
         // View
         if ($url = $this->getUrl()) {
             $viewId = sprintf('action-view-%s', mt_rand());
@@ -320,6 +279,47 @@ JS, [
             }
         }
 
+        // Validate
+        if (
+            ! $this->getIsRevision() &&
+            ! request()->headers->has('X-Craft-Container-Id') &&
+            app()->resolved(ElementRequest::class) &&
+            app(ElementRequest::class)->element === $this
+        ) {
+            $validateId = sprintf('action-validate-%s', mt_rand());
+            $items[] = [
+                'id' => $validateId,
+                'icon' => 'circle-check',
+                'label' => t('Validate {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ];
+
+            HtmlStack::jsWithVars(fn ($id, $elementId) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  btn.on('activate', () => {
+    const elementId = $elementId;
+    const form = Craft.createForm()
+      .addClass('hidden')
+      .append(Craft.getCsrfInput())
+      .appendTo(Garnish.\$bod);
+
+    Craft.submitForm(form, {
+      action: 'elements/validate',
+      retainScroll: true,
+      params: {
+        elementId,
+      },
+    });
+  });
+})();
+JS, [
+                InputNamespace::namespaceId($validateId),
+                $this->id,
+            ]);
+        }
+
         return $items;
     }
 
@@ -348,18 +348,6 @@ JS, [
         $redirectUrl = ElementHelper::postEditRedirectUrl($this);
         $sourceId = $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id;
 
-        if (! $this->getIsRevision()) {
-            $items[] = [
-                'label' => t('Validate {type}', ['type' => static::lowerDisplayName()]),
-                'icon' => 'circle-check',
-                'behavior' => [
-                    'type' => 'submit',
-                    'actionUrl' => Url::actionUrl('elements/validate'),
-                    'params' => ['elementId' => $this->id],
-                ],
-            ];
-        }
-
         if ($url = $this->getUrl()) {
             $items[] = [
                 'label' => t('View in a new tab'),
@@ -382,6 +370,18 @@ JS, [
                         'revisionId' => $this->revisionId,
                         'siteId' => $this->siteId,
                     ]],
+                ],
+            ];
+        }
+
+        if (! $this->getIsRevision()) {
+            $items[] = [
+                'label' => t('Validate {type}', ['type' => static::lowerDisplayName()]),
+                'icon' => 'circle-check',
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('elements/validate'),
+                    'params' => ['elementId' => $this->id],
                 ],
             ];
         }

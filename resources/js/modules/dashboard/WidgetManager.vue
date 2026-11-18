@@ -2,6 +2,9 @@
   import {t} from '@craftcms/ui';
   import type CraftSlidePickerButton from '@craftcms/ui/components/slide-picker-button/slide-picker-button';
   import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
+  import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
+  import {computed} from 'vue';
+  import DropIndicator from '@/common/components/DropIndicator.vue';
   import type CraftSelectColor from '@craftcms/ui/components/select-color/select-color';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
@@ -41,12 +44,40 @@
     );
   }
 
-  const {setItemRef, setHandleRef, getDropState, getRowPosition} =
+  const {setItemRef, setHandleRef, getDragState, getDropIndex, getRowPosition} =
     useReorderableItems({
       getItemIds: () => props.widgets.map((widget) => widget.id),
       enabled: () => !props.busy,
       onReorder: (from, to) => emit('reorder', from, to),
     });
+
+  function isDragging(widget: DashboardWidget): boolean {
+    return getDragState(widget.id).type !== 'idle';
+  }
+
+  const draggingIndex = computed(() => props.widgets.findIndex(isDragging));
+
+  /**
+   * Which edge of this row carries the drop line, if any. Every gap is drawn
+   * by the row below it, and the gap after the last row by that row's bottom,
+   * so the line between two rows has one owner.
+   */
+  function dropEdge(index: number): Edge | null {
+    const gap = getDropIndex();
+    const from = draggingIndex.value;
+
+    // Nowhere new: the widget would land back where it is.
+    if (gap === null || (from !== -1 && (gap === from || gap === from + 1))) {
+      return null;
+    }
+
+    if (gap === index) return 'top';
+    if (gap === index + 1 && index === props.widgets.length - 1) {
+      return 'bottom';
+    }
+
+    return null;
+  }
 </script>
 
 <template>
@@ -80,8 +111,8 @@
           v-for="(widget, index) in widgets"
           :key="widget.id"
           :ref="(el) => setItemRef(el, widget.id)"
-          class="flex flex-wrap items-center gap-sm px-sm py-md rounded bg-(--c-color-fill-quiet)"
-          :class="{'bg-gray-100': getDropState(widget.id).type === 'is-over'}"
+          class="widget-manager__item relative flex flex-wrap items-center gap-sm px-sm py-md rounded bg-(--c-color-fill-quiet)"
+          :class="{'widget-manager__item--dragging': isDragging(widget)}"
         >
           <craft-reorder-button
             :ref="
@@ -152,11 +183,34 @@
               <craft-icon name="trash" :label="t('Delete')"></craft-icon>
             </craft-button>
           </div>
+          <DropIndicator
+            contained
+            class="widget-manager__drop-indicator"
+            :edge="dropEdge(index)"
+          />
         </li>
       </ul>
     </div>
   </craft-popover>
 </template>
+
+<style scoped>
+  /* The widget being dragged stays where it was, faded, so you can see where
+     it came from while the line shows where it's going. */
+  .widget-manager__item--dragging {
+    opacity: 0.4;
+  }
+
+  /* Centered in the gap between rows rather than on a row's own edge. Scoped
+     under the item to outrank DropIndicator's contained offsets. */
+  .widget-manager__item .widget-manager__drop-indicator.drop-indicator--top {
+    inset-block-start: calc(var(--c-spacing-sm) / -2 - 1px);
+  }
+
+  .widget-manager__item .widget-manager__drop-indicator.drop-indicator--bottom {
+    inset-block-end: calc(var(--c-spacing-sm) / -2 - 1px);
+  }
+</style>
 
 <style scoped>
   craft-popover::part(popup) {

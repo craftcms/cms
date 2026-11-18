@@ -92,6 +92,34 @@ it('follows the url when the page changes, not a server-set flag', async () => {
   expect(byLabel(items, 'Utilities').active).toBe(true);
 });
 
+it('selects the page a visit is on its way to until the visit fails', async () => {
+  const items = await mount('/admin/content/entries');
+  const visit = {
+    url: new URL('/admin/utilities', window.location.origin),
+    method: 'get',
+    prefetch: false,
+    async: false,
+    only: [],
+    except: [],
+    completed: false,
+  };
+
+  document.dispatchEvent(
+    new CustomEvent('inertia:before', {detail: {visit}, cancelable: true})
+  );
+  await Promise.resolve();
+  await nextTick();
+
+  expect(byLabel(items, 'Entries').active).toBe(false);
+  expect(byLabel(items, 'Utilities').active).toBe(true);
+
+  document.dispatchEvent(new CustomEvent('inertia:finish', {detail: {visit}}));
+  await nextTick();
+
+  expect(byLabel(items, 'Entries').active).toBe(true);
+  expect(byLabel(items, 'Utilities').active).toBe(false);
+});
+
 it('still re-reads the nav when the page prop is replaced', async () => {
   // Inertia hands over a whole new props object on each visit, and MainNav
   // lives in the sidebar and never remounts — so that object has to be the

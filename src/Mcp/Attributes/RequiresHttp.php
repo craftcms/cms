@@ -9,7 +9,7 @@ use Attribute;
 /**
  * Marks an MCP capability that only works over HTTP, such as one that returns URLs authenticated by the MCP access token.
  *
- * The stdio server started by `php craft mcp:serve` does not offer these capabilities.
+ * The stdio server started by `php artisan craft:mcp:serve` does not offer these capabilities.
  *
  * @since 6.0.0
  */

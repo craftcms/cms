@@ -107,6 +107,7 @@ it('records captured structure movement positions', function () {
         'structure' => $structure,
         'root' => $root,
         'children' => [$parent, $moved],
+        'nested' => [$nested],
     ] = createStructureHierarchy();
     DB::table(Table::ACTIVITYEVENTS)->delete();
 
@@ -138,10 +139,14 @@ it('records captured structure movement positions', function () {
                 'id' => $parent->uid,
                 'label' => $parent->getUiLabel(),
             ],
-            'previousSibling' => null,
+            'previousSibling' => [
+                'type' => $nested::class,
+                'id' => $nested->uid,
+                'label' => $nested->getUiLabel(),
+            ],
         ],
     ])->and($this->activities->format($event))->toBe(
-        "Moved this entry from the position after {$parent->getUiLabel()} in {$root->getUiLabel()} to the first position in {$parent->getUiLabel()}",
+        "Moved this entry from the position after {$parent->getUiLabel()} in {$root->getUiLabel()} to the position after {$nested->getUiLabel()} in {$parent->getUiLabel()}",
     );
 });
 

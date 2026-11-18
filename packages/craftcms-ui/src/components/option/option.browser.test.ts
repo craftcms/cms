@@ -10,7 +10,9 @@ import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast, loadTokens} from '../../../test/contrast';
 import type CraftCombobox from '../combobox/combobox.js';
 import '../combobox/combobox.js';
+import '../chip/chip.js';
 import '../icon/icon.js';
+import '../indicator/indicator.js';
 import './option.js';
 import '../../styles/cp.css';
 
@@ -221,6 +223,55 @@ describe('visual', () => {
       ).toBeGreaterThanOrEqual(3);
     });
   });
+
+  it.each(['light', 'dark'])(
+    'keeps a chip’s label and status dot visible on a highlighted option, in the %s theme',
+    async (theme) => {
+      document.body.innerHTML = `
+        <div data-theme="${theme}" role="listbox" aria-label="Entries">
+          <craft-option active>
+            <craft-chip appearance="plain">
+              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <div>Poster archive</div>
+            </craft-chip>
+          </craft-option>
+          <craft-option active>
+            <craft-chip data-color="white" appearance="outline-fill">
+              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <div>Poster archive</div>
+            </craft-chip>
+          </craft-option>
+        </div>`;
+      await settle();
+      const [plain, white] = [
+        ...document.querySelectorAll<HTMLElement>('craft-chip'),
+      ].map((chip) => {
+        const dot = chip
+          .querySelector('craft-indicator')!
+          .shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+        return {
+          label: getComputedStyle(chip.querySelector('div')!).color,
+          ring: getComputedStyle(dot).borderTopColor,
+          dot: getComputedStyle(dot).backgroundColor,
+          fill: getComputedStyle(
+            chip.shadowRoot!.querySelector<HTMLElement>('.cp-chip')!
+          ).backgroundColor,
+        };
+      });
+      const highlight = getComputedStyle(
+        document.querySelector('craft-option')!
+      ).backgroundColor;
+
+      // A plain chip sits on the highlight, so it takes its colors.
+      expect(contrast(plain!.label, highlight)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(plain!.ring, highlight)).toBeGreaterThanOrEqual(3);
+
+      // A white chip is its own surface, so it keeps the page's.
+      expect(contrast(white!.label, white!.fill)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(white!.dot, white!.fill)).toBeGreaterThanOrEqual(3);
+      expect(white!.ring).toBe('rgba(0, 0, 0, 0)');
+    }
+  );
 
   it('keeps the highlighted and selected options visible in forced colors mode', async () => {
     await cdp().send('Emulation.setEmulatedMedia', {

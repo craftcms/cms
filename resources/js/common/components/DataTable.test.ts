@@ -238,3 +238,54 @@ function toggle(checkbox: Element, checked: boolean): void {
   input.checked = checked;
   input.dispatchEvent(new Event('change', {bubbles: true}));
 }
+
+function mountAlignedTable(options: {alignColumns?: boolean} = {}) {
+  const table = useCraftTable({
+    data: [{id: 1, name: 'First', price: '€18,450.00'}],
+    columns: [
+      {accessorKey: 'name', header: 'Name'},
+      {accessorKey: 'price', header: 'Price', meta: {align: 'end'}},
+    ],
+    getRowId: (row) => String(row.id),
+    enableSorting: true,
+  });
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApp({
+    render: () =>
+      h(DataTable, {table, alignColumns: options.alignColumns} as never),
+  });
+  app.mount(root);
+  teardown = () => app.unmount();
+  return {root};
+}
+
+it('aligns end-aligned columns to the end and leads their header with the sort icon', async () => {
+  const {root} = mountAlignedTable();
+  await nextTick();
+
+  const [nameHeader, priceHeader] = root.querySelectorAll('thead th');
+  const [nameCell, priceCell] = root.querySelectorAll('tbody td');
+
+  expect(nameHeader!.classList).not.toContain('cp-table-cell--align-end');
+  expect(nameCell!.classList).not.toContain('cp-table-cell--align-end');
+  expect(priceHeader!.classList).toContain('cp-table-cell--align-end');
+  expect(priceCell!.classList).toContain('cp-table-cell--align-end');
+
+  // The label stays the button's text either way, so its accessible name
+  // doesn't change; only the icon moves.
+  const nameButton = nameHeader!.querySelector('button')!;
+  const priceButton = priceHeader!.querySelector('button')!;
+  expect(nameButton.lastElementChild?.tagName).toBe('CRAFT-ICON');
+  expect(priceButton.firstElementChild?.tagName).toBe('CRAFT-ICON');
+  expect(priceButton.textContent?.trim()).toBe('Price');
+});
+
+it('ignores column alignment when alignColumns is off', async () => {
+  const {root} = mountAlignedTable({alignColumns: false});
+  await nextTick();
+
+  expect(root.querySelectorAll('.cp-table-cell--align-end')).toHaveLength(0);
+  const priceButton = root.querySelectorAll('thead th button')[1]!;
+  expect(priceButton.lastElementChild?.tagName).toBe('CRAFT-ICON');
+});

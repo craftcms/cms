@@ -57,7 +57,7 @@
     "@storybook/addon-a11y": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-themes": "catalog:",
-    "@storybook/vue3-vite": "^10.6.0",
+    "@storybook/vue3-vite": "^10.6.6",
     "@tailwindcss/node": "^4.2.4",
     "@tailwindcss/oxide": "^4.2.4",
     "@tailwindcss/vite": "^4.2.4",
@@ -113,7 +113,7 @@
     "fabric": "^7.4.0",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "catalog:",
-    "overtype": "^2.4.0",
+    "overtype": "^2.9.0",
     "punycode": "catalog:",
     "tailwindcss": "catalog:",
     "vue": "catalog:"

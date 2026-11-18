@@ -227,8 +227,20 @@ test('translate applies Laravel fallback before debug wrapping', function () {
         ],
     ], 'nl');
 
-    expect(I18N::translate('fallback.message', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel says Rias@')
-        ->and(I18N::translate('fallback.array', category: 'app', locale: 'nl'))->toBe('@fallback.array@');
+    $jsonPath = sys_get_temp_dir().'/craft-i18n-test-'.uniqid();
+    mkdir($jsonPath);
+    file_put_contents("$jsonPath/nl.json", '{"Laravel JSON message for :name": "Laravel JSON zegt :name"}');
+    app(Translator::class)->addJsonPath($jsonPath);
+
+    try {
+        expect(I18N::translate('fallback.message', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel says Rias@')
+            ->and(I18N::translate('fallback.array', category: 'app', locale: 'nl'))->toBe('@fallback.array@')
+            ->and(I18N::translate('Laravel JSON message for :name', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Laravel JSON zegt Rias@')
+            ->and(I18N::translate('Untranslated message for :name', ['name' => 'Rias'], 'app', 'nl'))->toBe('@Untranslated message for Rias@');
+    } finally {
+        unlink("$jsonPath/nl.json");
+        rmdir($jsonPath);
+    }
 });
 
 test('getAllTranslationsForLocale returns translations for registered categories', function () {

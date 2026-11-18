@@ -13,7 +13,8 @@
 - [x] An `outline` dot is a hollow ring in the fill color, and the ring reaches 3:1 against the same surfaces as a solid dot. Filled and hollow dots differ in shape as well as color. Per WCAG 1.4.11 (Non-text Contrast) and 1.4.1 (Use of Color). Verified by the `draws every hollow ring at 3:1 against …` cases in `indicator.browser.test.ts`.
 - [ ] The "use shapes" user preference reaches `craft-indicator`, so a dot can differ by shape as well as color. Per WCAG 1.4.1 (Use of Color). Known gap: it doesn't today.
 - [ ] In forced-colors mode, the dot keeps a visible edge. Its 1px border is forced to a system color, but a `solid` dot's border is `transparent`. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
-- [ ] A dot on a loud surface stays visible. Per WCAG 1.4.11 (Non-text Contrast). Known gap: on `--c-color-neutral-fill-loud`, such as a highlighted or checked `craft-option`, every solid dot falls to about 1:1. The option's text still carries the meaning, so this isn't a 1.4.11 failure, but the dot disappears from the row a keyboard user is on.
+- [x] A solid dot on a highlighted `craft-option`, whose `--c-color-neutral-fill-loud` fill every solid dot falls to about 1:1 against, stays visible: the option sets `--c-indicator-ring` to its text color, which rings the dot at 3:1 against the fill. Per WCAG 1.4.11 (Non-text Contrast). Verified by `keeps a chip’s label and status dot visible on a highlighted option, in the %s theme` in `option.browser.test.ts`.
+- [ ] A dot on other loud surfaces stays visible. Per WCAG 1.4.11 (Non-text Contrast). Known gap: elsewhere on a loud fill, a solid dot can still fall to about 1:1 unless its container sets `--c-indicator-ring`.
 
 ## Depends on usage
 

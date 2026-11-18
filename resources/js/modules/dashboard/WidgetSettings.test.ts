@@ -29,6 +29,7 @@ it('shows validation errors and closes settings after a successful retry', async
     maxColspan: 4,
     color: 'gray',
     settings: {title: 'Example widget'},
+    hasSettings: true,
     settingsUi: null,
     component: null,
     data: null,

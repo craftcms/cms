@@ -427,12 +427,17 @@ import './dashboard.scss';
       this.$front = this.$container.children('.front');
       const $pane = this.$front.children('.pane, craft-pane, craft-card');
 
-      this.$settingsBtn = $pane.children(
-        '.icon.settings, .widget-settings-button'
-      );
-      this.$heading = $pane.children('.widget-heading');
+      // The control panel's widgets group their heading and settings button
+      // in a header.
+      const $header = $pane.add($pane.children('.widget-header'));
+      this.$settingsBtn = $header
+        .children('.icon.settings')
+        .add(
+          $header.find('> .widget-header-actions > .widget-settings-button')
+        );
+      this.$heading = $header.children('.widget-heading');
       this.$title = this.$heading.find('> h2');
-      this.$subtitle = this.$heading.find('> h5');
+      this.$subtitle = this.$heading.find('> h5, > .widget-subtitle');
       this.$bodyContainer = $pane.children('.body');
 
       this.setSettings(settingsHtml, initSettingsFn, settingsUi);

@@ -22,7 +22,7 @@
 <template>
   <CpContainer>
     <div
-      class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-(--cp-header-height)"
+      class="border-b border-b-quiet py-1 divide flex justify-between items-center min-h-[calc(var(--cp-header-height)+1px)]"
     >
       <LayoutSlotOutlet name="content-toolbar">
         <div

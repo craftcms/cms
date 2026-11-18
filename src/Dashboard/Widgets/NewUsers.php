@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Ui;
@@ -83,10 +84,38 @@ class NewUsers extends Widget
         return self::isAvailable() ? 'craft:widget-new-users' : null;
     }
 
-    /** @return array{userGroupId: ?int, dateRange: string} */
+    /** @return array{userGroupId: ?int, userGroupName: ?string, userGroupNameSingular: ?string, dateRange: string, dateRangeLabel: ?string} */
     public function props(): array
     {
-        return ['userGroupId' => $this->userGroupId, 'dateRange' => $this->dateRange ?? 'd7'];
+        $dateRange = $this->dateRange ?? 'd7';
+        $userGroup = $this->userGroupId ? UserGroups::getGroupById($this->userGroupId) : null;
+        // Lowercased, as the total names it: “264 new members”. Group names
+        // are usually plural, so they’re left as they are, and singularized
+        // for a single new user.
+        $userGroupName = $userGroup ? Str::lower(t($userGroup->name, category: 'site')) : null;
+
+        return [
+            'userGroupId' => $this->userGroupId,
+            'userGroupName' => $userGroupName,
+            'userGroupNameSingular' => $userGroupName !== null ? Str::singular($userGroupName) : null,
+            'dateRange' => $dateRange,
+            'dateRangeLabel' => $this->dateRangeOptions()[$dateRange] ?? null,
+        ];
+    }
+
+    /**
+     * The date ranges the widget can show, by value.
+     *
+     * @return array<string, string>
+     */
+    private function dateRangeOptions(): array
+    {
+        return [
+            'd7' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]),
+            'd30' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]),
+            'lastweek' => t('Last Week'),
+            'lastmonth' => t('Last Month'),
+        ];
     }
 
     #[Override]
@@ -94,12 +123,12 @@ class NewUsers extends Widget
     {
         $ui = Ui::make([
             Field::make(t('Date Range'))
-                ->control(Choice::make('dateRange')->value($this->dateRange)->options([
-                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'value' => 'd7'],
-                    ['label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'value' => 'd30'],
-                    ['label' => t('Last Week'), 'value' => 'lastweek'],
-                    ['label' => t('Last Month'), 'value' => 'lastmonth'],
-                ])),
+                ->control(Choice::make('dateRange')->value($this->dateRange)->options(
+                    collect($this->dateRangeOptions())
+                        ->map(fn (string $label, string $value): array => ['label' => $label, 'value' => $value])
+                        ->values()
+                        ->all(),
+                )),
         ]);
 
         $userGroups = UserGroups::getAllGroups();
