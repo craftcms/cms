@@ -567,6 +567,11 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
+    /**
+     * @template T of CacheInterface
+     * @param T $cache
+     * @return T
+     */
     private function _useCache(CacheInterface $cache): CacheInterface
     {
         $this->_originalCache ??= Craft::$app->getCache();
