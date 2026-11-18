@@ -12,8 +12,10 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule as LegacyRule;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ConditionalRules;
+use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Stringable;
 
@@ -39,7 +41,7 @@ use Stringable;
  *
  * @since 6.0.0
  */
-class EnvValueRule implements DataAwareRule, ValidationRule
+class EnvValueRule implements DataAwareRule, ValidationRule, ValidatorAwareRule
 {
     public bool $implicit = true;
 
@@ -52,6 +54,13 @@ class EnvValueRule implements DataAwareRule, ValidationRule
      * @var array<string, mixed>
      */
     private array $data = [];
+
+    /**
+     * The outer validator’s custom messages and attribute names, so errors read the same as without this rule.
+     *
+     * @var array{messages: array<string, string>, attributes: array<string, string>}
+     */
+    private array $customizations = ['messages' => [], 'attributes' => []];
 
     /**
      * @param  Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string|array<int, Closure|LegacyRule|Stringable|ValidationRule|ConditionalRules|string>  $rules
@@ -75,6 +84,17 @@ class EnvValueRule implements DataAwareRule, ValidationRule
     }
 
     #[Override]
+    public function setValidator(LaravelValidator $validator): static
+    {
+        $this->customizations = [
+            'messages' => $validator->customMessages,
+            'attributes' => $validator->customAttributes,
+        ];
+
+        return $this;
+    }
+
+    #[Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $parsedValue = is_string($value)
@@ -86,7 +106,7 @@ class EnvValueRule implements DataAwareRule, ValidationRule
 
         $validator = Validator::make($data, [
             $attribute => $this->rules,
-        ]);
+        ], $this->customizations['messages'], $this->customizations['attributes']);
 
         if ($validator->passes()) {
             return;

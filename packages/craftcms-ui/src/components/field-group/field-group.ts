@@ -13,6 +13,8 @@ import {property} from 'lit/decorators.js';
  * @slot - The fields to lay out. Add `width-25`, `width-33`, `width-50`,
  *   `width-66`, or `width-75` to a child to give it a fraction of the row.
  *
+ * @cssproperty [--c-field-group-gap=var(--c-spacing-lg)] - The space between
+ *   rows of fields. The main content pane of a full-page form sets it wider.
  * @cssproperty [--c-field-group-separator-spacing=var(--c-spacing-lg)] - In a
  *   `separated` group, the space on each side of a column hairline.
  */
@@ -132,7 +134,8 @@ export default class CraftFieldGroup extends LitElement {
         craft-field-group {
           display: grid;
           grid-template-columns: repeat(12, minmax(0, 1fr));
-          gap: var(--gap, calc(var(--c-spacing) * 6)) var(--c-spacing-md);
+          gap: var(--gap, var(--c-field-group-gap, var(--c-spacing-lg)))
+            var(--c-spacing-md);
           container-type: inline-size;
         }
 
@@ -207,8 +210,22 @@ export default class CraftFieldGroup extends LitElement {
           > craft-field-group
           craft-field[required]
           > [slot='label']
-          > craft-icon[name='asterisk'][data-craft-field-decoration] {
+          craft-icon[name='asterisk'][data-craft-field-decoration] {
           display: none;
+        }
+
+        craft-field[fieldset][required]
+          > craft-field-group
+          craft-field[required]
+          > [slot='label']
+          > [data-craft-field-decoration]:not(:has(craft-info-icon)) {
+          display: contents !important;
+        }
+
+        craft-field[fieldset][required]
+          > craft-field-group
+          craft-field[required]:not([translatable])::part(actions) {
+          margin-inline-start: var(--_label-text-bearing);
         }
 
         @container (min-width: 30rem) {

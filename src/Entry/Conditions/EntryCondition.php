@@ -26,6 +26,7 @@ class EntryCondition extends ElementCondition
             PostDateConditionRule::class,
             SavableConditionRule::class,
             SectionConditionRule::class,
+            SectionTypeConditionRule::class,
             FieldConditionRule::class,
             TypeConditionRule::class,
             ViewableConditionRule::class,

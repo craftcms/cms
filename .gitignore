@@ -57,5 +57,5 @@ resources/build
 **/__screenshots__/
 **/.vitest-attachments/
 
-# phpbench workbench, results and opcache
-.phpbench/
+# Benchmark workbench and opcache
+.benchmarks/

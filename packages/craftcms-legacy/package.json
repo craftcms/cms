@@ -42,7 +42,7 @@
     "d3": "catalog:",
     "inputmask": "catalog:",
     "jquery": "catalog:",
-    "jquery-ui": "^1.14.2",
+    "jquery-ui": "catalog:",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "catalog:",

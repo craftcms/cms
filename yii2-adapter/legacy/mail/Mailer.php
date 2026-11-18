@@ -12,6 +12,7 @@ use craft\config\GeneralConfig;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\Email\Data\MailSettings;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\SystemMessage\Actions\FormatSystemMessageMailAction;
@@ -124,98 +125,101 @@ class Mailer extends \yii\symfonymailer\Mailer
             );
         }
 
+        return TemplateMode::with(TemplateMode::Site, function() use ($message) {
+            $currentSite = $messageSite = $twig = null;
+            $language = app()->getLocale();
+
+            try {
+                if ($message instanceof Message && isset($message->siteId)) {
+                    $currentSite = Sites::getCurrentSite();
+                    if ($message->siteId !== $currentSite->id) {
+                        $messageSite = Sites::getSiteById($message->siteId);
+                        if ($messageSite) {
+                            Sites::setCurrentSite($messageSite);
+                            // A new Twig environment loads the global sets and singles of the message's site
+                            $twig = Twig::create();
+                        }
+                    }
+                }
+
+                $send = fn() => $this->sendInSiteMode($message, $messageSite);
+
+                return $twig ? Twig::with($twig, TemplateMode::Site, $send) : $send();
+            } finally {
+                // Set things back to normal.
+                app()->setLocale($language);
+
+                if ($currentSite && $messageSite) {
+                    Sites::setCurrentSite($currentSite);
+                }
+            }
+        });
+    }
+
+    /**
+     * Prepares and sends a message once the template mode, site and Twig environment are set.
+     */
+    private function sendInSiteMode($message, ?Site $messageSite): bool
+    {
         $generalConfig = Cms::config();
-        $currentSite = $messageSite = $twig = null;
-        $language = app()->getLocale();
 
-        $originalTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Site);
-
-        try {
-            if ($message instanceof Message && isset($message->siteId)) {
-                $currentSite = Sites::getCurrentSite();
-                if ($message->siteId !== $currentSite->id) {
-                    $messageSite = Sites::getSiteById($message->siteId);
-                    if ($messageSite) {
-                        Sites::setCurrentSite($messageSite);
-                        // Reset Twig so any global sets and singles get reloaded for the new site.
-                        $twig = Twig::get();
-                        Twig::set(Twig::create());
-                    }
+        if ($message instanceof Message && $message->key !== null) {
+            if ($message->language === null) {
+                // If a site was specified, go with its language.
+                if ($messageSite) {
+                    $message->language = $messageSite->getLanguage();
+                } else {
+                    // Default to the current language.
+                    $message->language = Craft::$app->getRequest()->getIsSiteRequest()
+                        ? app()->getLocale()
+                        : Sites::getPrimarySite()->getLanguage();
                 }
             }
 
-            if ($message instanceof Message && $message->key !== null) {
-                if ($message->language === null) {
-                    // If a site was specified, go with its language.
-                    if ($messageSite) {
-                        $message->language = $messageSite->getLanguage();
-                    } else {
-                        // Default to the current language.
-                        $message->language = Craft::$app->getRequest()->getIsSiteRequest()
-                            ? app()->getLocale()
-                            : Sites::getPrimarySite()->getLanguage();
-                    }
-                }
+            $mailable = new SystemMessageMailable(
+                key: $message->key,
+                variables: $message->variables ?? [],
+                language: $message->language,
+                siteId: $message->siteId,
+            );
 
-                $mailable = new SystemMessageMailable(
-                    key: $message->key,
-                    variables: $message->variables ?? [],
-                    language: $message->language,
-                    siteId: $message->siteId,
-                );
+            $rendered = app(RenderSystemMessageAction::class)->handle(
+                key: $mailable->key,
+                variables: $mailable->variables,
+                language: $mailable->language,
+                siteId: $mailable->siteId,
+            );
 
-                $rendered = app(RenderSystemMessageAction::class)->handle(
-                    key: $mailable->key,
-                    variables: $mailable->variables,
-                    language: $mailable->language,
-                    siteId: $mailable->siteId,
-                );
+            $resolved = $this->resolveMailSettings($message->siteId);
 
-                $resolved = $this->resolveMailSettings($message->siteId);
+            $formatted = app(FormatSystemMessageMailAction::class)->handle($rendered, $resolved);
 
-                $formatted = app(FormatSystemMessageMailAction::class)->handle($rendered, $resolved);
+            $message->language = $rendered->language;
+            $message->setSubject($rendered->subject);
+            $message->setTextBody(view('c::mail.system-message-text', $formatted->viewData)->render());
+            $message->setHtmlBody($formatted->htmlBody);
+        }
 
-                $message->language = $rendered->language;
-                $message->setSubject($rendered->subject);
-                $message->setTextBody(view('mail.system-message-text', $formatted->viewData)->render());
-                $message->setHtmlBody($formatted->htmlBody);
-            }
+        // Set the default sender if there isn't one already.
+        if (!$message->getFrom()) {
+            $message->setFrom($this->from);
+        }
 
-            // Set the default sender if there isn't one already.
-            if (!$message->getFrom()) {
-                $message->setFrom($this->from);
-            }
+        if ($this->replyTo && !$message->getReplyTo()) {
+            $message->setReplyTo($this->replyTo);
+        }
 
-            if ($this->replyTo && !$message->getReplyTo()) {
-                $message->setReplyTo($this->replyTo);
-            }
-
-            // Apply the testToEmailAddress config setting.
-            if ($generalConfig instanceof GeneralConfig) {
-                $testToEmailAddress = $generalConfig->getTestToEmailAddress();
-                if (!empty($testToEmailAddress)) {
-                    $message->setTo($testToEmailAddress);
-                    $message->setCc([]);
-                    $message->setBcc([]);
-                }
-            }
-
-            return parent::send($message);
-        } finally {
-            // Set things back to normal.
-            app()->setLocale($language);
-
-            if ($currentSite && $messageSite) {
-                Sites::setCurrentSite($currentSite);
-            }
-
-            TemplateMode::set($originalTemplateMode);
-
-            if ($twig) {
-                Twig::set($twig);
+        // Apply the testToEmailAddress config setting.
+        if ($generalConfig instanceof GeneralConfig) {
+            $testToEmailAddress = $generalConfig->getTestToEmailAddress();
+            if (!empty($testToEmailAddress)) {
+                $message->setTo($testToEmailAddress);
+                $message->setCc([]);
+                $message->setBcc([]);
             }
         }
+
+        return parent::send($message);
     }
 
     /**

@@ -1,4 +1,5 @@
 import {createGlobalState} from '@vueuse/core';
+import {uuid} from '@/common/craft/strings';
 import {computed, shallowReactive, shallowRef, type InjectionKey} from 'vue';
 import {highlightField} from '@/common/composables/useFieldHighlight';
 import {firstFocusableWithin} from '@/common/utils/dom';
@@ -184,11 +185,11 @@ export const useAssistantContext = createGlobalState(() => {
      * ref, and returns its ref.
      */
     add(input: AssistantContextInput): string {
-      const key = input.key ?? crypto.randomUUID();
+      const key = input.key ?? uuid();
       const {data} = input;
       const existing = items.value.find((item) => item.key === key);
       const next: AssistantContextItem = {
-        ref: existing?.ref ?? crypto.randomUUID(),
+        ref: existing?.ref ?? uuid(),
         type: input.type,
         key,
         label: input.label,

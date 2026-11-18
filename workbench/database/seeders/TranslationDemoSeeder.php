@@ -34,6 +34,9 @@ use RuntimeException;
  * and an Exhibitions section whose entry is fully translated into French except for one field, untranslated in
  * German, and has a draft that reorders, edits, adds, and removes its Matrix sections.
  *
+ * The Field Showcase and Posts sections are enabled for the new sites too, so every field type, including relations
+ * to posts, can be tried per site. Saving the sections copies their existing entries to the new sites.
+ *
  * Not part of the default seed, which stays single-site:
  *
  *     php vendor/bin/testbench db:seed --class='Workbench\Database\Seeders\TranslationDemoSeeder'
@@ -45,6 +48,10 @@ class TranslationDemoSeeder extends Seeder
         $primary = Sites::getPrimarySite();
         $french = $this->site('french', 'Français', 'fr-FR', $primary);
         $german = $this->site('german', 'Deutsch', 'de-DE', $primary);
+
+        foreach (['showcase', 'posts'] as $handle) {
+            $this->enableSectionForSites($handle, [$french, $german]);
+        }
 
         $summary = $this->field('exhibitionSummary', 'Summary', PlainText::class, TranslationMethod::Site);
         $description = $this->field('exhibitionDescription', 'Description', PlainText::class, TranslationMethod::Site, [
@@ -175,6 +182,41 @@ class TranslationDemoSeeder extends Seeder
         }
 
         return $site;
+    }
+
+    /**
+     * Enables a section created by the default seed for the given sites, with its primary site’s URL settings.
+     *
+     * @param  list<Site>  $sites
+     */
+    private function enableSectionForSites(string $handle, array $sites): void
+    {
+        $section = Sections::getSectionByHandle($handle)
+            ?? throw new RuntimeException("The {$handle} section doesn’t exist. Run the default seed first.");
+        $siteSettings = $section->getSiteSettings();
+        $template = $siteSettings[Sites::getPrimarySite()->id] ?? reset($siteSettings)
+            ?: throw new RuntimeException("The {$handle} section has no site settings.");
+        $missing = array_filter($sites, fn (Site $site): bool => ! isset($siteSettings[$site->id]));
+
+        if ($missing === []) {
+            return;
+        }
+
+        foreach ($missing as $site) {
+            $siteSettings[$site->id] = new SectionSiteSettings([
+                'siteId' => $site->id,
+                'enabledByDefault' => $template->enabledByDefault,
+                'hasUrls' => $template->hasUrls,
+                'uriFormat' => $template->uriFormat,
+                'template' => $template->template,
+            ]);
+        }
+
+        $section->setSiteSettings(array_values($siteSettings));
+
+        if (! Sections::saveSection($section)) {
+            throw new RuntimeException("Failed to enable the {$section->name} section for the new sites: ".Json::encode($section->errors()->all()));
+        }
     }
 
     /**

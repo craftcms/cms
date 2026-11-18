@@ -1,4 +1,11 @@
-import {computed, type MaybeRefOrGetter, ref, type Ref, toValue} from 'vue';
+import {
+  computed,
+  type ComputedRef,
+  type MaybeRefOrGetter,
+  ref,
+  type Ref,
+  toValue,
+} from 'vue';
 import {isInteractiveClick} from '@/common/utils/dom';
 
 export type SelectableId = string | number;
@@ -66,6 +73,35 @@ function localStore<Id extends SelectableId>(): SelectableStore<Id> {
   };
 }
 
+/** What {@link useSelectable} returns, and what a selectable list accepts. */
+export interface Selectable<Id extends SelectableId = SelectableId> {
+  readonly selectedIds: ComputedRef<readonly Id[]>;
+  readonly hasSelection: ComputedRef<boolean>;
+  /** Everything selectable is selected: a select-all checkbox's checked state. */
+  readonly allSelected: ComputedRef<boolean>;
+  /** Some but not all: a select-all checkbox's indeterminate state. */
+  readonly someSelected: ComputedRef<boolean>;
+  /** The position of the last individually toggled item, which ranges start from. */
+  readonly anchorIndex: Ref<number | null>;
+  readonly enabled: ComputedRef<boolean>;
+  readonly readOnly: ComputedRef<boolean>;
+  isSelected(id: Id): boolean;
+  /** Whether the item itself can be selected, ignoring `readOnly`. */
+  canSelect(id: Id): boolean;
+  /** The item's position in `ids`, or `-1`. */
+  indexOf(id: Id): number;
+  select(id: Id, selected: boolean): void;
+  toggle(id: Id): void;
+  selectRange(id: Id, selected: boolean): void;
+  extendTo(id: Id): void;
+  setChecked(id: Id, checked: boolean, options?: {shiftKey?: boolean}): void;
+  selectAll(selected: boolean): void;
+  toggleAll(checked: boolean): void;
+  clear(): void;
+  prune(available?: readonly Id[]): void;
+  handleClick(id: Id, event: MouseEvent, boundary?: EventTarget | null): void;
+}
+
 /**
  * Anchor-based list selection: click, ctrl/cmd-click, and shift-click ranges,
  * for any ordered list of ids.
@@ -76,7 +112,7 @@ function localStore<Id extends SelectableId>(): SelectableStore<Id> {
  */
 export function useSelectable<Id extends SelectableId = SelectableId>(
   options: SelectableOptions<Id>
-) {
+): Selectable<Id> {
   const store = options.store ?? localStore<Id>();
   const anchorIndex: Ref<number | null> = ref(null);
 
@@ -281,8 +317,3 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
     handleClick,
   };
 }
-
-/** The object {@link useSelectable} returns — what a selectable list accepts. */
-export type Selectable<Id extends SelectableId = SelectableId> = ReturnType<
-  typeof useSelectable<Id>
->;

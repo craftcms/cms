@@ -119,9 +119,11 @@ export function lowercaseFirst(str: string): string {
 }
 
 export function uuid(): string {
+  /* oxlint-disable no-restricted-properties */
   if (typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
+  /* oxlint-enable no-restricted-properties */
 
   return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) => {
     const [byte = 0] = crypto.getRandomValues(new Uint8Array(1));

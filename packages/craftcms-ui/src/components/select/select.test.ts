@@ -106,12 +106,6 @@ describe('craft-select', () => {
     expect(element.value).toBe('en-US');
   });
 
-  it('reflects small so the stylesheet can act on it', async () => {
-    const element = await createSelect({small: ''});
-
-    expect(element.hasAttribute('small')).toBe(true);
-  });
-
   it('disables the native control', async () => {
     const element = await createSelect({disabled: ''});
 

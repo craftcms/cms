@@ -392,16 +392,14 @@ class ImageTransforms extends Component
             return app(AssetTransformers::class)->transform($asset, $definition);
         }
 
-        $immediately ??= false;
-
         app(ImageTransformers::class)->register($transformer);
-        $request = $this->legacyTransformRequest($asset, $definition, $transformer);
+        $request = $this->legacyTransformRequest($asset, $definition, $transformer, $immediately);
 
         if ($request === null) {
             return app(AssetTransformers::class)->transform($asset, $definition);
         }
 
-        return new LegacyImageTransformerDriver($transformer, $immediately)->transform($request);
+        return new LegacyImageTransformerDriver($transformer)->transform($request);
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
@@ -409,6 +407,7 @@ class ImageTransforms extends Component
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
         string $transformer,
+        ?bool $immediately = null,
     ): ?AssetTransformRequest {
         // A transformer chosen by the disk, including an explicit `craft` one, takes precedence over the legacy one.
         $disk = $asset->getVolume()->getResolvedFsTarget();
@@ -423,6 +422,7 @@ class ImageTransforms extends Component
             asset: $asset,
             transformer: $assetTransformer,
             parameters: $this->transformParameters($definition, $assetTransformer->driver),
+            immediately: $immediately ?? app(AssetTransformers::class)->immediateTransforms(),
         );
     }
 

@@ -214,6 +214,7 @@
     :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
     :placeholder-rows="placeholderRows"
+    :align-columns="!inlineEditing"
     :leading-column-tracks="leadingColumnTracks"
     :row-attributes="rowAttributes"
     :row-behavior="itemBehavior"
@@ -344,6 +345,10 @@
     white-space: normal;
   }
 
+  :deep(.cp-table-cell .inline-chips) {
+    flex-wrap: nowrap;
+  }
+
   :deep(.cp-table-cell) {
     width: min-content;
   }
@@ -360,7 +365,9 @@
   }
 
   :deep(.cp-table-row) {
-    --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
+    --_structure-indent: calc(
+      var(--structure-indent-step, 44px) * (var(--structure-level, 1) - 1)
+    );
   }
 
   // Holds the toggle's footprint whether or not this row has one: the table
@@ -374,6 +381,24 @@
   :deep(.cp-table-cell--structure-reorder),
   :deep(.cp-table-cell--structure) {
     padding-inline: 0;
+  }
+
+  // In a flush table, the first of these starts at the container's edge,
+  // left of the content, which is 16px in. When the container's padding
+  // grows past that, they move in by the difference, so they keep their
+  // place beside the content.
+  :deep(
+    .cp-table--flush
+      tr
+      > :is(
+        .cp-table-cell--structure,
+        .cp-table-cell--structure-reorder
+      ):first-child
+  ) {
+    padding-inline-start: max(
+      0px,
+      var(--cp-container-padding) - var(--c-spacing-lg)
+    );
   }
 
   :deep(.cp-table-cell--structure),

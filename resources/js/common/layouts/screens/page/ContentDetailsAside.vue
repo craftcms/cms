@@ -81,4 +81,14 @@
         var(--cp-details-end-gap, 0px)
     );
   }
+
+  /* Over the panels, so a composer's opaque fade can't cover the edge. */
+  .cp-content__details-pane::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    box-shadow: var(--cp-details-edge-shadow, none);
+  }
 </style>

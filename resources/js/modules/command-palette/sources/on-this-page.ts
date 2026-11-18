@@ -12,6 +12,8 @@ interface Target {
   hint?: string | null;
   description: string;
   icon: string;
+  /** SVG markup shown in place of `icon`. */
+  iconSvg?: string | null;
   /** A palette color for the icon, such as a nested entry's type's. */
   iconColor?: string | null;
   element: HTMLElement;
@@ -237,6 +239,7 @@ function landmarks(): Target[] {
         label,
         description: t('Sidebar panel'),
         icon: icon?.name ?? 'sidebar-flip',
+        iconSvg: icon?.querySelector(':scope > svg')?.outerHTML ?? null,
         element: trigger,
         activate: openPanel,
       });
@@ -326,16 +329,23 @@ function secondaryNav(): Target[] {
   });
 }
 
+/** Content that's only there for screen readers. */
+const VISUALLY_HIDDEN = '.sr-only, .visually-hidden';
+
 /**
  * The page's headings below its title, which names the page rather than a
  * part of it. The details sidebar's headings are left out: each just repeats
- * its panel's name, which is listed already.
+ * its panel's name, which is listed already. So are visually hidden ones:
+ * there's nothing on screen to search for, or to show once one is chosen.
  */
 function headings(): Target[] {
   return [
     ...document.querySelectorAll<HTMLElement>('main :is(h2, h3, h4, h5, h6)'),
   ]
-    .filter((heading) => !heading.closest('.details-panels'))
+    .filter(
+      (heading) =>
+        !heading.closest('.details-panels') && !heading.closest(VISUALLY_HIDDEN)
+    )
     .map((heading) => ({
       label: text(heading),
       description: trail(heading) || t('Heading'),
@@ -550,6 +560,7 @@ export const onThisPageProvider: CommandPaletteProvider = {
           hint,
           description,
           icon,
+          iconSvg,
           iconColor,
           element,
           activate,
@@ -561,6 +572,7 @@ export const onThisPageProvider: CommandPaletteProvider = {
           hint,
           description,
           icon,
+          iconSvg,
           iconColor,
           ...(href
             ? {href}

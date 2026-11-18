@@ -6,6 +6,7 @@ namespace CraftCms\Cms\View;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Responses\CpErrorPage;
 use CraftCms\Cms\Route\Events\Redirecting;
 use CraftCms\Cms\Route\RedirectRule;
 use CraftCms\Cms\Site\Sites;
@@ -38,7 +39,7 @@ use function CraftCms\Cms\t;
  *
  * Site requests look for `errors/<code>`, then `errors/offline` for 503s, then `errors/error`, each
  * in the current site’s template folder first and as a public or private template. When there’s no
- * site template, or on control panel requests, the control panel’s own error templates are used.
+ * site template, or on control panel requests, the control panel’s own error page is used.
  *
  * @since 6.0.0
  */
@@ -88,9 +89,19 @@ readonly class ErrorPages
         $statusCode = $httpException->getStatusCode();
 
         try {
-            [$template, $templateMode] = $this->findTemplate($request, $statusCode);
+            $siteTemplate = $this->findSiteTemplate($request, $statusCode);
 
-            return response(Template::renderPageTemplate($template, [
+            if ($siteTemplate === null) {
+                // An unexpected exception's message isn't meant for the person who hit it.
+                return CpErrorPage::response(
+                    $request,
+                    $statusCode,
+                    $e instanceof HttpExceptionInterface ? $httpException->getMessage() : '',
+                    $httpException->getHeaders(),
+                );
+            }
+
+            return response(Template::renderPageTemplate($siteTemplate, [
                 'message' => $httpException->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
@@ -99,7 +110,7 @@ readonly class ErrorPages
                 'exception' => $httpException,
                 'errors' => new ViewErrorBag,
                 ...get_object_vars($e),
-            ], $templateMode), $statusCode, $httpException->getHeaders());
+            ], TemplateMode::Site), $statusCode, $httpException->getHeaders());
         } catch (Throwable $renderException) {
             if (app()->hasDebugModeEnabled()) {
                 throw $renderException;
@@ -130,9 +141,9 @@ readonly class ErrorPages
     }
 
     /**
-     * @return array{string, TemplateMode}
+     * The site's own error template for the status code, or null when it has none or it's a control panel request.
      */
-    private function findTemplate(Request $request, int $statusCode): array
+    private function findSiteTemplate(Request $request, int $statusCode): ?string
     {
         if (! $request->isCpRequest()) {
             $names = [(string) $statusCode, ...($statusCode === 503 ? ['offline'] : []), 'error'];
@@ -143,16 +154,14 @@ readonly class ErrorPages
                 foreach ($folders as $folder) {
                     foreach (array_unique([$name, $trigger.$name]) as $filename) {
                         if ($this->templateResolver->exists("$folder/$filename", TemplateMode::Site)) {
-                            return ["$folder/$filename", TemplateMode::Site];
+                            return "$folder/$filename";
                         }
                     }
                 }
             }
         }
 
-        $template = $this->templateResolver->exists("errors/$statusCode", TemplateMode::Cp) ? "errors/$statusCode" : 'error';
-
-        return [$template, TemplateMode::Cp];
+        return null;
     }
 
     /**
@@ -194,7 +203,8 @@ readonly class ErrorPages
             return;
         }
 
-        view()->addNamespace(
+        // Replaced rather than added, as the view factory can outlive the binding, such as under Laravel Octane.
+        view()->replaceNamespace(
             'laravel-exceptions-renderer',
             dirname((string) new ReflectionClass(Renderer::class)->getFileName(), 3).'/resources/exceptions/renderer',
         );

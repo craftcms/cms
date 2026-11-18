@@ -106,6 +106,7 @@
   }
 
   .screen-details-layout__details {
+    --cp-details-bg: var(--c-surface-overlay);
     display: grid;
     gap: var(--c-spacing-md, 1rem);
     border-inline-start: 1px solid var(--c-color-border-quiet);
@@ -139,7 +140,7 @@
        off rather than against the content. */
     inline-size: clamp(calc(300rem / 16), 80cqi, calc(400rem / 16));
     max-inline-size: 80cqi;
-    background-color: var(--c-surface-overlay);
+    background-color: var(--cp-details-bg);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     box-shadow: var(--c-shadow-overlay);
   }

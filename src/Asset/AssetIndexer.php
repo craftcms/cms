@@ -280,8 +280,8 @@ class AssetIndexer
                 return;
             }
 
-            if ($indexEntry) {
-                $indexEntry->transitionTo(AssetIndexStatus::Processing);
+            if ($indexEntry && ! $indexEntry->claim()) {
+                $indexEntry = null;
             }
         });
 
@@ -462,9 +462,8 @@ class AssetIndexer
 
     public function getNextIndexEntry(AssetIndexingSession $session): ?AssetIndexData
     {
-        return AssetIndexData::query()
+        return AssetIndexData::processingClaim()->whereClaimable(AssetIndexData::query())
             ->where('sessionId', $session->id)
-            ->where('status', AssetIndexStatus::Pending)
             ->orderBy('id')
             ->first();
     }

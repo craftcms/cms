@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -51,10 +52,8 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        $siteIds = Collection::make((array) $this->paramValue())
-            ->map(fn (string $uid) => SiteGroups::getGroupByUid($uid))
-            ->filter(fn (?SiteGroup $group) => $group !== null)
-            ->map(fn (SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id))
+        $siteIds = Collection::make($this->paramIds(Table::SITEGROUPS, fn (string $uid) => SiteGroups::getGroupByUid($uid)->id ?? null) ?? [])
+            ->map(fn (int $groupId) => Sites::getEditableSitesByGroupId($groupId))
             ->flatten(1)
             ->map(fn (Site $site) => $site->id)
             ->all();

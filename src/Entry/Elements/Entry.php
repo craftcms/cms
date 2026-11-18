@@ -407,8 +407,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
     /**
      * `content/{page}/{handle}`, the shape {@see Section::getCpIndexUri()}
-     * produces and the rest of the CP links sections by. Singles share one
-     * source, and so one `singles` URL.
+     * produces and the rest of the CP links sections by.
      */
     #[Override]
     public static function sourceCpUri(array $source, ?string $page = null): ?string
@@ -418,11 +417,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         // A custom source limited to one section carries its handle too (see
         // modifyCustomSource()), but the handle URL would select the section's
         // own source, not the custom one.
-        $handle = match (true) {
-            $key === 'singles' => 'singles',
-            str_starts_with($key, 'section:') => $source['data']['handle'] ?? null,
-            default => null,
-        };
+        $handle = str_starts_with($key, 'section:') ? ($source['data']['handle'] ?? null) : null;
 
         if (! is_string($handle) || $handle === '') {
             return null;
@@ -453,17 +448,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         $sectionIds = [];
-        $singleSectionIds = [];
         $sectionsByType = [];
 
         foreach ($sections as $section) {
             $sectionIds[] = $section->id;
-
-            if ($section->type === SectionType::Single) {
-                $singleSectionIds[] = $section->id;
-            } else {
-                $sectionsByType[$section->type->value][] = $section;
-            }
+            $sectionsByType[$section->type->value][] = $section;
         }
 
         $sources = [
@@ -478,19 +467,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
         ];
 
-        if (! empty($singleSectionIds)) {
-            $sources[] = [
-                'key' => 'singles',
-                'label' => t('Singles'),
-                'criteria' => [
-                    'sectionId' => $singleSectionIds,
-                    'editable' => $editable,
-                ],
-                'defaultSort' => ['title', 'asc'],
-            ];
-        }
-
         $sectionTypes = [
+            SectionType::Single->value => t('Singles'),
             SectionType::Channel->value => t('Channels'),
             SectionType::Structure->value => t('Structures'),
         ];
@@ -531,6 +509,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                         $source['structureId'] = $section->structureId;
                         // What StructurePolicy::edit() checks, without looking the structure and its section up again
                         $source['structureEditable'] = $user && $section->structureId && $user->can("saveEntries:$section->uid");
+                    } elseif ($type === SectionType::Single->value) {
+                        $source['defaultSort'] = ['title', 'asc'];
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -620,8 +600,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         if ($source === '*') {
             $sections = Sections::getAllSections()->all();
-        } elseif ($source === 'singles') {
-            $sections = Sections::getSectionsByType(SectionType::Single)->all();
         } elseif ($source !== null && preg_match('/^section:(.+)$/', $source, $matches)) {
             $sections = array_filter([
                 Sections::getSectionByUid($matches[1]),
@@ -901,7 +879,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $attributes[] = 'section';
         }
 
-        if ($source !== 'singles') {
+        // Singles have no meaningful post or expiry dates, or authors.
+        if (! self::isSingleSource($source)) {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
             $attributes[] = 'authors';
@@ -910,6 +889,15 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $attributes[] = 'link';
 
         return $attributes;
+    }
+
+    /**
+     * Whether a source is a single section's own.
+     */
+    private static function isSingleSource(string $source): bool
+    {
+        return preg_match('/^section:(.+)$/', $source, $matches) === 1
+            && Sections::getSectionByUid($matches[1])?->type === SectionType::Single;
     }
 
     /** @return array<string, array<string, string|callable>> */
@@ -1345,9 +1333,24 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ->href(Url::cpUrl(sprintf('content/%s', $page ? ElementSourcesService::pageSlug($page) : 'entries'))),
         ];
 
-        // Is the section’s source enabled?
-        $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (ElementSources::sourceExists(Entry::class, $sourceKey)) {
+        $sourceKey = "section:$section->uid";
+        $sourceExists = ElementSources::sourceExists(Entry::class, $sourceKey);
+        // A page with one source has nothing to choose between, and the page
+        // and the source are the same place, so a crumb for each would repeat.
+        $onlySource = $sourceExists && ElementSources::getSources(Entry::class, page: $page, siteId: $this->siteId)
+            ->reject(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_HEADING)
+            ->count() === 1;
+
+        // A single with a source of its own is named by the entry chip that
+        // follows, so it only needs its page, and not even that when it's the
+        // page's only source: the page and the single are the same place.
+        if ($section->type === SectionType::Single && $sourceExists) {
+            return $onlySource ? [] : $crumbs;
+        }
+
+        // Is the section’s source enabled? If it's the page's only source, the
+        // page crumb already names it.
+        if ($sourceExists && ! $onlySource) {
             $sections = Sections::getEditableSections();
 
             // Filter out any sections that aren’t enabled for this site
@@ -1359,14 +1362,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             // Filter out any sections that don’t have an enabled source / don’t belong in this page
             $sources = ElementSources::getSources(Entry::class, page: $page)->all();
             $sourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $sources)));
-            $sections = $sections->filter(function (Section $s) use ($sourceKeys) {
-                $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
-
-                return isset($sourceKeys[$key]);
-            });
-
             $sectionOptions = $sections
-                ->filter(fn (Section $s) => $s->type !== SectionType::Single)
+                ->filter(fn (Section $s) => isset($sourceKeys["section:$s->uid"]))
                 ->map(fn (Section $s) => [
                     'type' => 'link',
                     'label' => $s->getUiLabel(),
@@ -1374,19 +1371,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     'selected' => $s->id === $section->id,
                 ]);
 
-            /** @var Section|null $firstSingle */
-            $firstSingle = $sections->first(fn (Section $s) => $s->type === SectionType::Single);
-            if ($firstSingle) {
-                $sectionOptions->prepend([
-                    'type' => 'link',
-                    'label' => t('Singles'),
-                    'href' => Url::cpUrl($firstSingle->getCpIndexUri()),
-                    'selected' => $section->type === SectionType::Single,
-                ]);
-            }
-
-            // The crumb names whichever option is current — for a Single that's
-            // the “Singles” pseudo-option, not the single's own name.
             $current = $sectionOptions->first(fn (array $o) => $o['selected'])
                 ?? $sectionOptions->first();
 
@@ -1397,7 +1381,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ->label($current['label'])
                 ->href($current['href'])
                 ->items($sectionOptions->count() > 1 ? $sectionOptions->all() : []);
-        } elseif ($section->type !== SectionType::Single) {
+        } elseif (! $sourceExists && $section->type !== SectionType::Single) {
             // Just show its name w/o a link
             $crumbs[] = new ActionItem()->label($section->getUiLabel());
         }
@@ -1865,7 +1849,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             // eager-load authors for all queried entries
             Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
-            return $this->_authors ?? [];
+            // a clone isn't among the queried entries, so the eager-load won't have set its authors
+            if (isset($this->_authors)) {
+                return $this->_authors;
+            }
         }
 
         $this->setAuthors(User::find()
@@ -2056,6 +2043,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ];
         }
 
+        if (! empty($this->fieldId)) {
+            $items[] = [
+                'label' => t('Field settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/fields/edit/$this->fieldId"),
+                ],
+            ];
+        }
+
         return $items;
     }
 
@@ -2154,6 +2152,14 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 } catch (RuntimeException) {
                     return t('Unknown');
                 }
+            case 'link':
+                // Only live entries get routed
+                $entry = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($entry->getStatus() !== self::STATUS_LIVE) {
+                    return '';
+                }
+
+                return parent::attributeHtml($attribute);
             default:
                 return parent::attributeHtml($attribute);
         }

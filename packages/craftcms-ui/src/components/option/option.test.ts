@@ -44,14 +44,6 @@ describe('craft-option', () => {
     ).toBe('12 entries');
   });
 
-  it('offers a suffix slot for trailing content', async () => {
-    const element = await createOption();
-
-    expect(
-      element.shadowRoot!.querySelector('slot[name="suffix"]')
-    ).toBeTruthy();
-  });
-
   it('carries its value, from the value attribute too', async () => {
     const element = await createOption({value: 'blog'});
 

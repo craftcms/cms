@@ -162,9 +162,9 @@ readonly class ElementSourceUi
                     ->forProjectConfig()
                     ->addRuleLabel(t('Add a filter')),
             ),
+            $this->viewModeField($elementType, $source),
             ...$this->sortFields($elementType, $source, $values),
             $this->tableAttributesField($elementType, $source, $isNew),
-            $this->viewModeField($elementType, $source),
             count($siteOptions) > 1
                 ? Field::make(t('Sites'), Choice::make('sites')->options($siteOptions)->allOption())
                     ->instructions(t('Choose which sites this source should be visible for.'))

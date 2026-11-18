@@ -231,7 +231,7 @@
   }
 }
 
-.cp-messages .copied-notification:has(.copied-notification-value) {
+.cp-messages .copied-notification.copied-notification--value {
   .notification-inner {
     display: grid;
     grid-template-columns: calc(20rem / 16) 1fr auto;
@@ -258,6 +258,7 @@
   .notification-details {
     grid-row: 2;
     grid-column: 2 / -1;
+    margin-block-start: var(--c-spacing-md);
     margin-block-end: calc(var(--c-spacing) * -2.5);
     margin-inline-end: calc(var(--c-spacing) * -3.5);
   }
@@ -270,7 +271,7 @@
   --fade-block: linear-gradient(#000, #000);
 
   box-sizing: border-box;
-  max-block-size: calc(var(--c-spacing) * 36);
+  max-block-size: calc(var(--c-spacing) * 24);
   padding-block-end: calc(var(--c-spacing) * 2.5);
   padding-inline-end: calc(var(--c-spacing) * 3.5);
   overflow: hidden;
@@ -342,7 +343,7 @@
 .cp-messages :is(.copied-chips, .copied-field-value-badges) {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--c-spacing) * 1.5);
+  gap: var(--c-spacing-sm);
 }
 
 /* A copied table's first rows, with long cells cut short. */

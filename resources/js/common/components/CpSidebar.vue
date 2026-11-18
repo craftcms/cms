@@ -150,7 +150,7 @@
   }
 
   .cp-sidebar[data-mode='docked'] {
-    --badge-border-color: var(--c-surface-sunken);
+    --badge-border-color: var(--c-surface-page);
     height: calc(
       100dvh - var(--cp-top-bar-visible-height, 0px) - var(
           --cp-debug-bar-height,
@@ -188,8 +188,10 @@
   }
 
   .cp-sidebar :deep(craft-nav-item) {
+    --c-nav-item-size: var(--cp-rail-item-size);
     --c-icon-size: calc(12rem / 16);
-    --c-nav-item-icon-color: var(--color-slate-700);
+    --c-nav-item-icon-color: var(--cp-chrome-icon-color);
+    --c-nav-item-color: var(--cp-chrome-text-color);
   }
 
   .cp-sidebar__header {
@@ -201,11 +203,10 @@
 
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
-    /* Level with the details tab rail, which starts below the body's inset
-       and border. */
+    /* Centers the first item on the content's header bar, which starts below
+       the body's border. */
     padding-block-start: calc(
-      var(--c-spacing-md) + 2px + var(--cp-body-inset) +
-        var(--cp-body-border-width)
+      var(--cp-body-border-width) + var(--cp-header-touch-target-offset)
     );
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
@@ -219,26 +220,14 @@
     }
   }
 
-  /* Docked and expanded, PageScreen flattens the body below 932px of shell,
-     dropping its inset, so the rail moves up by that much. The sidebar sits
-     outside the shell's container, so the same width is written as a viewport
-     width here: 932px plus the 226px expanded sidebar. Keep it in step. */
-  @media (width >= var(--breakpoint-lg)) and (width < 1158px) {
-    .cp-sidebar:not(.cp-sidebar--collapsed) .cp-sidebar__body {
-      padding-block-start: calc(
-        var(--c-spacing-md) + 2px + var(--cp-body-border-width)
-      );
-    }
-  }
-
   .cp-sidebar__footer {
     flex: 0 0 auto;
     display: grid;
     align-items: center;
     margin-block-start: auto;
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-md);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     position: sticky;
     z-index: 1;
     border-block-start: 1px solid transparent;

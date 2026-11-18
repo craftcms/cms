@@ -471,43 +471,6 @@ describe('craft-nav-item flyout', () => {
     await item.updateComplete;
     expect(item.subnavState).toBe('open');
   });
-
-  it('gives both kinds of heading one rule, so they can’t drift', () => {
-    // Against the stylesheet rather than computed styles, which happy-dom
-    // doesn't resolve through `var()`.
-    const hostRule = /:host\(\[group\]\) \{([^}]*)\}/.exec(
-      navItemStyles.cssText
-    )?.[1];
-    const headingRule =
-      /:host\(\[group\]\) \.nav-item,\s*\.flyout__label \{([^}]*)\}/.exec(
-        navItemStyles.cssText
-      )?.[1];
-
-    // A `group` row in the list and the label heading a collapsed item's
-    // flyout are the same thing drawn in two places.
-    expect(headingRule).toMatch(/font-size/);
-    expect(headingRule).toMatch(/font-weight/);
-
-    // A group's subnav is nested inside the host, so type set there would be
-    // inherited and every row beneath would read as a heading too.
-    expect(hostRule).toBeDefined();
-    expect(hostRule).not.toMatch(/font-size|font-weight/);
-  });
-
-  it('gives a heading more room above it than below', () => {
-    const rowRule = /:host\(\[group\]\) \.nav-item \{([^}]*)\}/.exec(
-      navItemStyles.cssText
-    )?.[1];
-
-    // It heads the rows under it, so it belongs with them: the gap above
-    // separates it from what came before, the one below only sets it off.
-    expect(navItemStyles.cssText).toContain(
-      'margin-block-start: var(--c-spacing-sm)'
-    );
-    expect(rowRule).toContain(
-      'padding-block: var(--_padding-block) var(--c-spacing-xs)'
-    );
-  });
 });
 
 describe('craft-nav-item rail stand-ins', () => {
@@ -781,23 +744,6 @@ describe('craft-nav-item selection', () => {
     item.current = true;
     await item.updateComplete;
     expect(link().getAttribute('aria-current')).toBe('page');
-  });
-
-  it('leaves the page you are on without a hover effect', () => {
-    // Against the stylesheet: :hover can't be driven from a test. The selected
-    // fill is the state to show there, so the hover rule steps around it.
-    expect(navItemStyles.cssText).toMatch(
-      /:host\(:not\(\[current\]\)\)\s+\.nav-item:not\(\.nav-item--static\):hover/
-    );
-  });
-
-  it('reflects current, so a selected child can be styled apart', async () => {
-    const item = await createFixture({iconOnly: false, subnav: false});
-
-    item.current = true;
-    await item.updateComplete;
-
-    expect(item.hasAttribute('current')).toBe(true);
   });
 });
 

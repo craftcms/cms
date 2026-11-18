@@ -3,6 +3,7 @@ import type {TextExpanderOption} from '@craftcms/ui/components/text-expander/tex
 import {shallowReactive} from 'vue';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
 import {assistantApi} from '@/bootstrap/assistant';
+import {assistantScreenLacksElement} from './assistant';
 import {
   assistantEditor,
   assistantEditors,
@@ -297,9 +298,14 @@ export function elementContextEditor(
     : null;
 }
 
-/** The editor the assistant offers to add. */
+/**
+ * The editor the assistant offers to add, and names in each request: the
+ * latest open one, unless an editor it can’t work with is in front.
+ */
 export function latestEditor(): AssistantEditor | null {
-  return assistantEditors().at(-1) ?? null;
+  return assistantScreenLacksElement.value
+    ? null
+    : (assistantEditors().at(-1) ?? null);
 }
 
 function elementKey(editor: AssistantEditor): string {

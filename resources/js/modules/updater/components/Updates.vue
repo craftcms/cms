@@ -46,6 +46,7 @@
     total: number;
     critical: boolean;
     allowUpdates: boolean;
+    allowPurchases: boolean;
     updates: UpdatesCollection;
   }
 
@@ -240,6 +241,7 @@
           v-if="cmsUpdate"
           v-bind="cmsUpdate"
           :allow-updates="allowUpdates"
+          :allow-purchases="data?.allowPurchases ?? false"
         />
 
         <!-- Plugin Updates -->
@@ -248,6 +250,7 @@
           :key="plugin.handle"
           v-bind="plugin"
           :allow-updates="allowUpdates"
+          :allow-purchases="data?.allowPurchases ?? false"
         />
       </div>
     </div>

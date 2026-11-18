@@ -46,8 +46,14 @@ export default css`
     outline: none;
   }
 
+  /*
+    Keeps scroll gestures over a modal's backdrop from reaching the page. It
+    only honours overscroll-behavior once it is a scroll container.
+  */
   dialog::backdrop {
     background-color: rgb(0 0 0 / 0.25);
+    overflow: hidden;
+    overscroll-behavior: contain;
   }
 
   /*
@@ -109,6 +115,8 @@ export default css`
     align-items: center;
     justify-content: space-between;
     gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
     padding: var(--c-spacing-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
     position: relative;
@@ -130,6 +138,7 @@ export default css`
     */
     min-block-size: 0;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: var(--c-spacing-lg);
   }
 
@@ -139,7 +148,10 @@ export default css`
     justify-content: flex-end;
     align-items: center;
     gap: var(--c-spacing-sm);
-    padding: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     box-shadow: var(--c-shadow-sm);
     position: relative;

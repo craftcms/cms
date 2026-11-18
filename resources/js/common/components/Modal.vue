@@ -17,33 +17,7 @@
   import type {ResizeGripsSize} from '@craftcms/ui';
   import {useResizableBox} from '@/common/composables/useResizableBox';
   import {useAnimatedBoxSize} from '@/common/composables/useAnimatedBoxSize';
-
-  export interface ModalProps {
-    isActive?: boolean;
-    /** Accessible name; ModalForm supplies its visible title. */
-    label?: string;
-    overlay?: boolean;
-    width?: string;
-    height?: string;
-    maxHeight?: string;
-    /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
-    resizable?: boolean;
-    /**
-     * Whether Escape and a click on the overlay close it. Off for a modal
-     * holding work that closing would throw away — only its own buttons do.
-     */
-    dismissible?: boolean;
-    /**
-     * Whether closing it puts focus back where it was before it opened. Off
-     * when whatever closed it moves focus somewhere on purpose.
-     */
-    restoreFocus?: boolean;
-    /**
-     * Opens without the enter transition, for a modal opened from the
-     * keyboard whose first keystrokes have to reach it. Closing still fades.
-     */
-    instant?: boolean;
-  }
+  import type {ModalProps} from './modal';
 
   const emit = defineEmits<{
     /** Dismissal was asked for — `event` is the Escape press or the dialog's own request. */
@@ -242,6 +216,12 @@
 </template>
 
 <style scoped>
+  /* Back to the CP's default, since a modal opened from a page's main column
+     would otherwise inherit that column's wider, fluid gutters. */
+  .cp-modal {
+    --cp-container-padding: var(--c-spacing-lg);
+  }
+
   /* A column flex box so slotted content can grow into a height the floor is
    holding open, instead of sitting at its natural height with a gap below. */
   .content {
@@ -256,6 +236,7 @@
     border-radius: var(--c-modal-radius);
     position: relative;
     overflow-y: scroll;
+    overscroll-behavior: contain;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
@@ -282,6 +263,7 @@
   .content > :slotted(form > craft-pane)::part(footer) {
     box-sizing: border-box;
     min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
   }
 

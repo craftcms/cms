@@ -80,7 +80,7 @@ it('requires admin changes', function () {
 
     get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.nodes', fn (Collection $nodes): bool => $nodes
+            ->where('ui.nodes', fn (Collection $nodes): bool => collect(flattenUiNodes($nodes->toArray()))
                 ->filter(fn (array $node): bool => isset($node['control']))
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly'))
             ->where('contentNotice', fn (string $notice): bool => str_contains(
@@ -146,6 +146,7 @@ describe('create / edit', function () {
                 ->where('ui.values.name', '')
                 ->where('submit.url', action([VolumesController::class, 'store']))
                 ->where('ui.nodes', function (Collection $nodes): bool {
+                    $nodes = collect(flattenUiNodes($nodes->toArray()));
                     $paths = $nodes->pluck('control.path');
 
                     return $nodes->contains(
@@ -176,7 +177,7 @@ describe('create / edit', function () {
 
     test('filesystem options disable targets used by other root volumes', function () {
         $volume = createTestVolume();
-        $hasDiskOption = fn (bool $disabled): Closure => fn (Collection $nodes): bool => $nodes->contains(
+        $hasDiskOption = fn (bool $disabled): Closure => fn (Collection $nodes): bool => collect(flattenUiNodes($nodes->toArray()))->contains(
             fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
                 && collect($node['control']['props']['options'] ?? [])
                     ->flatMap(fn (array $item): array => $item['options'] ?? [$item])

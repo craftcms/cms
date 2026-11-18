@@ -282,15 +282,25 @@ class CraftLinkField extends LitElement {
     delete config.limit;
     delete config.single;
 
-    await this.dispatchElementSelectStartEvent(
-      event.currentTarget instanceof HTMLElement ? event.currentTarget : null
-    );
+    const chooseButton =
+      event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
+    await this.dispatchElementSelectStartEvent(chooseButton);
+
+    /** Set when the selector hands off to a new entry's slideout. */
+    let handoff: Promise<void> | null = null;
 
     const modal = await createElementSelectorModal(type.elementType, {
       ...config,
       hideOnSelect: true,
       modalTitle: t('Choose {type}', {type: type.label}),
       multiSelect: false,
+      // Where a slideout opened from the selector, such as a new entry's,
+      // nests and returns focus to
+      triggerElement: () => chooseButton,
+      onHandoff: (settled) => {
+        handoff = settled;
+      },
       onSelect: (elements: ElementInfo[]) => {
         const [element] = elements;
 
@@ -308,7 +318,16 @@ class CraftLinkField extends LitElement {
     // The modal lives on <body>, outside this element's shadow root, so its DOM
     // events never reach here — the controller is the subscription point.
     modal.on('close', () => {
-      this.dispatchElementSelectEvent('element-select-end');
+      const end = () => this.dispatchElementSelectEvent('element-select-end');
+
+      // A popover this field is in would otherwise come back while the
+      // slideout is open, and focus moving into the slideout dismisses it.
+      if (handoff) {
+        void handoff.then(end);
+      } else {
+        end();
+      }
+
       modal.destroy();
     });
   }

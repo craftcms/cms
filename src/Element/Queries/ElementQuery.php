@@ -13,6 +13,8 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryPrepared;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
@@ -93,6 +95,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     /** @use Concerns\HydratesElements<TElement> */
     use Concerns\HydratesElements;
+
+    use Concerns\LegacyConstants;
 
     /** @use Concerns\OverridesResults<TElement> */
     use Concerns\OverridesResults;
@@ -327,7 +331,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ($this->hasElementSourceTable) {
-            $columnListing = self::$columnListings[$this->table] ??= DB::getSchemaBuilder()->getColumnListing($this->table);
+            $columnListing = self::$columnListings[$this->table] ??= DB::getReadSchemaBuilder()->getColumnListing($this->table);
 
             foreach ($columnListing as $column) {
                 $this->columnMap[$column] ??= "$this->table.$column";
@@ -1930,7 +1934,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $this->beforeQueryCallbacksBeforePrepare = $this->beforeQueryCallbacks;
         }
 
+        // Nested conditions leave the events to the query they belong to
+        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition;
         $originalWhereCount = count($this->query->wheres);
+
+        if ($dispatchesEvents) {
+            event(new ElementQueryPreparing($this));
+        }
+
+        $preparingWhereCount = count($this->query->wheres);
 
         foreach ($this->beforeQueryCallbacks as $i => $callback) {
             $callback($this);
@@ -1942,13 +1954,21 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         $this->elementQueryBeforeQuery();
 
+        $paramWhereCount = count($this->query->wheres);
+
+        if ($dispatchesEvents) {
+            event(new ElementQueryPrepared($this));
+        }
+
+        $wheres = $this->query->wheres;
         $this->query->wheres = [
-            ...$this->resolveWhereColumns(array_slice($this->query->wheres, 0, $originalWhereCount)),
-            ...array_slice($this->query->wheres, $originalWhereCount),
+            ...$this->resolveWhereColumns(array_slice($wheres, 0, $preparingWhereCount)),
+            ...array_slice($wheres, $preparingWhereCount, $paramWhereCount - $preparingWhereCount),
+            ...$this->resolveWhereColumns(array_slice($wheres, $paramWhereCount)),
         ];
 
         if (count($this->query->wheres) > $originalWhereCount) {
-            $this->addNewWheresWithinGroup($originalWhereCount);
+            $this->addNewWheresWithinGroup($originalWhereCount, $preparingWhereCount, $paramWhereCount);
         }
 
         $this->convertDateBindingsToUtc();
@@ -2021,19 +2041,22 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Groups the conditions added before the query was prepared apart from the ones its params added,
-     * so an `orWhere()` can't bypass the element query's own conditions.
+     * Groups the conditions added before the query was prepared, the ones {@see ElementQueryPreparing} listeners
+     * added, the ones its params added, and the ones {@see ElementQueryPrepared} listeners added apart from each
+     * other, so an `orWhere()` in one can't bypass the others.
      *
      * @see \Illuminate\Database\Eloquent\Builder::addNewWheresWithinGroup()
      */
-    private function addNewWheresWithinGroup(int $originalWhereCount): void
+    private function addNewWheresWithinGroup(int ...$sliceStarts): void
     {
         $allWheres = $this->query->wheres;
+        $bounds = [0, ...$sliceStarts, count($allWheres)];
 
         $this->query->wheres = [];
 
-        $this->groupWhereSlice(array_slice($allWheres, 0, $originalWhereCount));
-        $this->groupWhereSlice(array_slice($allWheres, $originalWhereCount));
+        for ($i = 1; $i < count($bounds); $i++) {
+            $this->groupWhereSlice(array_slice($allWheres, $bounds[$i - 1], $bounds[$i] - $bounds[$i - 1]));
+        }
     }
 
     /** @param array<int, array<string, mixed>> $whereSlice */

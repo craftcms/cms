@@ -6,11 +6,9 @@ export default css`
     --_padding-inline: var(--c-spacing-md);
     /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
-    /* Enough to center the icon column in a touch target, border included. */
+    /* Enough to center the icon column in a row, border included. */
     --_padding-block: calc(
-      (var(--c-size-touch-target) - var(--_prefix-size) - var(--_rail-border) *
-          2) /
-        2
+      (var(--_rail-size) - var(--_prefix-size) - var(--_rail-border) * 2) / 2
     );
     /* The space between the icon column and the label (tighter than the row's gap). */
     --_prefix-gap: var(--c-spacing-sm);
@@ -19,7 +17,12 @@ export default css`
     /* The square a collapsed row occupies, border included. The row draws a
        transparent border to keep room for its focus state. */
     --_rail-border: 1px;
-    --_rail-size: var(--c-size-touch-target);
+    --_rail-size: var(--c-nav-item-size, var(--c-size-touch-target));
+    /* A row with an icon, less its border, so the icon sits where a collapsed
+       row centers it. */
+    --_prefixed-padding-inline: calc(
+      (var(--_rail-size) - var(--_prefix-size)) / 2 - var(--_rail-border)
+    );
 
     border-radius: var(--c-radius-md);
   }
@@ -31,15 +34,15 @@ export default css`
     grid-template-columns: 1fr auto;
     align-items: center;
     text-decoration: none;
-    color: inherit;
+    color: var(--c-nav-item-color, inherit);
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     position: relative;
-    /* A full touch target whether or not there's an icon to fill one. */
+    /* A full row whether or not there's an icon to fill one. */
     box-sizing: border-box;
-    min-block-size: var(--c-size-touch-target);
+    min-block-size: var(--_rail-size);
 
     /*
      * Expanded, the focusable element is the label inside the row, so the ring
@@ -105,7 +108,7 @@ export default css`
   }
 
   .nav-item--prefixed {
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--_prefixed-padding-inline);
     grid-template-columns: var(--_prefix-size) 1fr auto;
 
     /* Pull the label back across the row's gap, to the tighter prefix gap. */
@@ -149,6 +152,13 @@ export default css`
     min-block-size: 0;
   }
 
+  /* A hovered row, or one with its flyout open, is back to full strength.
+     Before the selected states, which keep their own color. */
+  .nav-item:not(.nav-item--static):hover,
+  .nav-item--flyout-open {
+    color: inherit;
+  }
+
   :host([active]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
     border: 1px solid var(--c-color-accent-border-normal);
@@ -190,9 +200,11 @@ export default css`
     --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
-  /* Not on the page you're on: its selected fill is the state to show. */
-  :host(:not([current]))
-    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
+  /* Not on the page you're on: its selected fill is the state to show. A row
+     with its flyout open looks hovered while the pointer is in the flyout. */
+  :host(:not([current], [appearance='tabs']))
+    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
+  :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
 
@@ -213,7 +225,8 @@ export default css`
 
   /* A selected or hovered row's icon takes the row's own color. */
   :host([active]) .nav-item__prefix,
-  .nav-item:not(.nav-item--static):hover .nav-item__prefix {
+  .nav-item:not(.nav-item--static):hover .nav-item__prefix,
+  .nav-item--flyout-open .nav-item__prefix {
     color: inherit;
   }
 
@@ -245,8 +258,9 @@ export default css`
    */
   :host(:not([group])) .subnav {
     --_subnav-indent: calc(
-      var(--c-spacing-sm) + var(--_prefix-size) + var(--_prefix-gap) -
-        var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
+      var(--_prefixed-padding-inline) + var(--_prefix-size) +
+        var(--_prefix-gap) - var(--_subnav-rule) - var(--c-spacing-sm) -
+        var(--_padding-inline)
     );
     position: relative;
     margin-block-start: var(--c-spacing-sm);
@@ -280,13 +294,87 @@ export default css`
   .flyout {
     display: grid;
     gap: var(--c-spacing-xs);
-    padding: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
+  }
+
+  /*
+   * A flyout too tall for the viewport scrolls like the CP's other inner
+   * scrollers (.cp-inner-scroller): its scrollbar hidden until you hover or
+   * focus it, its content fading at an edge with more beyond. The list
+   * scrolls rather than the popover's pane, so the fade doesn't take the
+   * pane's border and shadow with it; it's capped at the pane's own cap less
+   * the pane's borders. The fade's lengths are registered in variables.css.
+   */
+  @supports (animation-timeline: scroll()) {
+    @keyframes nav-item-flyout-fade-start {
+      from {
+        --c-scroll-fade-start: 0px;
+      }
+      to {
+        --c-scroll-fade-start: var(--c-spacing-xl);
+      }
+    }
+
+    @keyframes nav-item-flyout-fade-end {
+      from {
+        --c-scroll-fade-end: var(--c-spacing-xl);
+      }
+      to {
+        --c-scroll-fade-end: 0px;
+      }
+    }
+
+    @media (forced-colors: none) and (prefers-contrast: no-preference) {
+      craft-popover::part(popup) {
+        overflow: hidden;
+      }
+
+      .flyout {
+        box-sizing: border-box;
+        max-block-size: calc(
+          var(
+              --popover-max-block-size,
+              var(--_popover-available-block-size, 40vh)
+            ) -
+            2px
+        );
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        scroll-padding-block: var(--c-spacing-xl);
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0,
+          #000 var(--c-scroll-fade-start),
+          #000 calc(100% - var(--c-scroll-fade-end)),
+          transparent 100%
+        );
+        animation-name: nav-item-flyout-fade-start, nav-item-flyout-fade-end;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(self block);
+        animation-range:
+          0 var(--c-spacing-xl),
+          calc(100% - var(--c-spacing-xl)) 100%;
+      }
+
+      /* The same revealed thumb as .cp-inner-scroller's. */
+      .flyout:is(:hover, :focus-within) {
+        scrollbar-color: color-mix(
+            in oklab,
+            var(--color-slate-600),
+            var(--color-blue-500) 20%
+          )
+          transparent;
+      }
+    }
   }
 
   /* Quieter than the label it trails, and sized to the toggle chevron it
      stands in for. */
   .flyout-indicator {
-    font-size: calc(10rem / 16);
+    font-size: var(--c-size-icon-sm, calc(12rem / 16));
     color: var(--c-color-neutral-on-quiet, currentcolor);
   }
 
@@ -294,9 +382,9 @@ export default css`
     padding-inline: var(--c-spacing-sm);
   }
 
-  /* Smaller than the row's own icons: it marks the item, it isn't one. */
+  /* The row's icon size, though the toggle is a small button. */
   .subnav-toggle craft-icon {
-    font-size: calc(10rem / 16);
+    font-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 
   /*
@@ -416,18 +504,17 @@ export default css`
     }
 
     /*
-     * The chevron stands in for the icon in the same square, so it matches its
-     * size. craft-button[icon][size=small] shrinks its contents to 0.8em and
-     * craft-icon shrinks again by the same, which would leave the chevron a
-     * fifth smaller than the icon it replaces — so cancel the button's share
-     * and keep the icon's, which follows --c-icon-size when that's set.
+     * The chevron stands in for the icon in the same square, so it matches the
+     * nav item's icon size, rather than the subnav toggle's smaller chevron or
+     * the small button's smaller icons.
      */
-    craft-button {
-      font-size: 1em;
-    }
+    --_rail-icon-size: var(
+      --c-icon-size,
+      var(--c-size-icon-sm, calc(12rem / 16))
+    );
 
     craft-icon {
-      font-size: var(--c-icon-size, 0.8em);
+      font-size: var(--_rail-icon-size);
     }
   }
 
@@ -475,5 +562,50 @@ export default css`
     font-size: var(--c-text-xs);
     font-weight: bold;
     line-height: 1;
+  }
+
+  :host([appearance='tabs']),
+  :host([appearance='tabs']) .nav-item {
+    border-radius: 0;
+  }
+
+  /* No gap, so the empty suffix column doesn't carry one and leave the bar
+     below wider than the label it marks. */
+  :host([appearance='tabs']) .nav-item {
+    gap: 0;
+    padding-inline: 0;
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item {
+    color: inherit;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  :host([appearance='tabs'][active]:not([current])) .nav-item::before {
+    display: none;
+  }
+
+  :host([appearance='tabs']) .nav-item::after {
+    content: '';
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: 0;
+    block-size: calc(2rem / 16);
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item::after {
+    background-color: var(
+      --c-nav-item-border-active,
+      var(--c-color-accent-fill-loud)
+    );
+  }
+
+  @media (forced-colors: active) {
+    :host([appearance='tabs'][current]) .nav-item::after {
+      background-color: Highlight;
+    }
   }
 `;

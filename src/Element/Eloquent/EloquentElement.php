@@ -33,8 +33,8 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Schema;
 use Override;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
@@ -282,7 +282,7 @@ abstract class EloquentElement extends Element
      */
     public static function modelColumns(): array
     {
-        return self::$modelColumns[static::class] ??= Schema::getColumnListing(static::newModel()->getTable());
+        return self::$modelColumns[static::class] ??= DB::getReadSchemaBuilder()->getColumnListing(static::newModel()->getTable());
     }
 
     /** @return TModel */

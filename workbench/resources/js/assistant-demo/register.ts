@@ -1,7 +1,9 @@
+import {Assistant} from '@craftcms/cp';
+
 /**
  * Three demo "plugins" that add to the AI assistant's context, to see how its
  * Add menu holds several plugins' sources and chips. Uses only what a
- * third-party plugin gets: the global `Cp` object.
+ * third-party plugin gets: `@craftcms/cp`.
  *
  * Their context types aren't registered on the server, so the assistant
  * leaves their items out of what the model sees.
@@ -30,15 +32,13 @@ const sources = [
   },
 ];
 
-window.Cp.booting((cp) => {
-  sources.forEach(({id, key, label, icon, data}, index) => {
-    cp.$assistant.registerContextSource({
-      id,
-      label: () => label,
-      icon,
-      order: index + 1,
-      available: () => cp.$assistant.getContext(key) === undefined,
-      add: () => cp.$assistant.addContext({type: id, key, label, icon, data}),
-    });
+sources.forEach(({id, key, label, icon, data}, index) => {
+  Assistant.registerContextSource({
+    id,
+    label: () => label,
+    icon,
+    order: index + 1,
+    available: () => Assistant.getContext(key) === undefined,
+    add: () => Assistant.addContext({type: id, key, label, icon, data}),
   });
 });

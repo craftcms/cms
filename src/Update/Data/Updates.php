@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Update\Data;
 
+use DateTimeInterface;
+
 /**
  * @internal
  *
@@ -15,6 +17,11 @@ readonly class Updates
         public Update $cms = new Update,
         /** @var Update[] */
         public array $plugins = [],
+        /**
+         * When the updates were fetched, if they were. Read it with `??`: data
+         * cached before it existed doesn’t have it.
+         */
+        public ?DateTimeInterface $dateFetched = null,
     ) {}
 
     public function getTotal(): int
@@ -35,11 +42,12 @@ readonly class Updates
     }
 
     /** @param array{cms?: array<string, mixed>, plugins?: array<array-key, array<string, mixed>>} $data */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, ?DateTimeInterface $dateFetched = null): self
     {
         return new self(
             cms: Update::fromArray($data['cms'] ?? []),
             plugins: array_map(Update::fromArray(...), $data['plugins'] ?? []),
+            dateFetched: $dateFetched,
         );
     }
 }

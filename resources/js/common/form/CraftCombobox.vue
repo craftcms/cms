@@ -13,7 +13,8 @@
     disabled?: boolean;
     clearable?: boolean;
     options?: Array<SelectItem>;
-    callouts?: Array<string>;
+    /** `envVars` explains that environment variables can be used. */
+    callouts?: Array<'envVars'>;
     error?: string;
     requireOptionMatch?: boolean;
     showAllOnEmpty?: boolean;

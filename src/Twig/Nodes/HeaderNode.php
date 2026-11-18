@@ -23,6 +23,7 @@ class HeaderNode extends Node
             ->write('$_headerParts = array_map(\'trim\', explode(\':\', ')
             ->subcompile($this->getNode('header'))
             ->raw(", 2));\n")
+            /** @see \CraftCms\Cms\Http\ResponseHeaders::add() */
             ->write(ResponseHeaders::class."::add(\$_headerParts[0], \$_headerParts[1] ?? '');\n")
             ->write("unset(\$_headerParts);\n");
     }

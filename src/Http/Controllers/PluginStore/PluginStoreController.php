@@ -93,13 +93,14 @@ readonly class PluginStoreController
     /**
      * What the store needs to know about this install to decide which plugins it can offer.
      *
-     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, yii2AdapterRequired: bool, allowUpdates: bool, cmsLicenseKey: string|null, craftIdEndpoint: string, craftExecutable: string, composerExecutable: string}
+     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, yii2AdapterRequired: bool, allowUpdates: bool, allowPurchases: bool, cmsLicenseKey: string|null, craftIdEndpoint: string, pluginInstallCommand: string, composerExecutable: string}
      */
     private function context(): array
     {
         $generalConfig = app(GeneralConfig::class);
         $terminalCommands = app(TerminalCommands::class);
         $composerConfig = app(Composer::class)->getConfig();
+        $allowPurchases = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges && request()->craftUser()?->can('performUpdates');
 
         return [
             'edition' => Edition::get()->handle(),
@@ -109,12 +110,13 @@ readonly class PluginStoreController
             'phpVersion' => PHP::version(),
             'composerPhpVersion' => $composerConfig['config']['platform']['php'] ?? null,
             'yii2AdapterRequired' => isset($composerConfig['require']['craftcms/yii2-adapter']),
-            'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges,
+            'allowUpdates' => $allowPurchases && app(Composer::class)->getIsAvailableForUi(),
+            'allowPurchases' => $allowPurchases,
             // Ties cart items to this install's license, and checkout hands the cart to Craft Console.
             'cmsLicenseKey' => app(License::class)->key(),
             'craftIdEndpoint' => Api::craftIdEndpoint(),
-            // Installation instructions use the local development environment’s wrappers, such as `ddev craft`.
-            'craftExecutable' => $terminalCommands->craftExecutable(),
+            // Installation instructions use the local development environment’s wrappers, such as `ddev artisan`.
+            'pluginInstallCommand' => $terminalCommands->craft('plugin:install'),
             'composerExecutable' => $terminalCommands->composerExecutable(),
         ];
     }

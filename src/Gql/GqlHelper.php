@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -498,6 +500,8 @@ class GqlHelper
      */
     public static function prepareTransformArguments(array $arguments): array|string
     {
+        // `immediately` controls generation rather than the transform itself.
+        unset($arguments['immediately']);
         $handle = $arguments['handle'] ?? null;
 
         if ($handle === null) {
@@ -512,18 +516,29 @@ class GqlHelper
 
     /**
      * @param  array<string, mixed>|string  $definition
+     * @param  bool  $immediately  Whether the `craft` transformer should generate the transform before returning its URL.
      */
     public static function resolveAssetTransform(
         Asset $asset,
         array|string $definition,
         string $field,
+        bool $immediately = false,
     ): mixed {
+        try {
+            $result = $immediately
+                ? app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->transform($definition))
+                : $asset->transform($definition);
+        } catch (NotSupportedException) {
+            // Assets the transformer can’t transform, such as videos in a mixed Assets field, resolve untransformed.
+            $result = null;
+        }
+
         return match ($field) {
-            'format' => File::getExtensionByMimeType($asset->transform($definition)->mimeType),
-            'height' => $asset->transform($definition)->height,
-            'mimeType' => $asset->transform($definition)->mimeType,
-            'url' => $asset->transform($definition)->url,
-            'width' => $asset->transform($definition)->width,
+            'format' => $result ? File::getExtensionByMimeType($result->mimeType) : $asset->getFormat(),
+            'height' => $result ? $result->height : $asset->getHeight(),
+            'mimeType' => $result ? $result->mimeType : $asset->getMimeType(),
+            'url' => $result ? $result->url : $asset->getUrl(),
+            'width' => $result ? $result->width : $asset->getWidth(),
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };
     }

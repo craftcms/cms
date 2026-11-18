@@ -238,6 +238,7 @@ export default css`
   :host([size~='small']) {
     --_padding-inline: var(--c-spacing-sm);
     --_height: var(--c-size-control-sm);
+    --c-icon-size: var(--c-size-icon-xs, calc(10rem / 16));
     min-width: var(--c-size-control-sm);
     font-size: 0.9em;
   }
@@ -325,10 +326,14 @@ export default css`
   Icon
    */
   :host([icon]:empty) {
-    /* A square around a 1em × 0.8em icon (see craft-icon). */
+    /* A square around the icon, which is 1.25 times as wide as it is tall (see craft-icon). */
+    --_icon-size: var(--c-icon-size, var(--c-size-icon-sm, calc(12rem / 16)));
     --_padding-inline: 0px;
-    --_flush-inline: max(0px, calc((var(--_height) - 1em) / 2));
-    --_flush-block: max(0px, calc((var(--_height) - 0.8em) / 2));
+    --_flush-inline: max(
+      0px,
+      calc((var(--_height) - var(--_icon-size) * 1.25) / 2)
+    );
+    --_flush-block: max(0px, calc((var(--_height) - var(--_icon-size)) / 2));
     aspect-ratio: 1;
     padding-block: 0;
     display: inline-flex;
@@ -338,11 +343,11 @@ export default css`
     line-height: 1;
   }
 
-  /* An xsmall button's own icon is half its height rather than 0.8em, so it
-     sits a whole number of pixels inside the borders (3px in a 16px button).
-     0.8em would put it a fraction of a pixel in, which 1x screens round off
-     center. Keyed on the content rather than \`[icon]\`, which isn't there
-     when \`icon\` is set as a property. */
+  /* An xsmall button's own icon is half its height rather than an icon size
+     token, so it sits a whole number of pixels inside the borders (3px in a
+     16px button), which 1x screens would otherwise round off center. Keyed on
+     the content rather than \`[icon]\`, which isn't there when \`icon\` is
+     set as a property. */
   :host([size~='xsmall']) .button-content--icon-only craft-icon {
     --c-icon-size: calc(var(--_height) / 2);
   }
@@ -371,7 +376,10 @@ export default css`
 
   :host([variant~='primary']:hover),
   :host([variant~='danger']:hover),
-  :host([variant~='solid']:hover) {
+  :host([variant~='solid']:hover),
+  :host([variant~='primary'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='danger'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='solid'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -402,7 +410,8 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant~='fill']:hover) {
+  :host([variant~='fill']:hover),
+  :host([variant~='fill'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
@@ -430,7 +439,16 @@ export default css`
   :host([variant~='outline']:not(:disabled):not(.loading):hover),
   :host([variant~='dashed']:not(:disabled):not(.loading):hover),
   :host([variant~='danger-plain']:not(:disabled):not(.loading):hover),
-  :host([variant~='plain']:not(:disabled):not(.loading):hover) {
+  :host([variant~='plain']:not(:disabled):not(.loading):hover),
+  /* A menu or popover's button keeps its hover state while it's open. */
+  :host(
+    :is(
+        [variant~='outline'],
+        [variant~='dashed'],
+        [variant~='danger-plain'],
+        [variant~='plain']
+      )[slot='invoker'][aria-expanded='true']
+  ) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
@@ -541,7 +559,8 @@ export default css`
   }
 
   :host([variant~='plain'][inherit]:not(:disabled):not(.loading):active),
-  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)) {
+  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)),
+  :host([variant~='plain'][inherit][slot='invoker'][aria-expanded='true']) {
     color: inherit;
   }
 
@@ -766,9 +785,9 @@ export default css`
     --_divider-right: var(--c-button-divider-start-color, transparent);
   }
 
-  /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
+  /* Ellipsis (action menu) icons read small at a small button's icon size */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    --c-icon-size: 1em;
+    --c-icon-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 `;

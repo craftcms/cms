@@ -55,7 +55,7 @@ Errors render in the `feedback` slot and are wired to the control with `aria-des
 
 <Canvas of={FieldStories.Translatable} sourceState="shown" />
 
-The status badge marks a field whose value is outdated or overridden. The translation indicator marks a field whose value is per-site, with `translation-description` explaining the scope.
+The status badge marks a field whose value is outdated or overridden. The translation indicator, an info icon, marks a field whose value is per-site; pressing it shows `translation-description`, explaining the scope.
 
 ## Fieldsets
 
@@ -69,7 +69,7 @@ Use it when the field holds several controls that share one question — a group
 
 <Canvas of={FieldStories.Actions} sourceState="shown" />
 
-The `actions` slot holds field-level controls: a hide-label toggle, a copy-value button, a settings menu.
+The `actions` slot holds field-level controls: a hide-label toggle, a copy-value button, a settings menu. They follow a visible label and its indicators, or sit at the end of the heading when the label is visually hidden.
 
 `label-extra` does something similar and is **deprecated** — use `actions`.
 

@@ -142,6 +142,7 @@ it('renders registered stage types and inline settings forms', function () {
     $automaticApproval = collect($payload['stageTypes'])->firstWhere('type', AutomaticApprovalStage::class);
 
     expect($userReview['label'])->toBe('User Review')
+        ->and($userReview['icon'])->toBe('user-magnifying-glass')
         ->and($userReview['settings'])->toBe([
             'approvalsRequired' => 1,
             'approvalMode' => 'total',
@@ -151,6 +152,7 @@ it('renders registered stage types and inline settings forms', function () {
         ->and($userReview['settingsUi']->nodes[0]->children[0]->control->component)->toBe('craft:user-group-select')
         ->and($automaticApproval)->toMatchArray([
             'label' => 'Automatic Approval',
+            'icon' => null,
             'settings' => [],
             'settingsUi' => null,
         ]);

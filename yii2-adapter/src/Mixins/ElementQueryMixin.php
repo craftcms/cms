@@ -67,7 +67,7 @@ class ElementQueryMixin
 
     public function column(): Closure
     {
-        return function($column) {
+        return function($db = null) {
             LegacyUsage::record('ElementQuery-column', 'Calling ->column on an ElementQuery is deprecated. Use ->pluck($column) instead.');
 
             /** @phpstan-ignore-next-line */

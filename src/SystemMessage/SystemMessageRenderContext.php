@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage;
 
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
@@ -15,49 +15,37 @@ use CraftCms\Cms\View\TemplateMode;
 readonly class SystemMessageRenderContext
 {
     public function __construct(
-        private CraftAssetTransformDriver $assetTransformDriver,
+        private AssetTransformers $assetTransformers,
         private Sites $sites,
         private Twig $twig,
     ) {}
 
     public function run(?int $siteId, string $language, callable $callback): mixed
     {
-        $currentSite = $messageSite = $twig = null;
-        $originalLanguage = app()->getLocale();
-        $originalTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Site);
+        return TemplateMode::with(TemplateMode::Site, function () use ($siteId, $language, $callback): mixed {
+            $currentSite = $siteId !== null ? $this->sites->getCurrentSite() : null;
+            $messageSite = $currentSite && $siteId !== $currentSite->id ? $this->sites->getSiteById($siteId) : null;
+            $originalLanguage = app()->getLocale();
+            $twig = null;
 
-        try {
-            if ($siteId !== null) {
-                $currentSite = $this->sites->getCurrentSite();
+            try {
+                if ($messageSite) {
+                    $this->sites->setCurrentSite($messageSite);
+                    // A new Twig environment loads the global sets and singles of the message's site
+                    $twig = $this->twig->create();
+                }
 
-                if ($siteId !== $currentSite->id) {
-                    $messageSite = $this->sites->getSiteById($siteId);
+                app()->setLocale($language);
+                $render = fn (): mixed => $this->assetTransformers->withImmediateTransforms($callback);
 
-                    if ($messageSite) {
-                        $this->sites->setCurrentSite($messageSite);
-                        // Reset Twig so any global sets and singles get reloaded for the new site.
-                        $twig = $this->twig->get();
-                        $this->twig->set($this->twig->create());
-                    }
+                return $twig ? $this->twig->with($twig, TemplateMode::Site, $render) : $render();
+            } finally {
+                app()->setLocale($originalLanguage);
+
+                if ($currentSite && $messageSite) {
+                    $this->sites->setCurrentSite($currentSite);
                 }
             }
-
-            app()->setLocale($language);
-
-            return $this->assetTransformDriver->withImmediateTransforms($callback);
-        } finally {
-            app()->setLocale($originalLanguage);
-
-            if ($currentSite && $messageSite) {
-                $this->sites->setCurrentSite($currentSite);
-            }
-
-            TemplateMode::set($originalTemplateMode);
-
-            if ($twig) {
-                $this->twig->set($twig);
-            }
-        }
+        });
     }
 }

@@ -10,6 +10,7 @@ namespace craft\cache;
 use craft\db\Connection;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -42,8 +43,9 @@ class DbCache extends YiiDbCache
             $table = $this->db->noCache(fn() => $this->db->getTableSchema($this->cacheTable));
             if (!$table) {
                 throw new InvalidConfigException(sprintf(
-                    'The `%s` table doesn’t exist. Run the `setup/db-cache-table` command to create it.',
+                    'The `%s` table doesn’t exist. Run `%s` to create it.',
                     $this->db->getSchema()->getRawTableName($this->cacheTable),
+                    app(TerminalCommands::class)->craft('setup:db-cache-table'),
                 ));
             }
 

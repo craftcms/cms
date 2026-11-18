@@ -23,7 +23,9 @@ describe('watchHover', () => {
   it('shows after the in delay when the invoker is hovered', async () => {
     const {calls, invoker} = setup({delayIn: 20});
 
-    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    );
     await after(50);
 
     expect(calls).toEqual(['show']);
@@ -32,10 +34,16 @@ describe('watchHover', () => {
   it('stays shown while the pointer moves onto the content', async () => {
     const {calls, invoker, content} = setup({delayOut: 20});
 
-    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    );
     await after(5);
-    invoker.dispatchEvent(new MouseEvent('mouseleave'));
-    content.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerleave', {pointerType: 'mouse'})
+    );
+    content.dispatchEvent(
+      new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    );
     await after(50);
 
     expect(calls).toEqual(['show', 'show']);
@@ -44,7 +52,9 @@ describe('watchHover', () => {
   it('cancels a pending show when torn down mid-hover', async () => {
     const {calls, invoker, watcher} = setup({delayIn: 20});
 
-    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    );
     watcher.teardown();
     await after(50);
 
@@ -54,7 +64,9 @@ describe('watchHover', () => {
   it('cancels a pending hide when torn down mid-leave', async () => {
     const {calls, invoker, watcher} = setup({delayOut: 20});
 
-    invoker.dispatchEvent(new MouseEvent('mouseleave'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerleave', {pointerType: 'mouse'})
+    );
     watcher.teardown();
     await after(50);
 
@@ -65,7 +77,9 @@ describe('watchHover', () => {
     const {calls, invoker} = setup({delayOut: 20});
     invoker.disabled = true;
 
-    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    );
     await after(50);
 
     expect(calls).toEqual(['hide']);
@@ -76,7 +90,9 @@ describe('watchHover', () => {
     invoker.setAttribute('aria-disabled', 'true');
     Object.assign(invoker, {focusableWhenDisabled: true});
 
-    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(
+      new PointerEvent('pointerenter', {pointerType: 'mouse'})
+    );
     await after(50);
 
     expect(calls).toEqual(['show']);

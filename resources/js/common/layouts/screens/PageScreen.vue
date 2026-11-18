@@ -43,6 +43,7 @@
   } from '@/common/composables/screen';
   import {
     withNavCrumbMenus,
+    withoutLoneCurrentCrumb,
     withSubnavCrumbs,
   } from '@/common/composables/subnavCrumbs';
   import useCraftData from '@/common/composables/useCraftData';
@@ -148,8 +149,10 @@
     // editor's lists just the sites that element propagates to, which is the
     // better answer there.
     const ownsSiteCrumb = merged.some((crumb) => crumb.id === 'site-crumb');
-    const trail =
-      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged;
+    const trail = withoutLoneCurrentCrumb(
+      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged,
+      page.url
+    );
 
     return trail.length > 0 ? trail : null;
   });
@@ -399,11 +402,13 @@
                               'cp-content-view': true,
                               'cp-content-view--constrained':
                                 contentConstrained,
+                              'cp-content-view--no-toolbar': !hasToolbar(),
                             }"
                           >
                             <slot name="content-toolbar">
                               <ContentToolbar
                                 v-show="hasToolbar()"
+                                class="mb-(--cp-content-block-start)"
                                 :legacy-ids="legacyIds"
                               >
                                 <template #meta>
@@ -544,8 +549,16 @@
 Shell
  */
   /* The top bar keeps its height and the shell takes at least the rest. Docked,
-     the sidebar's own height does this; floating, nothing else would. */
+     the sidebar's own height does this; floating, nothing else would.
+     `--cp-content-block-start` is the space below the content toolbar, or
+     above the content without one, and below the content either way: none up
+     to a 960px viewport, 16px from 2240px. */
   .page-screen {
+    --cp-content-block-start: clamp(
+      0px,
+      1.25vw - var(--c-spacing-md) * 1.5,
+      var(--c-spacing-lg)
+    );
     display: flex;
     flex-direction: column;
     min-height: calc(100dvh - var(--cp-debug-bar-height, 0px));
@@ -557,7 +570,7 @@ Shell
     padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
-    background-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-page);
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-rows: none;
@@ -605,7 +618,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     height: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    padding-block: var(--cp-body-inset);
+    padding-block: 0 var(--cp-body-inset);
   }
 
   .cp-body__panel {
@@ -644,7 +657,9 @@ Content: the secondary nav, content, and details panes
   .cp-content {
     /* Sizes the details pane's `cqi` caps to the panel, not the details rail beside it. */
     container: cp-content / inline-size;
-    height: 100%;
+    /* A floor rather than a height: a definite height makes Chrome lay out the
+       whole page again on each change to the content, such as a keystroke. */
+    min-height: 100%;
     max-width: 100vw;
     display: grid;
     /* Three columns at every width; the nav spans them while it's stacked above
@@ -707,6 +722,7 @@ Content: the secondary nav, content, and details panes
     --resize-handle-display: none;
 
     .cp-content__details {
+      --cp-details-edge-shadow: none;
       border-inline-start: none;
       box-shadow: none;
     }
@@ -714,7 +730,11 @@ Content: the secondary nav, content, and details panes
 
   .cp-content__header {
     grid-area: header;
-    padding-block: var(--c-spacing-md);
+    box-sizing: border-box;
+    display: grid;
+    align-content: center;
+    min-block-size: calc(var(--cp-header-height) + 1px);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
@@ -746,13 +766,49 @@ Content: the secondary nav, content, and details panes
   .cp-content__main {
     grid-area: main;
     overflow: clip;
+    /* For the gutters below. Its track is a definite `minmax(…, 1fr)`, so
+       containment can't collapse it. */
+    container: cp-content-main / inline-size;
+    /* The field layout's tabs sit a little further from the first field
+       here than in slideouts. See UiNodeList.vue. */
+    --cp-content-tabs-gap: calc(var(--c-spacing-lg) + var(--c-spacing-md));
+    /* Fields here are further apart than elsewhere, such as in slideouts,
+       the details pane and the content sidebar. */
+    --c-field-group-gap: calc(var(--c-spacing) * 6);
+  }
+
+  /* The main column's gutters grow with it: 16px up to 400px, 32px at
+     800px, 48px from 1200px. Resolved on its children, so `cqi` is the
+     column's and not the content view's (a container of its own, and
+     narrower when constrained), and everything in the column inherits the
+     same pixels. */
+  .cp-content__main > :deep(*) {
+    --cp-content-inline-padding: clamp(
+      var(--c-spacing-lg),
+      4cqi,
+      calc(var(--c-spacing-lg) * 3)
+    );
+    --cp-container-padding: var(--cp-content-inline-padding);
+    --c-field-indicator-inset: var(--cp-content-inline-padding);
   }
 
   .cp-content__details {
     grid-area: details;
     z-index: var(--c-layer-sticky);
     border-inline-start: 1px solid var(--c-color-border-quiet);
-    background-color: var(--c-surface-default);
+    --cp-details-bg: var(--c-surface-details);
+    --_details-inset-shadow: rgb(
+      var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier))
+    );
+    /* Drawn by the pane inside (see ContentDetailsAside), above the composers
+       whose opaque fades would otherwise cover it. */
+    --cp-details-edge-shadow: inset 6px 0 6px -6px var(--_details-inset-shadow);
+    background-color: var(--cp-details-bg);
+
+    &:dir(rtl) {
+      --cp-details-edge-shadow: inset -6px 0 6px -6px
+        var(--_details-inset-shadow);
+    }
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
     /* Contained in both axes, so the row sets its height rather than the pane:
@@ -768,9 +824,9 @@ Content: the secondary nav, content, and details panes
     display: grid;
     align-content: center;
     border-block-start: 1px solid var(--c-color-border-quiet);
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
   }
 
   /* Once the global nav stops docking beside it, the panel runs edge to edge.
@@ -827,6 +883,7 @@ Folds
     .cp-content--details > .cp-content__details {
       inline-size: var(--cp-content-details-width);
       justify-self: end;
+      --cp-details-edge-shadow: none;
       box-shadow: var(--c-shadow-md);
     }
   }
@@ -835,8 +892,7 @@ Folds
     /* With the global nav docked, the panel still floats only while there'd be
        room for a details pane beside the content, on every page alike. Below
        that it goes edge to edge as it does below this breakpoint, keeping a
-       dividing line beside the sidebar. CpSidebar mirrors this width to drop
-       the inset from its own top padding. */
+       dividing line beside the sidebar. */
     @container cp-shell (width < 932px) {
       .cp-body {
         --cp-body-inset: 0px;
@@ -871,6 +927,7 @@ Folds
       .cp-content--sidebar.cp-content--details > .cp-content__details {
         inline-size: var(--cp-content-details-width);
         justify-self: end;
+        --cp-details-edge-shadow: none;
         box-shadow: var(--c-shadow-md);
       }
     }
@@ -894,6 +951,12 @@ Content view
     /* Lets what's inside (e.g. the element index toolbar) respond to the room
        the content actually has, rather than the viewport. */
     container: cp-content-view / inline-size;
+    padding-block-end: var(--cp-content-block-start);
+  }
+
+  /* Without a toolbar to put it below, the top space goes above the content. */
+  .cp-content-view--no-toolbar {
+    padding-block-start: var(--cp-content-block-start);
   }
 
   .cp-content-view--constrained {

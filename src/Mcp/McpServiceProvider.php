@@ -15,6 +15,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Settings as CpSettings;
 use CraftCms\Cms\Mcp\Commands\ServeCommand;
 use CraftCms\Cms\Mcp\Enums\McpScope;
+use CraftCms\Cms\Mcp\Http\Middleware\AcceptJson;
 use CraftCms\Cms\Mcp\Http\Middleware\ChallengeWithoutOAuthKeys;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -41,6 +42,7 @@ class McpServiceProvider extends ServiceProvider
     {
         $kernel = $this->app->make(Kernel::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, AddOAuthChallenge::class);
+        $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, AcceptJson::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ReorderJsonAccept::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ChallengeWithoutOAuthKeys::class);
 

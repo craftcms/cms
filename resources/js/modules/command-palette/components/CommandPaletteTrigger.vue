@@ -35,8 +35,8 @@
 </template>
 
 <style scoped>
-  /* Matches the notification bell beside it. */
+  /* Matches the other icons around the content (see cp.css). */
   .command-palette-trigger {
-    --c-icon-size: 1em;
+    --c-icon-size: var(--cp-chrome-icon-size, 1em);
   }
 </style>

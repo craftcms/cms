@@ -45,6 +45,8 @@ const pagePanels = ref(true);
 const chatPanel = ref(false);
 /** Whether a page panel that comes first in the rail is mounted, after the others. */
 const latePanel = ref(false);
+/** Whether a panel with its own SVG icon is mounted. */
+const svgIconPanel = ref(false);
 /** Whether the shell is overlaying the column, which tests can flip. */
 const overlay = ref(false);
 
@@ -77,6 +79,7 @@ async function mount(
   pagePanels.value = true;
   chatPanel.value = chat;
   latePanel.value = false;
+  svgIconPanel.value = false;
   registry = createScreenPanels();
 
   app = createApp(
@@ -95,6 +98,19 @@ async function mount(
                 ScreenPanel,
                 {id: 'late', label: 'Late', icon: 'clock', order: -1},
                 () => h('p', 'Late content')
+              )
+            : null,
+          svgIconPanel.value
+            ? h(
+                ScreenPanel,
+                {
+                  id: 'news',
+                  label: 'News',
+                  icon: 'newspaper',
+                  iconSvg:
+                    '<svg viewBox="0 0 16 16"><path d="M0 0h16v16H0z"/></svg>',
+                },
+                () => h('p', 'News content')
               )
             : null,
           chatPanel.value
@@ -365,6 +381,20 @@ it('labels each trigger with a tooltip', async () => {
     ['details-panel-info', 'Info'],
     ['details-panel-history', 'History'],
   ]);
+});
+
+it('shows a panel’s own SVG in place of its named icon, labeled', async () => {
+  await mount('#rail');
+  svgIconPanel.value = true;
+  await settle();
+
+  const icon = trigger('news').querySelector('craft-icon')!;
+
+  expect(icon.querySelector(':scope > svg')?.getAttribute('viewBox')).toBe(
+    '0 0 16 16'
+  );
+  expect(icon.name).toBeUndefined();
+  expect(icon.label).toBe('News');
 });
 
 it('keeps the triggers beside their panels without a rail', async () => {

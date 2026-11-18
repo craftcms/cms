@@ -20,6 +20,7 @@ use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Mcp\Http\Controllers\DiscoveryController;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
+use CraftCms\Cms\Mcp\Http\Middleware\AcceptJson;
 use CraftCms\Cms\Mcp\Http\Middleware\AuthenticateStdioUpload;
 use CraftCms\Cms\Mcp\Http\Middleware\ChallengeWithoutOAuthKeys;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
@@ -110,7 +111,7 @@ readonly class RouteRegistrar
             $this->router->allowDuringMaintenance()
                 ->prefix("$route/uploads")
                 ->name('craft.mcp.uploads.')
-                ->middleware([...self::authenticatedMiddleware(), RequireAnyTokenScope::using(McpScope::Write->satisfyingValues())])
+                ->middleware([AcceptJson::class, ...self::authenticatedMiddleware(), RequireAnyTokenScope::using(McpScope::Write->satisfyingValues())])
                 ->group($this->registerUploadRoutes(...));
         }
 
@@ -121,6 +122,7 @@ readonly class RouteRegistrar
             ->prefix($this->routes->joinRoutePrefix([$this->routes->actionTriggerRoutePrefix(), 'mcp/upload-sessions']))
             ->name('craft.mcp.stdio.uploads.')
             ->middleware([
+                AcceptJson::class,
                 ForgetTriggerParameters::class,
                 EnsureInstalled::class,
                 AddLogContext::class,

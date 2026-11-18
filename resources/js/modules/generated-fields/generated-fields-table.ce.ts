@@ -44,7 +44,9 @@ export default class CraftGeneratedFieldsTable extends HTMLElement {
   get #cvd(): CardViewDesigner | undefined {
     const container = this.closest('.fld-cvd');
     const element = container?.querySelector('.card-view-designer');
-    return element ? cvdData.get(element) : undefined;
+    return container
+      ? (cvdData.get(container) ?? (element && cvdData.get(element)))
+      : undefined;
   }
 
   serialize(): UiValues[] {

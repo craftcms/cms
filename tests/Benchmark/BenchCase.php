@@ -17,25 +17,60 @@ use Orchestra\Testbench\Foundation\Config;
 use Orchestra\Testbench\Workbench\Workbench;
 use PDO;
 use RuntimeException;
+use Tally\ScratchDirectory;
 
 /**
  * Boots the workbench that `scripts/benchmark-setup.sh` builds, the way `vendor/bin/testbench` does.
  *
- * phpbench runs each iteration in its own process, so a request benchmark boots a fresh application each time, like
- * a PHP-FPM worker handling one request, and no memoized state carries over between iterations.
+ * Tally runs each case in its own process, so a request benchmark boots a fresh application, like a PHP-FPM worker
+ * handling one request, and no memoized state carries over between cases.
+ *
+ * Tally also runs cases in parallel, so each case gets its own copy of the workbench database. Pages such as the
+ * dashboard write to it on a user's first visit, which would otherwise lock the database for the other cases.
  */
 abstract class BenchCase
 {
+    public function __construct(
+        private readonly ScratchDirectory $scratch,
+    ) {}
+
     /**
      * The isolated workbench that scripts/benchmark-setup.sh builds.
      */
     public static function basePath(): string
     {
-        return getenv('CRAFT_BENCHMARK_PATH') ?: dirname(__DIR__, 2).'/.phpbench/laravel';
+        return getenv('CRAFT_BENCHMARK_PATH') ?: dirname(__DIR__, 2).'/.benchmarks/laravel';
+    }
+
+    /**
+     * Returns this case's copy of the workbench database, copying it on first use.
+     *
+     * Tally runs a case natively and then under its CPU simulation, with the same scratch directory, so the counted run
+     * sees what the native run wrote, as a returning user's request would.
+     */
+    protected function databasePath(): string
+    {
+        $path = $this->scratch->path().'/database.sqlite';
+
+        if (! is_file($path)) {
+            $workbenchDatabase = self::basePath().'/database/database.sqlite';
+
+            if (! is_file($workbenchDatabase)) {
+                throw new RuntimeException('No benchmark workbench at '.self::basePath().'. Run scripts/benchmark-setup.sh first.');
+            }
+
+            copy($workbenchDatabase, $path);
+        }
+
+        return $path;
     }
 
     protected function createApplication(): Application
     {
+        $database = $this->databasePath();
+        putenv("DB_DATABASE=$database");
+        $_ENV['DB_DATABASE'] = $_SERVER['DB_DATABASE'] = $database;
+
         $config = Config::loadFromYaml(dirname(__DIR__, 2));
 
         $app = Testbench::create(
@@ -113,11 +148,11 @@ abstract class BenchCase
     }
 
     /**
-     * Returns a value straight from the benchmark database, without booting the application.
+     * Returns a value straight from the case's database, without booting the application.
      */
-    protected static function query(string $sql): mixed
+    protected function query(string $sql): mixed
     {
-        $pdo = new PDO('sqlite:'.self::basePath().'/database/database.sqlite');
+        $pdo = new PDO('sqlite:'.$this->databasePath());
 
         return $pdo->query($sql)->fetchColumn();
     }

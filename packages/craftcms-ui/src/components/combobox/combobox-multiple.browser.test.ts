@@ -335,3 +335,60 @@ it('shows each selected option’s icon or dot on its token, hidden from assisti
   );
   expect(tokens[2]!.querySelector('craft-icon, craft-indicator')).toBeNull();
 });
+
+it('keeps an empty textbox beside the tokens until typed text needs its own line', async () => {
+  const {control, input} = await fixture((c) => {
+    c.value = ['Channel', 'Structure'];
+  });
+  const field = control.shadowRoot!.querySelector<HTMLElement>(
+    '.input-group__input'
+  )!;
+  const textbox =
+    control.shadowRoot!.querySelector<HTMLElement>('.combobox__textbox')!;
+  const tokens = [...control.querySelectorAll('craft-combobox-token')];
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const tokensEnd = tokens.at(-1)!.getBoundingClientRect().right;
+  const fieldEnd = field.getBoundingClientRect().right;
+  control.style.width = `${control.getBoundingClientRect().width - (fieldEnd - tokensEnd) + 5 * rem}px`;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const tokenTop = tokens[0]!.getBoundingClientRect().top;
+  expect(textbox.getBoundingClientRect().top).toBeLessThan(
+    tokenTop + tokens[0]!.getBoundingClientRect().height
+  );
+
+  await type(input, 'a search much longer than the room beside the tokens');
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(textbox.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    tokenTop + tokens[0]!.getBoundingClientRect().height
+  );
+});
+
+it('lines its chevron up with a select’s and a single combobox’s', async () => {
+  await import('../select/select.js');
+  document.body.innerHTML = `
+    <div style="width: 20rem">
+      <craft-select><select slot="input"><option>One</option></select></craft-select>
+      <craft-combobox></craft-combobox>
+      <craft-combobox multiple></craft-combobox>
+    </div>`;
+  const hosts = [
+    ...document.querySelectorAll<
+      HTMLElement & {updateComplete: Promise<unknown>}
+    >('craft-select, craft-combobox'),
+  ];
+  await Promise.all(hosts.map((host) => host.updateComplete));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const [select, single, multiple] = hosts.map((host) => {
+    const indicator = host.shadowRoot!.querySelector('.indicator')!;
+    return Math.round(
+      indicator.getBoundingClientRect().right -
+        parseFloat(getComputedStyle(indicator).paddingInlineEnd)
+    );
+  });
+
+  expect(single).toBe(select);
+  expect(multiple).toBe(select);
+});

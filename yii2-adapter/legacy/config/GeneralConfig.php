@@ -10,7 +10,7 @@
 namespace craft\config;
 
 use craft\services\Config;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use DateInterval;
@@ -79,6 +79,13 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     private array $heldSideEffects = [];
 
     /**
+     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * @deprecated in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.
+     */
+    public bool $asyncCsrfInputs = false;
+
+    /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      *
@@ -114,8 +121,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
             $this->whenBooting(fn() => $value === null
-                ? Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT)
-                : Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
+                ? Context::forgetHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT)
+                : Context::addHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
 
             $this->generateTransformsBeforePageLoad = $value;
         }
@@ -787,6 +794,29 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->deprecate('isSystemLive', 'Use Laravel maintenance mode instead.');
 
         $this->isSystemLive = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * ```php
+     * ->asyncCsrfInputs(true)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $asyncCsrfInputs
+     * @since 5.1.0
+     * @deprecated in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.
+     */
+    #[Deprecated(message: 'in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.')]
+    public function asyncCsrfInputs(bool $value = true): self
+    {
+        $this->deprecate('asyncCsrfInputs', 'It no longer has any effect. Front-end forms don’t need CSRF inputs.');
+
+        $this->asyncCsrfInputs = $value;
 
         return $this;
     }
@@ -1486,7 +1516,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * In the event that the key is compromised, a new secure key can be generated with the command:
      *
      * ```sh
-     * php craft setup/security-key
+     * php artisan key:generate
      * ```
      *
      * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.

@@ -109,6 +109,10 @@ readonly class Plugins
             throw new ToolCallException('Provide packageName and version to install a plugin that is not already Composer-installed.');
         }
 
+        if ($reason = $this->composer->getUnavailableReason()) {
+            throw new ToolCallException($reason);
+        }
+
         $this->composer->install([$packageName => $version]);
 
         return [

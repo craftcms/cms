@@ -61,6 +61,13 @@
   );
   const autopopulation = useAutopopulation();
   const columns = computed(() => Object.entries(props.control.props.columns));
+
+  /** Widths without a unit are pixels, as in Craft 5. */
+  function columnWidth(width: string | number | undefined) {
+    const trimmed = String(width ?? '').trim();
+    return /^\d*\.?\d+$/.test(trimmed) ? `${trimmed}px` : trimmed || undefined;
+  }
+
   const rowIdField = computed(() =>
     typeof props.control.props.includeRowId === 'string'
       ? props.control.props.includeRowId
@@ -119,6 +126,12 @@
     () => props.touchedPaths ?? new Set<string>()
   );
   const hiddenRows = computed(() => new Set(props.control.props.hiddenRows));
+  const headingColumn = computed(
+    () =>
+      columns.value.find(
+        ([, column]) => column.type === 'heading' && !column.html
+      )?.[0]
+  );
   const renderedRows = computed(() =>
     rows.value.map((row, index) => {
       const fields = rowFields(rowUi(index)?.nodes ?? []);
@@ -132,7 +145,12 @@
         }
       }
 
-      return {row, cells, hidden: hiddenRows.value.has(rowKey(index))};
+      const name =
+        headingColumn.value === undefined
+          ? ''
+          : String(row.value[headingColumn.value] ?? '').trim();
+
+      return {row, cells, name, hidden: hiddenRows.value.has(rowKey(index))};
     })
   );
 
@@ -536,12 +554,7 @@
               scope="col"
               :hidden="column.type === 'hidden'"
               :class="column.class"
-              :style="{
-                width:
-                  typeof column.width === 'number'
-                    ? `${column.width}%`
-                    : column.width,
-              }"
+              :style="{width: columnWidth(column.width)}"
             >
               <span v-if="column.headingHtml" v-html="column.headingHtml" />
               <template v-else>{{
@@ -567,7 +580,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="({row, cells, hidden}, index) in renderedRows"
+            v-for="({row, cells, name, hidden}, index) in renderedRows"
             :key="row.id"
             :ref="
               (element) =>
@@ -623,10 +636,15 @@
                 "
                 :value="row.value[key]"
                 :label="
-                  t('{heading}, row {row}', {
-                    heading: column.heading ?? column.label ?? key,
-                    row: index + 1,
-                  })
+                  name
+                    ? t('{heading}, {name}', {
+                        heading: column.heading ?? column.label ?? key,
+                        name,
+                      })
+                    : t('{heading}, row {row}', {
+                        heading: column.heading ?? column.label ?? key,
+                        row: index + 1,
+                      })
                 "
                 :editable="
                   editable && !disabledCell(row, key) && !column.static
@@ -669,7 +687,11 @@
                     control.props.allowReorder &&
                     !control.props.staticRows
                   "
-                  :label="t('Reorder row {row}', {row: index + 1})"
+                  :label="
+                    name
+                      ? t('Reorder {name}', {name})
+                      : t('Reorder row {row}', {row: index + 1})
+                  "
                   :position="position(index)"
                   :ref="
                     (element: unknown) =>
@@ -685,7 +707,11 @@
                   variant="plain"
                   size="small"
                   .disabled="!canDelete"
-                  :aria-label="t('Delete row {row}', {row: index + 1})"
+                  :aria-label="
+                    name
+                      ? t('Delete {name}', {name})
+                      : t('Delete row {row}', {row: index + 1})
+                  "
                   @click="deleteRow(index)"
                 />
               </div>

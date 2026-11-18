@@ -3,6 +3,7 @@ import {computed, nextTick, shallowRef, watch, type Ref} from 'vue';
 import {elementTypeName} from '@/common/craft/element-types';
 import {clearCopiedElements} from '@/modules/elements/clipboard';
 import {useCopiedElements} from '@/modules/matrix/copied-elements';
+import {elementFocusTarget} from './elementFocusTarget';
 import type {ElementPresentation, ElementSelectProps} from './types';
 
 /**
@@ -132,16 +133,10 @@ export function usePasteableElements(options: {
     clearCopiedElements();
     await nextTick();
 
-    const item = options.container.value?.querySelector<HTMLElement>(
-      `.elements-stage [data-id="${kept[kept.length - 1]}"]`
-    );
     const fallback = options.fallbackFocus.value;
     const target =
-      (item?.matches('[tabindex="0"]')
-        ? item
-        : item?.querySelector<HTMLElement>(
-            'craft-checkbox, craft-button, button, a[href], [tabindex="0"]'
-          )) ?? (fallback?.isConnected ? fallback : null);
+      elementFocusTarget(options.container.value, kept[kept.length - 1]!) ??
+      (fallback?.isConnected ? fallback : null);
 
     if (!target) {
       return;

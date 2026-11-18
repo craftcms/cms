@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use craft\config\GeneralConfig;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use Illuminate\Container\Container;
@@ -60,14 +60,14 @@ it('supports moved deprecated config settings', function(): void {
         ->generateTransformsBeforePageLoad(true)
         ->rememberedUserSessionDuration(7200)
         ->verificationCodeDuration(1800);
-    expect(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeTrue();
+    expect(Context::getHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeTrue();
 
     $config->generateTransformsBeforePageLoad = false;
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
         ->and(config('session.domain'))->toBe('.example.test')
         ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
-        ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
+        ->and(Context::getHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });
@@ -321,7 +321,7 @@ it('does not restore unset deprecated settings as overrides', function(): void {
     eval('$restored = ' . var_export($config, true) . ';');
 
     expect($restored)->toBeInstanceOf(GeneralConfig::class)
-        ->and(Context::hasHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
+        ->and(Context::hasHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
         ->and(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
 });
 

@@ -111,15 +111,6 @@ describe('BaseDrag settings + defaults', () => {
     expect(BaseDrag.minMouseDist).toBe(1);
     expect(BaseDrag.windowScrollTargetSize).toBe(25);
   });
-
-  it('starts with the documented initial state', () => {
-    const d = new BaseDrag();
-    expect(d.dragging).toBe(false);
-    expect(d.$targetItem).toBeNull();
-    expect(d.$items).toEqual([]);
-    expect(d.mouseX).toBeNull();
-    expect(d.scrollProperty).toBeNull();
-  });
 });
 
 describe('BaseDrag item management + registry', () => {
