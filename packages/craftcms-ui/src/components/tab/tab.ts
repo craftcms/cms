@@ -22,9 +22,9 @@ import styles from './tab.styles.js';
  * @slot suffix - Content after the label, such as an icon flagging errors in
  *   the tab's panel. Give an icon a `label` so its meaning is announced.
  *
- * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `0`, so
- *   the labels line up with the content around the strip; the strip's gap
- *   spaces them apart.
+ * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `0`;
+ *   `<craft-tabs>` sets it to `--c-spacing-md`, to leave room beside each
+ *   label for its hover fill.
  * @cssproperty --c-tab-spacing-block - Block padding. Defaults to `0.5em`, so
  *   the tab scales with whatever font size it inherits — which is how
  *   `<craft-tabs size>` resizes its tabs without touching them.
@@ -32,6 +32,11 @@ import styles from './tab.styles.js';
  *   Defaults to `--c-color-accent-fill-loud`.
  * @cssproperty --c-tab-font-weight-active - Label weight while selected.
  *   Defaults to `--font-weight-semibold`.
+ * @cssproperty --c-tab-background-hover - Fill behind the label of a hovered
+ *   tab that isn't selected. Defaults to `currentColor` at 5%, the sidebar
+ *   nav's hover fill.
+ * @cssproperty --c-tab-hover-block-size - Height of the hover fill, centered
+ *   in the tab. Defaults to `30rem / 16`, the height of a main nav item.
  * @cssproperty --c-tab-text-disabled - Label color while disabled. Defaults to
  *   `--c-status-disabled-text`.
  * @cssproperty --c-tab-indicator-inset-block-start - Indicator geometry. Set

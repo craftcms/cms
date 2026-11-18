@@ -7,6 +7,8 @@ export default css`
     padding-inline: var(--c-tab-spacing-inline, 0);
     padding-block: var(--c-tab-spacing-block, 0.5em);
     position: relative;
+    /* Keeps the hover fill below behind the label, but not behind the page. */
+    isolation: isolate;
     cursor: pointer;
   }
 
@@ -49,6 +51,35 @@ export default css`
   @media (forced-colors: active) {
     :host([selected])::after {
       background-color: Highlight;
+    }
+  }
+
+  /*
+   * The hover fill, like the sidebar nav's: shorter than the tab and centered
+   * in it, so it stays clear of the strip's rule and the selected indicator.
+   * It's drawn on ::before rather than the host's background for that reason.
+   */
+  @media (hover: hover) {
+    :host(:hover:not([selected]):not([disabled]))::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      inset-block: 0;
+      block-size: var(--c-tab-hover-block-size, calc(30rem / 16));
+      margin-block: auto;
+      z-index: -1;
+      border-radius: var(--c-radius-md);
+      background-color: var(
+        --c-tab-background-hover,
+        color-mix(in srgb, currentColor, transparent 95%)
+      );
+    }
+  }
+
+  /* Forced colors drop the fill, so a hovered tab shows the indicator instead. */
+  @media (forced-colors: active) {
+    :host(:hover:not([selected]):not([disabled]))::after {
+      background-color: CanvasText;
     }
   }
 

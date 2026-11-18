@@ -23,6 +23,15 @@ export default css`
   }
 
   /*
+   * Room beside each label for its hover fill. The gap between tabs shrinks to
+   * make up for it, so the labels sit only a little further apart.
+   */
+  :host(:not([appearance='fill'])) {
+    --c-tab-spacing-inline: var(--c-spacing-md);
+    --c-tabs-tab-gap: var(--c-spacing-md);
+  }
+
+  /*
    * The rule lives on the strip rather than the tablist so it runs under the
    * overflow menu too, which sits beside the tablist rather than inside it.
    * It's declared as four zero-width edges so a placement only has to move the
@@ -245,6 +254,8 @@ export default css`
    * against the track. The underline indicator isn't drawn.
    */
   :host([appearance='fill']) {
+    /* The fill appearance has its own hover state. */
+    --c-tab-background-hover: transparent;
     --_track-padding: var(--c-spacing-sm);
     --_tab-radius: var(--c-form-control-radius);
     --c-tab-border-active: transparent;
