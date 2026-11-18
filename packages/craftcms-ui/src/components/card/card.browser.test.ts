@@ -448,10 +448,17 @@ it.each([
 
     await userEvent.hover(button);
     const style = getComputedStyle(button);
+    const surface = ['header', 'base']
+      .map(
+        (part) =>
+          getComputedStyle(card.shadowRoot!.querySelector(`[part="${part}"]`)!)
+            .backgroundColor
+      )
+      .find((color) => color !== 'rgba(0, 0, 0, 0)');
 
-    expect(contrast(style.color, style.backgroundColor)).toBeGreaterThanOrEqual(
-      3
-    );
+    expect(
+      contrast(style.color, style.backgroundColor, surface)
+    ).toBeGreaterThanOrEqual(3);
     await userEvent.unhover(button);
   }
 );
