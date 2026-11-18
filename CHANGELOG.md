@@ -109,7 +109,7 @@
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
-- Tabs now show a light fill behind their label when hovered, like the sidebar nav, and sit a little further apart to make room for it. ([#20836](https://github.com/craftcms/cms/pull/20836))
+- Tabs now show a light fill behind their label when hovered, like the sidebar nav, and sit a little further apart to make room for it. Tab strips placed beside their panels now have a minimum width (`--c-tabs-strip-min-inline-size`), and tabs in the `fill` appearance are shorter. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - Fixed an error that occurred when batched queue jobs, such as resaving or propagating elements, queued their next batch on non-sync queues. ([#20791](https://github.com/craftcms/cms/issues/20791), [#20812](https://github.com/craftcms/cms/pull/20812))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
