@@ -84,6 +84,8 @@ export class Tab extends Base {
     ) {
       throw new Error('Field layout HUD requires a trigger and container.');
     }
+    hud.$hud.setAttribute('role', 'dialog');
+    hud.$hud.setAttribute('aria-label', t('Add a field'));
     hudData.set(hud.$hud, {
       $trigger: hud.$trigger,
       hide: () => hud.hide(),
