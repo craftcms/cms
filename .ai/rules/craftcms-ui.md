@@ -58,6 +58,15 @@ If a documented pattern fits the component — a WAI-ARIA APG pattern, or anothe
 ## Name properties apart from global HTML attributes
 Give a component property a name that isn't a global HTML attribute (`title`, `hidden`, `lang`, `dir`, `id`). For text shown as a component's title, use `label`, as `craft-pane` and `craft-callout` do: a `title` property also sets the native attribute, which paints a browser tooltip and is announced a second time. A slot named `title` is fine, since slotted content carries only the `slot` attribute.
 
+## Use the shared prop vocabulary
+One name per concept, so an attribute means the same thing on every element. `prop-vocabulary.test.ts` checks the built manifest against it.
+
+- **`size`** takes values from one scale, `xsmall | small | medium | large` (`Size` in `src/constants/size.ts`). A component accepts the subset it supports. No `md`/`lg`, `auto`, `zero`, or boolean `small`. Spacing is not size: `padding` keeps its own `sm…xl` scale, and a button that sits flush is `variant="plain" flush`.
+- **`variant`** is a semantic color: `neutral | success | warning | danger | info` (`Variant`). How prominently it's drawn is `appearance` (`solid | fill | outline-fill | outline | plain`). `craft-button` is the documented exception: its `variant` covers both until the button API is settled. The test lists the other current exceptions; don't add to the list.
+- **Booleans** are named for what turning them on does: `show-*` when the thing is hidden by default, `hide-*` when it's shown by default. Never `no-*`.
+- **Color:** a palette or CSS color is `color`. A second colored region is `<region>-color` (`track-color`, `icon-color`). Not `fill` or `bg-color`.
+- **In progress:** content being fetched is `loading`; an action in flight is named for the action (`submitting`); a bar or spinner with no value yet is `indeterminate`, as on native `<progress>`. Not `busy` or `pending`.
+
 ## Build form controls on Lion
 A new single form control is built on Lion, so `craft-field`, validation and posting work as they do for every other control:
 

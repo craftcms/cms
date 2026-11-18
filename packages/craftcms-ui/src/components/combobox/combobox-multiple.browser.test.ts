@@ -309,7 +309,7 @@ it('shows each selected option’s icon or dot on its token, hidden from assisti
   const {control} = await fixture((c) => {
     c.options = [
       {label: 'Starred', value: 'star', data: {icon: 'star', color: 'red'}},
-      {label: 'Green', value: 'green', data: {indicator: {fill: 'green'}}},
+      {label: 'Green', value: 'green', data: {indicator: {color: 'green'}}},
     ];
     c.value = ['star', 'green', 'custom'];
   });
@@ -327,7 +327,7 @@ it('shows each selected option’s icon or dot on its token, hidden from assisti
     'star'
   );
   expect(tokens[1]!.querySelector('craft-indicator')).toHaveAttribute(
-    'fill',
+    'color',
     'green'
   );
   expect(tokens[1]!.querySelector('craft-indicator')).not.toHaveAttribute(

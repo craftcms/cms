@@ -226,7 +226,7 @@ it('fills hex colors’ swatches, checkers a transparent one, and selects a hex 
 
 it('shows only the selected color’s swatch with swatch-only, naming the color as the field’s value', async () => {
   const {page, cdp} = await import('vite-plus/test/browser');
-  document.body.innerHTML = `<craft-select-color label="Color" swatch-only small value="red"></craft-select-color>`;
+  document.body.innerHTML = `<craft-select-color label="Color" swatch-only size="small" value="red"></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
   await select.updateComplete;

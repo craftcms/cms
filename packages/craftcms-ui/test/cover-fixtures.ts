@@ -88,16 +88,16 @@ export const MANY_ATTRIBUTES = [
     '<div class="color small static"><div class="color-preview" style="background-color: #e11d48"></div></div><span class="colorhex">Crimson</span>'
   ),
   attribute(
-    '<craft-badge fill="teal"><craft-icon slot="prefix" name="check"></craft-icon>Featured</craft-badge>'
+    '<craft-badge color="teal"><craft-icon slot="prefix" name="check"></craft-icon>Featured</craft-badge>'
   ),
   attribute(
-    '<craft-badge fill="gray"><craft-icon slot="prefix" name="xmark-large"></craft-icon>Archived</craft-badge>'
+    '<craft-badge color="gray"><craft-icon slot="prefix" name="xmark-large"></craft-icon>Archived</craft-badge>'
   ),
   attribute(
     colors
-      .map((color) => `<craft-badge fill="${color}">${color}</craft-badge>`)
+      .map((color) => `<craft-badge color="${color}">${color}</craft-badge>`)
       .join(' ')
   ),
-  '<ul class="flex gap-xs"><li><craft-badge fill="green">Live</craft-badge></li><li><craft-badge fill="blue"><craft-icon slot="prefix" name="pen-circle"></craft-icon>Edited</craft-badge></li></ul>',
+  '<ul class="flex gap-xs"><li><craft-badge color="green">Live</craft-badge></li><li><craft-badge color="blue"><craft-icon slot="prefix" name="pen-circle"></craft-icon>Edited</craft-badge></li></ul>',
   '</div>',
 ].join('');

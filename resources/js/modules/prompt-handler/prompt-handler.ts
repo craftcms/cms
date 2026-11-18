@@ -10,7 +10,7 @@ type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
 /** A `craft-dialog`. */
 type PromptDialog = HTMLElement & {
   label: string;
-  noHeader: boolean;
+  hideHeader: boolean;
   open: boolean;
 };
 
@@ -137,7 +137,7 @@ export class PromptHandler extends Base {
     this.modal?.remove();
 
     const dialog = document.createElement('craft-dialog') as PromptDialog;
-    dialog.noHeader = true;
+    dialog.hideHeader = true;
     this.modal = dialog;
 
     // The choices are a radio group named by the prompt's message. Prompt

@@ -148,11 +148,11 @@ describe('renderValuePreview', () => {
     expect(
       badges[1]!
         .querySelector('craft-indicator[slot="prefix"]')!
-        .getAttribute('fill')
+        .getAttribute('color')
     ).toBe('#1d4ed8');
     // No icon or color, so not the badge's own gray dot either
     expect(badges[2]!.children).toHaveLength(0);
-    expect(badges[2]!.hasAttribute('no-prefix')).toBe(true);
+    expect(badges[2]!.hasAttribute('hide-prefix')).toBe(true);
     expect(
       await renderValuePreview(copied({component: 'craft:choice', items: []}))
     ).toBeNull();
@@ -166,13 +166,13 @@ describe('renderValuePreview', () => {
       copied({component: 'craft:color-select', value: 'red'})
     )) as HTMLElement;
 
-    expect(color.querySelector('craft-indicator')!.getAttribute('fill')).toBe(
+    expect(color.querySelector('craft-indicator')!.getAttribute('color')).toBe(
       '#0000ff80'
     );
     expect(color.textContent).toBe('#0000ff80');
-    expect(palette.querySelector('craft-indicator')!.getAttribute('fill')).toBe(
-      'red'
-    );
+    expect(
+      palette.querySelector('craft-indicator')!.getAttribute('color')
+    ).toBe('red');
     expect(palette.textContent).toBe('Red');
     expect(
       await renderValuePreview(

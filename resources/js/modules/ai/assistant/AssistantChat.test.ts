@@ -887,7 +887,7 @@ describe('AssistantChat', () => {
       'Order #42'
     );
     expect(
-      bubble.querySelector('craft-chip craft-indicator')?.getAttribute('fill')
+      bubble.querySelector('craft-chip craft-indicator')?.getAttribute('color')
     ).toBe('green');
     expect(
       bubble.querySelector('.assistant-chat__prompt-text')?.textContent

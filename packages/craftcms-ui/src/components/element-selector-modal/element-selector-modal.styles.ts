@@ -110,8 +110,8 @@ export default css`
     renderBody/renderFooter, which reaches slotted content this component does
     not own; these rules only supply the matching visual state.
   */
-  :host([busy]) .body,
-  :host([busy]) .footer__group--secondary {
+  :host([submitting]) .body,
+  :host([submitting]) .footer__group--secondary {
     opacity: 0.6;
   }
 `;

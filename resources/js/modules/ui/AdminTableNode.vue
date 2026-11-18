@@ -397,7 +397,7 @@
             if (columnIndex === 0 && status) {
               return h('div', {class: 'flex flex-nowrap gap-sm items-center'}, [
                 h('craft-indicator', {
-                  fill: status.fill,
+                  color: status.fill,
                   label: status.label ?? undefined,
                   appearance:
                     status.value === 'disabled' ? 'outline' : undefined,

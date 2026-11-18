@@ -289,7 +289,7 @@ export default css`
     width: auto;
   }
 
-  /* As wide as a status dot (craft-indicator's \`md\` size plus its border),
+  /* As wide as a status dot (craft-indicator's \`medium\` size plus its border),
      so a wider status, like the draft icon, overflows evenly and lines up
      with the dots. */
   ::slotted([slot='status']) {

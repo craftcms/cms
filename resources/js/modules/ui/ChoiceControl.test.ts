@@ -272,7 +272,7 @@ describe('ChoiceControl', () => {
       expect(icon.hasAttribute('label')).toBe(false);
       expect((icon as HTMLElement).style.color).toBe('#ff0000');
       expect(
-        labels[1]!.querySelector('craft-indicator')!.getAttribute('fill')
+        labels[1]!.querySelector('craft-indicator')!.getAttribute('color')
       ).toBe('#00ff00');
       expect(labels[2]!.querySelector('craft-icon, craft-indicator')).toBe(
         null

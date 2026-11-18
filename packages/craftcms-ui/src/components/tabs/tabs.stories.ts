@@ -5,7 +5,9 @@ import {expect, waitFor} from 'storybook/test';
 
 import {html} from 'lit';
 
-import {sizes} from '@src/constants/size';
+import {Size} from '@src/constants/size';
+
+const sizes = [Size.Small, Size.Medium, Size.Large];
 
 import '../tab/tab.js';
 import './tabs.js';

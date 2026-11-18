@@ -9,14 +9,14 @@
 
 <template>
   <template v-if="plugin.isEnabled">
-    <craft-badge fill="success">{{ t('Installed') }}</craft-badge>
+    <craft-badge color="success">{{ t('Installed') }}</craft-badge>
   </template>
   <template v-else-if="!plugin.isComposerInstalled">
     <craft-badge>{{ t('Missing') }}</craft-badge>
   </template>
   <template v-else-if="plugin.isInstalled">
     <div class="flex gap-1 items-center">
-      <craft-badge fill="warning">{{ t('Disabled') }}</craft-badge>
+      <craft-badge color="warning">{{ t('Disabled') }}</craft-badge>
       <template v-if="plugin.isForceDisabled">
         <craft-info-icon>
           {{

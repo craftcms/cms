@@ -75,7 +75,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
   @property({attribute: 'cancel-label'}) cancelLabel = '';
 
   /** A submit is in flight. */
-  @property({type: Boolean, reflect: true}) busy = false;
+  @property({type: Boolean, reflect: true}) submitting = false;
 
   /** The index body is being fetched. */
   @property({type: Boolean, reflect: true}) loading = false;
@@ -209,7 +209,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
     if (state) {
       this.open = state.open;
-      this.busy = state.busy;
+      this.submitting = state.busy;
       this.loading = state.loading;
       this.canSubmit = state.canSubmit;
       this.label = state.title;
@@ -262,7 +262,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   protected override renderBody(): TemplateResult {
     return html`
-      <div class="body" part="body" ?inert=${this.busy}>
+      <div class="body" part="body" ?inert=${this.submitting}>
         ${this.loading && !this.hasIndex
           ? html`<slot name="loading"
               ><div class="loading"><craft-spinner></craft-spinner></div
@@ -279,7 +279,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
         <div
           class="footer__group footer__group--secondary"
           part="secondary-actions"
-          ?inert=${this.busy}
+          ?inert=${this.submitting}
         >
           <slot name="secondary-actions"></slot>
         </div>
@@ -289,7 +289,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
             part="cancel"
             type="button"
             variant="fill"
-            ?disabled=${this.busy}
+            ?disabled=${this.submitting}
             @click=${this.#onCancelClick}
           >
             ${this.cancelLabel || t('Cancel')}
@@ -299,7 +299,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
             type="button"
             variant="primary"
             ?disabled=${!this.canSubmit}
-            ?loading=${this.busy}
+            ?loading=${this.submitting}
             @click=${this.#onSelectClick}
           >
             ${this.selectLabel || t('Select')}
@@ -326,7 +326,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   /**
    * Every dismissal — Cancel, Escape, the backdrop — arrives here through
-   * `CraftDialog`. When bound, the controller decides: it refuses while busy,
+   * `CraftDialog`. When bound, the controller decides: it refuses while submitting,
    * which is what keeps the modal up mid-save.
    */
   protected override requestClose(): void {
@@ -347,7 +347,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
   };
 
   #onCancelClick = (): void => {
-    if (this.busy) {
+    if (this.submitting) {
       return;
     }
 

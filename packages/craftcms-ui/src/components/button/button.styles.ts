@@ -222,12 +222,6 @@ export default css`
   /*
   Sizes
    */
-  :host([size~='zero']) {
-    --_padding-inline: 0px;
-    --_height: 0px;
-    min-width: 0;
-  }
-
   :host([size~='xsmall']) {
     --_padding-inline: var(--c-spacing-xs);
     --_height: var(--c-size-control-xs);
@@ -777,7 +771,6 @@ export default css`
 
   /* Only an icon-only link sits flush in its square; one with a label keeps
      its padding. */
-  :host([href][size~='zero']:not([disabled])) .link,
   :host([href][icon]:empty:not([disabled])) .link {
     padding-inline: 0;
   }

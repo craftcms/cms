@@ -32,12 +32,12 @@ function computedColor(color: string): string {
 
 it('colours an option’s indicator', async () => {
   const control = await fixture([
-    {label: 'Online', value: 'true', data: {indicator: {fill: 'success'}}},
-    {label: 'Offline', value: 'false', data: {indicator: {fill: 'danger'}}},
+    {label: 'Online', value: 'true', data: {indicator: {color: 'success'}}},
+    {label: 'Offline', value: 'false', data: {indicator: {color: 'danger'}}},
   ]);
 
   const fills = [...control.querySelectorAll('craft-indicator')].map((el) =>
-    el.getAttribute('fill')
+    el.getAttribute('color')
   );
 
   expect(fills).toEqual(['success', 'danger']);
@@ -50,7 +50,7 @@ it('leaves an indicator without a fill on the component’s default', async () =
 
   const indicator = control.querySelector('craft-indicator')!;
 
-  expect(indicator.getAttribute('fill')).toBe('var(--c-color-fill-loud)');
+  expect(indicator.getAttribute('color')).toBe('var(--c-color-fill-loud)');
 });
 
 it('renders an indicator’s appearance', async () => {
@@ -123,8 +123,8 @@ it('leaves an icon without a colour unstyled', async () => {
 
 it('shows the selected option’s indicator while closed', async () => {
   const control = await fixture([
-    {label: 'Online', value: 'true', data: {indicator: {fill: 'success'}}},
-    {label: 'Offline', value: 'false', data: {indicator: {fill: 'danger'}}},
+    {label: 'Online', value: 'true', data: {indicator: {color: 'success'}}},
+    {label: 'Offline', value: 'false', data: {indicator: {color: 'danger'}}},
   ]);
   control.value = 'false';
   await control.updateComplete;
@@ -133,7 +133,7 @@ it('shows the selected option’s indicator while closed', async () => {
     '.prefix craft-indicator'
   )!;
 
-  expect(indicator.getAttribute('fill')).toBe('danger');
+  expect(indicator.getAttribute('color')).toBe('danger');
   expect(control.hasAttribute('has-prefix-icon')).toBe(true);
 });
 

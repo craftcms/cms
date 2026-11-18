@@ -50,7 +50,7 @@ describe.each(themes)('in the %s theme', (theme) => {
         const {dot, background} = await render(
           theme,
           surface,
-          `fill="${fill}"`
+          `color="${fill}"`
         );
 
         expect(
@@ -68,7 +68,7 @@ describe.each(themes)('in the %s theme', (theme) => {
         const {dot, background} = await render(
           theme,
           surface,
-          `fill="${fill}" appearance="outline"`
+          `color="${fill}" appearance="outline"`
         );
         const style = getComputedStyle(dot);
 
@@ -87,7 +87,7 @@ describe.each(themes)('in the %s theme', (theme) => {
       const {dot} = await render(
         theme,
         '--c-surface-default',
-        `fill="${fill}"`
+        `color="${fill}"`
       );
       const style = getComputedStyle(dot);
 
@@ -102,7 +102,7 @@ it('draws a white dot solid, like a gray one, in the dark theme', async () => {
   const {dot, background} = await render(
     'dark',
     '--c-surface-default',
-    'fill="white"'
+    'color="white"'
   );
   const style = getComputedStyle(dot);
 

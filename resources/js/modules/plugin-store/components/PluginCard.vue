@@ -37,7 +37,7 @@
       <PluginBand :icon-url="plugin.iconUrl" />
       <craft-badge
         v-if="!plugin.abandoned"
-        no-prefix
+        hide-prefix
         class="plugin-card__price"
       >
         {{ priceRangeLabel(plugin) }}
@@ -75,7 +75,7 @@
           <RatingStars :rating="plugin.ratingAvg" size="sm" />
           ({{ plugin.totalReviews }})
         </span>
-        <craft-badge v-if="trialEdition" size="small" no-prefix>
+        <craft-badge v-if="trialEdition" size="small" hide-prefix>
           {{ trialEdition.name }}
         </craft-badge>
         <craft-icon

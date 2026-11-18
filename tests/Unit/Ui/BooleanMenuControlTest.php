@@ -25,7 +25,7 @@ it('offers yes and no as a combobox that requires a match', function () {
     expect($control?->component)->toBe('craft:combobox')
         ->and($control?->props['requireOptionMatch'])->toBeTrue()
         ->and($control?->props['options'])->toBe([
-            ['label' => 'Yes', 'value' => '1', 'data' => ['indicator' => ['fill' => 'success']]],
+            ['label' => 'Yes', 'value' => '1', 'data' => ['indicator' => ['color' => 'success']]],
             ['label' => 'No', 'value' => '0', 'data' => ['indicator' => ['appearance' => 'outline']]],
         ])
         ->and($payload->values)->toBe(['enabled' => '1'])
@@ -52,7 +52,7 @@ it('lists boolean environment variables with what they resolve to', function () 
         ->and($envOptions->get('$BOOLEAN_MENU_ON')['data'])->toBe([
             'boolean' => '1',
             'hint' => 'Enabled',
-            'indicator' => ['fill' => 'success'],
+            'indicator' => ['color' => 'success'],
         ])
         ->and($envOptions->get('$BOOLEAN_MENU_OFF')['data'])->toBe([
             'boolean' => '0',

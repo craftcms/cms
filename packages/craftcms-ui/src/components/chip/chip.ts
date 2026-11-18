@@ -132,14 +132,13 @@ export default class CraftChip extends LitElement {
    * around the label and the size of the thumbnail in the prefix — `small`
    * is tight enough for a chip in a table cell, `large` suits one standing on
    * its own. `small` is also as tall as a small suffix button, so adding one
-   * doesn't change its height; `auto` has the same padding without that
-   * minimum, for a chip as compact as its content allows. `xsmall` is as tall
+   * doesn't change its height. `xsmall` is as tall
    * as a labeled badge, with its smaller text, for a chip set among badges.
    *
    * Left unset, it follows `thumb-size`: `small` for `sm`, `medium` for `md`,
    * and `large` from `lg` up. Without either, it's `small`.
    */
-  @property() size: SizeValue | 'xsmall' | 'auto' | null = null;
+  @property() size: SizeValue | null = null;
 
   /**
    * The size of the thumbnail in the prefix, overriding the one `size` gives
@@ -151,7 +150,7 @@ export default class CraftChip extends LitElement {
   thumbSize: ChipThumbSizeValue | null = null;
 
   /** The size the chip renders at: its own, or the one its thumbnail suits. */
-  get #size(): SizeValue | 'xsmall' | 'auto' {
+  get #size(): SizeValue {
     return (
       this.size ??
       (this.thumbSize ? sizeForThumbSize[this.thumbSize] : null) ??

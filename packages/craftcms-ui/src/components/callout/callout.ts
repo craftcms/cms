@@ -32,8 +32,8 @@ import {
  *   a link.
  *
  * @attr size - `small` steps the box down to `--c-text-sm` and tightens the gap
- *   between the icon and the text. Defaults to `auto`, which leaves the callout
- *   at the surrounding text size. Note this is type only — the padding below is
+ *   between the icon and the text. Defaults to `medium`, which leaves the
+ *   callout at the surrounding text size. Note this is type only — the padding below is
  *   `--c-spacing-*`, i.e. rem-based, so it does not scale with the size; set
  *   `padding` alongside it if a small callout wants a tighter box too.
  *
@@ -124,7 +124,7 @@ export default class CraftCallout extends Paddable(LitElement, {
 
   /** See the `size` attribute above. */
   @property()
-  size: 'small' | 'auto' = 'auto';
+  size: 'small' | 'medium' = 'medium';
 
   /**
    * The icon actually rendered: the one that was set, or the variant's

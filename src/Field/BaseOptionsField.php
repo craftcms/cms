@@ -412,7 +412,7 @@ abstract class BaseOptionsField extends Field implements DefaultableFieldInterfa
 
             $data = match (true) {
                 isset($option['icon']) => array_filter(['icon' => $option['icon'], 'color' => $option['color'] ?? null]),
-                isset($option['color']) => ['indicator' => ['fill' => $option['color']]],
+                isset($option['color']) => ['indicator' => ['color' => $option['color']]],
                 default => null,
             };
 

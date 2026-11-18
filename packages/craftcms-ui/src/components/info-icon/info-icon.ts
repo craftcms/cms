@@ -130,8 +130,8 @@ export default class CraftInfoIcon extends LitElement {
         <craft-button
           type="button"
           icon
-          size="zero"
           variant="plain"
+          flush
           id="${this.#buttonId}"
         >
           <craft-icon name="${this.icon}" label="${this.label}"></craft-icon>

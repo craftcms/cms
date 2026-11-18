@@ -126,7 +126,7 @@
       @update:expanded="onToggle(proposal, $event)"
     >
       <template v-if="isApplied(proposal)" #badge>
-        <craft-badge fill="success" size="small">
+        <craft-badge color="success" size="small">
           <craft-icon slot="prefix" name="check"></craft-icon>
           {{ t('Applied') }}
         </craft-badge>

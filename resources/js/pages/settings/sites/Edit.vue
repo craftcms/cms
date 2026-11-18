@@ -58,10 +58,10 @@
 
 <template>
   <LayoutSlot name="content-toolbar-meta">
-    <craft-badge :fill="site.enabled ? 'success' : 'gray'">
+    <craft-badge :color="site.enabled ? 'success' : 'gray'">
       {{ site.enabled ? t('Enabled') : t('Disabled') }}
     </craft-badge>
-    <craft-badge v-if="site.primary" no-prefix fill="accent" inline>
+    <craft-badge v-if="site.primary" hide-prefix color="accent" inline>
       <span>{{ t('Primary') }}</span>
     </craft-badge>
   </LayoutSlot>

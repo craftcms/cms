@@ -95,7 +95,7 @@ export const CustomColors: Story = {
   args: {
     progress: 60,
     color: '#22c55e',
-    'bg-color': '#dcfce7',
+    'track-color': '#dcfce7',
   },
 };
 

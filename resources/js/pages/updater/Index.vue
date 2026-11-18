@@ -145,7 +145,7 @@
           type="button"
           @click="handleOptionClick(option)"
           :variant="option.submit ? 'accent' : 'neutral'"
-          size="lg"
+          size="large"
         >
           {{ option.label }}
         </craft-button>

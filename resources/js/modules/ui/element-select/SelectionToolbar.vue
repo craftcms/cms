@@ -87,7 +87,7 @@
 
       <craft-badge
         size="small"
-        no-prefix
+        hide-prefix
         v-if="limit !== null && (!hasSelection || !actions.length)"
       >
         {{ total }}/{{ limit }}

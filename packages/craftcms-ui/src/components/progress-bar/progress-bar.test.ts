@@ -82,16 +82,16 @@ describe('craft-progress-bar', () => {
   });
 
   /**
-   * A pending bar has no value to report, so it fills the track and drops
+   * A indeterminate bar has no value to report, so it fills the track and drops
    * `aria-valuenow` rather than claiming a number it does not have.
    */
-  it('reports no value while pending', async () => {
-    const element = await createProgressBar({pending: ''});
+  it('reports no value while indeterminate', async () => {
+    const element = await createProgressBar({indeterminate: ''});
 
     expect(track(element).getAttribute('aria-valuenow')).toBeNull();
     expect(fill(element).style.width).toBe('100%');
-    expect(track(element).classList.contains('progress-bar--pending')).toBe(
-      true
-    );
+    expect(
+      track(element).classList.contains('progress-bar--indeterminate')
+    ).toBe(true);
   });
 });

@@ -317,7 +317,7 @@ export default class CraftTabs extends LitElement {
    * icon scales with its own text, so both follow from ordinary inheritance
    * rather than a second set of per-size rules. See tabs.styles.ts.
    */
-  @property({reflect: true}) size: SizeValue = 'medium';
+  @property({reflect: true}) size: Exclude<SizeValue, 'xsmall'> = 'medium';
 
   /** Cleanup for the listeners bound to each tab. */
   #tabCleanup: Array<() => void> = [];

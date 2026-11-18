@@ -67,7 +67,7 @@
         <craft-button
           type="button"
           variant="hairline"
-          size="lg"
+          size="large"
           @click="showAll"
         >
           {{ t('Show all changes') }}

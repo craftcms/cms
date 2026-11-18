@@ -27,7 +27,7 @@ const meta = {
   render: (args) => html`
     <craft-select
       name="${args.name ?? ''}"
-      ?small="${args.small}"
+      size="${args.size ?? 'medium'}"
       ?disabled="${args.disabled}"
     >
       <label slot="label">${args['label-slot']}</label>
@@ -50,9 +50,9 @@ type Story = StoryObj<SelectArgs>;
 /** The native `<select>` goes in the `input` slot; the component draws the rest. */
 export const Default: Story = {};
 
-/** `small` steps the control down for a dense row. */
+/** `size="small"` steps the control down for a dense row. */
 export const Small: Story = {
-  args: {small: true},
+  args: {size: 'small'},
 };
 
 export const WithHelpText: Story = {

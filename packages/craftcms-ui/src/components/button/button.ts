@@ -14,6 +14,7 @@ import {computeAccessibleName} from 'dom-accessibility-api';
 import {classMap} from 'lit/directives/class-map.js';
 import {Actionable} from '@src/mixins/Actionable';
 import {AsyncStates} from '@src/types';
+import type {SizeValue} from '@src/constants/size';
 
 export const ButtonVariant = {
   Primary: 'primary',
@@ -857,12 +858,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
    * only where nothing else comes within 12px of its center; beside another
    * target, use `small` or larger, a real 24×24 box.
    */
-  @property({reflect: true}) size:
-    | 'zero'
-    | 'xsmall'
-    | 'small'
-    | 'medium'
-    | 'large' = 'medium';
+  @property({reflect: true}) size: SizeValue = 'medium';
 
   /** The value submitted with the form or used for selection in a radio button-group */
   @property({reflect: true}) value: string;

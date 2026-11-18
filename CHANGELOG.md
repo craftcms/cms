@@ -116,6 +116,13 @@
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
+- `@craftcms/ui` web components now share one prop vocabulary: `size` takes `xsmall`, `small`, `medium`, or `large`, booleans are named `show-*` or `hide-*`, and colors are set with `color`.
+- Renamed `<craft-badge>`’s and `<craft-indicator>`’s `fill` attributes to `color`, and the `fill` key of `indicator` option data to `color`.
+- Renamed `<craft-dialog>`’s `no-close` and `no-header` attributes to `hide-close` and `hide-header`, and `<craft-badge>`’s `no-prefix` attribute to `hide-prefix`.
+- Renamed `<craft-progress-bar>`’s `pending` attribute to `indeterminate`, `<craft-progress>`’s `bg-color` attribute to `track-color`, and `<craft-element-selector-modal>`’s `busy` attribute to `submitting`.
+- `<craft-indicator>`’s `size` attribute now takes `medium` or `large`, rather than `md` or `lg`, and `<craft-callout>`’s defaults to `medium`, rather than `auto`.
+- Removed `<craft-input>`’s, `<craft-select>`’s, and `<craft-select-rich>`’s `small` attribute, and `CraftCms\Cms\Cp\Components\Input::small()`, `Select::small()`, and `SelectRich::small()`. `size="small"` and `size('small')` should be used instead.
+- Removed the `zero` size from `<craft-button>` and `CraftCms\Cms\Cp\Enums\Size`, and the `auto` size from `<craft-chip>`. A `plain` button with `flush` set should be used instead of a `zero` one.
 - Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer showed “[object Object]” rather than the error message when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer’s “Language” options didn’t include the languages’ names. ([#20818](https://github.com/craftcms/cms/issues/20818), [#20824](https://github.com/craftcms/cms/pull/20824))

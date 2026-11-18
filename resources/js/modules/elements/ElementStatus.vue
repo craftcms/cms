@@ -50,19 +50,20 @@
   });
 
   /**
-   * `craft-indicator` colors itself from `fill` alone: a status variant or
+   * `craft-indicator` colors itself from `color` alone: a status variant or
    * palette color name, or any CSS value. Empty string === all, which gets the
    * gradient. Nothing is bound for a value it can't color, or the indicator's
    * own fill would be overridden with nothing.
    */
   const indicatorBindings = computed(() => {
     if (!props.value) {
-      return {fill: 'linear-gradient(60deg, #184cef, #e5422b) border-box'};
+      return {color: 'linear-gradient(60deg, #184cef, #e5422b) border-box'};
     }
 
     if (props.color) {
       return {
-        fill: typeof props.color === 'string' ? props.color : props.color.value,
+        color:
+          typeof props.color === 'string' ? props.color : props.color.value,
       };
     }
 
@@ -71,12 +72,12 @@
     }
 
     if (variant.value !== 'custom') {
-      return {fill: variant.value};
+      return {color: variant.value};
     }
 
     const value = props.value.toString();
 
-    return (colors as string[]).includes(value) ? {fill: value} : {};
+    return (colors as string[]).includes(value) ? {color: value} : {};
   });
 
   const computedLabel = computed(

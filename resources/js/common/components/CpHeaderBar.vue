@@ -104,7 +104,7 @@
             <craft-badge
               v-if="devMode && bridged"
               class="cp-header-bar__bridged"
-              fill="violet"
+              color="violet"
               size="small"
             >
               <craft-icon name="bridge" slot="prefix"></craft-icon>

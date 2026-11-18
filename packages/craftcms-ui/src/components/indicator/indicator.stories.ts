@@ -21,15 +21,15 @@ type IndicatorArgs = CraftIndicator & typeof args;
 const APPEARANCES = ['solid', 'outline-fill', 'outline'] as const;
 
 /** One row of the appearance matrix, so every grid story shares its markup. */
-const row = (label: string, attrs: {fill?: string; size?: string}) => html`
+const row = (label: string, attrs: {color?: string; size?: string}) => html`
   <tr>
     <td style="padding-inline-end: 1rem; font-size: 0.8rem">${label}</td>
     ${APPEARANCES.map(
       (appearance) => html`
         <td style="padding: 0.25rem 0.75rem">
           <craft-indicator
-            fill="${attrs.fill ?? 'var(--c-color-fill-loud)'}"
-            size="${attrs.size ?? 'md'}"
+            color="${attrs.color ?? 'var(--c-color-fill-loud)'}"
+            size="${attrs.size ?? 'medium'}"
             appearance="${appearance}"
             label="${label} ${appearance}"
           ></craft-indicator>
@@ -76,21 +76,21 @@ type Story = StoryObj<IndicatorArgs>;
 export const Default: Story = {};
 
 /**
- * `fill` takes a status variant, which resolves to that variant's fill token.
+ * `color` takes a status variant, which resolves to that variant's fill token.
  */
 export const Variants: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
     matrix(
-      Object.values(Variant).map((variant) => row(variant, {fill: variant}))
+      Object.values(Variant).map((variant) => row(variant, {color: variant}))
     ),
 };
 
-/** `fill` also takes any palette swatch by name. */
+/** `color` also takes any palette swatch by name. */
 export const Swatches: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
-    matrix(colors.slice(0, 8).map((color) => row(color, {fill: color}))),
+    matrix(colors.slice(0, 8).map((color) => row(color, {color: color}))),
 };
 
 /**
@@ -103,7 +103,7 @@ export const ArbitraryColor: Story = {
   render: () =>
     matrix(
       ['#2c61de', 'rgba(30, 40, 40, 0.2)', 'linear-gradient(red, blue)'].map(
-        (value) => row(value, {fill: value})
+        (value) => row(value, {color: value})
       )
     ),
 };
@@ -113,8 +113,8 @@ export const ArbitrarySize: Story = {
   parameters: {controls: {disable: true}},
   render: () =>
     matrix(
-      (['md', 'lg'] as const).map((size) =>
-        row(size === 'md' ? 'md (default)' : size, {size})
+      (['medium', 'large'] as const).map((size) =>
+        row(size === 'medium' ? 'medium (default)' : size, {size})
       )
     ),
 };

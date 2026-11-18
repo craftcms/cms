@@ -231,13 +231,13 @@ describe('visual', () => {
         <div data-theme="${theme}" role="listbox" aria-label="Entries">
           <craft-option active>
             <craft-chip appearance="plain">
-              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <craft-indicator slot="status" color="teal"></craft-indicator>
               <div>Poster archive</div>
             </craft-chip>
           </craft-option>
           <craft-option active>
             <craft-chip data-color="white" appearance="outline-fill">
-              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <craft-indicator slot="status" color="teal"></craft-indicator>
               <div>Poster archive</div>
             </craft-chip>
           </craft-option>

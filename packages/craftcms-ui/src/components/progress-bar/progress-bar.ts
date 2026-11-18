@@ -30,9 +30,9 @@ import styles from './progress-bar.styles';
  * ></craft-progress-bar>
  * ```
  *
- * @example Indeterminate/pending state
+ * @example Indeterminate state
  * ```html
- * <craft-progress-bar pending></craft-progress-bar>
+ * <craft-progress-bar indeterminate></craft-progress-bar>
  * ```
  *
  * @example Animated transitions
@@ -50,7 +50,7 @@ import styles from './progress-bar.styles';
  * @cssprop [--c-progress-bar-radius=var(--c-radius-sm)] - Border radius
  * @cssprop [--c-progress-bar-track-color=var(--c-color-neutral-fill-quiet)] - Track background color
  * @cssprop [--c-progress-bar-fill-color=var(--c-color-accent-fill-loud)] - Fill color
- * @cssprop [--c-progress-bar-pending-color=var(--c-color-neutral-fill-normal)] - Pending stripe color
+ * @cssprop [--c-progress-bar-indeterminate-color=var(--c-color-neutral-fill-normal)] - Indeterminate stripe color
  */
 export default class CraftProgressBar extends LitElement {
   static override styles = [styles];
@@ -71,8 +71,8 @@ export default class CraftProgressBar extends LitElement {
   @property({type: Boolean, attribute: 'show-status'}) showStatus: boolean =
     false;
 
-  /** Whether the progress bar is in a pending/indeterminate state */
-  @property({type: Boolean, reflect: true}) pending: boolean = false;
+  /** Whether the progress bar is in an indeterminate state */
+  @property({type: Boolean, reflect: true}) indeterminate: boolean = false;
 
   /** Whether to smoothly transition between progress changes */
   @property({type: Boolean}) smooth: boolean = false;
@@ -105,9 +105,9 @@ export default class CraftProgressBar extends LitElement {
     }
 
     if (changedProperties.has('progress')) {
-      // Remove pending state when progress is set
-      if (this.progress > 0 && this.pending) {
-        this.pending = false;
+      // Remove indeterminate state when progress is set
+      if (this.progress > 0 && this.indeterminate) {
+        this.indeterminate = false;
       }
       this.#lastProgress = this.progress;
     }
@@ -141,7 +141,7 @@ export default class CraftProgressBar extends LitElement {
   reset(): void {
     this.progress = 0;
     this.processed = 0;
-    this.pending = true;
+    this.indeterminate = true;
     this.#lastProgress = 0;
   }
 
@@ -157,18 +157,18 @@ export default class CraftProgressBar extends LitElement {
 
   protected override render() {
     const fillStyles = {
-      width: this.pending ? '100%' : `${this.progressPercent}%`,
+      width: this.indeterminate ? '100%' : `${this.progressPercent}%`,
     };
 
     return html`
       <div
         class=${classMap({
           'progress-bar': true,
-          'progress-bar--pending': this.pending,
+          'progress-bar--indeterminate': this.indeterminate,
         })}
         part="track"
         role="progressbar"
-        aria-valuenow=${this.pending ? nothing : this.progressPercent}
+        aria-valuenow=${this.indeterminate ? nothing : this.progressPercent}
         aria-valuemin="0"
         aria-valuemax="100"
         aria-label=${this.label}
@@ -176,7 +176,7 @@ export default class CraftProgressBar extends LitElement {
         <div
           class=${classMap({
             'progress-bar__fill': true,
-            'progress-bar__fill--smooth': this.smooth && !this.pending,
+            'progress-bar__fill--smooth': this.smooth && !this.indeterminate,
           })}
           part="fill"
           style=${styleMap(fillStyles)}
@@ -188,7 +188,7 @@ export default class CraftProgressBar extends LitElement {
           </div>`
         : nothing}
       <span class="visually-hidden">
-        ${this.pending ? 'Loading' : `${this.progressPercent}%`}
+        ${this.indeterminate ? 'Loading' : `${this.progressPercent}%`}
       </span>
     `;
   }

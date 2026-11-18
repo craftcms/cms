@@ -1,6 +1,6 @@
 # `craft-element-selector-modal` accessibility
 
-Built on `craft-dialog`; see `dialog.a11y.md` for the dialog pattern. This file covers only what the selector adds: the heading, the footer buttons, and the busy and loading states.
+Built on `craft-dialog`; see `dialog.a11y.md` for the dialog pattern. This file covers only what the selector adds: the heading, the footer buttons, and the submitting and loading states.
 
 The element index is slotted in, so this component doesn't own the results list. Selection state, keyboard selection within the list, and announcements of results and selection count belong to the index, such as `ElementPicker` in `resources/js/modules/element-selector-modal/ElementSelectorModal.vue`.
 

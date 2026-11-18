@@ -32,12 +32,12 @@
             <strong>{{ t('Status') }}</strong>
           </div>
           <template v-if="session.actionRequired">
-            <craft-badge fill="warning">{{
+            <craft-badge color="warning">{{
               t('Waiting for review')
             }}</craft-badge>
           </template>
           <template v-else-if="session.id === currentSessionId">
-            <craft-badge fill="success">{{ t('Active') }}</craft-badge>
+            <craft-badge color="success">{{ t('Active') }}</craft-badge>
           </template>
           <template v-else>
             <craft-badge>{{ t('Waiting') }}</craft-badge>

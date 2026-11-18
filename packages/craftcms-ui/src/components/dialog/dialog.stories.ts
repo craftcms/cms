@@ -13,8 +13,8 @@ import '../button/button.js';
  */
 const {events, args, argTypes, template} = getStorybookHelpers('craft-dialog');
 
-// Boolean attributes whose name differs from their property (`no-close` and
-// `noClose`) are set by property name: the helpers generate an arg for the
+// Boolean attributes whose name differs from their property (`hide-close` and
+// `hideClose`) are set by property name: the helpers generate an arg for the
 // property too, and apply it after the attribute, so its default would win.
 
 /**
@@ -70,12 +70,12 @@ type Story = StoryObj<CraftDialog & typeof args>;
 export const Default: Story = {};
 
 /**
- * The content draws its own title, so `no-header` drops the header row, close
+ * The content draws its own title, so `hide-header` drops the header row, close
  * button included. The `label` still names the dialog, and dismissal comes
  * from the footer.
  */
-export const NoHeader: Story = {
-  args: {label: 'Dialog with its own title', noHeader: true},
+export const HideHeader: Story = {
+  args: {label: 'Dialog with its own title', hideHeader: true},
   render: (args) =>
     withOpener(
       args,
@@ -89,7 +89,7 @@ export const NoHeader: Story = {
     await dialog.updateComplete;
 
     // Also proves the manifest-derived args actually reach the component.
-    await expect(dialog.noHeader).toBe(true);
+    await expect(dialog.hideHeader).toBe(true);
 
     const root = dialog.shadowRoot!;
     await expect(root.querySelector('.header')).toBeNull();

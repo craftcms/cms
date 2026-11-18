@@ -27,7 +27,7 @@ declare const Craft: any;
 /** A `craft-dialog`. */
 interface PreviewDialog extends HTMLElement {
   open: boolean;
-  noHeader: boolean;
+  hideHeader: boolean;
   closeOnOutsideClick: boolean;
   label: string;
   updateComplete?: Promise<boolean>;
@@ -120,7 +120,7 @@ export class PreviewFileModal {
 
     this.dialog = document.createElement('craft-dialog') as PreviewDialog;
     this.dialog.classList.add('previewmodal');
-    this.dialog.noHeader = true;
+    this.dialog.hideHeader = true;
     this.dialog.closeOnOutsideClick = true;
     this.dialog.label = t('Preview file');
 

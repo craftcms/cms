@@ -25,7 +25,7 @@ type SelectRichArgs = CraftSelectRich & typeof args;
 const select = (args: Record<string, unknown>, options: unknown) => html`
   <craft-select-rich
     name="${(args.name as string) ?? ''}"
-    ?small="${args.small}"
+    size="${args.size ?? 'medium'}"
     ?disabled="${args.disabled}"
   >
     <label slot="label">${args['label-slot']}</label>
@@ -66,19 +66,19 @@ export const RichOptions: Story = {
       html`
         <craft-option .value="${'online'}">
           <div class="flex items-center gap-1">
-            <craft-indicator fill="success"></craft-indicator
+            <craft-indicator color="success"></craft-indicator
             ><span>Online</span>
           </div>
         </craft-option>
         <craft-option .value="${'maintenance'}">
           <div class="flex items-center gap-1">
-            <craft-indicator fill="warning"></craft-indicator
+            <craft-indicator color="warning"></craft-indicator
             ><span>Maintenance</span>
           </div>
         </craft-option>
         <craft-option .value="${'offline'}">
           <div class="flex items-center gap-1">
-            <craft-indicator fill="danger"></craft-indicator
+            <craft-indicator color="danger"></craft-indicator
             ><span>Offline</span>
           </div>
         </craft-option>
@@ -86,9 +86,9 @@ export const RichOptions: Story = {
     ),
 };
 
-/** `small` steps the control down for a dense row. */
+/** `size="small"` steps the control down for a dense row. */
 export const Small: Story = {
-  args: {small: true, name: 'size', 'label-slot': 'Size'},
+  args: {size: 'small', name: 'size', 'label-slot': 'Size'},
   render: (args) =>
     select(
       args,

@@ -34,7 +34,7 @@ declare const Craft: any;
 /** A `craft-dialog`. */
 interface CpModalDialog extends HTMLElement {
   open: boolean;
-  noHeader: boolean;
+  hideHeader: boolean;
   label: string;
 }
 
@@ -121,7 +121,7 @@ export class CpModal extends Base {
     if (this.#cpSettings.title) {
       this.dialog.label = this.#cpSettings.title;
     } else {
-      this.dialog.noHeader = true;
+      this.dialog.hideHeader = true;
     }
 
     // Fresh id per instance: container ids feed the X-Craft-Container-Id header.

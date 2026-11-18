@@ -94,7 +94,7 @@
         <div>
           <div class="flex items-center gap-sm">
             <strong>{{ name }}</strong>
-            <craft-badge v-if="showEdition" size="small" no-prefix>
+            <craft-badge v-if="showEdition" size="small" hide-prefix>
               {{ lineItem.purchasable.name }}
             </craft-badge>
           </div>

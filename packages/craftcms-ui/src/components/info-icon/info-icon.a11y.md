@@ -32,7 +32,7 @@ Follows the toggletip pattern described in Heydon Pickering's [Tooltips & Toggle
 ### Visual
 
 - [x] The button is a 24×24 CSS px box, all of which opens the bubble, while the icon keeps its own size. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `gives the button a target of at least 24×24 CSS px, all of which opens it` in `info-icon.browser.test.ts`.
-- [ ] The button shows a focus indicator at 3:1 against its surroundings, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified for the `plain`, `zero` button.
+- [ ] The button shows a focus indicator at 3:1 against its surroundings, in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified for the `plain`, `flush` button.
 - [ ] The icon reaches 3:1 against the surface it sits on, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
 - [ ] In forced-colors mode, the icon and focus indicator stay visible. Not yet verified.
 

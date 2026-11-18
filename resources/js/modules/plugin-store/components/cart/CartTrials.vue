@@ -56,7 +56,7 @@
             <strong>{{ trial.name }}</strong>
           </CpLink>
           <strong v-else>{{ trial.name }}</strong>
-          <craft-badge v-if="trial.showEdition" size="small" no-prefix>
+          <craft-badge v-if="trial.showEdition" size="small" hide-prefix>
             {{ trial.editionName }}
           </craft-badge>
         </div>

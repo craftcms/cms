@@ -98,7 +98,7 @@
               {{ reviewer.name }}
             </span>
           </span>
-          <craft-badge :fill="section.fill" size="small">
+          <craft-badge :color="section.fill" size="small">
             {{ section.label }}
           </craft-badge>
         </li>
@@ -149,7 +149,7 @@
                 {{ reviewer.name }}
               </span>
             </span>
-            <craft-badge :fill="section.fill" size="small">
+            <craft-badge :color="section.fill" size="small">
               {{ section.label }}
             </craft-badge>
           </li>

@@ -24,7 +24,7 @@ type BadgeArgs = CraftBadge & typeof args;
 const meta = {
   title: 'Components/Badge',
   component: 'craft-badge',
-  args: {...args, fill: 'gray', 'default-slot': 'Gray'},
+  args: {...args, color: 'gray', 'default-slot': 'Gray'},
   argTypes,
   // Render from args alone so every control — attributes and slots — drives
   // the story. Stories below vary the args, not the template.
@@ -41,7 +41,7 @@ export const Default: Story = {
     const indicator = host.shadowRoot!.querySelector('craft-indicator')!;
     await expect(indicator).toBeTruthy();
     // … which receives the badge's color and resolves it to the loud tone …
-    await expect(indicator.getAttribute('fill')).toBe('gray');
+    await expect(indicator.getAttribute('color')).toBe('gray');
     const dot = indicator.shadowRoot!.querySelector('.indicator')!;
     await expect(dot.getAttribute('style')).toContain(
       'var(--c-color-gray-fill-loud)'
@@ -51,9 +51,9 @@ export const Default: Story = {
   },
 };
 
-/** `fill` takes a color value from `Color` (e.g. `red`). */
+/** `color` takes a color value from `Color` (e.g. `red`). */
 export const FromColorValue: Story = {
-  args: {fill: 'red', 'default-slot': 'Value: red'},
+  args: {color: 'red', 'default-slot': 'Value: red'},
   play: async ({canvasElement}) => {
     const badge = canvasElement.querySelector('craft-badge')!;
     // The badge reflects the resolved color for its own surface styling.
@@ -67,7 +67,7 @@ export const AllColors: Story = {
     <div style="display: grid; gap: 0.5rem; justify-items: start">
       ${Object.entries(Color).map(
         ([key, value]) =>
-          html`<craft-badge fill=${value}>${capitalize(key)}</craft-badge>`
+          html`<craft-badge color=${value}>${capitalize(key)}</craft-badge>`
       )}
     </div>
   `,
@@ -83,7 +83,7 @@ export const Links: Story = {
     <div style="display: grid; gap: 0.5rem; justify-items: start">
       ${colors.map(
         (color) =>
-          html`<craft-badge fill=${color}
+          html`<craft-badge color=${color}
             >${capitalize(color)} <a href="#">link</a></craft-badge
           >`
       )}
@@ -106,7 +106,7 @@ export const SemanticColors: Story = {
         ] as const
       ).map(
         ([label, value]) =>
-          html`<craft-badge fill=${value}>${label}</craft-badge>`
+          html`<craft-badge color=${value}>${label}</craft-badge>`
       )}
     </div>
   `,
@@ -114,7 +114,7 @@ export const SemanticColors: Story = {
 
 export const CustomPrefix: Story = {
   args: {
-    fill: Color.Green,
+    color: Color.Green,
     'prefix-slot': '<craft-icon name="circle-check" label="Done"></craft-icon>',
     'default-slot': 'Custom prefix',
   },

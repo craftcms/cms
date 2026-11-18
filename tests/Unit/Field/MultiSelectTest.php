@@ -37,7 +37,7 @@ it('passes option groups, icons and colors to the combobox, with a hash on each 
         ['label' => 'Plain', 'value' => $encode('plain')],
         ['type' => 'optgroup', 'label' => 'Group', 'options' => [
             ['label' => 'Icon', 'value' => $encode('icon'), 'data' => ['icon' => 'star', 'color' => '#ff0000']],
-            ['label' => 'Color', 'value' => $encode('color'), 'data' => ['indicator' => ['fill' => '#00ff00']]],
+            ['label' => 'Color', 'value' => $encode('color'), 'data' => ['indicator' => ['color' => '#00ff00']]],
         ]],
     ]);
 });

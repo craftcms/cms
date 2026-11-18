@@ -55,8 +55,6 @@ class Input extends ViewComponent
 
     protected ?string $width = null;
 
-    protected bool $small = false;
-
     protected bool $center = false;
 
     protected bool $monospace = false;
@@ -162,14 +160,6 @@ class Input extends ViewComponent
     public function width(?string $width): static
     {
         $this->width = $width;
-
-        return $this;
-    }
-
-    /** Renders the input at a smaller size. */
-    public function small(bool $small = true): static
-    {
-        $this->small = $small;
 
         return $this;
     }
@@ -406,7 +396,6 @@ class Input extends ViewComponent
         return [
             'maxlength' => $this->maxlength,
             'size' => $this->getSize(),
-            'small' => $this->small,
             'width' => $this->width,
             'center' => $this->center,
             'monospace' => $this->monospace,

@@ -54,12 +54,12 @@ export const ProgressStates: Story = {
 };
 
 /**
- * The pending state shows an animated striped pattern to indicate
+ * The indeterminate state shows an animated striped pattern to indicate
  * indeterminate progress (when the total is unknown).
  */
-export const Pending: Story = {
+export const Indeterminate: Story = {
   args: {
-    pending: true,
+    indeterminate: true,
     label: 'Loading...',
   },
 };
@@ -120,7 +120,7 @@ export const AnimatedProgress: Story = {
       ) as CraftProgressBar;
       if (el) {
         el.processed = 0;
-        el.pending = false;
+        el.indeterminate = false;
       }
 
       const updateProgress = () => {
@@ -299,7 +299,7 @@ export const ResetMethod: Story = {
           processed="0"
           show-status
           smooth
-          pending
+          indeterminate
         ></craft-progress-bar>
         <div style="margin-top: 16px; display: flex; gap: 8px;">
           <button type="button" @click="${() => setProgress(25)}">25%</button>
@@ -321,7 +321,7 @@ export const Playground: Story = {
     progress: 50,
     'show-status': true,
     smooth: true,
-    pending: false,
+    indeterminate: false,
     label: 'File upload progress',
   },
 };

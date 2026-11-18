@@ -623,7 +623,7 @@
   >
     <craft-badge
       v-if="payload.isProvisionalDraft"
-      fill="violet"
+      color="violet"
       class="relative text-sm font-normal inline-flex"
     >
       <craft-icon name="pen-circle" slot="prefix"></craft-icon>
@@ -983,7 +983,7 @@
     <template #meta>
       <craft-badge
         v-if="payload.isProvisionalDraft"
-        fill="violet"
+        color="violet"
         class="relative text-sm font-normal inline-flex"
       >
         <craft-icon name="pen-circle" slot="prefix"></craft-icon>

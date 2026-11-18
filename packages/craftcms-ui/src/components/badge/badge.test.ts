@@ -25,34 +25,34 @@ describe('craft-badge', () => {
   it('defaults to gray', async () => {
     const element = await createBadge();
 
-    expect(element.fill).toBe('gray');
+    expect(element.color).toBe('gray');
   });
 
   /**
    * The host's `data-color` is what scopes the `--c-color-*` tokens the badge's
-   * own surface, border, and text read, so it has to follow `fill`.
+   * own surface, border, and text read, so it has to follow `color`.
    */
-  it('reflects the fill onto data-color for the token scope', async () => {
-    const element = await createBadge({fill: 'emerald'});
+  it('reflects the color onto data-color for the token scope', async () => {
+    const element = await createBadge({color: 'emerald'});
 
     expect(element.dataset.color).toBe('emerald');
   });
 
-  it('keeps data-color in step when the fill changes', async () => {
-    const element = await createBadge({fill: 'emerald'});
+  it('keeps data-color in step when the color changes', async () => {
+    const element = await createBadge({color: 'emerald'});
 
-    element.fill = 'red';
+    element.color = 'red';
     await element.updateComplete;
 
     expect(element.dataset.color).toBe('red');
   });
 
   /** The default prefix is an indicator tinted to match. */
-  it('renders an indicator carrying the same fill', async () => {
-    const element = await createBadge({fill: 'red'});
+  it('renders an indicator carrying the same color', async () => {
+    const element = await createBadge({color: 'red'});
     const indicator = element.shadowRoot!.querySelector('craft-indicator');
 
-    expect(indicator?.getAttribute('fill')).toBe('red');
+    expect(indicator?.getAttribute('color')).toBe('red');
   });
 
   it('exposes its regions as parts', async () => {
@@ -76,8 +76,8 @@ describe('craft-badge', () => {
     expect(root.querySelector('.badge__prefix')).not.toBeNull();
   });
 
-  it('leaves out the prefix with no-prefix', async () => {
-    const element = await createBadge({'no-prefix': ''});
+  it('leaves out the prefix with hide-prefix', async () => {
+    const element = await createBadge({'hide-prefix': ''});
 
     expect(element.shadowRoot!.querySelector('.badge__prefix')).toBeNull();
   });

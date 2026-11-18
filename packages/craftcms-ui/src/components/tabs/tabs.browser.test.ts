@@ -1,6 +1,8 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {contrast} from '../../../test/contrast';
-import {sizes} from '@src/constants/size';
+import {Size} from '@src/constants/size';
+
+const sizes = [Size.Small, Size.Medium, Size.Large];
 import './tabs.js';
 import '../tab/tab.js';
 import '../icon/icon.js';

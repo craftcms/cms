@@ -89,9 +89,6 @@ export default class CraftInput extends NativeField(LitElement) {
   /** Whether the native input allows automatic capitalization. */
   @property({attribute: false}) autoCapitalize = true;
 
-  /** Renders the input at a smaller size. */
-  @property({reflect: true, type: Boolean}) small = false;
-
   /**
    * Overrides the inferred width behavior. By default the control spans its
    * column, unless `maxlength` is set — which shrinks the control to the

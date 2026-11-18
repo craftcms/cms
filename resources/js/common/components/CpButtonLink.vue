@@ -21,7 +21,7 @@
   } = defineProps<{
     href: InertiaLinkProps['href'];
     variant?: ButtonVariant;
-    size?: 'zero' | 'small' | 'medium' | 'large';
+    size?: 'xsmall' | 'small' | 'medium' | 'large';
     icon?: string;
     target?: string;
     inertia?: boolean;

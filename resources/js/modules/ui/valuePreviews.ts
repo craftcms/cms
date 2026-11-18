@@ -102,7 +102,7 @@ const table: UiValuePreview = ({html}) => {
  */
 function swatch(color: string): HTMLElement {
   const indicator = document.createElement('craft-indicator');
-  indicator.setAttribute('fill', color);
+  indicator.setAttribute('color', color);
 
   return indicator;
 }
@@ -116,13 +116,13 @@ function badges(
   preview.append(
     ...entries.map(({label, marker}) => {
       const badge = document.createElement('craft-badge');
-      badge.setAttribute('fill', 'gray');
+      badge.setAttribute('color', 'gray');
 
       if (marker) {
         marker.slot = 'prefix';
         badge.append(marker);
       } else {
-        badge.toggleAttribute('no-prefix', true);
+        badge.toggleAttribute('hide-prefix', true);
       }
 
       badge.append(label);

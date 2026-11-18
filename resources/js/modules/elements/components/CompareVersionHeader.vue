@@ -171,7 +171,7 @@
             <craft-badge
               v-if="edited"
               slot="suffix"
-              fill="violet"
+              color="violet"
               size="small"
               class="compare-version-header__edited"
             >

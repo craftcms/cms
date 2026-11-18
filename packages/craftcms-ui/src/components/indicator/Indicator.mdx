@@ -14,7 +14,7 @@ in a list.
 ## Usage
 
 ```html
-<craft-indicator fill="success" label="Live"></craft-indicator>
+<craft-indicator color="success" label="Live"></craft-indicator>
 ```
 
 The element renders a single dot. It has no slot — all of its appearance is
@@ -22,7 +22,7 @@ driven by attributes.
 
 ## Fill
 
-`fill` sets the dot's color. A recognized **status variant** (`default`,
+`color` sets the dot's color. A recognized **status variant** (`default`,
 `success`, `warning`, `danger`, `info`) or **palette swatch** (`red`, `orange`,
 `amber`, `yellow`, `lime`, `green`, `emerald`, `teal`, `cyan`, `sky`, `blue`,
 `indigo`, `violet`, `purple`, `fuchsia`, `pink`, `rose`, `gray`, `white`,
@@ -69,7 +69,7 @@ wrapper to fine-tune it.
 - A `solid` dot has no ring, so it relies on its fill for contrast. The palette
   and variant fills reach 3:1 on the default, sunken and selected-row surfaces.
   Check any custom color
-  passed to `fill`, such as a plugin's status color, reaches 3:1 against the
+  passed to `color`, such as a plugin's status color, reaches 3:1 against the
   surface it sits on.
 
 ## Styling
