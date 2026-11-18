@@ -2,6 +2,7 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -15,6 +16,11 @@ use function CraftCms\Cms\craftAuth;
 class User extends \yii\web\User
 {
     private IdentityInterface|false|null $_identity = false;
+
+    /**
+     * The user [[setIdentity()]] put on the Craft guard, which clearing the identity takes off while it's still there.
+     */
+    private ?UserElement $_guardUser = null;
 
     private ?AuthManager $_illuminateAuthManager = null;
 
@@ -43,7 +49,32 @@ class User extends \yii\web\User
      */
     public function setIdentity($identity): void
     {
+        $user = $identity;
+
+        if ($identity instanceof UserElement && !$identity instanceof IdentityInterface) {
+            $identity = new IdentityWrapper($identity);
+        }
+
         parent::setIdentity($identity);
+
+        if ($user instanceof UserElement) {
+            // Setting the guard's user fires `Authenticated`, whose adapter listener comes back here.
+            if (craftAuth()->id() !== $user->getAuthIdentifier()) {
+                craftAuth()->setUser($user);
+                $this->_guardUser = $user;
+            }
+        } elseif ($identity === null && $this->_guardUser !== null) {
+            $guardUser = $this->_guardUser;
+            $this->_guardUser = null;
+
+            if (craftAuth()->hasUser() && craftAuth()->user() === $guardUser) {
+                // Go back to the session's user, if there is one, the next time the identity is read.
+                craftAuth()->forgetUser();
+                $this->_identity = false;
+
+                return;
+            }
+        }
 
         $this->_identity = $identity;
     }

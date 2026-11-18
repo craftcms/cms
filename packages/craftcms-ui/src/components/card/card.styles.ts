@@ -17,7 +17,7 @@ export default css`
 
   /* What's in a tinted card takes the card's color rather than gray, as its
      body does: neutral controls and hairlines, the selected tab's indicator,
-     form control and checkbox borders, and UI text. */
+     form control and checkbox borders, UI text, and input placeholders. */
   ${tintedHost()} ::slotted(*) {
     --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
     --c-color-neutral-fill-normal: var(--_colorable-fill-normal);
@@ -36,6 +36,7 @@ export default css`
       var(--_colorable-on-quiet) 75%,
       var(--_colorable-fill-quiet)
     );
+    --c-form-control-placeholder: var(--c-text-quiet);
   }
 
   /* A neutral card re-resolves the tokens a tinted card recolors (see

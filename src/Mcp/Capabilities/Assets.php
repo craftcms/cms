@@ -34,6 +34,7 @@ use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -138,7 +139,8 @@ readonly class Assets
         }
 
         return [
-            'url' => $result->url,
+            // Volumes can have root-relative URLs, which MCP clients can’t resolve
+            'url' => Url::absoluteUrl($result->url, $asset->getSite()->getBaseUrl()),
             'mimeType' => $result->mimeType,
             'width' => $result->width,
             'height' => $result->height,

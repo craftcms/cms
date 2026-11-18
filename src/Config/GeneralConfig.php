@@ -633,7 +633,7 @@ class GeneralConfig extends BaseConfig
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
      * ::: code
@@ -1205,22 +1205,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $disallowRobots = false;
-
-    /**
-     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability. This setting can be overridden by passing an `async` option into the `csrfInput()` function.
-     *
-     *  ::: code
-     *  ```php Static Config
-     *  ->asyncCsrfInputs(true)
-     *  ```
-     *  ```shell Environment Override
-     *  CRAFT_ASYNC_CSRF_INPUTS=true
-     *  ```
-     *  :::
-     *
-     * @group Security
-     */
-    public bool $asyncCsrfInputs = false;
 
     /**
      * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
@@ -3167,7 +3151,7 @@ class GeneralConfig extends BaseConfig
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
      *
      * ```bash
-     * php craft utils/update-usernames
+     * php artisan craft:utils:update-usernames
      * ```
      *
      * ::: code
@@ -3873,7 +3857,7 @@ class GeneralConfig extends BaseConfig
      * Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
      * ```php
@@ -4496,22 +4480,6 @@ class GeneralConfig extends BaseConfig
     public function disallowRobots(bool $value = true): self
     {
         $this->disallowRobots = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether CSRF values should be injected via JavaScript for greater cache-ability.
-     *
-     *  ```php
-     *  ->asyncCsrfInputs(true)
-     *  ```
-     *
-     * @see $asyncCsrfInputs
-     */
-    public function asyncCsrfInputs(bool $value = true): self
-    {
-        $this->asyncCsrfInputs = $value;
 
         return $this;
     }
@@ -6491,7 +6459,7 @@ class GeneralConfig extends BaseConfig
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
      *
      * ```bash
-     * php craft utils/update-usernames
+     * php artisan craft:utils:update-usernames
      * ```
      *
      * ```php

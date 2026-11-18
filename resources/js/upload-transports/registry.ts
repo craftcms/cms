@@ -1,4 +1,5 @@
 import Uppy from '@uppy/core';
+import {uuid} from '@/common/craft/strings';
 import {configureTus} from './tus';
 import {configureS3} from './s3';
 import {UploadError, type UploadRequestOptions} from '../upload-request';
@@ -58,7 +59,7 @@ export function transportInstance(type: string): TransportInstance {
 
   if (!instances.has(type)) {
     const uppy = new Uppy({
-      onBeforeFileAdded: (file) => ({...file, id: crypto.randomUUID()}),
+      onBeforeFileAdded: (file) => ({...file, id: uuid()}),
     });
 
     try {

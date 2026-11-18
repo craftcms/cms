@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Database;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -349,8 +349,8 @@ class ElementRelationParamFilter
                     return false;
                 }
 
-                if ($fieldModel instanceof BaseRelationField) {
-                    // We'll deal with normal relation fields all together
+                if ($fieldModel instanceof RelationalFieldInterface) {
+                    // We'll deal with relation fields, and other fields that store relations, all together
                     $relationFieldIds[] = $fieldModel->id;
                 } elseif ($fieldModel instanceof Matrix) {
                     $nestedFieldIds = [];
@@ -391,7 +391,7 @@ class ElementRelationParamFilter
                         if ($relCriteria['sourceSite']) {
                             $subQuery->where(function (Builder $query) use ($relCriteria, $sourcesAlias) {
                                 $query->whereNull("$sourcesAlias.sourceSiteId")
-                                    ->orWhere("$sourcesAlias.sourceSiteId", $relCriteria['sourceSite']);
+                                    ->orWhereIn("$sourcesAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
                             });
                         }
 
@@ -416,7 +416,7 @@ class ElementRelationParamFilter
                         if ($relCriteria['sourceSite']) {
                             $subQuery->where(function (Builder $query) use ($relCriteria, $nestedElementTargetsAlias) {
                                 $query->whereNull("$nestedElementTargetsAlias.sourceSiteId")
-                                    ->orWhere("$nestedElementTargetsAlias.sourceSiteId", $relCriteria['sourceSite']);
+                                    ->orWhereIn("$nestedElementTargetsAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
                             });
                         }
 
@@ -460,7 +460,7 @@ class ElementRelationParamFilter
             if ($relCriteria['sourceSite']) {
                 $subQuery->where(function (Builder $query) use ($relCriteria, $relTableAlias) {
                     $query->whereNull("$relTableAlias.sourceSiteId")
-                        ->orWhere("$relTableAlias.sourceSiteId", $relCriteria['sourceSite']);
+                        ->orWhereIn("$relTableAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
                 });
             }
 

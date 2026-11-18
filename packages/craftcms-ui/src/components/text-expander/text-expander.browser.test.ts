@@ -120,3 +120,45 @@ it('highlights the suggestion that Enter will insert, and moves the highlight wi
   await vi.waitFor(() => expect(fill(name)).toBe(highlighted));
   expect(fill(email)).not.toBe(highlighted);
 });
+
+it.each([
+  [
+    'above the caret, short of room below and with more above',
+    'bottom',
+    'above',
+  ],
+  ['below the caret, with room there', 'top', 'below'],
+])('opens its popup %s', async (_, edge, side) => {
+  document.body.innerHTML = `
+      <input id="field" type="text" aria-label="Template"
+        style="position: fixed; inset-inline-start: 20px; ${edge}: 120px">
+      <craft-text-expander for="field"></craft-text-expander>`;
+  const input = document.querySelector('input')!;
+  const expander = document.querySelector('craft-text-expander')!;
+  expander.triggers = [
+    {
+      trigger: '{',
+      boundary: 'anywhere',
+      options: [{label: 'Email', value: '{email}'}],
+    },
+  ];
+  await expander.updateComplete;
+  await userEvent.fill(input, '{');
+  await vi.waitFor(() =>
+    expect(expander.querySelector('craft-option')).not.toBeNull()
+  );
+
+  const popup = expander
+    .shadowRoot!.querySelector('craft-popover')!
+    .shadowRoot!.querySelector<HTMLElement>('[part~="popup"]')!;
+  await vi.waitFor(() => {
+    const pane = popup.getBoundingClientRect();
+    const field = input.getBoundingClientRect();
+    const middle = field.top + field.height / 2;
+    if (side === 'above') {
+      expect(pane.bottom).toBeLessThan(middle);
+    } else {
+      expect(pane.top).toBeGreaterThan(middle);
+    }
+  });
+});

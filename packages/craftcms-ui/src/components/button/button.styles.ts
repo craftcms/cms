@@ -238,6 +238,7 @@ export default css`
   :host([size~='small']) {
     --_padding-inline: var(--c-spacing-sm);
     --_height: var(--c-size-control-sm);
+    --c-icon-size: var(--c-size-icon-xs, calc(10rem / 16));
     min-width: var(--c-size-control-sm);
     font-size: 0.9em;
   }
@@ -325,10 +326,14 @@ export default css`
   Icon
    */
   :host([icon]:empty) {
-    /* A square around a 1em × 0.8em icon (see craft-icon). */
+    /* A square around the icon, which is 1.25 times as wide as it is tall (see craft-icon). */
+    --_icon-size: var(--c-icon-size, var(--c-size-icon-sm, calc(12rem / 16)));
     --_padding-inline: 0px;
-    --_flush-inline: max(0px, calc((var(--_height) - 1em) / 2));
-    --_flush-block: max(0px, calc((var(--_height) - 0.8em) / 2));
+    --_flush-inline: max(
+      0px,
+      calc((var(--_height) - var(--_icon-size) * 1.25) / 2)
+    );
+    --_flush-block: max(0px, calc((var(--_height) - var(--_icon-size)) / 2));
     aspect-ratio: 1;
     padding-block: 0;
     display: inline-flex;
@@ -338,11 +343,11 @@ export default css`
     line-height: 1;
   }
 
-  /* An xsmall button's own icon is half its height rather than 0.8em, so it
-     sits a whole number of pixels inside the borders (3px in a 16px button).
-     0.8em would put it a fraction of a pixel in, which 1x screens round off
-     center. Keyed on the content rather than \`[icon]\`, which isn't there
-     when \`icon\` is set as a property. */
+  /* An xsmall button's own icon is half its height rather than an icon size
+     token, so it sits a whole number of pixels inside the borders (3px in a
+     16px button), which 1x screens would otherwise round off center. Keyed on
+     the content rather than \`[icon]\`, which isn't there when \`icon\` is
+     set as a property. */
   :host([size~='xsmall']) .button-content--icon-only craft-icon {
     --c-icon-size: calc(var(--_height) / 2);
   }
@@ -780,9 +785,9 @@ export default css`
     --_divider-right: var(--c-button-divider-start-color, transparent);
   }
 
-  /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
+  /* Ellipsis (action menu) icons read small at a small button's icon size */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    --c-icon-size: 1em;
+    --c-icon-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 `;

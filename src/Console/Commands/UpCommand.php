@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Console\Commands;
 
 use Closure;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
@@ -214,7 +215,7 @@ class UpCommand extends Command implements Isolatable
             $this->components->task(t('Clearing:').' '.t('Compiled views'), CompiledViews::clear(...));
         } catch (Throwable $e) {
             report($e);
-            $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `php artisan view:clear` manually.');
+            $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `'.app(TerminalCommands::class)->artisan('view:clear').'` manually.');
         }
     }
 

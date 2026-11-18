@@ -934,7 +934,7 @@
     display: flex;
     align-items: center;
     gap: var(--c-spacing-sm);
-    min-height: var(--cp-header-height, 3rem);
+    min-height: calc(var(--cp-header-height, 3rem) + 1px);
     padding-inline: var(--c-spacing-md);
   }
 

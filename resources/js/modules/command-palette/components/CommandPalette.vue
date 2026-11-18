@@ -113,6 +113,7 @@
   const actions = useTemplateRef<{place: () => void}>('actions');
   const viewHeading = useTemplateRef<HTMLElement>('viewHeading');
   const viewBody = useTemplateRef<HTMLElement>('viewBody');
+  const results = useTemplateRef<HTMLElement>('results');
 
   const query = shallowRef('');
   const selectedIndex = shallowRef(0);
@@ -225,6 +226,15 @@
       ) ?? null
   );
 
+  /**
+   * The result selected when the query last changed: the top one then. It
+   * stays selected as other providers' results arrive, even ones that rank
+   * above it, so Return opens what was showing as selected rather than
+   * something that came in a moment before. Only if it goes does the new top
+   * result take its place.
+   */
+  let autoSelectedId: string | null = null;
+
   // The top result is selected until the person picks another, or moves to
   // its actions; once they have, theirs stays selected as other providers'
   // results arrive.
@@ -232,11 +242,25 @@
     selectionMoved.value = false;
     selectedIndex.value = 0;
     hoveredId.value = null;
+    autoSelectedId = rows.value[0]?.item.id ?? null;
+    void scrollToSelection();
   });
 
   watch(rows, (current, previous) => {
     if (!selectionMoved.value) {
-      selectedIndex.value = 0;
+      const index =
+        autoSelectedId === null
+          ? -1
+          : current.findIndex((row) => row.item.id === autoSelectedId);
+
+      if (index === -1) {
+        autoSelectedId = current[0]?.item.id ?? null;
+        selectedIndex.value = 0;
+        void scrollToSelection();
+      } else if (index !== selectedIndex.value) {
+        selectedIndex.value = index;
+        void scrollToSelection();
+      }
 
       return;
     }
@@ -245,6 +269,21 @@
     const index = current.findIndex((row) => row.item.id === selectedId);
     selectedIndex.value = Math.max(index, 0);
   });
+
+  /**
+   * Brings the selected result into view after the palette selects one itself.
+   * The top one scrolls the results all the way up, heading and all.
+   */
+  async function scrollToSelection(): Promise<void> {
+    if (selectedIndex.value === 0) {
+      await nextTick();
+      results.value?.scrollTo({top: 0});
+
+      return;
+    }
+
+    await scrollSelectedIntoView();
+  }
 
   // A result's actions go when it does, and focus on them would go with them.
   watch(actionsRow, (current, previous) => {
@@ -807,6 +846,7 @@
         </div>
 
         <div
+          ref="results"
           class="command-palette__results"
           :aria-busy="search.searching.value ? 'true' : 'false'"
           @pointerleave="onResultsPointerLeave"
@@ -937,13 +977,8 @@
 <style scoped>
   /* Draws the modal's border inside its clipping box, so the search field's focus ring can cover it. */
   .command-palette {
-    /*
-     * The search bar's height: a small control between the modal's padding,
-     * which is what a view's heading bar comes to with its small Back button.
-     */
-    --_bar-block-size: calc(
-      var(--c-size-control-sm) + var(--c-modal-padding) * 2
-    );
+    /* The search bar's height, less its bottom border: a modal header's. */
+    --_bar-block-size: calc(var(--c-modal-header-height) - 1px);
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -1079,10 +1114,13 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--c-spacing-lg);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
     margin-inline: calc(var(--c-modal-padding) * -1);
+    margin-block-start: calc(var(--c-modal-padding) * -1);
     margin-block-end: var(--cp-container-padding);
     padding-inline: var(--c-modal-padding);
-    padding-block-end: var(--c-modal-padding);
+    padding-block: var(--c-spacing-sm);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 

@@ -42,6 +42,23 @@ it('checks reserved and pending job presence without hydrating the backlog', fun
         ->and($retrieved)->toBe(0);
 });
 
+it('does not count jobs reserved for longer than the queue\'s retry_after', function () {
+    config()->set('queue.default', 'database');
+    config()->set('queue.connections.database.retry_after', 600);
+
+    $this->service->processing('reserved-job');
+    expect($this->service->hasReservedJobs())->toBeTrue();
+
+    $this->travel(599)->seconds();
+    expect($this->service->hasReservedJobs())->toBeTrue();
+
+    $this->travel(2)->seconds();
+    expect($this->service->hasReservedJobs())->toBeFalse();
+
+    $this->service->setProgress('reserved-job', 'Still running', 50);
+    expect($this->service->hasReservedJobs())->toBeTrue();
+});
+
 it('shares queue status while loading only the displayed job', function () {
     $this->service->queued('pending-one', 'First pending job');
     $this->service->queued('pending-two', 'Second pending job');
@@ -422,11 +439,56 @@ it('keeps cancellation hidden and immune to later writes', function () {
         ->description->toBe('Job to Cancel')
         ->progress->toBe(0);
 
-    $this->travel(30)->days();
+    $this->travel(6)->days();
     expect(new JobProgressModel()->prunable()->where('uid', $uid)->exists())->toBeFalse();
+
+    $this->travel(2)->days();
+    expect(new JobProgressModel()->prunable()->where('uid', $uid)->exists())->toBeTrue();
 
     $this->service->queued($uid, 'Explicit retry');
     expect($this->service->getProgress($uid)?->status)->toBe(JobStatus::Pending);
+});
+
+it('ignores worker events that arrive after a job finished', function (string $finish, JobStatus $status) {
+    $uid = "late-events-$finish";
+    $this->service->queued($uid, 'Job');
+    $this->service->processing($uid);
+    $finish === 'completed' ? $this->service->completed($uid) : $this->service->failed($uid, error: 'Boom');
+
+    $this->service->failed($uid, error: 'Late failure');
+    $this->service->completed($uid);
+    $this->service->processing($uid);
+    $this->service->setProgress($uid, 'Late progress', 75);
+
+    expect(JobProgressModel::find($uid)->status)->toBe($status);
+})->with([
+    'completed' => ['completed', JobStatus::Done],
+    'failed' => ['failed', JobStatus::Failed],
+]);
+
+it('keeps a cancelled delayed job until a week after its delay ran out', function () {
+    $this->service->queued('delayed-job', 'Delayed job', delay: 10 * 86400);
+    $this->service->cancel('delayed-job');
+
+    $this->travel(16)->days();
+    expect(new JobProgressModel()->prunable()->where('uid', 'delayed-job')->exists())->toBeFalse();
+
+    $this->travel(2)->days();
+    expect(new JobProgressModel()->prunable()->where('uid', 'delayed-job')->exists())->toBeTrue();
+});
+
+it('counts delayed jobs as waiting once their delay has passed', function () {
+    $this->service->queued('delayed-job', 'Delayed job', delay: 60);
+    expect($this->service->hasPendingJobs())->toBeFalse();
+
+    $this->travel(61)->seconds();
+    expect($this->service->hasPendingJobs())->toBeTrue();
+});
+
+it('displays jobs queued without a delay', function () {
+    $this->service->queued('no-delay-job', 'Job', delay: 0);
+
+    expect($this->service->getDisplayedJob()?->uid)->toBe('no-delay-job');
 });
 
 it('can check if a job exists', function () {

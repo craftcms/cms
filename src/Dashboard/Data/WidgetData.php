@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Data;
 
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\View\HtmlFragment;
 
 /**
@@ -30,6 +29,7 @@ readonly class WidgetData
         public ?string $component,
         public ?array $data,
         public HtmlFragment $fragment,
-        public ?UiPayload $settingsUi,
+        /** Whether the widget has settings, whose UI the dashboard loads when they're opened. */
+        public bool $hasSettings,
     ) {}
 }

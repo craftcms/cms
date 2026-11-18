@@ -92,7 +92,7 @@ readonly class Releases
     }
 
     /** @return array{release: array<string, mixed>} */
-    #[McpTool(name: 'releases_get', description: 'Reads a release and basic member metadata across sites. Content fields require drafts_get and content view permission.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'releases_get', description: 'Reads a release and basic member metadata across sites. A scheduled release’s publishedAt is the future time it will publish. Content fields require drafts_get and content view permission.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function get(#[Schema(minimum: 1)] int $id): array
     {
         return ['release' => $this->serializer->serialize($this->release($id))];

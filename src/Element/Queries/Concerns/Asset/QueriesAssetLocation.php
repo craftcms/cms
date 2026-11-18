@@ -85,6 +85,12 @@ trait QueriesAssetLocation
 
     public static function applyVolumeId(BuilderContract $query, mixed $value): void
     {
+        if ($value === []) {
+            $query->whereRaw('0 = 1');
+
+            return;
+        }
+
         if (! $value) {
             return;
         }

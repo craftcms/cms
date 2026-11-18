@@ -55,7 +55,7 @@ final class UpdateStatusesCommand extends Command implements Isolatable
                         ->site('*')
                         ->unique()
                         ->status(null)
-                        ->where('status', '!=', $status)
+                        ->where('entries.status', '!=', $status)
                         ->where($condition);
 
                     $this->resaveEntries($query);
@@ -80,8 +80,8 @@ final class UpdateStatusesCommand extends Command implements Isolatable
             Entry::STATUS_LIVE => function (Builder $query) use ($now) {
                 $query->where('entries.postDate', '<=', $now)
                     ->where(function (Builder $query) use ($now) {
-                        $query->whereNull('expiryDate')
-                            ->orWhere('expiryDate', '>', $now);
+                        $query->whereNull('entries.expiryDate')
+                            ->orWhere('entries.expiryDate', '>', $now);
                     });
             },
             Entry::STATUS_PENDING => function (Builder $query) use ($now) {

@@ -13,8 +13,27 @@ export default css`
 
   ::slotted([slot='input']) {
     ${baseFormControlStyles}
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--_spacing-block);
     line-height: var(--leading-normal);
     resize: vertical;
+  }
+
+  :host {
+    --_spacing-block: var(--c-textarea-spacing-block, var(--c-spacing-md));
+  }
+
+  @supports (field-sizing: content) {
+    /* Matches the selector that makes the textarea content-box. */
+    .input-group__container > .input-group__input ::slotted([slot='input']) {
+      box-sizing: border-box;
+      --_block-offset: calc(
+        2 * (var(--_spacing-block, 0px) + var(--_input-border-width, 0px))
+      );
+      field-sizing: content;
+      min-block-size: calc(var(--_rows) * 1lh + var(--_block-offset));
+      max-block-size: calc(var(--_max-rows) * 1lh + var(--_block-offset));
+      /* Scrolls once it stops growing, even where the page hides overflow. */
+      overflow-y: auto !important;
+    }
   }
 `;

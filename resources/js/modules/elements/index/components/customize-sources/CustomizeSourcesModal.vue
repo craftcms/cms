@@ -279,6 +279,10 @@
       source.label = String(valueAt(values, change.path) ?? '');
     }
 
+    if (leaf === 'enabled' && change.path.at(-2) === source.key) {
+      source.enabled = valueAt(values, change.path);
+    }
+
     if (leaf === 'attr' && change.path.at(-2) === 'defaultSort' && source.key) {
       const dir = defaultSortDir(
         source,
@@ -543,7 +547,10 @@
   function isEnabled(source: SourceRow): boolean {
     if (source.type !== 'native') return true;
 
-    const enabled = settingsFor(source).enabled;
+    const enabled =
+      source.enabled !== undefined
+        ? source.enabled
+        : settingsFor(source).enabled;
 
     return !(
       enabled === false ||
@@ -674,6 +681,12 @@
             :item-id="sourceId"
             :label="(source) => source.label"
             :sublabel="(source) => source.handle"
+            :status="
+              (source) =>
+                isEnabled(source)
+                  ? null
+                  : {status: 'disabled', label: t('Disabled')}
+            "
             :item-type="(source) => source.type"
             :selected="selectedKey"
             :disabled="(source) => !source.key"

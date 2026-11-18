@@ -567,6 +567,9 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
+     * Set a column’s `align` to `end` when its values are quantities (amounts, counts, measurements), so the
+     * column and its header are right-aligned and the digits line up. Columns align to the start by default.
+     *
      * @return array<string,AttributeConfig> The table attributes.
      */
     public static function tableAttributes(): array;

@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Url;
 use Override;
@@ -33,12 +32,6 @@ class EntryIndexViewModel extends ContentIndexViewModel
         return $this->sectionHandle ?? '';
     }
 
-    /** @return list<array<string, mixed>> */
-    public function publishableSections(): array
-    {
-        return SectionResource::collection(Sections::getPublishableSections())->resolve();
-    }
-
     /**
      * The entry index is a page of its own — `content/entries`, or
      * `content/{page}` for a custom index page.
@@ -52,18 +45,14 @@ class EntryIndexViewModel extends ContentIndexViewModel
     /**
      * Sections have index URLs of their own, which is what the rest of the CP
      * links them by — see {@see Section::getCpIndexUri()}, whose shape this
-     * matches. Singles share one source, and so one `singles` URL.
+     * matches.
      *
      * @param  array<string, mixed>  $source
      */
     #[Override]
     protected function sourceUrl(array $source): ?string
     {
-        $handle = match (true) {
-            $source['key'] === 'singles' => 'singles',
-            str_starts_with((string) $source['key'], 'section:') => $source['data']['handle'] ?? null,
-            default => null,
-        };
+        $handle = str_starts_with((string) $source['key'], 'section:') ? ($source['data']['handle'] ?? null) : null;
 
         // Anything that isn't a section source has no URL of its own, so fall
         // back to the `?source=` query. That includes a custom source limited
@@ -74,19 +63,14 @@ class EntryIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * Maps the section-handle route segment (e.g. `content/entries/blog`,
-     * `content/entries/singles`) to its source key (`singles` for Single
-     * sections, `section:{uid}` otherwise).
+     * Maps the section-handle route segment (e.g. `content/entries/blog`) to
+     * its source key (`section:{uid}`).
      */
     #[Override]
     protected function defaultSourceKey(): ?string
     {
         if ($this->sectionHandle === null || $this->sectionHandle === '') {
             return null;
-        }
-
-        if ($this->sectionHandle === 'singles') {
-            return 'singles';
         }
 
         $section = Sections::getSectionByHandle($this->sectionHandle);

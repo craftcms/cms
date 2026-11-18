@@ -195,7 +195,7 @@
     padding-inline-end: calc(
       var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
     );
-    min-height: calc(42rem / 16);
+    min-height: var(--cp-header-height);
     display: grid;
     gap: var(--c-spacing-sm);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';

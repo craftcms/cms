@@ -13,7 +13,10 @@
    * ```
    */
   import {computed, onBeforeUnmount, onMounted, useId, watch} from 'vue';
-  import {useScreenPanels} from '@/common/composables/screenPanels';
+  import {
+    useScreenPanels,
+    type ScreenPanels,
+  } from '@/common/composables/screenPanels';
   import DetailsPanelContent from './DetailsPanelContent.vue';
   import type {DetailsPanel, DetailsPanelStatus} from './detailsPanels';
 
@@ -37,11 +40,20 @@
     initialFocus?: () => HTMLElement | null | undefined;
     /** See {@link DetailsPanel.unlistedInPalette}. */
     unlistedInPalette?: boolean;
+    /**
+     * The screen to add it to, rather than the nearest one, or `null` for
+     * none, which keeps its content mounted but out of every rail. The panel
+     * moves when it changes, keeping its content's state.
+     */
+    screen?: ScreenPanels | null;
   }>();
 
-  const panels = useScreenPanels();
+  const nearest = useScreenPanels();
+  const panels = computed(() =>
+    props.screen === undefined ? nearest : props.screen
+  );
 
-  if (import.meta.env.DEV && !panels) {
+  if (import.meta.env.DEV && props.screen === undefined && !nearest) {
     console.warn(
       `[ScreenPanel] “${props.id}” isn't inside a screen, so nothing will show it.`
     );
@@ -68,22 +80,25 @@
   // screen, which would otherwise re-render while this is still mounting.
   onMounted(() => {
     watch(
-      descriptor,
-      (panel, previous) => {
-        if (previous && previous.id !== panel.id) {
-          panels?.unregister(previous.id);
+      [descriptor, panels],
+      ([panel, screen], [previous, previousScreen]) => {
+        if (
+          previous &&
+          (previous.id !== panel.id || previousScreen !== screen)
+        ) {
+          previousScreen?.unregister(previous.id);
         }
 
-        panels?.register(panel);
+        screen?.register(panel);
       },
       {immediate: true}
     );
   });
 
-  onBeforeUnmount(() => panels?.unregister(props.id));
+  onBeforeUnmount(() => panels.value?.unregister(props.id));
 
-  const section = computed(() => panels?.sections.get(props.id) ?? null);
-  const active = computed(() => panels?.openPanelId.value === props.id);
+  const section = computed(() => panels.value?.sections.get(props.id) ?? null);
+  const active = computed(() => panels.value?.openPanelId.value === props.id);
 
   defineSlots<{
     default?(props: {active: boolean}): unknown;

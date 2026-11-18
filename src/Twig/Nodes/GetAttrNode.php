@@ -113,6 +113,7 @@ class GetAttrNode extends GetAttrExpression
         }
 
         // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
+        /** @see TemplateHelper::attribute() */
         $compiler->raw(TemplateHelper::class.'::attribute($this->env, $this->source, ');
 
         if ($nullSafe) {

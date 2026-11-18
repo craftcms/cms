@@ -117,6 +117,7 @@ export function createCraftColumnHelper<T extends object>() {
       return baseHelper.display({
         id: 'actions',
         header: t('Actions'),
+        enableHiding: false,
         meta: {
           headerSrOnly: true,
           ...config.meta,

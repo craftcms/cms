@@ -114,6 +114,43 @@ test('cloned executed structure queries can be further narrowed', function () {
         ->and($query->clone()->structureId(123)->applyAfterQueryCallbacks(collect([[]]))->first())->toBe(['structureId' => 123]);
 });
 
+test('sibling params are limited to the parent of nested elements', function () {
+    $structure = Structure::factory()->create();
+    // Clean structure from factory created elements
+    $structure->structureElements()->delete();
+
+    $root = new StructureElement([
+        'structureId' => $structure->id,
+    ]);
+    $root->makeRoot();
+
+    $append = function (StructureElement $parent) use ($structure): StructureElement {
+        $node = new StructureElement([
+            'structureId' => $structure->id,
+            'elementId' => Entry::factory()->create()->id,
+        ]);
+        $node->appendTo($parent);
+
+        return $node;
+    };
+
+    $parent = $append($root);
+    $otherParent = $append($root);
+    [$a, $b, $c] = [$append($parent), $append($parent), $append($parent)];
+    $append($otherParent);
+
+    $query = entryQuery()->structureId($structure->id);
+    $element = $query->clone()->id($b->elementId)->one();
+
+    expect($query->clone()->siblingOf($b->elementId)->ids())->toBe([$a->elementId, $c->elementId])
+        ->and($query->clone()->prevSiblingOf($b->elementId)->ids())->toBe([$a->elementId])
+        ->and($query->clone()->nextSiblingOf($b->elementId)->ids())->toBe([$c->elementId])
+        ->and($query->clone()->prevSiblingOf($a->elementId)->ids())->toBe([])
+        ->and($query->clone()->nextSiblingOf($c->elementId)->ids())->toBe([])
+        ->and($element->getPrevSibling()?->id)->toBe($a->elementId)
+        ->and($element->getNextSibling()?->id)->toBe($c->elementId);
+});
+
 test('structure params that cannot be resolved keep aborting the query', function (string $param) {
     $entry = Entry::factory()->createElement();
     Entry::factory()->create();

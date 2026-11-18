@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\ActivityTimelinePresenter;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
@@ -18,10 +20,10 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
-use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
+use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Notifications\ReleaseFailed;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
@@ -423,6 +425,19 @@ it('publishes only due scheduled releases after the scheduling user loses every 
         ->and(EntryElement::find()->id($unscheduledDraft->getCanonicalId())->status(null)->one()->title)->toBe('Unscheduled original');
 });
 
+it('rejects a status change made from an outdated copy of a release', function () {
+    $release = $this->releases->create('Launch', null, $this->actor);
+    $outdated = Release::query()->findOrFail($release->id);
+
+    $release->transitionTo(ReleaseStatus::Scheduled, ['publishedAt' => now()->addDay()]);
+
+    expect(fn () => $outdated->transitionTo(ReleaseStatus::Publishing))
+        ->toThrow(RuntimeException::class, 'changed concurrently')
+        ->and(fn () => $release->transitionTo(ReleaseStatus::Scheduled))
+        ->toThrow(LogicException::class, 'cannot transition from scheduled to scheduled')
+        ->and($release->refresh()->status)->toBe(ReleaseStatus::Scheduled);
+});
+
 it('requires publication permission to cancel a scheduled release', function () {
     Date::setTestNow('2026-10-01 12:00:00');
 
@@ -592,11 +607,14 @@ it('records release publication in the activity of each published entry', functi
         ->subject(ActivitySubject::fromElement($canonical))
         ->sole();
 
-    expect($event->eventType)->toBe(ReleaseDraftPublished::class)
-        ->and(app(Activities::class)->format($event)->toHtml())->toBe(sprintf(
-            'Published with the <a href="%s">Launch &lt;day&gt;</a> release',
-            route('craft.cp.releases.show', $release),
-        ));
+    $presented = app(ActivityTimelinePresenter::class)->events(collect([$event]), $this->actor)->sole();
+
+    expect($event->eventType)->toBe(DraftApplied::class)
+        ->and($event->operationId)->toBe("release:$release->id")
+        ->and($presented['operation'])->toBe([
+            'label' => 'Launch <day>',
+            'url' => route('craft.cp.releases.show', $release),
+        ]);
 });
 
 it('requires release publication permission even when a manager can publish the member', function () {

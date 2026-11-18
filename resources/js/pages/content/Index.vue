@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import NewEntryButton from '@/modules/elements/components/NewEntryButton.vue';
-  import type {PublishableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
   import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import EntryMoverModal from '@/modules/entry-mover/EntryMoverModal.vue';
@@ -11,15 +10,17 @@
   } from '@/modules/elements/index/composables/useElementIndexVisits';
   import {index} from '@/routes/craft/cp/content/index.js';
   import {usePage} from '@inertiajs/vue3';
+  import useCraftData from '@/common/composables/useCraftData';
 
   // The shared index payload comes from the ElementIndexPage pipeline; only
   // the Entry-specific keys (EntryIndexViewModel) remain props.
   const props = defineProps<{
     sectionHandle?: string | number;
-    publishableSections: Array<PublishableSection>;
   }>();
 
   const page = usePage<{page: string}>();
+  // The shared once prop, rather than a page prop of its own sent with every visit
+  const {general} = useCraftData();
 
   // The pipeline is route-agnostic; this page owns the fact that its index
   // lives at `content.index` with `page`/`sectionHandle` route params.
@@ -51,7 +52,7 @@
         <NewEntryButton
           :sources="indexState.sources"
           :source="indexState.source ?? undefined"
-          :publishable-sections="publishableSections"
+          :creatable-sections="general.creatableSections"
           :element-display-name="indexState.elementLowerDisplayName"
         />
       </template>

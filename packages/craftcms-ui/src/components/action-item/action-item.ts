@@ -8,6 +8,7 @@ import {LightDomController} from '@src/controllers/LightDomController';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {linkTarget, newTabCue} from '@src/utilities/external-links';
+import {cancelIdle, whenIdle} from '@src/utilities/idle';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
@@ -37,6 +38,46 @@ const INTERACTIVE = [
   'craft-checkbox',
   'craft-switch',
 ].join(', ');
+
+/** Items in closed menus waiting to render, in the order they arrived. */
+const waitingItems = new Set<CraftActionItem>();
+
+/** The idle callback that renders {@link waitingItems}. */
+let renderWaitingHandle: number | undefined;
+
+function queueFirstRender(item: CraftActionItem): void {
+  waitingItems.add(item);
+  renderWaitingHandle ??= whenIdle(renderWaitingItems);
+}
+
+/** Leaves an item out of idle rendering, as when it's rendered or removed. */
+function unqueueFirstRender(item: CraftActionItem): void {
+  waitingItems.delete(item);
+  if (!waitingItems.size && renderWaitingHandle !== undefined) {
+    cancelIdle(renderWaitingHandle);
+    renderWaitingHandle = undefined;
+  }
+}
+
+/**
+ * Renders waiting items until the idle period runs out, then waits for the
+ * next one. Rendering them together, rather than one per idle callback, lets
+ * other idle work that reads styles find them settled.
+ */
+function renderWaitingItems(deadline?: IdleDeadline): void {
+  renderWaitingHandle = undefined;
+
+  for (const item of waitingItems) {
+    item.renderNow();
+    if (deadline && deadline.timeRemaining() <= 0) {
+      break;
+    }
+  }
+
+  if (waitingItems.size) {
+    renderWaitingHandle = whenIdle(renderWaitingItems);
+  }
+}
 
 /**
  * @summary A single entry in a menu, rendered as a button or — when `href` is
@@ -179,6 +220,15 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     super.connectedCallback();
     this.addEventListener('click', this._blockDisabledClick, {capture: true});
     this.addEventListener('click', this);
+    // Picks up the first render it was waiting for when it was removed: at
+    // idle if it's back in a closed menu, or now if it shows.
+    if (this.#releaseFirstRender) {
+      if (this.#inClosedMenu()) {
+        queueFirstRender(this);
+      } else {
+        this.renderNow();
+      }
+    }
   }
 
   override disconnectedCallback() {
@@ -188,6 +238,8 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     });
     this.removeEventListener('click', this);
     this._clearResetStateTimeout();
+    // Its first render still waits, but not on idle time while it's out of the page.
+    unqueueFirstRender(this);
   }
 
   /**
@@ -203,6 +255,60 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
       control.focus(options);
     } else {
       super.focus(options);
+    }
+  }
+
+  /** Whether it's in a closed menu's pane, rather than showing. */
+  #inClosedMenu(): boolean {
+    const menu = this.closest<HTMLElement & {open?: boolean}>(
+      'craft-action-menu'
+    );
+    if (!menu || menu.open) {
+      return false;
+    }
+
+    // The invoker shows while the menu is closed.
+    let menuChild: Element = this;
+    while (menuChild.parentElement !== menu) {
+      menuChild = menuChild.parentElement!;
+    }
+
+    return menuChild.slot !== 'invoker';
+  }
+
+  /** Lets a first render that's waiting for its closed menu go ahead. */
+  #releaseFirstRender: (() => void) | null = null;
+
+  /**
+   * Holds the first render of an item in a closed menu until the browser is
+   * idle. A page can carry hundreds of these, and none of them shows until
+   * its menu opens, which renders them at once with {@link renderNow}.
+   */
+  protected override scheduleUpdate(): void | Promise<unknown> {
+    if (this.hasUpdated || !this.#inClosedMenu()) {
+      return super.scheduleUpdate();
+    }
+
+    return new Promise<void>((resolve) => {
+      this.#releaseFirstRender = () => {
+        this.#releaseFirstRender = null;
+        unqueueFirstRender(this);
+        resolve();
+      };
+      queueFirstRender(this);
+    }).then(() => super.scheduleUpdate());
+  }
+
+  /**
+   * Renders an item whose first render is waiting for its closed menu, so it
+   * has its size and button by the time the menu shows.
+   *
+   * @internal
+   */
+  renderNow(): void {
+    if (this.#releaseFirstRender) {
+      this.#releaseFirstRender();
+      this.performUpdate();
     }
   }
 

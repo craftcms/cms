@@ -72,7 +72,7 @@ readonly class DashboardController
                 'name' => $widget->getDisplayName(),
                 'maxColspan' => $widget->getMaxColspan(),
                 'selectable' => true,
-                'settingsUi' => $this->getWidgetSettingsUi($widget, '__NAMESPACE__'),
+                'hasSettings' => $this->widgetHasSettings($widget),
             ]);
         }
 
@@ -82,7 +82,7 @@ readonly class DashboardController
                     'iconSvg' => $this->getWidgetIconSvg($widget),
                     'name' => $widget->getDisplayName(),
                     'maxColspan' => $widget->getMaxColspan(),
-                    'settingsUi' => null,
+                    'hasSettings' => false,
                     'selectable' => false,
                 ]);
             }
@@ -95,7 +95,12 @@ readonly class DashboardController
             'crumbs' => fn () => [
                 new ActionItem()->label(t('Dashboard')),
             ],
-            'widgets' => fn () => $widgets->map(fn (WidgetInterface $widget) => $this->getWidgetData($widget))->filter()->values(),
+            // Skip widgets the user is no longer allowed to use
+            'widgets' => fn () => $widgets
+                ->filter(fn (WidgetInterface $widget) => $this->canUseWidget($widget))
+                ->map(fn (WidgetInterface $widget) => $this->getWidgetData($widget))
+                ->filter()
+                ->values(),
             'widgetTypes' => $widgetTypeInfo->map(fn (array $info) => new WidgetTypeData(...$info)),
             // Offered for widgets, as for entry types; the color select's own palette is wider.
             'widgetColors' => array_column(Color::cases(), 'value'),
