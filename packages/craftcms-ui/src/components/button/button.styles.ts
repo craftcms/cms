@@ -564,8 +564,8 @@ export default css`
     color: inherit;
   }
 
-  /* Tint: hovered, pressed (marked active) and open, a plain button is
-     tinted with its own color rather than filled. */
+  /* Tint: hovered, pressed (marked active) and, as a popover's invoker, open,
+     a plain button is tinted with its own color rather than filled. */
   :host([variant~='plain'][tint]) {
     --c-color-fill-quiet: transparent;
     --c-color-mix-hover: currentColor 5%;
@@ -579,7 +579,11 @@ export default css`
     --c-color-on-loud: currentColor;
   }
 
-  :host([variant~='plain'][tint][aria-expanded='true']:not(:disabled)) {
+  :host(
+    [variant~='plain'][tint][slot='invoker'][aria-expanded='true']:not(
+      :disabled
+    )
+  ) {
     background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 

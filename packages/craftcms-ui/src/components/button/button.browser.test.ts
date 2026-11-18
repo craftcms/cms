@@ -377,10 +377,16 @@ describe('[tint]', () => {
     expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('is tinted as much while open', async () => {
-    const button = await mountTinted('aria-expanded="true"');
+  it('is tinted as much while its popover is open', async () => {
+    const button = await mountTinted('slot="invoker" aria-expanded="true"');
 
     expect(getComputedStyle(button).backgroundColor).toBe(tint(0.12));
+  });
+
+  it('isn’t tinted while expanded by something other than a popover', async () => {
+    const button = await mountTinted('aria-expanded="true"');
+
+    expect(getComputedStyle(button).backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('keeps the surrounding text color while pressed, with inherit', async () => {

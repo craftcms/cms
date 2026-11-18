@@ -394,16 +394,6 @@ export default css`
     font-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 
-  /* Its subnav opens in place rather than popping up, so an open one isn't
-     tinted as a button with a menu open is. */
-  .subnav-toggle[aria-expanded='true']:not([active]) {
-    background-color: transparent;
-
-    &:hover {
-      background-color: color-mix(in srgb, currentColor 5%, transparent);
-    }
-  }
-
   /*
    * Collapsed to a rail
    *
