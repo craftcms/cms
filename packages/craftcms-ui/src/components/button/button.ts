@@ -850,6 +850,13 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
   @property({reflect: true, type: Boolean}) inherit: boolean = false;
 
   /**
+   * Tints a `plain` button with its own color while it's hovered, pressed or
+   * open, rather than filling it, and draws no border or shadow when it's
+   * pressed. For quiet buttons in a page's chrome, such as a header's icons.
+   */
+  @property({reflect: true, type: Boolean}) tint: boolean = false;
+
+  /**
    * Size of the button. Defaults to "medium".
    *
    * `xsmall` draws below the 24px minimum target size, so it keeps a

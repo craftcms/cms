@@ -16,6 +16,7 @@
     class="command-palette-trigger"
     icon="search"
     :variant="ButtonVariant.Plain"
+    tint
     type="button"
     size="small"
     aria-haspopup="dialog"
@@ -38,5 +39,6 @@
   /* Matches the other icons around the content (see cp.css). */
   .command-palette-trigger {
     --c-icon-size: var(--cp-chrome-icon-size, 1em);
+    margin-inline: -6.5px;
   }
 </style>

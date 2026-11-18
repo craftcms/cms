@@ -603,6 +603,7 @@ export default class CraftNavItem extends LitElement {
         @keydown="${this.#stopActionPressAtRow}"
         @keyup="${this.#stopActionPressAtRow}"
         variant="${Appearance.Plain}"
+        tint
         icon
         size="small"
         aria-controls="${this.subnavId}"
@@ -672,6 +673,7 @@ export default class CraftNavItem extends LitElement {
         @keydown="${this.#stopActionPressAtRow}"
         @keyup="${this.#stopActionPressAtRow}"
         variant="${Appearance.Plain}"
+        tint
         icon
         size="small"
         aria-controls="${this.subnavId}"

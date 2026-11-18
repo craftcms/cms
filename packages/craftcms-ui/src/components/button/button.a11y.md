@@ -42,6 +42,7 @@ Follows the WAI-ARIA APG [Button](https://www.w3.org/WAI/ARIA/apg/patterns/butto
 
 - [x] A disabled button is muted to 50% opacity rather than recolored, so it keeps its variant's colors. Disabled controls are exempt from WCAG 1.4.3 (Contrast (Minimum)), and the state is conveyed by `disabled` or `aria-disabled`, not by the dimming alone. Per WCAG 1.4.1 (Use of Color). Verified by `mutes a disabled button` and `keeps the variant’s own fill rather than repainting it` in `button.browser.test.ts`.
 - [ ] The `link` variant is underlined by default, so it isn't marked by color alone among other text. Per WCAG 1.4.1 (Use of Color). Not yet verified.
+- [x] With `tint`, a plain button keeps its own text color when it's pressed or open, behind a tint of that color rather than the loud fill, so its icon or label doesn't change color under the pointer. Per WCAG 1.4.3 (Contrast (Minimum)) and 1.4.11 (Non-text Contrast). Verified by `is tinted with its own color while pressed, keeping its color, with no border`, `is tinted as much while open` and `keeps the surrounding text color while pressed, with inherit` in `button.browser.test.ts`.
 - [ ] Variant text and borders meet 4.5:1 and 3:1 in every state, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)) and 1.4.11 (Non-text Contrast). Not yet verified.
 - [ ] In forced colors mode, the button's boundary, focus outline and `active` state stay visible. Not yet verified.
 

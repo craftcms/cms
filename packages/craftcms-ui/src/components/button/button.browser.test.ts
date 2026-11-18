@@ -348,6 +348,59 @@ describe('[inherit]', () => {
   });
 });
 
+describe('[tint]', () => {
+  async function mountTinted(attributes = ''): Promise<CraftButton> {
+    document.body.innerHTML = `<craft-button variant="plain" icon="code" aria-label="Dev Mode" tint style="--c-color-neutral-on-quiet: rgb(200, 100, 0)" ${attributes}></craft-button>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+    return button;
+  }
+
+  function tint(alpha: number): string {
+    return `color(srgb 0.784314 0.392157 0 / ${alpha})`;
+  }
+
+  it('has no fill at rest', async () => {
+    const button = await mountTinted();
+
+    expect(getComputedStyle(button).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('is tinted with its own color while pressed, keeping its color, with no border', async () => {
+    const button = await mountTinted();
+    button.active = true;
+    await button.updateComplete;
+    const style = getComputedStyle(button);
+
+    expect(style.backgroundColor).toBe(tint(0.12));
+    expect(style.color).toBe('rgb(200, 100, 0)');
+    expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('is tinted as much while open', async () => {
+    const button = await mountTinted('aria-expanded="true"');
+
+    expect(getComputedStyle(button).backgroundColor).toBe(tint(0.12));
+  });
+
+  it('keeps the surrounding text color while pressed, with inherit', async () => {
+    document.body.innerHTML = `<div style="color: rgb(0, 128, 0)"><craft-button variant="plain" icon="code" aria-label="Actions" tint inherit></craft-button></div>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    button.active = true;
+    await button.updateComplete;
+
+    expect(getComputedStyle(button).color).toBe('rgb(0, 128, 0)');
+  });
+
+  it('takes the loud fill while pressed without it', async () => {
+    document.body.innerHTML = `<craft-button variant="plain" icon="code" aria-label="Dev Mode" style="--c-color-neutral-fill-loud: rgb(10, 20, 30)" active></craft-button>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+
+    expect(getComputedStyle(button).backgroundColor).toBe('rgb(10, 20, 30)');
+  });
+});
+
 describe('outline and dashed borders', () => {
   async function mount(variant: string): Promise<CraftButton> {
     document.body.innerHTML = `

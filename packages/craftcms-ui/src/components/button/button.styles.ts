@@ -564,6 +564,29 @@ export default css`
     color: inherit;
   }
 
+  /* Tint: hovered, pressed (marked active) and open, a plain button is
+     tinted with its own color rather than filled. */
+  :host([variant~='plain'][tint]) {
+    --c-color-fill-quiet: transparent;
+    --c-color-mix-hover: currentColor 5%;
+    --c-color-mix-active: currentColor 12%;
+    --c-color-fill-loud: color-mix(in srgb, currentColor 12%, transparent);
+    --c-color-on-loud: var(--c-color-on-quiet);
+    --c-color-border-loud: transparent;
+  }
+
+  :host([variant~='plain'][inherit][tint]) {
+    --c-color-on-loud: currentColor;
+  }
+
+  :host([variant~='plain'][tint][aria-expanded='true']:not(:disabled)) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  :host([variant~='plain'][tint]:active) {
+    box-shadow: none;
+  }
+
   /* After the variants, which switch the sizer off: xsmall draws under
      the minimum target size, so the hit area has to come from the sizer. */
   :host([size~='xsmall'])::before {
