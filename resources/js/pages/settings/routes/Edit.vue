@@ -139,7 +139,7 @@
         </craft-input>
 
         <div class="route-token-picker">
-          <h3>{{ t('Add a token') }}</h3>
+          <h2>{{ t('Add a token') }}</h2>
           <button
             v-for="token in tokens"
             :key="token.label"
@@ -247,7 +247,7 @@
     padding-inline: 24px;
   }
 
-  .route-token-picker h3 {
+  .route-token-picker h2 {
     flex-basis: 100%;
     font-size: var(--c-text-sm);
     font-weight: 600;
