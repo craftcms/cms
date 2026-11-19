@@ -60,11 +60,16 @@ export function useInertiaUiRenderer<
     {flush: 'sync', immediate: true}
   );
 
+  /** The path of the control a server error key belongs to. */
+  function errorPath(key: string): string[] | null {
+    return mapErrorPath
+      ? mapErrorPath(key)
+      : defaultErrorPath(key, toValue(payload));
+  }
+
   const errors = computed(() =>
     Object.entries(form.errors).flatMap(([path, message]) => {
-      const mappedPath = mapErrorPath
-        ? mapErrorPath(path)
-        : defaultErrorPath(path, toValue(payload));
+      const mappedPath = errorPath(path);
 
       return mappedPath
         ? [{path: mappedPath, messages: [String(message)]}]
@@ -168,6 +173,7 @@ export function useInertiaUiRenderer<
 
   return {
     advanceBaseline,
+    errorPath,
     errors,
     onMutation,
     rebase,

@@ -434,6 +434,7 @@ export function useElementEditor({
   // mutation — so neither can claim the other's keys.
   const {
     advanceBaseline,
+    errorPath,
     errors,
     onMutation: onLayoutMutation,
     rebase,
@@ -444,12 +445,21 @@ export function useElementEditor({
 
   const {
     advanceBaseline: advanceSidebarBaseline,
+    errorPath: sidebarErrorPath,
     errors: sidebarErrors,
     onMutation: onSidebarFormMutation,
     rebase: rebaseSidebar,
     renderer: sidebarRenderer,
     resetValues: resetSidebarValues,
   } = useInertiaUiRenderer(form, sidebarPayload);
+
+  /**
+   * The control paths a server error key could belong to: the layout's, then
+   * the sidebar's, as the error summary links whichever is on the page.
+   */
+  function errorPaths(key: string): (string[] | null)[] {
+    return [errorPath(key), sidebarErrorPath(key)];
+  }
 
   useSiteStatuses(form);
 
@@ -1569,6 +1579,7 @@ export function useElementEditor({
     addToRelease,
     discardDraft,
     submitAction,
+    errorPaths,
     errors,
     form,
     uiPayload,
