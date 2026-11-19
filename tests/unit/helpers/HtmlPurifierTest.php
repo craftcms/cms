@@ -78,6 +78,26 @@ class HtmlPurifierTest extends TestCase
         }
     }
 
+    public function testProcessIgnoresCacheCleanupFailures(): void
+    {
+        $cachePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($cachePath);
+        // An old cache entry that can't be removed
+        FileHelper::createDirectory($cachePath . DIRECTORY_SEPARATOR . '1.0.0,abc,1.ser');
+
+        self::assertSame('<p><mark>Hi</mark></p>', HtmlPurifier::process('<p><mark>Hi</mark></p>'));
+    }
+
+    public function testProcessWithConfigObjectSettingDefinitionId(): void
+    {
+        $config = HTMLPurifier_Config::createDefault();
+        $config->autoFinalize = false;
+        $config->set('HTML.DefinitionID', 'my-plugin');
+        @$config->getHTMLDefinition(true)->addAttribute('p', 'data-foo', 'Text');
+
+        self::assertSame('<p data-foo="bar">Hi</p>', HtmlPurifier::process('<p data-foo="bar">Hi</p>', $config));
+    }
+
     public function testProcessWithSubclassCanEditHtmlDefinition(): void
     {
         $purifier = new class() extends HtmlPurifier {

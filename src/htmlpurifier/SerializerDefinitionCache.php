@@ -61,6 +61,16 @@ class SerializerDefinitionCache extends HTMLPurifier_DefinitionCache_Serializer
     /**
      * @inheritdoc
      */
+    public function cleanup($config)
+    {
+        // HTML Purifier runs this on every cache miss. Its warnings, such as when another request already
+        // removed an old file, shouldn't fail the request.
+        return @parent::cleanup($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function get($config)
     {
         $file = $this->generateFilePath($config);

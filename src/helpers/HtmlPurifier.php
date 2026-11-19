@@ -7,12 +7,14 @@
 
 namespace craft\helpers;
 
+use Closure;
 use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\SerializerDefinitionCache;
 use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
 use HTMLPurifier_DefinitionCacheFactory;
 use HTMLPurifier_Encoder;
+use WeakMap;
 
 /**
  * HtmlPurifier provides an ability to clean up HTML from any harmful code.
@@ -49,7 +51,16 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     private const HTML_DEFINITION_REV = 1;
 
     /**
-     * @inheritdoc
+     * @var WeakMap<HTMLPurifier_Config,true>|null Configs that [[process()]] opted into HTML definition caching
+     */
+    private static ?WeakMap $cachedConfigs = null;
+
+    /**
+     * Passes markup through HTMLPurifier making it safe to output to end user.
+     *
+     * @param string $content The HTML content to purify
+     * @param array|Closure|HTMLPurifier_Config|null $config The config to use for HTMLPurifier
+     * @return string The purified HTML content
      */
     public static function process($content, $config = null)
     {
@@ -62,6 +73,8 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
             $config->autoFinalize = false;
             $config->set('HTML.DefinitionID', 'craft');
             $config->set('HTML.DefinitionRev', self::HTML_DEFINITION_REV);
+            self::$cachedConfigs ??= new WeakMap();
+            self::$cachedConfigs[$config] = true;
 
             // Write cache files atomically, unless the config chose another cache implementation or disabled it
             if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
@@ -76,8 +89,8 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     /**
      * Configures HTML Purifier with Craft’s defaults and HTML definition customizations.
      *
-     * If `HTML.DefinitionID` is set, the customizations are only applied when the HTML definition isn’t
-     * cached yet. Otherwise the definition is customized each time, and isn’t cached.
+     * When [[process()]] is passed a config array or no config, the customizations are only applied when the
+     * HTML definition isn’t cached yet. Otherwise the definition is customized each time, and isn’t cached.
      *
      * @param HTMLPurifier_Config $config
      */
@@ -93,7 +106,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         // Add support for some HTML5 elements
         // see https://github.com/mewebstudio/Purifier/issues/32#issuecomment-182502361
         // see https://gist.github.com/lluchs/3303693
-        $def = $config->get('HTML.DefinitionID') !== null
+        $def = isset(self::$cachedConfigs[$config])
             ? $config->maybeGetRawHTMLDefinition()
             : $config->getDefinition('HTML', true);
 
