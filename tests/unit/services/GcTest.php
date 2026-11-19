@@ -9,7 +9,6 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -30,7 +29,6 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception as DbException;
 
 /**
  * Unit tests for the garbage collector service.
@@ -256,39 +254,33 @@ class GcTest extends TestCase
     }
 
     /**
-     * Foreign key checks must be back on when deleting orphaned FK rows fails partway through.
+     * Deleting orphaned FK rows must apply the foreign key actions of the tables that reference them.
      *
-     * @see https://github.com/craftcms/cms/issues/20386
+     * @see https://github.com/craftcms/cms/issues/20885
      */
-    public function testFkChecksRestoredWhenOrphanedFkRowDeletionFails(): void
+    public function testDeletingOrphanedFkRowsAppliesForeignKeyActions(): void
     {
         $db = Craft::$app->getDb();
-        $commandClass = $db->commandClass;
-        $db->commandClass = get_class(new class() extends Command {
-            public function execute()
-            {
-                // only fail the orphaned FK row deletions
-                if (preg_match('/^DELETE (t\.\* )?FROM \S+ t\s/', $this->getSql())) {
-                    throw new DbException('Simulated failure');
-                }
-                return parent::execute();
-            }
-        });
+        Db::insert(Table::DRAFTS, ['name' => 'Orphaned draft']);
+        $draftId = (int)$db->getLastInsertID(Table::DRAFTS);
+        Db::insert(Table::ELEMENTS, ['type' => self::class, 'draftId' => $draftId]);
+        $draftElementId = (int)$db->getLastInsertID(Table::ELEMENTS);
+        Db::insert(Table::ELEMENTS, ['type' => self::class, 'canonicalId' => $draftElementId]);
+        $derivativeElementId = (int)$db->getLastInsertID(Table::ELEMENTS);
 
-        try {
-            $this->gc->run(true);
-            self::fail('Garbage collection should have failed.');
-        } catch (DbException $e) {
-            self::assertSame('Simulated failure', $e->getMessage());
-        } finally {
-            $db->commandClass = $commandClass;
-        }
+        // orphan the draft element
+        $db->createCommand()->checkIntegrity(false)->execute();
+        Db::delete(Table::DRAFTS, ['id' => $draftId]);
+        $db->createCommand()->checkIntegrity(true)->execute();
 
-        if ($db->getIsMysql()) {
-            self::assertSame(1, (int)$db->createCommand('SELECT @@foreign_key_checks')->queryScalar());
-        } else {
-            self::assertSame(0, (int)$db->createCommand("SELECT count(*) FROM pg_trigger WHERE tgenabled = 'D'")->queryScalar());
-        }
+        $this->gc->run(true);
+
+        self::assertFalse((new Query())->from(Table::ELEMENTS)->where(['id' => $draftElementId])->exists());
+        self::assertNull((new Query())
+            ->select('canonicalId')
+            ->from(Table::ELEMENTS)
+            ->where(['id' => $derivativeElementId])
+            ->scalar());
     }
 
     /**
