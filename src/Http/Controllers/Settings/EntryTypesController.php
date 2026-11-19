@@ -346,7 +346,7 @@ class EntryTypesController
         $entryType->handle = $request->input('handle', $entryType->handle);
         $entryType->description = $request->input('description', $entryType->description);
 
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
 
         $html = InputNamespace::namespaceInputs(
             fn () => template('settings/entry-types/_selection-settings', [

@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use craft\errors\ExitException;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\LegacyScreenFragments;
@@ -44,7 +43,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             throw new InvalidConfigException('TemplateResponseFormatter can only be used on responses with a TemplateResponseBehavior.');
         }
 
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
 
         $templateMode = $behavior->templateMode ? TemplateMode::from($behavior->templateMode) : null;
 

@@ -302,11 +302,10 @@
     margin-inline-start: 1px;
   }
 
-  /* In line with the content below them, which the page screen measures,
-     past the content's 1px border. Collapsed, they follow the site's name
-     instead. */
+  /* In line with a secondary nav's icons: past the content's 1px border, its
+     sidebar's padding, and a nav item's inset before its icon. */
   .cp-header-bar__crumbs--indented {
-    margin-inline-start: calc(var(--cp-content-start, 0px) + 1px);
+    margin-inline-start: calc(var(--c-spacing-md) + var(--c-spacing-sm) + 1px);
   }
 
   /* Matches craft-breadcrumb-item's separators. */

@@ -12,6 +12,34 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
+it('switches to the menu once a hidden tab shows buttons that do not fit', async () => {
+  const container = document.createElement('div');
+  container.style.width = '200px';
+  container.hidden = true;
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(NestedElementsCreateButton, {
+        choices: Array.from({length: 6}, (_, i) => ({
+          value: `type${i}`,
+          label: `Type ${i}`,
+        })),
+        label: 'New block',
+        disabled: false,
+      }),
+  });
+  app.mount(container);
+  await new Promise(requestAnimationFrame);
+  expect(container.querySelector('[data-ui-matrix-add]')).not.toBeNull();
+
+  container.hidden = false;
+
+  await expect
+    .element(page.getByRole('button', {name: 'New block'}))
+    .toBeVisible();
+  expect(container.querySelector('[data-ui-matrix-add]')).toBeNull();
+});
+
 it('opens the entry type menu and creates the chosen type', async () => {
   const onCreate = vi.fn();
   const container = document.createElement('div');

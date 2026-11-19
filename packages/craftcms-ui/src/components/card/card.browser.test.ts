@@ -8,7 +8,7 @@ import '../checkbox/checkbox.js';
 import '../badge/badge.js';
 import '../truncate/truncate.js';
 import '../field/field.js';
-import {contrast} from '../../../test/contrast';
+import {backdropOf, contrast} from '../../../test/contrast';
 import {
   HARD_IMAGES,
   MANY_ATTRIBUTES,
@@ -435,7 +435,7 @@ it.each([
   'keeps a hovered header control readable on a selected card in the %s theme (%s)',
   async (theme, color) => {
     document.body.innerHTML = `
-      <div data-theme="${theme}">
+      <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
         <craft-card ${color} active>
           <div slot="header">
             <craft-button variant="plain" inherit icon="ellipsis" aria-label="Actions"></craft-button>
@@ -448,16 +448,9 @@ it.each([
 
     await userEvent.hover(button);
     const style = getComputedStyle(button);
-    const surface = ['header', 'base']
-      .map(
-        (part) =>
-          getComputedStyle(card.shadowRoot!.querySelector(`[part="${part}"]`)!)
-            .backgroundColor
-      )
-      .find((color) => color !== 'rgba(0, 0, 0, 0)');
 
     expect(
-      contrast(style.color, style.backgroundColor, surface)
+      contrast(style.color, style.backgroundColor, backdropOf(button))
     ).toBeGreaterThanOrEqual(3);
     await userEvent.unhover(button);
   }
@@ -570,7 +563,7 @@ it('gives what’s in a tinted card the card’s color, but not in a neutral one
   const tokens = {
     '--c-text-default': '--c-color-orange-on-quiet',
     '--c-form-control-border-color': '--c-color-orange-border-normal',
-    '--c-tab-border-active': '--c-color-orange-on-quiet',
+    '--c-tab-indicator-fill-active': '--c-color-orange-on-quiet',
     '--c-color-neutral-border-quiet': '--c-color-orange-border-quiet',
     '--c-color-neutral-fill-normal': '--c-color-orange-fill-normal',
   };
@@ -620,8 +613,8 @@ it('keeps a neutral card nested in a tinted one, and what’s in it, neutral', a
         resolve('outside', `var(${token})`)
       );
     }
-    expect(resolve(id, 'var(--c-tab-border-active, red)'), id).toBe(
-      resolve('outside', 'var(--c-tab-border-active, red)')
+    expect(resolve(id, 'var(--c-tab-indicator-fill-active, red)'), id).toBe(
+      resolve('outside', 'var(--c-tab-indicator-fill-active, red)')
     );
   }
 

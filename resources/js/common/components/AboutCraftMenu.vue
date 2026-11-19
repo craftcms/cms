@@ -27,7 +27,10 @@
       variant="plain"
     >
       <span class="about-craft-trigger__content">
-        <EditionBadge :edition="info.edition" />
+        <EditionBadge
+          :edition="info.edition"
+          class="about-craft-trigger__badge"
+        />
         <craft-badge-indicator
           v-if="app.needsAttention"
           class="about-craft-trigger__dot"
@@ -49,6 +52,10 @@
     --c-color-neutral-on-quiet: var(--cp-chrome-text-color);
     padding-inline: 2px;
     margin-inline: -3px;
+  }
+
+  .about-craft-trigger__badge {
+    color: var(--c-text-quiet);
   }
 
   .about-craft-trigger__content {

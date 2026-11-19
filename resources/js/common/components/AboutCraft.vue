@@ -111,6 +111,10 @@
     gap: var(--c-spacing-xs) calc(var(--c-spacing-sm) + 2px);
   }
 
+  .about-craft__edition {
+    color: var(--c-text-quiet);
+  }
+
   .about-craft__version {
     margin: 0;
     color: var(--c-text-quiet);

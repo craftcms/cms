@@ -162,6 +162,30 @@ describe('craft-slide-picker', () => {
     expect(handler).toHaveBeenCalledTimes(3);
   });
 
+  it.each([
+    {dir: 'ltr', key: 'ArrowDown', value: 40},
+    {dir: 'ltr', key: 'ArrowRight', value: 60},
+    {dir: 'ltr', key: 'ArrowLeft', value: 40},
+    {dir: 'rtl', key: 'ArrowUp', value: 60},
+    {dir: 'rtl', key: 'ArrowDown', value: 40},
+    {dir: 'rtl', key: 'ArrowRight', value: 40},
+    {dir: 'rtl', key: 'ArrowLeft', value: 60},
+  ])(
+    'moves from 50 to $value with $key in a $dir context',
+    async ({dir, key, value}) => {
+      const wrapper = document.createElement('div');
+      wrapper.dir = dir;
+      document.body.append(wrapper);
+      const element = await createSlidePicker({value: 50}, wrapper);
+
+      press(element, key);
+      await settle(element);
+
+      expect(element.value).toBe(value);
+      wrapper.remove();
+    }
+  );
+
   it('ignores input while read-only, but stays in the Tab order', async () => {
     const element = await createSlidePicker({value: 50});
     element.readOnly = true;

@@ -363,7 +363,11 @@ it('round-trips link cells through request values, storage, and editor values', 
             ['col1' => ['value' => 'https://example.com', 'type' => 'url', 'label' => 'Docs', 'urlSuffix' => '?page=2']],
             ['col1' => null],
         ])
-        ->and($payload->values['links'][0]['col1'])->toBe([...$stored[0]['col1'], 'defaultLabel' => 'example.com'])
+        ->and($payload->values['links'][0]['col1'])->toBe([
+            'label' => 'Docs', 'urlSuffix' => '?page=2', 'target' => '', 'title' => '', 'class' => '', 'id' => '',
+            'rel' => '', 'ariaLabel' => '', 'download' => false, 'filename' => '',
+            'value' => 'https://example.com', 'type' => 'url', 'defaultLabel' => 'example.com',
+        ])
         ->and($cell->component)->toBe('craft:link')
         ->and(array_column($cell->props['types'], 'id'))->toBe(['url', 'email'])
         ->and($cell->props['advancedFields'])->toBe(['urlSuffix'])

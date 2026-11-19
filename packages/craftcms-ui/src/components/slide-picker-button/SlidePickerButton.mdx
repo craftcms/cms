@@ -1,0 +1,46 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SlidePickerButtonStories from './slide-picker-button.stories';
+
+<Meta of={SlidePickerButtonStories} name="Docs" />
+
+# Slide Picker Button
+
+`<craft-slide-picker-button>` shows a value as a small copy of a [Slide Picker](?path=/docs/form-controls-slide-picker--docs)'s segments, and opens a full-size slide picker in a popover to change it.
+
+<Canvas of={SlidePickerButtonStories.Default} sourceState="shown" />
+
+It's the preferred way to pick a number from a short scale, because it meets WCAG 2.2 AA's minimum target size (2.5.8 Target Size (Minimum)): the whole button is a 24×24 CSS px target, and the segments in the popover are large. A full-size slide picker's segments are smaller than that at their default size. Use one only where there's room to make every segment at least `1.5rem` wide and tall, where it saves a step. It fits a dense row too, such as a widget's column count or a field layout element's width.
+
+<Canvas of={SlidePickerButtonStories.ItemLabel} sourceState="shown" />
+
+<Canvas of={SlidePickerButtonStories.ValueLabel} sourceState="shown" />
+
+<Canvas of={SlidePickerButtonStories.ReadOnly} sourceState="shown" />
+
+## Posting a Value
+
+Give it a `name` and it posts with the form, as a slide picker does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. A disabled button posts nothing.
+
+It emits `input` then `change` each time the value is changed in the popover:
+
+```js
+button.addEventListener('change', () => {
+  console.log(button.value);
+});
+```
+
+## Lining Up With Other Buttons
+
+The button is a plain `craft-button` until it's hovered. Set `flush` to pull its segments out to its edge, as `craft-button`'s `flush` does, so they line up with the text or buttons beside it.
+
+## Accessibility
+
+The button shows no text, so its tooltip is its visible label. The tooltip shows the value, and the button's name is exactly that, so voice control users can say what they see.
+
+- **Set `slider-label`.** It's shown only in the popover, below the slider, and names that slider. It doesn't change the button or its tooltip, which always show the value.
+- **Set `item-label` to the name of the item the button sizes**, such as the item's name on every row of a list. It describes the button, so a screen reader says "3 columns, button, News", and buttons on several items are told apart. Keep it in step with the item's name.
+- **Set `value-unit` or `valueLabel`** whenever the number alone doesn't say what it counts, since the value is the button's name and all its tooltip shows: "50% width", not "50", and "3 columns", not "3".
+
+## Properties
+
+<ArgTypes of={SlidePickerButtonStories} />

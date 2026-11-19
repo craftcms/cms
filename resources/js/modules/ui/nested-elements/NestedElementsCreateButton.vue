@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T">
   import '@craftcms/ui/components/button/button';
   import {t} from '@craftcms/ui';
-  import {useElementSize} from '@vueuse/core';
-  import {computed, nextTick, ref, watch} from 'vue';
+  import {useElementSize, useResizeObserver} from '@vueuse/core';
+  import {computed, ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItems} from '@/common/types';
 
@@ -74,17 +74,15 @@
     {flush: 'post'}
   );
 
-  watch(
-    [addButtons, () => props.choices],
-    async () => {
-      await nextTick();
-
-      if (addButtons.value) {
-        buttonsWidth.value = addButtons.value.scrollWidth;
-      }
-    },
-    {immediate: true}
-  );
+  /**
+   * A row on a hidden tab measures 0 at mount, so it is measured again
+   * whenever it resizes, including when its tab is first shown.
+   */
+  useResizeObserver(addButtons, () => {
+    if (addButtons.value?.scrollWidth) {
+      buttonsWidth.value = addButtons.value.scrollWidth;
+    }
+  });
 
   const actions = computed<ActionItems>(() =>
     groups.value.map(([group, choices]) => ({

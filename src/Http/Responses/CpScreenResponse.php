@@ -853,7 +853,7 @@ class CpScreenResponse implements Responsable
      */
     private function prepareSlideout(Request $request): array
     {
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
         $containerId = $request->header('X-Craft-Container-Id');
 
         if ($this->prepareScreen) {
