@@ -18,17 +18,33 @@
    * `criteria`, or those an `EmbeddedElementIndex` token was made for, each
    * linked to its edit page, and can export them. Unless it's read-only, its
    * elements can be selected for element actions and edited inline.
+   *
+   * `criteria` are sent from the browser, so they decide what the index shows,
+   * not what a request is allowed to reach. Pass a `token` when the scope or
+   * read-only state has to be enforced on the server.
    */
   const props = defineProps<{
     elementType: string;
+    /**
+     * The element query criteria to list. They come from the browser, so they
+     * shape the list but don't restrict access: element actions and inline
+     * editing still check each element's own permissions.
+     */
     criteria?: Record<string, unknown>;
-    /** The token of a PHP `EmbeddedElementIndex`, used in place of `criteria`. */
+    /**
+     * The token of a PHP `EmbeddedElementIndex`, used in place of `criteria`.
+     * Its criteria and read-only state are enforced on the server.
+     */
     token?: string;
     /** The first page, when the screen already has it. */
     initial?: NestedContentIndexData;
     /** Keeps this index's view settings apart from other indexes of the same element type. */
     storageKey?: string;
-    /** Only lists and exports the elements, without element actions or inline editing. A read-only token is always read-only. */
+    /**
+     * Only lists and exports the elements, without element actions or inline
+     * editing. Without a token this only hides those controls; a read-only
+     * token is enforced on the server.
+     */
     readOnly?: boolean;
   }>();
 

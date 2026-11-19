@@ -68,6 +68,7 @@ class SaveElementIndexElementsController
                     ]);
                 $elements = collect($originalIds)->map(fn (int $id) => $preparedByOriginalId[$id]);
             } elseif ($embeddedScope !== null) {
+                // Clearing the status and drafts params only drops the listing's filters; the index's own criteria still apply
                 $elements = EmbeddedIndexViewModel::editableQuery($request)
                     ->whereIn('elements.id', $originalIds)
                     ->status(null)

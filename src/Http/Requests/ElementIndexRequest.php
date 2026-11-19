@@ -61,6 +61,9 @@ class ElementIndexRequest extends FormRequest
 
     /**
      * Returns the scope of an embedded index: the one in its token, its owner, or the `embeddedCriteria` the request posts.
+     *
+     * Posted criteria come from the browser, so their scope only shapes the list; only a token's criteria and
+     * read-only state are enforced.
      */
     public function embeddedIndexScope(): EmbeddedIndexScope
     {

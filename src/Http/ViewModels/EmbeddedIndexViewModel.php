@@ -34,6 +34,8 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
 
     private ?int $unfilteredTotal = null;
 
+    private ?ElementQueryInterface $restrictedQuery = null;
+
     private readonly EmbeddedIndexScope $scope;
 
     private readonly ElementIndexSourceSettings $indexSource;
@@ -197,18 +199,45 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
         return $this->indexSource;
     }
 
+    #[Override]
+    protected function resolveQuery(): ElementQueryInterface
+    {
+        $query = parent::resolveQuery();
+
+        if ($this->restrictedQuery !== $query) {
+            $this->scope->restrictQuery($query);
+            $this->restrictedQuery = $query;
+        }
+
+        return $query;
+    }
+
+    #[Override]
+    public function statusOptions(): array
+    {
+        // As in Craft 5, an index whose criteria set a status has no status menu
+        if ($this->indexSource->owner === null && array_key_exists('status', $this->indexSource->criteria)) {
+            return [];
+        }
+
+        return parent::statusOptions();
+    }
+
     private function unfilteredTotal(): int
     {
-        [$sourceKey, $source] = $this->sourceState();
+        if ($this->unfilteredTotal !== null) {
+            return $this->unfilteredTotal;
+        }
 
-        return $this->unfilteredTotal ??= $this->elementType::indexElementCount(
-            app(ElementIndexes::class)->buildQueryState(
-                elementType: $this->elementType,
-                source: $source,
-                baseCriteria: $this->baseCriteria(),
-            )['query'],
-            $sourceKey,
-        );
+        [$sourceKey, $source] = $this->sourceState();
+        $query = app(ElementIndexes::class)->buildQueryState(
+            elementType: $this->elementType,
+            source: $source,
+            baseCriteria: $this->baseCriteria(),
+        )['query'];
+        $this->scope->restrictQuery($query);
+
+        return $this->unfilteredTotal = $this->elementType::indexElementCount($query, $sourceKey);
     }
 
     public function reorderable(): bool

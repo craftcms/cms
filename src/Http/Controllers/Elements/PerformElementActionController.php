@@ -141,7 +141,8 @@ class PerformElementActionController
                 $actionQuery->id(['not', ...$exceptIds]);
             }
         } elseif ($embedded && ! $nested) {
-            // Narrows the index's own criteria, which can include IDs, rather than replacing them
+            // Narrows the index's own criteria, which can include IDs, rather than replacing them.
+            // Clearing the status only drops the listing's status filter; the index's own criteria still apply.
             $actionQuery->whereIn('elements.id', $elementIds)->status(null);
         } else {
             $actionQuery->id($elementIds)->status(null);

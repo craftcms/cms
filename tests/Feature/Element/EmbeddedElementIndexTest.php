@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexContro
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
+use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -327,4 +329,109 @@ it('rejects element actions and inline edits but allows exports when it’s read
     expect($entry->enabled)->toBeTrue()
         ->and($entry->title)->toBe('Before')
         ->and(collect($exported)->pluck('id')->all())->toBe([$entry->id]);
+});
+
+it('keeps the definition status when the request picks another one', function () {
+    [$enabled, $disabled] = EntryModel::factory()->count(2)->create();
+    $element = Entry::find()->id($disabled->id)->one();
+    $element->enabled = false;
+    Elements::saveElement($element);
+    $index = EmbeddedElementIndex::make(Entry::class)
+        ->criteria(['id' => [$enabled->id, $disabled->id], 'status' => 'disabled']);
+
+    foreach (['enabled', 'live', ''] as $status) {
+        $payload = ($this->postEmbedded)(['embeddedIndexToken' => $index->token(), 'status' => $status])
+            ->assertOk()
+            ->json();
+
+        expect(collect($payload['data'])->pluck('id')->all())->toBe($status === '' ? [$disabled->id] : []);
+    }
+});
+
+it('keeps the definition status for the site it lists', function () {
+    $otherSite = SiteModel::factory()->create();
+    app(Sites::class)->refreshSites();
+    $entryType = EntryTypeModel::factory()->create();
+    $section = SectionModel::factory()->withEntryTypes($entryType)->withSites($otherSite)->create();
+    $model = EntryModel::factory()->forSection($section)->forEntryType($entryType)->create();
+    $entry = Entry::find()->id($model->id)->one();
+    $entry->setEnabledForSite([$entry->siteId => true, $otherSite->id => false]);
+    Elements::saveElement($entry);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id, 'status' => 'disabled']);
+
+    $listed = fn (string $siteHandle) => collect(($this->postEmbedded)([
+        'embeddedIndexToken' => $index->token(),
+        'status' => 'enabled',
+        'site' => $siteHandle,
+    ])->assertOk()->json('data'))->pluck('id')->all();
+
+    expect(Entry::find()->id($entry->id)->siteId($otherSite->id)->status('disabled')->exists())->toBeTrue()
+        ->and($listed(app(Sites::class)->getPrimarySite()->handle))->toBe([]);
+});
+
+it('exports only the elements matching the definition status', function () {
+    [$enabled, $disabled] = EntryModel::factory()->count(2)->create();
+    $element = Entry::find()->id($disabled->id)->one();
+    $element->enabled = false;
+    Elements::saveElement($element);
+    $index = EmbeddedElementIndex::make(Entry::class)
+        ->criteria(['id' => [$enabled->id, $disabled->id], 'status' => 'disabled']);
+
+    $byStatus = ($this->postToIndex)(ExportElementIndexController::class, $index, [
+        'type' => Raw::class,
+        'format' => 'json',
+        'status' => 'enabled',
+    ])->assertOk()->json();
+    $byId = ($this->postToIndex)(ExportElementIndexController::class, $index, [
+        'type' => Raw::class,
+        'format' => 'json',
+        'criteria' => ['id' => [$enabled->id]],
+    ])->assertOk()->json();
+
+    expect($byStatus)->toBe([])
+        ->and($byId)->toBe([]);
+});
+
+it('runs element actions only on the elements matching the definition status', function () {
+    [$enabled, $disabled] = EntryModel::factory()->count(2)->create();
+    $element = Entry::find()->id($disabled->id)->one();
+    $element->enabled = false;
+    Elements::saveElement($element);
+    $index = EmbeddedElementIndex::make(Entry::class)
+        ->criteria(['id' => [$enabled->id, $disabled->id], 'status' => 'disabled']);
+
+    ($this->postToIndex)(PerformElementActionController::class, $index, [
+        'elementAction' => SetStatus::class,
+        'elementIds' => [$enabled->id, $disabled->id],
+        'status' => SetStatus::ENABLED,
+    ])->assertOk();
+    ($this->postToIndex)(PerformElementActionController::class, $index, [
+        'elementAction' => SetStatus::class,
+        'elementIds' => [$enabled->id],
+        'status' => SetStatus::DISABLED,
+    ]);
+
+    expect(Entry::find()->id($enabled->id)->status(null)->one()->enabled)->toBeTrue()
+        ->and(Entry::find()->id($disabled->id)->status(null)->one()->enabled)->toBeTrue();
+});
+
+it('saves inline edits only to the elements matching the definition status', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Before']);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id, 'status' => 'disabled']);
+
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $entry->siteId,
+        'namespace' => 'inline',
+        'inline' => ["element-$entry->id" => ['title' => 'After']],
+    ])->assertUnprocessable();
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('Before');
+});
+
+it('hides the status menu when the definition sets a status', function () {
+    $fixed = EmbeddedIndexViewModel::forDefinition(EmbeddedElementIndex::make(Entry::class)->criteria(['status' => 'disabled']))->payload(false);
+    $open = EmbeddedIndexViewModel::forDefinition(EmbeddedElementIndex::make(Entry::class))->payload(false);
+
+    expect($fixed['statusOptions'])->toBe([])
+        ->and(collect($open['statusOptions'])->pluck('value')->all())->toContain('live', 'disabled');
 });

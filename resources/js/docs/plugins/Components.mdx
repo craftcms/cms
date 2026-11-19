@@ -96,6 +96,10 @@ The `<craft-*>` web components (`<craft-button>`, `<craft-input>`,
 | `EmbeddedElementIndex` | An element index within a screen, such as a list of a customer's orders. It lists the elements matching `criteria` for `elementType`, with search, filters, columns and paging, links each to its edit page, and offers element actions, inline editing and exports unless `readOnly` is set. `storageKey` keeps its view settings apart from other indexes of the same element type. |
 | `ElementEditor`        | Craft's element editor.                                                                                                                                                                                                                                                                                                                                                               |
 
+`EmbeddedElementIndex` can take the `token` of a PHP `EmbeddedElementIndex` in
+place of `criteria`. `criteria` and `readOnly` are only enforced on the server
+when they come from a token.
+
 `useSelectable()` gives any list Craft's selection: click, Cmd/Ctrl-click,
 Shift-click ranges, checkboxes and the keyboard. See
 **Composables/useSelectable Overview**.

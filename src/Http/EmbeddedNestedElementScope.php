@@ -187,6 +187,8 @@ class EmbeddedNestedElementScope implements EmbeddedIndexScope
         return $this->isAuthorized('reorderNestedElements', $this->resolveOwner());
     }
 
+    public function restrictQuery(ElementQueryInterface $query): void {}
+
     /**
      * @param  array<string, mixed>  $criteria
      * @return array<string, mixed>
