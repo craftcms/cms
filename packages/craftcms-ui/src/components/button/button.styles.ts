@@ -512,7 +512,7 @@ export default css`
 
   :host([variant~='link']) {
     --_link-color: var(--c-text-link);
-    --_link-tint: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    --_link-tint: var(--_link-color);
     font: inherit;
     min-width: auto;
     color: var(--_link-color);

@@ -421,14 +421,14 @@ describe('plain', () => {
 describe('link', () => {
   async function mountLink(decoration = ''): Promise<CraftButton> {
     // With the tokens the CP supplies, which its padding and flush come from.
-    document.body.innerHTML = `<div class="frame" style="display: flex; align-items: flex-start; font: 16px/normal sans-serif; --c-size-control-sm: 24px; --c-spacing-sm: 6px; --c-text-link: rgb(200, 100, 0); --c-color-neutral-on-quiet: rgb(0, 100, 200); ${decoration}"><craft-button variant="link" size="small" style="box-sizing: border-box">Mark as read</craft-button></div>`;
+    document.body.innerHTML = `<div class="frame" style="display: flex; align-items: flex-start; font: 16px/normal sans-serif; --c-size-control-sm: 24px; --c-spacing-sm: 6px; --c-text-link: rgb(200, 100, 0); ${decoration}"><craft-button variant="link" size="small" style="box-sizing: border-box">Mark as read</craft-button></div>`;
     const button = document.querySelector('craft-button') as CraftButton;
     await button.updateComplete;
     return button;
   }
 
   function tint(alpha: number): string {
-    return `color(srgb 0 0.392157 0.784314 / ${alpha})`;
+    return `color(srgb 0.784314 0.392157 0 / ${alpha})`;
   }
 
   it('takes the link color, with no fill or underline at rest', async () => {
@@ -445,7 +445,7 @@ describe('link', () => {
     expect(getComputedStyle(button).textDecorationLine).toBe('underline');
   });
 
-  it('keeps the link color while pressed, behind a plain button’s tint', async () => {
+  it('keeps the link color while pressed, behind a tint of it', async () => {
     const button = await mountLink();
     button.active = true;
     await button.updateComplete;
@@ -455,7 +455,7 @@ describe('link', () => {
     expect(style.color).toBe('rgb(200, 100, 0)');
   });
 
-  it('keeps the link color and a plain button’s tint while pressed under the pointer', async () => {
+  it('keeps the link color and its tint while pressed under the pointer', async () => {
     const {userEvent} = await import('vite-plus/test/browser');
     const button = await mountLink();
     await userEvent.hover(button);
@@ -468,7 +468,7 @@ describe('link', () => {
     await userEvent.unhover(button);
   });
 
-  it('keeps the link color while hovered, behind a plain button’s lighter tint', async () => {
+  it('keeps the link color while hovered, behind a lighter tint of it', async () => {
     const {userEvent} = await import('vite-plus/test/browser');
     const button = await mountLink();
     await userEvent.hover(button);
