@@ -83,7 +83,7 @@ class PerformElementActionController
             )['query'];
         } elseif ($embedded) {
             $sourceKey = ElementIndexSourceSettings::NESTED_KEY;
-            $elementQuery = EmbeddedIndexViewModel::editableQuery($request);
+            $elementQuery = EmbeddedIndexViewModel::actionQuery($request);
         } else {
             [$sourceKey, $source] = $this->elementIndexes->resolveSource(
                 $elementType,

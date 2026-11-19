@@ -118,6 +118,48 @@ describe('EmbeddedElementIndexView', () => {
     });
   });
 
+  it('keeps Set Status’s status apart from the listed status', async () => {
+    const setStatus = {
+      key: 'CraftCms\\Cms\\Element\\Actions\\SetStatus',
+      label: 'Set Status',
+      action: {
+        type: 'http',
+        method: 'POST',
+        url: '/actions/element-indexes/perform-action',
+        body: {elementAction: 'CraftCms\\Cms\\Element\\Actions\\SetStatus'},
+      },
+    } as BulkActionItem;
+    restoreElementInternals = stubElementInternals();
+    const payload = nestedIndexPayload([nestedElement(11)], {
+      actions: [setStatus],
+      statusMenuValue: 'live',
+    });
+    request.post.mockResolvedValue({data: payload});
+    root = document.createElement('div');
+    document.body.append(root);
+    app = createApp({
+      render: () =>
+        h(EmbeddedElementIndexView, {
+          elementType: 'Entry',
+          initial: payload,
+          params: {embeddedIndexToken: 'sealed'},
+          storageKey: 'embeddedindex.test',
+        }),
+    });
+    app.mount(root);
+    await vi.waitFor(() => expect(root!.querySelector('tr')).not.toBeNull());
+
+    selectRow(root, 'Entry 11');
+    await vi.waitFor(() => expect(actionItem(root!, 'Disabled')).toBeDefined());
+    actionItem(root, 'Disabled')!.click();
+
+    await vi.waitFor(() => expect(actions.run).toHaveBeenCalled());
+    expect(actions.run.mock.calls[0]?.[0].body).toMatchObject({
+      status: 'disabled',
+      criteria: {status: 'live'},
+    });
+  });
+
   it('asks for inline inputs when editing inline', async () => {
     const container = mount(false);
     await vi.waitFor(() =>

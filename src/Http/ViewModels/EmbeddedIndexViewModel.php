@@ -90,6 +90,22 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     }
 
     /**
+     * Returns the query an embedded index request lists its elements from, for element actions.
+     *
+     * Action requests post the status menu's value as `criteria.status`, since an action's own settings,
+     * such as Set Status's, can use `status`.
+     *
+     * @throws HttpException if the index is read-only
+     */
+    public static function actionQuery(ElementIndexRequest $request): ElementQueryInterface
+    {
+        return self::editableQuery(self::internalRequest([
+            ...$request->all(),
+            'status' => $request->input('criteria.status'),
+        ]));
+    }
+
+    /**
      * Builds an embedded index for an {@see EmbeddedElementIndex} without making an HTTP request.
      */
     public static function forDefinition(EmbeddedElementIndex $index): self

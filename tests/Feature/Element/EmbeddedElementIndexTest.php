@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\EmbeddedElementIndex;
@@ -315,6 +316,20 @@ it('runs element actions only on the elements it lists', function () {
 
     expect(Entry::find()->id($listed->id)->status(null)->one()->enabled)->toBeFalse()
         ->and(Entry::find()->id($unlisted->id)->status(null)->one()->enabled)->toBeTrue();
+});
+
+it('runs element actions on the trashed elements it lists', function () {
+    $entry = EntryModel::factory()->createElement();
+    Elements::deleteElement($entry);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id]);
+
+    ($this->postToIndex)(PerformElementActionController::class, $index, [
+        'elementAction' => Restore::class,
+        'elementIds' => [$entry->id],
+        'criteria' => ['status' => 'trashed'],
+    ])->assertOk();
+
+    expect(Entry::find()->id($entry->id)->status(null)->exists())->toBeTrue();
 });
 
 it('saves inline edits to the elements it lists', function () {

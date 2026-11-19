@@ -108,6 +108,16 @@
     return {...query, ...scopeParams};
   }
 
+  /**
+   * The params element actions find the listed elements with. The status menu's
+   * value goes under `criteria`, apart from action settings such as Set Status's `status`.
+   */
+  function actionParams(): Record<string, unknown> {
+    const {status, ...listed} = listedParams();
+
+    return {...listed, criteria: {status: status || null}};
+  }
+
   async function exportElements(
     format: ElementIndexExportFormat = 'csv',
     type?: string,
@@ -274,7 +284,7 @@
           :element-type="elementType"
           source="__IMP__"
           context="embeddedIndex"
-          :params="listedParams()"
+          :params="actionParams()"
           :site-id="elementIndex.siteId"
           @edit="editElement"
           @view="viewElement"
