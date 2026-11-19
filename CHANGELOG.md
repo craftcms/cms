@@ -259,6 +259,7 @@
 - Fixed a bug where editable table column widths without a unit, such as Table fields’ column widths, weren’t treated as pixels. ([#20781](https://github.com/craftcms/cms/issues/20781), [#20808](https://github.com/craftcms/cms/pull/20808))
 - Fixed a bug where element chips’ labels and status indicators were hard to see in highlighted options, such as in relation fields’ search results. ([#20778](https://github.com/craftcms/cms/issues/20778), [#20807](https://github.com/craftcms/cms/pull/20807))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2xwp-6jjc-hfmm)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Added `CraftCms\Cms\Dashboard\Dashboard::isWidgetTypeAvailable()`.
