@@ -34,6 +34,7 @@ use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -52,6 +53,8 @@ use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -804,7 +807,9 @@ JS, [
     {
         $components = [];
 
-        $metaFieldsHtml = trim($this->metaFieldsHtml($static));
+        $metaFieldsHtml = trim((string) ($this->hasMetaFieldsNodes()
+            ? $this->metaFieldsNodesHtml($static)
+            : $this->metaFieldsHtml($static)));
         if ($metaFieldsHtml !== '') {
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta'])
                 .Html::tag('h2', t('Metadata'), ['class' => 'visually-hidden']);
@@ -999,6 +1004,36 @@ JS, [
     protected function metaFieldsNodes(bool $static): array
     {
         return [];
+    }
+
+    /**
+     * Returns whether the element's meta fields come from
+     * {@see metaFieldsNodes()}. An element type that overrides
+     * {@see metaFieldsHtml()} without overriding `metaFieldsNodes()` alongside it
+     * keeps its HTML, so its fields aren't lost.
+     */
+    private function hasMetaFieldsNodes(): bool
+    {
+        return new ReflectionMethod($this, 'metaFieldsHtml')->getDeclaringClass()->getName()
+            === new ReflectionMethod($this, 'metaFieldsNodes')->getDeclaringClass()->getName();
+    }
+
+    /**
+     * Renders {@see metaFieldsNodes()} as HTML for the HTML editor, followed by
+     * the HTML that {@see ElementMetaFieldsHtmlResolving} listeners add.
+     */
+    private function metaFieldsNodesHtml(bool $static): string
+    {
+        // Delta tracking is on so attributes such as an entry's dates register
+        // their names, which the HTML editor uses to submit only changed values.
+        $nodes = DeltaRegistry::withActive(true, fn () => $this->metaFieldsNodes($static));
+        $html = $nodes === [] ? '' : app(UiHtmlRenderer::class)->render(
+            app(UiResolver::class)->resolve(Ui::make($nodes), new UiContext(errors: $this->uiErrors())),
+        );
+
+        event($event = new ElementMetaFieldsHtmlResolving($this, $static));
+
+        return $html."\n".$event->html;
     }
 
     /**

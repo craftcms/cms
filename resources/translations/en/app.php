@@ -3753,4 +3753,6 @@ return [
     '“{name}” value copied.' => '“{name}” value copied.',
     'Deprecated' => 'Deprecated',
     '“{{entry}}” is approved' => '“{{entry}}” is approved',
+    'About Craft CMS' => 'About Craft CMS',
+    'Up to date' => 'Up to date',
 ];
