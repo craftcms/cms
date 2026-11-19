@@ -229,6 +229,30 @@ class ImageHelperTest extends TestCase
         )));
     }
 
+    public function testAltTextByStream(): void
+    {
+        $iptc = "Photoshop 3.0\x008BIM\x04\x04\0\0" . pack('N', 12) . "\x1C\x02\x78" . pack('n', 7) . 'Caption';
+        $iptc = "\xFF\xED" . pack('n', strlen($iptc) + 2) . $iptc;
+        $xmp = static fn(string $description) => "\xFF\xE1" . pack('n', 31 + strlen($description)) . "http://ns.adobe.com/xap/1.0/\0" . $description;
+        $withoutAlt = $xmp('<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:creator>Someone</dc:creator></rdf:Description></rdf:RDF></x:xmpmeta>');
+        $withAlt = $xmp('<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:description>Description</dc:description></rdf:Description></rdf:RDF></x:xmpmeta>');
+        $filler = "\xFF\xE2" . pack('n', 65000) . str_repeat("\0", 64998);
+        $stream = static function(string $contents) {
+            $stream = fopen('php://memory', 'r+');
+            fwrite($stream, $contents);
+            rewind($stream);
+            return $stream;
+        };
+
+        // XMP without alt text falls back to the IPTC caption
+        self::assertSame('Caption', Image::altTextByStream($stream("\xFF\xD8$withoutAlt$iptc\xFF\xDA")));
+        // Metadata after the image data or past the read limit is ignored
+        self::assertNull(Image::altTextByStream($stream("\xFF\xD8\xFF\xDA\0\x02$withAlt")));
+        self::assertNull(Image::altTextByStream($stream("\xFF\xD8" . str_repeat($filler, 9) . "$withAlt\xFF\xDA")));
+        self::assertSame('Description', Image::altTextByStream($stream("\xFF\xD8" . str_repeat($filler, 8) . "$withAlt\xFF\xDA")));
+        self::assertNull(Image::altTextByStream(fopen(dirname(__FILE__, 3) . '/_data/assets/files/google.png', 'rb')));
+    }
+
     /**
      *
      */

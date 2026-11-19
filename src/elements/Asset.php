@@ -3980,56 +3980,7 @@ JS;
                 return null;
             }
 
-            $dom = new \DOMDocument();
-            if (!@$dom->loadXML($xmp)) {
-                return null;
-            }
-
-            $xpath = new \DOMXPath($dom);
-            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-            $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
-            $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
-            $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
-
-            // Try Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
-            foreach ([
-                '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
-                '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
-                '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
-                '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
-            ] as $query) {
-                $nodes = $xpath->query($query);
-                if ($nodes !== false) {
-                    foreach ($nodes as $node) {
-                        $value = trim($node->textContent);
-                        if ($value !== '') {
-                            return $value;
-                        }
-                    }
-                }
-            }
-
-            // Try dc:description as an rdf:Alt structure
-            $nodes = $xpath->query('//dc:description/rdf:Alt/rdf:li');
-            if ($nodes !== false) {
-                foreach ($nodes as $node) {
-                    $value = trim($node->textContent);
-                    if ($value !== '') {
-                        return $value;
-                    }
-                }
-            }
-
-            // Try dc:description as a plain string value
-            $nodes = $xpath->query('//dc:description[not(rdf:Alt)]');
-            if ($nodes !== false) {
-                foreach ($nodes as $node) {
-                    $value = trim($node->textContent);
-                    if ($value !== '') {
-                        return $value;
-                    }
-                }
-            }
+            return Image::altTextFromXmp($xmp);
         } catch (Throwable) {
             // Ignore errors and fall through to IPTC
         }
@@ -4053,14 +4004,7 @@ JS;
                 return null;
             }
 
-            $iptc = iptcparse($imageInfo['APP13']);
-
-            if (!empty($iptc['2#120'])) {
-                $value = trim(implode(' ', $iptc['2#120']));
-                if ($value !== '') {
-                    return $value;
-                }
-            }
+            return Image::altTextFromIptc($imageInfo['APP13']);
         } catch (Throwable) {
             // Ignore errors
         }

@@ -26,6 +26,8 @@ class Image
 {
     // Bounds metadata scans for formats whose dimensions aren't in fixed header bytes.
     private const MAX_IMAGE_SIZE_STREAM_BYTES = 1024 * 1024;
+    // Bounds JPEG metadata reads. EXIF, XMP, ICC and Photoshop segments are each at most 64KB.
+    private const MAX_METADATA_STREAM_BYTES = 512 * 1024;
     private const JXL_CONTAINER_SIGNATURE = "\x00\x00\x00\x0CJXL \x0D\x0A\x87\x0A";
     // Bytes needed to parse a JPEG XL SizeHeader (68 bits max), plus the 2-byte codestream signature
     private const JXL_SIZE_HEADER_BYTES = 11;
@@ -435,6 +437,126 @@ class Image
         }
 
         return $dimensions;
+    }
+
+    /**
+     * Returns a JPEG’s alt text from its XMP or IPTC metadata, reading only the segments before the image data.
+     *
+     * XMP’s `Iptc4xmpCore:AltTextAccessibility` or `dc:description` is used first, then IPTC’s Caption/Abstract,
+     * the same as for uploaded images. Other formats return `null`, since their metadata can follow the image data.
+     *
+     * @param resource $stream
+     * @return string|null
+     * @since 5.13.0
+     */
+    public static function altTextByStream($stream): ?string
+    {
+        if (!is_resource($stream)) {
+            throw new TypeError('Argument passed should be a resource.');
+        }
+
+        if (stream_get_contents($stream, 2) !== "\xFF\xD8") {
+            return null;
+        }
+
+        $xmp = null;
+        $iptc = null;
+        $bytesRead = 2;
+
+        while ($xmp === null || $iptc === null) {
+            $header = stream_get_contents($stream, 4);
+
+            if ($header === false || strlen($header) < 4 || $header[0] !== "\xFF") {
+                break;
+            }
+
+            $type = ord($header[1]);
+            $length = unpack('n', $header, 2)[1] - 2;
+            $bytesRead += 4 + $length;
+
+            // Stop at the image data, at the end of the file, or once the read would pass the limit
+            if ($type === 0xDA || $type === 0xD9 || $length < 0 || $bytesRead > self::MAX_METADATA_STREAM_BYTES) {
+                break;
+            }
+
+            $segment = $length ? stream_get_contents($stream, $length) : '';
+
+            if ($segment === false || strlen($segment) < $length) {
+                break;
+            }
+
+            if ($type === 0xE1 && $xmp === null && str_starts_with($segment, "http://ns.adobe.com/xap/1.0/\0")) {
+                $xmp = substr($segment, 29);
+            } elseif ($type === 0xED && $iptc === null && str_starts_with($segment, "Photoshop 3.0\0")) {
+                $iptc = $segment;
+            }
+        }
+
+        return ($xmp !== null ? self::altTextFromXmp($xmp) : null)
+            ?? ($iptc !== null ? self::altTextFromIptc($iptc) : null);
+    }
+
+    /**
+     * Returns alt text from an XMP packet: `Iptc4xmpCore:AltTextAccessibility`, then `dc:description`.
+     *
+     * @param string $xmp
+     * @return string|null
+     * @internal
+     */
+    public static function altTextFromXmp(string $xmp): ?string
+    {
+        $dom = new \DOMDocument();
+        if (!@$dom->loadXML(trim($xmp, "\0 \t\n\r"))) {
+            return null;
+        }
+
+        $xpath = new \DOMXPath($dom);
+        $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+        $xpath->registerNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+        $xpath->registerNamespace('Iptc4xmpCore', 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/');
+        $xpath->registerNamespace('Iptc4xmpExt', 'http://iptc.org/std/Iptc4xmpExt/2008-02-29/');
+
+        foreach ([
+            // Iptc4xmpCore:AltTextAccessibility (LangAlt rdf:Alt/rdf:li structure)
+            '//Iptc4xmpCore:AltTextAccessibility/rdf:Alt/rdf:li',
+            '//Iptc4xmpExt:AltTextAccessibility/rdf:Alt/rdf:li',
+            '//Iptc4xmpCore:AltTextAccessibility[not(rdf:Alt)]',
+            '//Iptc4xmpExt:AltTextAccessibility[not(rdf:Alt)]',
+            // dc:description as an rdf:Alt structure, then as a plain string value
+            '//dc:description/rdf:Alt/rdf:li',
+            '//dc:description[not(rdf:Alt)]',
+        ] as $query) {
+            $nodes = $xpath->query($query);
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $value = trim($node->textContent);
+                    if ($value !== '') {
+                        return $value;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the Caption/Abstract (field 2:120) from IPTC data, such as a JPEG’s APP13 segment.
+     *
+     * @param string $iptc
+     * @return string|null
+     * @internal
+     */
+    public static function altTextFromIptc(string $iptc): ?string
+    {
+        $values = iptcparse($iptc);
+
+        if (empty($values['2#120'])) {
+            return null;
+        }
+
+        $value = trim(implode(' ', $values['2#120']));
+        return $value !== '' ? $value : null;
     }
 
     /**
