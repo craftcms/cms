@@ -20,8 +20,8 @@ Follows the WAI-ARIA APG [Breadcrumb](https://www.w3.org/WAI/ARIA/apg/patterns/b
 
 ### Reflow and zoom
 
-- [ ] At 320px wide and at 400% zoom, the trail fits its container without scrolling the page sideways. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Known gap: collapsing isn't implemented (`adjustOverflow()` is a TODO), crumbs don't wrap, and each crumb is `white-space: nowrap`, so a deep trail overflows.
-- [ ] Crumbs collapsed out of the trail stay reachable from the keyboard, in one activation, through a menu that follows `craft-action-menu`'s behavior. Per WCAG 2.1.1 (Keyboard) and 1.4.10 (Reflow). Not yet verified. There's no collapse menu yet.
+- [x] At 320px wide and at 400% zoom, the trail fits its container without scrolling the page sideways. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Crumbs that don't fit collapse into a menu, and the current page truncates when it alone is too wide. Verified by `collapses from the middle, keeping the first and last crumbs` and `truncates the last crumb when nothing else fits beside it` in `breadcrumbs.browser.test.ts`.
+- [x] Crumbs collapsed out of the trail get `hidden`, leaving the accessibility tree, and stay reachable from the keyboard through a `craft-action-menu` named "More items", whose items are links to the same places. Per WCAG 2.1.1 (Keyboard) and 1.4.10 (Reflow). Verified by `follows the collapsed crumb’s own link from the menu` in `breadcrumbs.browser.test.ts`.
 
 ## Depends on usage
 

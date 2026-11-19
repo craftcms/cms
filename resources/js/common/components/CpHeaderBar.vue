@@ -134,14 +134,14 @@
         class="cp-header-bar__breadcrumbs"
         v-else-if="section === 'breadcrumbs'"
       >
-        <div class="flex gap-md items-center">
+        <div class="flex gap-md items-center min-w-0">
           <SystemInfo
             v-if="isLarge"
             class="cp-header-bar__system"
             :class="{'cp-header-bar__system--collapsed': sidebarCollapsed}"
           />
           <div
-            class="flex flex-nowrap items-center gap-md"
+            class="flex flex-nowrap items-center gap-md min-w-0"
             v-show="crumbs || hasContextMenu"
           >
             <span
