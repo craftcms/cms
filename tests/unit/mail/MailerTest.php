@@ -15,6 +15,9 @@ use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use craft\web\twig\CpExtension;
+use craft\web\View;
+use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use UnitTester;
 use yii\base\ErrorException;
@@ -41,6 +44,15 @@ class MailerTest extends TestCase
      * @var UnitTester
      */
     protected UnitTester $tester;
+
+    public function _fixtures(): array
+    {
+        return [
+            'sites' => [
+                'class' => SitesFixture::class,
+            ],
+        ];
+    }
 
     /**
      * Tests mail from key composition
@@ -175,6 +187,33 @@ class MailerTest extends TestCase
             'giel@yellowflash.net' => 'Giel',
             'info@craftcms.com' => 'Craft CMS',
         ], $lastMessage->to);
+    }
+
+    /**
+     * @see https://github.com/craftcms/cms/issues/20855
+     */
+    public function testSendMailForOtherSiteRestoresTwig(): void
+    {
+        $view = Craft::$app->getView();
+        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+        $cpTwig = $view->getTwig(View::TEMPLATE_MODE_CP);
+        $siteTwig = $view->getTwig(View::TEMPLATE_MODE_SITE);
+
+        $otherSite = Craft::$app->getSites()->getSiteByHandle('testSite1');
+        self::assertNotSame(Craft::$app->getSites()->getCurrentSite()->id, $otherSite->id);
+
+        $message = $this->mailer->composeFromKey('account_activation', [
+            'user' => Craft::$app->getUsers()->getUserById(1),
+            'link' => 'https://craftcms.com',
+        ]);
+        $message->setTo('test@craft.test');
+        $message->siteId = $otherSite->id;
+        $this->mailer->send($message);
+
+        self::assertSame(View::TEMPLATE_MODE_CP, $view->getTemplateMode());
+        self::assertSame($cpTwig, $view->getTwig(View::TEMPLATE_MODE_CP));
+        self::assertSame($siteTwig, $view->getTwig(View::TEMPLATE_MODE_SITE));
+        self::assertTrue($view->getTwig()->hasExtension(CpExtension::class));
     }
 
     /**

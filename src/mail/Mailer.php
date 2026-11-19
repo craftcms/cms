@@ -240,11 +240,13 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $sitesService->setCurrentSite($currentSite);
             }
 
-            $view->setTemplateMode($originalTemplateMode);
-
+            // Restore the site Twig environment before switching back to the original template mode,
+            // since setTwig() sets the environment for the current template mode
             if ($twig) {
                 $view->setTwig($twig);
             }
+
+            $view->setTemplateMode($originalTemplateMode);
 
             Craft::configure($this, $originalSettings);
         }
