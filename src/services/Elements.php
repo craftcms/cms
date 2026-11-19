@@ -3581,19 +3581,25 @@ class Elements extends Component
                 // Each map can cover a different element type, so collect the results of every map
                 // before handing them to the source elements, indexed by the sources' positions
                 $loadedElements = [];
+                $loadedPositions = [];
                 $loadedCounts = [];
 
-                // With several maps, the plan's offset and limit apply to each source's combined elements,
+                // With several maps, the plan's offset, limit, and inReverse apply to each source's combined elements,
                 // while each map keeps its own
                 $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
                 $combinedOffset = count($maps) > 1 ? (int)($planCriteria['offset'] ?? 0) : 0;
                 $combinedLimit = count($maps) > 1 && isset($planCriteria['limit']) ? (int)$planCriteria['limit'] : null;
+                $combinedReverse = count($maps) > 1 && !empty($planCriteria['inReverse']);
+
+                // Put the combined elements back in the order they were mapped in, unless a map wants a custom order
+                $restoreMappingOrder = count($maps) > 1;
 
                 foreach ($maps as $map) {
                     $targetElementIdsBySourceIds = null;
                     $query = null;
                     $offset = 0;
                     $limit = null;
+                    $inReverse = false;
 
                     if (!empty($map['map'])) {
                         // Loop through the map to find:
@@ -3605,7 +3611,8 @@ class Elements extends Component
                         foreach ($map['map'] as $mapping) {
                             if (!empty($mapping['target'])) {
                                 $uniqueTargetElementIds[$mapping['target']] = true;
-                                $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
+                                // @phpstan-ignore offsetAccess.notFound (normalizeEagerLoadingMaps() sets each mapping's position)
+                                $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] ??= $mapping['position'];
                             }
                         }
 
@@ -3644,10 +3651,16 @@ class Elements extends Component
                         // Save the offset & limit params for later
                         $offset = ArrayHelper::remove($criteria, 'offset', 0);
                         $limit = ArrayHelper::remove($criteria, 'limit');
+                        $inReverse = !empty($criteria['inReverse']);
 
                         if (count($maps) > 1) {
                             $offset = $otherCriteria['offset'] ?? 0;
                             $limit = $otherCriteria['limit'] ?? null;
+                            $inReverse = !empty($otherCriteria['inReverse']);
+                        }
+
+                        if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
+                            $restoreMappingOrder = false;
                         }
 
                         Craft::configure($query, $criteria);
@@ -3714,6 +3727,7 @@ class Elements extends Component
                     foreach ($filteredElements as $i => $sourceElement) {
                         $targetElementIdsForSource = [];
                         $targetElementsForSource = [];
+                        $positionsForSource = [];
 
                         if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
                             // Does the path mapping want a custom order?
@@ -3733,7 +3747,7 @@ class Elements extends Component
                                 }
                             }
 
-                            if (!empty($criteria['inReverse'])) {
+                            if ($inReverse) {
                                 $targetElementIdsForSource = array_reverse($targetElementIdsForSource);
                             }
 
@@ -3755,6 +3769,7 @@ class Elements extends Component
                                         }
                                     }
                                     $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
+                                    $positionsForSource[] = $targetElementIdsBySourceIds[$sourceElement->id][$elementId];
 
                                     // If we're collecting cache info and the element is expirable, register its expiry date
                                     if (
@@ -3778,6 +3793,7 @@ class Elements extends Component
                             }
 
                             $loadedElements[$i] = [...$loadedElements[$i] ?? [], ...$targetElementsForSource];
+                            $loadedPositions[$i] = [...$loadedPositions[$i] ?? [], ...$positionsForSource];
                         }
                     }
 
@@ -3809,8 +3825,18 @@ class Elements extends Component
 
                 // Tell the source elements about their eager-loaded elements
                 foreach ($filteredElements as $i => $sourceElement) {
-                    if (isset($loadedElements[$i]) && ($combinedOffset || $combinedLimit)) {
-                        $loadedElements[$i] = array_slice($loadedElements[$i], $combinedOffset, $combinedLimit);
+                    if (isset($loadedElements[$i]) && count($maps) > 1) {
+                        if ($restoreMappingOrder) {
+                            asort($loadedPositions[$i]);
+                            $combinedElements = $loadedElements[$i];
+                            $loadedElements[$i] = array_map(fn(int $key) => $combinedElements[$key], array_keys($loadedPositions[$i]));
+                        }
+                        if ($combinedReverse) {
+                            $loadedElements[$i] = array_reverse($loadedElements[$i]);
+                        }
+                        if ($combinedOffset || $combinedLimit) {
+                            $loadedElements[$i] = array_slice($loadedElements[$i], $combinedOffset, $combinedLimit);
+                        }
                     }
 
                     if (!empty($loadedElements[$i])) {
@@ -3831,8 +3857,16 @@ class Elements extends Component
      * @param EagerLoadingMap|EagerLoadingMap[]|false $map
      * @return EagerLoadingMap[]|false[]
      */
-    private function normalizeEagerLoadingMaps(array|false $map): array
+    private function normalizeEagerLoadingMaps(array|false $map, int &$position = 0): array
     {
+        if (isset($map['map'])) {
+            // Number the mappings, so elements from maps that get split up by element type can be put back in order
+            foreach ($map['map'] as &$mapping) {
+                $mapping['position'] = $position++;
+            }
+            unset($mapping);
+        }
+
         if (isset($map['elementType']) || $map === false) {
             // a normal, one-dimensional map
             return [$map];
@@ -3856,7 +3890,7 @@ class Elements extends Component
         foreach ($map as $m) {
             if (isset($m['map'])) {
                 /** @phpstan-ignore-next-line */
-                array_push($maps, ...$this->normalizeEagerLoadingMaps($m));
+                array_push($maps, ...$this->normalizeEagerLoadingMaps($m, $position));
             }
         }
         return $maps;

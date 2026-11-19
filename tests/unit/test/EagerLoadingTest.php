@@ -368,6 +368,52 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
+     * Test that a map split up by element type keeps its mapping order, and that the plan's `inReverse`
+     * applies to each source's combined elements
+     *
+     * @return void
+     */
+    public function testEagerLoadingMapsKeepMappingOrder(): void
+    {
+        [$entryA, $entryB] = Entry::find()->limit(2)->orderBy(['elements.id' => SORT_ASC])->all();
+        $user = User::find()->one();
+        self::assertNotNull($entryB);
+        self::assertNotNull($user);
+
+        EagerLoadingTestSourceElement::$map = [
+            'map' => [
+                ['source' => 1, 'target' => $entryA->id],
+                ['source' => 1, 'target' => $user->id],
+                ['source' => 1, 'target' => $entryB->id],
+            ],
+        ];
+        $source = new EagerLoadingTestSourceElement([
+            'id' => 1,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+        ]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$source], [
+            'mixed',
+            ['path' => 'mixed as page', 'criteria' => ['offset' => 1, 'limit' => 1]],
+            ['path' => 'mixed as reversed', 'criteria' => ['inReverse' => true]],
+            ['path' => 'mixed as reversedPage', 'criteria' => ['inReverse' => true, 'offset' => 1, 'limit' => 1]],
+        ]);
+
+        $ids = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $source->getEagerLoadedElements($alias)->all(),
+        );
+
+        $a = [Entry::class, $entryA->id];
+        $u = [User::class, $user->id];
+        $b = [Entry::class, $entryB->id];
+        self::assertSame([$a, $u, $b], $ids('mixed'));
+        self::assertSame([$u], $ids('page'));
+        self::assertSame([$b, $u, $a], $ids('reversed'));
+        self::assertSame([$u], $ids('reversedPage'));
+    }
+
+    /**
      * @param callable(EntryQuery): EntryQuery $modifyQuery
      * @param bool $one Whether to execute the query with `one()` rather than `all()`
      * @return int[]
