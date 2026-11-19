@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
-import {contrast} from '../../../test/contrast';
+import {contrast, expectReadableOnHover} from '../../../test/contrast';
 import {sizes} from '@src/constants/size';
 import './tabs.js';
 import '../tab/tab.js';
@@ -328,6 +328,24 @@ describe.each(themes)('in the %s theme', (theme) => {
     expect(getComputedStyle(tabs[1]!).borderTopColor).toBe('rgba(0, 0, 0, 0)');
   });
 });
+
+it.each<{appearance: string; attrs: Record<string, string>}>([
+  {appearance: 'default', attrs: {}},
+  {appearance: 'fill', attrs: {appearance: 'fill'}},
+])(
+  'keeps a hovered tab’s label at 4.5:1 on its fill ($appearance appearance)',
+  async ({attrs}) => {
+    await expectReadableOnHover(
+      async (parent) => {
+        const {tabs} = await strip({parent, attrs});
+        await expect.poll(() => tabs[0]!.hasAttribute('selected')).toBe(true);
+
+        return tabs[1]!;
+      },
+      {surfaces: ['default', 'raised', 'sunken', 'overlay']}
+    );
+  }
+);
 
 /** Whether a 24px circle centered on `rect` stays clear of every other target. */
 function clearOfOthers(rect: DOMRect, others: DOMRect[]): boolean {
