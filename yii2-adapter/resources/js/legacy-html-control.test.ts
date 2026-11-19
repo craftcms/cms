@@ -199,6 +199,9 @@ describe('Legacy HTML UI Control', () => {
         },
       }
     );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
     const items =
       container.querySelector<HTMLInputElement>('[name="items[2]"]')!;
 
@@ -373,6 +376,40 @@ describe('Legacy HTML UI Control', () => {
     expect(mutation.value).toEqual({fields: {target: ['6']}});
   });
 
+  it('keeps an already-expanded value when its inputs announce themselves on remount', async () => {
+    // A remount can render inputs with older values than the island holds,
+    // which it restores once they've mounted.
+    customElements.define(
+      'test-announcing-expanded-input',
+      class extends HTMLElement {
+        connectedCallback() {
+          this.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+      }
+    );
+    const {container, mutation} = await mount(
+      {
+        html: '<test-announcing-expanded-input><input type="hidden" name="fields[target]" value=""><input type="hidden" name="fields[target][]" value="5"></test-announcing-expanded-input>',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        path: ['fields', 'target'],
+        values: {fields: {target: ['6']}},
+      }
+    );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+    await nextTick();
+
+    expect(mutation.value).toEqual({});
+    expect(
+      container.querySelector<HTMLInputElement>('[name="fields[target][]"]')!
+        .value
+    ).toBe('6');
+  });
+
   it('restores list inputs from an already-expanded value', async () => {
     // After an autosave, the island remounts with the value it last published
     // (expanded), not the server's flat input names.
@@ -413,6 +450,9 @@ describe('Legacy HTML UI Control', () => {
       },
       {values: {__legacy: {'codes[00]': ''}}}
     );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
     const input = container.querySelector<HTMLInputElement>('input')!;
 
     input.value = 'leading';
@@ -460,6 +500,14 @@ describe('Legacy HTML UI Control', () => {
       configurable: true,
       value: [new File(['content'], 'selected.txt')],
     });
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+    input.dispatchEvent(new Event('change', {bubbles: true}));
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      'selected.txt'
+    );
 
     const submit = new SubmitEvent('submit', {bubbles: true, cancelable: true});
     form.dispatchEvent(submit);
@@ -611,6 +659,9 @@ describe('Legacy HTML UI Control', () => {
         },
       }
     );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
     const input = container.querySelector<HTMLInputElement>(
       '[name="nested[block][settings][title]"]'
     )!;

@@ -158,6 +158,7 @@ import {
     _error = null;
     _errors = [];
     _snapshot = null;
+    _mounting = false;
     ready = Promise.resolve();
 
     set node(node) {
@@ -301,8 +302,12 @@ import {
 
       // Inputs also announce themselves as they initialize, such as an element
       // select input adding its saved elements, before anything has changed.
+      // Serializing skips file inputs, so a selected file still goes through
+      // `publish()` to report it.
       if (
-        JSON.stringify(serializeFormInputsAsObject(this)) === this._snapshot
+        this._mounting ||
+        (!selectedFile(this) &&
+          JSON.stringify(serializeFormInputsAsObject(this)) === this._snapshot)
       ) {
         return;
       }
@@ -342,9 +347,6 @@ import {
 
       this.dispose();
       this.clearError();
-      // Until the inputs have mounted, the server's capture of them stands in
-      // for what they serialize to.
-      this._snapshot = JSON.stringify(this.currentValue() ?? null);
 
       if (!fragment) {
         this.invalidate(
@@ -371,6 +373,11 @@ import {
           return;
         }
 
+        // Inputs can announce themselves as they're inserted, before anything
+        // has changed. Changes are measured from what they then serialize to,
+        // which a remount's island value may not match until it's restored.
+        this._mounting = true;
+
         if (
           !(await this.append(
             nativeFieldHtml(
@@ -384,6 +391,9 @@ import {
         ) {
           return;
         }
+
+        this._mounting = false;
+        this._snapshot = JSON.stringify(serializeFormInputsAsObject(this));
 
         if (!(await this.append(fragment.bodyHtml, document.body, runId))) {
           return;
@@ -401,6 +411,10 @@ import {
       } catch (error) {
         if (runId === this._runId) {
           this.invalidate(error);
+        }
+      } finally {
+        if (runId === this._runId) {
+          this._mounting = false;
         }
       }
     }
