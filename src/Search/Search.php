@@ -24,7 +24,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Search as SearchHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
@@ -83,6 +82,18 @@ class Search
             return true;
         }
 
+        try {
+            $this->writeKeywords($element, $fieldHandles);
+        } finally {
+            $mutex->release();
+        }
+
+        return true;
+    }
+
+    /** @param list<string>|null $fieldHandles */
+    private function writeKeywords(ElementInterface $element, ?array $fieldHandles): void
+    {
         $customFields = array_values(array_filter(
             $element->getFieldLayout()?->getCustomFields() ?? [],
             fn (FieldInterface $field) => $field->searchable && $field->layoutElement !== null,
@@ -153,14 +164,6 @@ class Search
                 DB::table(Table::SEARCHINDEX)->insert($chunk);
             }, 1_000, fn (Throwable $e) => $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
         }
-
-        $mutex->release();
-
-        TagDependency::invalidate([
-            sprintf('element-search-query::%s', $element::class),
-        ]);
-
-        return true;
     }
 
     /** @return string[] */
