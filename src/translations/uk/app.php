@@ -880,6 +880,7 @@ return [
     'Groups' => 'Групи',
     'Guest Required' => 'Потрібен гість',
     'HTML Email Template' => 'HTML-шаблон ел. листа',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Дескриптор',
     'Has Descendants' => 'Має дочірні елементи',
     'Has URL' => 'Має URL-адресу',

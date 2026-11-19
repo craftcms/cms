@@ -880,6 +880,7 @@ return [
     'Groups' => 'Ομάδες',
     'Guest Required' => 'Απαιτείται επισκέπτης',
     'HTML Email Template' => 'Πρότυπο email HTML',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Αναγνωριστικό',
     'Has Descendants' => 'Has Descendants',
     'Has URL' => 'Έχει URL',

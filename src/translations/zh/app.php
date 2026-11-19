@@ -880,6 +880,7 @@ return [
     'Groups' => '群组',
     'Guest Required' => '需要宾客',
     'HTML Email Template' => 'HTML 电子邮件模版',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => '句柄',
     'Has Descendants' => '具有子项',
     'Has URL' => '有 URL',
