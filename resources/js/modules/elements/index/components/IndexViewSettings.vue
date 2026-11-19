@@ -66,8 +66,8 @@
   });
 
   /**
-   * The settings as they were when the menu opened. Closing any way but Apply
-   * — Cancel, Escape, a click outside — goes back to them.
+   * The settings as they were when the menu opened, which Cancel goes back to.
+   * Closing it any other way keeps the changes; Apply is only a way to close.
    */
   let opened: {
     mode?: ViewMode['mode'];
@@ -77,11 +77,9 @@
     thumbSize: ThumbSize;
     order: string[];
   } | null = null;
-  let applied = false;
 
   function onShow(): void {
     fields.value?.takeSnapshot();
-    applied = false;
     opened = {
       mode: mode.value,
       sortField: sortField.value,
@@ -96,7 +94,7 @@
   function revert(): void {
     const was = opened;
     opened = null;
-    if (applied || !was) return;
+    if (!was) return;
 
     if (was.mode !== undefined && mode.value !== was.mode)
       mode.value = was.mode;
@@ -130,9 +128,8 @@
     actions.value?.focusCancel();
   }
 
-  /** Changes show as they're made, so applying only keeps them. */
-  function apply(): void {
-    applied = true;
+  function cancel(): void {
+    revert();
     void popover.value?.hide();
   }
 </script>
@@ -143,7 +140,6 @@
     class="index-view-settings"
     style="--popover-min-inline-size: 24rem; --popover-max-inline-size: 24rem"
     @craft-show.self="onShow"
-    @craft-hide.self="revert"
   >
     <!-- Something else can trigger it, like a chip summing up its settings. -->
     <slot name="invoker">
@@ -189,8 +185,8 @@
         ref="actions"
         :clear-label="changeCount ? t('Clear') : undefined"
         @clear="useDefaults"
-        @cancel="popover?.hide()"
-        @apply="apply"
+        @cancel="cancel"
+        @apply="popover?.hide()"
       />
     </craft-pane>
   </craft-popover>

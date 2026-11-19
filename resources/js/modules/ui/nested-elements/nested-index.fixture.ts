@@ -218,11 +218,11 @@ export function button(root: HTMLElement, label: string) {
   ) as HTMLElement & {disabled: boolean};
 }
 
-/** Switches the table between viewing and editing, as its View/Edit buttons do. */
-export function setTableMode(root: HTMLElement, mode: 'view' | 'edit'): void {
-  root
-    .querySelector('craft-button-group[name="tableMode"]')!
-    .dispatchEvent(new CustomEvent('change', {detail: {value: mode}}));
+/** Starts editing the table inline, as the toolbar menu's Bulk edit does. */
+export function startBulkEdit(root: HTMLElement): void {
+  [...root.querySelectorAll<HTMLElement>('craft-action-item')]
+    .find((item) => item.textContent?.trim() === 'Bulk edit')!
+    .click();
 }
 
 export function pagerButton(

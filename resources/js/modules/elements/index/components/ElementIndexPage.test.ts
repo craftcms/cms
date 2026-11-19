@@ -351,16 +351,28 @@ it('leaves the primary title link to page navigation', async () => {
   expect(quickEdit.openEditor).not.toHaveBeenCalled();
 });
 
-it('offers inline editing and export on page tables', async () => {
+function moreActionsMenu(container: Element): Element | null {
+  return (
+    container
+      .querySelector('craft-icon[aria-label="More actions"]')
+      ?.closest('craft-action-menu') ?? null
+  );
+}
+
+function moreActionLabels(container: Element): Array<string | undefined> {
+  return [
+    ...(moreActionsMenu(container)?.querySelectorAll('craft-action-item') ??
+      []),
+  ].map((item) => item.textContent?.trim());
+}
+
+it('offers bulk editing and export from the page table’s action menu', async () => {
   const container = await mountPage();
 
-  expect(
-    container.querySelector('craft-button-group[name="tableMode"]')
-  ).not.toBeNull();
-  expect(container.textContent).toContain('Export');
+  expect(moreActionLabels(container)).toEqual(['Bulk edit', 'Export']);
 });
 
-it('puts the primary action last, with a menu beside it only for extra actions', async () => {
+it('puts the action menu after the primary action, with a menu beside it only for extra actions', async () => {
   // `craft-button-group` calls attachInternals(), which happy-dom doesn't implement.
   const attachInternals = Object.getOwnPropertyDescriptor(
     HTMLElement.prototype,
@@ -395,19 +407,15 @@ it('puts the primary action last, with a menu beside it only for extra actions',
     upload
   );
   const group = container.querySelector('craft-button-group')!;
-  const exportButton = [...container.querySelectorAll('craft-button')].find(
-    (button) => button.textContent?.trim() === 'Export'
-  );
 
-  expect(group.parentElement?.lastElementChild).toBe(group);
+  expect(group.nextElementSibling).toBe(moreActionsMenu(container));
   expect(group.firstElementChild?.textContent).toBe('Upload files');
   expect(
     [...group.querySelectorAll('craft-action-item')].map((item) =>
       item.textContent?.trim()
     )
   ).toEqual(['Generate image']);
-  expect(exportButton).toBeDefined();
-  expect(group.contains(exportButton!)).toBe(false);
+  expect(group.textContent).not.toContain('Export');
 
   teardown?.();
   container = await mountPage({}, undefined, 'table', {}, upload);
@@ -417,16 +425,13 @@ it('puts the primary action last, with a menu beside it only for extra actions',
   )!;
 
   expect(container.querySelector('craft-button-group')).toBeNull();
-  expect(uploadButton.parentElement?.lastElementChild).toBe(uploadButton);
+  expect(uploadButton.nextElementSibling).toBe(moreActionsMenu(container));
 });
 
-it('hides inline editing outside table mode', async () => {
+it('offers bulk editing in table mode only', async () => {
   const container = await mountPage({}, undefined, 'cards');
 
-  expect(
-    container.querySelector('craft-button-group[name="tableMode"]')
-  ).toBeNull();
-  expect(container.textContent).toContain('Export');
+  expect(moreActionLabels(container)).toEqual(['Export']);
 });
 
 it('opens the public URL instead of the CP URL in a new tab', async () => {

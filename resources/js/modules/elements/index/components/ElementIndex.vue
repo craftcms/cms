@@ -304,17 +304,6 @@
     void structure?.moveRow(id, move);
   }
 
-  /** The table's View | Edit switch. Edit stays on until saved or left. */
-  function setEditing(editing: boolean): void {
-    if (editing === isInlineEditing.value) return;
-
-    if (editing) {
-      void startInlineEditing();
-    } else {
-      inlineEditor.cancel();
-    }
-  }
-
   // Rows reloaded while editing (a new filter, sort or page) come back with
   // their inputs, so editing carries on over them.
   watch(data, () => {
@@ -532,18 +521,29 @@
   const canExport = computed(() =>
     Boolean(exportElements && elementIndex.exporters?.length)
   );
-  const moreActions = computed(() =>
-    canExport.value
+  const moreActions = computed(() => [
+    ...(canEditInline.value && !isInlineEditing.value
       ? [
           {
-            label: t('Export…'),
+            label: t('Bulk edit'),
+            icon: 'pen',
+            disabled: processing.value,
+            onClick: () => void startInlineEditing(),
+          },
+        ]
+      : []),
+    ...(canExport.value
+      ? [
+          {
+            label: t('Export'),
+            icon: 'arrow-up-from-bracket',
             // Not mid-request, when the criteria it would send are changing.
             disabled: processing.value,
             onClick: () => (exporting.value = 'all'),
           },
         ]
-      : []
-  );
+      : []),
+  ]);
 
   /** The selection as the exporter takes it: IDs, or every result but some. */
   function selectedExportIds(): Array<string | number> {
@@ -664,8 +664,6 @@
       >
         <template
           v-if="
-            canEditInline ||
-            isInlineEditing ||
             moreActions.length ||
             $slots['toolbar-actions'] ||
             $slots['toolbar-actions-after'] ||
@@ -674,39 +672,7 @@
           #actions
         >
           <div class="flex flex-wrap gap-md items-center">
-            <craft-button-group
-              v-if="canEditInline || isInlineEditing"
-              name="tableMode"
-              :aria-label="t('Table mode')"
-              .value="isInlineEditing ? 'edit' : 'view'"
-              @change="
-                (event: CustomEvent) =>
-                  setEditing(event.detail.value === 'edit')
-              "
-            >
-              <craft-button
-                type="button"
-                value="view"
-                :variant="ButtonVariant.Fill"
-                .disabled="processing"
-                >{{ t('View') }}</craft-button
-              >
-              <craft-button
-                type="button"
-                value="edit"
-                :variant="ButtonVariant.Fill"
-                .disabled="processing"
-                >{{ t('Edit') }}</craft-button
-              >
-            </craft-button-group>
             <slot name="toolbar-actions" :element-index="elementIndex" />
-            <ActionMenu
-              v-if="moreActions.length"
-              :actions="moreActions"
-              :label="t('More actions')"
-              :button-variant="ButtonVariant.Fill"
-              :flush="false"
-            />
             <slot name="toolbar-actions-after" :element-index="elementIndex" />
             <!-- The main action comes last, with a menu beside it for anything else. -->
             <craft-button-group
@@ -727,6 +693,23 @@
               </ActionMenu>
             </craft-button-group>
             <slot v-else name="primary-action" :element-index="elementIndex" />
+            <!-- Sized like the primary action beside it. -->
+            <ActionMenu
+              v-if="moreActions.length"
+              :actions="moreActions"
+              :label="t('More actions')"
+            >
+              <template #invoker="{label}">
+                <craft-button
+                  slot="invoker"
+                  type="button"
+                  :variant="ButtonVariant.Fill"
+                  icon
+                >
+                  <craft-icon name="ellipsis" :label="label"></craft-icon>
+                </craft-button>
+              </template>
+            </ActionMenu>
           </div>
         </template>
         <template #search-options v-if="$slots['search-options']">

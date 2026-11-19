@@ -3,7 +3,7 @@
    * How an index shows its elements: view mode, sort, thumbnail size and table
    * columns, or just the `only` ones, so they can be split across menus.
    */
-  import {computed, ref, watch} from 'vue';
+  import {computed, ref, useId, watch} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
   import Select from '@/common/form/Select.vue';
   import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
@@ -42,6 +42,7 @@
   const sortDirection = defineModel<'asc' | 'desc'>('sortDirection', {
     required: true,
   });
+  const sortDirectionId = `sort-direction-${useId()}`;
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
@@ -144,9 +145,9 @@
         <craft-button-group role="group" :aria-label="t('Sort Direction')">
           <craft-button
             type="button"
+            :id="`${sortDirectionId}-asc`"
             icon="asc"
             value="asc"
-            :aria-label="t('Sort ascending')"
             :aria-pressed="sortDirection === 'asc'"
             :variant="ButtonVariant.Fill"
             .active="sortDirection === 'asc'"
@@ -155,9 +156,9 @@
           ></craft-button>
           <craft-button
             type="button"
+            :id="`${sortDirectionId}-desc`"
             icon="desc"
             value="desc"
-            :aria-label="t('Sort descending')"
             :aria-pressed="sortDirection === 'desc'"
             :variant="ButtonVariant.Fill"
             .active="sortDirection === 'desc'"
@@ -165,6 +166,16 @@
             @click="setSortDirection('desc')"
           ></craft-button>
         </craft-button-group>
+        <!-- Name the icon-only buttons. -->
+        <craft-tooltip :for="`${sortDirectionId}-asc`" invoker-relation="label">
+          {{ t('Ascending') }}
+        </craft-tooltip>
+        <craft-tooltip
+          :for="`${sortDirectionId}-desc`"
+          invoker-relation="label"
+        >
+          {{ t('Descending') }}
+        </craft-tooltip>
       </div>
     </div>
     <div v-if="shows('thumbSize') && thumbSizeChoices.length">

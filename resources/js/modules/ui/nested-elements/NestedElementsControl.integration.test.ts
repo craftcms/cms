@@ -17,7 +17,7 @@ import {
   nestedIndexPayload,
   postsTo,
   selectRow,
-  setTableMode,
+  startBulkEdit,
   selectRows,
   stubElementInternals,
   waitForPage,
@@ -372,7 +372,7 @@ describe('NestedElementsControl', () => {
   it('retains and retries failed inline values without an intermediate refresh', async () => {
     const {root, ownerRefresh} = mount();
     await waitForPage(root, 1);
-    setTableMode(root, 'edit');
+    startBulkEdit(root);
     const input = await vi.waitFor(() => {
       const element = root.querySelector<HTMLInputElement>(
         '[data-inline-id="11"] input'

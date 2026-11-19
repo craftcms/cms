@@ -24,7 +24,7 @@ import {
   pagerButton,
   postsTo,
   selectRow,
-  setTableMode,
+  startBulkEdit,
   stubElementInternals,
   standardNestedActions,
   waitForPage,
@@ -529,7 +529,7 @@ describe('NestedElementsIndex', () => {
       pages: [[element(11, {}, {inlineInputHtml: inlineTitleInput(11)})]],
     });
     await waitForIdle(root);
-    setTableMode(root, 'edit');
+    startBulkEdit(root);
     const input = await vi.waitFor(() => {
       const element = root.querySelector<HTMLInputElement>(
         '[data-inline-id="11"] input'
@@ -817,7 +817,7 @@ function findActionItem(
 }
 
 function exportItem(root: HTMLElement): HTMLElement & {disabled: boolean} {
-  return actionItem(root, 'Export…') as HTMLElement & {disabled: boolean};
+  return actionItem(root, 'Export') as HTMLElement & {disabled: boolean};
 }
 
 /** Opens the export modal from the toolbar's menu, returning its form. */

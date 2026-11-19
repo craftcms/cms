@@ -264,7 +264,7 @@ it('keeps score available until clearing search restores the sort, and locks its
   const select = container!.querySelector('select-stub')!;
   const descending = container!.querySelector<
     HTMLElement & {disabled: boolean}
-  >('craft-button[aria-label="Sort descending"]')!;
+  >('craft-button[value="desc"]')!;
 
   expect(select.getAttribute('data-options')).toBe('score,title,dateCreated');
   expect(descending.disabled).toBe(true);
@@ -289,7 +289,7 @@ it('removes score without a search and locks custom ordering', () => {
   const select = container!.querySelector('select-stub')!;
   const descending = container!.querySelector<
     HTMLElement & {disabled: boolean}
-  >('craft-button[aria-label="Sort descending"]')!;
+  >('craft-button[value="desc"]')!;
 
   expect(select.getAttribute('data-options')).toBe('sortOrder,title');
   expect(descending.disabled).toBe(true);
@@ -320,12 +320,20 @@ it('names the view mode and sort direction button groups', () => {
     'craft-radio-group[label="View Mode"]'
   )!;
   const sortDirection = container!
-    .querySelector('craft-button[aria-label="Sort ascending"]')!
+    .querySelector('craft-button[value="asc"]')!
     .closest('craft-button-group')!;
 
   expect(viewModes).not.toBeNull();
   expect(sortDirection.getAttribute('role')).toBe('group');
   expect(sortDirection.getAttribute('aria-label')).toBe('Sort Direction');
+  // Each icon-only button is named by its tooltip.
+  expect(
+    [...sortDirection.querySelectorAll('craft-button')].map((button) =>
+      container!
+        .querySelector(`craft-tooltip[for="${button.id}"]`)
+        ?.textContent?.trim()
+    )
+  ).toEqual(['Ascending', 'Descending']);
 });
 
 it('changes sort direction when its actual direction button is clicked', async () => {
@@ -333,10 +341,10 @@ it('changes sort direction when its actual direction button is clicked', async (
     sortOptions: [{label: 'Title', value: 'title', defaultDir: 'asc'}],
   });
   const ascending = container!.querySelector<HTMLElement & {active: boolean}>(
-    'craft-button[aria-label="Sort ascending"]'
+    'craft-button[value="asc"]'
   )!;
   const descending = container!.querySelector<HTMLElement & {active: boolean}>(
-    'craft-button[aria-label="Sort descending"]'
+    'craft-button[value="desc"]'
   )!;
 
   expect(ascending.active).toBe(true);
