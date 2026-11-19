@@ -7,11 +7,18 @@ namespace CraftCms\Cms\Gql\Interfaces;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element as ElementElement;
+use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
+use CraftCms\Cms\Gql\Arguments\Elements\User as UserArguments;
 use CraftCms\Cms\Gql\Attributes\Gql as GqlAttribute;
 use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
 use CraftCms\Cms\Gql\ElementSchemaTypes;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
+use CraftCms\Cms\Gql\Resolvers\RelatedBy;
 use CraftCms\Cms\Gql\Types\Generators\ElementType;
 use CraftCms\Cms\Gql\Types\InterfaceType;
 use CraftCms\Cms\Gql\Types\Release;
@@ -76,6 +83,7 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'description' => 'Return a number of related elements for a field.',
                 'complexity' => GqlHelper::eagerLoadComplexity(),
             ],
+            ...self::relatedByFieldDefinitions(),
             ...static::gqlPropertyFields(ElementElement::class),
             'siteHandle' => [
                 'name' => 'siteHandle',
@@ -88,6 +96,46 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'description' => 'The unique identifier for an element-site relation.',
             ],
         ]), self::getName()));
+    }
+
+    /**
+     * Returns the fields for the elements of each type that the schema can query that relate to or reference an
+     * element through a field.
+     *
+     * @return array<string, FieldDefinitionConfig>
+     */
+    private static function relatedByFieldDefinitions(): array
+    {
+        $fields = [];
+
+        foreach ([
+            'relatedEntriesBy' => [GqlHelper::canQueryEntries(), 'entries', EntryInterface::class, EntryArguments::class],
+            'relatedAssetsBy' => [GqlHelper::canQueryAssets(), 'assets', AssetInterface::class, AssetArguments::class],
+            'relatedUsersBy' => [GqlHelper::canQueryUsers(), 'users', UserInterface::class, UserArguments::class],
+        ] as $name => [$canQuery, $query, $interface, $arguments]) {
+            if (! $canQuery) {
+                continue;
+            }
+
+            $fields[$name] = [
+                'name' => $name,
+                'type' => Type::nonNull(Type::listOf($interface::getType())),
+                // `field` replaces the entries query’s argument of the same name, which `fieldId` stands in for
+                'args' => [
+                    ...$arguments::getArguments(),
+                    'field' => [
+                        'name' => 'field',
+                        'type' => Type::nonNull(Type::string()),
+                        'description' => 'The handle of the relation or reference-tracking field, such as an Entries or Link field.',
+                    ],
+                ],
+                'description' => "The $query that relate to or reference the element through a field, such as the $query that select it in a relation field. Accepts the same arguments as the `$query` query.",
+                'resolve' => RelatedBy::class.'::resolve',
+                'complexity' => GqlHelper::relatedArgumentComplexity(Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+            ];
+        }
+
+        return $fields;
     }
 
     /**
