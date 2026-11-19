@@ -8,6 +8,8 @@ use ArrayObject;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Assets as AssetField;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
@@ -19,6 +21,7 @@ use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
 use CraftCms\Cms\Gql\Events\GqlEagerLoadableFieldsResolving;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Resolvers\RelatedBy;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -280,6 +283,10 @@ class ElementQueryConditionBuilder extends Component
                 /** @var FieldInterface|null $craftContentField */
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
+                // `relatedEntriesBy` and the like are limited and traversed like relation fields of their element type
+                $relatedByFieldType = $craftContentField ? null : (RelatedBy::FIELD_TYPES[$nodeName] ?? null);
+                $relatedByField = $relatedByFieldType ? new $relatedByFieldType : null;
+
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
                 $isSpecialField = $this->_isAdditionalEagerLoadableNode((string) $nodeName, $parentField);
@@ -289,7 +296,7 @@ class ElementQueryConditionBuilder extends Component
                 $otherEagerLoadableNode = $nodeName === GqlService::GRAPHQL_COUNT_FIELD;
 
                 // That is a Craft field that can be eager-loaded or is a special eager-loadable field
-                if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isSpecialField) {
+                if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isSpecialField || $relatedByField) {
                     $plan = new EagerLoadPlan;
 
                     // Any arguments?
@@ -323,44 +330,20 @@ class ElementQueryConditionBuilder extends Component
                     // If this a custom Craft content field
                     if ($craftContentField) {
                         /** @var EagerLoadingFieldInterface $craftContentField */
-                        $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
-
                         // Load additional requirements enforced by schema, enforcing permissions to see content
-                        if ($additionalArguments === null) {
-                            // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
-                            $arguments = ['id' => ['and', 1, 2]];
-                        } else {
-                            // Loop through what schema allows for this content type
-                            foreach ($additionalArguments as $argumentName => $argumentValue) {
-                                // If they also want to filter by field that is enforced by schema.
-                                // (Non-array values, such as `editable`, are always enforced as-is.)
-                                if (isset($arguments[$argumentName]) && is_array($argumentValue)) {
-                                    if (! is_array($arguments[$argumentName])) {
-                                        $arguments[$argumentName] = [$arguments[$argumentName]];
-                                    }
-
-                                    // See what remains after we enforce the scope by schema.
-                                    $allowed = array_intersect($arguments[$argumentName], $argumentValue);
-
-                                    // If they wanted to filter by values that were not allowed by schema, make it impossible
-                                    if (empty($allowed)) {
-                                        $arguments = ['id' => ['and', 1, 2]];
-                                        break;
-                                    }
-
-                                    // Otherwise, allow the overlapping things.
-                                    $arguments[$argumentName] = $allowed;
-                                } else {
-                                    // Otherwise, just add their filters to the list.
-                                    $arguments[$argumentName] = $argumentValue;
-                                }
-                            }
-                        }
+                        $arguments = GqlHelper::restrictArgumentsToConditions($arguments, $craftContentField->getEagerLoadingGqlConditions());
 
                         // For relational fields, prepare the arguments.
                         if ($craftContentField instanceof EagerLoadingFieldInterface) {
                             $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
+                    }
+
+                    $relatedByHandle = null;
+
+                    if ($relatedByField) {
+                        $relatedByHandle = 'relatedBy:'.Arr::pull($arguments, 'field');
+                        $arguments = GqlHelper::restrictArgumentsToConditions($arguments, $relatedByField->getEagerLoadingGqlConditions());
                     }
 
                     // See if the field was aliased in the query
@@ -375,7 +358,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (! $transformableAssetProperty) {
-                        $plan->handle = $nodeName;
+                        $plan->handle = $relatedByHandle ?? $nodeName;
                         $plan->alias = $alias ?: $nodeName;
                         /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
@@ -389,6 +372,16 @@ class ElementQueryConditionBuilder extends Component
                             };
                         }
                         $plan->criteria = array_merge_recursive($plan->criteria, $this->_argumentManager->prepareArguments($arguments));
+
+                        if ($relatedByField) {
+                            // The field can relate elements of several types, so only load the ones of this type
+                            $elementType = $relatedByField::elementType();
+                            $plan->configureQuery = function (ElementQueryInterface $query) use ($elementType): void {
+                                if (! $query instanceof ElementQuery || $query->elementType !== $elementType) {
+                                    $query->whereRaw('1 = 0');
+                                }
+                            };
+                        }
                     }
 
                     // If it has any more selections, build the plans recursively
@@ -400,11 +393,13 @@ class ElementQueryConditionBuilder extends Component
                             } else {
                                 $traverseContext = $craftContentField->context;
                             }
+                        } elseif ($relatedByField) {
+                            $traverseContext = 'global';
                         } else {
                             $traverseContext = $context;
                         }
 
-                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField, $wrappingFragment, $traverseContext);
+                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $nodeName === self::LOCALIZED_NODENAME ? $parentField : ($craftContentField ?? $relatedByField), $wrappingFragment, $traverseContext);
                     }
                 }
                 // If not, see if it's a fragment

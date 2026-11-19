@@ -248,6 +248,7 @@
 
 #### GraphQL
 - Added the `hasUrls` field to volumes in GraphQL queries.
+- Added the `relatedEntriesBy`, `relatedAssetsBy`, and `relatedUsersBy` fields to elements in GraphQL queries, which return the entries, assets, or users that relate to or reference an element through a field, such as `relatedEntriesBy(field: "categories")`. They accept the same arguments as the `entries`, `assets`, and `users` queries, are eager-loaded, and only return elements the schema can query.
 - The `level` GraphQL argument is now a `[QueryArgument]`, so it accepts the same values as the `level` element query param, such as `">= 2"` or `[1, 2]`. Queries that pass it from an `Int` variable must declare the variable as `[QueryArgument]`. ([#20209](https://github.com/craftcms/cms/pull/20209))
 - Address queries in GraphQL now accept the `addressLine1`, `addressLine2`, `addressLine3`, `dependentLocality`, `field`, `fieldId`, `firstName`, `fullName`, `lastName`, `locality`, `organization`, `organizationTaxId`, `postalCode`, `primaryOwnerId`, and `sortingCode` arguments, like the matching address query params. ([#20251](https://github.com/craftcms/cms/pull/20251))
 - Added the `canonicalId`, `canonicalUid`, `draftId`, `draftName`, `draftNotes`, `fieldId`, `isDraft`, `isUnpublishedDraft`, `ownerId`, and `sortOrder` fields to addresses, and the `sortOrder` field to content blocks, in GraphQL queries. ([#20251](https://github.com/craftcms/cms/pull/20251))

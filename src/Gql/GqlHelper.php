@@ -630,6 +630,46 @@ class GqlHelper
         return $fieldName;
     }
 
+    /**
+     * Restricts the arguments for a query of related elements to the conditions the active schema enforces for them.
+     *
+     * Arguments that filter by a condition are narrowed to the values the schema allows, and the other conditions
+     * are added. If nothing the arguments ask for is allowed, the arguments are replaced with an impossible condition.
+     *
+     * @param  array<string, mixed>  $arguments
+     * @param  array<string, mixed>|null  $conditions  The conditions returned by a relation field’s
+     *                                                 `getEagerLoadingGqlConditions()`. `null` means the schema allows
+     *                                                 none of the elements.
+     * @return array<string, mixed>
+     */
+    public static function restrictArgumentsToConditions(array $arguments, ?array $conditions): array
+    {
+        $impossible = ['id' => ['and', 1, 2]];
+
+        if ($conditions === null) {
+            return $impossible;
+        }
+
+        foreach ($conditions as $argumentName => $argumentValue) {
+            // Non-array values, such as `editable`, are always enforced as-is.
+            if (! isset($arguments[$argumentName]) || ! is_array($argumentValue)) {
+                $arguments[$argumentName] = $argumentValue;
+
+                continue;
+            }
+
+            $allowed = array_intersect((array) $arguments[$argumentName], $argumentValue);
+
+            if (empty($allowed)) {
+                return $impossible;
+            }
+
+            $arguments[$argumentName] = $allowed;
+        }
+
+        return $arguments;
+    }
+
     public static function eagerLoadComplexity(): callable
     {
         return static fn ($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
