@@ -6,13 +6,18 @@ use craft\elements\GlobalSet;
 use craft\fields\Matrix as LegacyMatrix;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
@@ -28,8 +33,10 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Yii2Adapter\Field\Field as LegacyField;
 use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -260,6 +267,57 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     'plugin index inside blocks' => [true, LegacyMatrix::VIEW_MODE_INDEX, true],
 ]);
 
+it('names legacy field inputs inside nested blocks by the block namespace and layout handle', function(string $fieldType) {
+    $legacyField = Field::factory()->create(['name' => 'Target', 'handle' => 'target3', 'type' => NestedLegacyTargetField::class]);
+    $layoutElement = ['type' => CustomField::class, 'uid' => Str::uuid()->toString(), 'fieldUid' => $legacyField->uid, 'handle' => 'target'];
+
+    if ($fieldType === Matrix::class) {
+        $entryType = EntryTypeModel::factory()
+            ->withFieldLayout(FieldLayout::factory()->withContentTab([new CustomField(config: $layoutElement)]))
+            ->create(['name' => 'Link', 'handle' => 'link']);
+        $settings = ['entryTypes' => [$entryType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS];
+    } else {
+        $settings = ['fieldLayouts' => [Str::uuid()->toString() => ['tabs' => [['name' => 'Content', 'elements' => [$layoutElement]]]]]];
+    }
+
+    $field = Fields::createField(['name' => 'Links', 'handle' => 'links', 'type' => $fieldType, 'settings' => $settings]);
+    expect(Fields::saveField($field))->toBeTrue();
+    $model = EntryModel::factory()->withFieldLayout(FieldLayout::factory()->forField($field))->create();
+    $owner = Entry::find()->id($model->id)->one();
+
+    if ($fieldType === Matrix::class) {
+        $owner->setFieldValue('links', ['new1' => ['type' => 'link', 'title' => 'Link']]);
+        expect(Elements::saveElement($owner))->toBeTrue();
+        $owner = Entry::find()->id($model->id)->one();
+        $scope = ['fields', 'links', 'entries', $owner->getFieldValue('links')->one()->uid];
+    } else {
+        $scope = ['fields', 'links'];
+    }
+
+    $payload = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner);
+    $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator(Json::decode(Json::encode($payload->nodes))), RecursiveIteratorIterator::SELF_FIRST);
+    $control = collect(iterator_to_array($nodes, false))->first(
+        fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === [...$scope, 'fields', 'target'],
+    );
+    $name = LegacyHtml::namespace([...$scope, 'fields', 'target']);
+
+    expect($control)->not->toBeNull()
+        ->and(new Crawler($control['props']['fragment']['html'])->filter('input')->each(fn(Crawler $input) => $input->attr('name')))
+        ->toBe([$name, "{$name}[]"]);
+})->with([
+    'Matrix' => Matrix::class,
+    'Content Block' => ContentBlock::class,
+]);
+
 class PluginMatrixUiField extends LegacyMatrix
 {
+}
+
+class NestedLegacyTargetField extends LegacyField
+{
+    #[Override]
+    public function getInputHtml(mixed $value, ?ElementInterface $element): string
+    {
+        return sprintf('<input type="hidden" name="%1$s" value=""><input type="hidden" name="%1$s[]" value="1">', $this->handle);
+    }
 }

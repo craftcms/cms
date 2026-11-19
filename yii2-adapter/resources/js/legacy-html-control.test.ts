@@ -186,7 +186,7 @@ describe('Legacy HTML UI Control', () => {
   it('matches PHP expansion for sparse keys and normalized roots', async () => {
     const {container, mutation} = await mount(
       {
-        html: '<input name="a.b[c.d]" value="nested"><input name="items[2]" value="sparse">',
+        html: '<input name="a.b[c.d]" value="nested"><input name="items[2]" value="">',
         headHtml: '',
         bodyHtml: '',
       },
@@ -194,15 +194,16 @@ describe('Legacy HTML UI Control', () => {
         values: {
           __legacy: {
             'a.b[c.d]': 'nested',
-            'items[2]': 'sparse',
+            'items[2]': '',
           },
         },
       }
     );
+    const items =
+      container.querySelector<HTMLInputElement>('[name="items[2]"]')!;
 
-    container
-      .querySelector<HTMLInputElement>('[name="items[2]"]')!
-      .dispatchEvent(new InputEvent('input', {bubbles: true}));
+    items.value = 'sparse';
+    items.dispatchEvent(new InputEvent('input', {bubbles: true}));
     await nextTick();
 
     expect(mutation.value).toEqual({
@@ -330,6 +331,48 @@ describe('Legacy HTML UI Control', () => {
     expect(published).not.toHaveBeenCalled();
   });
 
+  it('ignores native change events from inputs that initialize without changing anything', async () => {
+    const connected = vi.fn();
+    customElements.define(
+      'test-announcing-input',
+      class extends HTMLElement {
+        connectedCallback() {
+          connected();
+          this.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+      }
+    );
+    const {container, mutation} = await mount(
+      {
+        html: '<test-announcing-input><input type="hidden" name="fields[target]" value=""><input type="hidden" name="fields[target][]" value="5"></test-announcing-input>',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        path: ['fields', 'target'],
+        values: {
+          fields: {target: {'fields[target]': '', 'fields[target][]': '5'}},
+        },
+      }
+    );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+    const input = container.querySelector('test-announcing-input')!;
+    input.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(connected).toHaveBeenCalled();
+    expect(mutation.value).toEqual({});
+
+    input.querySelector<HTMLInputElement>('[name="fields[target][]"]')!.value =
+      '6';
+    input.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation.value).toEqual({fields: {target: ['6']}});
+  });
+
   it('restores list inputs from an already-expanded value', async () => {
     // After an autosave, the island remounts with the value it last published
     // (expanded), not the server's flat input names.
@@ -364,16 +407,16 @@ describe('Legacy HTML UI Control', () => {
   it('preserves leading-zero keys like PHP', async () => {
     const {container, mutation} = await mount(
       {
-        html: '<input name="codes[00]" value="leading">',
+        html: '<input name="codes[00]" value="">',
         headHtml: '',
         bodyHtml: '',
       },
-      {values: {__legacy: {'codes[00]': 'leading'}}}
+      {values: {__legacy: {'codes[00]': ''}}}
     );
+    const input = container.querySelector<HTMLInputElement>('input')!;
 
-    container
-      .querySelector<HTMLInputElement>('input')!
-      .dispatchEvent(new InputEvent('input', {bubbles: true}));
+    input.value = 'leading';
+    input.dispatchEvent(new InputEvent('input', {bubbles: true}));
     await nextTick();
 
     expect(mutation.value).toEqual({codes: {'00': 'leading'}});

@@ -299,6 +299,14 @@ import {
         return;
       }
 
+      // Inputs also announce themselves as they initialize, such as an element
+      // select input adding its saved elements, before anything has changed.
+      if (
+        JSON.stringify(serializeFormInputsAsObject(this)) === this._snapshot
+      ) {
+        return;
+      }
+
       try {
         this.publish(isTypingEvent(event) ? 'typing' : 'discrete');
       } catch (error) {
@@ -307,12 +315,8 @@ import {
     };
 
     handleLegacyChange = (event) => {
-      // Native change events reach `handleInput` directly, and inputs also
-      // trigger `change` as they initialize, before anything has changed.
-      if (
-        !event.originalEvent &&
-        JSON.stringify(serializeFormInputsAsObject(this)) !== this._snapshot
-      ) {
+      // Native change events reach `handleInput` directly.
+      if (!event.originalEvent) {
         this.handleInput(event);
       }
     };
@@ -338,6 +342,9 @@ import {
 
       this.dispose();
       this.clearError();
+      // Until the inputs have mounted, the server's capture of them stands in
+      // for what they serialize to.
+      this._snapshot = JSON.stringify(this.currentValue() ?? null);
 
       if (!fragment) {
         this.invalidate(
