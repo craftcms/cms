@@ -9,8 +9,10 @@ use CraftCms\Cms\Field\Commands\DeleteFieldsCommand;
 use CraftCms\Cms\Field\Commands\FieldsAutoMergeCommand;
 use CraftCms\Cms\Field\Commands\FieldsMergeCommand;
 use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
+use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\Listeners\FieldReferenceEventSubscriber;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +31,8 @@ class FieldsServiceProvider extends ServiceProvider
 
         Event::subscribe(FieldReferenceEventSubscriber::class);
         Event::listen(SetEagerLoadedElements::class, Link::handleSetEagerLoadedElements(...));
+        // Don't keep linked elements between queue jobs
+        Event::listen(JobProcessing::class, fn () => BaseElementLinkType::forgetFetchedElements());
 
         $this->registerIdeHelperListeners($projectConfig);
     }

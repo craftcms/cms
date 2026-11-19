@@ -66,37 +66,15 @@ class LinkData implements Arrayable, Serializable, Stringable
 
     private ?LinkElementLoader $elementLoader = null;
 
-    private ?Closure $eagerLoader = null;
-
-    private ?ElementInterface $eagerLoadedElement = null;
+    /**
+     * @var LinkEagerLoadState|null Eager loader and eager-loaded element, shared with clones of the link
+     */
+    private ?LinkEagerLoadState $eagerLoadState = null;
 
     public function __construct(
         private readonly string $value,
         private readonly BaseLinkType $linkType,
     ) {}
-
-    /**
-     * Leaves out the eager loader, which can’t be serialized, so links can be cached before they’re read.
-     *
-     * @return array<string, mixed>
-     */
-    public function __serialize(): array
-    {
-        $data = get_object_vars($this);
-        unset($data['eagerLoader']);
-
-        return $data;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function __unserialize(array $data): void
-    {
-        foreach ($data as $name => $value) {
-            $this->$name = $value;
-        }
-    }
 
     public function __toString(): string
     {
@@ -274,7 +252,7 @@ class LinkData implements Arrayable, Serializable, Stringable
 
         $this->loadElement();
 
-        return $this->eagerLoadedElement ?? $this->linkType->element($this->value);
+        return $this->eagerLoadState->element ?? $this->linkType->element($this->value);
     }
 
     /**
@@ -295,7 +273,7 @@ class LinkData implements Arrayable, Serializable, Stringable
      */
     public function setEagerLoader(Closure $eagerLoader): void
     {
-        $this->eagerLoader = $eagerLoader;
+        $this->eagerLoadState()->loader = $eagerLoader;
     }
 
     /**
@@ -305,18 +283,28 @@ class LinkData implements Arrayable, Serializable, Stringable
      */
     public function setEagerLoadedElement(ElementInterface $element): void
     {
-        $this->eagerLoader = null;
-        $this->eagerLoadedElement = $element;
-        BaseElementLinkType::rememberElement($this->value, $element);
+        $state = $this->eagerLoadState();
+        $state->loader = null;
+        $state->element = $element;
+
+        if ($this->linkType instanceof BaseElementLinkType) {
+            $this->linkType::rememberElement($this->value, $element);
+        }
+    }
+
+    private function eagerLoadState(): LinkEagerLoadState
+    {
+        return $this->eagerLoadState ??= new LinkEagerLoadState;
     }
 
     private function loadElement(): void
     {
-        if ($this->eagerLoader !== null) {
-            $eagerLoader = $this->eagerLoader;
-            $this->eagerLoader = null;
+        $eagerLoader = $this->eagerLoadState?->loader;
 
-            if (! BaseElementLinkType::hasFetchedElement($this->value)) {
+        if ($eagerLoader !== null) {
+            $this->eagerLoadState->loader = null;
+
+            if ($this->linkType instanceof BaseElementLinkType && ! $this->linkType::hasFetchedElement($this->value)) {
                 $eagerLoader();
             }
         }

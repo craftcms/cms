@@ -36,7 +36,7 @@ use function CraftCms\Cms\t;
 abstract class BaseElementLinkType extends BaseLinkType
 {
     /**
-     * @var array<string,ElementInterface|false>
+     * @var array<class-string,array<string,ElementInterface|false>> Fetched elements, by link type and value
      *
      * @see element()
      */
@@ -59,7 +59,7 @@ abstract class BaseElementLinkType extends BaseLinkType
      */
     public static function hasFetchedElement(string $value): bool
     {
-        return isset(self::$fetchedElements[$value]);
+        return isset(self::$fetchedElements[static::class][$value]);
     }
 
     /**
@@ -69,7 +69,7 @@ abstract class BaseElementLinkType extends BaseLinkType
      */
     public static function rememberElement(string $value, ?ElementInterface $element): void
     {
-        self::$fetchedElements[$value] = $element ?? false;
+        self::$fetchedElements[static::class][$value] = $element ?? false;
     }
 
     /**
@@ -426,7 +426,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         foreach (array_unique($values) as $value) {
             $reference = static::parseReference($value);
 
-            if ($reference && ! isset(self::$fetchedElements[$value])) {
+            if ($reference && ! isset(self::$fetchedElements[static::class][$value])) {
                 $idsBySite[$reference['siteId'] ?? 0][$value] = $reference['id'];
             }
         }
@@ -436,7 +436,7 @@ abstract class BaseElementLinkType extends BaseLinkType
                 ->keyBy('id');
 
             foreach ($ids as $value => $id) {
-                self::$fetchedElements[$value] = $elements->get($id) ?? false;
+                self::$fetchedElements[static::class][$value] = $elements->get($id) ?? false;
             }
         }
     }
@@ -531,16 +531,16 @@ abstract class BaseElementLinkType extends BaseLinkType
      */
     public function element(?string $value): ?ElementInterface
     {
-        if (! isset(self::$fetchedElements[$value])) {
+        if (! isset(self::$fetchedElements[static::class][$value])) {
             $query = $this->elementQuery($value);
 
             if (! $query) {
                 return null;
             }
 
-            self::$fetchedElements[$value] = $query->one() ?? false;
+            self::$fetchedElements[static::class][$value] = $query->one() ?? false;
         }
 
-        return self::$fetchedElements[$value] ?: null;
+        return self::$fetchedElements[static::class][$value] ?: null;
     }
 }

@@ -8,10 +8,12 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\Entry as EntryLinkType;
+use CraftCms\Cms\Field\LinkTypes\Url;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -141,8 +143,93 @@ it('serializes links that haven’t been read', function () {
     $target = EntryModel::factory()->createElement();
     $ids = linkOwnerIds([entryLink($target), entryLink($target)]);
     $link = Entry::find()->id($ids)->fixedOrder()->all()[0]->link;
+    $serialized = serialize($link);
 
-    expect(unserialize(serialize($link))->getElement()->id)->toBe($target->id);
+    expect($serialized)->not->toContain('Closure')
+        ->and(unserialize($serialized)->getElement()->id)->toBe($target->id);
+});
+
+it('serializes links that have been read without their element', function () {
+    $target = EntryModel::factory()->createElement();
+    $ids = linkOwnerIds([entryLink($target), entryLink($target)]);
+    $link = Entry::find()->id($ids)->fixedOrder()->with(['link'])->all()[0]->link;
+    $link->getElement();
+    $serialized = serialize($link);
+
+    expect($serialized)->not->toContain(sprintf('O:%d:"%s"', strlen(Entry::class), Entry::class))
+        ->and(unserialize($serialized)->getElement()->id)->toBe($target->id);
+});
+
+it('restores serialized links', function () {
+    $link = new LinkData('https://example.com', new Url);
+    $link->target = '_blank';
+    $restored = unserialize(serialize($link));
+
+    expect($restored->getValue())->toBe('https://example.com')
+        ->and($restored->getType())->toBe('url')
+        ->and($restored->target)->toBe('_blank');
+});
+
+it('keeps the private properties of LinkData subclasses when serialized', function () {
+    $link = new NotedLinkData('https://example.com', new Url);
+    $link->setNote('Kept');
+
+    expect(unserialize(serialize($link))->note())->toBe('Kept');
+});
+
+it('eager-loads every field that shares a handle', function () {
+    $target = EntryModel::factory()->createElement();
+    $linkOwner = EntryModel::factory()
+        ->withField('related', Link::class, ['types' => ['entry', 'url']], value: ['type' => 'url', 'value' => 'https://example.com'])
+        ->createElementWithFields()
+        ->element;
+    $entriesOwner = EntryModel::factory()
+        ->withField('related', Entries::class, value: [$target->id])
+        ->createElementWithFields()
+        ->element;
+    $owners = Entry::find()->id([$linkOwner->id, $entriesOwner->id])->fixedOrder()->with(['related'])->all();
+
+    expect(array_map(fn (Entry $entry) => $entry->id, $owners[1]->getEagerLoadedElements('related')?->all() ?? []))->toBe([$target->id]);
+});
+
+it('lets every field that shares a handle fetch its own value when one skips eager-loading', function () {
+    $targets = [EntryModel::factory()->createElement(), EntryModel::factory()->createElement()];
+    $skippingOwner = EntryModel::factory()
+        ->withField('related', SkippingEntries::class, value: [$targets[0]->id])
+        ->createElementWithFields()
+        ->element;
+    $entriesOwner = EntryModel::factory()
+        ->withField('related', Entries::class, value: [$targets[1]->id])
+        ->createElementWithFields()
+        ->element;
+    $owners = Entry::find()->id([$skippingOwner->id, $entriesOwner->id])->fixedOrder()->with(['related'])->all();
+
+    expect(array_map(fn (Entry $entry) => $entry->id, $owners[0]->getFieldValue('related')->all()))->toBe([$targets[0]->id]);
+});
+
+it('forgets fetched elements before each queue job', function () {
+    $targets = [EntryModel::factory()->createElement(), EntryModel::factory()->createElement()];
+    $ids = linkOwnerIds(array_map(entryLink(...), $targets));
+    $owners = Entry::find()->id($ids)->with(['link'])->all();
+    foreach ($owners as $owner) {
+        $owner->getFieldValue('link')->getUrl();
+    }
+    $source = WeakReference::create($owners[0]);
+    unset($owners, $owner);
+
+    dispatch(function () {});
+    gc_collect_cycles();
+
+    expect($source->get())->toBeNull();
+});
+
+it('keeps fetched elements apart per link type', function () {
+    $target = EntryModel::factory()->createElement();
+    $value = "{entry:$target->id@$target->siteId:url}";
+    $ids = linkOwnerIds([['type' => 'entry', 'value' => $value], ['type' => 'entry', 'value' => $value]]);
+    Entry::find()->id($ids)->with(['link'])->all();
+
+    expect(new SlugScopedEntryLinkType()->element($value))->toBeNull();
 });
 
 it('leaves link types with their own element query to them', function () {
@@ -169,5 +256,28 @@ class SlugScopedEntryLinkType extends EntryLinkType
     protected static function referencedElementsQuery(array $ids, ?int $siteId): ElementQueryInterface
     {
         return parent::referencedElementsQuery($ids, $siteId)->slug('not-a-target');
+    }
+}
+
+class NotedLinkData extends LinkData
+{
+    private string $note = '';
+
+    public function setNote(string $note): void
+    {
+        $this->note = $note;
+    }
+
+    public function note(): string
+    {
+        return $this->note;
+    }
+}
+
+class SkippingEntries extends Entries
+{
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
+    {
+        return null;
     }
 }
