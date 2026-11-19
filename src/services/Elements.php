@@ -3592,6 +3592,7 @@ class Elements extends Component
                 $combinedReverse = count($maps) > 1 && !empty($planCriteria['inReverse']);
 
                 // Put the combined elements back in the order they were mapped in, unless a map wants a custom order
+                // or reverses its own elements
                 $restoreMappingOrder = count($maps) > 1;
 
                 foreach ($maps as $map) {
@@ -3659,7 +3660,7 @@ class Elements extends Component
                             $inReverse = !empty($otherCriteria['inReverse']);
                         }
 
-                        if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
+                        if ($inReverse || !empty($criteria['orderBy']) || !empty($criteria['order'])) {
                             $restoreMappingOrder = false;
                         }
 

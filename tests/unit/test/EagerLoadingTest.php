@@ -411,6 +411,41 @@ class EagerLoadingTest extends TestCase
         self::assertSame([$u], $ids('page'));
         self::assertSame([$b, $u, $a], $ids('reversed'));
         self::assertSame([$u], $ids('reversedPage'));
+
+        // a map's own inReverse is kept
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entryA->id],
+                    ['source' => 1, 'target' => $entryB->id],
+                ],
+                'criteria' => ['inReverse' => true],
+            ],
+            [
+                'elementType' => User::class,
+                'map' => [
+                    ['source' => 1, 'target' => $user->id],
+                ],
+            ],
+        ];
+        $source = new EagerLoadingTestSourceElement([
+            'id' => 1,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+        ]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$source], [
+            'mixed',
+            ['path' => 'mixed as firstMixed', 'criteria' => ['limit' => 1]],
+        ]);
+
+        $ids = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $source->getEagerLoadedElements($alias)->all(),
+        );
+
+        self::assertSame([$b, $a, $u], $ids('mixed'));
+        self::assertSame([$b], $ids('firstMixed'));
     }
 
     /**
