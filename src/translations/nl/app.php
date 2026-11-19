@@ -880,6 +880,7 @@ return [
     'Groups' => 'Groepen',
     'Guest Required' => 'Gast vereist',
     'HTML Email Template' => 'HTML e-mail sjabloon',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Ingang',
     'Has Descendants' => 'Heeft onderliggende',
     'Has URL' => 'Heeft URL',

@@ -29,6 +29,7 @@ use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\TagGroup;
+use craft\services\ElementSources;
 use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
@@ -823,7 +824,7 @@ MD);
         $sourcesService = Craft::$app->getElementSources();
 
         $sourceKey = sprintf('section:%s', $this->_section()->uid);
-        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, ElementSources::CONTEXT_SETTINGS, true))
             ->map(function(array $config) use ($sourceKey, $name) {
                 if (($config['key'] ?? null) === $sourceKey) {
                     $config['page'] = $name;

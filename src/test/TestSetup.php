@@ -8,6 +8,7 @@
 namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
+use Codeception\Test\TestCaseWrapper;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
@@ -283,12 +284,13 @@ class TestSetup
      */
     public static function appType(): string
     {
-        $appType = 'web';
-        if (isset(CraftTest::$currentTest) && CraftTest::$currentTest instanceof ConsoleTest) {
-            $appType = 'console';
+        $test = CraftTest::$currentTest ?? null;
+        // Codeception 5 wraps unit tests
+        if ($test instanceof TestCaseWrapper) {
+            $test = $test->getTestCase();
         }
 
-        return $appType;
+        return $test instanceof ConsoleTest ? 'console' : 'web';
     }
 
     /**

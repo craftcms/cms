@@ -3,6 +3,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\filters\BasicHttpAuthLogin;
 use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -14,6 +15,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Mcp\Server;
 use Mcp\Server\Transport\StreamableHttpTransport;
+use yii\base\ActionEvent;
 use yii\filters\RateLimiter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
@@ -66,9 +68,29 @@ class McpController extends Controller
             $session->enableAutoLogin = false;
             $session->setIdentity(null);
 
+            // When BasicHttpAuthLogin applies to this request, its credentials authenticate the user instead of an
+            // access token. Its filters run here, before the access token check, and with the session disabled, so
+            // they check the credentials rather than reusing a signed-in session.
+            $event = new ActionEvent($action);
+            foreach ([...array_values(Craft::$app->getBehaviors()), ...array_values($this->getBehaviors())] as $behavior) {
+                if ($behavior instanceof BasicHttpAuthLogin) {
+                    $behavior->beforeFilter($event);
+                    if (!$event->isValid) {
+                        return false;
+                    }
+                }
+            }
+
             try {
-                $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp', scopes: $scopes));
-                Craft::$app->get('mcp')->tokenScopes = $scopes;
+                if ($session->getIdentity() !== null) {
+                    // Check the account state and resource permissions, as for access tokens. Basic auth isn't
+                    // scoped, so the user's permissions alone determine their access.
+                    $session->setIdentity($oauth->authorizedUser((string)$session->getId(), 'mcp'));
+                    Craft::$app->get('mcp')->tokenScopes = array_keys($oauth->getResource('mcp')->scopes);
+                } else {
+                    $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp', scopes: $scopes));
+                    Craft::$app->get('mcp')->tokenScopes = $scopes;
+                }
             } catch (OAuthServerException $exception) {
                 $this->response->getHeaders()->set('WWW-Authenticate', 'Bearer resource_metadata="' . $oauth->resourceMetadataUrl('mcp') . '", scope="' . implode(' ', array_keys($oauth->getResource('mcp')->scopes)) . '"');
                 $this->response->setStatusCode(401);

@@ -880,6 +880,7 @@ return [
     'Groups' => 'Grupper',
     'Guest Required' => 'Gjest påkrevd',
     'HTML Email Template' => 'HTML e-postmal',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Handle',
     'Has Descendants' => 'Har etterkommere',
     'Has URL' => 'Har URL',

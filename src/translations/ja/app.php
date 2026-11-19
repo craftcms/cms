@@ -880,6 +880,7 @@ return [
     'Groups' => 'グループ',
     'Guest Required' => 'ゲストが必須',
     'HTML Email Template' => 'HTMLメールのテンプレート',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'ハンドル',
     'Has Descendants' => '子孫あり',
     'Has URL' => 'URL あり',

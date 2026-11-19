@@ -220,6 +220,19 @@ class UrlHelperTest extends TestCase
     }
 
     /**
+     * Tests the UrlHelper::absoluteUrl() method.
+     *
+     * @dataProvider absoluteUrlDataProvider
+     * @param string $expected
+     * @param string $url
+     * @param string|null $baseUrl
+     */
+    public function testAbsoluteUrl(string $expected, string $url, ?string $baseUrl): void
+    {
+        self::assertSame($expected, UrlHelper::absoluteUrl($url, $baseUrl));
+    }
+
+    /**
      * Tests the UrlHelper::url() method.
      *
      * @dataProvider urlFunctionDataProvider
@@ -808,6 +821,25 @@ class UrlHelperTest extends TestCase
             ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/genêve?foo=bar'],
             ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/gen%C3%AAve?foo=bar'],
             ['foo+bar', 'foo bar'],
+        ];
+    }
+
+    /**
+     * Tests for UrlHelper::absoluteUrl()
+     *
+     * @return array
+     */
+    public static function absoluteUrlDataProvider(): array
+    {
+        return [
+            'root-relative, current site' => ['https://test.craftcms.test/uploads/a.png', '/uploads/a.png', null],
+            'root-relative, base with a path' => ['https://example.com/uploads/a.png', '/uploads/a.png', 'https://example.com/fr/'],
+            'path-relative, base with a path' => ['https://example.com/fr/uploads/a.png', 'uploads/a.png', 'https://example.com/fr/'],
+            'protocol-relative' => ['http://cdn.example.com/a.png', '//cdn.example.com/a.png', 'http://example.com/'],
+            'query and fragment' => ['https://example.com/a.png?v=2#top', '/a.png?v=2#top', 'https://example.com/'],
+            'unencoded characters' => ['https://example.com/uploads/caf%C3%A9%20au%20lait.png', '/uploads/café au lait.png', 'https://example.com/'],
+            'already absolute' => ['https://cdn.example.com/a.png', 'https://cdn.example.com/a.png', 'https://example.com/'],
+            'relative base' => ['/a.png', '/a.png', '/fr/'],
         ];
     }
 

@@ -880,6 +880,7 @@ return [
     'Groups' => 'קבוצות',
     'Guest Required' => 'אורח נדרש',
     'HTML Email Template' => 'תבנית HTML אימייל',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'מזהה ייחודי',
     'Has Descendants' => 'בעל צאצאים',
     'Has URL' => 'בעל כתובת URL',
