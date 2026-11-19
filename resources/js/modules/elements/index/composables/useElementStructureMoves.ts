@@ -2,6 +2,7 @@ import {computed} from 'vue';
 import {actionClient, t} from '@craftcms/ui';
 import {getElementLevelDelta, moveElement} from '@actions/StructuresController';
 import {useMessages} from '@/modules/messages/useMessages';
+import {rootGroup} from '@/modules/conditions/conditionTree';
 import type {ElementIndexModel} from '../types/model';
 import {
   loadedBranchDepth,
@@ -16,10 +17,7 @@ export function useElementStructureMoves(index: ElementIndexModel) {
   const messages = useMessages();
 
   function hasActiveFilter(): boolean {
-    const rules = elementIndex.currentCondition?.conditionRules;
-    return Array.isArray(rules)
-      ? rules.length > 0
-      : (rules?.rules.length ?? 0) > 0;
+    return rootGroup(elementIndex.currentCondition ?? null).rules.length > 0;
   }
 
   /**

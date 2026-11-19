@@ -24,6 +24,7 @@ import {
   pagerButton,
   postsTo,
   selectRow,
+  setTableMode,
   stubElementInternals,
   standardNestedActions,
   waitForPage,
@@ -306,19 +307,19 @@ describe('NestedElementsIndex', () => {
     button(root, 'Refresh').click();
     await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(next().disabled).toBe(true);
-    expect(button(root, 'Export').disabled).toBe(true);
+    await vi.waitFor(() => expect(exportItem(root).disabled).toBe(true));
     expect(pageInput(root).disabled).toBeFalsy();
     release();
     await vi.waitFor(() => expect(previous().disabled).toBe(false));
-    expect(button(root, 'Export').disabled).toBe(false);
+    await vi.waitFor(() => expect(exportItem(root).disabled).toBe(false));
 
     let finishExport!: () => void;
     actions.run.mockImplementationOnce(
       () => new Promise<void>((resolve) => (finishExport = resolve))
     );
-    exportButton(root, 'XLSX').click();
+    await exportAs(root, 'xlsx');
     await vi.waitFor(() => expect(previous().disabled).toBe(true));
-    expect(button(root, 'Export').disabled).toBe(true);
+    expect(exportItem(root).disabled).toBe(true);
     expect(pageInput(root).disabled).toBeFalsy();
     finishExport();
     await vi.waitFor(() => expect(previous().disabled).toBe(false));
@@ -334,9 +335,9 @@ describe('NestedElementsIndex', () => {
 
       return input!;
     });
-    const exportInput = root.querySelector<HTMLInputElement>(
-      'input[type="number"]'
-    )!;
+    const exportInput = (
+      await openExport(root)
+    ).querySelector<HTMLInputElement>('input[type="number"]')!;
 
     for (const input of [pagerInput, exportInput]) {
       const event = new KeyboardEvent('keydown', {
@@ -392,9 +393,9 @@ describe('NestedElementsIndex', () => {
     selectRow(root, 31);
     await nextTick();
     expect(findActionItem(root, 'Delete')).toBeDefined();
-    root
-      .querySelector('craft-button-group[name="viewState[mode]"]')!
-      .dispatchEvent(new CustomEvent('change', {detail: {value: 'table'}}));
+    const viewMode = labelled(root, 'craft-radio-group', 'View Mode');
+    viewMode.value = 'table';
+    viewMode.dispatchEvent(new Event('change'));
     await vi.waitFor(() =>
       expect(root.querySelector('tr[data-nested-id="31"]')).not.toBeNull()
     );
@@ -527,7 +528,8 @@ describe('NestedElementsIndex', () => {
     const {root} = mount({
       pages: [[element(11, {}, {inlineInputHtml: inlineTitleInput(11)})]],
     });
-    button(root, 'Edit inline').click();
+    await waitForIdle(root);
+    setTableMode(root, 'edit');
     const input = await vi.waitFor(() => {
       const element = root.querySelector<HTMLInputElement>(
         '[data-inline-id="11"] input'
@@ -554,10 +556,11 @@ describe('NestedElementsIndex', () => {
     expect(submitted!.get('inline[element-11][title]')).toBe('Edited');
   });
 
-  it('exports with the server-selected exporter and format', () => {
+  it('exports with the server-selected exporter and format', async () => {
     const {root} = mount();
-    exportButton(root, 'XLSX').click();
+    await exportAs(root, 'xlsx');
 
+    await vi.waitFor(() => expect(actions.run).toHaveBeenCalled());
     expect(actions.run).toHaveBeenCalledWith({
       type: 'download',
       method: 'POST',
@@ -813,12 +816,42 @@ function findActionItem(
   );
 }
 
-function exportButton(root: HTMLElement, format: string): HTMLElement {
-  return [...root.querySelectorAll<HTMLElement>('craft-button')].find(
-    (candidate) =>
-      candidate.textContent?.includes('Expanded') &&
-      candidate.textContent.includes(format)
-  )!;
+function exportItem(root: HTMLElement): HTMLElement & {disabled: boolean} {
+  return actionItem(root, 'Export…') as HTMLElement & {disabled: boolean};
+}
+
+/** Opens the export modal from the toolbar's menu, returning its form. */
+async function openExport(root: HTMLElement): Promise<HTMLFormElement> {
+  exportItem(root).click();
+
+  return vi.waitFor(() => {
+    const form = labelled(root, 'craft-select', 'Format')?.closest('form');
+    expect(form).toBeTruthy();
+
+    return form!;
+  });
+}
+
+/** A control by its `label`, which Vue sets as a property, not an attribute. */
+function labelled(
+  root: HTMLElement,
+  selector: string,
+  label: string
+): HTMLElement & {value: string} {
+  return [
+    ...root.querySelectorAll<HTMLElement & {label?: string; value: string}>(
+      selector
+    ),
+  ].find((element) => element.label === label)!;
+}
+
+async function exportAs(root: HTMLElement, format: string): Promise<void> {
+  const form = await openExport(root);
+  const select = labelled(form, 'craft-select', 'Format');
+  select.value = format;
+  select.dispatchEvent(new Event('change'));
+  await nextTick();
+  form.dispatchEvent(new Event('submit', {cancelable: true}));
 }
 
 async function waitForIdle(root: HTMLElement): Promise<void> {

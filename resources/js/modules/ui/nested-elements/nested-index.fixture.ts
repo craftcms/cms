@@ -218,6 +218,13 @@ export function button(root: HTMLElement, label: string) {
   ) as HTMLElement & {disabled: boolean};
 }
 
+/** Switches the table between viewing and editing, as its View/Edit buttons do. */
+export function setTableMode(root: HTMLElement, mode: 'view' | 'edit'): void {
+  root
+    .querySelector('craft-button-group[name="tableMode"]')!
+    .dispatchEvent(new CustomEvent('change', {detail: {value: mode}}));
+}
+
 export function pagerButton(
   root: HTMLElement,
   label: 'Next page' | 'Previous page'

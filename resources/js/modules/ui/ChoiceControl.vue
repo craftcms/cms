@@ -38,6 +38,8 @@
     custom?: boolean;
     value: ChoiceValue;
     disabled?: boolean;
+    /** Guidance shown under a checkbox or radio label. */
+    description?: string;
     /**
      * Heads a run of consecutive options sharing it, as an `<optgroup>` when
      * presented as a select. Other presentations ignore it.
@@ -760,6 +762,9 @@
           <span v-else-if="option.labelHtml" v-html="option.labelHtml" />
           <template v-else>{{ option.label }}</template>
         </label>
+        <span v-if="option.description" slot="help-text">{{
+          option.description
+        }}</span>
       </component>
     </div>
     <template v-if="customCheckboxes">

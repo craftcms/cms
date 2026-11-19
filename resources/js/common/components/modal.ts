@@ -35,4 +35,6 @@ export interface ModalProps {
    * keyboard whose first keystrokes have to reach it. Closing still fades.
    */
   instant?: boolean;
+  /** Stops it scrolling, for content that fills it and scrolls its own regions. */
+  fill?: boolean;
 }

@@ -122,7 +122,8 @@
   .cs-column__heading {
     display: block;
     margin: 0;
-    font-size: var(--c-text-sm);
+    // Matches a field label and a table heading.
+    font-size: var(--c-text-base);
     font-weight: bold;
   }
 

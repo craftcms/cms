@@ -317,6 +317,7 @@
               :class="{
                 'cp-body--sidebar': hasSidebar(),
                 'cp-body--details': regions.hasDetails(),
+                'cp-body--rail': regions.hasPanels(),
               }"
             >
               <!-- Wraps the `page-main` slot, so a page that takes it over still
@@ -520,7 +521,7 @@
                 </slot>
               </div>
               <div
-                v-show="regions.hasDetails()"
+                v-show="regions.hasPanels()"
                 id="cp-details-rail"
                 class="cp-details-rail"
               ></div>
@@ -631,8 +632,9 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     overflow: clip;
   }
 
-  /* The details rail stands in for the trailing inset. */
-  .cp-body--details .cp-body__panel {
+  /* The details rail stands in for the trailing inset. Details without panels
+     have no rail, so the inset stays. */
+  .cp-body--rail .cp-body__panel {
     margin-inline-end: 0;
   }
 
@@ -844,7 +846,7 @@ Content: the secondary nav, content, and details panes
     }
 
     /* The border still divides the panel from the details rail. */
-    .cp-body--details .cp-body__panel {
+    .cp-body--rail .cp-body__panel {
       border-inline-end-color: var(--c-color-neutral-border-quiet);
     }
   }
@@ -905,7 +907,7 @@ Folds
         box-shadow: none;
       }
 
-      .cp-body--details .cp-body__panel {
+      .cp-body--rail .cp-body__panel {
         border-inline-end-color: var(--c-color-neutral-border-quiet);
       }
     }

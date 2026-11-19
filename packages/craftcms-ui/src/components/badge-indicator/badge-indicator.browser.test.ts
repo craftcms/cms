@@ -25,3 +25,23 @@ it.each([
 
   expect(badge.top - row.top).toBeCloseTo(row.bottom - badge.bottom, 0);
 });
+
+it.each([
+  ['a count', 'badge-count="3"'],
+  ['a dot', ''],
+])('draws %s smaller at the small size', async (_, attributes) => {
+  document.body.innerHTML = `
+    <craft-badge-indicator ${attributes}></craft-badge-indicator>
+    <craft-badge-indicator ${attributes} size="small"></craft-badge-indicator>`;
+  const [medium, small] = document.querySelectorAll<CraftBadgeIndicator>(
+    'craft-badge-indicator'
+  );
+  await Promise.all([medium!.updateComplete, small!.updateComplete]);
+
+  const box = (indicator: CraftBadgeIndicator) =>
+    indicator
+      .shadowRoot!.querySelector('[part="badge"]')!
+      .getBoundingClientRect();
+
+  expect(box(small!).height).toBeLessThan(box(medium!).height);
+});

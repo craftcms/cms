@@ -65,14 +65,33 @@ export function useUiValues(initial: UiPayload) {
   /**
    * Takes in a refreshed payload: values the client has never held, and the
    * values of every control the client can't edit. The client's own unsaved
-   * values stay.
+   * values stay, unless their control's value scope changed (an element
+   * select switched to another element type, say).
    */
   function adopt(refreshed: UiPayload): void {
+    const scopeChanged = new Set<string>();
+    visitControls(refreshed.nodes, (control) => {
+      const previous = controlAt(control.path);
+      if (previous && previous.valueScope !== control.valueScope) {
+        scopeChanged.add(JSON.stringify(control.path));
+      }
+    });
+
     mergeMissing(values, refreshed.values);
     rememberControls(refreshed.nodes);
     visitControls(refreshed.nodes, (control) => {
       if (control.mode !== 'editable') {
         write(control.path, valueAt(refreshed.values, control.path));
+        return;
+      }
+
+      // Only when the server sent a value to take its place.
+      const next = valueAt(refreshed.values, control.path);
+      if (
+        scopeChanged.has(JSON.stringify(control.path)) &&
+        next !== undefined
+      ) {
+        write(control.path, next);
       }
     });
   }

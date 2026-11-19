@@ -54,6 +54,23 @@ type Story = StoryObj<RadioGroupArgs>;
 /** Exactly one option may be selected, and the group owns the value. */
 export const Default: Story = {};
 
+/** Each option can explain itself; the text lines up with its label. */
+export const WithDescriptions: Story = {
+  parameters: {controls: {disable: true}},
+  render: () =>
+    html`<craft-radio-group name="visibility">
+      <label slot="label">Visible to</label>
+      <craft-radio value="me" checked>
+        <label slot="label">Only me</label>
+        <span slot="help-text">Listed with your own views.</span>
+      </craft-radio>
+      <craft-radio value="everyone">
+        <label slot="label">Everyone</label>
+        <span slot="help-text">Shared with every user.</span>
+      </craft-radio>
+    </craft-radio-group>`,
+};
+
 /**
  * A group rendered by the server adopts the name already on its inputs, so the
  * markup keeps posting the way it did before the component upgraded.

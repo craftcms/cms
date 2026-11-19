@@ -4,7 +4,7 @@ import {createApp, defineComponent, h, ref, shallowRef, type App} from 'vue';
 import UiRenderer from './UiRenderer.vue';
 import {isRecord} from './runtime';
 import type {UiPayload, UiPropertyValue, UiValues} from './types';
-import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {fetchUiPayload} from './fetchUiPayload';
 
 // TODO: Remove this legacy bridge once the field layout designer's settings
 // slideout is rendered by the Inertia/Vue CP.
@@ -114,19 +114,16 @@ export function defineLayoutComponentSettingsUiHost(
           );
         }
 
-        const {data} = await actionClient.post(
+        const data = await fetchUiPayload<{headHtml: string; bodyHtml: string}>(
           'fields/refresh-layout-component-settings',
           {
             // `values` is already relative to `scope`, unlike currentValues().
             ...this.#requestData(),
             settings: values,
             scope,
-          }
+          },
+          'The layout component did not return a UI payload.'
         );
-
-        if (!data.ui) {
-          throw new Error('The layout component did not return a UI payload.');
-        }
 
         // Server-rendered controls (condition builders, field selects) register
         // their own assets on every render.

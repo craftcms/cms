@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\IdConditionRule;
+use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -17,6 +19,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
@@ -198,6 +201,7 @@ it('returns fully normalized source customization data', function () {
             ['sources', 'custom:existing', 'defaultSort', 'dir'],
             ['sources', 'custom:existing', 'tableAttributes'],
             ['sources', 'custom:existing', 'sites'],
+            ['sources', 'custom:existing', 'visibility'],
             ['sources', 'custom:existing', 'userGroups'],
         ])
         ->and(controlPaths($sources['heading:content']['ui'] ?? ['nodes' => []]))->toBe([]);
@@ -799,6 +803,135 @@ it('stores the count toggle', function () {
     $config = app(ProjectConfig::class)->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class));
 
     expect($config[0]['showBadgeCount'])->toBeTrue();
+});
+
+/** @return array<string, mixed>|null */
+function sourceFieldNode(array $ui, array $path): ?array
+{
+    $found = null;
+    $walk = function (array $nodes) use (&$walk, &$found, $path): void {
+        foreach ($nodes as $node) {
+            if (($node['control']['path'] ?? null) === $path) {
+                $found = $node;
+            }
+
+            $walk($node['children'] ?? []);
+        }
+    };
+    $walk($ui['nodes'] ?? []);
+
+    return $found;
+}
+
+/** @return array<string, mixed> */
+function newSourceUi(array $settings, array $extra = []): array
+{
+    return postJson(action([ElementSourcesController::class, 'ui']), [
+        'elementType' => Entry::class,
+        'sourceKey' => 'custom:new',
+        'type' => ElementSources::TYPE_CUSTOM,
+        'settings' => $settings,
+        ...$extra,
+    ])->assertOk()->json();
+}
+
+/** @return array<string, mixed> */
+function idAndSlugCondition(): array
+{
+    return [
+        'class' => Entry::createCondition()::class,
+        'conditionRules' => [
+            ['class' => IdConditionRule::class, 'uid' => Str::uuid()->toString(), 'operator' => '=', 'value' => '1'],
+            ['class' => SlugConditionRule::class, 'uid' => Str::uuid()->toString(), 'operator' => '=', 'value' => 'home'],
+        ],
+    ];
+}
+
+it('leaves out filters a new source can’t keep in project config, and says which', function () {
+    $response = newSourceUi(['condition' => idAndSlugCondition(), 'visibility' => 'everyone']);
+    $idLabel = Conditions::createConditionRule(['class' => IdConditionRule::class])->getLabel();
+
+    $rules = $response['ui']['values']['sources']['custom:new']['condition']['conditionRules'];
+
+    expect($response['droppedRules'])->toBe([$idLabel])
+        ->and(array_column($rules, 'class'))->toBe([SlugConditionRule::class])
+        ->and(sourceFieldNode($response['ui'], ['sources', 'custom:new', 'condition'])['props']['warning'])->toContain($idLabel);
+});
+
+it('keeps every filter on a new source kept to yourself', function () {
+    $response = newSourceUi(['condition' => idAndSlugCondition(), 'visibility' => 'me']);
+
+    $rules = $response['ui']['values']['sources']['custom:new']['condition']['conditionRules'];
+
+    expect($response['droppedRules'])->toBe([])
+        ->and(array_column($rules, 'class'))->toBe([IdConditionRule::class, SlugConditionRule::class]);
+});
+
+it('offers “Only me” for new sources only', function () {
+    $visibilityOptions = fn (array $ui, string $key) => array_column(
+        controlProps($ui, ['sources', $key, 'visibility'])['options'],
+        'value',
+    );
+
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:saved', 'label' => 'Saved', 'condition' => Entry::createCondition()->getConfig()],
+    ]);
+
+    $saved = postJson(action([ElementSourcesController::class, 'ui']), [
+        'elementType' => Entry::class,
+        'sourceKey' => 'custom:saved',
+        'type' => ElementSources::TYPE_CUSTOM,
+    ])->assertOk()->json('ui');
+
+    expect($visibilityOptions(newSourceUi([])['ui'], 'custom:new'))->toContain('me')
+        ->and($visibilityOptions($saved, 'custom:saved'))->not->toContain('me')
+        ->and($saved['values']['sources']['custom:saved']['visibility'])->toBe('everyone');
+});
+
+it('marks the parts of a new source that differ from where they came from', function () {
+    $ui = newSourceUi([], ['edited' => ['sort']])['ui'];
+
+    expect(sourceFieldNode($ui, ['sources', 'custom:new', 'defaultSort', 'attr'])['props']['headingSuffix'])->toContain(t('Edited'))
+        ->and(sourceFieldNode($ui, ['sources', 'custom:new', 'condition'])['props']['headingSuffix'] ?? null)->toBeNull();
+});
+
+it('won’t store a source kept to yourself', function () {
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceOrder' => ['custom:mine'],
+        'sources' => [
+            'custom:mine' => [
+                'label' => 'Mine',
+                'condition' => ['class' => ElementCondition::class, 'elementType' => TestElementSourcesElement::class, 'conditionRules' => []],
+                'visibility' => 'me',
+            ],
+        ],
+    ])->assertUnprocessable()->assertJsonValidationErrors('sources.custom:mine.visibility');
+});
+
+it('ignores user groups on a source visible to everyone', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $group = UserGroup::factory()->create();
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => TestElementSourcesElement::class,
+        'sourceOrder' => ['custom:shared'],
+        'sourcePages' => ['custom:shared' => 'Content'],
+        'pageSettings' => ['Content' => ['label' => 'Content']],
+        'sources' => [
+            'custom:shared' => [
+                'label' => 'Shared',
+                'condition' => ['class' => ElementCondition::class, 'elementType' => TestElementSourcesElement::class, 'conditionRules' => []],
+                'visibility' => 'everyone',
+                'userGroups' => [$group->uid],
+            ],
+        ],
+    ])->assertOk();
+
+    $config = collect($projectConfig->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, TestElementSourcesElement::class)))
+        ->keyBy('key');
+
+    expect($config['custom:shared'])->not->toHaveKey('userGroups');
 });
 
 it('lists new entry pages beside the pages they were added next to in saved navigations', function () {

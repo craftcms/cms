@@ -214,37 +214,6 @@ it('gives the index’s actions their own cell', () => {
   expect(toolbar.classList.contains('element-toolbar--actions')).toBe(true);
 });
 
-// The buttons are icon-only, so each gets its name as a tooltip — as the
-// label it already has, rather than a description repeating it.
-it('gives each view mode button its name as a tooltip', () => {
-  mount({
-    viewModes: [
-      {mode: 'table', title: 'Display in a table', icon: 'list'},
-      {mode: 'thumbs', title: 'Display as thumbnails', icon: 'grid'},
-    ],
-  });
-
-  const tooltips = [
-    ...container!.querySelectorAll<HTMLElement & {for?: string}>(
-      'craft-tooltip'
-    ),
-  ];
-
-  expect(tooltips.map((tooltip) => tooltip.textContent?.trim())).toEqual([
-    'Display in a table',
-    'Display as thumbnails',
-  ]);
-  tooltips.forEach((tooltip) => {
-    expect(tooltip.getAttribute('invoker-relation')).toBe('label');
-    // Vue sets `for` as a property; the attribute only follows on update.
-    const button = document.getElementById(tooltip.for!);
-    expect(button?.localName).toBe('craft-button');
-    expect(button?.getAttribute('aria-label')).toBe(
-      tooltip.textContent?.trim()
-    );
-  });
-});
-
 it('puts the site menu and the status menu in one cell', () => {
   mount({
     sites: [site(1, 'default', 'Default'), site(2, 'fr', 'French')],
@@ -348,13 +317,13 @@ it('names the view mode and sort direction button groups', () => {
   });
 
   const viewModes = container!.querySelector(
-    'craft-button-group[name="viewState[mode]"]'
+    'craft-radio-group[label="View Mode"]'
   )!;
   const sortDirection = container!
     .querySelector('craft-button[aria-label="Sort ascending"]')!
     .closest('craft-button-group')!;
 
-  expect(viewModes.getAttribute('aria-label')).toBe('View Mode');
+  expect(viewModes).not.toBeNull();
   expect(sortDirection.getAttribute('role')).toBe('group');
   expect(sortDirection.getAttribute('aria-label')).toBe('Sort Direction');
 });

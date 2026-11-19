@@ -1,33 +1,42 @@
 <script setup lang="ts">
-  import {computed, nextTick, ref, useId, useTemplateRef, watch} from 'vue';
+  import {nextTick, useTemplateRef} from 'vue';
   import {ButtonVariant, t} from '@craftcms/ui';
-  import Select from '@/common/form/Select.vue';
-  import CheckboxGroup from '@/common/form/CheckboxGroup.vue';
+  import ViewSettingsFields from './ViewSettingsFields.vue';
+  import PaneActions from './PaneActions.vue';
   import type {CheckboxOption} from '@/common/types';
+  import type {ViewSettingKind} from '@/modules/elements/index/composables/useElementIndex';
   import type {
     ThumbSize,
     SortOption,
+    ViewMode,
   } from '@/modules/elements/types/view-state';
 
-  const props = defineProps<{
-    /** The toggleable/reorderable table columns. */
-    options: Array<CheckboxOption>;
-    /** The sortable attributes for the "Sort by" select; an empty `value` means no sort. */
-    sortOptions: Array<SortOption>;
-    /** Whether the active sort has an intrinsic direction. */
-    sortDirectionLocked?: boolean;
-    disabled?: boolean;
-    /**
-     * The thumbnail sizes the active view mode offers. The Thumb Size setting
-     * only shows
-     * when there are some.
-     */
-    thumbSizeOptions?: Array<ThumbSize>;
-    /** Whether the active view mode has table columns to choose. */
-    showTableColumns?: boolean;
-    /** Whether any setting differs from its default, offering to reset them. */
-    customized?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      /** The button's label. */
+      label?: string;
+      icon?: string;
+      /** The settings this menu holds; all of them when left out. */
+      only?: ViewSettingKind[];
+      viewModes?: Array<ViewMode>;
+      /** The toggleable/reorderable table columns. */
+      options: Array<CheckboxOption>;
+      /** The sortable attributes for the "Sort by" select; an empty `value` means no sort. */
+      sortOptions: Array<SortOption>;
+      /** Whether the active sort has an intrinsic direction. */
+      sortDirectionLocked?: boolean;
+      disabled?: boolean;
+      /** The thumbnail sizes the active view mode offers, if any. */
+      thumbSizeOptions?: Array<ThumbSize>;
+      /** Whether the active view mode has table columns to choose. */
+      showTableColumns?: boolean;
+      /** How many of the View menu's settings differ from the source's. */
+      changeCount?: number;
+      /** Which of the View menu's settings differ from the source's. */
+      changed?: ViewSettingKind[];
+    }>(),
+    {label: () => t('View'), icon: 'sliders'}
+  );
 
   const sortField = defineModel<string>('sortField', {required: true});
   const sortDirection = defineModel<'asc' | 'desc'>('sortDirection', {
@@ -36,203 +45,165 @@
   const tableColumns = defineModel<Array<string>>('tableColumns', {
     required: true,
   });
-
   const thumbSize = defineModel<ThumbSize>('thumbSize', {default: 'sm'});
-
-  // Unique per popover, since an index can share the page with another (e.g.
-  // an element selection modal).
-  const thumbSizeIdPrefix = `thumb-size-${useId()}`;
-
-  const thumbSizeLabels: Record<ThumbSize, string> = {
-    sm: t('Small'),
-    md: t('Medium'),
-    lg: t('Large'),
-    xl: t('XL'),
-    '2xl': t('2XL'),
-  };
-
-  const thumbSizeChoices = computed(() =>
-    (props.thumbSizeOptions ?? []).map((value) => ({
-      label: thumbSizeLabels[value],
-      value,
-    }))
-  );
-
-  function onThumbSizeChanged(event: Event) {
-    thumbSize.value = (
-      event.currentTarget as HTMLElement & {value: ThumbSize}
-    ).value;
-  }
+  const mode = defineModel<ViewMode['mode']>('mode');
 
   const emit = defineEmits<{
     (e: 'reorder', options: Array<CheckboxOption>): void;
     (e: 'use-defaults'): void;
   }>();
 
+  const fields =
+    useTemplateRef<InstanceType<typeof ViewSettingsFields>>('fields');
+  const actions = useTemplateRef<InstanceType<typeof PaneActions>>('actions');
+  const popover = useTemplateRef<
+    HTMLElement & {show(): Promise<void>; hide(): Promise<void>}
+  >('popover');
+
+  defineExpose({
+    /** Opens the menu, as its button would. */
+    show: () => popover.value?.show(),
+  });
+
   /**
-   * The columns as displayed in the popover — an open-time snapshot of the
-   * canonical order (visible columns in the user's order, then the rest
-   * alphabetically; see `useElementIndexColumns`). Mirroring Craft 5: the
-   * snapshot refreshes each time the popover *opens*, so toggling checkboxes
-   * while it's open never re-sorts rows out from under the pointer — a newly
-   * checked column stays put here while appending to the table, and shows in
-   * its new position on the next open.
+   * The settings as they were when the menu opened. Closing any way but Apply
+   * — Cancel, Escape, a click outside — goes back to them.
    */
-  const displayOptions = ref<Array<CheckboxOption>>([]);
+  let opened: {
+    mode?: ViewMode['mode'];
+    sortField: string;
+    sortDirection: 'asc' | 'desc';
+    tableColumns: string[];
+    thumbSize: ThumbSize;
+    order: string[];
+  } | null = null;
+  let applied = false;
 
-  function takeSnapshot() {
-    displayOptions.value = [...props.options];
+  function onShow(): void {
+    fields.value?.takeSnapshot();
+    applied = false;
+    opened = {
+      mode: mode.value,
+      sortField: sortField.value,
+      sortDirection: sortDirection.value,
+      tableColumns: [...tableColumns.value],
+      thumbSize: thumbSize.value,
+      order: props.options.map((option) => String(option.value)),
+    };
   }
 
-  takeSnapshot();
+  /** Puts back only what changed, so an untouched setting sends no visit. */
+  function revert(): void {
+    const was = opened;
+    opened = null;
+    if (applied || !was) return;
 
-  // A source switch replaces the available columns entirely; refresh the
-  // snapshot so the popover doesn't show the previous source's list. Watch the
-  // option *values* rather than the array: `options` is a computed that gets a
-  // new identity (and order) whenever a checkbox toggles, and re-snapshotting
-  // then would re-sort the list mid-edit.
-  watch(
-    () =>
-      props.options
-        .map((option) => option.value)
-        .sort()
-        .join(','),
-    () => takeSnapshot()
-  );
+    if (was.mode !== undefined && mode.value !== was.mode)
+      mode.value = was.mode;
+    if (sortField.value !== was.sortField) sortField.value = was.sortField;
+    if (sortDirection.value !== was.sortDirection) {
+      sortDirection.value = was.sortDirection;
+    }
+    if (thumbSize.value !== was.thumbSize) thumbSize.value = was.thumbSize;
+    if (tableColumns.value.join() !== was.tableColumns.join()) {
+      tableColumns.value = was.tableColumns;
+    }
 
-  function onReorder(next: Array<CheckboxOption>) {
-    // Keep the popover showing the order the user just dragged to.
-    displayOptions.value = next;
-    emit('reorder', next);
-  }
-
-  function setSortDirection(direction: 'asc' | 'desc') {
-    if (!props.sortDirectionLocked) {
-      sortDirection.value = direction;
+    const order = props.options.map((option) => String(option.value));
+    if (order.join() !== was.order.join()) {
+      emit(
+        'reorder',
+        [...props.options].sort(
+          (a, b) =>
+            was.order.indexOf(String(a.value)) -
+            was.order.indexOf(String(b.value))
+        )
+      );
     }
   }
-
-  const closeButton = useTemplateRef<HTMLElement>('closeButton');
 
   // The button goes away once the settings are back to their defaults, so
   // focus moves on to the one beside it rather than being lost.
   async function useDefaults() {
     emit('use-defaults');
     await nextTick();
-    closeButton.value?.focus();
+    actions.value?.focusCancel();
   }
 
-  function closePopover(event: MouseEvent) {
-    if (event.currentTarget instanceof HTMLElement) {
-      event.currentTarget.dispatchEvent(
-        new Event('close-overlay', {bubbles: true, composed: true})
-      );
-    }
+  /** Changes show as they're made, so applying only keeps them. */
+  function apply(): void {
+    applied = true;
+    void popover.value?.hide();
   }
 </script>
 
 <template>
-  <craft-popover @craft-show.self="takeSnapshot">
-    <craft-button
-      type="button"
-      slot="invoker"
-      icon="sliders"
-      :variant="ButtonVariant.Fill"
-      .disabled="disabled"
-    >
-      {{ t('View') }}
-    </craft-button>
-
-    <div slot="content-body" class="gap-lg">
-      <div v-if="sortOptions.length">
-        <div class="flex items-end gap-md">
-          <Select
-            :label="t('Sort by')"
-            v-model="sortField"
-            :options="sortOptions"
-          />
-          <craft-button-group role="group" :aria-label="t('Sort Direction')">
-            <craft-button
-              type="button"
-              icon="asc"
-              value="asc"
-              :aria-label="t('Sort ascending')"
-              :aria-pressed="sortDirection === 'asc'"
-              :variant="ButtonVariant.Fill"
-              .active="sortDirection === 'asc'"
-              .disabled="!sortField || sortDirectionLocked"
-              @click="setSortDirection('asc')"
-            ></craft-button>
-            <craft-button
-              type="button"
-              icon="desc"
-              value="desc"
-              :aria-label="t('Sort descending')"
-              :aria-pressed="sortDirection === 'desc'"
-              :variant="ButtonVariant.Fill"
-              .active="sortDirection === 'desc'"
-              .disabled="!sortField || sortDirectionLocked"
-              @click="setSortDirection('desc')"
-            ></craft-button>
-          </craft-button-group>
-        </div>
-      </div>
-      <div v-if="thumbSizeChoices.length">
-        <craft-radio-group
-          appearance="button-group"
-          :name="thumbSizeIdPrefix"
-          :label="t('Thumb Size')"
-          .value="thumbSize"
-          @change="onThumbSizeChanged"
-        >
-          <craft-radio
-            v-for="option in thumbSizeChoices"
-            :key="option.value"
-            .value="option.value"
-            .checked="thumbSize === option.value"
-          >
-            <input
-              slot="input"
-              :id="`${thumbSizeIdPrefix}-${option.value}`"
-              type="radio"
-              :name="thumbSizeIdPrefix"
-              :value="option.value"
-              :checked="thumbSize === option.value"
-            />
-            <label slot="label" :for="`${thumbSizeIdPrefix}-${option.value}`">
-              {{ option.label }}
-            </label>
-          </craft-radio>
-        </craft-radio-group>
-      </div>
-      <div v-if="showTableColumns">
-        <CheckboxGroup
-          :label="t('Table Columns')"
-          name="viewState[tableColumns][]"
-          v-model="tableColumns"
-          :options="displayOptions"
-          sortable
-          @update:options="onReorder"
-        />
-      </div>
-    </div>
-
-    <div slot="content-footer" class="flex items-center gap-md">
+  <craft-popover
+    ref="popover"
+    class="index-view-settings"
+    style="--popover-min-inline-size: 24rem; --popover-max-inline-size: 24rem"
+    @craft-show.self="onShow"
+    @craft-hide.self="revert"
+  >
+    <!-- Something else can trigger it, like a chip summing up its settings. -->
+    <slot name="invoker">
       <craft-button
-        v-if="customized"
         type="button"
-        :variant="ButtonVariant.Plain"
-        @click="useDefaults"
-        >{{ t('Use defaults') }}</craft-button
-      >
-      <craft-button
-        ref="closeButton"
-        class="ms-auto"
-        type="button"
-        @click="closePopover"
+        slot="invoker"
+        :icon="icon"
         :variant="ButtonVariant.Fill"
-        >{{ t('Close') }}</craft-button
+        .disabled="disabled"
       >
-    </div>
+        {{ label }}
+        <!-- Says something here has changed; the filter bar says what. -->
+        <craft-badge-indicator
+          v-if="changeCount"
+          slot="suffix"
+          style="margin-inline-start: var(--c-spacing-xs)"
+          :alt-text="t('Changed')"
+        ></craft-badge-indicator>
+      </craft-button>
+    </slot>
+
+    <!-- A pane like the filter menu's, so the menus look and act alike. -->
+    <craft-pane slot="content" padding="lg" class="index-view-settings__pane">
+      <ViewSettingsFields
+        ref="fields"
+        :options="options"
+        :sort-options="sortOptions"
+        :sort-direction-locked="sortDirectionLocked"
+        :thumb-size-options="thumbSizeOptions"
+        :show-table-columns="showTableColumns"
+        :view-modes="viewModes"
+        :only="only"
+        :changed="changed"
+        v-model:mode="mode"
+        v-model:sort-field="sortField"
+        v-model:sort-direction="sortDirection"
+        v-model:table-columns="tableColumns"
+        v-model:thumb-size="thumbSize"
+        @reorder="(next) => emit('reorder', next)"
+      />
+
+      <PaneActions
+        ref="actions"
+        :clear-label="changeCount ? t('Clear') : undefined"
+        @clear="useDefaults"
+        @cancel="popover?.hide()"
+        @apply="apply"
+      />
+    </craft-pane>
   </craft-popover>
 </template>
+
+<style scoped>
+  /* The filter menu's shadow, with the pane in place of the menu's own padding. */
+  .index-view-settings::part(popup) {
+    box-shadow: var(--c-shadow-overlay);
+  }
+
+  .index-view-settings__pane {
+    --c-pane-border-width: 0;
+    display: block;
+  }
+</style>

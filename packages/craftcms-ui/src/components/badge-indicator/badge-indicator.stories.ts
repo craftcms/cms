@@ -70,3 +70,8 @@ export const Secondary: Story = {
 export const Inverse: Story = {
   args: {variant: 'inverse', 'badge-count': 12},
 };
+
+/** A smaller badge, for a compact control such as an icon button. */
+export const Small: Story = {
+  args: {variant: 'primary', size: 'small', 'badge-count': 3},
+};

@@ -81,6 +81,7 @@ readonly class StatusHtml
             'color' => Color::Gray->value,
             'icon' => null,
             'label' => null,
+            'size' => null,
         ];
 
         if ($config['color'] instanceof Color) {
@@ -103,6 +104,7 @@ readonly class StatusHtml
 
         return Html::tag('craft-badge', $contents, [
             'fill' => $config['color'],
+            'size' => $config['size'],
         ]);
     }
 
@@ -127,12 +129,14 @@ readonly class StatusHtml
         return $this->statusLabelHtml($config);
     }
 
-    public function editedStatusLabelHtml(): string
+    /** @param  'small'|'medium'|'large'|null  $size */
+    public function editedStatusLabelHtml(?string $size = null): string
     {
         return $this->statusLabelHtml([
             'color' => Color::Violet,
             'icon' => 'pen-circle',
             'label' => t('Edited'),
+            'size' => $size,
         ]);
     }
 }
