@@ -8,7 +8,8 @@
    */
   import {ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
-  import {actionClient, appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
+  import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui';
+  import {fetchUiPayload} from '@/modules/ui/fetchUiPayload';
   import CpContainer from '@/common/components/CpContainer.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useSlideout} from '@/common/slideouts';
@@ -96,15 +97,12 @@
     values: UiPayload['values'],
     scope: string[] = payload.value.scope ?? []
   ): Promise<UiPayload> {
-    const {data} = await actionClient.post(
+    const data = await fetchUiPayload<{headHtml: string; bodyHtml: string}>(
       'fields/refresh-layout-component-settings',
       // `values` is already relative to `scope`, unlike currentValues().
-      {...context.requestData(), settings: values, scope}
+      {...context.requestData(), settings: values, scope},
+      'The layout component did not return a UI payload.'
     );
-
-    if (!data.ui) {
-      throw new Error('The layout component did not return a UI payload.');
-    }
 
     // Server-rendered controls (condition builders, field selects) register
     // their own assets on every render.

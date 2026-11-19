@@ -1,7 +1,7 @@
 import {mountUiHost} from './mountUiHost';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import {renderUi} from '@/actions/CraftCms/Cms/Http/Controllers/FieldsController';
-import {actionClient} from '@craftcms/ui';
+import {fetchUiPayload} from './fetchUiPayload';
 import {h} from 'vue';
 import UiRenderer from './UiRenderer.vue';
 import {scopeUiPayload} from './uiScope';
@@ -33,7 +33,7 @@ export function defineFieldSettingsUiHost(
             payload,
             refresh: payload.refreshable
               ? async (settings: UiPayload['values']) => {
-                  const {data} = await actionClient.post<{ui: UiPayload}>(
+                  const {ui} = await fetchUiPayload(
                     renderUi.url(),
                     {
                       values: {
@@ -45,13 +45,10 @@ export function defineFieldSettingsUiHost(
                       },
                       scope: [],
                       settingsOnly: true,
-                    }
+                    },
+                    'The field did not return its settings UI.'
                   );
-                  if (!data.ui)
-                    throw new Error(
-                      'The field did not return its settings UI.'
-                    );
-                  return scopeUiPayload(data.ui, scope);
+                  return scopeUiPayload(ui, scope);
                 }
               : undefined,
           })

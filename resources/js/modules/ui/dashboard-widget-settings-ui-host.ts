@@ -2,7 +2,7 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import {createApp, defineComponent, h, ref, shallowRef, type App} from 'vue';
 import UiRenderer from './UiRenderer.vue';
 import type {UiPayload} from './types';
-import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {fetchUiPayload} from './fetchUiPayload';
 
 // TODO: Remove this legacy bridge once Dashboard widget settings are rendered by the Inertia/Vue Dashboard.
 
@@ -96,20 +96,17 @@ export function defineDashboardWidgetSettingsUiHost(
           throw new Error('A widget type is required to refresh its settings.');
         }
 
-        const {data} = await actionClient.post(
+        const {ui} = await fetchUiPayload(
           'dashboard/refresh-widget-settings',
           {
             type: this.#widgetType,
             settings: values,
             namespace: scope.join('.'),
-          }
+          },
+          'The widget did not return a UI payload.'
         );
 
-        if (!data.ui) {
-          throw new Error('The widget did not return a UI payload.');
-        }
-
-        return data.ui;
+        return ui;
       }
     }
   );

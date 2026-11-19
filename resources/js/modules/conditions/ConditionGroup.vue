@@ -102,7 +102,7 @@
 
         <div
           v-if="editor.editable()"
-          class="flex flex-wrap items-center gap-md"
+          class="condition-group__add flex flex-wrap items-center gap-md"
         >
           <TypePicker
             :types="editor.payload().ruleTypes"

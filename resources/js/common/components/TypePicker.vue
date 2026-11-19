@@ -51,6 +51,7 @@
 
 <template>
   <craft-action-menu
+    class="type-picker"
     :actions="actions"
     .disabled="disabled"
     :label="label"
@@ -70,3 +71,11 @@
     </craft-button>
   </craft-action-menu>
 </template>
+
+<style scoped>
+  /* Long lists, such as every filter a condition offers, scroll rather than
+     running down the page. */
+  .type-picker {
+    --popover-max-block-size: 50vh;
+  }
+</style>

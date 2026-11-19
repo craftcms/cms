@@ -181,10 +181,10 @@ class Pane extends ViewComponent
         return $this;
     }
 
-    /** Content at the start of the footer, e.g. a save status message. */
-    public function feedback(string|Htmlable|Stringable|ViewComponent|null $feedback): static
+    /** Content at the start of the footer: a save status message, or a Cancel button. */
+    public function footerStart(string|Htmlable|Stringable|ViewComponent|null $footerStart): static
     {
-        $this->slots['feedback'] = $feedback;
+        $this->slots['footer-start'] = $footerStart;
 
         return $this;
     }
