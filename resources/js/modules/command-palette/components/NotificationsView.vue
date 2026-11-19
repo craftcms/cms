@@ -77,9 +77,14 @@
 </template>
 
 <style scoped>
-  /* Lines the notifications up with the view's heading, rather than insetting them as the notification center does. */
+  /* Reaches past the view's padding to its edges, so a notification's hover
+     fill does, while its content still lines up with the view's heading. */
+  .command-palette-notifications__list {
+    margin-inline: calc(var(--c-modal-padding) * -1);
+  }
+
   .command-palette-notifications__list::part(item) {
-    padding-inline: 0;
+    padding-inline: var(--c-modal-padding);
   }
 
   /* The view header's margin already spaces the first one from the heading. */
