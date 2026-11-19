@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'Групи',
     'Guest Required' => 'Потрібен гість',
     'HTML Email Template' => 'HTML-шаблон ел. листа',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'Засіб очищення HTML',
     'Handle' => 'Дескриптор',
     'Has Descendants' => 'Має дочірні елементи',

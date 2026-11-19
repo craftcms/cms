@@ -21,3 +21,17 @@ it('impersonates the user and redirects to the control panel via an impersonatio
 
     expect(auth()->id())->toBe($target->id);
 });
+
+it('impersonates via a URL made from the control panel', function () {
+    $admin = User::find()->admin()->one();
+    $target = UserModel::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
+
+    actingAs($admin);
+    request()->attributes->set('isCpRequest', true);
+    $url = app(GetImpersonationUrlAction::class)(User::find()->id($target->id)->one());
+    request()->attributes->remove('isCpRequest');
+
+    get($url)->assertRedirect(Url::cpUrl('dashboard'));
+
+    expect(auth()->id())->toBe($target->id);
+});

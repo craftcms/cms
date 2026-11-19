@@ -144,7 +144,7 @@ class RouteTokens
         $this->deleteExpiredTokens();
 
         try {
-            return Cache::lock("token:$token")->block(5, function () use ($token) {
+            return Cache::lock("token:$token", 10)->block(5, function () use ($token) {
                 $result = RouteToken::where('token', $token)->first();
 
                 if (! $result) {
@@ -153,20 +153,26 @@ class RouteTokens
                     return false;
                 }
 
-                // Usage limit enforcement (for future requests)
+                // Usage limit enforcement (for future requests). Each use is claimed with a conditional
+                // write, so a use is only granted once even if the lock expires mid-request.
                 if ($result->usageLimit) {
-                    // Does it have any more life after this?
-                    $newUsageCount = $result->usageCount + 1;
-                    if ($newUsageCount < $result->usageLimit) {
-                        // Increment its count
-                        $this->incrementTokenUsageCountById($result->id);
-                        $this->remainingTokenUsages[$token] = $result->usageLimit - $newUsageCount;
+                    $used = DB::table(Table::ROUTETOKENS)
+                        ->where('id', $result->id)
+                        ->where('usageCount', '<', $result->usageLimit - 1)
+                        ->increment('usageCount');
+
+                    if ($used) {
+                        $this->remainingTokenUsages[$token] = $result->usageLimit - $result->usageCount - 1;
                     } else {
-                        // Just delete it
-                        $this->deleteTokenById($result->id);
+                        // This is its last use, so delete it, unless another request already did
+                        $used = DB::table(Table::ROUTETOKENS)->where('id', $result->id)->delete();
                         $this->remainingTokenUsages[$token] = 0;
 
                         Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
+
+                        if (! $used) {
+                            return false;
+                        }
                     }
                 } else {
                     $this->remainingTokenUsages[$token] = null;

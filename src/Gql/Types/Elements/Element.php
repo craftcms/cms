@@ -97,7 +97,7 @@ class Element extends ObjectType
      * element query for this type’s `prev` and `next` fields.
      *
      * Subclasses that add `prev`/`next` fields to their GraphQL interface (see
-     * [[\craft\gql\interfaces\elements\Entry]] for an example) should override this to
+     * [[\CraftCms\Cms\Gql\Interfaces\Elements\Entry]] for an example) should override this to
      * return the [[ElementResolver]] class used to resolve their own top-level queries,
      * so element navigation stays scoped to what the active schema is allowed to read.
      *

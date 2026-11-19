@@ -10,11 +10,13 @@ use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\Model\RouteToken as RouteTokenModel;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
@@ -88,11 +90,18 @@ readonly class PreviewController
     private function reusePreviewToken(RouteTokens $tokens, string $token, array $route): string|false
     {
         try {
-            return Cache::lock("token:$token")->block(5, function () use ($tokens, $token, $route) {
+            return Cache::lock("token:$token", 10)->block(5, function () use ($tokens, $token, $route) {
                 $existing = RouteTokenModel::where('token', $token)->first();
 
                 if (! $existing) {
-                    return $tokens->createPreviewToken($route, token: $token);
+                    try {
+                        // In its own transaction, so a conflict only rolls back to a savepoint when nested,
+                        // rather than aborting an enclosing Postgres transaction
+                        return DB::transaction(fn () => $tokens->createPreviewToken($route, token: $token));
+                    } catch (UniqueConstraintViolationException) {
+                        // Another request created it after this one's lock expired
+                        $existing = RouteTokenModel::where('token', $token)->firstOrFail();
+                    }
                 }
 
                 abort_unless($existing->route == $route, 400, 'Invalid preview token.');

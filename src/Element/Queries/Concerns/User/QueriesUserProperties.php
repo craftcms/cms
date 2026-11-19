@@ -144,7 +144,7 @@ trait QueriesUserProperties
      *
      * ```twig
      * {# Get the requested username #}
-     * {% set requestedUsername = craft.app.request.getSegment(2) %}
+     * {% set requestedUsername = Request.segment(2) %}
      *
      * {# Fetch that user #}
      * {% set {element-var} = {twig-method}
@@ -154,11 +154,11 @@ trait QueriesUserProperties
      *
      * ```php
      * // Get the requested username
-     * $requestedUsername = \Craft::$app->request->getSegment(2);
+     * $requestedUsername = request()->segment(2);
      *
      * // Fetch that user
      * ${element-var} = {php-method}
-     *     ->username(\craft\helpers\Db::escapeParam($requestedUsername))
+     *     ->username(\CraftCms\Cms\Support\Query::escapeParam($requestedUsername))
      *     ->one();
      * ```
      *
