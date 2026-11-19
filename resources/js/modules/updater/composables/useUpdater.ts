@@ -110,6 +110,17 @@ export function useUpdater(initialState: UpdaterState): UseUpdaterReturn {
       }
 
       executeAction(option.nextUrl);
+    } else if (option.finished) {
+      // A finishing option, such as Cancel, ends the process and returns to returnUrl
+      state.value = {
+        ...state.value,
+        status: option.status,
+        error: undefined,
+        errorDetails: undefined,
+        options: undefined,
+        finished: true,
+        returnUrl: option.returnUrl ?? state.value.returnUrl,
+      };
     }
   }
 

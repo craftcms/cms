@@ -13,7 +13,10 @@ afterEach(() => {
 });
 
 async function mount(
-  state: Pick<CraftCms.Cms.Update.Data.UpdaterState, 'error' | 'errorDetails'>
+  state: Pick<
+    CraftCms.Cms.Update.Data.UpdaterState,
+    'error' | 'errorDetails' | 'options'
+  >
 ): Promise<HTMLElement> {
   const initialState = {data: '', finishUrl: '', ...state};
   root = document.createElement('div');
@@ -45,4 +48,26 @@ it('renders error output as text, keeping the paragraph and code formatting', as
     '<b>composer</b>'
   );
   expect(paragraphs[1]!.innerHTML).toBe('then retry<br>now');
+});
+
+it('finishes when a finishing option such as Cancel is clicked', async () => {
+  const root = await mount({
+    error: 'Project config YAML files can’t be written in this environment.',
+    options: [
+      {
+        label: 'Cancel',
+        status: 'All done!',
+        finished: true,
+        returnUrl: 'https://example.com/admin/dashboard',
+      },
+    ],
+  });
+
+  root.querySelector<HTMLElement>('.updater-options craft-button')!.click();
+  await nextTick();
+
+  expect(root.querySelector('.error-message')).toBeNull();
+  expect(root.querySelector('.updater-options')).toBeNull();
+  expect(root.querySelector('.icon-success')).not.toBeNull();
+  expect(root.querySelector('.updater-status')!.textContent).toBe('All done!');
 });
