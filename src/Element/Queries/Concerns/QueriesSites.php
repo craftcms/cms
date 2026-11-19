@@ -135,6 +135,8 @@ trait QueriesSites
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the {elements} should be queried in. Defaults to the current (requested) site.')]
     public function site($value): static
     {
+        $this->forgetImplicitEagerLoadCriteria('siteId');
+
         if ($value === null) {
             $this->siteId = null;
         } elseif ($value === '*') {
@@ -203,6 +205,7 @@ trait QueriesSites
     #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Determines which site(s) the {elements} should be queried in. Defaults to the current (requested) site.')]
     public function siteId($value): static
     {
+        $this->forgetImplicitEagerLoadCriteria('siteId');
         $this->siteId = self::normalizeSiteId($value);
 
         return $this;

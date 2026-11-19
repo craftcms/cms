@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
@@ -23,11 +24,12 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 /**
  * @internal
  *
- * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int,position?:int}
+ * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int,siteId?:int[],position?:int}
  * @phpstan-type NormalizedEagerLoadingMap array{elementType:class-string<ElementInterface>,map?:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  * @phpstan-type EagerLoadingMap NormalizedEagerLoadingMap|array{map:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  *
@@ -240,6 +242,7 @@ readonly class ElementEagerLoader
 
                 foreach ($maps as $map) {
                     $targetElementIdsBySourceIds = null;
+                    $targetSiteIdsBySourceIds = [];
                     $query = null;
                     $offset = 0;
                     $limit = null;
@@ -251,10 +254,14 @@ readonly class ElementEagerLoader
                         $uniqueTargetElementIds = [];
                         $targetElementIdsBySourceIds = [];
 
+                        // Also find the sites a mapping was saved for, if it's limited to some
                         foreach ($map['map'] as $mapping) {
                             if (! empty($mapping['target'])) {
                                 $uniqueTargetElementIds[$mapping['target']] = true;
                                 $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = $mapping['position'] ?? 0;
+                                if (isset($mapping['siteId'])) {
+                                    $targetSiteIdsBySourceIds[$mapping['source']][$mapping['target']] = $mapping['siteId'];
+                                }
                             }
                         }
 
@@ -279,9 +286,13 @@ readonly class ElementEagerLoader
                         );
 
                         // Allow custom ordering, as long as it can't contain raw SQL, and the mapping criteria
-                        // doesn't define its own (see https://github.com/craftcms/cms/issues/19992)
+                        // doesn't define its own, other than asking for the element type's default order
+                        // (see https://github.com/craftcms/cms/issues/19992)
                         $planOrderBy = null;
-                        if (! empty($plan->criteria['orderBy']) && ! isset($otherCriteria['orderBy'])) {
+                        if (
+                            ! empty($plan->criteria['orderBy']) &&
+                            (! isset($otherCriteria['orderBy']) || $otherCriteria['orderBy'] instanceof OrderByPlaceholderExpression)
+                        ) {
                             $planOrderBy = $this->safeOrderBy($plan->criteria['orderBy']);
 
                             if ($planOrderBy === null) {
@@ -338,6 +349,25 @@ readonly class ElementEagerLoader
 
                         if ($plan->configureQuery !== null) {
                             ($plan->configureQuery)($query);
+                        }
+
+                        // Like the `relatedTo` param, only map a target element to a source element if the mapping
+                        // was saved for one of the sites being queried. The criteria set siteId without normalizing
+                        // it, such as '*', so normalize it on a copy. Invalid values match no sites, and the query
+                        // returns no elements for them either.
+                        $querySiteIds = [];
+                        if (! empty($targetSiteIdsBySourceIds)) {
+                            try {
+                                $querySiteIds = array_map(intval(...), (array) (clone $query)->siteId($query->siteId)->siteId);
+                            } catch (InvalidArgumentException) {
+                            }
+                        }
+                        foreach ($targetSiteIdsBySourceIds as $sourceElementId => $siteIdsByTargetId) {
+                            foreach ($siteIdsByTargetId as $targetElementId => $targetSiteIds) {
+                                if (empty(array_intersect($targetSiteIds, $querySiteIds))) {
+                                    unset($targetElementIdsBySourceIds[$sourceElementId][$targetElementId]);
+                                }
+                            }
                         }
                     }
 

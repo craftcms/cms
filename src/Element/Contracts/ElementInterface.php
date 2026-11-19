@@ -1547,6 +1547,17 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
+     * Returns the elements that relate to or reference this element through a field.
+     *
+     * @param  string  $field  The field handle, or a path like `myMatrix.categories` to get the owners of nested entries
+     * @param  class-string<self>|null  $elementType  The type of the elements to return. Required when more than one
+     *                                                element type uses the field.
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
+     */
+    #[AllowedInSandbox]
+    public function relatedBy(string $field, ?string $elementType = null): ElementQueryInterface|ElementCollection;
+
+    /**
      * Sets some eager-loaded elements on a given handle.
      *
      * @param  string  $handle  The handle that was used to eager-load the elements

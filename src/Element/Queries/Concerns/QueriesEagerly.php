@@ -67,6 +67,12 @@ trait QueriesEagerly
         'ruleset',
     ];
 
+    /**
+     * @var array<string, mixed> Criteria values that the eager loader sets for each source element itself, which are
+     *                           left out of eager-loading plans unless they're changed
+     */
+    private array $eagerLoadImplicitCriteria = [];
+
     private ?string $eagerLoadQueryState = null;
 
     private int $eagerLoadBeforeQueryCallbackCount = 0;
@@ -181,6 +187,29 @@ trait QueriesEagerly
     }
 
     /**
+     * Leaves criteria out of eager-loading plans as long as they keep their current values, for criteria the eager
+     * loader sets for each source element itself, such as the source element's site.
+     *
+     * @param  string[]|string  $criteria
+     */
+    public function excludeImplicitEagerLoadCriteria(array|string $criteria): static
+    {
+        foreach ((array) $criteria as $name) {
+            $this->eagerLoadImplicitCriteria[$name] = $this->$name;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Includes a criterion in eager-loading plans again after it was set explicitly, even to its implicit value.
+     */
+    protected function forgetImplicitEagerLoadCriteria(string $name): void
+    {
+        unset($this->eagerLoadImplicitCriteria[$name]);
+    }
+
+    /**
      * Returns whether the query results were already eager loaded by the query's source element.
      */
     public function wasEagerLoaded(?string $alias = null): bool
@@ -252,9 +281,11 @@ trait QueriesEagerly
             return null;
         }
 
-        $criteria += array_diff_key(
-            $this->getCriteria(),
-            array_flip($this->eagerLoadCriteriaExclusions),
+        $criteria += array_filter(
+            array_diff_key($this->getCriteria(), array_flip($this->eagerLoadCriteriaExclusions)),
+            fn (mixed $value, string $name) => ! array_key_exists($name, $this->eagerLoadImplicitCriteria) ||
+                $value !== $this->eagerLoadImplicitCriteria[$name],
+            ARRAY_FILTER_USE_BOTH,
         ) + ['with' => $this->with];
 
         if ($this->eagerLoadAlias !== null) {
