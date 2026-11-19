@@ -195,9 +195,11 @@ class MailerTest extends TestCase
     public function testSendMailForOtherSiteRestoresTwig(): void
     {
         $view = Craft::$app->getView();
+        // createTwig() picks extensions based on the active template mode
+        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $siteTwig = $view->getTwig();
         $view->setTemplateMode(View::TEMPLATE_MODE_CP);
-        $cpTwig = $view->getTwig(View::TEMPLATE_MODE_CP);
-        $siteTwig = $view->getTwig(View::TEMPLATE_MODE_SITE);
+        $cpTwig = $view->getTwig();
 
         $otherSite = Craft::$app->getSites()->getSiteByHandle('testSite1');
         self::assertNotSame(Craft::$app->getSites()->getCurrentSite()->id, $otherSite->id);
