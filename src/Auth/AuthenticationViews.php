@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Auth;
 
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Route\TemplateRoute;
+use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Contracts\View\View;
@@ -22,6 +23,7 @@ readonly class AuthenticationViews
     public function __construct(
         private TemplateResolver $templates,
         private HandleInertiaRequests $inertia,
+        private Sites $sites,
     ) {}
 
     /**
@@ -34,8 +36,12 @@ readonly class AuthenticationViews
         ?array $inertiaProps = null,
         array $templateData = [],
     ): View|InertiaResponse|Response {
-        if (! $request->isCpRequest() && $this->templates->exists($request->craftPath(), TemplateMode::Site)) {
-            return new TemplateRoute($request->craftPath(), $templateData, publicOnly: false)->handle($request);
+        if (! $request->isCpRequest()) {
+            $path = $request->isActionRequest() ? $request->craftPath() : $this->sites->getRequestPath($request);
+
+            if ($this->templates->exists($path, TemplateMode::Site)) {
+                return new TemplateRoute($path, $templateData, publicOnly: false)->handle($request);
+            }
         }
 
         TemplateMode::set(TemplateMode::Cp);

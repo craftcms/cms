@@ -26,27 +26,32 @@ if (Edition::get()->registersFrontendUserRoutes()) {
 
     /*
      * These paths can be localized per site, so a route is registered for every
-     * site's value. Changing them or the sites requires re-running `route:cache`
-     * on installs that cache routes.
+     * site's value, at the root and under each site's base path, such as `fr` for
+     * `https://example.com/fr/`. Changing them or the sites requires re-running
+     * `route:cache` on installs that cache routes.
      */
     if (Cms::isInstalled()) {
-        foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
+        $basePaths = $routes->siteBasePaths();
+        $sitePaths = fn (string $getter) => $routes->localizedConfigPaths($getter)
+            ->flatMap(fn (string $path) => [$path, ...$basePaths->map(fn (string $basePath) => "$basePath/$path")]);
+
+        foreach ($sitePaths('getLoginPath') as $path) {
             Route::allowDuringMaintenance()->get($path, [LoginController::class, 'showLogin']);
             Route::allowDuringMaintenance()->post($path, [LoginController::class, 'attemptLogin'])
                 ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
 
-        foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
+        foreach ($sitePaths('getVerifyEmailPath') as $path) {
             Route::allowDuringMaintenance()->get($path, [VerifyEmailController::class, 'show']);
             Route::allowDuringMaintenance()->post($path, [VerifyEmailController::class, 'store']);
         }
 
-        foreach ($routes->localizedConfigPaths('getSetPasswordPath') as $path) {
+        foreach ($sitePaths('getSetPasswordPath') as $path) {
             Route::allowDuringMaintenance()->get($path, [SetPasswordController::class, 'show']);
             Route::allowDuringMaintenance()->post($path, [SetPasswordController::class, 'store']);
         }
 
-        foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
+        foreach ($sitePaths('getLogoutPath') as $path) {
             Route::allowDuringMaintenance()->match(['get', 'post'], $path, [LoginController::class, 'logout']);
         }
     }
