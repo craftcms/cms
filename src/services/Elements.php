@@ -3856,9 +3856,15 @@ class Elements extends Component
     private function normalizeEagerLoadingMaps(array|false $map, int &$position = 0): array
     {
         if (isset($map['map'])) {
-            // Number the mappings, so elements from maps that get split up by element type can be put back in order
+            // Number the mappings, so elements from maps that get split up by element type can be put back in order.
+            // A map with its own inReverse is numbered in reverse, so the whole map gets reversed rather than each
+            // element type within it.
+            $reverse = !empty($map['criteria']['inReverse']);
+            $first = $position;
+            $last = $position + count($map['map']) - 1;
             foreach ($map['map'] as &$mapping) {
-                $mapping['position'] = $position++;
+                $mapping['position'] = $reverse ? $first + $last - $position : $position;
+                $position++;
             }
             unset($mapping);
         }
