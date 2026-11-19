@@ -352,6 +352,7 @@
 - Garbage collection now always re-enables foreign key checks, even if it doesn’t finish. ([#20386](https://github.com/craftcms/cms/issues/20386))
 - Fixed a bug where the PostgreSQL password could be included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
 - Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
+- The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20887](https://github.com/craftcms/cms/pull/20887))
 
 ### Extensibility
 
@@ -1330,6 +1331,7 @@ Moved the following controllers:
 - Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
 - Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
+- Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20887](https://github.com/craftcms/cms/pull/20887))
 - Removed `craft\models\ProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ProjectConfigData`
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.
