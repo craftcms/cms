@@ -454,6 +454,40 @@ class EagerLoadingTest extends TestCase
 
         self::assertSame([$b, $a, $u], $ids('mixed'));
         self::assertSame([$b], $ids('firstMixed'));
+
+        // a map's own inReverse only affects the sources it covers
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'map' => [
+                    ['source' => 1, 'target' => $entryA->id],
+                    ['source' => 1, 'target' => $user->id],
+                    ['source' => 1, 'target' => $entryB->id],
+                ],
+            ],
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 2, 'target' => $entryA->id],
+                    ['source' => 2, 'target' => $entryB->id],
+                ],
+                'criteria' => ['inReverse' => true],
+            ],
+        ];
+        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        $sourceA = new EagerLoadingTestSourceElement(['id' => 1, 'siteId' => $siteId]);
+        $sourceB = new EagerLoadingTestSourceElement(['id' => 2, 'siteId' => $siteId]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$sourceA, $sourceB], [
+            'mixed',
+        ]);
+
+        $sourceIds = fn(ElementInterface $source) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $source->getEagerLoadedElements('mixed')->all(),
+        );
+
+        self::assertSame([$a, $u, $b], $sourceIds($sourceA));
+        self::assertSame([$b, $a], $sourceIds($sourceB));
     }
 
     /**
