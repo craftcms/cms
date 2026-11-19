@@ -7,8 +7,8 @@ export default css`
   }
 
   .badge-indicator {
-    --_badge-color: var(--c-color-info-fill-loud);
-    --_text-color: var(--c-color-info-on-loud);
+    --_badge-color: var(--c-color-accent-fill-loud);
+    --_text-color: var(--c-color-accent-on-loud);
     --badge-size: calc(8rem / 16);
     display: inline-flex;
     min-width: var(--badge-size);

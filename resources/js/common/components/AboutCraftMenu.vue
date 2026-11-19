@@ -30,6 +30,7 @@
         <EditionBadge
           :edition="info.edition"
           class="about-craft-trigger__badge"
+          :class="{'about-craft-trigger__badge--dotted': app.needsAttention}"
         />
         <craft-badge-indicator
           v-if="app.needsAttention"
@@ -63,11 +64,27 @@
     display: inline-flex;
   }
 
+  /* Cut away around the dot rather than ringing it, so whatever's behind the
+     button shows through in every state. Centered on the dot, 2px wider than
+     it. */
+  .about-craft-trigger__badge--dotted {
+    --_cutout-x: calc(100% - 2px);
+    mask-image: radial-gradient(
+      circle at var(--_cutout-x) 2px,
+      transparent 6px,
+      #000 6.5px
+    );
+
+    &:dir(rtl) {
+      --_cutout-x: 2px;
+    }
+  }
+
+  /* Within the button's top corner. */
   .about-craft-trigger__dot {
-    --badge-border-width: 2px;
     position: absolute;
-    inset-block-start: -4.5px;
-    inset-inline-end: -4.5px;
+    inset-block-start: -2px;
+    inset-inline-end: -2px;
   }
 
   craft-popover::part(popup) {

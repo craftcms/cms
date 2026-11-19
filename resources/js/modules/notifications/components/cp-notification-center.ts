@@ -34,15 +34,26 @@ class CpNotificationCenter extends LitElement {
       translate: 0 1.5px;
     }
 
-    .notification-trigger__badge {
-      --badge-border-width: 2px;
-      position: absolute;
-      inset-block-start: -2.5px;
-      inset-inline-end: 0;
+    /* Cut away around the dot rather than ringing it, so whatever's behind
+       the button shows through in every state. Centered on the dot, 2px
+       wider than it. */
+    .notification-trigger__icon--dotted {
+      --_cutout-x: calc(100% - 2px);
+      mask-image: radial-gradient(
+        circle at var(--_cutout-x) -2px,
+        transparent 6px,
+        #000 6.5px
+      );
     }
 
-    .notification-trigger__badge::part(badge) {
-      background-color: var(--c-color-danger-fill-loud);
+    .notification-trigger__icon--dotted:dir(rtl) {
+      --_cutout-x: 2px;
+    }
+
+    .notification-trigger__badge {
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline-end: 2px;
     }
 
     craft-popover::part(popup) {
@@ -146,7 +157,9 @@ class CpNotificationCenter extends LitElement {
         >
           <span slot="prefix">
             <craft-icon
-              class="notification-trigger__icon"
+              class="notification-trigger__icon ${this.#unread.length
+                ? 'notification-trigger__icon--dotted'
+                : ''}"
               name="bell"
             ></craft-icon>
             ${this.#unread.length

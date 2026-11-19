@@ -91,10 +91,27 @@ export default css`
   }
 
   craft-badge-indicator {
-    --badge-border-width: 2px;
     position: absolute;
-    inset-inline-end: 0;
-    inset-block-end: 0;
+    inset-inline-end: 2px;
+    inset-block-end: 2px;
+  }
+
+  .nav-item__prefix--indicated {
+    --_cutout-x: calc(50% + 6px);
+  }
+
+  .nav-item__prefix--indicated:dir(rtl) {
+    --_cutout-x: calc(50% - 6px);
+  }
+
+  .nav-item__prefix--indicated .nav-icon,
+  .nav-item__prefix--indicated .nav-item__initial,
+  .nav-item__prefix--indicated ::slotted([slot='icon']) {
+    mask-image: radial-gradient(
+      circle at var(--_cutout-x) calc(50% + 6px),
+      transparent 6px,
+      #000 6.5px
+    );
   }
 
   .nav-item__prefix craft-button,
