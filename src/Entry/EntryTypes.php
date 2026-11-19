@@ -95,7 +95,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryTypes = Craft::$app->entries->getEntryTypesBySectionId(1);
+     * $entryTypes = \CraftCms\Cms\Support\Facades\EntryTypes::getEntryTypesBySectionId(1);
      * ```
      *
      *
@@ -191,7 +191,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryTypes = Craft::$app->entries->getAllEntryTypes();
+     * $entryTypes = \CraftCms\Cms\Support\Facades\EntryTypes::getAllEntryTypes();
      * ```
      *
      * @return Collection<int, EntryType>
@@ -207,7 +207,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryType = Craft::$app->entries->getEntryTypeById(1);
+     * $entryType = \CraftCms\Cms\Support\Facades\EntryTypes::getEntryTypeById(1);
      * ```
      */
     public function getEntryTypeById(int $entryTypeId, bool $withTrashed = false): ?EntryType
@@ -246,7 +246,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryType = Craft::$app->entries->getEntryTypeByHandle('article');
+     * $entryType = \CraftCms\Cms\Support\Facades\EntryTypes::getEntryTypeByHandle('article');
      * ```
      */
     public function getEntryTypeByHandle(string $entryTypeHandle): ?EntryType
@@ -495,7 +495,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $success = Craft::$app->entries->deleteEntryTypeById(1);
+     * $success = \CraftCms\Cms\Support\Facades\EntryTypes::deleteEntryTypeById(1);
      * ```
      *
      *
@@ -520,7 +520,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $success = Craft::$app->entries->deleteEntryType($entryType);
+     * $success = \CraftCms\Cms\Support\Facades\EntryTypes::deleteEntryType($entryType);
      * ```
      *
      *

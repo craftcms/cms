@@ -173,6 +173,7 @@
 - Action menu buttons no longer announce a menu pop-up.
 - Menu buttons without text or a label, such as the arrow half of split Save buttons on plugin screens, are now named “More actions” for screen readers. ([#20576](https://github.com/craftcms/cms/pull/20576))
 - The current user’s own First Name and Last Name fields, and the Full Name, First Name, Last Name, and Organization fields of their own addresses, now have `autocomplete` tokens, so browsers and password managers can fill them in. ([#20407](https://github.com/craftcms/cms/pull/20407))
+- Dashboard widgets’ column counts and field layout elements’ widths are now changed from a larger slider in a popover, opened by a button that shows the current size, so they meet the minimum target size for pointer and touch input. ([#20681](https://github.com/craftcms/cms/pull/20681))
 
 ### Administration
 
@@ -294,6 +295,7 @@
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
 
 ### Extensibility
+- Added the `craft-slide-picker-button` component, a button that shows a value as a small copy of a slide picker’s segments and opens a full-size `craft-slide-picker` in a popover, for slide pickers in dense rows. Its tooltip shows the value and is its label, so it’s named by the value, such as “3 columns”, and described by its `item-label`, such as “Recent Entries”. Its `slider-label` labels the slider in the popover. Its `value-unit`, such as `% width`, is shown and announced after the value. ([#20681](https://github.com/craftcms/cms/pull/20681))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 
 #### Plugins

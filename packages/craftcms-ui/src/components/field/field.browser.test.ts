@@ -75,6 +75,26 @@ it('describes a control after the main one by its instructions and errors, keepi
     .toHaveAccessibleDescription('The card’s accent. Color is invalid.');
 });
 
+it('describes a nested control by its instructions only while there are some', async () => {
+  document.body.innerHTML =
+    '<craft-field label="Title"><craft-input slot="input"><input slot="input"></craft-input></craft-field>';
+  const field = document.querySelector<CraftField>('craft-field')!;
+  const input = document.querySelector('input')!;
+
+  await expect.element(input).toHaveAccessibleName('Title');
+  // A reference to empty instructions computes to the same empty description
+  // as no reference at all, so these checks read the reference itself.
+  expect(input.getAttribute('aria-describedby') ?? '').toBe('');
+
+  field.helpText = 'Some instructions';
+  await expect.element(input).toHaveAccessibleDescription('Some instructions');
+
+  field.helpText = '';
+  await vi.waitFor(() =>
+    expect(input.getAttribute('aria-describedby') ?? '').toBe('')
+  );
+});
+
 it.each([false, true])(
   'labels a nested combobox and its listbox once (multiple: %s)',
   async (multiple) => {

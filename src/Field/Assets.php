@@ -1132,10 +1132,12 @@ class Assets extends BaseRelationField
                     continue;
                 }
 
+                // Don’t read the file here: beforeElementSave() moves it before the element is validated,
+                // and validation locates the uploaded files again.
                 $files[] = [
                     'filename' => $uploadedFile->getClientOriginalName(),
-                    'mimeType' => $uploadedFile->getMimeType(),
-                    'path' => $uploadedFile->path(),
+                    'mimeType' => $uploadedFile->getClientMimeType(),
+                    'path' => $uploadedFile->getPathname(),
                     'type' => 'upload',
                 ];
             }

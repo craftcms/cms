@@ -1988,6 +1988,7 @@ return [
     'Groups' => '群组',
     'Guest Required' => '需要宾客',
     'HTML Email Template' => 'HTML 电子邮件模版',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'HTML 清理器',
     'Handle' => '句柄',
     'Has Descendants' => '具有子项',

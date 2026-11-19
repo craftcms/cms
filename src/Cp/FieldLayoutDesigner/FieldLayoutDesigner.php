@@ -340,7 +340,7 @@ class FieldLayoutDesigner
                 ]),
                 'data' => ['name' => mb_strtolower($groupName)],
             ]).
-            Html::tag('h6', Html::encode($groupName)).
+            Html::tag('h3', Html::encode($groupName), ['class' => 'cp-h6']).
             implode('', array_map(fn (BaseField $field) => $this->layoutElementSelectorHtml($field, true, [
                 'class' => array_filter([
                     ! $this->showFldFieldSelector($fieldLayout, $field) ? 'hidden' : null,

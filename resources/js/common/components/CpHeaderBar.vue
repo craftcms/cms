@@ -198,7 +198,6 @@
     @media (width < var(--breakpoint-lg)) {
       /* As much above the menu button as beside it. */
       padding-block-start: var(--c-spacing-md);
-      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
     }
 
     @media (width >= var(--breakpoint-lg)) {
@@ -235,7 +234,7 @@
     /* The bell sits as far from the avatar as the avatar does from the
        details panel's first tab. */
     .cp-header-bar__icons {
-      margin-inline-end: 18px;
+      margin-inline-end: 17px;
     }
 
     .cp-header-bar__user {
@@ -302,10 +301,11 @@
     margin-inline-start: 1px;
   }
 
-  /* In line with a secondary nav's icons: past the content's 1px border, its
-     sidebar's padding, and a nav item's inset before its icon. */
+  /* In line with a secondary nav's labels. */
   .cp-header-bar__crumbs--indented {
-    margin-inline-start: calc(var(--c-spacing-md) + var(--c-spacing-sm) + 1px);
+    margin-inline-start: calc(
+      var(--cp-body-inset) + var(--c-spacing-md) * 2 + 1px
+    );
   }
 
   /* Matches craft-breadcrumb-item's separators. */

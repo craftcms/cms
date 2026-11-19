@@ -1245,7 +1245,7 @@ class GeneralConfig extends BaseConfig
      * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is automatically invalidated any time
      * an element is saved, the site structure is updated, or a GraphQL schema is saved.
      *
-     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide its own
+     * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
      * caching logic and setting the `result` property.
      *
      * ::: code
@@ -1331,7 +1331,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var array<string, array<string, mixed>> List of additional file kinds Craft should support. This array will get merged with the one defined in
-     *                                          `\craft\helpers\Assets::_buildFileKinds()`.
+     *                                          `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()`.
      *
      * ```php Static Config
      * ->extraFileKinds([
@@ -1776,7 +1776,7 @@ class GeneralConfig extends BaseConfig
      * - `stateless`: Whether the provider should bypass Socialite state checks.
      * - `groups`: User group IDs, UIDs, or handles to assign to new users.
      * - `createsUsers`: Whether the provider may create new users when no existing account can be matched. Defaults to the public registration setting when `null` or omitted.
-     * - `activatesUsers`: Whether matched or newly-created users should be activated automatically.
+     * - `controlsAccess`: Whether the provider becomes the source of truth for whether users can access Craft. When `true`, anyone the provider lets sign in gets access: Craft saves new users as active and activates any matched user who isn't active, which also lifts suspensions and locks. Disabled and archived users still can't sign in. Defaults to `false`.
      * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `false`.
      * - `identityResolver`: A custom identity resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
      * - `userResolver`: A custom linked-user resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
@@ -2058,8 +2058,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The path within the `templates` folder where element partial templates will live.
      *
-     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * Partial templates are used to render elements when calling [[\CraftCms\Cms\Element\Queries\ElementQuery::render()]],
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\CraftCms\Cms\Element\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -4312,7 +4312,7 @@ class GeneralConfig extends BaseConfig
      * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is automatically invalidated any time
      * an element is saved, the site structure is updated, or a GraphQL schema is saved.
      *
-     * This setting will have no effect if a plugin is using the [[\craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY]] event to provide its own
+     * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
      * caching logic and setting the `result` property.
      *
      * ```php
@@ -4424,7 +4424,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * List of additional file kinds Craft should support. This array will get merged with the one defined in
-     * `\craft\helpers\Assets::_buildFileKinds()`.
+     * `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()`.
      *
      * ```php
      * ->extraFileKinds([
@@ -5182,8 +5182,8 @@ class GeneralConfig extends BaseConfig
     /**
      * The path within the `templates` folder where element partial templates will live.
      *
-     * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * Partial templates are used to render elements when calling [[\CraftCms\Cms\Element\Queries\ElementQuery::render()]],
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\CraftCms\Cms\Element\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *

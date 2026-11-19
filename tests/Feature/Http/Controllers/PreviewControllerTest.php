@@ -3,15 +3,19 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 use function Pest\Laravel\actingAs;
@@ -135,6 +139,34 @@ it('reuses a pre-generated token that already exists', function () {
         ->assertRedirect('https://example.com');
 
     expect(RouteToken::count())->toBe(1);
+});
+
+it('reuses a pre-generated token that another request created after it looked', function () {
+    $params = [
+        'elementType' => CraftCms\Cms\Entry\Elements\Entry::class,
+        'siteId' => Site::firstOrFail()->id,
+        'canonicalId' => $this->entry->id,
+        'previewToken' => Crypt::encrypt($token = Str::random(32)),
+    ];
+
+    postJson(action([PreviewController::class, 'createToken']), $params)->assertOk();
+    $row = RouteToken::where('token', $token)->firstOrFail()->getAttributes();
+    RouteToken::where('token', $token)->delete();
+
+    // Another request creates the token right after this one finds it missing
+    $competed = false;
+    DB::listen(function (QueryExecuted $query) use (&$competed, $row) {
+        if (! $competed && str_contains($query->sql, 'routetokens') && str_starts_with($query->sql, 'select')) {
+            $competed = true;
+            DB::table(Table::ROUTETOKENS)->insert(Arr::except($row, 'id'));
+        }
+    });
+
+    postJson(action([PreviewController::class, 'createToken']), $params)
+        ->assertOk()
+        ->assertJson(['token' => $token]);
+
+    expect(RouteToken::where('token', $token)->count())->toBe(1);
 });
 
 it('keeps a reused token alive, and recreates it once it has expired', function () {

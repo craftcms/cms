@@ -50,9 +50,12 @@ it('keeps focus on the column header button after sorting', function () {
 });
 
 it('adds a column from the view menu', function () {
-    visitCp('content/entries/articles')
+    $page = visitCp('content/entries/articles')
         ->assertMissing('#main thead >> role=button[name="ID"]')
         ->click('#main >> role=button[name="View"]')
+        ->assertVisible('role=button[name="Add item"]');
+
+    assertNoAccessibilityIssues($page)
         ->click('role=button[name="Add item"]')
         ->click('role=button[name="ID"]')
         ->click('role=button[name="Close"]')
@@ -87,14 +90,17 @@ it('deletes an entry and restores it from the trash', function () {
 
     $page->click('#main >> role=checkbox[name="Select Alpha"]')
         ->click('#main >> role=button[name="Actions"] >> nth=-1')
+        ->assertVisible('role=button[name="Delete"]');
+
+    assertNoAccessibilityIssues($page)
         ->click('role=button[name="Delete"]')
         ->assertMissing('#main tbody >> role=link[name="Alpha"]')
         ->assertVisible('#main tbody >> role=link[name="Bravo"]');
 
     expect(EntryElement::find()->title('Alpha')->trashed()->exists())->toBeTrue();
 
-    visitCp('content/entries/articles?status=trashed')
-        ->assertVisible('#main tbody >> role=checkbox[name="Select Alpha"]')
+    assertNoAccessibilityIssues(visitCp('content/entries/articles?status=trashed')
+        ->assertVisible('#main tbody >> role=checkbox[name="Select Alpha"]'))
         ->assertDontSeeIn('#main tbody', 'Bravo')
         ->click('#main >> role=checkbox[name="Select Alpha"]')
         ->click('#main >> role=button[name="Actions"] >> nth=-1')
@@ -110,6 +116,8 @@ it('filters the entries by status', function () {
     $charlie->enabled = false;
     Elements::saveElement($charlie);
 
+    // Axe doesn't check the open listbox. The combobox has no `aria-controls` because its listbox is in the shadow
+    // root, a known deviation recorded in select-rich.a11y.md.
     visitCp('content/entries/articles')
         ->click('#main >> role=combobox[name="Status"]')
         ->click('role=option[name="Disabled"]')
@@ -120,10 +128,13 @@ it('filters the entries by status', function () {
 });
 
 it('filters the entries by a condition', function () {
-    visitCp('content/entries/articles')
+    $page = visitCp('content/entries/articles')
         ->click('#main >> role=button[name="Filter results"]')
         ->click('role=button[name="Add a filter"]')
         ->click('role=button[name="Title"]')
+        ->assertVisible('role=textbox[name="Title"]');
+
+    assertNoAccessibilityIssues($page)
         ->type('role=textbox[name="Title"]', 'Bravo')
         ->click('role=button[name="Apply"]')
         ->assertQueryStringHas('condition')

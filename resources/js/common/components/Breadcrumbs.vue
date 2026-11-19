@@ -17,6 +17,8 @@
     defineProps<{
       items: Array<BreadcrumbItem>;
       separator?: string;
+      /** Names the navigation landmark. Give a second set of crumbs on the page a name of its own. */
+      label?: string;
     }>(),
     {
       separator: '/',
@@ -46,7 +48,7 @@
 </script>
 
 <template>
-  <craft-breadcrumbs :label="t('Breadcrumbs')" class="text-xs">
+  <craft-breadcrumbs :label="label ?? t('Breadcrumbs')" class="text-xs">
     <craft-breadcrumb-item
       v-for="item in crumbs"
       :key="item.key"

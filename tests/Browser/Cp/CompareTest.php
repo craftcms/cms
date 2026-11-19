@@ -122,7 +122,7 @@ it('compares a draft with the current entry from the Versions panel', function (
         ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
         ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in May');
 
-    assertNoJavaScriptErrors($page);
+    assertNoAccessibilityIssues(assertNoJavaScriptErrors($page));
 });
 
 it('copies a field’s value from the older version, and undoes it', function () {

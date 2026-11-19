@@ -969,7 +969,7 @@ MD);
         $sourcesService = app(ElementSources::class);
 
         $sourceKey = sprintf('section:%s', $this->_section()->uid);
-        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, ElementSources::CONTEXT_SETTINGS, true))
             ->map(function(array $config) use ($sourceKey, $name) {
                 if (($config['key'] ?? null) === $sourceKey) {
                     $config['page'] = $name;

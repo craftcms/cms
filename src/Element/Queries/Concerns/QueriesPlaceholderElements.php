@@ -36,7 +36,7 @@ trait QueriesPlaceholderElements
 
     /**
      * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
-     * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
+     * elements that were set by [[\CraftCms\Cms\Element\Elements::setPlaceholderElement()]].
      */
     public function ignorePlaceholders(bool $value = true): static
     {
