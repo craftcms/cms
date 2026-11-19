@@ -90,16 +90,12 @@
 
   const customizeSourcesActive = ref(false);
 
-  const {currentUser, allowAdminChanges} = useCraftData();
+  const {currentUser} = useCraftData();
 
   // The sources are edited from the nav now rather than from a sidebar on the
-  // page, so the page lends the nav the gear that opens the editor. Only for
-  // admins, where admin changes are allowed — the server refuses anyone else.
-  if (
-    props.customizableSources &&
-    currentUser.value?.admin &&
-    allowAdminChanges.value
-  ) {
+  // page, so the page lends the nav the gear that opens the editor. Anyone
+  // can open it: they edit their own sources, and see the rest read-only.
+  if (props.customizableSources && currentUser.value) {
     useNavItemAction(() => props.route.url(), {
       label: t('Customize sources'),
       icon: 'gear',

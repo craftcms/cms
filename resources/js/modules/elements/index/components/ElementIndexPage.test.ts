@@ -492,14 +492,14 @@ it.each([
     {admin: true, allowAdminChanges: false},
   ],
 ])(
-  'offers it to nobody but admins who can make changes — not %s',
+  'offers it to %s too, who sees what they can’t change read-only',
   async (_, as) => {
     Object.assign(craft, as);
 
     try {
       await mountPage({customizableSources: true});
 
-      expect(useNavItemActions()('/admin/entries')).toEqual([]);
+      expect(useNavItemActions()('/admin/entries')[0]?.icon).toBe('gear');
     } finally {
       Object.assign(craft, {admin: true, allowAdminChanges: true});
     }

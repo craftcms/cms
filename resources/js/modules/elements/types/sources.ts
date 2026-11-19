@@ -22,6 +22,8 @@ interface SourceNative extends BaseSource {
 
 interface SourceCustom extends BaseSource {
   type: 'custom';
+  /** Kept to the user who made it, rather than shared through project config. */
+  personal?: boolean;
   tableAttributes?: Array<string>;
   condition?: {
     class: string;

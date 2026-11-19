@@ -65,6 +65,9 @@
       <span v-else class="cs-column__heading" aria-hidden="true">&nbsp;</span>
     </div>
 
+    <!-- Edge to edge beneath the heading, rather than inset with the content. -->
+    <slot name="banner" />
+
     <!-- Scrolls on its own, beneath the heading, so a long list doesn't carry
       the other columns with it. -->
     <div class="cs-column__body">

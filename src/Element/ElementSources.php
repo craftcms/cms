@@ -53,6 +53,9 @@ class ElementSources
 
     public const string TYPE_CUSTOM = 'custom';
 
+    /** The key of the heading the current user's own sources are listed under. */
+    public const string USER_SOURCES_HEADING_KEY = 'heading:user-sources';
+
     public const string CONTEXT_FIELD = 'field';
 
     public const string CONTEXT_INDEX = 'index';
@@ -199,6 +202,17 @@ class ElementSources
     }
 
     /**
+     * Drops the sources resolved for an element type, so the next read picks
+     * up changes made since.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function forgetSources(string $elementType): void
+    {
+        unset($this->sources[$elementType]);
+    }
+
+    /**
      * @param  class-string<ElementInterface>  $elementType
      * @return Collection<int,SourceConfig>
      */
@@ -249,7 +263,9 @@ class ElementSources
                         continue;
                     }
 
-                    $source = $elementType::modifyCustomSource($source);
+                    $source = $elementType::modifyCustomSource(
+                        isset($source['baseSource']) ? self::withBaseSource($source, $indexedNativeSources) : $source,
+                    );
                 }
 
                 if ($source['type'] === self::TYPE_HEADING) {
@@ -283,6 +299,10 @@ class ElementSources
             }
         } else {
             $sources = $nativeSources;
+        }
+
+        if (in_array($context, [self::CONTEXT_INDEX, self::CONTEXT_NAVIGATION], true)) {
+            $sources = $this->withPersonalSources($elementType, $sources);
         }
 
         // Normalize the site IDs
@@ -388,7 +408,7 @@ class ElementSources
             $sources = $source['nested'] ?? [];
         }
 
-        if (! str_starts_with($sourceKey, 'custom:')) {
+        if (! str_starts_with($sourceKey, 'custom:') && ! PersonalElementSources::isPersonalKey($sourceKey)) {
             $source = $elementType::findSource($sourceKey, $context);
 
             if ($source) {
@@ -500,6 +520,97 @@ class ElementSources
     }
 
     /**
+     * Adds the current user's own sources under the “User sources” heading, in
+     * the order they were made. The heading is a shared one, which admins can
+     * move and rename like any other; until they've saved it, it's added at
+     * the end of the page.
+     *
+     * A personal source only narrows the source it was saved from, so it never
+     * shows the user anything that source wouldn't. Without that source, it
+     * shows nothing.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  SourceConfig[]  $sources
+     * @return SourceConfig[]
+     */
+    private function withPersonalSources(string $elementType, array $sources): array
+    {
+        $user = currentUserElement();
+        $personal = $user ? app(PersonalElementSources::class)->all($user, $elementType) : [];
+
+        if ($personal === []) {
+            return $sources;
+        }
+
+        $heading = array_find_key($sources, fn (array $s) => ($s['key'] ?? null) === self::USER_SOURCES_HEADING_KEY);
+
+        if ($heading === null) {
+            $pages = collect($sources)->pluck('page')->filter(fn (mixed $page) => is_string($page))->unique();
+            $page = $pages->contains($personal[0]['page'] ?? null) ? $personal[0]['page'] : $pages->first();
+            $onPage = $page === null ? $sources : array_filter($sources, fn (array $s) => ($s['page'] ?? null) === $page);
+            $heading = array_key_last($onPage) === null ? count($sources) : array_key_last($onPage) + 1;
+
+            array_splice($sources, $heading, 0, [[
+                'type' => self::TYPE_HEADING,
+                'key' => self::USER_SOURCES_HEADING_KEY,
+                'heading' => t('User sources'),
+                ...($page !== null ? ['page' => $page] : []),
+            ]]);
+        }
+
+        // After whatever else an admin put under the heading, up to the next
+        // one or the end of its page.
+        $page = $sources[$heading]['page'] ?? null;
+        $end = $heading + 1;
+
+        while (
+            isset($sources[$end]) &&
+            $sources[$end]['type'] !== self::TYPE_HEADING &&
+            ($sources[$end]['page'] ?? null) === $page
+        ) {
+            $end++;
+        }
+
+        $natives = collect($sources)
+            ->where('type', self::TYPE_NATIVE)
+            ->reject(fn (array $source) => (bool) ($source['disabled'] ?? false))
+            ->keyBy('key')
+            ->all();
+
+        array_splice($sources, $end, 0, array_map(
+            fn (array $source) => $elementType::modifyCustomSource(self::withBaseSource([
+                ...$source,
+                'type' => self::TYPE_CUSTOM,
+                'personal' => true,
+                ...($page !== null ? ['page' => $page] : []),
+            ], $natives)),
+            $personal,
+        ));
+
+        return $sources;
+    }
+
+    /**
+     * A custom source narrowed to the built-in source it was made from: that
+     * source's criteria apply first, and its structure comes along. Without
+     * that source, as for a user who can't see it, it matches nothing.
+     *
+     * @param  SourceConfig  $source
+     * @param  array<string, SourceConfig>  $natives  Built-in sources, by key
+     * @return SourceConfig
+     */
+    private static function withBaseSource(array $source, array $natives): array
+    {
+        $base = $natives[$source['baseSource'] ?? ''] ?? null;
+
+        return [
+            ...Arr::only($base ?? [], ['structureId', 'structureEditable', 'data']),
+            ...$source,
+            'baseCriteria' => $base ? ($base['criteria'] ?? []) : ['id' => false],
+        ];
+    }
+
+    /**
      * Returns whether the given custom source should be available for the current user.
      */
     /** @param SourceConfig $source */
@@ -600,6 +711,8 @@ class ElementSources
 
         // config cleanup
         $sources = new Collection($sources)
+            // Kept in their owners' preferences, never in project config.
+            ->reject(fn (array $s) => ($s['personal'] ?? false) || PersonalElementSources::isPersonalKey((string) ($s['key'] ?? '')))
             ->map(fn (array $s) => array_filter([
                 'type' => $s['type'] ?? self::TYPE_NATIVE,
                 'key' => $s['key'] ?? null,
@@ -618,6 +731,7 @@ class ElementSources
                         'sites' => $s['sites'] ?? null,
                         'userGroups' => $s['userGroups'] ?? null,
                         'showBadgeCount' => isset($s['showBadgeCount']) ? filter_var($s['showBadgeCount'], FILTER_VALIDATE_BOOLEAN) : null,
+                        'baseSource' => $s['baseSource'] ?? null,
                     ],
                     self::TYPE_HEADING => [
                         'heading' => $s['heading'] ?? '',
@@ -651,15 +765,7 @@ class ElementSources
     public function updateSource(string $elementType, string $key, array $settings): void
     {
         $nativeSources = $this->nativeSources($elementType, self::CONTEXT_INDEX);
-        $configs = $this->sourceConfigs($elementType) ?: array_map(
-            fn (array $source) => array_filter([
-                'type' => $source['type'],
-                'key' => $source['key'] ?? null,
-                'heading' => $source['type'] === self::TYPE_HEADING ? ($source['heading'] ?? '') : null,
-                'page' => $source['page'] ?? null,
-            ], fn (mixed $value) => $value !== null),
-            $nativeSources,
-        );
+        $configs = $this->savedSourceConfigs($elementType);
 
         $index = array_find_key(
             $configs,
@@ -688,6 +794,45 @@ class ElementSources
         $configs[$index] = array_merge($configs[$index], $settings);
 
         $this->saveSources($elementType, $configs);
+    }
+
+    /**
+     * Adds a custom source to project config, after the last source on its
+     * page.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $source
+     */
+    public function addSource(string $elementType, array $source): void
+    {
+        $configs = $this->savedSourceConfigs($elementType);
+        $onPage = array_filter($configs, fn (array $config) => ($config['page'] ?? null) === ($source['page'] ?? null));
+        $after = $onPage === [] ? array_key_last($configs) : array_key_last($onPage);
+
+        array_splice($configs, $after === null ? 0 : $after + 1, 0, [$source]);
+
+        $this->saveSources($elementType, $configs);
+        $this->forgetSources($elementType);
+    }
+
+    /**
+     * The saved source configs, or the native sources as they'd be saved when
+     * there are none yet, so changing one source keeps the rest.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @return list<array<string, mixed>>
+     */
+    private function savedSourceConfigs(string $elementType): array
+    {
+        return array_values($this->sourceConfigs($elementType) ?: array_map(
+            fn (array $source) => array_filter([
+                'type' => $source['type'],
+                'key' => $source['key'] ?? null,
+                'heading' => $source['type'] === self::TYPE_HEADING ? ($source['heading'] ?? '') : null,
+                'page' => $source['page'] ?? null,
+            ], fn (mixed $value) => $value !== null),
+            $this->nativeSources($elementType, self::CONTEXT_INDEX),
+        ));
     }
 
     /**

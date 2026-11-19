@@ -19,7 +19,13 @@ export interface SourceRow {
   /** Shown under the label — a section's handle, say. */
   handle: string | null;
   page: string;
+  /** Kept to the current user, in their preferences rather than project config. */
+  personal?: boolean;
+  /** Shown to the current user without letting them change it. */
+  readOnly?: boolean;
   ui: UiPayload | null;
+  /** Settings a new source starts with, such as who sees it. */
+  seed?: UiPayload['values'];
   /** Sent with each rebuild of its settings, so they're built the same way. */
   params?: Record<string, unknown>;
   /** Settings are built on first select and kept, as the legacy modal did. */
@@ -33,6 +39,8 @@ export interface PageRow {
 
 export interface SourcesResponse {
   multiPage: boolean;
+  /** Whether the current user can change sources other than their own. */
+  canEditShared?: boolean;
   elementTypeName: string;
   pageSettings: Record<string, {icon?: string | null}>;
   sources: Array<{
@@ -42,6 +50,8 @@ export interface SourcesResponse {
     heading: string | null;
     handle?: string | null;
     page: string | null;
+    personal?: boolean;
+    readOnly?: boolean;
     ui: UiPayload | null;
   }>;
 }

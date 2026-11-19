@@ -35,6 +35,8 @@
     selected?: string | null;
     /** Rows this returns true for can't be selected. */
     disabled?: (item: T) => boolean;
+    /** Rows this returns true for stay where they are, with no handle. */
+    locked?: (item: T) => boolean;
     /** A row's action menu. Returning nothing renders no menu. */
     actions?: (item: T, index: number) => ActionItem[];
     /**
@@ -82,6 +84,7 @@
       type: props.itemType?.(item) ?? null,
       actions: props.actions?.(item, index) ?? [],
       moves: props.moves?.(item, index) ?? [],
+      locked: props.locked?.(item) ?? false,
     }))
   );
 
@@ -237,6 +240,7 @@
     >
       <span class="cs-item__control">
         <craft-reorder-button
+          v-if="!row.locked"
           class="cs-item__handle"
           :position="position(row.index)"
           :moves="row.moves"

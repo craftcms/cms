@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Navigation;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\ElementSourceUi;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Http\Controllers\Elements\Concerns\SavesSourceSettings;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -21,6 +22,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -29,6 +31,7 @@ use function CraftCms\Cms\t;
 readonly class ElementSourcesController
 {
     use RespondsWithFlash;
+    use SavesSourceSettings;
 
     public function show(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceUi $sourceUi): JsonResponse
     {
@@ -36,9 +39,13 @@ readonly class ElementSourcesController
         $elementType = $request->elementType();
         $multiPage = $elementType::multiPageSources();
         $sources = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
+        $canEditShared = self::canEditShared();
 
         return new JsonResponse([
             'multiPage' => $multiPage,
+            // Anyone can look; only those who may change project config can
+            // change anything but their own sources.
+            'canEditShared' => $canEditShared,
             'sources' => $sources
                 ->map(fn (array $source) => [
                     'key' => $source['key'] ?? null,
@@ -48,11 +55,20 @@ readonly class ElementSourcesController
                     // Shown under the label, as the legacy modal did.
                     'handle' => $source['data']['handle'] ?? null,
                     'page' => $multiPage ? ($source['page'] ?? $this->defaultPage($elementType)) : null,
+                    'personal' => (bool) ($source['personal'] ?? false),
+                    'readOnly' => self::isReadOnly($source, $canEditShared),
                     // ElementSources synthesizes a keyless blank heading as a
                     // separator. Nothing can address it by Control path and
                     // store() can't save it, so it gets no UI.
                     'ui' => ($source['key'] ?? '') !== ''
-                        ? $sourceUi->payload($elementType, $source)
+                        // One kept to yourself can hold rules project config can't.
+                        ? $sourceUi->payload(
+                            $elementType,
+                            $source,
+                            withUserGroups: $canEditShared,
+                            forProjectConfig: ! ($source['personal'] ?? false),
+                            readOnly: self::isReadOnly($source, $canEditShared),
+                        )
                         : null,
                 ])
                 ->values()
@@ -86,17 +102,24 @@ readonly class ElementSourcesController
             'forProjectConfig' => ['nullable', 'boolean'],
             'part' => ['nullable', Rule::in(['filters', 'view'])],
             'edited' => ['nullable', 'array'],
-            'edited.*' => [Rule::in(['filters', 'sort', 'columns', 'viewMode'])],
+            'edited.*' => [Rule::in(['filters', 'sort', 'columns', 'viewMode', 'thumbSize'])],
         ]);
-        $withUserGroups = $data['withUserGroups'] ?? true;
+        $canEditShared = self::canEditShared();
+        $settings = $data['settings'] ?? [];
+
+        // Anyone else can only keep a source to themselves.
+        if (! $canEditShared) {
+            $settings['visibility'] = 'me';
+        }
+
+        $withUserGroups = $canEditShared && ($data['withUserGroups'] ?? true);
         // A source kept to yourself never goes into project config.
         $forProjectConfig = ($data['forProjectConfig'] ?? true)
-            && ($data['settings']['visibility'] ?? null) !== 'me';
+            && ($settings['visibility'] ?? null) !== 'me';
 
         $source = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true)
             ->firstWhere('key', $data['sourceKey']);
 
-        $settings = $data['settings'] ?? [];
         $dropped = [];
 
         // A new source can start from an index's filters, which may hold rules
@@ -117,6 +140,7 @@ readonly class ElementSourcesController
             part: $data['part'] ?? null,
             edited: $data['edited'] ?? [],
             droppedRules: $dropped,
+            readOnly: $source !== null && ! $canEditShared && ! ($source['personal'] ?? false),
         );
 
         $scope = $data['scope'] ?? [];
@@ -130,6 +154,23 @@ readonly class ElementSourcesController
             'droppedRules' => $dropped,
             'userGroupOptions' => $withUserGroups ? null : $sourceUi->userGroupOptions(),
         ]);
+    }
+
+    /**
+     * Whether a source can only be looked at: any but the user's own, for
+     * anyone who can't change shared sources.
+     *
+     * @param  array<string, mixed>  $source
+     */
+    private static function isReadOnly(array $source, bool $canEditShared): bool
+    {
+        return ! $canEditShared && ! ($source['personal'] ?? false);
+    }
+
+    /** Whether the current user may change sources in project config. */
+    private static function canEditShared(): bool
+    {
+        return (bool) currentUser()?->isAdmin() && Cms::config()->allowAdminChanges;
     }
 
     /**
@@ -178,6 +219,7 @@ readonly class ElementSourcesController
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $key) {
+
             $type = match (true) {
                 str_starts_with((string) $key, 'custom:') => ElementSources::TYPE_CUSTOM,
                 str_starts_with((string) $key, 'heading:') => ElementSources::TYPE_HEADING,
@@ -228,6 +270,11 @@ readonly class ElementSourcesController
                         'label' => $postedSettings['label'],
                         'condition' => Conditions::createCondition($postedSettings['condition'])->getConfig(),
                     ];
+
+                    // Not something the settings edit, so it stays as it was.
+                    if (isset($oldSourceConfigs[$key]['baseSource'])) {
+                        $sourceConfig['baseSource'] = $oldSourceConfigs[$key]['baseSource'];
+                    }
 
                     if (isset($postedSettings['sites']) && ! self::isAllScope($postedSettings['sites'])) {
                         $sourceConfig['sites'] = $this->sourceScope($postedSettings['sites']);
@@ -310,41 +357,17 @@ readonly class ElementSourcesController
         $elementType = $request->elementType();
         $request->validate([
             'source' => ['required', 'string'],
-            'defaultSort' => ['nullable', 'array'],
-            'defaultViewMode' => ['nullable', 'string'],
-            'tableAttributes' => ['nullable', 'array'],
-            'defaultThumbSizes' => ['nullable', 'array:'.implode(',', array_keys(ChipThumbSize::INDEX_VIEW_SIZES))],
-            ...collect(ChipThumbSize::INDEX_VIEW_SIZES)->mapWithKeys(fn (array $sizes, string $view) => [
-                "defaultThumbSizes.$view" => ['nullable', Rule::in($sizes)],
-            ])->all(),
-            'condition' => ['nullable', 'array'],
+            ...$this->sourceSettingRules(),
         ]);
 
         $key = $request->string('source')->value();
         $source = $elementSources->findSource($elementType, $key);
 
-        if ($source === null || isset($source['keyPath'])) {
+        if ($source === null || isset($source['keyPath']) || ($source['personal'] ?? false)) {
             abort(404, t('That source can’t be saved.'));
         }
 
-        $settings = [];
-
-        if ($request->filled('defaultSort')) {
-            $settings['defaultSort'] = $this->defaultSort($request->input('defaultSort'));
-        }
-
-        if ($request->filled('defaultViewMode')) {
-            $settings['defaultViewMode'] = $request->string('defaultViewMode')->value();
-        }
-
-        if ($request->has('tableAttributes')) {
-            $settings['tableAttributes'] = $this->tableAttributeKeys($request->array('tableAttributes'));
-        }
-
-        // Only the views posted change; the source keeps its size for the other.
-        if ($thumbSizes = array_filter($request->array('defaultThumbSizes'))) {
-            $settings['defaultThumbSizes'] = [...($source['defaultThumbSizes'] ?? []), ...$thumbSizes];
-        }
+        $settings = $this->postedViewSettings($request, $source);
 
         // A custom source's filters are its whole condition, as the index showed it.
         $condition = $request->array('condition');
@@ -366,10 +389,7 @@ readonly class ElementSourcesController
                 ]);
             }
 
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Conditions::createCondition($storable);
-            $sourceCondition->forQuery = false;
-            $settings['condition'] = $sourceCondition->getConfig();
+            $settings['condition'] = $this->sourceCondition($storable);
         }
 
         $elementSources->updateSource($elementType, $key, $settings);
@@ -378,22 +398,6 @@ readonly class ElementSourcesController
             t('Saved changes to “{source}”.', ['source' => $source['label'] ?? $key]),
             redirect: $navigation->sourceUrl($elementType, $key),
         );
-    }
-
-    /**
-     * Accepts the UI's `['attr' => …, 'dir' => …]` and the legacy
-     * `[attr, dir]` list alike.
-     */
-    private function defaultSort(mixed $defaultSort): mixed
-    {
-        if (is_array($defaultSort) && (isset($defaultSort['attr']) || isset($defaultSort['dir']))) {
-            return array_values(array_filter(
-                [$defaultSort['attr'] ?? null, $defaultSort['dir'] ?? null],
-                fn (mixed $value) => $value !== null && $value !== '',
-            ));
-        }
-
-        return $defaultSort;
     }
 
     /**
@@ -424,20 +428,5 @@ readonly class ElementSourcesController
         }
 
         return array_values($scope);
-    }
-
-    /**
-     * @param  array<array-key, mixed>  $attributes
-     * @return list<mixed>|string
-     */
-    private function tableAttributeKeys(array $attributes): array|string
-    {
-        $attributes = collect($attributes)
-            ->map(fn (mixed $attribute) => data_get($attribute, 'value', $attribute))
-            ->filter()
-            ->values()
-            ->all();
-
-        return $attributes ?: '-';
     }
 }

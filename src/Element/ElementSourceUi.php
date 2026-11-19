@@ -68,8 +68,9 @@ readonly class ElementSourceUi
      * @param  list<'filters'|'sort'|'columns'|'viewMode'>  $edited  parts that differ from the source
      *                                                               they were taken from, marked as edited
      * @param  list<string>  $droppedRules  labels of filters left out because project config can't hold them
+     * @param  bool  $readOnly  shows the settings without letting them be changed
      */
-    public function payload(string $elementType, array $source, array $values = [], bool $isNew = false, bool $withUserGroups = true, bool $withLabel = true, bool $forProjectConfig = true, ?string $part = null, array $edited = [], array $droppedRules = []): UiPayload
+    public function payload(string $elementType, array $source, array $values = [], bool $isNew = false, bool $withUserGroups = true, bool $withLabel = true, bool $forProjectConfig = true, ?string $part = null, array $edited = [], array $droppedRules = [], bool $readOnly = false): UiPayload
     {
         if (! isset($source['key']) || $source['key'] === '') {
             throw new InvalidArgumentException('Element source UIs require a source key.');
@@ -93,7 +94,8 @@ readonly class ElementSourceUi
             new UiContext(
                 namespace: ['sources', $key],
                 values: ['sources' => [$key => $values]],
-                refreshable: true,
+                mode: $readOnly ? ControlMode::ReadOnly : ControlMode::Editable,
+                refreshable: ! $readOnly,
             ),
         );
     }
@@ -306,9 +308,9 @@ readonly class ElementSourceUi
 
         return [
             $withLabel ? Field::make(t('Label'), Text::make('label')) : null,
-            // Only a new source can be kept to yourself, which lets its filters
-            // hold rules project config can't.
-            $isNew && $withUserGroups
+            // Kept to yourself, a source's filters can hold rules project
+            // config can't, so they follow who it's visible to.
+            ($isNew || ($source['personal'] ?? false)) && $withUserGroups
                 ? Group::make('source-filters', [$filters])->dependsOn('visibility')
                 : $filters,
             ...$view,
@@ -316,24 +318,24 @@ readonly class ElementSourceUi
                 ? Field::make(t('Sites'), Choice::make('sites')->options($siteOptions)->allOption())
                     ->instructions(t('Choose which sites this source should be visible for.'))
                 : null,
-            ...($withUserGroups ? $this->visibilityNodes($values, $groupOptions, $isNew) : []),
+            ...($withUserGroups ? $this->visibilityNodes($values, $groupOptions, $isNew || ($source['personal'] ?? false)) : []),
             $this->badgeCountField($elementType, $source),
         ];
     }
 
     /**
      * Who sees the source, with the user groups to pick from only when it's
-     * for specific ones. Only a new source can be kept to yourself; one
-     * already in project config stays there.
+     * for specific ones. Only a new source, or one already kept to yourself,
+     * can be kept to yourself; one in project config stays there.
      *
      * @param  array<string, mixed>  $values
      * @param  list<array{label: string, value: string}>  $groupOptions
      * @return list<Node>
      */
-    private function visibilityNodes(array $values, array $groupOptions, bool $isNew): array
+    private function visibilityNodes(array $values, array $groupOptions, bool $canBePersonal): array
     {
         $options = [
-            ...($isNew ? [['label' => t('Only me'), 'value' => 'me', 'description' => t('Listed with your own views in the navigation.')]] : []),
+            ...($canBePersonal ? [['label' => t('Only me'), 'value' => 'me', 'description' => t('Listed with your own views in the navigation.')]] : []),
             ['label' => t('Everyone'), 'value' => 'everyone', 'description' => t('Saved to project config, like any custom source.')],
         ];
 
@@ -635,7 +637,11 @@ readonly class ElementSourceUi
             'condition' => $source['condition'] ?? $elementType::createCondition()->getConfig(),
             'sites' => $this->seedScope($source, 'sites'),
             'userGroups' => $this->seedScope($source, 'userGroups'),
-            'visibility' => isset($source['userGroups']) ? 'groups' : 'everyone',
+            'visibility' => match (true) {
+                (bool) ($source['personal'] ?? false) => 'me',
+                isset($source['userGroups']) => 'groups',
+                default => 'everyone',
+            },
         ] + $shared;
     }
 

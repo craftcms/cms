@@ -183,6 +183,9 @@ class ElementIndexes
         };
 
         if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+            // What a personal source narrows, which its filters never widen.
+            $applyCriteria($source['baseCriteria'] ?? []);
+
             if (! $condition || ! $conditionReplacesSource) {
                 /** @var ElementConditionInterface $sourceCondition */
                 $sourceCondition = Conditions::createCondition($source['condition']);

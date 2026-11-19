@@ -56,6 +56,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PasteableElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
+use CraftCms\Cms\Http\Controllers\Elements\PersonalElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\SaveElementController;
 use CraftCms\Cms\Http\Controllers\Elements\SearchController as ElementSearchController;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
@@ -320,12 +321,17 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('element-search/search', ElementSearchController::class);
         Route::post('element-selector-modals/body', ElementSelectorModalController::class);
         Route::post('element-selects/pasteable', PasteableElementsController::class);
+        // Anyone can view the sources, and edit their own; the rest is admins'.
+        Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
+        Route::post('element-index-settings/source-settings-ui', [ElementSourcesController::class, 'ui']);
         Route::middleware([RequireAdminChanges::class])->group(function () {
-            Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
             Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);
-            Route::post('element-index-settings/source-settings-ui', [ElementSourcesController::class, 'ui']);
             Route::post('element-index-settings/save-source', [ElementSourcesController::class, 'update']);
+            Route::post('element-index-settings/share-personal-source', [PersonalElementSourcesController::class, 'share']);
         });
+        Route::post('element-index-settings/create-personal-source', [PersonalElementSourcesController::class, 'store']);
+        Route::post('element-index-settings/save-personal-source', [PersonalElementSourcesController::class, 'update']);
+        Route::post('element-index-settings/delete-personal-source', [PersonalElementSourcesController::class, 'destroy']);
 
         // Entries
         Route::post('entries/create', CreateEntryController::class);

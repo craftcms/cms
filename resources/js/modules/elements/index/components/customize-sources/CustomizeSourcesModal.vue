@@ -11,9 +11,13 @@
   import {computed, nextTick, ref, shallowRef, watch} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
+  import PersonalElementSourcesController from '@actions/Elements/PersonalElementSourcesController';
+  import type {SourcesLanding} from '@/modules/elements/index/composables/useCustomizeSources';
   import {fetchSourceUi} from './fetchSourceUi';
   import SourceSettings from './SourceSettings.vue';
   import ModalForm from '@/common/components/ModalForm.vue';
+  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
+  import useCraftData from '@/common/composables/useCraftData';
   import type {UiChange, UiPayload} from '@/modules/ui/types';
   import {valueAt} from '@/modules/ui/runtime';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
@@ -37,7 +41,7 @@
     type SourcesResponse,
     type SourceType,
   } from './types';
-  import {showError, showNotice} from '@/modules/messages/messages';
+  import {showError} from '@/modules/messages/messages';
 
   const props = defineProps<{
     isActive: boolean;
@@ -50,7 +54,12 @@
      * Starts with a new custom source taken from these settings, selected,
      * with the parts in `edited` marked as changed from the index's source.
      */
-    newSource?: {settings: Record<string, unknown>; edited?: string[]} | null;
+    newSource?: {
+      settings: Record<string, unknown>;
+      edited?: string[];
+      /** The source it was saved from, which one kept to yourself narrows. */
+      from?: string | null;
+    } | null;
   }>();
 
   const emit = defineEmits<{
@@ -144,6 +153,13 @@
     {immediate: true}
   );
 
+  /** The sources kept to yourself as they loaded, so removing one deletes it. */
+  /** Whether the current user can change sources other than their own. */
+  const canEditShared = ref(true);
+  const {currentUser} = useCraftData();
+  let loadedPersonalKeys = new Set<string>();
+  let loadedPersonalPages = new Map<string, string>();
+
   async function load(): Promise<void> {
     loading.value = true;
     loaded.value = false;
@@ -161,6 +177,7 @@
       );
 
       multiPage.value = data.multiPage;
+      canEditShared.value = data.canEditShared ?? true;
       sources.value = data.sources.map((source) => ({
         // Headings saved before 5.8 have no key, and neither does the blank one
         // ElementSources adds to separate newly added sources from the rest.
@@ -174,9 +191,20 @@
           (source.type === 'heading' ? source.heading : source.label) ?? '',
         handle: source.handle ?? null,
         page: source.page ?? '',
+        personal: source.personal ?? false,
+        readOnly: source.readOnly ?? false,
         ui: source.ui,
         mounted: false,
       }));
+      loadedPersonalPages = new Map(
+        data.sources
+          .filter(
+            (source) =>
+              source.personal && source.type === 'custom' && source.key
+          )
+          .map((source) => [source.key as string, source.page ?? ''])
+      );
+      loadedPersonalKeys = new Set(loadedPersonalPages.keys());
       resetPages(data);
       selectedPage.value = initialPage();
       loaded.value = true;
@@ -231,7 +259,12 @@
 
       let ui: UiPayload;
       try {
-        ui = await fetchSourceUi(props.elementType, source.key, source.type);
+        ui = await fetchSourceUi(
+          props.elementType,
+          source.key,
+          source.type,
+          source.seed
+        );
       } catch (error: any) {
         failedUiKey.value = source.key;
         showError(error?.response?.data?.message);
@@ -279,16 +312,19 @@
     }
   }
 
-  async function add(type: 'heading' | 'custom'): Promise<void> {
-    const key = `${type}:${uuid()}`;
+  /** Adds a heading, or a custom source — kept to you, for `user`. */
+  async function add(type: 'heading' | 'custom' | 'user'): Promise<void> {
+    const rowType: SourceType = type === 'user' ? 'custom' : type;
+    const key = `${rowType}:${uuid()}`;
 
     // Listed straight away, with its settings loading in beside it.
     sources.value.push({
       key,
-      type: type as SourceType,
+      type: rowType,
       label: '',
       handle: null,
       page: selectedPage.value ?? '',
+      ...(type === 'user' ? {seed: {visibility: 'me'}} : {}),
       ui: null,
       mounted: false,
     });
@@ -470,15 +506,32 @@
     // Enter submits even while Save is disabled.
     if (saving.value || !loaded.value) return;
 
-    // Sources kept to yourself aren't project config, so store() never
-    // sees them.
-    const isPersonal = (source: SourceRow) =>
-      source.type === 'custom' && settingsFor(source).visibility === 'me';
+    // Sources kept to yourself live in your preferences, so store() never
+    // sees them: they're created, saved, shared or deleted one by one.
+    const wasPersonal = (source: SourceRow) => Boolean(source.personal);
+    // Anyone who can't change shared sources can only keep one to themselves;
+    // the shared ones they see are read-only.
+    const keptPersonal = (source: SourceRow) =>
+      source.type === 'custom' &&
+      !source.readOnly &&
+      (!canEditShared.value || settingsFor(source).visibility === 'me');
+    // One untouched since it loaded has nothing to save.
+    const touched = (source: SourceRow) =>
+      !source.personal ||
+      source.mounted ||
+      loadedPersonalPages.get(source.key ?? '') !== source.page;
     const personal = sources.value.filter(
-      (source) => source.key && isPersonal(source)
+      (source) =>
+        source.key &&
+        source.type === 'custom' &&
+        (wasPersonal(source) || keptPersonal(source)) &&
+        touched(source)
     );
     const saveable = sources.value.filter(
-      (source) => source.key && !isPersonal(source)
+      (source) => source.key && !wasPersonal(source) && !keptPersonal(source)
+    );
+    const removed = [...loadedPersonalKeys].filter(
+      (key) => !sources.value.some((source) => source.key === key)
     );
 
     saving.value = true;
@@ -490,45 +543,60 @@
       : landingKey;
 
     try {
-      const {data} = await actionClient.post<{redirect?: string}>(
-        ElementSourcesController.store().url,
-        {
-          elementType: props.elementType,
-          landingSource: landing,
-          sourceOrder: saveable.map((source) => source.key),
-          sources: Object.fromEntries(
-            saveable.map((source) => [source.key, settingsFor(source)])
-          ),
-          ...(multiPage.value
-            ? {
-                sourcePages: Object.fromEntries(
-                  saveable.map((source) => [source.key, source.page])
-                ),
-                // Key order is page order — store() looks each page up by its
-                // index in this object.
-                pageSettings: Object.fromEntries(
-                  pages.value.map((page) => [
-                    page.name,
-                    {icon: page.icon ?? ''},
-                  ])
-                ),
-              }
-            : {}),
-        }
-      );
+      // Only someone who can change shared sources has any to save.
+      const {data} = !canEditShared.value
+        ? {data: {} as {redirect?: string}}
+        : await actionClient.post<{redirect?: string}>(
+            ElementSourcesController.store().url,
+            {
+              elementType: props.elementType,
+              landingSource: landing,
+              sourceOrder: saveable.map((source) => source.key),
+              sources: Object.fromEntries(
+                saveable.map((source) => [source.key, settingsFor(source)])
+              ),
+              ...(multiPage.value
+                ? {
+                    sourcePages: Object.fromEntries(
+                      saveable.map((source) => [source.key, source.page])
+                    ),
+                    // Key order is page order — store() looks each page up by its
+                    // index in this object.
+                    pageSettings: Object.fromEntries(
+                      pages.value.map((page) => [
+                        page.name,
+                        {icon: page.icon ?? ''},
+                      ])
+                    ),
+                  }
+                : {}),
+            }
+          );
 
-      // Personal sources aren't built yet.
+      let personalLanding: SourcesLanding | null = null;
+
       for (const source of personal) {
-        showNotice(
-          t('Prototype: would save “{name}” to your own views.', {
-            name: source.label,
-          })
+        const landed = await savePersonal(source, keptPersonal(source));
+
+        if (source.key === landingKey) personalLanding = landed;
+      }
+
+      for (const key of removed) {
+        await actionClient.post(
+          PersonalElementSourcesController.destroy().url,
+          {
+            elementType: props.elementType,
+            source: key,
+          }
         );
       }
 
       // The index's sources, columns and view modes all come from what just
       // changed, so the index starts over from the server.
-      emit('saved', {sourceKey: landing, url: data.redirect ?? null});
+      emit(
+        'saved',
+        personalLanding ?? {sourceKey: landing, url: data.redirect ?? null}
+      );
     } catch (error: any) {
       const responseErrors = error?.response?.data?.errors;
 
@@ -540,6 +608,62 @@
 
       saving.value = false;
     }
+  }
+
+  /**
+   * Saves a source kept to yourself: a new one is created, and one that's no
+   * longer kept to yourself is shared once its settings are saved.
+   */
+  async function savePersonal(
+    source: SourceRow,
+    kept: boolean
+  ): Promise<SourcesLanding> {
+    const {
+      visibility,
+      userGroups,
+      sites: _sites,
+      showBadgeCount: _showBadgeCount,
+      ...settings
+    } = settingsFor(source);
+    const common = {
+      elementType: props.elementType,
+      ...settings,
+      ...(multiPage.value ? {page: source.page} : {}),
+    };
+
+    if (!source.personal) {
+      const {data} = await actionClient.post<{
+        sourceKey: string;
+        redirect?: string;
+      }>(PersonalElementSourcesController.store().url, {
+        ...common,
+        source: props.newSource?.from ?? props.sourceKey,
+      });
+
+      return {sourceKey: data.sourceKey, url: data.redirect ?? null};
+    }
+
+    const {data} = await actionClient.post<{redirect?: string}>(
+      PersonalElementSourcesController.update().url,
+      {...common, source: source.key}
+    );
+
+    if (kept) {
+      return {sourceKey: source.key, url: data.redirect ?? null};
+    }
+
+    const {data: shared} = await actionClient.post<{
+      sourceKey: string;
+      redirect?: string;
+    }>(PersonalElementSourcesController.share().url, {
+      elementType: props.elementType,
+      source: source.key,
+      ...(visibility === 'groups' && Array.isArray(userGroups)
+        ? {userGroups}
+        : {}),
+    });
+
+    return {sourceKey: shared.sourceKey, url: shared.redirect ?? null};
   }
 
   /** Whether a source will be listed on the index once saved. */
@@ -648,7 +772,8 @@
             :label="(page) => page.name"
             :icon="(page) => page.icon"
             :selected="selectedPage"
-            :actions="pageActions"
+            :actions="(page) => (canEditShared ? pageActions(page) : [])"
+            :locked="() => !canEditShared"
             accepts="source"
             :can-drop-into="(page) => page.name !== selectedPage"
             @select="openPage"
@@ -656,7 +781,7 @@
             @drop-into="(page, key) => moveToPage(key, page)"
           />
 
-          <template #footer>
+          <template v-if="canEditShared" #footer>
             <craft-button
               type="button"
               icon="plus"
@@ -690,8 +815,11 @@
             :item-type="(source) => source.type"
             :selected="selectedKey"
             :disabled="(source) => !source.key"
-            :actions="sourceActions"
-            :moves="sourceMoves"
+            :locked="(source) => Boolean(source.readOnly)"
+            :actions="
+              (source) => (source.readOnly ? [] : sourceActions(source))
+            "
+            :moves="(source) => (source.readOnly ? [] : sourceMoves(source))"
             :span="sourceSpan"
             drag-type="source"
             @select="openSource"
@@ -703,8 +831,16 @@
             <ActionMenu
               :label="t('Source actions')"
               :actions="[
-                {label: t('New heading'), onClick: () => add('heading')},
-                {label: t('New custom source'), onClick: () => add('custom')},
+                ...(canEditShared
+                  ? [
+                      {label: t('New heading'), onClick: () => add('heading')},
+                      {
+                        label: t('New custom source'),
+                        onClick: () => add('custom'),
+                      },
+                    ]
+                  : []),
+                {label: t('New user source'), onClick: () => add('user')},
               ]"
             >
               <template #invoker>
@@ -728,6 +864,18 @@
           :back="t('Back to sources')"
           @back="showScreen('sources')"
         >
+          <template #banner>
+            <CalloutReadOnly
+              v-if="selected?.mounted && selected.readOnly"
+              class="source-read-only"
+            >
+              <!-- An admin is only kept out by the environment, which the
+                banner says by default. -->
+              <template v-if="!currentUser?.admin">{{
+                t('Only admins can change this source.')
+              }}</template>
+            </CalloutReadOnly>
+          </template>
           <div ref="settingsPane">
             <template v-for="source in sources" :key="source.key">
               <craft-field-group
@@ -762,3 +910,11 @@
     />
   </ModalForm>
 </template>
+
+<style scoped lang="scss">
+  // The column's header already draws the line above it.
+  .source-read-only {
+    display: block;
+    border: 0;
+  }
+</style>

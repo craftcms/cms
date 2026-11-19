@@ -43,6 +43,8 @@
   import type {ActionItems} from '@/common/types';
   import {showError} from '@/modules/messages/messages';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
+  import PersonalElementSourcesController from '@actions/Elements/PersonalElementSourcesController';
+  import SourceNameModal from './SourceNameModal.vue';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {
@@ -361,6 +363,16 @@
     viewChanges.value.map((change) => change.kind as ViewSettingKind)
   );
   const isCustomSource = computed(() => elementIndex.source?.type === 'custom');
+  const isPersonalSource = computed(
+    () =>
+      elementIndex.source?.type === 'custom' &&
+      Boolean(elementIndex.source.personal)
+  );
+  /** Anyone can save a view of their own; only admins can change shared ones. */
+  const canSaveViews = computed(() => Boolean(page.props?.craft?.currentUser));
+  const canUpdateSource = computed(
+    () => isPersonalSource.value || canEditSources.value
+  );
   /**
    * The changes Save stores on the source. Filters only fit in a custom
    * source's condition; search and status always stay the index's own.
@@ -408,6 +420,28 @@
   const savingSource = shallowRef(false);
   const thumbView = computed(() => viewFor(mode.value));
 
+  /** The view's settings of `kinds`, as a source stores them. */
+  function viewSettings(kinds: string[]): Record<string, unknown> {
+    return {
+      ...(kinds.includes('rule') ? {condition: conditions.value} : {}),
+      ...(kinds.includes('sort')
+        ? {defaultSort: {attr: sortField.value, dir: sortDirection.value}}
+        : {}),
+      ...(kinds.includes('viewMode') ? {defaultViewMode: mode.value} : {}),
+      ...(kinds.includes('columns')
+        ? {tableAttributes: [...tableColumns.value]}
+        : {}),
+      // Just the size of the view on screen, the one that changed.
+      ...(kinds.includes('thumbSize') && thumbView.value
+        ? {
+            defaultThumbSizes: {
+              [thumbView.value]: thumbSizes.value[thumbView.value],
+            },
+          }
+        : {}),
+    };
+  }
+
   async function saveToSource(): Promise<void> {
     const key = elementIndex.source?.key;
     if (!key || savingSource.value || updateBlockedReason.value) return;
@@ -417,26 +451,13 @@
 
     try {
       const {data} = await actionClient.post<{redirect?: string}>(
-        ElementSourcesController.update().url,
+        isPersonalSource.value
+          ? PersonalElementSourcesController.update().url
+          : ElementSourcesController.update().url,
         {
           elementType: filterContext.value?.elementType,
           source: key,
-          ...(kinds.includes('rule') ? {condition: conditions.value} : {}),
-          ...(kinds.includes('sort')
-            ? {defaultSort: {attr: sortField.value, dir: sortDirection.value}}
-            : {}),
-          ...(kinds.includes('viewMode') ? {defaultViewMode: mode.value} : {}),
-          ...(kinds.includes('columns')
-            ? {tableAttributes: [...tableColumns.value]}
-            : {}),
-          // Just the size of the view on screen, the one that changed.
-          ...(kinds.includes('thumbSize') && thumbView.value
-            ? {
-                defaultThumbSizes: {
-                  [thumbView.value]: thumbSizes.value[thumbView.value],
-                },
-              }
-            : {}),
+          ...viewSettings(kinds),
         }
       );
 
@@ -446,6 +467,54 @@
       showError(error?.response?.data?.message);
     } finally {
       savingSource.value = false;
+    }
+  }
+
+  const naming = shallowRef(false);
+  const namingError = shallowRef<string | null>(null);
+
+  /** Saves the view as a new source of the user's own, and goes to it. */
+  async function saveAsPersonal(label: string): Promise<void> {
+    if (savingSource.value) return;
+    savingSource.value = true;
+    namingError.value = null;
+
+    try {
+      const {data} = await actionClient.post<{
+        redirect?: string;
+        sourceKey: string;
+      }>(PersonalElementSourcesController.store().url, {
+        elementType: filterContext.value?.elementType,
+        source: elementIndex.source?.key,
+        label,
+        ...viewSettings(['rule', 'sort', 'viewMode', 'columns']),
+        defaultThumbSizes: {...thumbSizes.value},
+      });
+
+      naming.value = false;
+      // They live on in the new source, not as changes to this one.
+      forgetSaved(['rule', 'sort', 'viewMode', 'columns', 'thumbSize']);
+      emit('sources-saved', {
+        sourceKey: data.sourceKey,
+        url: data.redirect ?? null,
+      });
+    } catch (error: any) {
+      namingError.value =
+        error?.response?.data?.errors?.label?.[0] ??
+        error?.response?.data?.message ??
+        null;
+    } finally {
+      savingSource.value = false;
+    }
+  }
+
+  /** Saving as new names a source of your own, or, for admins, adds one to the sources editor. */
+  function saveNew(): void {
+    if (canEditSources.value) {
+      savingNew.value = true;
+    } else {
+      namingError.value = null;
+      naming.value = true;
     }
   }
 
@@ -670,9 +739,22 @@
         :is-active="savingNew"
         :element-type="filterContext?.elementType ?? ''"
         :page="elementIndex.page"
-        :new-source="{settings: newSourceSettings, edited: editedParts}"
+        :new-source="{
+          settings: newSourceSettings,
+          edited: editedParts,
+          from: elementIndex.source?.key,
+        }"
         @close="savingNew = false"
         @saved="emit('sources-saved', $event)"
+      />
+      <SourceNameModal
+        v-if="offersSaveView && canSaveViews"
+        :is-active="naming"
+        :title="t('Save as new view')"
+        :loading="savingSource"
+        :error="namingError"
+        @close="naming = false"
+        @save="saveAsPersonal"
       />
       <ElementIndexFilterBar
         v-if="offersSaveView && !isInlineEditing"
@@ -681,14 +763,14 @@
         :disabled="processing || savingSource"
         :edited="changes.length > 0"
         :condition-edited="conditionEdited"
-        :can-save="canEditSources"
-        :updatable-source="canEditSources ? elementIndex.source?.label : null"
+        :can-save="canSaveViews"
+        :updatable-source="canUpdateSource ? elementIndex.source?.label : null"
         :update-blocked-reason="updateBlockedReason"
         @update-condition="conditions = $event"
         @reset="resetAll"
         @update="saveToSource"
         @reset-view="resetView()"
-        @save-new="savingNew = true"
+        @save-new="saveNew"
         :view-changes="viewChanges"
         :sort-direction="sortDirection"
       >
