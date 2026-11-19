@@ -3592,17 +3592,12 @@ class Elements extends Component
                 $combinedLimit = count($maps) > 1 && (int)($planCriteria['limit'] ?? 0) > 0 ? (int)$planCriteria['limit'] : null;
                 $combinedReverse = count($maps) > 1 && !empty($planCriteria['inReverse']);
 
-                // Put each source's combined elements back in the order they were mapped in, unless a map that covers
-                // the source wants a custom order or reverses its own elements
-                $skipMappingOrder = [];
-
                 foreach ($maps as $map) {
                     $targetElementIdsBySourceIds = null;
                     $query = null;
                     $offset = 0;
                     $limit = null;
                     $inReverse = false;
-                    $mapSkipsMappingOrder = false;
 
                     if (!empty($map['map'])) {
                         // Loop through the map to find:
@@ -3661,8 +3656,6 @@ class Elements extends Component
                             $limit = $otherCriteria['limit'] ?? null;
                             $inReverse = !empty($otherCriteria['inReverse']);
                         }
-
-                        $mapSkipsMappingOrder = $inReverse || !empty($criteria['orderBy']) || !empty($criteria['order']);
 
                         Craft::configure($query, $criteria);
 
@@ -3731,10 +3724,6 @@ class Elements extends Component
                         $positionsForSource = [];
 
                         if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                            if ($mapSkipsMappingOrder) {
-                                $skipMappingOrder[$i] = true;
-                            }
-
                             // Does the path mapping want a custom order?
                             if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
                                 // Assign the elements in the order they were returned from the query
@@ -3798,6 +3787,9 @@ class Elements extends Component
                             }
 
                             $loadedElements[$i] = [...$loadedElements[$i] ?? [], ...$targetElementsForSource];
+                            // Fill the map's own mapping positions in the order the map produced its elements,
+                            // so its own reversal or custom order is kept when the maps get interleaved below
+                            sort($positionsForSource);
                             $loadedPositions[$i] = [...$loadedPositions[$i] ?? [], ...$positionsForSource];
                         }
                     }
@@ -3831,11 +3823,10 @@ class Elements extends Component
                 // Tell the source elements about their eager-loaded elements
                 foreach ($filteredElements as $i => $sourceElement) {
                     if (isset($loadedElements[$i]) && count($maps) > 1) {
-                        if (!isset($skipMappingOrder[$i])) {
-                            asort($loadedPositions[$i]);
-                            $combinedElements = $loadedElements[$i];
-                            $loadedElements[$i] = array_map(fn(int $key) => $combinedElements[$key], array_keys($loadedPositions[$i]));
-                        }
+                        // Put the combined elements back in the order they were mapped in
+                        asort($loadedPositions[$i]);
+                        $combinedElements = $loadedElements[$i];
+                        $loadedElements[$i] = array_map(fn(int $key) => $combinedElements[$key], array_keys($loadedPositions[$i]));
                         if ($combinedReverse) {
                             $loadedElements[$i] = array_reverse($loadedElements[$i]);
                         }
