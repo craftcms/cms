@@ -512,6 +512,7 @@ export default css`
 
   :host([variant~='link']) {
     --_link-color: var(--c-text-link);
+    --_link-tint: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     font: inherit;
     min-width: auto;
     color: var(--_link-color);
@@ -527,10 +528,17 @@ export default css`
     }
   }
 
+  :host([variant~='link']:not([inherit])),
+  :host([variant~='link'][inherit]) {
+    --c-color-fill-loud: color-mix(in srgb, var(--_link-tint) 12%, transparent);
+    --c-color-on-loud: var(--_link-color);
+    --c-color-border-loud: transparent;
+  }
+
   @media (hover: hover) {
     :host([variant~='link']:not(:disabled):not(.loading):hover) {
       color: var(--_link-color);
-      background-color: color-mix(in srgb, currentColor 5%, transparent);
+      background-color: color-mix(in srgb, var(--_link-tint) 5%, transparent);
     }
   }
 
@@ -541,7 +549,7 @@ export default css`
     [variant~='link'][slot='invoker'][aria-expanded='true']:not(:disabled)
   ) {
     color: var(--_link-color);
-    background-color: color-mix(in srgb, currentColor 12%, transparent);
+    background-color: color-mix(in srgb, var(--_link-tint) 12%, transparent);
     box-shadow: none;
   }
 
