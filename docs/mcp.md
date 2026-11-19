@@ -55,6 +55,22 @@ return [
 
 Signing keys, token lifetimes, and client redirect restrictions are configured separately in [`config/oauth.php`](oauth.md#configuration).
 
+### HTTP basic auth
+
+Sites behind HTTP basic auth can't receive an access token, because the `Authorization` header holds the basic auth credentials. When a `craft\filters\BasicHttpAuthLogin` filter applies to the authenticated endpoint, Craft signs in the user whose username and password are in those credentials instead of checking for an access token. The filter only applies to site requests, so the authenticated endpoint must be a site route without the control panel trigger, such as `/mcp`, requested on a site's host rather than a separate `baseCpUrl` host. The filter can be attached to the whole site in `config/app.web.php`, or only to the MCP server in `config/mcp.php`:
+
+```php
+<?php
+
+return [
+    'filters' => [
+        craft\filters\BasicHttpAuthLogin::class,
+    ],
+];
+```
+
+Basic auth requests don't have OAuth scopes, so the user's Craft permissions alone determine what they can do. Clients send the credentials with each request, such as `claude mcp add --transport http --header "Authorization: Basic <base64 username:password>" craft https://example.com/mcp`. Requests without valid credentials receive a `401` response that asks for basic auth. When `requireUserAgentAndIpForSession` is enabled, as it is by default, requests also need a `User-Agent` header, or Craft won't sign the user in.
+
 ## Public content
 
 Under **Settings → MCP**, choose a public route, enable the server, and approve each tool, resource, resource template, or prompt to expose. A capability must be marked `PublicMcp` before it is eligible for approval.
