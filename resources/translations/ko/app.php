@@ -1988,6 +1988,7 @@ return [
     'Groups' => '그룹',
     'Guest Required' => '게스트 필수',
     'HTML Email Template' => 'HTML 이메일 템플릿',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'HTML 새니타이저',
     'Handle' => '핸들',
     'Has Descendants' => '하위 항목 있음',

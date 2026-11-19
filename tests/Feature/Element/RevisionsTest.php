@@ -14,6 +14,8 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Tests\TestClasses\Element\TestRevisionableElement;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 
@@ -119,4 +121,20 @@ it('saves revisions for any element type that has revisions', function () {
         ->and($revisions[0]->title)->toBe('Original title')
         ->and($revisions[0]->revisionNotes)->toStartWith('Revision from ')
         ->and($revisions[1]->title)->toBe('Updated title');
+});
+
+it('doesn’t delete a revision another request created with the same number', function () {
+    Entry::factory()->create();
+    $element = EntryElement::findOne();
+    $competitorId = null;
+
+    // Another request takes the same number after this one's lock expired
+    Event::listen(RevisionCreating::class, function () use ($element, &$competitorId) {
+        Event::forget(RevisionCreating::class);
+        Cache::lock('revision:'.$element->id)->forceRelease();
+        $competitorId = $this->revisions->createRevision($element, force: true);
+    });
+
+    expect(fn () => $this->revisions->createRevision($element, force: true))->toThrow(QueryException::class)
+        ->and(Elements::getElementById($competitorId))->not->toBeNull();
 });

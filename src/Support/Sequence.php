@@ -36,7 +36,7 @@ readonly class Sequence
     {
         $name = Str::emojiToShortcodes($name);
 
-        return Cache::lock('seq--'.str_replace(['/', '\\'], '-', $name))
+        return Cache::lock('seq--'.str_replace(['/', '\\'], '-', $name), 10)
             ->block(3, function () use ($name, $length) {
                 $num = self::nextNumber($name);
 

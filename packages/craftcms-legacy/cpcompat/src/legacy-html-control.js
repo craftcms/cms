@@ -158,6 +158,7 @@ import {
     _error = null;
     _errors = [];
     _snapshot = null;
+    _mounting = false;
     ready = Promise.resolve();
 
     set node(node) {
@@ -299,6 +300,18 @@ import {
         return;
       }
 
+      // Inputs also announce themselves as they initialize, such as an element
+      // select input adding its saved elements, before anything has changed.
+      // Serializing skips file inputs, so a selected file still goes through
+      // `publish()` to report it.
+      if (
+        this._mounting ||
+        (!selectedFile(this) &&
+          JSON.stringify(serializeFormInputsAsObject(this)) === this._snapshot)
+      ) {
+        return;
+      }
+
       try {
         this.publish(isTypingEvent(event) ? 'typing' : 'discrete');
       } catch (error) {
@@ -307,12 +320,8 @@ import {
     };
 
     handleLegacyChange = (event) => {
-      // Native change events reach `handleInput` directly, and inputs also
-      // trigger `change` as they initialize, before anything has changed.
-      if (
-        !event.originalEvent &&
-        JSON.stringify(serializeFormInputsAsObject(this)) !== this._snapshot
-      ) {
+      // Native change events reach `handleInput` directly.
+      if (!event.originalEvent) {
         this.handleInput(event);
       }
     };
@@ -364,6 +373,11 @@ import {
           return;
         }
 
+        // Inputs can announce themselves as they're inserted, before anything
+        // has changed. Changes are measured from what they then serialize to,
+        // which a remount's island value may not match until it's restored.
+        this._mounting = true;
+
         if (
           !(await this.append(
             nativeFieldHtml(
@@ -377,6 +391,9 @@ import {
         ) {
           return;
         }
+
+        this._mounting = false;
+        this._snapshot = JSON.stringify(serializeFormInputsAsObject(this));
 
         if (!(await this.append(fragment.bodyHtml, document.body, runId))) {
           return;
@@ -394,6 +411,10 @@ import {
       } catch (error) {
         if (runId === this._runId) {
           this.invalidate(error);
+        }
+      } finally {
+        if (runId === this._runId) {
+          this._mounting = false;
         }
       }
     }

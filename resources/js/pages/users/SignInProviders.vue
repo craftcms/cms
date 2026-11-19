@@ -47,7 +47,7 @@
   }
 
   async function disconnectProvider(provider: Provider) {
-    if (!provider.connected) {
+    if (!provider.canDisconnect) {
       return;
     }
 
@@ -69,6 +69,13 @@
       processingProvider.value = null;
     }
   }
+
+  const buttonId = (provider: Provider) =>
+    `sign-in-provider-${provider.handle}-button`;
+
+  const disabledReasonTooltip = (provider: Provider) =>
+    provider.disabledReason &&
+    h('craft-tooltip', {for: buttonId(provider)}, provider.disabledReason);
 
   const columnHelper = createCraftColumnHelper<Provider>();
   const table = useCraftTable<Provider>({
@@ -114,11 +121,16 @@
                   provider: row.original.name,
                 }),
                 disabled: !row.original.canConnect,
+                id: buttonId(row.original),
+                'focusable-when-disabled': row.original.disabledReason
+                  ? true
+                  : undefined,
                 loading: processingProvider.value === row.original.handle,
                 onclick: () => connectProvider(row.original),
               },
               t('Connect')
             ),
+          !row.original.connected && disabledReasonTooltip(row.original),
           row.original.connected &&
             h(
               'craft-button',
@@ -128,12 +140,17 @@
                 'aria-label': t('Disconnect {provider}', {
                   provider: row.original.name,
                 }),
-
+                disabled: !row.original.canDisconnect,
+                id: buttonId(row.original),
+                'focusable-when-disabled': row.original.disabledReason
+                  ? true
+                  : undefined,
                 loading: processingProvider.value === row.original.handle,
                 onclick: () => disconnectProvider(row.original),
               },
               t('Disconnect')
             ),
+          row.original.connected && disabledReasonTooltip(row.original),
         ]),
       ];
     },
