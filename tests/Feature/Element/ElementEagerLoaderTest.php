@@ -431,9 +431,284 @@ it('normalizes private eager loading maps and resolves untyped target ids from t
         ->and($groupedMaps)->toHaveCount(1)
         ->and($groupedMaps[0]['elementType'])->toBe(TestElementEagerLoaderResolvedTargetElement::class)
         ->and($groupedMaps[0]['map'])->toBe([
-            ['source' => 1, 'target' => $entry->id],
+            ['source' => 1, 'target' => $entry->id, 'position' => 0],
         ])
         ->and($groupedMaps[0]['criteria'])->toBe(['limit' => 1])
         ->and($groupedMaps[0]['createElement'])->toBe($createElement)
         ->and($nestedMaps)->toBe([$directMap]);
+});
+
+it('combines the results of every map returned for a handle', function (array|Closure $maps) {
+    $loader = app(ElementEagerLoader::class);
+    $sourceA = new TestElementEagerLoaderSourceElement(['id' => 1]);
+    $sourceB = new TestElementEagerLoaderSourceElement(['id' => 2]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', $maps);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$sourceA, $sourceB], [
+        'mixed',
+        ['path' => 'mixed as mixedCount', 'count' => true],
+        ['path' => 'mixed as firstMixed', 'criteria' => ['limit' => 1]],
+        ['path' => 'mixed as otherMixed', 'criteria' => ['offset' => 1]],
+    ]);
+
+    expect($sourceA->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([101, 201])
+        ->and($sourceA->getEagerLoadedElementCount('mixedCount'))->toBe(2)
+        ->and($sourceB->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([102])
+        ->and($sourceB->getEagerLoadedElementCount('mixedCount'))->toBe(1)
+        ->and($sourceA->getEagerLoadedElements('firstMixed')?->pluck('id')->all())->toBe([101])
+        ->and($sourceA->getEagerLoadedElements('otherMixed')?->pluck('id')->all())->toBe([201])
+        ->and($sourceB->getEagerLoadedElements('otherMixed')?->pluck('id')->all())->toBe([]);
+})->with([
+    'list of maps' => [[
+        [
+            'elementType' => TestElementEagerLoaderTargetElement::class,
+            'map' => [['source' => 1, 'target' => 101], ['source' => 2, 'target' => 102]],
+        ],
+        [
+            'elementType' => TestElementEagerLoaderNestedTargetElement::class,
+            'map' => [['source' => 1, 'target' => 201]],
+        ],
+    ]],
+    'map with typed mappings' => [[
+        'map' => [
+            ['source' => 1, 'target' => 101, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ['source' => 2, 'target' => 102, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ['source' => 1, 'target' => 201, 'elementType' => TestElementEagerLoaderNestedTargetElement::class],
+        ],
+    ]],
+]);
+
+it('keeps each map’s own limit when combining maps, and accepts numeric-string limits', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        [
+            'elementType' => TestElementEagerLoaderTargetElement::class,
+            'map' => [['source' => 1, 'target' => 101], ['source' => 1, 'target' => 102]],
+            'criteria' => ['limit' => 1],
+        ],
+        [
+            'elementType' => TestElementEagerLoaderNestedTargetElement::class,
+            'map' => [['source' => 1, 'target' => 201], ['source' => 1, 'target' => 202]],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+        ['id' => 202, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        'mixed',
+        ['path' => 'mixed as limited', 'criteria' => ['limit' => '2']],
+    ]);
+
+    expect($source->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([101, 201, 202])
+        ->and($source->getEagerLoadedElements('limited')?->pluck('id')->all())->toBe([101, 201]);
+});
+
+it('keeps the mapping order across element types, and reverses and paginates the combined elements', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        'map' => [
+            ['source' => 1, 'target' => 101, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ['source' => 1, 'target' => 201, 'elementType' => TestElementEagerLoaderNestedTargetElement::class],
+            ['source' => 1, 'target' => 102, 'elementType' => TestElementEagerLoaderTargetElement::class],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        'mixed',
+        ['path' => 'mixed as page', 'criteria' => ['offset' => 1, 'limit' => 1]],
+        ['path' => 'mixed as reversed', 'criteria' => ['inReverse' => true]],
+        ['path' => 'mixed as reversedPage', 'criteria' => ['inReverse' => true, 'offset' => 2, 'limit' => 1]],
+    ]);
+
+    expect($source->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([101, 201, 102])
+        ->and($source->getEagerLoadedElements('page')?->pluck('id')->all())->toBe([201])
+        ->and($source->getEagerLoadedElements('reversed')?->pluck('id')->all())->toBe([102, 201, 101])
+        ->and($source->getEagerLoadedElements('reversedPage')?->pluck('id')->all())->toBe([101]);
+});
+
+it('keeps a map’s own reversal when combining maps', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        [
+            'elementType' => TestElementEagerLoaderTargetElement::class,
+            'map' => [['source' => 1, 'target' => 101], ['source' => 1, 'target' => 102]],
+            'criteria' => ['inReverse' => true],
+        ],
+        [
+            'elementType' => TestElementEagerLoaderNestedTargetElement::class,
+            'map' => [['source' => 1, 'target' => 201]],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        'mixed',
+        ['path' => 'mixed as first', 'criteria' => ['limit' => 1]],
+    ]);
+
+    expect($source->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([102, 101, 201])
+        ->and($source->getEagerLoadedElements('first')?->pluck('id')->all())->toBe([102]);
+});
+
+it('ignores nonpositive offsets and limits when combining maps', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        'map' => [
+            ['source' => 1, 'target' => 101, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ['source' => 1, 'target' => 201, 'elementType' => TestElementEagerLoaderNestedTargetElement::class],
+            ['source' => 1, 'target' => 102, 'elementType' => TestElementEagerLoaderTargetElement::class],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        ['path' => 'mixed as negativeLimit', 'criteria' => ['limit' => -1]],
+        ['path' => 'mixed as zeroLimit', 'criteria' => ['offset' => 1, 'limit' => 0]],
+        ['path' => 'mixed as negativeOffset', 'criteria' => ['offset' => -1]],
+    ]);
+
+    expect($source->getEagerLoadedElements('negativeLimit')?->pluck('id')->all())->toBe([101, 201, 102])
+        ->and($source->getEagerLoadedElements('zeroLimit')?->pluck('id')->all())->toBe([201, 102])
+        ->and($source->getEagerLoadedElements('negativeOffset')?->pluck('id')->all())->toBe([101, 201, 102]);
+});
+
+it('keeps each map’s own order within the mapping order', function () {
+    $loader = app(ElementEagerLoader::class);
+    $sourceA = new TestElementEagerLoaderSourceElement(['id' => 1]);
+    $sourceB = new TestElementEagerLoaderSourceElement(['id' => 2]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        [
+            'map' => [
+                ['source' => 1, 'target' => 101, 'elementType' => TestElementEagerLoaderTargetElement::class],
+                ['source' => 1, 'target' => 201, 'elementType' => TestElementEagerLoaderNestedTargetElement::class],
+                ['source' => 1, 'target' => 102, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ],
+        ],
+        [
+            'elementType' => TestElementEagerLoaderTargetElement::class,
+            'map' => [['source' => 2, 'target' => 101], ['source' => 2, 'target' => 102]],
+            'criteria' => ['inReverse' => true],
+        ],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$sourceA, $sourceB], ['mixed']);
+
+    expect($sourceA->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([101, 201, 102])
+        ->and($sourceB->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([102, 101]);
+
+    // A reversed map covering the same source keeps its own order, after the interleaved one
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        [
+            'map' => [
+                ['source' => 1, 'target' => 101, 'elementType' => TestElementEagerLoaderTargetElement::class],
+                ['source' => 1, 'target' => 201, 'elementType' => TestElementEagerLoaderNestedTargetElement::class],
+                ['source' => 1, 'target' => 102, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ],
+        ],
+        [
+            'elementType' => TestElementEagerLoaderTargetElement::class,
+            'map' => [['source' => 1, 'target' => 103], ['source' => 1, 'target' => 104]],
+            'criteria' => ['inReverse' => true],
+        ],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+        ['id' => 103, 'siteId' => 1],
+        ['id' => 104, 'siteId' => 1],
+    ]);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        'mixed',
+        ['path' => 'mixed as page', 'criteria' => ['offset' => 2, 'limit' => 2]],
+    ]);
+
+    expect($source->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([101, 201, 102, 104, 103])
+        ->and($source->getEagerLoadedElements('page')?->pluck('id')->all())->toBe([102, 104]);
+});
+
+it('reverses a map split up by element type as a whole', function () {
+    $loader = app(ElementEagerLoader::class);
+    $source = new TestElementEagerLoaderSourceElement(['id' => 1]);
+
+    TestElementEagerLoaderSourceElement::setTestEagerLoadingMap('mixed', [
+        'map' => [
+            ['source' => 1, 'target' => 101, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ['source' => 1, 'target' => 102, 'elementType' => TestElementEagerLoaderTargetElement::class],
+            ['source' => 1, 'target' => 201, 'elementType' => TestElementEagerLoaderNestedTargetElement::class],
+        ],
+        'criteria' => ['inReverse' => true],
+    ]);
+
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderTargetElement::class, [
+        ['id' => 101, 'siteId' => 1],
+        ['id' => 102, 'siteId' => 1],
+    ]);
+    TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [
+        ['id' => 201, 'siteId' => 1],
+    ]);
+
+    $loader->eagerLoadElements(TestElementEagerLoaderSourceElement::class, [$source], [
+        'mixed',
+        ['path' => 'mixed as first', 'criteria' => ['limit' => 1]],
+    ]);
+
+    expect($source->getEagerLoadedElements('mixed')?->pluck('id')->all())->toBe([201, 102, 101])
+        ->and($source->getEagerLoadedElements('first')?->pluck('id')->all())->toBe([201]);
 });

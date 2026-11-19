@@ -123,6 +123,7 @@
 - Renamed `<craft-tab>`’s `--c-tab-spacing-inline`, `--c-tab-spacing-block`, and `--c-tab-border-active` custom properties to `--c-tab-padding-inline`, `--c-tab-padding-block`, and `--c-tab-indicator-fill-active`. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - The web installer now has a “Time Zone” field, which defaults to the time zone in the project config, or the browser’s time zone. Previously, sites installed from the web installer were always set to America/Los_Angeles.
 - Fixed a bug where element editors autosaved a provisional draft as soon as they loaded when they had a legacy relation field from the Yii2 adapter, such as a Categories field, including within Matrix entries and Content Blocks. ([#20869](https://github.com/craftcms/cms/issues/20869), [#20871](https://github.com/craftcms/cms/pull/20871))
+- Fixed a bug where eager-loading maps that covered more than one element type, or were returned as a list of maps, only loaded the elements from one of them.
 - Fixed a bug where Live Preview kept showing discarded changes after “Discard changes” was clicked. ([#20839](https://github.com/craftcms/cms/issues/20839), [#20858](https://github.com/craftcms/cms/pull/20858))
 - Fixed a bug where the web installer’s Port field was too narrow to show its value.
 - Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
