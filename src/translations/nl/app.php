@@ -952,7 +952,7 @@ return [
     'Never' => 'Nooit',
     'New Issues' => 'Nieuwe problemen',
     'New Password' => 'Nieuw wachtwoord',
-    'New Tab' => 'Nieuw label',
+    'New Tab' => 'Nieuwe tab',
     'New block type' => 'Nieuw bloktype',
     'New category group' => 'Nieuwe categorie groep',
     'New category in the {group} category group' => 'Nieuwe categorie in de categoriegroep {group}',

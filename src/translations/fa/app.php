@@ -1202,7 +1202,7 @@ return [
     'Remove' => 'حذف',
     'Rename file' => 'تغییر نام فایل',
     'Rename folder' => 'تغییر نام پوشه',
-    'Rename selected group' => 'تغییر نام گروه حذف شده',
+    'Rename selected group' => 'تغییر نام گروه انتخاب‌شده',
     'Rename' => 'تغییر نام',
     'Renew for {price}' => 'تجدید با {price}',
     'Reorder' => 'تغییر ترتیب',
