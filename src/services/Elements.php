@@ -3587,8 +3587,9 @@ class Elements extends Component
                 // With several maps, the plan's offset, limit, and inReverse apply to each source's combined elements,
                 // while each map keeps its own
                 $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
-                $combinedOffset = count($maps) > 1 ? (int)($planCriteria['offset'] ?? 0) : 0;
-                $combinedLimit = count($maps) > 1 && isset($planCriteria['limit']) ? (int)$planCriteria['limit'] : null;
+                // (nonpositive values are ignored, as they are within a single map)
+                $combinedOffset = count($maps) > 1 ? max((int)($planCriteria['offset'] ?? 0), 0) : 0;
+                $combinedLimit = count($maps) > 1 && (int)($planCriteria['limit'] ?? 0) > 0 ? (int)$planCriteria['limit'] : null;
                 $combinedReverse = count($maps) > 1 && !empty($planCriteria['inReverse']);
 
                 // Put the combined elements back in the order they were mapped in, unless a map wants a custom order

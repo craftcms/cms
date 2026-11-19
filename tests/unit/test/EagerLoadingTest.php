@@ -397,6 +397,9 @@ class EagerLoadingTest extends TestCase
             ['path' => 'mixed as page', 'criteria' => ['offset' => 1, 'limit' => 1]],
             ['path' => 'mixed as reversed', 'criteria' => ['inReverse' => true]],
             ['path' => 'mixed as reversedPage', 'criteria' => ['inReverse' => true, 'offset' => 1, 'limit' => 1]],
+            ['path' => 'mixed as negativeLimit', 'criteria' => ['limit' => -1]],
+            ['path' => 'mixed as zeroLimit', 'criteria' => ['offset' => 1, 'limit' => 0]],
+            ['path' => 'mixed as negativeOffset', 'criteria' => ['offset' => -1]],
         ]);
 
         $ids = fn(string $alias) => array_map(
@@ -411,6 +414,11 @@ class EagerLoadingTest extends TestCase
         self::assertSame([$u], $ids('page'));
         self::assertSame([$b, $u, $a], $ids('reversed'));
         self::assertSame([$u], $ids('reversedPage'));
+
+        // nonpositive limits and offsets are ignored, as they are with a single map
+        self::assertSame([$a, $u, $b], $ids('negativeLimit'));
+        self::assertSame([$u, $b], $ids('zeroLimit'));
+        self::assertSame([$a, $u, $b], $ids('negativeOffset'));
 
         // a map's own inReverse is kept
         EagerLoadingTestSourceElement::$map = [
