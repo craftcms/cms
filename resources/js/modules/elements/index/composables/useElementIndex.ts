@@ -1,4 +1,5 @@
 import type {ColumnDef, RowSelectionState} from '@tanstack/vue-table';
+import {t} from '@craftcms/ui';
 import {
   type CraftTableFeatures,
   useCraftTable,
@@ -16,7 +17,10 @@ import type {
   useContentIndexData,
   ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
-import {useElementIndexThumbSize} from '@/modules/elements/index/composables/useElementIndexThumbSize';
+import {
+  thumbSizeLabel,
+  useElementIndexThumbSize,
+} from '@/modules/elements/index/composables/useElementIndexThumbSize';
 import {useElementIndexColumns} from '@/modules/elements/index/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/index/composables/useElementIndexFilters';
 import {useElementIndexPagination} from '@/modules/elements/index/composables/useElementIndexPagination';
@@ -28,6 +32,7 @@ import {
   useElementIndexStructure,
 } from '@/modules/elements/index/composables/useElementIndexStructure';
 import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {viewModeLabel} from '@/modules/elements/index/viewModeLabel';
 import {onElementChanged} from '@/modules/elements/element-instances';
 import {tryOnScopeDispose} from '@vueuse/core';
 import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
@@ -47,8 +52,46 @@ import type {InlineEditingSaveResult} from '@/modules/elements/index/composables
 import type {ElementIndexContext} from '@/modules/elements/index/index-context';
 import type {
   CardThumbSettings,
+  SourceFilterState,
   ViewMode,
 } from '@/modules/elements/types/view-state';
+import {isGroup, rootGroup} from '@/modules/conditions/conditionTree';
+
+/** Something about the index that differs from its source's saved view. */
+export interface ElementIndexChange {
+  kind:
+    | 'rule'
+    | 'status'
+    | 'search'
+    | 'viewMode'
+    | 'sort'
+    | 'columns'
+    | 'thumbSize';
+  label: string;
+  /** The condition rule's UID, for `kind: 'rule'`. */
+  uid?: string;
+  /** What a View menu setting is now, for showing beside its label. */
+  value?: string;
+}
+
+export type ViewSettingKind = 'viewMode' | 'sort' | 'columns' | 'thumbSize';
+
+export const VIEW_SETTING_KINDS: ViewSettingKind[] = [
+  'viewMode',
+  'sort',
+  'columns',
+  'thumbSize',
+];
+
+/** The settings in each of the Sort and Settings menus. */
+export const VIEW_MENU_KINDS: Record<'sort' | 'settings', ViewSettingKind[]> = {
+  sort: ['sort'],
+  settings: ['viewMode', 'thumbSize', 'columns'],
+};
+
+function hasFilters(filters?: SourceFilterState | null): boolean {
+  return Boolean(filters?.search || filters?.status || filters?.condition);
+}
 
 interface UseElementIndexOptions {
   elementIndex: ReturnType<typeof useContentIndexData>;
@@ -107,6 +150,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     mode: savedMode,
     restore: restoreViewMode,
     persistedMode,
+    resetToDefault: resetViewMode,
   } = useElementIndexViewMode(
     viewState,
     visitor,
@@ -174,17 +218,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     status: elementIndex.statusMenuValue,
     conditions: elementIndex.currentCondition,
     busy: options.busy,
-    preferredSort: () => {
-      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
-        ({field}) => field !== 'score'
-      );
-
-      if (saved?.length) {
-        return saved;
-      }
-
-      return sourceKey() === initialSourceKey ? preferredSort : [];
-    },
+    preferredSort: () => defaultSort(sourceKey()),
     params: () => ({
       source: elementIndex.source?.key,
       viewMode: mode.value,
@@ -203,20 +237,42 @@ export function useElementIndex(options: UseElementIndexOptions) {
   // only there do they count toward, or get reset by, "Use defaults".
   const showsTableColumns = () =>
     mode.value === 'table' || mode.value === 'structure';
-  const viewCustomized = computed(
-    () =>
-      !sortIsDefault.value ||
-      !thumbSizeIsDefault.value ||
-      (showsTableColumns() && !columnsAreDefault.value)
+  /** The mode the source opens in, among those the index can show. */
+  const defaultMode = () =>
+    visibleViewModes.value.some(
+      ({mode}) => mode === elementIndex.defaultViewMode
+    )
+      ? elementIndex.defaultViewMode!
+      : (visibleViewModes.value[0]?.mode ?? 'table');
+  /** Whether each view setting differs from the source's. */
+  const viewSettingChanged: Record<ViewSettingKind, () => boolean> = {
+    viewMode: () => mode.value !== defaultMode(),
+    sort: () => !sortIsDefault.value,
+    columns: () => showsTableColumns() && !columnsAreDefault.value,
+    thumbSize: () => !thumbSizeIsDefault.value,
+  };
+  const viewCustomized = computed(() =>
+    (['sort', 'columns', 'thumbSize'] as const).some((kind) =>
+      viewSettingChanged[kind]()
+    )
   );
 
-  /** Returns the View menu's settings to the source's defaults in one visit. */
-  function resetView(): void {
-    const resets = [
-      resetSort(),
-      showsTableColumns() ? resetColumns() : null,
-      resetThumbSize(),
+  /** What returning `kinds` to the source's defaults asks the server for. */
+  function viewResets(kinds: ViewSettingKind[]): IndexRestore[] {
+    return [
+      kinds.includes('viewMode') ? resetViewMode(defaultMode()) : null,
+      kinds.includes('sort') ? resetSort() : null,
+      kinds.includes('columns') && showsTableColumns() ? resetColumns() : null,
+      kinds.includes('thumbSize') ? resetThumbSize() : null,
     ].filter((reset): reset is IndexRestore => reset !== null);
+  }
+
+  /**
+   * Returns the View menu's settings — or just `kinds` of them — to the
+   * source's defaults in one visit.
+   */
+  function resetView(kinds: ViewSettingKind[] = VIEW_SETTING_KINDS): void {
+    const resets = viewResets(kinds);
 
     if (resets.length === 0) {
       return;
@@ -378,7 +434,9 @@ export function useElementIndex(options: UseElementIndexOptions) {
       restoreViewMode(),
       restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),
+      restoreFilters(),
     ].filter((restore): restore is IndexRestore => restore !== null);
+    filtersRestored = true;
 
     // Requested after the others have read the URL into the view state, so the
     // mode and size are the ones the index will show. Naming the mode in the
@@ -401,6 +459,185 @@ export function useElementIndex(options: UseElementIndexOptions) {
         only: [...new Set(restores.flatMap((restore) => restore.only))],
         replace: true,
       }
+    );
+  }
+
+  /** The filter params a source's remembered filters (or none) visit with. */
+  /** A source's sort when it isn't searching: its saved one, else its default. */
+  function defaultSort(key: string) {
+    const saved = viewState.value.sources?.[key]?.sort?.filter(
+      ({field}) => field !== 'score'
+    );
+
+    if (saved?.length) {
+      return saved;
+    }
+
+    return key === initialSourceKey ? preferredSort : [];
+  }
+
+  function syncFilters(stored?: SourceFilterState | null): void {
+    filters.sync({
+      search: stored?.search,
+      status: stored?.status,
+      conditions: stored?.condition,
+    });
+  }
+
+  function filterParams(stored?: SourceFilterState | null) {
+    return {
+      search: stored?.search || null,
+      status: stored?.status || null,
+      condition: (stored?.condition ?? null) as never,
+    };
+  }
+
+  /**
+   * A source's last filters come back with it, unless the URL names its own:
+   * a shared link shows what it was shared with.
+   */
+  function restoreFilters(): IndexRestore | null {
+    const query = Object.keys(visitor.currentQuery());
+    const named = query.some(
+      (key) =>
+        key === 'search' || key === 'status' || key.startsWith('condition')
+    );
+    const stored = viewState.value.sources?.[sourceKey()]?.filters;
+
+    if (named || !hasFilters(stored)) {
+      return null;
+    }
+
+    syncFilters(stored);
+
+    return {
+      params: filterParams(stored),
+      only: [
+        'data',
+        'pagination',
+        'structure',
+        'search',
+        'status',
+        'statusMenuValue',
+        'currentCondition',
+        'currentConditionSummary',
+      ],
+    };
+  }
+
+  let filtersRestored = false;
+
+  watch(
+    () =>
+      [
+        sourceKey(),
+        elementIndex.search,
+        elementIndex.statusMenuValue,
+        elementIndex.currentCondition,
+      ] as const,
+    ([key, search, status, condition]) => {
+      if (!filtersRestored) return;
+      const current = viewState.value.sources?.[key];
+      const next: SourceFilterState = {search, status, condition};
+
+      viewState.value.sources = {
+        ...viewState.value.sources,
+        [key]: {...current, filters: hasFilters(next) ? next : undefined},
+      };
+    }
+  );
+
+  const sortLabel = () => {
+    const option = elementIndex.sortOptions.find(
+      ({value}) => value === sortField.value
+    );
+
+    return option?.label ?? sortField.value;
+  };
+
+  /** How the index differs from its source's saved view. */
+  const changes = computed<ElementIndexChange[]>(() => [
+    // Each top-level rule or group, as the filter bar shows them.
+    ...rootGroup(filters.conditions.value).rules.map((item) =>
+      isGroup(item)
+        ? {kind: 'rule' as const, label: t('Filter group')}
+        : {
+            kind: 'rule' as const,
+            label:
+              elementIndex.currentConditionSummary?.find(
+                (summary) => summary.uid === item.uid
+              )?.label ?? t('Filter'),
+            uid: item.uid,
+          }
+    ),
+    ...(filters.status.value
+      ? [
+          {
+            kind: 'status' as const,
+            label:
+              elementIndex.statusOptions?.find(
+                ({value}) => value === filters.status.value
+              )?.label ?? filters.status.value,
+          },
+        ]
+      : []),
+    ...(filters.search.value
+      ? [{kind: 'search' as const, label: `“${filters.search.value}”`}]
+      : []),
+    ...(viewSettingChanged.viewMode()
+      ? [
+          {
+            kind: 'viewMode' as const,
+            label: t('View mode'),
+            value: (() => {
+              const viewMode = visibleViewModes.value.find(
+                (option) => option.mode === mode.value
+              );
+
+              return viewMode ? viewModeLabel(viewMode) : mode.value;
+            })(),
+          },
+        ]
+      : []),
+    ...(viewSettingChanged.sort()
+      ? [{kind: 'sort' as const, label: t('Sort'), value: sortLabel()}]
+      : []),
+    ...(viewSettingChanged.columns()
+      ? [
+          {
+            kind: 'columns' as const,
+            label: t('Columns'),
+            value: t('{count, number} shown', {
+              count: tableColumns.value.length,
+            }),
+          },
+        ]
+      : []),
+    ...(viewSettingChanged.thumbSize()
+      ? [
+          {
+            kind: 'thumbSize' as const,
+            label: t('Thumbnail size'),
+            value: thumbSizeLabel(thumbSize.value),
+          },
+        ]
+      : []),
+  ]);
+
+  /** Puts the source back to its saved view: filters, search and view. */
+  function resetAll(): void {
+    const key = sourceKey();
+    const resets = viewResets(VIEW_SETTING_KINDS);
+    const {filters: _filters, ...rest} = viewState.value.sources?.[key] ?? {};
+
+    viewState.value.sources = {...viewState.value.sources, [key]: rest};
+    filters.sync({});
+    visitor.merge(
+      Object.assign(
+        {...filterParams(null)},
+        ...resets.map((reset) => reset.params)
+      ),
+      {resetPage: true}
     );
   }
 
@@ -522,12 +759,30 @@ export function useElementIndex(options: UseElementIndexOptions) {
   function changeSource(key: string): void {
     if (key === elementIndex.source?.key) return;
     const sourceMode = persistedMode(key);
+    const stored = viewState.value.sources?.[key]?.filters;
+    // Starting or ending a search swaps the relevance sort in or out.
+    const searching = Boolean(stored?.search);
+    const sort =
+      searching === Boolean(visitor.currentQuery().search)
+        ? {}
+        : {
+            sort: searching
+              ? [{field: 'score', direction: 'desc' as const}]
+              : defaultSort(key).map(({field, direction}) => ({
+                  field,
+                  direction,
+                })),
+          };
+
+    syncFilters(stored);
 
     // A source without a chosen mode gets its default, which only the server
     // knows, so its thumbnail size can't be asked for until its rows arrive.
     visitor.merge(
       {
         source: key,
+        ...filterParams(stored),
+        ...sort,
         viewMode: sourceMode ?? null,
         ...(sourceMode
           ? thumbSizeModeParams(sourceMode, key)
@@ -647,6 +902,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     sortDirection,
     viewCustomized,
     resetView,
+    changes,
+    resetAll,
     mode,
     thumbSize,
     thumbSizeOptions,

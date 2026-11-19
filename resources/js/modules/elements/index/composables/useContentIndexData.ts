@@ -1,3 +1,4 @@
+import type {UiPayload} from '@/modules/ui/types';
 import {usePage} from '@inertiajs/vue3';
 import {computed, reactive, toValue, type MaybeRefOrGetter} from 'vue';
 import type {PaginationData, SortItem} from '@/common/types';
@@ -37,12 +38,20 @@ export interface ElementIndexRow extends InlineEditableRow {
  * (`Array<any>`). The generated type stays the source of truth for which keys
  * exist; this narrows what they contain.
  */
+export interface ConditionRuleSummary {
+  uid: string | null;
+  label: string;
+  /** The rule's UI, as the condition builder renders it. */
+  ui: UiPayload | null;
+}
+
 export type ContentIndexData = Omit<
   GeneratedProps,
   | 'source'
   | 'sources'
   | 'sites'
   | 'currentCondition'
+  | 'currentConditionSummary'
   | 'viewState'
   | 'viewModes'
   | 'sortOptions'
@@ -57,6 +66,10 @@ export type ContentIndexData = Omit<
   sources: Source[];
   sites: IndexSite[];
   currentCondition: ConditionConfig | null;
+  /** The applied filters' rules, at any depth, as the builder renders them. */
+  currentConditionSummary?: ConditionRuleSummary[];
+  /** The view mode the source opens in. */
+  defaultViewMode?: ViewMode['mode'];
   /** `mode` is the view mode the payload's rows were rendered for. */
   viewState: Partial<ViewState> & {mode?: ViewMode['mode']};
   viewModes: ViewMode[];
@@ -139,6 +152,9 @@ export function useContentIndexData<
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
+    currentConditionSummary: computed(
+      () => props().currentConditionSummary ?? []
+    ),
     drafts: computed(() => props().drafts),
     trashed: computed(() => props().trashed),
 
@@ -149,6 +165,7 @@ export function useContentIndexData<
     defaultTableColumns: computed(() => props().defaultTableColumns),
     sort: computed(() => props().sort),
     defaultSort: computed(() => props().defaultSort),
+    defaultViewMode: computed(() => props().defaultViewMode),
     sortOptions: computed(() => props().sortOptions),
 
     // Results

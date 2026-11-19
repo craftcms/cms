@@ -71,7 +71,7 @@ function mount(context?: ElementIndexContext) {
         );
       }
 
-      return () => h(FilterHud);
+      return () => h(FilterHud, {anchor: document.createElement('button')});
     },
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -102,7 +102,7 @@ it('uses the provided index context and merges detached owner parameters', () =>
 it('falls back to the Inertia page when no index context is provided', () => {
   mount();
 
-  expect(http.data).toMatchObject({
+  expect(http.transform.mock.lastCall![0](http.data)).toMatchObject({
     elementType: 'PageEntry',
     context: 'index',
     source: {type: 'native', key: 'page', label: 'Page'},

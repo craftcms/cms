@@ -41,6 +41,8 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     isAvailable: () => editingIds.value.length > 0,
   });
   const errors = ref<InlineEditingErrors>({});
+  /** Set while a save is in flight, including the reload that follows it. */
+  const saving = ref(false);
   let initialInputs = '';
 
   function renderCell(
@@ -80,6 +82,11 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
   async function start(): Promise<void> {
     await options.load(true);
+    await resume();
+  }
+
+  /** Picks editing back up over rows that were reloaded while it was on. */
+  async function resume(): Promise<void> {
     editingIds.value = toValue(options.editableRows)
       .filter((entry) => Boolean(entry.inlineInputHtml))
       .map((entry) => entry.id);
@@ -96,6 +103,16 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
         firstFocusableWithin(firstCell)?.focus();
       }
     }
+  }
+
+  function isDirty(): boolean {
+    const container = options.container.value;
+
+    return Boolean(
+      container &&
+      editingIds.value.length &&
+      initialInputs !== serializeFormInputs(container)
+    );
   }
 
   function clear(): void {
@@ -146,7 +163,13 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
       return;
     }
 
-    const result = await options.save(body);
+    saving.value = true;
+    let result: InlineEditingSaveResult | false;
+    try {
+      result = await options.save(body);
+    } finally {
+      saving.value = false;
+    }
     if (result === false) {
       return;
     }
@@ -191,8 +214,11 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
   return {
     editingIds,
     errors,
+    saving,
     renderCell,
     start,
+    resume,
+    isDirty,
     clear,
     cancel,
     save,
