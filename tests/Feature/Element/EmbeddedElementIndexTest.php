@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\EmbeddedElementIndex;
@@ -434,4 +435,72 @@ it('hides the status menu when the definition sets a status', function () {
 
     expect($fixed['statusOptions'])->toBe([])
         ->and(collect($open['statusOptions'])->pluck('value')->all())->toContain('live', 'disabled');
+});
+
+it('doesn’t let an inline edit redirect the save to another element', function () {
+    $listed = EntryModel::factory()->createElement(['title' => 'Listed']);
+    $other = EntryModel::factory()->createElement(['title' => 'Other']);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $listed->id]);
+
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $listed->siteId,
+        'namespace' => 'inline',
+        'inline' => ["element-$listed->id" => ['id' => $other->id, 'title' => 'Hacked']],
+    ])->assertOk();
+
+    expect(Entry::find()->id($other->id)->status(null)->one()->title)->toBe('Other')
+        ->and(Entry::find()->id($listed->id)->status(null)->one()->title)->toBe('Hacked');
+});
+
+it('applies inline edits to the elements they were posted for, whatever order the index lists them in', function () {
+    $entries = collect(['Alpha', 'Bravo', 'Charlie'])
+        ->map(fn (string $title) => EntryModel::factory()->createElement(['title' => $title]));
+    $index = EmbeddedElementIndex::make(Entry::class)
+        ->criteria(['id' => $entries->pluck('id')->all()])
+        ->defaultSort('title', 'desc');
+
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $entries[0]->siteId,
+        'namespace' => 'inline',
+        'inline' => $entries->mapWithKeys(fn (Entry $entry) => ["element-$entry->id" => ['title' => "$entry->title saved"]])->all(),
+    ])->assertOk();
+
+    expect($entries->map(fn (Entry $entry) => Entry::find()->id($entry->id)->status(null)->one()->title)->all())
+        ->toBe(['Alpha saved', 'Bravo saved', 'Charlie saved']);
+});
+
+it('authorizes inline edits after applying them', function () {
+    Edition::set(Edition::Pro);
+    $entry = EntryModel::factory()->createElement(['title' => 'Before']);
+    $otherSection = EntryModel::factory()->createElement()->getSection();
+    $section = $entry->getSection();
+    $site = app(Sites::class)->getSiteById($entry->siteId);
+    $editor = UserModel::factory()
+        ->withPermissions([
+            'accessCp',
+            "editSite:$site->uid",
+            "viewEntries:$section->uid",
+            "viewPeerEntries:$section->uid",
+            "saveEntries:$section->uid",
+            "savePeerEntries:$section->uid",
+        ])
+        ->createElement(['admin' => false]);
+    actingAs($editor);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id]);
+
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $entry->siteId,
+        'namespace' => 'inline',
+        'inline' => ["element-$entry->id" => ['title' => 'Before saved']],
+    ])->assertOk();
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $entry->siteId,
+        'namespace' => 'inline',
+        'inline' => ["element-$entry->id" => ['sectionId' => $otherSection->id, 'title' => 'Moved']],
+    ])->assertForbidden();
+
+    $entry = Entry::find()->id($entry->id)->status(null)->one();
+
+    expect($entry->sectionId)->toBe($section->id)
+        ->and($entry->title)->toBe('Before saved');
 });

@@ -95,7 +95,13 @@ class SaveElementIndexElementsController
                 Gate::authorize('save', $element);
             }
 
-            $errors = $this->validateElements($elements, $namespace, $data, $embedded ? $originalIds : null);
+            // An ownerless embedded index loads its elements in the index's order, by the IDs they were posted under
+            $guardedIds = match (true) {
+                $embedded => $originalIds,
+                $embeddedScope !== null => $elements->pluck('id')->all(),
+                default => null,
+            };
+            $errors = $this->validateElements($elements, $namespace, $data, $guardedIds);
 
             if (! empty($errors)) {
                 if ($embedded) {
