@@ -41,7 +41,35 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     }
 
     /**
+     * @var int The revision of the HTML definition customizations made by [[configure()]].
+     * Bump it whenever they change, so cached HTML definitions are rebuilt.
+     */
+    private const HTML_DEFINITION_REV = 1;
+
+    /**
      * @inheritdoc
+     */
+    public static function process($content, $config = null)
+    {
+        // Give array configs a definition ID so HTML Purifier caches the customized HTML definition,
+        // rather than rebuilding it on every call. Its cache keys already account for the other HTML.*
+        // directives. Config objects and closures can edit the definition themselves, so they aren't cached.
+        if ($config === null || is_array($config)) {
+            $config ??= [];
+            $config['HTML.DefinitionID'] = 'craft';
+            $config['HTML.DefinitionRev'] = self::HTML_DEFINITION_REV;
+        }
+
+        return parent::process($content, $config);
+    }
+
+    /**
+     * Configures HTML Purifier with Craft’s defaults and HTML definition customizations.
+     *
+     * If `HTML.DefinitionID` is set, the customizations are only applied when the HTML definition isn’t
+     * cached yet. Otherwise the definition is customized each time, and isn’t cached.
+     *
+     * @param HTMLPurifier_Config $config
      */
     public static function configure($config): void
     {
@@ -55,8 +83,11 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         // Add support for some HTML5 elements
         // see https://github.com/mewebstudio/Purifier/issues/32#issuecomment-182502361
         // see https://gist.github.com/lluchs/3303693
-        if ($def = $config->getDefinition('HTML', true)) {
+        $def = $config->get('HTML.DefinitionID') !== null
+            ? $config->maybeGetRawHTMLDefinition()
+            : $config->getDefinition('HTML', true);
 
+        if ($def) {
             /** @var \HTMLPurifier_HTMLDefinition $def */
 
             // Content model actually excludes several tags, not modelled here

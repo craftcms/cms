@@ -7,6 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
+use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
 use craft\test\TestCase;
 use HTMLPurifier_Config;
@@ -41,6 +43,31 @@ class HtmlPurifierTest extends TestCase
         self::assertNull($config->get('HTML.DefinitionID'));
         self::assertSame('', $config->get('Attr.DefaultImageAlt'));
         self::assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
+    }
+
+    public function testProcessCachesHtmlDefinition(): void
+    {
+        $cachePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($cachePath);
+        $html = '<figure><a href="https://example.com" download="file.pdf">Link</a><figcaption>Caption</figcaption></figure>';
+
+        // Run each config twice, so the second call is served from the definition cache
+        for ($i = 0; $i < 2; $i++) {
+            self::assertSame($html, HtmlPurifier::process($html));
+            self::assertSame('<a href="https://example.com">Link</a>Caption', HtmlPurifier::process($html, ['HTML.Allowed' => 'a[href]']));
+        }
+
+        self::assertCount(2, glob($cachePath . DIRECTORY_SEPARATOR . '*.ser'));
+    }
+
+    public function testProcessWithClosureCanEditHtmlDefinition(): void
+    {
+        for ($i = 0; $i < 2; $i++) {
+            $output = HtmlPurifier::process('<p data-foo="bar">Hi</p>', function(HTMLPurifier_Config $config) {
+                $config->getHTMLDefinition(true)->addAttribute('p', 'data-foo', 'Text');
+            });
+            self::assertSame('<p data-foo="bar">Hi</p>', $output);
+        }
     }
 
     /**
