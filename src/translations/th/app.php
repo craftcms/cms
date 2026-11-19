@@ -880,6 +880,7 @@ return [
     'Groups' => 'กลุ่ม',
     'Guest Required' => 'จำเป็นต้องมีผู้ใช้ชั่วคราว',
     'HTML Email Template' => 'เทมเพลตอีเมล HTML',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'ตัวจัดการ',
     'Has Descendants' => 'มีโหนดสืบทอด',
     'Has URL' => 'มี URL',
