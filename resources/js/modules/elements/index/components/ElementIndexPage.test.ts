@@ -516,9 +516,3 @@ it('stops handling it when the page goes', async () => {
 
   expect(standalone.open).toHaveBeenCalledOnce();
 });
-
-  teardown!();
-  teardown = undefined;
-
-  expect(useNavItemActions()('/admin/entries')).toEqual([]);
-});
