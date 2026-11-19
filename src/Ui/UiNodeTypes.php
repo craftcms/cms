@@ -20,6 +20,7 @@ use CraftCms\Cms\Ui\Nodes\Missing;
 use CraftCms\Cms\Ui\Nodes\Outlet;
 use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\Slot;
 use CraftCms\Cms\Ui\Nodes\Tab;
 use CraftCms\Cms\Ui\Nodes\Table;
 use CraftCms\Cms\Ui\Nodes\TemplateContent;
@@ -52,6 +53,7 @@ class UiNodeTypes extends TypeRegistry
         Outlet::class,
         Scope::class,
         Separator::class,
+        Slot::class,
         Tab::class,
         Table::class,
         TemplateContent::class,

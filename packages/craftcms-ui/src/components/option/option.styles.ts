@@ -67,6 +67,10 @@ export default css`
     min-width: 0;
   }
 
+  ::slotted([slot='badge']) {
+    flex: none;
+  }
+
   @media (forced-colors: active) {
     :host([active]) {
       outline: var(--c-focus-outline-width) solid Highlight;

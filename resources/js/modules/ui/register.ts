@@ -35,6 +35,7 @@ import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
 import OutletNode from './OutletNode.vue';
 import SeparatorNode from './SeparatorNode.vue';
+import SlotNode from './SlotNode.vue';
 import './content-block-input';
 
 /**
@@ -82,6 +83,7 @@ export function registerUiComponents(
   components.register('craft:line-break', LineBreakNode);
   components.register('craft:outlet', OutletNode);
   components.register('craft:separator', SeparatorNode);
+  components.register('craft:slot', SlotNode);
   components.register('craft:handle', HandleControl);
   components.register('craft:slug', SlugControl);
   components.register('craft:hidden-field', HiddenFieldNode);

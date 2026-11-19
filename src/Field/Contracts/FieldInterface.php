@@ -22,6 +22,8 @@ use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTimeInterface;
@@ -549,4 +551,19 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * @param  ElementInterface  $element  The element that was just restored
      */
     public function afterElementRestore(ElementInterface $element): void;
+
+    /**
+     * Normalizes value so that it can be imported into the field.
+     *
+     * @param  array<string, mixed>  $importSettings  the field's settings from the importer's `fieldSettings` tree
+     */
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed;
+
+    /**
+     * Returns the extra settings that can be set for the field when it’s mapped in an import. Their values are
+     * passed to `normalizeValueForImport()` as `$importSettings`, alongside those of the field’s import handler.
+     *
+     * @return list<FieldMappingSetting>
+     */
+    public function importMappingSettings(): array;
 }

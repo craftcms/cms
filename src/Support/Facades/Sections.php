@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \CraftCms\Cms\Section\Data\Section|null getSectionById(int $sectionId)
  * @method static \CraftCms\Cms\Section\Data\Section|null getSectionByUid(string $uid)
  * @method static \CraftCms\Cms\Section\Data\Section|null getSectionByHandle(string $sectionHandle)
+ * @method static \CraftCms\Cms\Section\Data\Section|null resolveSection(mixed $section, \CraftCms\Cms\Shared\Enums\ModelIdentifier[]|null $by = null)
  * @method static \CraftCms\Cms\Section\Data\SectionSiteSettings[] getSectionSiteSettings(int $sectionId)
  * @method static bool saveSection(\CraftCms\Cms\Section\Data\Section $section, bool $runValidation = true)
  * @method static void handleChangedSection(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)

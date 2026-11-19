@@ -252,6 +252,19 @@
 - Fixed an error that occurred after running pending migrations from the control panel on MySQL, which restored the database backup even though the migrations had succeeded. ([#20784](https://github.com/craftcms/cms/pull/20784))
 - Fixed a bug where installing or uninstalling a plugin, or running migrations, on MySQL left the database connection reporting an open transaction, so later transactions in the same request only created savepoints and `afterCommit` callbacks never ran. ([#20784](https://github.com/craftcms/cms/pull/20784))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
+- Added `CraftCms\Cms\Shared\Enums\ModelIdentifier`.
+- Added `CraftCms\Cms\Validation\Rules\ModelReferenceRule`.
+- Added `CraftCms\Cms\Asset\Validation\Rules\VolumeRule`.
+- Added `CraftCms\Cms\Entry\Validation\Rules\EntryTypeRule`.
+- Added `CraftCms\Cms\Section\Validation\Rules\SectionRule`.
+- Added `CraftCms\Cms\Site\Validation\Rules\SiteRule`.
+- Added `CraftCms\Cms\User\Validation\Rules\UserGroupRule`.
+- Added `CraftCms\Cms\Asset\Volumes::resolveVolume()`.
+- Added `CraftCms\Cms\Entry\EntryTypes::resolveEntryType()`.
+- Added `CraftCms\Cms\Section\Sections::resolveSection()`.
+- Added `CraftCms\Cms\Site\Sites::resolveSite()`.
+- `CraftCms\Cms\User\UserGroups::resolveGroup()` now accepts `CraftCms\Cms\User\Data\UserGroup` objects, and has a `$by` argument for limiting which identifier types are accepted.
+- Removed `CraftCms\Cms\Validation\Rules\SiteIdRule`. `CraftCms\Cms\Site\Validation\Rules\SiteRule` should be used instead.
 - Fixed a bug where `CraftCms\Cms\Image\ImageTransformHelper::storeLocalSource()` and `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place. ([#20775](https://github.com/craftcms/cms/pull/20775))
 - Fixed a bug where a queue job whose worker died stayed reserved, so the control panel didn’t start the queue again until the job’s record was pruned 7 days later. Jobs reserved for longer than the queue connection’s `retry_after` setting no longer count as running. ([#20792](https://github.com/craftcms/cms/pull/20792))
 - Fixed a bug where one failed queue job stopped control panel requests from running the queue automatically. ([#20792](https://github.com/craftcms/cms/pull/20792))

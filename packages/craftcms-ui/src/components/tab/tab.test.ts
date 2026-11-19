@@ -16,6 +16,21 @@ beforeEach(() => {
 });
 
 describe('craft-tab', () => {
+  it('shows an error icon named “Errors” while it has errors, so they aren’t told by color alone', async () => {
+    const element = await createTab();
+    element.setAttribute('has-errors', '');
+    await element.updateComplete;
+    const icon = () => element.shadowRoot!.querySelector('craft-icon');
+
+    expect(icon()?.getAttribute('name')).toBe('triangle-exclamation');
+    expect(icon()?.getAttribute('label')).toBe('Errors');
+
+    element.hasErrors = false;
+    await element.updateComplete;
+
+    expect(icon()).toBeNull();
+  });
+
   it('mirrors its label text for the width reservation', async () => {
     const element = await createTab();
     const label = () =>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand;
+use CraftCms\Cms\Asset\Commands\ImportAssetsCommand;
 use CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand;
 use CraftCms\Cms\Asset\Commands\IndexOneAssetCommand;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
@@ -28,6 +29,7 @@ class AssetServiceProvider extends ServiceProvider
         }
 
         $this->commands([
+            ImportAssetsCommand::class,
             IndexAllAssetsCommand::class,
             IndexOneAssetCommand::class,
             CleanupAssetIndexesCommand::class,

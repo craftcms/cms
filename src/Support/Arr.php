@@ -274,6 +274,10 @@ class Arr extends \Illuminate\Support\Arr
         return false;
     }
 
+    /**
+     * Normalizes the key from bracket notation into dot notation.
+     * `foo[bar][baz]` => `foo.bar.baz`
+     */
     public static function dotifyKey(int|string $key): string|int
     {
         // Normalize the key into dot notation
@@ -282,5 +286,91 @@ class Arr extends \Illuminate\Support\Arr
         }
 
         return $key;
+    }
+
+    /**
+     * Normalizes the string from bracket notation into an array.
+     * `foo[bar][baz]` => `['foo', 'bar', 'baz']`
+     *
+     * @return list<string>
+     */
+    public static function bracketsToArray(string $string): array
+    {
+        return explode('[', str_replace(']', '', $string));
+    }
+
+    /**
+     * Returns an array of unique dot-notated keys from a given multidimensional array.
+     *
+     * @param  array<array-key, mixed>  $array
+     * @return list<string>
+     */
+    public static function uniqueDotifiedKeys(array $array, string $prepend = ''): array
+    {
+        $keys = [];
+
+        foreach ($array as $key => $value) {
+            $isListItem = is_int($key);
+            $path = $isListItem
+                ? $prepend
+                : ($prepend === '' ? (string) $key : $prepend.'.'.$key);
+
+            if (! $isListItem && $path !== '') {
+                $keys[] = $path;
+            }
+
+            if (is_array($value)) {
+                $keys = array_merge($keys, self::uniqueDotifiedKeys($value, $path));
+            }
+        }
+
+        return array_values(array_unique($keys));
+    }
+
+    /**
+     * Returns a sample of the value at a dot-notated key produced by `uniqueDotifiedKeys()`, looking
+     * through every element of any list it meets (mirroring that method's own list transparency),
+     * since the key may only exist in a later element. A non-empty scalar is preferred over the
+     * first value found.
+     *
+     * @param  array<array-key, mixed>  $array
+     */
+    public static function sampleValueAtDotifiedKey(array $array, string $key): mixed
+    {
+        return self::sampleAt($array, explode('.', $key));
+    }
+
+    /**
+     * @param  list<string>  $segments
+     */
+    private static function sampleAt(mixed $value, array $segments): mixed
+    {
+        if (is_array($value) && self::isList($value)) {
+            $fallback = null;
+
+            foreach ($value as $element) {
+                $sample = self::sampleAt($element, $segments);
+
+                if (is_scalar($sample) && $sample !== '') {
+                    return $sample;
+                }
+
+                $fallback ??= $sample;
+            }
+
+            return $fallback;
+        }
+
+        if ($segments === []) {
+            return $value;
+        }
+
+        $segment = array_shift($segments);
+
+        if (! is_array($value) || ! array_key_exists($segment, $value)) {
+            return null;
+        }
+
+        return self::sampleAt($value[$segment], $segments);
     }
 }

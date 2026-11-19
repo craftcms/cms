@@ -423,6 +423,8 @@ export default class CraftCombobox extends FormAssociated(
 
     this.#syncValidity();
 
+    this.toggleAttribute('has-clear-button', this.#showsClearButton);
+
     this.toggleAttribute(
       'has-prefix-icon',
       this.#selectedOption()?.data?.icon != null ||
@@ -1046,6 +1048,10 @@ export default class CraftCombobox extends FormAssociated(
       : nothing}`;
   }
 
+  get #showsClearButton(): boolean {
+    return this.clearable && this.#hasValue() && !this.#inactive;
+  }
+
   #hasValue(): boolean {
     const value = this.value;
 
@@ -1169,7 +1175,7 @@ export default class CraftCombobox extends FormAssociated(
                 </span>`
               : nothing}
           <slot name="input"></slot>
-          ${this.clearable && this.#hasValue() && !this.#inactive
+          ${this.#showsClearButton
             ? html`<craft-button
                 class="clear"
                 type="button"

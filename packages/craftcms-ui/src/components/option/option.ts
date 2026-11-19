@@ -21,6 +21,8 @@ import '../icon/icon.js';
  *
  * @slot - The option's label and any markup that goes with it.
  * @slot suffix - Trailing content, shown after the label and hint.
+ * @slot badge - A badge appended to the label. A select appends the selected
+ *   option's to its value too.
  *
  * @fires craft-selected-change - `selected` changed. Bubbles, so the listbox
  *   around the option hears it.
@@ -120,7 +122,7 @@ export default class CraftOption extends LitElement {
   override render() {
     return html`
       <div class="choice-field__label">
-        <span class="content"><slot></slot></span>
+        <span class="content"><slot></slot><slot name="badge"></slot></span>
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>

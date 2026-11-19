@@ -43,6 +43,11 @@ export const Outline: Story = {
   args: {appearance: 'outline'},
 };
 
+/** `dashed` draws a dashed border, matching a dashed button. */
+export const Dashed: Story = {
+  args: {appearance: 'dashed'},
+};
+
 /** The default slot holds whatever gets the reader out of the empty state. */
 export const WithAction: Story = {
   args: {

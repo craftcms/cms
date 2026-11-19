@@ -1,0 +1,328 @@
+[
+  {
+    "title": "Structuring entry types",
+    "summary": "How to approach structuring entry types.",
+    "difficulty": "advanced",
+    "featured": true,
+    "readingTime": 20
+  },
+  {
+    "title": "Building navigation menus",
+    "summary": "An updated look at building navigation menus.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 25
+  },
+  {
+    "title": "Choosing a hosting plan",
+    "summary": "How to approach choosing a hosting plan.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 5
+  },
+  {
+    "title": "Designing a field layout",
+    "summary": "How to approach designing a field layout.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 27
+  },
+  {
+    "title": "",
+    "summary": "A guide whose title is missing.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 4
+  },
+  {
+    "title": "Relating entries to each other",
+    "summary": "How to approach relating entries to each other.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 9
+  },
+  {
+    "title": "Internal: style guide notes",
+    "summary": "How to approach internal: style guide notes.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 5,
+    "skip": true
+  },
+  {
+    "title": "Localizing your site",
+    "summary": "An updated look at localizing your site.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 7
+  },
+  {
+    "title": "Organizing content with categories",
+    "summary": "How to approach organizing content with categories.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 16
+  },
+  {
+    "title": "Setting up environments",
+    "summary": "How to approach setting up environments.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 12
+  },
+  {
+    "title": "Tagging content",
+    "summary": "How to approach tagging content.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 23
+  },
+  {
+    "title": "Using the GraphQL API",
+    "summary": "An updated look at using the GraphQL API.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 14
+  },
+  {
+    "title": "Writing your first template",
+    "summary": "How to approach writing your first template.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 19
+  },
+  {
+    "title": "Previewing drafts",
+    "summary": "How to approach previewing drafts.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 5
+  },
+  {
+    "title": "Mastering everything",
+    "summary": "A guide with a difficulty the field doesn’t offer.",
+    "difficulty": "expert",
+    "featured": true,
+    "readingTime": 60
+  },
+  {
+    "title": "Scheduling posts",
+    "summary": "How to approach scheduling posts.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 12
+  },
+  {
+    "title": "Internal: release checklist",
+    "summary": "How to approach internal: release checklist.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 12,
+    "skip": true
+  },
+  {
+    "title": "Planning a migration",
+    "summary": "An updated look at planning a migration.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 21
+  },
+  {
+    "title": "Writing custom Twig filters",
+    "summary": "How to approach writing custom Twig filters.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 19
+  },
+  {
+    "title": "Working with assets",
+    "summary": "How to approach working with assets.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 26
+  },
+  {
+    "title": "Resizing images on the fly",
+    "summary": "How to approach resizing images on the fly.",
+    "difficulty": "intermediate",
+    "featured": true,
+    "readingTime": 26
+  },
+  {
+    "title": "Configuring email",
+    "summary": "An updated look at configuring email.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 28
+  },
+  {
+    "title": "Managing users and permissions",
+    "summary": "How to approach managing users and permissions.",
+    "difficulty": "intermediate",
+    "featured": true,
+    "readingTime": 8
+  },
+  {
+    "title": "Handling form submissions",
+    "summary": "How to approach handling form submissions.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 8
+  },
+  {
+    "title": "Measuring reading time",
+    "summary": "How to approach measuring reading time.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 9
+  },
+  {
+    "title": "Securing the control panel",
+    "summary": "How to approach securing the control panel.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 15
+  },
+  {
+    "title": "Internal: support macros",
+    "summary": "How to approach internal: support macros.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 19,
+    "skip": true
+  },
+  {
+    "title": "Running scheduled tasks",
+    "summary": "An updated look at running scheduled tasks.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 10
+  },
+  {
+    "title": "Backing up your database",
+    "summary": "How to approach backing up your database.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 22
+  },
+  {
+    "title": "Caching strategies",
+    "summary": "How to approach caching strategies.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 15
+  },
+  {
+    "title": "Upgrading between versions",
+    "summary": "How to approach upgrading between versions.",
+    "difficulty": "advanced",
+    "featured": true,
+    "readingTime": 29
+  },
+  {
+    "title": "Deploying with zero downtime",
+    "summary": "An updated look at deploying with zero downtime.",
+    "difficulty": "intermediate",
+    "featured": true,
+    "readingTime": 17
+  },
+  {
+    "title": "Indexing content for search",
+    "summary": "How to approach indexing content for search.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 11
+  },
+  "not a guide",
+  {
+    "title": "Paginating listings",
+    "summary": "How to approach paginating listings.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 18
+  },
+  {
+    "title": "Debugging slow pages",
+    "summary": "An updated look at debugging slow pages.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 24
+  },
+  {
+    "title": "Building a blog",
+    "summary": "How to approach building a blog.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 25
+  },
+  {
+    "title": "Building a portfolio",
+    "summary": "How to approach building a portfolio.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 7
+  },
+  {
+    "title": "Building a documentation site",
+    "summary": "How to approach building a documentation site.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 14
+  },
+  {
+    "title": "Translating static strings",
+    "summary": "How to approach translating static strings.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 21
+  },
+  {
+    "title": "Adding SEO metadata",
+    "summary": "How to approach adding SEO metadata.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 28
+  },
+  {
+    "title": "Serving a headless front end",
+    "summary": "How to approach serving a headless front end.",
+    "difficulty": "intermediate",
+    "featured": true,
+    "readingTime": 10
+  },
+  {
+    "title": "Integrating a CRM",
+    "summary": "How to approach integrating a CRM.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 17
+  },
+  {
+    "title": "Sending newsletters",
+    "summary": "How to approach sending newsletters.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 24
+  },
+  {
+    "title": "Reviewing content before publishing",
+    "summary": "How to approach reviewing content before publishing.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 6
+  },
+  {
+    "title": "Archiving old content",
+    "summary": "How to approach archiving old content.",
+    "difficulty": "advanced",
+    "featured": true,
+    "readingTime": 13
+  },
+  {
+    "title": "Measuring page performance",
+    "summary": "How to approach measuring page performance.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 20
+  }
+]
