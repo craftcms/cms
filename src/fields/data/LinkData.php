@@ -7,6 +7,7 @@
 
 namespace craft\fields\data;
 
+use Closure;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
@@ -102,6 +103,9 @@ class LinkData extends BaseObject implements Serializable, Arrayable
     private string $renderedValue;
     private ?string $label = null;
     private ?string $filename = null;
+    private ?Closure $eagerLoader = null;
+
+    private ?ElementInterface $eagerLoadedElement = null;
 
     public function __construct(
         private readonly string $value,
@@ -109,6 +113,29 @@ class LinkData extends BaseObject implements Serializable, Arrayable
         array $config = [],
     ) {
         parent::__construct($config);
+    }
+
+    /**
+     * Leaves out the eager loader, which can’t be serialized, so links can be cached before they’re read.
+     *
+     * @return array<string,mixed>
+     */
+    public function __serialize(): array
+    {
+        $data = get_object_vars($this);
+        unset($data['eagerLoader']);
+
+        return $data;
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        foreach ($data as $name => $value) {
+            $this->$name = $value;
+        }
     }
 
     public function __toString(): string
@@ -157,6 +184,7 @@ class LinkData extends BaseObject implements Serializable, Arrayable
     public function getValue(): string
     {
         if (!isset($this->renderedValue)) {
+            $this->loadElement();
             $this->renderedValue = $this->linkType->renderValue($this->value);
         }
         return $this->renderedValue;
@@ -200,6 +228,7 @@ class LinkData extends BaseObject implements Serializable, Arrayable
             return $this->label;
         }
 
+        $this->loadElement();
         return $this->linkType->linkLabel($this->value);
     }
 
@@ -224,7 +253,12 @@ class LinkData extends BaseObject implements Serializable, Arrayable
     #[AllowedInSandbox]
     public function getFilename(bool $custom = true): ?string
     {
-        return $custom ? $this->filename : $this->linkType->filename($this->value);
+        if ($custom) {
+            return $this->filename;
+        }
+
+        $this->loadElement();
+        return $this->linkType->filename($this->value);
     }
 
     /**
@@ -316,7 +350,47 @@ class LinkData extends BaseObject implements Serializable, Arrayable
         if (!$this->linkType instanceof BaseElementLinkType) {
             return null;
         }
-        return $this->linkType->element($this->value);
+
+        $this->loadElement();
+
+        return $this->eagerLoadedElement ?? $this->linkType->element($this->value);
+    }
+
+    /**
+     * Sets the callback that eager-loads this link’s element, together with the elements of the same field on other
+     * elements, the first time it’s needed.
+     *
+     * @param Closure $eagerLoader
+     * @internal
+     */
+    public function setEagerLoader(Closure $eagerLoader): void
+    {
+        $this->eagerLoader = $eagerLoader;
+    }
+
+    /**
+     * Sets the element that was eager-loaded for this link.
+     *
+     * @param ElementInterface $element
+     * @internal
+     */
+    public function setEagerLoadedElement(ElementInterface $element): void
+    {
+        $this->eagerLoader = null;
+        $this->eagerLoadedElement = $element;
+        BaseElementLinkType::rememberElement($this->value, $element);
+    }
+
+    private function loadElement(): void
+    {
+        if ($this->eagerLoader !== null) {
+            $eagerLoader = $this->eagerLoader;
+            $this->eagerLoader = null;
+
+            if (!BaseElementLinkType::hasFetchedElement($this->value)) {
+                $eagerLoader();
+            }
+        }
     }
 
     public function serialize(): mixed

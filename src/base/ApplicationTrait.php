@@ -44,6 +44,7 @@ use craft\fieldlayoutelements\users\EmailField;
 use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
+use craft\fields\Link;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -1691,6 +1692,9 @@ trait ApplicationTrait
 
         // Register field layout listeners
         $this->_registerFieldLayoutListener();
+
+        // Keep eager-loaded Link field elements on the fields’ values
+        Event::on(Element::class, Element::EVENT_SET_EAGER_LOADED_ELEMENTS, [Link::class, 'handleSetEagerLoadedElements']);
 
         // Register all the listeners for config items
         $this->_registerConfigListeners();

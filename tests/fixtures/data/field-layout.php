@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Color;
 use craft\fields\Entries;
+use craft\fields\Link;
 use craft\fields\Matrix;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -125,6 +126,16 @@ return [
                             ],
                         ],
                         'required' => true,
+                    ],
+
+                    // LINK FIELD
+                    [
+                        'uid' => 'field-1026-----------------------uid',
+                        'name' => 'Link Field',
+                        'handle' => 'linkField',
+                        'type' => Link::class,
+                        'types' => ['entry', 'url'],
+                        'required' => false,
                     ],
                 ],
             ],

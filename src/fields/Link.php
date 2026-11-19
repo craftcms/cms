@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\base\Field;
@@ -17,12 +18,15 @@ use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\SetEagerLoadedElementsEvent;
 use craft\fields\conditions\LinkFieldConditionRule;
 use craft\fields\data\LinkData;
 use craft\fields\linktypes\Asset;
+use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
 use craft\fields\linktypes\BaseTextLinkType;
 use craft\fields\linktypes\Category;
@@ -45,6 +49,8 @@ use craft\validators\StringValidator;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use ReflectionMethod;
+use WeakReference;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
@@ -54,7 +60,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
+class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface, EagerLoadingFieldInterface
 {
     use RelationalFieldTrait;
 
@@ -72,6 +78,12 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     public const TYPE_EMAIL = 'email';
 
     private static array $_types;
+
+    /**
+     * @var array<class-string<BaseLinkType>,bool> Whether each link type’s elements can be eager-loaded
+     * @see canEagerLoad()
+     */
+    private static array $_eagerLoadableTypes = [];
 
     /**
      * @inheritdoc
@@ -592,7 +604,169 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             $config = [];
         }
 
-        return new LinkData($value, $linkType, $config);
+        $link = new LinkData($value, $linkType, $config);
+
+        if ($element && isset($this->id, $this->handle) && self::canEagerLoad($link)) {
+            $this->setEagerLoader($link, $element, $this->id, $this->handle);
+        }
+
+        return $link;
+    }
+
+    /**
+     * Eager-loads the link’s element together with the elements this field links to on the other elements from the
+     * same query, the first time it’s needed.
+     */
+    private function setEagerLoader(LinkData $link, ElementInterface $element, int $fieldId, string $handle): void
+    {
+        $owner = WeakReference::create($element);
+
+        $link->setEagerLoader(static function() use ($owner, $fieldId, $handle): void {
+            $element = $owner->get();
+
+            if (!isset($element->elementQueryResult)) {
+                return;
+            }
+
+            // Only the links whose elements haven’t been fetched, so eager-loaded elements aren’t replaced
+            $elements = array_values(array_filter(
+                $element->elementQueryResult,
+                function(ElementInterface $sibling) use ($fieldId, $handle): bool {
+                    if ($sibling->getFieldLayout()?->getFieldByHandle($handle)?->id !== $fieldId) {
+                        return false;
+                    }
+
+                    $link = $sibling->getFieldValue($handle);
+
+                    return (
+                        $link instanceof LinkData &&
+                        self::canEagerLoad($link) &&
+                        !BaseElementLinkType::hasFetchedElement($link->serialize()['value'] ?? '')
+                    );
+                },
+            ));
+
+            if (count($elements) < 2) {
+                return;
+            }
+
+            Craft::$app->getElements()->eagerLoadElements($element::class, $elements, [$handle]);
+
+            // Remember the links whose elements weren’t found
+            foreach ($elements as $sibling) {
+                $link = $sibling->getFieldValue($handle);
+
+                if ($link instanceof LinkData && self::canEagerLoad($link)) {
+                    $value = $link->serialize()['value'] ?? '';
+
+                    if (!BaseElementLinkType::hasFetchedElement($value)) {
+                        BaseElementLinkType::rememberElement($value, null);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.13.0
+     */
+    public function getEagerLoadingMap(array $sourceElements): array|false
+    {
+        $valuesByType = [];
+        foreach ($sourceElements as $sourceElement) {
+            $link = $sourceElement->getFieldValue($this->handle);
+
+            if ($link instanceof LinkData && self::canEagerLoad($link)) {
+                $valuesByType[self::types()[$link->getType()]][$sourceElement->id] = $link->serialize()['value'] ?? '';
+            }
+        }
+
+        $maps = [];
+        foreach ($valuesByType as $type => $values) {
+            /** @var class-string<BaseElementLinkType> $type */
+            array_push($maps, ...$type::eagerLoadingMaps($values));
+        }
+
+        return $maps ?: false;
+    }
+
+    /**
+     * Sets eager-loaded elements on the Link field values they were eager-loaded for, rather than on the elements,
+     * so the field values remain links.
+     *
+     * Plans that could load other elements than the links resolve to are discarded, see loadsLinkedElement().
+     *
+     * @param SetEagerLoadedElementsEvent $event
+     * @internal
+     */
+    public static function handleSetEagerLoadedElements(SetEagerLoadedElementsEvent $event): void
+    {
+        /** @var ElementInterface $element */
+        $element = $event->sender;
+        $handle = (string)$event->plan->handle;
+        $handle = str_contains($handle, ':') ? explode(':', $handle, 2)[1] : $handle;
+
+        if (!$element->getFieldLayout()?->getFieldByHandle($handle) instanceof self) {
+            return;
+        }
+
+        $event->handled = true;
+
+        if (empty($event->elements)) {
+            return;
+        }
+
+        $link = $element->getFieldValue($handle);
+
+        if ($link instanceof LinkData && self::loadsLinkedElement($event->plan, $link)) {
+            $link->setEagerLoadedElement($event->elements[0]);
+        }
+    }
+
+    /**
+     * Returns whether the plan loads the element the link resolves to.
+     *
+     * Plans with an alias, extra criteria or a query callback could load other elements. Plans limited to some sites,
+     * such as GraphQL’s, only keep links to a specific site, as the sites could change which site a link without one
+     * resolves to.
+     */
+    private static function loadsLinkedElement(EagerLoadPlan $plan, LinkData $link): bool
+    {
+        if (
+            $plan->alias !== $plan->handle ||
+            $plan->configureQuery !== null ||
+            !empty(array_diff(array_keys($plan->criteria), ['status', 'drafts', 'revisions', 'withTransforms']))
+        ) {
+            return false;
+        }
+
+        if ($plan->siteIds === null) {
+            return true;
+        }
+
+        $type = self::types()[$link->getType()] ?? null;
+
+        return is_subclass_of($type, BaseElementLinkType::class) && $type::referencesSite($link->serialize()['value'] ?? '');
+    }
+
+    /**
+     * Returns whether the link’s element can be eager-loaded, which requires an element link type that fetches
+     * elements the default way.
+     */
+    private static function canEagerLoad(LinkData $link): bool
+    {
+        $type = self::types()[$link->getType()] ?? null;
+
+        if ($type === null) {
+            return false;
+        }
+
+        return self::$_eagerLoadableTypes[$type] ??= (
+            is_subclass_of($type, BaseElementLinkType::class) &&
+            (new ReflectionMethod($type, 'element'))->class === BaseElementLinkType::class &&
+            (new ReflectionMethod($type, 'elementQuery'))->class === BaseElementLinkType::class
+        );
     }
 
     /**

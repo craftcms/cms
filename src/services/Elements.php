@@ -3829,7 +3829,7 @@ class Elements extends Component
         foreach ($map as $m) {
             if (isset($m['map'])) {
                 /** @phpstan-ignore-next-line */
-                $maps += $this->normalizeEagerLoadingMaps($m);
+                array_push($maps, ...$this->normalizeEagerLoadingMaps($m));
             }
         }
         return $maps;
