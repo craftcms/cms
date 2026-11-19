@@ -389,6 +389,10 @@ export default css`
     color: var(--c-color-neutral-on-quiet, currentcolor);
   }
 
+  .flyout-indicator:dir(rtl) {
+    scale: -1 1;
+  }
+
   .flyout__label {
     padding-inline: var(--c-spacing-sm);
   }
