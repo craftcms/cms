@@ -202,7 +202,10 @@
       ? {load: loadInlineInputs, save: saveInline}
       : undefined,
     exportElements,
-    pinnedColumn: {key: 'title', label: initial.elementDisplayName},
+    pinnedColumn:
+      initial.viewState.showHeaderColumn === false
+        ? null
+        : {key: 'title', label: initial.elementDisplayName},
     data: (rows, mode, elementIndex) =>
       elementIndex.viewState.mode === mode ? rows : [],
     fetch: async (query) => {

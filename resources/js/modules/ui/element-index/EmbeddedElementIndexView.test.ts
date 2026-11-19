@@ -183,6 +183,35 @@ describe('EmbeddedElementIndexView', () => {
     );
   });
 
+  it.each([true, false])(
+    'shows the title column when showHeaderColumn is %s',
+    async (showHeaderColumn) => {
+      restoreElementInternals = stubElementInternals();
+      const payload = nestedIndexPayload([nestedElement(11)]);
+      payload.viewState.showHeaderColumn = showHeaderColumn;
+      request.post.mockResolvedValue({data: payload});
+      root = document.createElement('div');
+      document.body.append(root);
+      app = createApp({
+        render: () =>
+          h(EmbeddedElementIndexView, {
+            elementType: 'Entry',
+            initial: payload,
+            params: {embeddedIndexToken: 'sealed'},
+            storageKey: 'embeddedindex.test',
+          }),
+      });
+      app.mount(root);
+      await vi.waitFor(() => expect(root!.querySelector('tr')).not.toBeNull());
+
+      expect(
+        [...root.querySelectorAll('th')].some(
+          (th) => th.textContent?.trim() === payload.elementDisplayName
+        )
+      ).toBe(showHeaderColumn);
+    }
+  );
+
   it('asks for inline inputs when editing inline', async () => {
     const container = mount(false);
     await vi.waitFor(() =>
