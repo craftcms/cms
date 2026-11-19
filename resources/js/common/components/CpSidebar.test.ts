@@ -211,4 +211,21 @@ describe('the Customize menu', () => {
   it('is left out for anyone the server gives no menu', async () => {
     expect(find(await mountSidebar('docked', 'visible'))).toBeNull();
   });
+
+  it('stays in the floating sidebar, which has nothing to collapse', async () => {
+    // Below `lg` the sidebar floats, and this menu is the only way to
+    // customize sources there.
+    const container = await mountSidebar('floating', 'visible', menu);
+
+    expect(find(container)).not.toBeNull();
+    expect(
+      container.querySelector('.cp-sidebar__footer craft-nav-item')
+    ).toBeNull();
+  });
+
+  it('leaves the floating sidebar without a footer when there is no menu', async () => {
+    const container = await mountSidebar('floating', 'visible');
+
+    expect(container.querySelector('.cp-sidebar__footer')).toBeNull();
+  });
 });
