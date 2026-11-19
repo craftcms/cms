@@ -741,7 +741,7 @@ class Gql
 
     public function generateToken(): string
     {
-        return Str::random(32, extendedChars: true);
+        return Str::random(32);
     }
 
     /**

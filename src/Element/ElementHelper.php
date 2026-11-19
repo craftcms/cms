@@ -62,7 +62,7 @@ class ElementHelper
      */
     public static function tempSlug(): string
     {
-        return '__temp_'.Str::random(36);
+        return '__temp_'.Str::random(36, extendedChars: false);
     }
 
     /**

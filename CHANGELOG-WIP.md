@@ -482,6 +482,7 @@
 - Deprecated `craft\helpers\Session`. `Illuminate\Support\Facades\Session` should be used instead.
 - Deprecated `craft\helpers\Sequence`. `CraftCms\Cms\Support\Sequence` should be used instead.
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
+- `CraftCms\Cms\Support\Str::random()` returns uppercase and lowercase letters and digits by default, unlike `craft\helpers\StringHelper::randomString()`, which returns lowercase letters. Pass `extendedChars: false` to `Str::random()` for lowercase letters only. ([#20865](https://github.com/craftcms/cms/pull/20865))
 - Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
 - Deprecated `craft\helpers\App::env()`, `CraftCms\Cms\Support\Env::get()` should be used instead.
 - Deprecated `craft\markdown\Markdown`, `craft\markdown\GithubMarkdown`, `craft\markdown\MarkdownExtra`, and `craft\markdown\PreEncodedMarkdown`. `CraftCms\Cms\Support\Facades\Markdown` should be used instead.
