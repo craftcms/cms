@@ -1,25 +1,19 @@
 <script setup lang="ts">
-  import {
-    actionClient,
-    appendBodyHtml,
-    appendHeadHtml,
-    isHttpError,
-    t,
-  } from '@craftcms/ui';
-  import {runAction} from '@craftcms/ui/actions.mjs';
-  import {getElements} from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ElementIndexController';
-  import exportIndex from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ExportElementIndexController';
-  import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
+  import {isHttpError, t} from '@craftcms/ui';
   import ElementBulkActionsBar from '@/modules/elements/index/components/ElementBulkActionsBar.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
-  import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
-  import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
+  import {normalizeSort} from '@/modules/elements/index/composables/useElementIndexSort';
+  import {useElementRowActions} from '@/modules/elements/index/composables/useElementRowActions';
   import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
+  import {exportElementIndex} from '@/modules/elements/index/export-element-index';
   import {saveInlineElements} from '@/modules/elements/index/save-inline-elements';
   import type {ElementIndexExportFormat} from '@/modules/elements/index/types/exporters';
-  import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
   import {showError} from '@/modules/messages/messages';
-  import type {NestedContentIndexData} from '../nested-elements/nested-elements';
+  import {
+    appendPayloadAssets,
+    type NestedContentIndexData,
+  } from '../nested-elements/nested-elements';
+  import {useEmbeddedIndexElements} from './useEmbeddedIndexElements';
 
   type EmbeddedIndexData = NestedContentIndexData & {readOnly?: boolean};
 
@@ -42,10 +36,6 @@
 
   const {elementType, initial, params} = props;
   const editable = !props.readOnly && !initial.readOnly;
-  const renderedMode = initial.viewState.mode;
-  const renderedColumns = initial.defaultTableColumns.filter(
-    (column) => column !== 'title'
-  );
   const scopeParams = {
     elementType,
     context: 'embeddedIndex',
@@ -53,54 +43,11 @@
     ...params,
   };
 
-  function normalizedSort(value: unknown): IndexQueryParams['sort'] {
-    const items = Array.isArray(value)
-      ? value
-      : value instanceof Object
-        ? Object.values(value)
-        : [];
-
-    const normalized = items.filter(
-      (item): item is {field: string; direction: 'asc' | 'desc'} =>
-        item instanceof Object &&
-        typeof item.field === 'string' &&
-        (item.direction === 'asc' || item.direction === 'desc')
-    );
-
-    return normalized[0]?.field === 'score'
-      ? normalized.slice(0, 1)
-      : normalized.filter((item) => item.field !== 'score');
-  }
-
-  /** Flattens params into the bracketed keys a form body needs for nested values. */
-  function formParams(
-    values: Record<string, unknown>,
-    prefix = ''
-  ): Record<string, unknown> {
-    return Object.fromEntries(
-      Object.entries(values).flatMap(([key, value]) => {
-        const name = prefix ? `${prefix}[${key}]` : key;
-
-        return value instanceof Object
-          ? Object.entries(formParams(value as Record<string, unknown>, name))
-          : [[name, value]];
-      })
-    );
-  }
-
-  const initialSort = normalizedSort(initial.sort);
   // The screen's `?site=` doesn't reach the requests for later pages, so they
   // name the site the first page listed until the site menu changes it.
   const initialSite = initial.sites.find(
     (site) => site.id === initial.siteId
   )?.handle;
-
-  async function appendPayloadAssets(
-    payload: NestedContentIndexData
-  ): Promise<void> {
-    await appendHeadHtml(payload.headHtml ?? '');
-    await appendBodyHtml(payload.bodyHtml ?? '');
-  }
 
   void appendPayloadAssets(initial);
 
@@ -132,21 +79,16 @@
     }
 
     try {
-      await runAction({
-        type: 'download',
-        method: 'POST',
-        url: exportIndex.url(),
-        body: {
+      await exportElementIndex(
+        {
           ...listedParams(),
-          criteria: {
-            ...(selectedIds.length ? {id: [...selectedIds]} : {}),
-            ...(limit ? {limit} : {}),
-          },
-          sort: normalizedSort(model.query.value.sort ?? initialSort),
-          type,
-          format,
+          sort: normalizeSort(model.query.value.sort ?? initialSort),
         },
-      });
+        format,
+        type,
+        selectedIds,
+        limit
+      );
     } catch (cause) {
       const message = isHttpError<{message?: string}>(cause)
         ? cause.response?.data?.message
@@ -159,27 +101,14 @@
     return model.load();
   }
 
-  let loadingInlineInputs = false;
-
-  /** Reloads the rows with their inline inputs, to start editing inline. */
-  async function loadInlineInputs(): Promise<void> {
-    loadingInlineInputs = true;
-
-    try {
-      await model.load();
-    } finally {
-      loadingInlineInputs = false;
-    }
-  }
-
   /** Saves inline edits, then reloads the rows so they show the saved values. */
   async function saveInline(
     body: URLSearchParams
   ): Promise<InlineEditingSaveResult | false> {
-    const result = await saveInlineElements(
-      body,
-      formParams({...listedParams(), siteId: model.view.elementIndex.siteId})
-    );
+    const result = await saveInlineElements(body, {
+      ...listedParams(),
+      siteId: model.view.elementIndex.siteId,
+    });
 
     if (result && (!result.errors || Object.keys(result.errors).length === 0)) {
       await reload();
@@ -188,7 +117,7 @@
     return result;
   }
 
-  const model = useDetachedElementIndex<EmbeddedIndexData>({
+  const {model, initialSort} = useEmbeddedIndexElements<EmbeddedIndexData>({
     initial,
     initialQuery: initialSite ? {site: initialSite} : {},
     storageKey: props.storageKey,
@@ -198,72 +127,21 @@
       fieldLayouts: payload.fieldLayouts,
       extraParams: params,
     }),
-    inlineEditing: editable
-      ? {load: loadInlineInputs, save: saveInline}
-      : undefined,
+    requestParams: () => scopeParams,
+    showHeaderColumn: initial.viewState.showHeaderColumn,
+    saveInline: editable ? saveInline : undefined,
     exportElements,
-    pinnedColumn:
-      initial.viewState.showHeaderColumn === false
-        ? null
-        : {key: 'title', label: initial.elementDisplayName},
-    data: (rows, mode, elementIndex) =>
-      elementIndex.viewState.mode === mode ? rows : [],
-    fetch: async (query) => {
-      const {data} = await actionClient.post<EmbeddedIndexData>(
-        getElements.url(),
-        {
-          viewMode: renderedMode,
-          columns: renderedColumns,
-          ...query,
-          ...scopeParams,
-          ...(loadingInlineInputs ? {editable: true} : {}),
-          sort: normalizedSort(query.sort ?? initialSort),
-          showInGrid: (query.viewMode ?? renderedMode) === 'cards',
-        }
-      );
-
-      return data;
-    },
-    onLoaded: async (payload) => {
-      await appendPayloadAssets(payload);
-    },
     onError: (cause) => emit('error', cause),
   });
 
   const {selection, elementIndex} = model.view;
 
-  // Double-click an element to edit it in a slideout.
-  const quickEdit = useElementQuickEdit({
-    refreshResults: () => {
+  const {quickEdit, editElement, viewElement} = useElementRowActions({
+    rows: () => elementIndex.data,
+    refresh: () => {
       void reload();
     },
   });
-
-  function actionRow(detail: BulkActionEventDetail) {
-    if (detail.elementIds.length !== 1) {
-      return null;
-    }
-
-    const id = String(detail.elementIds[0]);
-
-    return elementIndex.data.find((row) => String(row.id) === id) ?? null;
-  }
-
-  function editElement(detail: BulkActionEventDetail): void {
-    const url = actionRow(detail)?.cpEditUrl;
-
-    if (url) {
-      quickEdit.openEditor(url, detail.trigger);
-    }
-  }
-
-  function viewElement(detail: BulkActionEventDetail): void {
-    const url = actionRow(detail)?.viewUrl;
-
-    if (url) {
-      window.open(url, '_blank', 'noopener');
-    }
-  }
 
   function onActionPerformed(): void {
     selection.clearSelection();
