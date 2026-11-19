@@ -321,6 +321,53 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
+     * Test that each map keeps its own limit when several maps are combined, and that the plan's limit
+     * can be a numeric string
+     *
+     * @return void
+     */
+    public function testEagerLoadingMapsWithOwnLimits(): void
+    {
+        $entries = Entry::find()->limit(4)->orderBy(['elements.id' => SORT_ASC])->ids();
+        self::assertCount(4, $entries);
+
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entries[0]],
+                    ['source' => 1, 'target' => $entries[1]],
+                ],
+                'criteria' => ['limit' => 1],
+            ],
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entries[2]],
+                    ['source' => 1, 'target' => $entries[3]],
+                ],
+            ],
+        ];
+        $source = new EagerLoadingTestSourceElement([
+            'id' => 1,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+        ]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$source], [
+            'mixed',
+            ['path' => 'mixed as limited', 'criteria' => ['limit' => '2']],
+        ]);
+
+        $ids = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => $element->id,
+            $source->getEagerLoadedElements($alias)->all(),
+        );
+
+        self::assertSame([$entries[0], $entries[2], $entries[3]], $ids('mixed'));
+        self::assertSame([$entries[0], $entries[2]], $ids('limited'));
+    }
+
+    /**
      * @param callable(EntryQuery): EntryQuery $modifyQuery
      * @param bool $one Whether to execute the query with `one()` rather than `all()`
      * @return int[]

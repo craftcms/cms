@@ -3583,9 +3583,11 @@ class Elements extends Component
                 $loadedElements = [];
                 $loadedCounts = [];
 
-                // With several maps, the plan's offset and limit apply to each source's combined elements
-                $combinedOffset = 0;
-                $combinedLimit = null;
+                // With several maps, the plan's offset and limit apply to each source's combined elements,
+                // while each map keeps its own
+                $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
+                $combinedOffset = count($maps) > 1 ? (int)($planCriteria['offset'] ?? 0) : 0;
+                $combinedLimit = count($maps) > 1 && isset($planCriteria['limit']) ? (int)$planCriteria['limit'] : null;
 
                 foreach ($maps as $map) {
                     $targetElementIdsBySourceIds = null;
@@ -3644,10 +3646,8 @@ class Elements extends Component
                         $limit = ArrayHelper::remove($criteria, 'limit');
 
                         if (count($maps) > 1) {
-                            $combinedOffset = $offset;
-                            $combinedLimit = $limit;
-                            $offset = 0;
-                            $limit = null;
+                            $offset = $otherCriteria['offset'] ?? 0;
+                            $limit = $otherCriteria['limit'] ?? null;
                         }
 
                         Craft::configure($query, $criteria);
@@ -3810,7 +3810,7 @@ class Elements extends Component
                 // Tell the source elements about their eager-loaded elements
                 foreach ($filteredElements as $i => $sourceElement) {
                     if (isset($loadedElements[$i]) && ($combinedOffset || $combinedLimit)) {
-                        $loadedElements[$i] = array_slice($loadedElements[$i], (int)$combinedOffset, $combinedLimit);
+                        $loadedElements[$i] = array_slice($loadedElements[$i], $combinedOffset, $combinedLimit);
                     }
 
                     if (!empty($loadedElements[$i])) {
