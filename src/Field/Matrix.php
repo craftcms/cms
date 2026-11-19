@@ -383,6 +383,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     #[Override]
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'siteSettings.*.uriFormat' => t('Entry URI Format'),
+        ]);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

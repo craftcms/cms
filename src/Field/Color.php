@@ -236,6 +236,14 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
     }
 
     #[Override]
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'palette.*.color' => t('Color'),
+        ]);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
