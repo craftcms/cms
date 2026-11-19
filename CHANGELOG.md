@@ -120,6 +120,7 @@
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
 - Renamed `<craft-tab>`’s `--c-tab-spacing-inline`, `--c-tab-spacing-block`, and `--c-tab-border-active` custom properties to `--c-tab-padding-inline`, `--c-tab-padding-block`, and `--c-tab-indicator-fill-active`. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - The web installer now has a “Time Zone” field, which defaults to the time zone in the project config, or the browser’s time zone. Previously, sites installed from the web installer were always set to America/Los_Angeles.
+- Fixed a bug where Live Preview kept showing discarded changes after “Discard changes” was clicked. ([#20839](https://github.com/craftcms/cms/issues/20839), [#20858](https://github.com/craftcms/cms/pull/20858))
 - Fixed a bug where the web installer’s Port field was too narrow to show its value.
 - Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer showed “[object Object]” rather than the error message when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
