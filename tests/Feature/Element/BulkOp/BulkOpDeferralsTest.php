@@ -7,6 +7,9 @@ use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\BulkOp\Events\DeferredBulkOpReplayed;
 use CraftCms\Cms\Entry\Elements\Entry;
+use Illuminate\Contracts\Queue\Job;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\DB;
 
 class TestDeferredBulkEvent
@@ -143,6 +146,21 @@ it('persists pending triggers for later replay', function () {
     expect($this->bulkOpConnection->table(Table::BULKOPEVENTS)
         ->where('key', $key)
         ->count())->toBe(1);
+});
+
+it('persists pending triggers when a queued job finishes, but not a sync one', function () {
+    $this->deferrals->defer(TestDeferredBulkEvent::class, function () {});
+
+    $key = $this->bulkOps->start();
+
+    event(new TestDeferredBulkEvent('inside'));
+    event(new JobProcessed('sync', new SyncJob(app(), '{}', 'sync', 'default')));
+
+    expect($this->bulkOpConnection->table(Table::BULKOPEVENTS)->where('key', $key)->count())->toBe(0);
+
+    event(new JobProcessed('database', Mockery::mock(Job::class, ['getQueue' => 'default', 'payload' => []])));
+
+    expect($this->bulkOpConnection->table(Table::BULKOPEVENTS)->where('key', $key)->count())->toBe(1);
 });
 
 it('replays persisted rows and deletes them', function () {

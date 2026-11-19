@@ -30,6 +30,7 @@ class NamespaceNode extends Node
             ->raw(";\n")
             ->write("if (\$_namespace !== null && \$_namespace !== '') {\n")
             ->indent()
+            /** @see \CraftCms\Cms\View\InputNamespace::namespaceInputs() */
             ->write('yield '.InputNamespace::class."::namespaceInputs(function () use (&\$context, \$macros, \$blocks) {\n")
             ->indent()
             ->write('return ')

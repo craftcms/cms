@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Override;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,23 +50,6 @@ class ConfigSyncController extends BaseUpdaterController
     }
 
     /**
-     * Renders the Config Sync page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = $this->hashedData();
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => $this->returnUrl(),
-        ])->toResponse($this->request);
-    }
-
-    /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
      */
     public function retry(): Response
@@ -80,6 +62,8 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function applyYamlChanges(): Response
     {
+        $forceUpdate = $this->projectConfig->forceUpdate;
+
         if (! empty($this->data['force'])) {
             $this->projectConfig->forceUpdate = true;
         }
@@ -94,6 +78,8 @@ class ConfigSyncController extends BaseUpdaterController
                     $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),
                 ],
             ]);
+        } finally {
+            $this->projectConfig->forceUpdate = $forceUpdate;
         }
 
         return $this->sendFinished();

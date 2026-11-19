@@ -17,7 +17,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-it('describes the base URL field with its environment variable and alias hint', async () => {
+it('describes the base URL field with its help text', async () => {
   const host = document.createElement('div');
   document.body.append(host);
   const app = createApp(SiteFields, {
@@ -30,7 +30,5 @@ it('describes the base URL field with its environment variable and alias hint', 
   teardown = () => app.unmount();
   await expect
     .element(page.getByRole('textbox', {name: 'Base URL'}))
-    .toHaveAccessibleDescription(
-      /^The base URL for the site\.\s+Type \$ to choose an environment variable, or @ to choose an alias\.\s+Learn more$/
-    );
+    .toHaveAccessibleDescription('The base URL for the site.');
 });

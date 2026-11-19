@@ -488,8 +488,8 @@ describe('craft-text-expander', () => {
 
     type(target, '@b');
     await waitForFirstOption(expander);
-    outside.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
-    outside.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}));
+    outside.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    outside.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}));
 
     await vi.waitFor(() => expect(options(expander)).toHaveLength(0));
     expect(popover(expander).open).toBe(false);

@@ -664,7 +664,7 @@ trait QueriesStructures
 
                 $elementQuery
                     ->where('structureelements.lft', '>', $parent->lft)
-                    ->where('structureelements.rgt', '>', $parent->rgt);
+                    ->where('structureelements.rgt', '<', $parent->rgt);
             }
 
             switch ($param) {

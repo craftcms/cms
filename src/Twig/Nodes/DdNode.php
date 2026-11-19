@@ -27,6 +27,7 @@ class DdNode extends Node
         if ($this->hasNode('var')) {
             $compiler->subcompile($this->getNode('var'));
         } else {
+            /** @see Template::contextWithoutTemplate() */
             $compiler->raw(sprintf('%s::contextWithoutTemplate($context)', Template::class));
         }
 

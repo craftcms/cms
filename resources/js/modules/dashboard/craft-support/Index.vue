@@ -43,7 +43,7 @@
             <craft-icon
               :name="link.icon"
               :family="link.iconFamily"
-              class="support-link__icon"
+              class="support-link__icon cp-item-icon"
             ></craft-icon>
             <span class="support-link__label">{{ link.label }}</span>
             <craft-icon
@@ -101,7 +101,6 @@
 
   .support-link__icon {
     flex: none;
-    color: var(--c-color-fill-loud, var(--c-text-link));
   }
 
   .support-link__label {

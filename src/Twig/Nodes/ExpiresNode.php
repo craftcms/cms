@@ -28,6 +28,7 @@ class ExpiresNode extends Node
                 ->write('$expiration = ')
                 ->subcompile($expiration)
                 ->raw(";\n")
+                /** @see DateTimeHelper::toDateTime() */
                 ->write(sprintf(
                     '$duration = %s::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();',
                     DateTimeHelper::class,
@@ -49,6 +50,7 @@ class ExpiresNode extends Node
             $compiler->write("\$duration = $duration;\n");
         }
 
+        /** @see \CraftCms\Cms\Http\ResponseHeaders::setCache() */
         $compiler->write(ResponseHeaders::class."::setCache(\$duration);\n");
     }
 }

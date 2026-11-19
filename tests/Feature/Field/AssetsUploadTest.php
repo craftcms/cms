@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\Events\AssetsUploadedFilesLocating;
@@ -17,6 +18,8 @@ use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile as HttpUploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,6 +52,39 @@ it('adds uploaded files to the assets already selected in the field', function (
     $related = $entry::find()->id($entry->id)->one()->getFieldValue('images')->all();
     expect(array_column($related, 'id'))->toHaveCount(2)->toContain($existing->id)
         ->and(array_column($related, 'filename'))->toContain('uploaded.txt');
+});
+
+it('saves an element with a file uploaded in the request', function () {
+    actingAs(User::findOne());
+    config()->set('filesystems.disks.temp-assets', ['driver' => 'local', 'root' => storage_path('framework/testing/temp-assets')]);
+    config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
+    Storage::fake('temp-assets');
+    Storage::fake('upload-destination');
+    Cms::config()->tempAssetUploadDisk = 'temp-assets';
+
+    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $entry = Entry::factory()
+        ->withField('images', Assets::class, settings: ['defaultUploadLocationSource' => "volume:$volume->uid"])
+        ->createElementWithFields()->element;
+
+    $path = tempnam(sys_get_temp_dir(), 'php');
+    file_put_contents($path, 'uploaded');
+    app()->instance('request', Request::create('/', 'POST', files: [
+        'fields' => ['images' => [new HttpUploadedFile($path, 'notes.txt', 'text/plain', test: true)]],
+    ]));
+
+    // move_uploaded_file() only moves files from real HTTP uploads, so move it when the field saves it as an asset.
+    Event::listen(ElementSaving::class, function (ElementSaving $event) use ($path) {
+        if ($event->element instanceof AssetElement && file_exists($path)) {
+            rename($path, $event->element->tempFilePath);
+        }
+    });
+
+    $entry->setFieldParamNamespace('fields');
+
+    expect(Elements::saveElement($entry))->toBeTrue()
+        ->and(array_column($entry::find()->id($entry->id)->one()->getFieldValue('images')->all(), 'filename'))->toBe(['notes.txt']);
 });
 
 it('holds uploads from the field control to the field’s selection condition', function () {

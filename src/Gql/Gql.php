@@ -741,7 +741,7 @@ class Gql
 
     public function generateToken(): string
     {
-        return Str::random(32, extendedChars: true);
+        return Str::random(32);
     }
 
     /**
@@ -771,8 +771,12 @@ class Gql
 
             $muteEvents = $this->projectConfig->muteEvents;
             $this->projectConfig->muteEvents = false;
-            $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
-            $this->projectConfig->muteEvents = $muteEvents;
+
+            try {
+                $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
+            } finally {
+                $this->projectConfig->muteEvents = $muteEvents;
+            }
         }
 
         $this->_saveTokenInternal($token);

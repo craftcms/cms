@@ -62,7 +62,7 @@ readonly class RunQueue
             return false;
         }
 
-        if ($this->progressService->getActive()->isNotEmpty()) {
+        if ($this->progressService->hasReservedJobs()) {
             return false;
         }
 

@@ -205,6 +205,13 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
         return NumberFieldConditionRule::class;
     }
 
+    /** @return 'start'|'end' */
+    #[Override]
+    public function tableAttributeAlignment(): string
+    {
+        return 'end';
+    }
+
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {

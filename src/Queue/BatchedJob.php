@@ -149,6 +149,7 @@ abstract class BatchedJob extends Job
             return;
         }
 
+        $nextJob->job = null;
         dispatch($nextJob);
     }
 

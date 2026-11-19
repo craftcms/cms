@@ -174,7 +174,7 @@ test('next acquires cache lock with correct key', function (string $name, string
 
     Sequence::next($name);
 
-    Cache::shouldHaveReceived('lock')->once()->with($expectedLockKey);
+    Cache::shouldHaveReceived('lock')->once()->with($expectedLockKey, 10);
 })->with([
     ['test', 'seq--test'],
     ['test/path', 'seq--test-path'],

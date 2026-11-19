@@ -29,6 +29,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Search\Search;
@@ -117,6 +118,8 @@ readonly class ElementDeletions
                                 }
 
                                 $element->setFieldValue($field->handle, $value);
+                            } elseif ($field instanceof TableField) {
+                                $field->replaceRelations($element, [$mergedElement->id], $prevailingElement->id);
                             }
                         }
 
@@ -310,7 +313,8 @@ readonly class ElementDeletions
                     $record->deleteWithChildren();
                 }
 
-                $this->elementCaches->invalidateForElement($element);
+                // After commit, so another process can't cache the element as it was before the delete
+                DB::afterCommit(fn () => $this->elementCaches->invalidateForElement($element));
 
                 if ($element->hardDelete) {
                     // Remove drafts and revisions first. Otherwise PostgreSQL can null their elements' canonicalId after
@@ -594,7 +598,8 @@ readonly class ElementDeletions
                     $this->search->indexElementAttributes($siteElement);
                 }
 
-                $this->elementCaches->invalidateForElement($element);
+                // After commit, so another process can't cache the element as it was before the restore
+                DB::afterCommit(fn () => $this->elementCaches->invalidateForElement($element));
             }
 
             foreach ($elements as $element) {

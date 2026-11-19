@@ -270,7 +270,7 @@ it('cleanly republishes configured files for enabled plugins', function () {
     }
 });
 
-it('ignores missing transaction exceptions during uninstall commits', function () {
+it('allows implicit commits during uninstall', function () {
     $this->plugins->enablePlugin('test-plugin');
 
     $manager = DB::getFacadeRoot();
@@ -284,9 +284,9 @@ it('ignores missing transaction exceptions during uninstall commits', function (
     $connections->setValue($manager, $resolvedConnections);
 
     $connectionMock
-        ->shouldReceive('commit')
+        ->shouldReceive('commitSchemaChanges')
         ->once()
-        ->andThrow(new PDOException('There is no active transaction'));
+        ->andReturnUsing(fn () => $connection->commit());
 
     try {
         $this->plugins->uninstallPlugin('test-plugin');

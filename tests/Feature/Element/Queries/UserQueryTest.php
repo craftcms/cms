@@ -77,3 +77,13 @@ it('can query by status', function (string $status, array $attributes, int $expe
     [User::STATUS_SUSPENDED, ['suspended' => true], 1],
     [User::STATUS_LOCKED, ['locked' => true], 1],
 ]);
+
+it('leaves users whose cooldown has ended out of the locked status', function () {
+    Cms::config()->cooldownDuration = 300;
+
+    UserModel::factory()->create(['locked' => true, 'lockoutDate' => now('UTC')->subMinute()]);
+    UserModel::factory()->create(['locked' => true, 'lockoutDate' => now('UTC')->subMinutes(10)]);
+    UserModel::factory()->create(['locked' => true, 'lockoutDate' => null]);
+
+    expect(userQuery()->status(User::STATUS_LOCKED)->count())->toBe(1);
+});

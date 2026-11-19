@@ -29,6 +29,9 @@ export interface CraftColumnMeta {
   headerClass?: string | Record<string, boolean>;
   // Applies classes to both the header and cell at once
   columnClass?: string | Record<string, boolean>;
+  // How the column's header and cells align. `end` is for quantities, so
+  // their digits line up down the column.
+  align?: 'start' | 'end';
   trackSize?: string;
 }
 

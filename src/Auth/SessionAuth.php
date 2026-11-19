@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth;
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -12,8 +11,6 @@ use Illuminate\Support\Facades\Session;
  */
 class SessionAuth
 {
-    private const string AUTH_LOCK_NAME = 'authAccess';
-
     /**
      * @var string|null The session variable name used to store the authorization keys for the current session.
      *
@@ -28,17 +25,15 @@ class SessionAuth
      */
     public static function authorize(string $action): void
     {
-        Cache::lock(self::AUTH_LOCK_NAME)->block(5, function () use ($action) {
-            $access = Session::get(self::$authAccessParam, []);
+        $access = Session::get(self::$authAccessParam, []);
 
-            if (in_array($action, $access, true)) {
-                return;
-            }
+        if (in_array($action, $access, true)) {
+            return;
+        }
 
-            $access[] = $action;
+        $access[] = $action;
 
-            Session::put(self::$authAccessParam, $access);
-        });
+        Session::put(self::$authAccessParam, $access);
     }
 
     /**
@@ -46,18 +41,16 @@ class SessionAuth
      */
     public static function deauthorize(string $action): void
     {
-        Cache::lock(self::AUTH_LOCK_NAME)->block(5, function () use ($action) {
-            $access = Session::get(self::$authAccessParam, []);
-            $index = array_search($action, $access, true);
+        $access = Session::get(self::$authAccessParam, []);
+        $index = array_search($action, $access, true);
 
-            if ($index === false) {
-                return;
-            }
+        if ($index === false) {
+            return;
+        }
 
-            array_splice($access, $index, 1);
+        array_splice($access, $index, 1);
 
-            Session::put(self::$authAccessParam, $access);
-        });
+        Session::put(self::$authAccessParam, $access);
     }
 
     /**

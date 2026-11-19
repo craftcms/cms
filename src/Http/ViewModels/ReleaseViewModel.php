@@ -76,7 +76,7 @@ class ReleaseViewModel extends ViewModel
             canManage: $canManage,
             canSchedule: $canPublish && $this->actor->can('schedule', $this->release),
             canPublish: $canPublish,
-            canUnschedule: $this->release->status === ReleaseStatus::Scheduled
+            canUnschedule: $this->release->status->canTransitionTo(ReleaseStatus::Draft)
                 && $this->actor->can('publishReleases'),
         );
     }

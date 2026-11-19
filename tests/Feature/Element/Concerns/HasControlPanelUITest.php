@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
@@ -28,6 +29,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
@@ -396,6 +398,19 @@ describe('getSidebarHtml', function () {
         expect((string) $html)->toContain('Appended');
     });
 
+    test('renders the meta fields that EntryMetaFieldsResolving listeners leave', function () {
+        Event::listen(function (EntryMetaFieldsResolving $event) {
+            unset($event->fields['postDate']);
+            $event->fields['subtitle'] = UiField::make('Subtitle')->control(Text::make('subtitle'));
+        });
+
+        $html = (string) $this->entry->getSidebarHtml(false);
+
+        expect($html)->toContain('name="slug"')
+            ->toContain('name="subtitle"')
+            ->not->toContain('name="postDate[date]"');
+    });
+
     test('shows Post Date and Expiry Date per the entry type', function (string $context, bool $showPostDate, bool $showExpiryDate) {
         $entryType = EntryType::factory()->create([
             'handle' => 'block',
@@ -428,8 +443,8 @@ describe('getSidebarHtml', function () {
             ->map(fn ($node) => $node instanceof UiField ? $node->getControl()?->path() : null)
             ->all();
 
-        expect(str_contains($html, 'id="postDate-date"'))->toBe($showPostDate)
-            ->and(str_contains($html, 'id="expiryDate-date"'))->toBe($showExpiryDate)
+        expect(str_contains($html, 'name="postDate[date]"'))->toBe($showPostDate)
+            ->and(str_contains($html, 'name="expiryDate[date]"'))->toBe($showExpiryDate)
             ->and(in_array('postDate', $paths, true))->toBe($showPostDate)
             ->and(in_array('expiryDate', $paths, true))->toBe($showExpiryDate);
     })->with(['nested', 'single'])->with([

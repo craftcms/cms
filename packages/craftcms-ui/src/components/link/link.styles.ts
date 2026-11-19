@@ -25,8 +25,8 @@ export default css`
   craft-button[slot='invoker'][aria-expanded='true'] {
     background-color: color-mix(
       in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-hover)
+      var(--c-color-mix-hover),
+      transparent
     );
   }
 

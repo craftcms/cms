@@ -26,6 +26,7 @@ class UserSignInProvidersViewModel implements Arrayable
      *     icon: string|null,
      *     connected: bool,
      *     canConnect: bool,
+     *     canDisconnect: bool,
      *     disabledReason: string|null,
      *     disconnectWarning: string|null,
      * }>
@@ -34,16 +35,10 @@ class UserSignInProvidersViewModel implements Arrayable
 
     public function __construct(User $user, OAuth $oauth)
     {
-        $providers = $oauth->getProviderDefinitions();
-
-        $connectedProviderCount = $providers
-            ->filter(fn (ProviderDefinition $provider): bool => $oauth->identityFor($user, $provider) !== null)
-            ->count();
-
-        $this->providers = $providers
-            ->map(function (ProviderDefinition $provider) use ($user, $oauth, $connectedProviderCount): array {
+        $this->providers = $oauth->getProviderDefinitions()
+            ->map(function (ProviderDefinition $provider) use ($user, $oauth): array {
                 $connected = $oauth->identityFor($user, $provider) !== null;
-                $lastPrimaryCredential = $connected && ! $user->getHasPassword() && $connectedProviderCount === 1;
+                $canDisconnect = $connected && $oauth->canUnlinkIdentity($user, $provider);
 
                 return [
                     'handle' => $provider->handle,
@@ -51,8 +46,11 @@ class UserSignInProvidersViewModel implements Arrayable
                     'icon' => $provider->icon,
                     'connected' => $connected,
                     'canConnect' => ! $connected && ! $provider->stateless,
-                    'disabledReason' => $this->disabledReason($provider, $connected),
-                    'disconnectWarning' => $connected ? $this->disconnectWarning($provider, $lastPrimaryCredential) : null,
+                    'canDisconnect' => $canDisconnect,
+                    'disabledReason' => $this->disabledReason($provider, $connected, $canDisconnect),
+                    'disconnectWarning' => $canDisconnect ? t('Are you sure you want to disconnect {provider}?', [
+                        'provider' => $provider->name,
+                    ]) : null,
                 ];
             })
             ->values()
@@ -67,25 +65,18 @@ class UserSignInProvidersViewModel implements Arrayable
         ];
     }
 
-    private function disabledReason(ProviderDefinition $provider, bool $connected): ?string
+    private function disabledReason(ProviderDefinition $provider, bool $connected, bool $canDisconnect): ?string
     {
-        if ($connected || ! $provider->stateless) {
-            return null;
-        }
-
-        return t('This provider can’t be connected because it is configured to use stateless OAuth.');
-    }
-
-    private function disconnectWarning(ProviderDefinition $provider, bool $lastPrimaryCredential): string
-    {
-        if ($lastPrimaryCredential) {
-            return t('Disconnecting {provider} will leave your account without a password or connected sign-in provider. You may be unable to sign in again.', [
+        if ($connected) {
+            return $canDisconnect ? null : t('You can’t disconnect {provider} because it’s the only way to sign in to your account.', [
                 'provider' => $provider->name,
             ]);
         }
 
-        return t('Are you sure you want to disconnect {provider}?', [
-            'provider' => $provider->name,
-        ]);
+        if (! $provider->stateless) {
+            return null;
+        }
+
+        return t('This provider can’t be connected because it is configured to use stateless OAuth.');
     }
 }
