@@ -19,7 +19,7 @@ interface ElementIndexSortContext {
 }
 
 /** Keep valid, unique sort items in priority order. */
-export function normalizeSort(
+function normalizeSort(
   items: Array<SortItem> | Record<string, SortItem> | undefined
 ): Array<SortItem> {
   // `sort` round-trips through query params as an index-keyed object
