@@ -1162,6 +1162,7 @@ class Install extends Migration
         Schema::createIndex(Table::FIELDLAYOUTS, ['dateDeleted']);
         Schema::createIndex(Table::FIELDLAYOUTS, ['type']);
         Schema::createIndex(Table::FIELDREFERENCES, ['fieldId', 'fieldInstanceUid', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
+        Schema::createIndex(Table::FIELDREFERENCES, ['sourceId']);
         Schema::createIndex(Table::FIELDREFERENCES, ['targetId']);
         Schema::createIndex(Table::FIELDS, ['handle', 'context']);
         Schema::createIndex(Table::FIELDS, ['context']);
@@ -1404,6 +1405,10 @@ class Install extends Migration
             $site->setLanguage($this->site->getLanguage(false));
             $site->setName($this->site->getName(false));
             Sites::saveSite($site);
+
+            if ($this->timezone !== null) {
+                $projectConfig->set('system.timeZone', $this->timezone);
+            }
         }
 
         app()->setLocale($this->site->getLanguage());

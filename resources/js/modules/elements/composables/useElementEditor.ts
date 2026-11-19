@@ -1462,6 +1462,10 @@ export function useElementEditor({
         element: null,
         canonical: props.updatedTimestamps.canonical,
       });
+      // A provisional draft's preview token names the canonical element, so
+      // the token survives the discard and Live Preview has no other reason to
+      // reload the discarded changes away.
+      refreshPreviews();
 
       // Revert against the payload the page already holds, so the fields go
       // back the moment the draft is deleted rather than a round trip later —

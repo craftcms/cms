@@ -27,6 +27,7 @@
     {
       title: undefined,
       overlay: true,
+      holdHeight: true,
       dismissible: true,
       restoreFocus: true,
       instant: false,
@@ -51,6 +52,7 @@
     :height="height"
     :max-height="maxHeight"
     :resizable="resizable"
+    :hold-height="holdHeight"
     :dismissible="dismissible"
     :restore-focus="restoreFocus"
     :instant="instant"

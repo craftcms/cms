@@ -61,3 +61,14 @@ it('gives the button a target of at least 24×24 CSS px, all of which opens it',
     await expect.poll(() => tooltip.open).toBe(false);
   }
 });
+
+it('shows the help cursor over its button', async () => {
+  const element = document.createElement('craft-info-icon') as CraftInfoIcon;
+  element.textContent = 'Shown in the entry index.';
+  document.body.append(element);
+  await element.updateComplete;
+
+  const button = element.shadowRoot!.querySelector('craft-button')!;
+
+  expect(getComputedStyle(button).cursor).toBe('help');
+});

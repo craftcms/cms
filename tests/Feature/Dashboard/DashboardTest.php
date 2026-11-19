@@ -7,6 +7,7 @@ use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
+use CraftCms\Cms\Dashboard\Widgets\AboutCraft;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\MissingWidget;
@@ -69,6 +70,22 @@ it('can get all widgets and adds default widgets', function () {
     expect($this->dashboard->getAllWidgets())->not()->toBeEmpty();
 
     expect(WidgetModel::count())->toBeGreaterThan(0);
+});
+
+it('adds the About Craft CMS widget last for admins and users who can update Craft, and not for others', function () {
+    expect($this->dashboard->getAllWidgets()->last())->toBeInstanceOf(AboutCraft::class);
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'performUpdates'])->createElement());
+    Once::flush();
+
+    expect($this->dashboard->getAllWidgets()->last())->toBeInstanceOf(AboutCraft::class);
+
+    actingAs(UserModel::factory()->withPermissions(['accessCp'])->createElement());
+    Once::flush();
+
+    expect($this->dashboard->getAllWidgets()->map(fn ($widget) => $widget::class))
+        ->not->toBeEmpty()
+        ->not->toContain(AboutCraft::class);
 });
 
 it('returns missing widgets for saved widget types that can no longer be resolved', function () {

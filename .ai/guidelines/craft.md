@@ -171,6 +171,7 @@ For this path:
 
 - Take a test's expected result from an independent oracle: measure the real output (what's rendered, returned, or stored) rather than recomputing it with the model or simplifications the code itself relies on. An oracle that shares the code's assumptions agrees with it whenever those assumptions are wrong.
 - Choose inputs that could make the test fail: extremes, and inputs where the code's assumptions break, such as data that's missing, stale, or doesn't match what it describes.
+- Before measuring a state, assert that it's applied: the hover fill is painted, the media query matches, the selector applies. A missing token or a rule that doesn't apply falls back to a default, and a default can pass.
 - Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it. A red browser test leaves a failure screenshot in its `__screenshots__/` folder; delete it once the test passes again.
 
 ## Working through tasks
