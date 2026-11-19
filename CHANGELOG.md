@@ -311,6 +311,8 @@
 - Fixed a bug where Markdown fields didn’t track references to elements with the ID 100 or 1234, or other ref tags that look like emoji shortcodes, such as `{entry:smile:url}`. Deleting the element didn’t list those references or replace them. ([#20901](https://github.com/craftcms/cms/pull/20901))
 - Fixed a bug where garbage collection could block other requests’ database writes while deleting orphaned foreign key rows. Orphaned rows are now found without locking anything and deleted in small batches, with foreign key checks enabled, so the deletions also apply the foreign key actions of rows that reference them. ([#20885](https://github.com/craftcms/cms/issues/20885))
 - Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
+- Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
+- Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 
 ## 6.0.0-beta.1 - 2026-11-10
 
