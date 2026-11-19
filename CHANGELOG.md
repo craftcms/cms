@@ -24,7 +24,6 @@
 - Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath, when the filesystem moved them along with it. ([#20773](https://github.com/craftcms/cms/issues/20773))
 - Fixed a bug where the `assets_transform_url` MCP tool and MCP element data returned root-relative URLs for assets in volumes with root-relative base URLs, which MCP clients can’t resolve.
 - Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
-- Fixed a bug where eager-loading maps that covered more than one element type, or were returned as a list of maps, only loaded the elements from one of them.
 
 ## 5.12.1 - 2026-11-10
 
