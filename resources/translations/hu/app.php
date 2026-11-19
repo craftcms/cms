@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'Csoportok',
     'Guest Required' => 'Kötelező vendég',
     'HTML Email Template' => 'HTML Email Sablon',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'HTML-tisztító',
     'Handle' => 'Elnevezés',
     'Has Descendants' => 'Vannak utódai',
