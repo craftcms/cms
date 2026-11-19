@@ -43,6 +43,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Run `composer ci` before creating a pull request.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use the `pr` skill to write the pull request body.
+- Use the `requesting-accessibility-reviews` skill to request an accessibility review.
 
 ## Control panel trigger
 
