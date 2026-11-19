@@ -37,6 +37,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
+use yii\db\Expression;
 use yii\di\Instance;
 
 /**
@@ -678,11 +679,13 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned foreign key rows ... ');
 
-        // Find the orphaned rows with a plain SELECT, which doesn't lock any rows,
-        // then delete them in small batches, each in its own transaction.
+        // Find the orphaned rows a page at a time with plain SELECTs, which don't lock any rows,
+        // and delete each page in its own transaction.
         // FK checks stay enabled, so the deletions cascade and set columns to NULL as the schema says,
         // and other connections' writes only wait on the rows being deleted.
         // (https://github.com/craftcms/cms/issues/20885)
+        $batchSize = 1000;
+
         foreach ($this->db->getSchema()->getTableSchemas() as $table) {
             /** @var TableSchema $table */
             $extendedFkInfo = $table->getExtendedForeignKeys();
@@ -692,37 +695,53 @@ class Gc extends Component
                     $fk = array_merge($fk);
                     $refTable = array_shift($fk);
 
-                    // Identify the orphaned rows by their primary key, so each batch deletes at most 1,000 rows.
-                    // Tables without one fall back to the FK value, which may match more rows.
-                    $keyColumns = $table->primaryKey ?: array_keys($fk);
-
                     foreach ($fk as $fkColumn => $pkColumn) {
+                        // Identify the rows by their primary key, so each batch deletes at most $batchSize rows
+                        // (tables without one fall back to the FK value, which may match more rows).
+                        // Including the FK value means a row whose FK changed since the SELECT won't be deleted.
+                        $keyColumns = array_values(array_unique([...$table->primaryKey, $fkColumn]));
+                        $qualifiedKeyColumns = array_map(fn(string $column) => "t.$column", $keyColumns);
+                        $quotedKeyColumns = implode(', ', array_map(fn(string $column) => $this->db->quoteColumnName($column), $qualifiedKeyColumns));
+
                         $query = (new Query())
-                            ->select(array_map(fn(string $column) => "t.$column", $keyColumns))
+                            ->select($qualifiedKeyColumns)
                             ->distinct()
                             ->from(['t' => $table->name])
                             ->leftJoin(['t2' => $refTable], "[[t2.$pkColumn]] = [[t.$fkColumn]]")
                             ->where(['not', ["t.$fkColumn" => null]])
-                            ->andWhere(["t2.$pkColumn" => null]);
+                            ->andWhere(["t2.$pkColumn" => null])
+                            ->orderBy(array_fill_keys($qualifiedKeyColumns, SORT_ASC))
+                            ->limit($batchSize);
+                        $lastKey = null;
 
-                        // Recheck that each row is still orphaned, in case it changed since the SELECT
-                        $stillOrphaned = [
-                            'and',
-                            ['not', ["$table->name.$fkColumn" => null]],
-                            ['not exists', (new Query())
-                                ->from(['t2' => $refTable])
-                                ->where("[[t2.$pkColumn]] = [[$table->name.$fkColumn]]"),
-                            ],
-                        ];
+                        do {
+                            $pageQuery = clone $query;
+                            if ($lastKey !== null) {
+                                // Continue after the last page, skipping any rows that couldn't be deleted
+                                $params = [];
+                                foreach (array_values($lastKey) as $i => $value) {
+                                    $params[":lastKey$i"] = $value;
+                                }
+                                $pageQuery->andWhere(new Expression(
+                                    sprintf('(%s) > (%s)', $quotedKeyColumns, implode(', ', array_keys($params))),
+                                    $params,
+                                ));
+                            }
 
-                        foreach (Db::batch($query, 1000) as $keys) {
+                            $keys = $pageQuery->all($this->db);
+                            if (empty($keys)) {
+                                break;
+                            }
+
                             try {
-                                Db::delete($table->name, ['and', ['in', $keyColumns, $keys], $stillOrphaned], db: $this->db);
+                                Db::delete($table->name, ['in', $keyColumns, $keys], db: $this->db);
                             } catch (DbException $e) {
                                 // Most likely another foreign key restricts the deletion
                                 Craft::warning("Couldn't delete orphaned rows from $table->name: {$e->getMessage()}", __METHOD__);
                             }
-                        }
+
+                            $lastKey = end($keys);
+                        } while (count($keys) === $batchSize);
                     }
                 }
 
