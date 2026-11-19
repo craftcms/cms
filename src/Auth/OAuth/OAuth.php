@@ -19,6 +19,7 @@ use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUserGroups;
 use CraftCms\Cms\Auth\OAuth\Data\ButtonData;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\Auth\OAuth\Exceptions\ProviderConfigurationException;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -310,6 +311,20 @@ class OAuth
     public function hasIdentity(int $userId): bool
     {
         return SsoIdentity::query()->where('userId', $userId)->exists();
+    }
+
+    /**
+     * Returns whether the user can still sign in without the given provider:
+     * with a password, a passkey, or another configured provider.
+     */
+    public function canUnlinkIdentity(User $user, ProviderDefinition $provider): bool
+    {
+        return $user->getHasPassword()
+            || app(Passkeys::class)->hasPasskeys($user)
+            || $this->getProviderDefinitions()->contains(
+                fn (ProviderDefinition $other): bool => $other->handle !== $provider->handle
+                    && $this->identityFor($user, $other) !== null,
+            );
     }
 
     public function unlinkIdentity(User $user, ProviderDefinition $provider): void
