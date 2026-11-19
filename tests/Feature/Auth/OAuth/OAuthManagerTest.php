@@ -112,6 +112,24 @@ describe('provider configuration', function () {
         expect(app(OAuth::class)->getProviderDefinition('test')->trustsEmail)->toBeTrue();
     });
 
+    test('provider credentials are parsed for environment variables', function () {
+        $_SERVER['OAUTH_TEST_CLIENT_ID'] = 'env-client-id';
+        $_SERVER['OAUTH_TEST_CLIENT_SECRET'] = 'env-client-secret';
+
+        configureOAuthManagerProvider([
+            'clientId' => '$OAUTH_TEST_CLIENT_ID',
+            'clientSecret' => '$OAUTH_TEST_CLIENT_SECRET',
+        ]);
+
+        $oauth = app(OAuth::class);
+        $driver = $oauth->buildProvider($oauth->getProviderDefinition('test'));
+
+        unset($_SERVER['OAUTH_TEST_CLIENT_ID'], $_SERVER['OAUTH_TEST_CLIENT_SECRET']);
+
+        expect(new ReflectionProperty($driver, 'clientId')->getValue($driver))->toBe('env-client-id')
+            ->and(new ReflectionProperty($driver, 'clientSecret')->getValue($driver))->toBe('env-client-secret');
+    });
+
     test('named driver shorthands can inherit credentials from services config', function (array $providers) {
         Config::set('services.github', [
             'client_id' => 'services-github-client',

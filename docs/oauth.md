@@ -50,8 +50,8 @@ When you use a named Socialite driver such as `github` or `google`, Craft merges
 Each provider supports the following keys:
 
 - `driver` required. A registered Socialite driver name, or a Socialite-compatible provider class name.
-- `clientId` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes.
-- `clientSecret` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes.
+- `clientId` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes. Can be set to an environment variable reference, such as `'$GITHUB_CLIENT_ID'`.
+- `clientSecret` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes. Can be set to an environment variable reference, such as `'$GITHUB_CLIENT_SECRET'`.
 - `name` optional. Human-friendly provider name.
 - `label` optional. Button label. Defaults to `Sign in with {name}`.
 - `icon` optional. Control panel brand icon name for the sign-in providers screen.

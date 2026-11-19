@@ -24,6 +24,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -400,8 +401,8 @@ class OAuth
         }
 
         $driver = $config['driver'];
-        $clientId = $config['clientId'] ?? null;
-        $clientSecret = $config['clientSecret'] ?? null;
+        $clientId = Env::parse($config['clientId'] ?? null);
+        $clientSecret = Env::parse($config['clientSecret'] ?? null);
         $providerClass = $this->resolveProviderClass($handle, $driver);
         $name = ($config['name'] ?? null) ?: Str::headline($handle);
         $label = ($config['label'] ?? null) ?: t('Sign in with {name}', ['name' => $name]);
@@ -413,8 +414,8 @@ class OAuth
             providerClass: $providerClass,
             name: $name,
             label: $label,
-            clientId: $clientId !== null ? (string) $clientId : null,
-            clientSecret: $clientSecret !== null ? (string) $clientSecret : null,
+            clientId: $clientId,
+            clientSecret: $clientSecret,
             icon: $icon,
             stateless: (bool) ($config['stateless'] ?? false),
             createsUsers: array_key_exists('createsUsers', $config)
