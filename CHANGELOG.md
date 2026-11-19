@@ -305,6 +305,7 @@
 - Fixed a bug where changing a Link field’s label in a draft could make autosave run repeatedly, so Live Preview never opened. ([#20870](https://github.com/craftcms/cms/pull/20870))
 - Fixed a bug where `<craft-tooltip>` text didn’t wrap when the tooltip was inside an element that doesn’t wrap text, such as an admin table’s actions cell. ([#20891](https://github.com/craftcms/cms/pull/20891))
 - Fixed a bug where Matrix and other nested element fields on a tab that wasn’t initially shown didn’t collapse their “Add {type}” buttons into a menu when they didn’t fit, so the buttons overflowed past the edge of the field. ([#20893](https://github.com/craftcms/cms/pull/20893))
+- Fixed a bug where the global sidebar’s shadow showed along the edge of the page while it was closed on smaller screens, and where the closed sidebar covered the page in right-to-left languages. ([#20897](https://github.com/craftcms/cms/pull/20897))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
