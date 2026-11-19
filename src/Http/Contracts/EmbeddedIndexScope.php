@@ -27,4 +27,19 @@ interface EmbeddedIndexScope
      * Limits an index query to the elements the scope allows, in a way that later query params can't override.
      */
     public function restrictQuery(ElementQueryInterface $query): void;
+
+    /**
+     * Returns the IDs of the sites the index can list, or `null` if it can list any site.
+     *
+     * The index lists one site at a time: the requested site when it's one of these, or else the first of them.
+     * With a single site, the index has no site menu.
+     *
+     * @return non-empty-list<int>|null
+     */
+    public function siteIds(): ?array;
+
+    /**
+     * Returns whether the index offers a status menu, rather than its scope fixing the elements' status.
+     */
+    public function showsStatusMenu(): bool;
 }

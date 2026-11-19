@@ -44,6 +44,32 @@ class EmbeddedElementIndexScope implements EmbeddedIndexScope
     }
 
     /**
+     * Returns the sites named by the `siteId` in the index's criteria.
+     *
+     * Values that don't name sites by ID, like `*` or a `not` list, allow any site;
+     * the criteria still limit which elements each site lists.
+     */
+    public function siteIds(): ?array
+    {
+        $siteId = $this->index->getCriteria()['siteId'] ?? null;
+        $siteIds = is_array($siteId) ? $siteId : [$siteId];
+
+        if ($siteIds === [] || array_any($siteIds, fn (mixed $id): bool => ! is_numeric($id))) {
+            return null;
+        }
+
+        return array_values(array_unique(array_map(intval(...), $siteIds)));
+    }
+
+    /**
+     * As in Craft 5, an index whose criteria set a status has no status menu.
+     */
+    public function showsStatusMenu(): bool
+    {
+        return ! array_key_exists('status', $this->index->getCriteria());
+    }
+
+    /**
      * Limits the query to the element-site rows matching the definition criteria, through a subquery,
      * so the status menu, filters and the resets done for element actions and inline editing can't replace them.
      * Rows are matched per site, since an element's status can differ between sites.

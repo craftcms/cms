@@ -190,6 +190,19 @@ class EmbeddedNestedElementScope implements EmbeddedIndexScope
     public function restrictQuery(ElementQueryInterface $query): void {}
 
     /**
+     * Nested elements are listed in their owner's site.
+     */
+    public function siteIds(): array
+    {
+        return [$this->resolveOwner()->siteId];
+    }
+
+    public function showsStatusMenu(): bool
+    {
+        return true;
+    }
+
+    /**
      * @param  array<string, mixed>  $criteria
      * @return array<string, mixed>
      */

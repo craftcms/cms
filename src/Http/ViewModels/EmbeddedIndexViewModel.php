@@ -233,12 +233,7 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     #[Override]
     public function statusOptions(): array
     {
-        // As in Craft 5, an index whose criteria set a status has no status menu
-        if ($this->indexSource->owner === null && array_key_exists('status', $this->indexSource->criteria)) {
-            return [];
-        }
-
-        return parent::statusOptions();
+        return $this->scope->showsStatusMenu() ? parent::statusOptions() : [];
     }
 
     private function unfilteredTotal(): int
@@ -303,77 +298,36 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
      * for selection, element actions and inline editing.
      */
     #[Override]
-    protected function applySite(ElementQueryInterface $query): void
-    {
-        if ($this->indexSource->owner !== null) {
-            parent::applySite($query);
-
-            return;
-        }
-
-        $query->siteId($this->siteId());
-    }
-
-    #[Override]
     public function siteId(): int
     {
-        if ($this->indexSource->owner !== null) {
-            return parent::siteId();
-        }
+        $siteIds = $this->scope->siteIds();
 
-        $criteriaSiteIds = $this->criteriaSiteIds();
-
-        if ($criteriaSiteIds === null || in_array($this->site()->id, $criteriaSiteIds, true)) {
+        if ($siteIds === null || in_array($this->site()->id, $siteIds, true)) {
             return $this->site()->id;
         }
 
-        return $this->selectableSites()->first()->id ?? $criteriaSiteIds[0];
+        return $this->selectableSites()->first()->id ?? $siteIds[0];
     }
 
     #[Override]
     public function showSiteMenu(): bool
     {
-        if ($this->indexSource->owner === null && count($this->criteriaSiteIds() ?? []) === 1) {
-            return false;
-        }
-
-        return parent::showSiteMenu();
+        return count($this->scope->siteIds() ?? []) !== 1 && parent::showSiteMenu();
     }
 
     #[Override]
     protected function selectableSites(): Collection
     {
         $sites = parent::selectableSites();
-        $criteriaSiteIds = $this->indexSource->owner === null ? $this->criteriaSiteIds() : null;
+        $siteIds = $this->scope->siteIds();
 
-        if ($criteriaSiteIds === null) {
+        if ($siteIds === null) {
             return $sites;
         }
 
         return $sites
-            ->filter(fn (Site $site): bool => in_array($site->id, $criteriaSiteIds, true))
+            ->filter(fn (Site $site): bool => in_array($site->id, $siteIds, true))
             ->values();
-    }
-
-    /**
-     * Returns the sites an index without an owner can list, from the `siteId` in its criteria,
-     * or `null` if any site can be listed.
-     *
-     * Values that don't name sites by ID, like `*` or a `not` list, allow any site;
-     * the criteria still limit which elements each site lists.
-     *
-     * @return non-empty-list<int>|null
-     */
-    private function criteriaSiteIds(): ?array
-    {
-        $siteId = $this->indexSource->criteria['siteId'] ?? null;
-        $siteIds = is_array($siteId) ? $siteId : [$siteId];
-
-        if ($siteIds === [] || array_any($siteIds, fn (mixed $id): bool => ! is_numeric($id))) {
-            return null;
-        }
-
-        return array_values(array_unique(array_map(intval(...), $siteIds)));
     }
 
     #[Override]
