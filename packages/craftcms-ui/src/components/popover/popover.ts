@@ -24,6 +24,7 @@ import {
   showLayer,
   supportsPopover,
   VIEWPORT_MARGIN,
+  placementForDirection,
 } from '@src/utilities/overlay-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
@@ -692,7 +693,7 @@ export default class CraftPopover extends LitElement {
       // Position relative to the viewport, which is also what the top layer
       // places against.
       strategy: 'fixed',
-      placement: this.placement,
+      placement: placementForDirection(this.placement, this),
       modifiers: [
         ...overlayModifiers(this.distance),
         fitAvailableBlockSize,

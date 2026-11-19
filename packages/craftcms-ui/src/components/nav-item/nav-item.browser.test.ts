@@ -270,6 +270,18 @@ it("keeps a lent control's keyboard activation from reaching the row", async () 
 
 // CpLink puts Inertia's Link handlers on the host, which visit on Enter's
 // keyup — so the chevron has to keep its own presses from reaching them.
+it('points its flyout chevron toward the flyout in right-to-left layouts', async () => {
+  document.documentElement.dir = 'rtl';
+  try {
+    const item = await railFixture();
+    const chevron = item.shadowRoot!.querySelector('.flyout-indicator')!;
+
+    expect(getComputedStyle(chevron).scale).toBe('-1 1');
+  } finally {
+    document.documentElement.removeAttribute('dir');
+  }
+});
+
 it('opens the flyout from its chevron instead of following the link', async () => {
   const {userEvent} = await import('vite-plus/test/browser');
   const item = await railFixture();

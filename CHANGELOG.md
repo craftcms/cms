@@ -301,6 +301,8 @@
 - Fixed a bug where `<craft-tooltip>` text didn’t wrap when the tooltip was inside an element that doesn’t wrap text, such as an admin table’s actions cell. ([#20891](https://github.com/craftcms/cms/pull/20891))
 - Fixed a bug where Matrix and other nested element fields on a tab that wasn’t initially shown didn’t collapse their “Add {type}” buttons into a menu when they didn’t fit, so the buttons overflowed past the edge of the field. ([#20893](https://github.com/craftcms/cms/pull/20893))
 - Fixed an error that occurred when saving an element from a front-end form with a file uploaded to an Assets field. ([#20881](https://github.com/craftcms/cms/issues/20881))
+- Fixed a bug where menus, popovers, and tooltips opened toward the wrong side in right-to-left languages. ([#20900](https://github.com/craftcms/cms/pull/20900))
+- Fixed a bug where the Utilities wrench, external-link icons, checkmarks, and magnifying glass icons weren’t mirrored in right-to-left languages, and global nav flyout chevrons pointed away from their flyouts. ([#20900](https://github.com/craftcms/cms/pull/20900))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
