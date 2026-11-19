@@ -35,7 +35,7 @@ abstract class Field extends CoreField implements LegacyField, LegacySettingsCom
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return parent::normalizeValueFromRequest(app(LegacyHtml::class)->capturedFieldValue($value, $this->handle), $element);
+        return parent::normalizeValueFromRequest(app(LegacyHtml::class)->capturedFieldValue($value, $this->handle, $element?->getFieldParamNamespace()), $element);
     }
 
     public function getSettingsHtml(): ?string

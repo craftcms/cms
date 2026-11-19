@@ -45,7 +45,7 @@ abstract class BaseRelationField extends CoreBaseRelationField implements Legacy
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return parent::normalizeValueFromRequest(app(LegacyHtml::class)->capturedFieldValue($value, $this->handle), $element);
+        return parent::normalizeValueFromRequest(app(LegacyHtml::class)->capturedFieldValue($value, $this->handle, $element?->getFieldParamNamespace()), $element);
     }
 
     public function settingsUi(UiContext $context = new UiContext()): Ui

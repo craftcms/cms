@@ -26,6 +26,6 @@ class Json extends \CraftCms\Cms\Field\Json implements LegacyField
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?JsonData
     {
-        return parent::normalizeValueFromRequest($this->capturedRequestValue($value), $element);
+        return parent::normalizeValueFromRequest($this->capturedRequestValue($value, $element), $element);
     }
 }

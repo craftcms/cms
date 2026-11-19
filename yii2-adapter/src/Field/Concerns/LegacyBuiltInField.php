@@ -55,7 +55,7 @@ trait LegacyBuiltInField
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return parent::normalizeValueFromRequest($this->capturedRequestValue($value), $element);
+        return parent::normalizeValueFromRequest($this->capturedRequestValue($value, $element), $element);
     }
 
     /**
@@ -63,13 +63,13 @@ trait LegacyBuiltInField
      *
      * Aliases whose parent narrows `normalizeValueFromRequest()`'s return type override it to call this.
      */
-    private function capturedRequestValue(mixed $value): mixed
+    private function capturedRequestValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (!$this->rendersLegacyInput() && !$this->rendersLegacyInput(true)) {
             return $value;
         }
 
-        return app(LegacyHtml::class)->capturedFieldValue($value, $this->handle);
+        return app(LegacyHtml::class)->capturedFieldValue($value, $this->handle, $element?->getFieldParamNamespace());
     }
 
     public function getSettingsHtml(): ?string

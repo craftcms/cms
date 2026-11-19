@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\InputNamespace;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
@@ -311,8 +312,10 @@ class LegacyHtml
      *
      * A nested field's legacy HTML submits that map as-is until its inputs are edited, such as when a sibling Matrix
      * entry changes, rather than the expanded value its inputs post.
+     *
+     * @param string|null $paramNamespace The element's field param namespace, such as `fields.links.entries.uid:<uid>.fields`
      */
-    public function capturedFieldValue(mixed $value, string $handle): mixed
+    public function capturedFieldValue(mixed $value, string $handle, ?string $paramNamespace = null): mixed
     {
         if (!is_array($value) || $value === [] || array_is_list($value)) {
             return $value;
@@ -342,12 +345,26 @@ class LegacyHtml
             $root = array_slice($segments, 0, $length);
         }
 
-        // The field's inputs are named after its path, which ends with `[fields][<handle>]`
+        // The field's inputs are named after the request param it's posted to, with nested entries keyed by their bare UID
         $valueIndex = null;
 
-        foreach ($root as $index => $segment) {
-            if ($index > 0 && $segment === $handle && $root[$index - 1] === 'fields') {
-                $valueIndex = $index + 1;
+        if ($paramNamespace !== null) {
+            $path = [
+                ...array_map(fn(string $segment) => Str::chopStart($segment, 'uid:'), explode('.', $paramNamespace)),
+                $handle,
+            ];
+
+            if (array_slice($root, 0, count($path)) === $path) {
+                $valueIndex = count($path);
+            }
+        }
+
+        // Without it, the field's path is taken to end at the last `[fields][<handle>]` pair its inputs share
+        if ($valueIndex === null) {
+            foreach ($root as $index => $segment) {
+                if ($index > 0 && $segment === $handle && $root[$index - 1] === 'fields') {
+                    $valueIndex = $index + 1;
+                }
             }
         }
 
