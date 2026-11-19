@@ -447,7 +447,7 @@ class Image
      *
      * @param resource $stream
      * @return string|null
-     * @since 5.13.0
+     * @internal
      */
     public static function altTextByStream($stream): ?string
     {
