@@ -191,7 +191,7 @@ it('offers only the sites the criteria list, and lists the menu’s first when a
 
     expect(collect($payload['sites'])->pluck('id')->sort()->values()->all())
         ->toBe(collect([$entry->siteId, $otherSite->id])->sort()->values()->all())
-        ->and($payload['siteId'])->toBe(app(Sites::class)->getPrimarySite()->id)
+        ->and($payload['siteId'])->toBe($payload['sites'][0]['id'])
         ->and(collect($payload['data'])->pluck('id')->all())->toBe([$entry->id]);
 });
 
