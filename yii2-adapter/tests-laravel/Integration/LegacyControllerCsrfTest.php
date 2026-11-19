@@ -76,6 +76,17 @@ it('runs a legacy controller’s beforeAction() once for a request that passes C
     expect(CsrfProtectedTestController::$beforeActionCalls)->toBe(1);
 });
 
+it('keeps validating CSRF tokens for actions a legacy controller doesn’t opt out of after it opts out of another', function(): void {
+    $module = Craft::$app->getModule('test-plugin');
+
+    $this->postJson('/actions/test-plugin/hook/handle')->assertOk();
+
+    // Requests reset the Yii app once they’re done.
+    app('Craft')->setModule('test-plugin', $module);
+
+    $this->postJson('/actions/test-plugin/hook/other')->assertStatus(419);
+});
+
 class CsrfOptOutTestController extends \craft\web\Controller
 {
     public $enableCsrfValidation = false;
@@ -102,6 +113,11 @@ class CsrfBeforeActionOptOutTestController extends \craft\web\Controller
     }
 
     public function actionHandle(): \yii\web\Response
+    {
+        return $this->asJson(['ok' => true]);
+    }
+
+    public function actionOther(): \yii\web\Response
     {
         return $this->asJson(['ok' => true]);
     }
