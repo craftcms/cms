@@ -323,8 +323,8 @@ class LegacyHtml
 
         foreach ($value as $name => $item) {
             $segments = is_string($name) ? $this->inputSegments($name) : null;
-            // Requests convert empty strings to null
-            $item ??= '';
+            // Requests convert empty strings to null, including in lists
+            $item = is_array($item) ? array_map(fn(mixed $option) => $option ?? '', $item) : $item ?? '';
             $isInputValue = is_string($item) || (is_array($item) && array_is_list($item) && array_all($item, fn(mixed $option) => is_string($option)));
 
             if ($segments === null || !$isInputValue) {

@@ -280,6 +280,11 @@ it('reads a field’s value from the flat input map its HTML captured', function
         'target',
         array_map(strval(...), range(1, 1001)),
     ],
+    'a list with empty values the request made null' => [
+        ['fields[options]' => null, 'fields[options][]' => ['a', null]],
+        'options',
+        ['a', ''],
+    ],
     'a value keyed by the field’s handle' => [
         ['fields[width][width]' => '12'],
         'width',
