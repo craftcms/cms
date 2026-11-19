@@ -1783,7 +1783,7 @@ abstract class Element extends Component implements ElementInterface, AllowableI
 
     /**
      * @inheritdoc
-     * @return EagerLoadingMap|null|false
+     * @return EagerLoadingMap|list<EagerLoadingMap>|null|false
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -1831,13 +1831,18 @@ abstract class Element extends Component implements ElementInterface, AllowableI
             }
         }
 
-        // If there were any matching fields, find the first one that's actually included in
-        // at least one of the source elements’ field layouts
+        // If there were any matching fields, get the maps of each one that's included in at least one of the
+        // source elements’ field layouts
         if (!empty($fields)) {
+            $results = [];
+            $fieldIds = [];
+
             foreach ($fields as $field) {
-                if (!$field instanceof EagerLoadingFieldInterface) {
+                if (!$field instanceof EagerLoadingFieldInterface || isset($fieldIds[$field->id])) {
                     continue;
                 }
+
+                $fieldIds[$field->id] = true;
 
                 // filter out elements, if field is not part of its layout
                 // https://github.com/craftcms/cms/issues/12539
@@ -1848,12 +1853,40 @@ abstract class Element extends Component implements ElementInterface, AllowableI
                     })
                 );
 
-                if (!empty($fieldSourceElements)) {
-                    return $field->getEagerLoadingMap($fieldSourceElements);
+                if (empty($fieldSourceElements)) {
+                    continue;
+                }
+
+                $result = $field->getEagerLoadingMap($fieldSourceElements);
+
+                // Skipping this handle lets every field fetch its own value
+                if ($result === null) {
+                    return null;
+                }
+
+                if ($result !== false) {
+                    $results[] = $result;
                 }
             }
 
-            // None of the source elements include any of the matching fields
+            if (count($results) === 1) {
+                return $results[0];
+            }
+
+            if (!empty($results)) {
+                // Each element has one layout, so the fields' source elements don't overlap
+                $maps = [];
+                foreach ($results as $result) {
+                    if (isset($result['map'])) {
+                        $maps[] = $result;
+                    } else {
+                        array_push($maps, ...$result);
+                    }
+                }
+                return $maps;
+            }
+
+            // None of the source elements include any of the matching fields, or none of them have a map
             return false;
         }
 

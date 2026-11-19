@@ -8,16 +8,35 @@
 namespace crafttests\unit\fields;
 
 use Craft;
+use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
+use craft\events\EagerLoadElementsEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\data\LinkData;
+use craft\fields\Entries;
 use craft\fields\linktypes\BaseElementLinkType;
+use craft\fields\linktypes\Entry as EntryLinkType;
+use craft\fields\linktypes\Url;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use craft\models\EntryType;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\models\Section;
+use craft\models\Section_SiteSettings;
+use craft\queue\Queue as CraftQueue;
+use craft\services\Elements;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use ReflectionProperty;
+use WeakReference;
+use yii\base\Event;
+use yii\queue\ExecEvent;
+use yii\queue\Queue;
 
 /**
  * Unit tests for the Link custom field.
@@ -140,8 +159,185 @@ class LinkTest extends TestCase
         $target = $this->createEntry();
         $ids = $this->createLinkOwners([$this->entryLink($target), $this->entryLink($target)]);
         $link = $this->link(Entry::find()->id($ids)->fixedOrder()->all()[0]);
+        $serialized = serialize($link);
 
-        self::assertSame($target->id, unserialize(serialize($link))->getElement()->id);
+        self::assertStringNotContainsString('Closure', $serialized);
+        self::assertSame($target->id, unserialize($serialized)->getElement()->id);
+    }
+
+    public function testLinksThatHaveBeenReadAreSerializedWithoutTheirElement(): void
+    {
+        $target = $this->createEntry();
+        $ids = $this->createLinkOwners([$this->entryLink($target), $this->entryLink($target)]);
+        $link = $this->link(Entry::find()->id($ids)->fixedOrder()->with(['linkField'])->all()[0]);
+        $link->getElement();
+        $serialized = serialize($link);
+
+        self::assertStringNotContainsString(sprintf('O:%d:"%s"', strlen(Entry::class), Entry::class), $serialized);
+        self::assertSame($target->id, unserialize($serialized)->getElement()->id);
+    }
+
+    public function testSerializedLinksCanBeRestored(): void
+    {
+        $link = unserialize(serialize(new LinkData('https://example.com', new Url(), ['target' => '_blank'])));
+
+        self::assertSame('https://example.com', $link->getValue());
+        self::assertSame('url', $link->getType());
+        self::assertSame('_blank', $link->target);
+    }
+
+    public function testPrivatePropertiesOfLinkDataSubclassesAreKeptWhenSerialized(): void
+    {
+        $link = new NotedLinkData('https://example.com', new Url());
+        $link->setNote('Kept');
+
+        self::assertSame('Kept', unserialize(serialize($link))->note());
+    }
+
+    public function testFieldsThatShareAHandleAreAllEagerLoaded(): void
+    {
+        $entriesService = Craft::$app->getEntries();
+        $layout = new FieldLayout(['type' => Entry::class]);
+        $tab = new FieldLayoutTab(['name' => 'Content']);
+        $tab->setLayout($layout);
+        $tab->setElements([new CustomField(Craft::$app->getFields()->getFieldByHandle('relatedEntry'), ['handle' => 'linkField'])]);
+        $layout->setTabs([$tab]);
+        $entryType = new EntryType(['name' => 'Related', 'handle' => 'related']);
+        $entryType->setFieldLayout($layout);
+        $section = new Section(['name' => 'Related', 'handle' => 'related', 'type' => Section::TYPE_CHANNEL]);
+        $section->setEntryTypes([$entryType]);
+        $section->setSiteSettings([
+            new Section_SiteSettings([
+                'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+                'hasUrls' => false,
+            ]),
+        ]);
+        self::assertTrue($entriesService->saveEntryType($entryType));
+        self::assertTrue($entriesService->saveSection($section));
+
+        try {
+            $target = $this->createEntry();
+            [$linkOwnerId] = $this->createLinkOwners([['type' => 'url', 'value' => 'https://example.com']]);
+            $entriesOwner = new Entry([
+                'sectionId' => $section->id,
+                'typeId' => $entryType->id,
+                'title' => StringHelper::randomString(),
+            ]);
+            $entriesOwner->setFieldValue('linkField', [$target->id]);
+            Craft::$app->getElements()->saveElement($entriesOwner, false);
+            $owners = Entry::find()->id([$linkOwnerId, $entriesOwner->id])->fixedOrder()->with(['linkField'])->all();
+
+            self::assertSame(
+                [$target->id],
+                array_map(fn(ElementInterface $element) => $element->id, $owners[1]->getEagerLoadedElements('linkField')?->all() ?? []),
+            );
+        } finally {
+            $entriesService->deleteSection($section);
+            $entriesService->deleteEntryType($entryType);
+        }
+    }
+
+    public function testFieldsThatShareAHandleFetchTheirOwnValuesWhenOneSkipsEagerLoading(): void
+    {
+        $fieldsService = Craft::$app->getFields();
+        $entriesService = Craft::$app->getEntries();
+        $skippingField = new SkippingEntries(['name' => 'Skipping', 'handle' => 'skippingRelated']);
+        self::assertTrue($fieldsService->saveField($skippingField));
+        $skippingType = $this->entryTypeWithField('skipping', $skippingField, 'skippingRelated');
+        $entriesType = $this->entryTypeWithField('entries', $fieldsService->getFieldByHandle('relatedEntry'), 'skippingRelated');
+        $section = new Section(['name' => 'Skipping', 'handle' => 'skipping', 'type' => Section::TYPE_CHANNEL]);
+        $section->setEntryTypes([$skippingType, $entriesType]);
+        $section->setSiteSettings([
+            new Section_SiteSettings([
+                'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+                'hasUrls' => false,
+            ]),
+        ]);
+        self::assertTrue($entriesService->saveSection($section));
+
+        try {
+            $targets = [$this->createEntry(), $this->createEntry()];
+            $ownerIds = [];
+            foreach ([$skippingType, $entriesType] as $i => $entryType) {
+                $owner = new Entry([
+                    'sectionId' => $section->id,
+                    'typeId' => $entryType->id,
+                    'title' => StringHelper::randomString(),
+                ]);
+                $owner->setFieldValue('skippingRelated', [$targets[$i]->id]);
+                Craft::$app->getElements()->saveElement($owner, false);
+                $ownerIds[] = $owner->id;
+            }
+            $owners = Entry::find()->id($ownerIds)->fixedOrder()->with(['skippingRelated'])->all();
+
+            self::assertSame(
+                [$targets[0]->id],
+                array_map(fn(ElementInterface $element) => $element->id, $owners[0]->getFieldValue('skippingRelated')->all()),
+            );
+        } finally {
+            $entriesService->deleteSection($section);
+            $entriesService->deleteEntryType($skippingType);
+            $entriesService->deleteEntryType($entriesType);
+            $fieldsService->deleteField($skippingField);
+        }
+    }
+
+    public function testLinksSkippedByTheirBatchStillResolve(): void
+    {
+        $target = $this->createEntry();
+        $ids = $this->createLinkOwners([$this->entryLink($target), $this->entryLink($target)]);
+        $skipPlans = function(EagerLoadElementsEvent $event) {
+            $event->with = [];
+        };
+        Craft::$app->getElements()->on(Elements::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $skipPlans);
+
+        try {
+            $owners = Entry::find()->id($ids)->fixedOrder()->all();
+
+            self::assertSame($target->id, $this->link($owners[0])->getElement()?->id);
+        } finally {
+            Craft::$app->getElements()->off(Elements::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $skipPlans);
+        }
+    }
+
+    public function testFetchedElementsAreKeptApartPerLinkType(): void
+    {
+        $target = $this->createEntry();
+        $ids = $this->createLinkOwners([$this->entryLink($target), $this->entryLink($target)]);
+        Entry::find()->id($ids)->with(['linkField'])->all();
+
+        self::assertNull((new SlugScopedEntryLinkType())->element($this->entryLink($target)['value']));
+    }
+
+    public function testQueueJobsDontKeepTheLinkedElementsOfEarlierJobs(): void
+    {
+        $targets = [$this->createEntry(), $this->createEntry()];
+        $ids = $this->createLinkOwners(array_map(fn(Entry $target) => $this->entryLink($target), $targets));
+        $owners = Entry::find()->id($ids)->with(['linkField'])->all();
+        foreach ($owners as $owner) {
+            $this->link($owner)->getUrl();
+        }
+        $source = WeakReference::create($owners[0]);
+        unset($owners, $owner);
+
+        Event::trigger(CraftQueue::class, Queue::EVENT_BEFORE_EXEC, new ExecEvent());
+        gc_collect_cycles();
+
+        self::assertNull($source->get());
+    }
+
+    private function entryTypeWithField(string $handle, FieldInterface $field, string $fieldHandle): EntryType
+    {
+        $layout = new FieldLayout(['type' => Entry::class]);
+        $tab = new FieldLayoutTab(['name' => 'Content']);
+        $tab->setLayout($layout);
+        $tab->setElements([new CustomField($field, ['handle' => $fieldHandle])]);
+        $layout->setTabs([$tab]);
+        $entryType = new EntryType(['name' => $handle, 'handle' => $handle]);
+        $entryType->setFieldLayout($layout);
+        self::assertTrue(Craft::$app->getEntries()->saveEntryType($entryType));
+
+        return $entryType;
     }
 
     private function createEntry(array $attributes = []): Entry
@@ -191,5 +387,36 @@ class LinkTest extends TestCase
     private function entryLink(Entry $target): array
     {
         return ['type' => 'entry', 'value' => "{entry:$target->id@$target->siteId:url}"];
+    }
+}
+
+class NotedLinkData extends LinkData
+{
+    private string $note = '';
+
+    public function setNote(string $note): void
+    {
+        $this->note = $note;
+    }
+
+    public function note(): string
+    {
+        return $this->note;
+    }
+}
+
+class SlugScopedEntryLinkType extends EntryLinkType
+{
+    public function elementQuery(?string $value): ?ElementQueryInterface
+    {
+        return parent::elementQuery($value)?->slug('not-a-target');
+    }
+}
+
+class SkippingEntries extends Entries
+{
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
+    {
+        return null;
     }
 }

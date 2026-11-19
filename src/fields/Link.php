@@ -641,7 +641,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                     return (
                         $link instanceof LinkData &&
                         self::canEagerLoad($link) &&
-                        !BaseElementLinkType::hasFetchedElement($link->serialize()['value'] ?? '')
+                        !self::elementLinkType($link)::hasFetchedElement($link->serialize()['value'] ?? '')
                     );
                 },
             ));
@@ -651,19 +651,6 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             }
 
             Craft::$app->getElements()->eagerLoadElements($element::class, $elements, [$handle]);
-
-            // Remember the links whose elements weren’t found
-            foreach ($elements as $sibling) {
-                $link = $sibling->getFieldValue($handle);
-
-                if ($link instanceof LinkData && self::canEagerLoad($link)) {
-                    $value = $link->serialize()['value'] ?? '';
-
-                    if (!BaseElementLinkType::hasFetchedElement($value)) {
-                        BaseElementLinkType::rememberElement($value, null);
-                    }
-                }
-            }
         });
     }
 
@@ -712,15 +699,22 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         }
 
         $event->handled = true;
+        $link = $element->getFieldValue($handle);
 
-        if (empty($event->elements)) {
+        if (!$link instanceof LinkData || !self::canEagerLoad($link) || !self::loadsLinkedElement($event->plan, $link)) {
             return;
         }
 
-        $link = $element->getFieldValue($handle);
-
-        if ($link instanceof LinkData && self::loadsLinkedElement($event->plan, $link)) {
+        if (!empty($event->elements)) {
             $link->setEagerLoadedElement($event->elements[0]);
+        } elseif ($event->plan->siteIds === null) {
+            // Looked up by this plan; the elements it finds replace this
+            $type = self::elementLinkType($link);
+            $value = $link->serialize()['value'] ?? '';
+
+            if (!$type::hasFetchedElement($value)) {
+                $type::rememberElement($value, null);
+            }
         }
     }
 
@@ -748,6 +742,17 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         $type = self::types()[$link->getType()] ?? null;
 
         return is_subclass_of($type, BaseElementLinkType::class) && $type::referencesSite($link->serialize()['value'] ?? '');
+    }
+
+    /**
+     * Returns the element link type class of a link that can be eager-loaded.
+     *
+     * @return class-string<BaseElementLinkType>
+     */
+    private static function elementLinkType(LinkData $link): string
+    {
+        /** @var class-string<BaseElementLinkType> */
+        return self::types()[$link->getType()];
     }
 
     /**

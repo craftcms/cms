@@ -45,6 +45,7 @@ use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
 use craft\fields\Link;
+use craft\fields\linktypes\BaseElementLinkType;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -1695,6 +1696,9 @@ trait ApplicationTrait
 
         // Keep eager-loaded Link field elements on the fields’ values
         Event::on(Element::class, Element::EVENT_SET_EAGER_LOADED_ELEMENTS, [Link::class, 'handleSetEagerLoadedElements']);
+
+        // Don't keep linked elements between queue jobs
+        Event::on(Queue::class, Queue::EVENT_BEFORE_EXEC, fn() => BaseElementLinkType::forgetFetchedElements());
 
         // Register all the listeners for config items
         $this->_registerConfigListeners();

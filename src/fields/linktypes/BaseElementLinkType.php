@@ -28,10 +28,20 @@ use yii\base\InvalidArgumentException;
 abstract class BaseElementLinkType extends BaseLinkType
 {
     /**
-     * @var array<string,ElementInterface|false>
+     * @var array<class-string,array<string,ElementInterface|false>> Fetched elements, by link type and value
      * @see element()
      */
     private static array $fetchedElements = [];
+
+    /**
+     * Forgets the linked elements fetched so far, so a long-running process doesn’t keep them between queue jobs.
+     *
+     * @internal
+     */
+    public static function forgetFetchedElements(): void
+    {
+        self::$fetchedElements = [];
+    }
 
     /**
      * Returns the element type this link type is for.
@@ -345,7 +355,7 @@ JS, [
      */
     public static function hasFetchedElement(string $value): bool
     {
-        return isset(self::$fetchedElements[$value]);
+        return isset(self::$fetchedElements[static::class][$value]);
     }
 
     /**
@@ -357,7 +367,7 @@ JS, [
      */
     public static function rememberElement(string $value, ?ElementInterface $element): void
     {
-        self::$fetchedElements[$value] = $element ?? false;
+        self::$fetchedElements[static::class][$value] = $element ?? false;
     }
 
     /**
@@ -425,16 +435,16 @@ JS, [
      */
     public function element(?string $value): ?ElementInterface
     {
-        if (!isset(self::$fetchedElements[$value])) {
+        if (!isset(self::$fetchedElements[static::class][$value])) {
             $query = $this->elementQuery($value);
 
             if (!$query) {
                 return null;
             }
 
-            self::$fetchedElements[$value] = $query->one() ?? false;
+            self::$fetchedElements[static::class][$value] = $query->one() ?? false;
         }
 
-        return self::$fetchedElements[$value] ?: null;
+        return self::$fetchedElements[static::class][$value] ?: null;
     }
 }
