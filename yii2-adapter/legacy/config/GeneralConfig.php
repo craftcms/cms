@@ -150,6 +150,27 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public string|array|null|false $testToEmailAddress = null;
 
     /**
+     * @var string[]|null List of headers where proxies store the real client IP.
+     *
+     * See [[\yii\web\Request::ipHeaders]] for more details.
+     *
+     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IP_HEADERS=X-Forwarded-For,CF-Connecting-IP
+     * ```
+     * :::
+     *
+     * @group System
+     * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     */
+    public ?array $ipHeaders = null;
+
+    /**
      * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
      *
      * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
@@ -1193,6 +1214,34 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->deprecate('enableTwigSandbox', 'It no longer has any effect. The Twig sandbox is always enabled for untrusted templates.');
 
         $this->enableTwigSandbox = $value;
+
+        return $this;
+    }
+
+    /**
+     * List of headers where proxies store the real client IP.
+     *
+     * See [[\yii\web\Request::ipHeaders]] for more details.
+     *
+     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
+     *
+     * ```php
+     * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
+     * ```
+     *
+     * @group System
+     *
+     * @param string[]|null $value
+     *
+     * @see $ipHeaders
+     * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     */
+    #[Deprecated(message: 'in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.')]
+    public function ipHeaders(?array $value): self
+    {
+        $this->deprecate('ipHeaders', '[Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.');
+
+        $this->ipHeaders = $value;
 
         return $this;
     }

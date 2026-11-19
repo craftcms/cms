@@ -339,7 +339,7 @@
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
 - Deprecated the `defaultCookieDomain`, `phpSessionName`, `sameSiteCookieValue`, `useSecureCookies`, and `userSessionDuration` general config settings. Laravel’s `session` config should be used instead.
 - Deprecated the `rememberedUserSessionDuration` and `verificationCodeDuration` general config settings. Laravel’s `auth.guards.craft.remember` and `auth.passwords.craft.expire` config values should be used instead.
-- Deprecated the `secureHeaders`, `secureProtocolHeaders`, and `trustedHosts` general config settings. [Laravel’s trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) should be configured instead.
+- Deprecated the `ipHeaders`, `secureHeaders`, `secureProtocolHeaders`, and `trustedHosts` general config settings. [Laravel’s trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) should be configured instead.
 - Deprecated the `devMode` and `securityKey` general config settings. Laravel’s `app.debug` and `app.key` config values should be used instead.
 - Deprecated the `asyncCsrfInputs` general config setting. It no longer has any effect, as front-end forms don’t need CSRF inputs. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.

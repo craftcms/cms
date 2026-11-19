@@ -1676,26 +1676,6 @@ class GeneralConfig extends BaseConfig
     public mixed $invalidUserTokenPath = null;
 
     /**
-     * @var string[]|null List of headers where proxies store the real client IP.
-     *
-     * See [[\yii\web\Request::ipHeaders]] for more details.
-     *
-     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_IP_HEADERS=X-Forwarded-For,CF-Connecting-IP
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?array $ipHeaders = null;
-
-    /**
      * @var bool Whether GraphQL types should be generated lazily.
      *
      * ::: code
@@ -5000,30 +4980,6 @@ class GeneralConfig extends BaseConfig
     public function invalidUserTokenPath(mixed $value): self
     {
         $this->invalidUserTokenPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * List of headers where proxies store the real client IP.
-     *
-     * See [[\yii\web\Request::ipHeaders]] for more details.
-     *
-     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
-     *
-     * ```php
-     * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
-     * ```
-     *
-     * @group System
-     *
-     * @param  string[]|null  $value
-     *
-     * @see $ipHeaders
-     */
-    public function ipHeaders(?array $value): self
-    {
-        $this->ipHeaders = $value;
 
         return $this;
     }
