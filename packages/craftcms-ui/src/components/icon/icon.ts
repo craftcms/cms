@@ -24,6 +24,10 @@ import {resolveIcon} from '../../utilities/icons.js';
  * icon-only button, or beside text it adds to, like an external-link icon
  * after "View". Beside text that already says it, leave the label off.
  *
+ * Icons that point a way, such as the wrench, the external-link arrow,
+ * checkmarks and the magnifying glass, are mirrored in right-to-left layouts. Arrows and chevrons aren't: name the one
+ * that points the way you mean.
+ *
  * @slot - Your own icon markup, used in place of the named one.
  *
  * @cssproperty [--c-icon-size=var(--c-size-icon-sm)] - The icon's size.
@@ -184,6 +188,24 @@ export default class CraftIcon extends LitElement {
 
         :host([data-color]) {
           color: var(--c-color-fill-loud);
+        }
+
+        :host(
+          :is(
+            [name='wrench'],
+            [name='tool'],
+            [name='arrow-up-right-from-square'],
+            [name='external'],
+            [name='check'],
+            [name='circle-check'],
+            [name='done'],
+            [name='square-check'],
+            [name='check-double'],
+            [name='magnifying-glass'],
+            [name='search']
+          ):dir(rtl)
+        ) {
+          scale: -1 1;
         }
 
         svg,

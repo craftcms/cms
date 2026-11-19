@@ -112,6 +112,14 @@ describe('provider configuration', function () {
         expect(app(OAuth::class)->getProviderDefinition('test')->trustsEmail)->toBeTrue();
     });
 
+    test('the deprecated activatesUsers setting still enables controlsAccess', function () {
+        configureOAuthManagerProvider([
+            'activatesUsers' => true,
+        ]);
+
+        expect(app(OAuth::class)->getProviderDefinition('test')->controlsAccess)->toBeTrue();
+    });
+
     test('provider credentials are parsed for environment variables', function () {
         $_SERVER['OAUTH_TEST_CLIENT_ID'] = 'env-client-id';
         $_SERVER['OAUTH_TEST_CLIENT_SECRET'] = 'env-client-secret';

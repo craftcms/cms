@@ -11,6 +11,30 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+it('opens toward the start of the line in right-to-left layouts', async () => {
+  document.body.innerHTML = `
+    <div dir="rtl" style="position: fixed; top: 100px; left: 200px;">
+      <craft-popover placement="bottom-start" open>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content" style="width: 100px; height: 40px;">Menu</div>
+      </craft-popover>
+    </div>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  const invoker = document
+    .querySelector('craft-button')!
+    .getBoundingClientRect();
+  const popup = popover
+    .shadowRoot!.querySelector('[part~="popup"]')!
+    .getBoundingClientRect();
+
+  expect(popup.right).toBeCloseTo(invoker.right, 0);
+  expect(popup.left).toBeLessThan(invoker.left);
+});
+
 it('gives the panel itself no role', async () => {
   document.body.innerHTML = `
     <craft-popover>
