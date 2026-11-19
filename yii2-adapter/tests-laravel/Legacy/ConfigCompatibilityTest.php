@@ -198,16 +198,43 @@ it('applies array general configs through the legacy settings', function(): void
         ->and($config->usePathInfo)->toBeTrue();
 });
 
-it('passes the deprecated IP headers setting to the Yii request', function(GeneralConfig $config): void {
+it('passes the deprecated proxy settings to the Yii request', function(\CraftCms\Cms\Config\GeneralConfig $config): void {
+    Config::set('craft.general', $config);
     app()->instance(\CraftCms\Cms\Config\GeneralConfig::class, $config);
 
-    $request = Craft::createObject(\craft\helpers\App::webRequestConfig());
+    try {
+        $request = Craft::createObject(\craft\helpers\App::webRequestConfig());
 
-    expect($request->ipHeaders)->toBe(['CF-Connecting-IP'])
-        ->and($config->getDeprecatedSettings())->toHaveKey('ipHeaders');
+        expect($request->ipHeaders)->toBe(['CF-Connecting-IP'])
+            ->and($request->secureHeaders)->toBe(['X-Forwarded-For'])
+            ->and($request->secureProtocolHeaders)->toBe(['X-Forwarded-Proto' => ['https']])
+            ->and($request->trustedHosts)->toBe(['10.0.0.1'])
+            ->and(GeneralConfig::current()->getDeprecatedSettings())->toHaveKeys(['ipHeaders', 'secureHeaders', 'secureProtocolHeaders', 'trustedHosts']);
+    } finally {
+        foreach (['CRAFT_IP_HEADERS', 'CRAFT_SECURE_HEADERS', 'CRAFT_SECURE_PROTOCOL_HEADERS', 'CRAFT_TRUSTED_HOSTS'] as $name) {
+            putenv($name);
+        }
+    }
 })->with([
-    'fluent config' => fn() => GeneralConfig::create()->ipHeaders(['CF-Connecting-IP']),
-    'array config' => fn() => new GeneralConfigCompatibility()->convert(['ipHeaders' => ['CF-Connecting-IP']]),
+    'core config with environment overrides' => function() {
+        putenv('CRAFT_IP_HEADERS=CF-Connecting-IP');
+        putenv('CRAFT_SECURE_HEADERS=X-Forwarded-For');
+        putenv('CRAFT_SECURE_PROTOCOL_HEADERS={"X-Forwarded-Proto":["https"]}');
+        putenv('CRAFT_TRUSTED_HOSTS=10.0.0.1');
+
+        return \CraftCms\Cms\Config\GeneralConfig::create();
+    },
+    'fluent config' => fn() => GeneralConfig::create()
+        ->ipHeaders(['CF-Connecting-IP'])
+        ->secureHeaders(['X-Forwarded-For'])
+        ->secureProtocolHeaders(['X-Forwarded-Proto' => ['https']])
+        ->trustedHosts(['10.0.0.1']),
+    'array config' => fn() => new GeneralConfigCompatibility()->convert([
+        'ipHeaders' => ['CF-Connecting-IP'],
+        'secureHeaders' => ['X-Forwarded-For'],
+        'secureProtocolHeaders' => ['X-Forwarded-Proto' => ['https']],
+        'trustedHosts' => ['10.0.0.1'],
+    ]),
 ]);
 
 it('maps the renamed temp asset upload setting', function(): void {

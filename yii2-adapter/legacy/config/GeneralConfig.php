@@ -9,8 +9,10 @@
 
 namespace craft\config;
 
+use Craft;
 use craft\services\Config;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use DateInterval;
@@ -169,6 +171,232 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
      */
     public ?array $ipHeaders = null;
+
+    /**
+     * @var list<string>|null Lists of headers that are, by default, subject to the trusted host configuration.
+     *
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead,
+     * passing the headers to trust in `bootstrap/app.php`.
+     * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+     *             Request::HEADER_X_FORWARDED_HOST |
+     *             Request::HEADER_X_FORWARDED_PROTO
+     *         );
+     *     })
+     *     // ...
+     * ```
+     *
+     * @group Security
+     * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     */
+    public ?array $secureHeaders = null;
+
+    /**
+     * @var array<string, list<string>>|null List of headers to check for determining whether the connection is made via HTTPS.
+     *
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     * Requests from trusted proxies are treated as secure when their `X-Forwarded-Proto` header is `https`.
+     * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
+     *     })
+     *     // ...
+     * ```
+     *
+     * @group Security
+     * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     */
+    public ?array $secureProtocolHeaders = null;
+
+    /**
+     * @var array<int|string, string|list<string>> The configuration for trusted security-related headers.
+     *
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
+     *     })
+     *     // ...
+     * ```
+     *
+     * @group Security
+     * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     */
+    public ?array $trustedHosts = ['any'];
+
+    /**
+     * @var bool Whether users should be allowed to create similarly-named tags.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->allowSimilarTags(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ALLOW_SIMILAR_TAGS=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @deprecated in 6.0.0. Tags are deprecated. Run `php craft entrify/tags` to convert tag groups to sections.
+     */
+    public bool $allowSimilarTags = false;
+
+    /**
+     * @var string|null A unique ID representing the current build of the codebase.
+     *
+     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
+     * ```
+     * ```shell Environment Override
+     * CRAFT_BUILD_ID=$GIT_SHA
+     * ```
+     * :::
+     *
+     * @group Environment
+     * @deprecated in 6.0.0. It only affects asset bundles published through the Yii adapter.
+     */
+    public ?string $buildId = null;
+
+    /**
+     * @var int|null The default permission to be set for newly-generated files.
+     *
+     * If set to `null`, the permission will be determined by the current environment.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->defaultFileMode(0744)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEFAULT_FILE_MODE=0744
+     * ```
+     * :::
+     *
+     * @group System
+     * @deprecated in 6.0.0. It only affects files written through the Yii adapter. Set `permissions` in a local disk’s config instead.
+     */
+    public ?int $defaultFileMode = null;
+
+    /**
+     * @var bool Whether SVG thumbnails should be rasterized.
+     *
+     * This requires SVG decoding support from the active image driver.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->rasterizeSvgThumbs(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_RASTERIZE_SVG_THUMBS=true
+     * ```
+     * :::
+     *
+     * @group Image Handling
+     * @deprecated in 6.0.0. It no longer has any effect.
+     */
+    public bool $rasterizeSvgThumbs = false;
+
+    /**
+     * @var string|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     *
+     * @phpstan-var 'None'|'Lax'|'Strict'|null
+     *
+     * ::: warning
+     * This setting is deprecated. Configure `session.same_site` or set the `SESSION_SAME_SITE` environment variable instead.
+     * :::
+     *
+     * ```shell
+     * SESSION_SAME_SITE=strict
+     * ```
+     *
+     * @group System
+     *
+     * @since 3.1.33
+     * @deprecated in 6.0.0. Configure `session.same_site` or set the `SESSION_SAME_SITE` environment variable instead.
+     */
+    public ?string $sameSiteCookieValue = null;
+
+    /**
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
+     *
+     * ::: warning
+     * This setting is deprecated. Configure `app.key` or set the `APP_KEY` environment variable instead.
+     * :::
+     *
+     * ::: warning
+     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
+     * :::
+     *
+     * ```shell
+     * APP_KEY=base64:2cf24dba5...
+     * ```
+     *
+     * In the event that the key is compromised, a new key can be generated with the command:
+     *
+     * ```sh
+     * php artisan key:generate
+     * ```
+     *
+     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
+     *
+     * @see https://craftcms.com/knowledge-base/securing-craft
+     *
+     * @group Security
+     * @deprecated in 6.0.0. Configure `app.key` or set the `APP_KEY` environment variable instead.
+     */
+    public string $securityKey = '';
+
+    /**
+     * @var bool Whether a `Content-Length` header should be sent with responses.
+     *
+     * This only affects template responses rendered through the Yii2 adapter.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->sendContentLengthHeader(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 3.7.3
+     * @deprecated in 6.0.0. It only affects template responses rendered through the Yii adapter.
+     */
+    public bool $sendContentLengthHeader = false;
+
+    /**
+     * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
+     *
+     * ::: warning
+     * This setting is deprecated. Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.
+     * :::
+     *
+     * ```shell
+     * SESSION_SECURE_COOKIE=true
+     * ```
+     *
+     * @group Security
+     * @deprecated in 6.0.0. Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.
+     */
+    public string|bool $useSecureCookies = 'auto';
 
     /**
      * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
@@ -1915,6 +2143,124 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
+     * Whether users should be allowed to create similarly-named tags.
+     *
+     * ```php
+     * ->allowSimilarTags(true)
+     * ```
+     *
+     * @group System
+     *
+     * @see $allowSimilarTags
+     * @deprecated in 6.0.0. Tags are deprecated. Run `php craft entrify/tags` to convert tag groups to sections.
+     */
+    #[Deprecated(message: 'in 6.0.0. Tags are deprecated. Run `php craft entrify/tags` to convert tag groups to sections.')]
+    public function allowSimilarTags(bool $value = true): self
+    {
+        $this->deprecate('allowSimilarTags', 'Tags are deprecated. Run `php craft entrify/tags` to convert tag groups to sections.');
+
+        $this->allowSimilarTags = $value;
+
+        return $this;
+    }
+
+    /**
+     * A unique ID representing the current build of the codebase.
+     *
+     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
+     *
+     * ```php
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
+     * ```
+     *
+     * @group Environment
+     *
+     * @see $buildId
+     * @deprecated in 6.0.0. It only affects asset bundles published through the Yii adapter.
+     */
+    #[Deprecated(message: 'in 6.0.0. It only affects asset bundles published through the Yii adapter.')]
+    public function buildId(?string $value): self
+    {
+        $this->deprecate('buildId', 'It only affects asset bundles published through the Yii adapter.');
+
+        $this->buildId = $value;
+
+        return $this;
+    }
+
+    /**
+     * The default permission to be set for newly-generated files.
+     *
+     * If set to `null`, the permission will be determined by the current environment.
+     *
+     * ```php
+     * ->defaultFileMode(0744)
+     * ```
+     *
+     * @group System
+     *
+     * @see $defaultFileMode
+     * @since 4.2.0
+     * @deprecated in 6.0.0. It only affects files written through the Yii adapter. Set `permissions` in a local disk’s config instead.
+     */
+    #[Deprecated(message: 'in 6.0.0. It only affects files written through the Yii adapter. Set `permissions` in a local disk’s config instead.')]
+    public function defaultFileMode(?int $value): self
+    {
+        $this->deprecate('defaultFileMode', 'It only affects files written through the Yii adapter. Set `permissions` in a local disk’s config instead.');
+
+        $this->defaultFileMode = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether SVG thumbnails should be rasterized.
+     *
+     * This requires SVG decoding support from the active image driver.
+     *
+     * ```php
+     * ->rasterizeSvgThumbs(true)
+     * ```
+     *
+     * @group Image Handling
+     *
+     * @see $rasterizeSvgThumbs
+     * @deprecated in 6.0.0. It no longer has any effect.
+     */
+    #[Deprecated(message: 'in 6.0.0. It no longer has any effect.')]
+    public function rasterizeSvgThumbs(bool $value = true): self
+    {
+        $this->deprecate('rasterizeSvgThumbs', 'It no longer has any effect.');
+
+        $this->rasterizeSvgThumbs = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether a `Content-Length` header should be sent with responses.
+     *
+     * ```php
+     * ->sendContentLengthHeader(true)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $sendContentLengthHeader
+     * @deprecated in 6.0.0. It only affects template responses rendered through the Yii adapter.
+     */
+    #[Deprecated(message: 'in 6.0.0. It only affects template responses rendered through the Yii adapter.')]
+    public function sendContentLengthHeader(bool $value = true): self
+    {
+        $this->deprecate('sendContentLengthHeader', 'It only affects template responses rendered through the Yii adapter.');
+
+        $this->sendContentLengthHeader = $value;
+
+        return $this;
+    }
+
+    /**
      * Returns the normalized test email addresses.
      */
     public function getTestToEmailAddress(): array
@@ -2079,6 +2425,24 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
                 $property->setValue(null, null);
             }
         });
+    }
+
+    /**
+     * Returns the general config as this class, to read settings that only the Yii adapter supports.
+     *
+     * A config created with `CraftCms\Cms\Config\GeneralConfig::create()` doesn't have those settings, so the adapter’s
+     * copy of it is returned instead, which has them, with their `CRAFT_` environment overrides applied.
+     */
+    public static function current(): self
+    {
+        $config = Cms::config();
+
+        if ($config instanceof self) {
+            return $config;
+        }
+
+        /** @var self */
+        return Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GENERAL);
     }
 
     /**

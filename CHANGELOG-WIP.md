@@ -275,6 +275,10 @@
 - Deprecated the `ipHeaders`, `secureHeaders`, `secureProtocolHeaders`, and `trustedHosts` general config settings. [Laravel’s trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) should be configured instead.
 - Deprecated the `devMode` and `securityKey` general config settings. Laravel’s `app.debug` and `app.key` config values should be used instead.
 - Deprecated the `asyncCsrfInputs` general config setting. It no longer has any effect, as front-end forms don’t need CSRF inputs. ([#20429](https://github.com/craftcms/cms/pull/20429))
+- Deprecated the `allowSimilarTags` general config setting, along with tags.
+- Deprecated the `buildId` and `sendContentLengthHeader` general config settings. They only affect asset bundles and template responses that go through the Yii adapter.
+- Deprecated the `defaultFileMode` general config setting. It only affects files written through the Yii adapter. A local disk’s `permissions` config should be used instead.
+- Deprecated the `rasterizeSvgThumbs` general config setting. It no longer has any effect.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
 - Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))
