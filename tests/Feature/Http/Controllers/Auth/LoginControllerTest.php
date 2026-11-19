@@ -14,6 +14,7 @@ use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -29,6 +30,7 @@ use Inertia\Middleware;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\currentUserElement;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -196,6 +198,21 @@ test('attemptLogin succeeds with valid credentials', function () {
 
     expect(Auth::check())->toBeTrue();
     expect(Auth::id())->toBe($user->id);
+});
+
+test('attemptLogin does not expose the password hash or remember token in its JSON response', function () {
+    $user = User::findOne();
+
+    $json = postJson(action([LoginController::class, 'attemptLogin']), [
+        'loginName' => $user->email,
+        'password' => 'craftcms2018!!',
+    ])->assertOk()->json('user');
+
+    $secrets = ['password', 'newPassword', 'currentPassword', 'remember_token'];
+
+    expect($json)->toHaveKey('id', $user->id)->not->toHaveKeys($secrets)
+        // Twig’s `json_encode` filter encodes the user element directly
+        ->and(Json::decode(Json::encode(currentUserElement())))->toHaveKey('id', $user->id)->not->toHaveKeys($secrets);
 });
 
 test('control panel logins post to the control panel and redirect to the post-CP-login redirect', function () {
