@@ -126,6 +126,21 @@ it('rejects tokens that are tampered with, for another element type, or for anot
     ($this->postEmbedded)(['embeddedIndexToken' => $token])->assertStatus(400);
 });
 
+it('leaves nested element actions out of its card menus', function () {
+    $entry = EntryModel::factory()->create();
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id]);
+
+    $items = ($this->postEmbedded)([
+        'embeddedIndexToken' => $index->token(),
+        'viewMode' => 'cards',
+        'viewState' => ['mode' => 'cards'],
+    ])->assertOk()->json('data.0.actionMenuItems');
+
+    expect($items)->not->toBeEmpty()
+        ->and(collect($items)->pluck('action.name')->all())->not->toContain('craft:nested-element-action')
+        ->and(collect($items)->pluck('label')->all())->not->toContain('Duplicate', 'Delete entry');
+});
+
 it('builds the initial payload without a request or owner', function () {
     EntryModel::factory()->count(2)->create();
 

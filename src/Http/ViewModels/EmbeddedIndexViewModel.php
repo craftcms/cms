@@ -416,6 +416,7 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     protected function cardConfig(ElementInterface $element): array
     {
         $static = $this->indexSource->static;
+        $nestedActions = $this->indexSource->owner !== null && ! $static;
 
         return [
             'context' => $this->indexSource->fieldId !== null ? 'field' : 'embedded-index',
@@ -424,8 +425,8 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             'autoReload' => $this->mode() !== ElementIndexViewMode::Cards->value,
             'showStatus' => true,
             'showActionMenu' => ! $element->trashed,
-            'showNestedActions' => ! $static,
-            'nestedActionEvents' => ! $static,
+            'showNestedActions' => $nestedActions,
+            'nestedActionEvents' => $nestedActions,
             'sortable' => ! $static && $this->indexSource->sortable,
             'canPaste' => ! $static && $this->indexSource->canPaste,
             'showInGrid' => $this->request->boolean('showInGrid'),
