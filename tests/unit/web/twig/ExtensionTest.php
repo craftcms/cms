@@ -996,8 +996,22 @@ class ExtensionTest extends TestCase
             }
         };
 
+        $target = new class() {
+            public int $calls = 0;
+
+            public function boom(): bool
+            {
+                $this->calls++;
+                return true;
+            }
+        };
+
         self::expectException(TwigError::class);
-        $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable], $templateMode);
+        try {
+            $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable, 'target' => $target], $templateMode);
+        } finally {
+            self::assertSame(0, $target->calls);
+        }
     }
 
     public static function sandboxedArrayFilterKeyDataProvider(): array
@@ -1008,6 +1022,9 @@ class ExtensionTest extends TestCase
             'index with an object as its groups' => ["{{ [{shh: 'hit'}]|index(null, obj)|keys|first }}"],
             'column with a key path' => ["{{ [craft]|column(['app', 'config', 'general', 'securityKey'])|first }}"],
             'multisort with a key path' => ["{{ [craft]|multisort([['app', 'config', 'general', 'securityKey']])|length }}"],
+            'where with a callable array' => ["{{ ['x']|where([target, 'boom'])|length }}"],
+            'contains with a callable array' => ["{{ ['x']|contains([target, 'boom']) ? 'y' : 'n' }}"],
+            'multisort with a callable array' => ["{{ ['x', 'y']|multisort([target, 'boom'])|length }}"],
             'index with a disallowed property' => ["{{ [obj]|index('secret')|keys|first }}"],
             'where with a disallowed property' => ["{{ [obj]|where('secret', 'shh')|length }}"],
             'contains with a disallowed property' => ["{{ [obj]|contains('secret', 'shh') }}"],
@@ -1026,6 +1043,26 @@ class ExtensionTest extends TestCase
             'filterByValue comparing an object that can’t be a string with a string' => ["{{ [1]|filterByValue(v => stringable, 'shh')|length }}"],
             'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
         ];
+    }
+
+    /**
+     * multisort must read each item of a key list as a key name in the sandbox, never call it as a callable array.
+     */
+    public function testSandboxedMultisortNeverCallsCallableArrays(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        self::$callableArrayTargetCalls = 0;
+
+        $this->view->renderSandboxedString("{{ ['x', 'y']|multisort([targetClass, 'callableArrayTarget'])|length }}", ['targetClass' => self::class]);
+        self::assertSame(0, self::$callableArrayTargetCalls);
+    }
+
+    private static int $callableArrayTargetCalls = 0;
+
+    public static function callableArrayTarget(): int
+    {
+        self::$callableArrayTargetCalls++;
+        return 0;
     }
 
     /**
