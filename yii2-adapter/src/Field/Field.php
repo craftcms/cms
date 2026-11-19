@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Field;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Field as CoreField;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldControl;
@@ -11,6 +12,7 @@ use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldHtml;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
 use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 
 abstract class Field extends CoreField implements LegacyField, LegacySettingsComponent
 {
@@ -29,6 +31,11 @@ abstract class Field extends CoreField implements LegacyField, LegacySettingsCom
      */
     public function init(): void
     {
+    }
+
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return parent::normalizeValueFromRequest(app(LegacyHtml::class)->capturedFieldValue($value, $this->handle, $element?->getFieldParamNamespace()), $element);
     }
 
     public function getSettingsHtml(): ?string

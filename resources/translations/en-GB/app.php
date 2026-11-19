@@ -3560,6 +3560,7 @@ return [
     'weeks from now' => 'weeks from now',
     'weeks' => 'weeks',
     'yesterday' => 'yesterday',
+    '{action} ({count, number} {type})' => '{action} ({count, number} {type})',
     '{action} can only be performed on up to {limit, number} elements at a time.' => '{action} can only be performed on up to {limit, number} elements at a time.',
     '{action} will run in the background for {count, number} {type}.' => '{action} will run in the background for {count, number} {type}.',
     '{action}, {cell}' => '{action}, {cell}',

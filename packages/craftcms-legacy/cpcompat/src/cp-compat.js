@@ -532,7 +532,7 @@
       if (!warned) {
         warned = true;
         console.warn(
-          'Craft.SlidePicker is deprecated. Emit <craft-slide-picker> directly instead (or use Craft.ui.createSlidePicker).'
+          'Craft.SlidePicker is deprecated. Emit <craft-slide-picker> directly instead.'
         );
       }
     }

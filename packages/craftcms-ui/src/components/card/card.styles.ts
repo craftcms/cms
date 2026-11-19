@@ -17,7 +17,7 @@ export default css`
 
   /* What's in a tinted card takes the card's color rather than gray, as its
      body does: neutral controls and hairlines, the selected tab's indicator,
-     form control and checkbox borders, and UI text. */
+     form control and checkbox borders, UI text, and input placeholders. */
   ${tintedHost()} ::slotted(*) {
     --c-color-neutral-fill-quiet: var(--_colorable-fill-quiet);
     --c-color-neutral-fill-normal: var(--_colorable-fill-normal);
@@ -28,7 +28,7 @@ export default css`
     --c-color-neutral-on-quiet: var(--_colorable-on-quiet);
     --c-color-neutral-on-normal: var(--_colorable-on-normal);
     --c-color-neutral-on-loud: var(--_colorable-on-loud);
-    --c-tab-border-active: var(--_colorable-on-quiet);
+    --c-tab-indicator-fill-active: var(--_colorable-on-quiet);
     --c-form-control-border-color: var(--_colorable-border-normal);
     --c-text-default: var(--_colorable-on-quiet);
     --c-text-quiet: color-mix(
@@ -36,13 +36,14 @@ export default css`
       var(--_colorable-on-quiet) 75%,
       var(--_colorable-fill-quiet)
     );
+    --c-form-control-placeholder: var(--c-text-quiet);
   }
 
   /* A neutral card re-resolves the tokens a tinted card recolors (see
      tokens.css). The selected tab's indicator has no token of its own to go
      back to, so it's cleared, leaving tabs their default. */
   :host(:is([data-color='white'], [data-color='gray'], [data-color='slate'])) {
-    --c-tab-border-active: initial;
+    --c-tab-indicator-fill-active: initial;
   }
 
   :host([active]) .card {
@@ -56,8 +57,8 @@ export default css`
       border-color: var(--c-color-border-loud);
       color: var(--c-color-on-loud);
       --c-checkbox-border-color: var(--c-color-on-loud);
-      /* Plain controls here hover over the quiet fill, which would be a light
-         patch under the header's light text. */
+      /* Plain controls here are pressed over the quiet fill, which would be a
+         light patch under the header's light text. */
       --c-color-fill-quiet: var(--c-color-fill-loud);
       --c-color-border-quiet: var(--c-color-border-loud);
       --c-color-on-quiet: var(--c-color-on-loud);

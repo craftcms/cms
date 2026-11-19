@@ -11,6 +11,8 @@ declare(strict_types=1);
 
 namespace craft\fields;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Data\JsonData;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyBuiltInField;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 
@@ -21,4 +23,9 @@ use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 class Json extends \CraftCms\Cms\Field\Json implements LegacyField
 {
     use LegacyBuiltInField;
+
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?JsonData
+    {
+        return parent::normalizeValueFromRequest($this->capturedRequestValue($value, $element), $element);
+    }
 }

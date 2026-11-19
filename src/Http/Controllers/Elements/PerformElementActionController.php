@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Activity\OperationTypes\ElementActionOperation;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -138,6 +139,7 @@ class PerformElementActionController
         }
 
         $count = $selectAll ? (clone $actionQuery)->count() : count($elementIds);
+        $operation = ElementActionOperation::for($action, $elementType, $count);
 
         if ($count > ElementActions::SYNC_LIMIT) {
             abort_if(! $action->supportsQueue(), 400, t('{action} can only be performed on up to {limit, number} elements at a time.', [
@@ -146,7 +148,7 @@ class PerformElementActionController
             ]));
 
             if (! $embedded) {
-                return $this->queueAction($request, $action, $elementType, $actionQuery);
+                return $operation->scope(fn (): SymfonyResponse => $this->queueAction($request, $action, $elementType, $actionQuery));
             }
         }
 
@@ -180,10 +182,10 @@ class PerformElementActionController
                 }
                 $elementIds = $preparedElements->pluck('id')->all();
 
-                $result = $this->elementActions->invoke(
+                $result = $operation->scope(fn (): array => $this->elementActions->invoke(
                     action: $action,
                     query: $actionQuery->id($elementIds),
-                );
+                ));
 
                 if ($result['success'] && $action instanceof Duplicate) {
                     $duplicateIds = $action->duplicateIdsBySourceId();
@@ -218,7 +220,7 @@ class PerformElementActionController
                 throw $exception;
             }
         } else {
-            $result = $this->elementActions->invoke($action, $actionQuery);
+            $result = $operation->scope(fn (): array => $this->elementActions->invoke($action, $actionQuery));
         }
 
         abort_if(! $result['valid'], 400, 'Element action params did not validate');

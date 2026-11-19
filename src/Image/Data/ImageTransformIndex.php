@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use DateTimeInterface;
 
@@ -50,14 +51,44 @@ class ImageTransformIndex extends Component
     {
         parent::__construct($config);
 
-        // Reset inProgress if stale (30+ seconds)
+        // Reset inProgress if the request generating the transform abandoned it
         if (
             $this->inProgress
             && $this->dateUpdated
-            && now()->diffInSeconds($this->dateUpdated, true) > 30
+            && ImageTransformer::inProgressClaim()->isAbandoned($this->dateUpdated)
         ) {
             $this->inProgress = false;
         }
+    }
+
+    /**
+     * Marks the transform as being generated. A failure from an earlier attempt stays recorded
+     * until this attempt succeeds or fails.
+     */
+    public function markGenerating(): void
+    {
+        $this->inProgress = true;
+        $this->fileExists = false;
+    }
+
+    /**
+     * Marks the transform as generated.
+     */
+    public function markGenerated(): void
+    {
+        $this->inProgress = false;
+        $this->fileExists = true;
+        $this->error = false;
+    }
+
+    /**
+     * Marks the transform as failed to generate.
+     */
+    public function markFailed(): void
+    {
+        $this->inProgress = false;
+        $this->fileExists = false;
+        $this->error = true;
     }
 
     public function getTransform(): ImageTransform

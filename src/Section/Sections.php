@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section;
 
+use CraftCms\Cms\Activity\OperationTypes\SectionOperation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
@@ -864,18 +865,20 @@ class Sections
                 ->where('entries.deletedWithSection', true)
                 ->get();
 
-            $entriesByType = $entries->groupBy('typeId');
-            foreach ($entriesByType as $typeEntries) {
-                try {
-                    $typeEntries->each(function (Entry $entry) {
-                        $entry->deletedWithSection = false;
-                    });
+            SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
+                $entriesByType = $entries->groupBy('typeId');
+                foreach ($entriesByType as $typeEntries) {
+                    try {
+                        $typeEntries->each(function (Entry $entry) {
+                            $entry->deletedWithSection = false;
+                        });
 
-                    $this->elements->restoreElements($typeEntries->all());
-                } catch (RuntimeException) {
-                    // the entry type probably wasn't restored
+                        $this->elements->restoreElements($typeEntries->all());
+                    } catch (RuntimeException) {
+                        // the entry type probably wasn't restored
+                    }
                 }
-            }
+            });
         }
 
         /** @var Section $section */

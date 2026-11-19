@@ -465,11 +465,11 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(): void
     {
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
         $request = $this->getRequest();
 
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Aliases::get($generalConfig->resourceBaseUrl ?? '@web/cpresources'), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Aliases::get($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;

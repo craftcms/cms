@@ -302,6 +302,18 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
         return Query::TYPE_DECIMAL;
     }
 
+    /**
+     * Numbers are right-aligned, unless their preview format is “None”, which is what numeric codes and years
+     * use: those are read rather than compared, so they stay aligned like text.
+     *
+     * @return 'start'|'end'
+     */
+    #[Override]
+    public function tableAttributeAlignment(): string
+    {
+        return $this->previewFormat === self::FORMAT_NONE ? 'start' : 'end';
+    }
+
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {

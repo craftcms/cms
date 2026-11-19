@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
 use yii\web\IdentityInterface;
 
+use function CraftCms\Cms\craftAuth;
+
 beforeEach(function() {
     Cms::config()->authGuard = 'craft';
     Cms::config()->authPasswordBroker = 'craft';
@@ -71,6 +73,45 @@ it('switches identity through the Craft guard', function() {
 
     $this->legacyUser->switchIdentity($identity);
     $this->legacyUser->switchIdentity(null);
+});
+
+it('sets a user element as the web identity and the Craft guard user', function() {
+    $user = new UserElement(['id' => 42]);
+
+    $this->legacyUser->setIdentity($user);
+
+    expect($this->legacyUser->getIdentity())->toBeInstanceOf(IdentityWrapper::class)
+        ->and($this->legacyUser->getId())->toBe(42)
+        ->and(craftAuth()->user())->toBe($user);
+});
+
+it('takes a user it set off the Craft guard when the web identity is cleared', function() {
+    $this->legacyUser->setIdentity(new UserElement(['id' => 42]));
+    $this->legacyUser->setIdentity(null);
+
+    expect($this->legacyUser->getIdentity())->toBeNull()
+        ->and(craftAuth()->user())->toBeNull();
+});
+
+it('leaves a user that replaced the one it set on the Craft guard when the web identity is cleared', function() {
+    $this->legacyUser->setIdentity(new UserElement(['id' => 42]));
+    $user = new UserElement(['id' => 43]);
+    craftAuth()->setUser($user);
+
+    $this->legacyUser->setIdentity(null);
+
+    expect($this->legacyUser->getIdentity())->toBeNull()
+        ->and(craftAuth()->user())->toBe($user);
+});
+
+it('leaves a user it did not set on the Craft guard when the web identity is cleared', function() {
+    $user = new UserElement(['id' => 42]);
+    craftAuth()->setUser($user);
+
+    $this->legacyUser->setIdentity(null);
+
+    expect($this->legacyUser->getIdentity())->toBeNull()
+        ->and(craftAuth()->user())->toBe($user);
 });
 
 it('clears the console identity on the Craft guard without logging out', function() {

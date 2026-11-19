@@ -33,6 +33,7 @@
     width: 'md',
     label: () => t('Dialog'),
     resizable: false,
+    holdHeight: true,
     dismissible: true,
     restoreFocus: true,
     instant: false,
@@ -138,7 +139,7 @@
   const resizer = useResizableBox({
     target: content,
     active: () => props.isActive,
-    fixedHeight: () => Boolean(props.height),
+    fixedHeight: () => Boolean(props.height) || !props.holdHeight,
   });
   const sizeAnimation = useAnimatedBoxSize({
     target: content,
@@ -236,6 +237,7 @@
     border-radius: var(--c-modal-radius);
     position: relative;
     overflow-y: scroll;
+    overscroll-behavior: contain;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */

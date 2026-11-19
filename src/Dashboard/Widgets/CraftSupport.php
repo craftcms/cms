@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\Images;
@@ -25,7 +24,6 @@ class CraftSupport extends Widget
 {
     /** @param array<string, mixed> $config */
     public function __construct(
-        private readonly GeneralConfig $generalConfig,
         private readonly Plugins $plugins,
         private readonly Images $images,
         array $config = []
@@ -58,32 +56,40 @@ class CraftSupport extends Widget
         return 'life-ring';
     }
 
-    #[Override]
-    public function getTitle(): ?string
-    {
-        return null;
-    }
-
     public function component(): ?string
     {
         return currentUser()?->isAdmin() ? 'craft:widget-craft-support' : null;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{links: list<array{url: string, label: string, icon: string, iconFamily?: string}>} */
     public function props(): array
     {
-        $cmsVersion = Cms::VERSION;
-        $cmsMajorVersion = (int) $cmsVersion;
+        $cmsMajorVersion = (int) Cms::VERSION;
 
+        return [
+            'links' => [
+                ['url' => sprintf('https://craftcms.com/docs/%s.x/', $cmsMajorVersion), 'label' => t('Documentation'), 'icon' => 'book'],
+                ['url' => 'https://craftcms.com/knowledge-base', 'label' => t('Knowledge Base'), 'icon' => 'lightbulb'],
+                ['url' => 'https://craftcms.com/contact', 'label' => t('Contact Craft Support'), 'icon' => 'headset'],
+                ['url' => $this->bugReportUrl($cmsMajorVersion), 'label' => t('Report a bug on GitHub'), 'icon' => 'bug'],
+                ['url' => 'https://github.com/craftcms/cms/discussions/new?category=ideas', 'label' => t('Request a feature on GitHub'), 'icon' => 'github', 'iconFamily' => 'brands'],
+                ['url' => 'https://craftcms.com/discord', 'label' => t('Meet the Craft community'), 'icon' => 'discord', 'iconFamily' => 'brands'],
+                ['url' => 'https://craftcms.com/partners', 'label' => t('Find an official Craft Partner'), 'icon' => 'handshake'],
+            ],
+        ];
+    }
+
+    /**
+     * Returns the URL for a new GitHub issue from the bug report template, with this install’s environment filled in.
+     */
+    private function bugReportUrl(int $cmsMajorVersion): string
+    {
         $pluginVersions = [];
         foreach ($this->plugins->getAllPlugins() as $plugin) {
             $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->version);
         }
 
-        $dbDriver = DB::driverLabel();
-
-        $imagesService = $this->images;
-        $imageDriver = match ($imagesService->getDriver()) {
+        $imageDriver = match ($this->images->getDriver()) {
             ImageDriver::Gd => 'GD',
             ImageDriver::Imagick => 'Imagick',
             ImageDriver::Vips => 'Vips',
@@ -107,29 +113,17 @@ class CraftSupport extends Widget
 
 EOD;
 
-        return [
-            'resources' => [
-                ['url' => 'https://craftcms.com/partners', 'label' => t('Find an official Craft Partner')],
-                ['url' => 'https://craftcms.com/discord', 'label' => t('Meet the Craft community')],
-                ['url' => 'https://craftquest.io', 'label' => t('Unlimited video training')],
-                ['url' => 'https://craftcms.com/docs/5.x/', 'label' => t('Documentation')],
-                ['url' => 'https://craftcms.com/knowledge-base', 'label' => t('Knowledge Base')],
-            ],
-            'issueTitlePrefix' => sprintf('[%s.x]: ', $cmsMajorVersion),
-            'issueParams' => [
-                'labels' => sprintf('bug,craft%s', $cmsMajorVersion),
-                'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
-                'body' => $body,
-                'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Edition::get()->name),
-                'phpVersion' => PHP::version(),
-                'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
-                'db' => sprintf('%s %s', $dbDriver, normalizeVersion(DB::getServerVersion())),
-                'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
-                'plugins' => implode("\n", $pluginVersions),
-            ],
-            'showBackupOption' => $this->generalConfig->backupCommand !== false,
-            'canContactSupport' => Edition::get()->value >= Edition::Pro->value,
-            'email' => in_array(currentUser()->asElement()->email, ['support@pixelandtonic.com', 'support@craftcms.com'], true) ? '' : currentUser()->asElement()->email,
-        ];
+        return 'https://github.com/craftcms/cms/issues/new?'.http_build_query([
+            'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
+            'labels' => sprintf('bug,craft%s', $cmsMajorVersion),
+            'title' => sprintf('[%s.x]: ', $cmsMajorVersion),
+            'body' => $body,
+            'cmsVersion' => sprintf('%s (%s)', Cms::VERSION, Edition::get()->name),
+            'phpVersion' => PHP::version(),
+            'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
+            'db' => sprintf('%s %s', DB::driverLabel(), normalizeVersion(DB::getServerVersion())),
+            'imageDriver' => sprintf('%s %s', $imageDriver, $this->images->getVersion()),
+            'plugins' => implode("\n", $pluginVersions),
+        ], encoding_type: PHP_QUERY_RFC3986);
     }
 }

@@ -725,19 +725,21 @@ class Sites
                 $muteEvents = $this->projectConfig->muteEvents;
                 $this->projectConfig->muteEvents = true;
 
-                foreach ($this->projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
-                    if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
-                        $sectionConfig['siteSettings'][$transferContentToSite->uid] = Arr::pull($sectionConfig['siteSettings'],
-                            $site->uid);
-                        $this->projectConfig->set(
-                            path: ProjectConfig::PATH_SECTIONS.'.'.$sectionUid,
-                            value: $sectionConfig,
-                            message: 'Prune site settings',
-                        );
+                try {
+                    foreach ($this->projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
+                        if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
+                            $sectionConfig['siteSettings'][$transferContentToSite->uid] = Arr::pull($sectionConfig['siteSettings'],
+                                $site->uid);
+                            $this->projectConfig->set(
+                                path: ProjectConfig::PATH_SECTIONS.'.'.$sectionUid,
+                                value: $sectionConfig,
+                                message: 'Prune site settings',
+                            );
+                        }
                     }
+                } finally {
+                    $this->projectConfig->muteEvents = $muteEvents;
                 }
-
-                $this->projectConfig->muteEvents = $muteEvents;
 
                 // Get all of the entry IDs in those sections
                 $entryIds = DB::table(Table::ENTRIES)

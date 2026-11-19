@@ -6,6 +6,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
@@ -162,6 +164,27 @@ it('compiles the meta fields into a sidebar UI', function () {
                     && ($postDate['props']['icon'] ?? null) === 'calendar';
             })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
+            ->etc()
+        );
+});
+
+it('lets meta field listeners change the sidebar UI', function () {
+    Event::listen(function (EntryMetaFieldsResolving $event) {
+        unset($event->fields['postDate'], $event->fields['expiryDate']);
+    });
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarUi.nodes', function (Collection $nodes) {
+                $paths = $nodes
+                    ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
+                    ->all();
+
+                return in_array('slug', $paths, true)
+                    && ! in_array('postDate', $paths, true)
+                    && ! in_array('expiryDate', $paths, true);
+            })
             ->etc()
         );
 });

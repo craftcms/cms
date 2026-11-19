@@ -6,8 +6,11 @@ use craft\queue\JobInterface;
 use craft\queue\LegacyJobWrapper;
 use craft\queue\QueueComponent as Queue;
 use craft\queue\QueueInterface;
+use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Database\QueryException;
+use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Queue as QueueFacade;
 use yii\base\Component;
@@ -133,6 +136,22 @@ it('returns job details for unknown job', function() {
         }
         throw $e;
     }
+});
+
+it('reads job statuses from the Laravel queue', function() {
+    $this->mock(JobProgress::class)
+        ->shouldReceive('getProgress')
+        ->andReturnUsing(fn(string $id) => $id === 'reserved' ? tap(new JobProgressModel(), fn($job) => $job->status = JobStatus::Reserved) : null);
+    $this->mock(FailedJobProviderInterface::class)
+        ->shouldReceive('find')
+        ->andReturnUsing(fn(string $id) => $id === 'failed' ? (object) ['exception' => 'Boom'] : null);
+
+    $component = new Queue();
+
+    expect($component->status('reserved'))->toBe(Queue::STATUS_RESERVED)
+        ->and($component->isFailed('failed'))->toBeTrue()
+        ->and($component->isFailed('reserved'))->toBeFalse()
+        ->and($component->status('finished'))->toBe(Queue::STATUS_DONE);
 });
 
 it('setProgress method exists for backwards compatibility', function() {

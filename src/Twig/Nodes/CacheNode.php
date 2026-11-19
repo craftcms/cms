@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
+use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateCaches;
 use Override;
@@ -26,6 +27,10 @@ class CacheNode extends Node
             ->addDebugInfo($this)
             ->write('$cacheService = app('.TemplateCaches::class."::class);\n")
             ->write("\$request = request();\n")
+            /**
+             * @see RequestMixin::isPreview()
+             * @see RequestMixin::getHadToken()
+             */
             ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getHadToken()");
 
         if ($this->hasNode('conditions')) {
@@ -56,6 +61,7 @@ class CacheNode extends Node
 
         $compiler
             ->raw(";\n")
+            /** @see TemplateCaches::getTemplateCache() */
             ->write("\$cacheBody_$n = \$cacheService->getTemplateCache(\$cacheKey_$n, $global, true);\n")
             ->outdent()
             ->write("} else {\n")
@@ -67,14 +73,37 @@ class CacheNode extends Node
             ->indent()
             ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
+            /** @see TemplateCaches::startTemplateCache() */
             ->write("\$cacheService->startTemplateCache(true, $global);\n")
             ->outdent()
             ->write("}\n")
+            ->write("\$obLevel_$n = ob_get_level();\n")
             ->write("ob_start();\n")
+            // If the body throws, close the cache frame so later assets and tags don't land in it
+            ->write("try {\n")
+            ->indent()
             ->subcompile($this->getNode('body'))
+            ->outdent()
+            ->write("} catch (\\Throwable \$e_$n) {\n")
+            ->indent()
+            ->write("while (ob_get_level() > \$obLevel_$n) {\n")
+            ->indent()
+            ->write("ob_end_clean();\n")
+            ->outdent()
+            ->write("}\n")
+            ->write("if (!\$ignoreCache_$n) {\n")
+            ->indent()
+            /** @see TemplateCaches::abortTemplateCache() */
+            ->write("\$cacheService->abortTemplateCache($global);\n")
+            ->outdent()
+            ->write("}\n")
+            ->write("throw \$e_$n;\n")
+            ->outdent()
+            ->write("}\n")
             ->write("\$cacheBody_$n = ob_get_clean();\n")
             ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
+            /** @see TemplateCaches::endTemplateCache() */
             ->write("\$cacheService->endTemplateCache(\$cacheKey_$n, $global, ");
 
         $compiler->raw('null, ');

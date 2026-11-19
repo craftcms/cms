@@ -21,7 +21,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use PDOException;
 use Throwable;
 
 /**
@@ -88,7 +87,7 @@ class Updates
         }
 
         try {
-            $updatesData = UpdatesData::fromArray($this->api->getUpdates());
+            $updatesData = UpdatesData::fromArray($this->api->getUpdates(), now());
         } catch (Throwable $e) {
             Log::warning("Couldn't get updates: {$e->getMessage()}", [__METHOD__]);
 
@@ -209,14 +208,7 @@ class Updates
             throw new MigrateException($name ?? 'Craft', $handle, null, 0, $e);
         }
 
-        try {
-            DB::commit();
-        } catch (PDOException $e) {
-            // The transaction could be implicitly committed by Mysql
-            if ($e->getMessage() !== 'There is no active transaction') {
-                throw $e;
-            }
-        }
+        DB::commitSchemaChanges();
 
         // Delete all compiled templates
         try {

@@ -6,9 +6,9 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
+use CraftCms\Cms\Dashboard\Widgets\AboutCraft;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
-use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Elements\User;
@@ -127,7 +127,7 @@ it('validates when updating', function () {
 
 it('can update the colspan of a widget', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(AboutCraft::class));
 
     expect(WidgetModel::first()->colspan)->toBeNull();
 
@@ -140,7 +140,7 @@ it('can update the colspan of a widget', function () {
 });
 
 it('makes new widgets gray', function () {
-    postJson(action([WidgetsController::class, 'store']), ['type' => Updates::class])
+    postJson(action([WidgetsController::class, 'store']), ['type' => AboutCraft::class])
         ->assertOk()
         ->assertJsonPath('info.color', 'gray');
 
@@ -149,7 +149,7 @@ it('makes new widgets gray', function () {
 
 it('can change and clear the color of a widget', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(AboutCraft::class));
 
     postJson(action([WidgetsController::class, 'updateColor']), [
         'id' => $widget->id,
@@ -169,7 +169,7 @@ it('can change and clear the color of a widget', function () {
 
 it('only accepts palette colors for a widget', function (array $payload) {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(AboutCraft::class));
 
     postJson(action([WidgetsController::class, 'updateColor']), ['id' => $widget->id, ...$payload])
         ->assertJsonValidationErrorFor('color');
@@ -198,7 +198,7 @@ it('keeps a widget’s color when its settings are saved', function () {
 });
 
 it('restores a deleted widget’s color, including none', function (?string $color) {
-    postJson(action([WidgetsController::class, 'store']), ['type' => Updates::class, 'color' => $color])
+    postJson(action([WidgetsController::class, 'store']), ['type' => AboutCraft::class, 'color' => $color])
         ->assertOk()
         ->assertJsonPath('info.color', $color);
 
@@ -207,7 +207,7 @@ it('restores a deleted widget’s color, including none', function (?string $col
 
 it('colspan must be between 1 and 4', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(AboutCraft::class));
 
     postJson(action([WidgetsController::class, 'updateColspan']), [
         'id' => $widget->id,
@@ -222,7 +222,7 @@ it('colspan must be between 1 and 4', function () {
 
 it('can reorder widgets', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget1 = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget1 = $dashboard->createWidget(AboutCraft::class));
     $dashboard->saveWidget($widget2 = $dashboard->createWidget(CraftSupport::class));
 
     expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget1->id, $widget2->id]);
@@ -237,7 +237,7 @@ it('can reorder widgets', function () {
 
 it('can delete a widget', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget1 = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget1 = $dashboard->createWidget(AboutCraft::class));
 
     expect(WidgetModel::count())->toBe(1);
 
@@ -250,7 +250,7 @@ it('can delete a widget', function () {
 
 it('does not report a cancelled widget save or deletion as successful', function (string $operation) {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(AboutCraft::class));
 
     $eventClass = $operation === 'update'
         ? WidgetSaving::class
@@ -269,7 +269,7 @@ it('does not report a cancelled widget save or deletion as successful', function
 
 it('rejects changes to another user’s widget', function (string $operation) {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(AboutCraft::class));
 
     $before = WidgetModel::query()->findOrFail($widget->id)->getAttributes();
     actingAs(UserModel::factory()->admin()->create());
@@ -284,10 +284,41 @@ it('rejects changes to another user’s widget', function (string $operation) {
 
 it('rejects adding another instance of a singleton widget', function () {
     UserModel::query()->whereKey(Auth::id())->update(['hasDashboard' => true]);
-    app(Dashboard::class)->saveWidget(app(Dashboard::class)->createWidget(Updates::class));
+    app(Dashboard::class)->saveWidget(app(Dashboard::class)->createWidget(AboutCraft::class));
 
-    postJson(action([WidgetsController::class, 'store']), ['type' => Updates::class])
+    postJson(action([WidgetsController::class, 'store']), ['type' => AboutCraft::class])
         ->assertJsonValidationErrorFor('type');
 
     expect(WidgetModel::query()->count())->toBe(1);
+});
+
+it('returns a saved widget’s settings UI with its saved settings', function () {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+            'limit' => 25,
+        ],
+    ]));
+
+    postJson(action([WidgetsController::class, 'refreshSettings']), [
+        'widgetId' => $widget->id,
+        'namespace' => "widget{$widget->id}-settings",
+    ])->assertOk()
+        ->assertJsonPath('ui.scope', ["widget{$widget->id}-settings"])
+        ->assertJsonPath("ui.values.widget{$widget->id}-settings.limit", 25);
+});
+
+test('refreshing settings needs a widget of the current user’s', function () {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget(['type' => CraftSupport::class]));
+    WidgetModel::query()->whereKey($widget->id)->update(['userId' => UserModel::factory()->create()->id]);
+
+    postJson(action([WidgetsController::class, 'refreshSettings']), [
+        'widgetId' => $widget->id,
+        'namespace' => 'settings',
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrorFor('widgetId');
 });

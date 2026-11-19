@@ -23,6 +23,7 @@ class TagNode extends Node
             ->addDebugInfo($this)
             ->write("ob_start();\n")
             ->subcompile($this->getNode('content'))
+            /** @see Html::tag() */
             ->write('yield '.Html::class.'::tag(')
             ->subcompile($this->getNode('name'))
             ->raw(', ob_get_clean()');

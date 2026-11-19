@@ -13,6 +13,10 @@ import {Appearance} from '@src/constants/appearances';
  * of object states. Reach for this when the dot means something that
  * vocabulary does not cover, since it takes any palette color or CSS color.
  *
+ * @cssproperty --c-indicator-ring - Ring color of a `solid` dot, for a surface
+ *   the fill alone doesn't stand out on. Defaults to `transparent`, so no
+ *   ring shows. A highlighted `craft-option` sets it to its text color, and a white `fill` or `outline-fill` chip resets it.
+ *
  * @since 1.0
  */
 export default class CraftIndicator extends LitElement {
@@ -58,7 +62,7 @@ export default class CraftIndicator extends LitElement {
       }
 
       .indicator--solid {
-        border-color: transparent;
+        border-color: var(--c-indicator-ring, transparent);
       }
 
       .indicator--outline {

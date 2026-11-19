@@ -8,6 +8,7 @@ use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\Crafty;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\ShowElements;
+use CraftCms\Cms\Ai\Assistant\ShowField;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
 use CraftCms\Cms\Ai\Jobs\NameConversation;
 use CraftCms\Cms\Ai\Settings;
@@ -229,6 +230,25 @@ it('shows the elements the user can view as chips, which only the chat gets, lea
 
     expect(Json::decode(app(ShowElements::class)->handle(new ToolRequest(['elements' => [['type' => 'entries', 'id' => $hidden->id]]])))['elements'])
         ->toBe([]);
+});
+
+it('shows a tool call that threw as failed, while it streams and once the conversation is shown again', function () {
+    $this->partialMock(ShowField::class)->shouldReceive('handle')->andThrow(new RuntimeException('The field is gone.'));
+    AssistantAgent::fake([
+        new ToolCall('call_1', ShowField::NAME, ['fieldId' => 1]),
+        'I couldn’t find it.',
+    ]);
+    $threadId = (string) Str::uuid();
+
+    $events = chatEvents(chat($threadId, 'Where’s the body field?')->assertOk());
+    $streamed = array_find($events, static fn (array $event): bool => $event['type'] === 'TOOL_CALL_RESULT');
+
+    expect($streamed['state'])->toBe('output-error')
+        ->and($streamed['content'])->toContain('The field is gone.');
+
+    getJson(action([AssistantController::class, 'show'], ['threadId' => $threadId]))
+        ->assertJsonPath('messages.1.parts.0.state', 'error')
+        ->assertJsonPath('messages.1.parts.1.content', 'I couldn’t find it.');
 });
 
 it('ends the reply once the assistant has asked a question, as the answer is the user’s next message', function () {

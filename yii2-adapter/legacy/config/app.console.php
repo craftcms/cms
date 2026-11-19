@@ -20,6 +20,8 @@ return [
         },
         'errorHandler' => [
             'class' => ErrorHandler::class,
+            // Yii2ServiceProvider defines YII_ENV_TEST, which would otherwise make uncaught exceptions exit with status 0
+            'silentExitOnException' => false,
         ],
         'request' => [
             'class' => Request::class,

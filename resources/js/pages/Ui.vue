@@ -353,6 +353,8 @@
 <style scoped>
   /* The tab strip spaces itself from the panels, so the group's gap would double it. */
   .ui-page__fields > :deep(.ui-node-list__tabs) {
-    margin-block-end: calc(-1 * var(--gap, calc(var(--c-spacing) * 6)));
+    margin-block-end: calc(
+      -1 * var(--gap, var(--c-field-group-gap, var(--c-spacing-lg)))
+    );
   }
 </style>

@@ -11,7 +11,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -90,8 +92,12 @@ test('index', function () {
         'edition' => 'standard',
         'version' => '1.0.0',
     ])
-        ->assertSee('Plugin Installer')
-        ->assertSee('data-updater', false);
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('updater/Index')
+            ->where('title', 'Plugin Installer')
+            ->where('initialState.nextUrl', action([InstallController::class, 'precheck']))
+            ->where('initialState.finishUrl', action([InstallController::class, 'finish']))
+        );
 });
 
 test('missing Composer prevents the installation workflow from starting', function () {
@@ -102,10 +108,10 @@ test('missing Composer prevents the installation workflow from starting', functi
         'handle' => 'test-plugin',
         'edition' => 'standard',
         'version' => '1.0.0',
-    ])->assertOk()->viewData('state');
+    ])->assertOk()->viewData('page')['props']['initialState'];
 
     expect($state['error'])->toBe('Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
-        ->and($state)->not->toHaveKey('nextAction');
+        ->and($state)->not->toHaveKey('nextUrl');
 });
 
 test('index requires the Yii2 adapter alongside plugins that need it', function (array $input, array $composerRequire, array $requirements) {
@@ -119,7 +125,7 @@ test('index requires the Yii2 adapter alongside plugins that need it', function 
         'edition' => 'standard',
         'version' => '^1.0.0',
         ...$input,
-    ])->viewData('state');
+    ])->viewData('page')['props']['initialState'];
 
     postJson(action([InstallController::class, 'composerInstall']), [
         'data' => $state['data'],
@@ -152,7 +158,7 @@ test('enable', function () {
     postJson(action([InstallController::class, 'enable']), [
         'data' => $this->hashedData,
     ])->assertJsonFragment([
-        'nextAction' => InstallController::ACTION_MIGRATE,
+        'nextUrl' => action([InstallController::class, 'migrate']),
         'status' => 'Updating the plugin…',
     ]);
 });
@@ -177,6 +183,6 @@ test('finish', function () {
         'data' => $this->hashedData,
     ])->assertJsonFragment([
         'finished' => true,
-        'returnUrl' => 'plugin-store',
+        'returnUrl' => cp_url('plugin-store'),
     ]);
 });

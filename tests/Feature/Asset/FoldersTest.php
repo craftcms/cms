@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->folders = app(Folders::class);
@@ -413,6 +414,68 @@ it('refreshes lookups after updating and deleting an existing folder record', fu
     expect($this->folders->getFolderById($model->id))->toBeNull()
         ->and($this->folders->getFolderByUid($model->uid))->toBeNull()
         ->and($this->folders->getRootFolderByVolumeId($volume->id)->id)->not->toBe($model->id);
+});
+
+it('renames subfolders whose paths differ in case from the renamed folder', function () {
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $disk = Storage::disk('test-disk');
+    $disk->deleteDirectory('');
+
+    // `uploads/moved/` lives inside `Uploads/`, as it would on case-insensitive storage, while
+    // `uploads/separate/` is a separate directory on case-sensitive storage
+    foreach (['Uploads/moved/nested', 'Uploads/photos/trip', 'Uploads/separate/inside', 'uploads/separate', 'Ⱥ/moved', 'Straße/moved'] as $directory) {
+        $disk->makeDirectory($directory);
+    }
+
+    $store = function (int $parentId, string $path) use ($volume): int {
+        $folder = new VolumeFolder([
+            'name' => basename($path),
+            'parentId' => $parentId,
+            'volumeId' => $volume->id,
+            'path' => $path,
+        ]);
+        $this->folders->storeFolderModel($folder);
+
+        return $folder->id;
+    };
+
+    $folder = $store($root->id, 'Uploads/');
+    $folderIds = [
+        'moved' => $movedId = $store($folder, 'uploads/moved/'),
+        'nested' => $store($movedId, 'uploads/moved/nested/'),
+        'photos' => $photosId = $store($folder, 'Uploads/Photos/'),
+        'trip' => $store($photosId, 'Uploads/photos/trip/'),
+        'separate' => $separateId = $store($folder, 'uploads/separate/'),
+        'inside' => $store($separateId, 'Uploads/separate/inside/'),
+        'recordOnly' => $store($folder, 'Uploads/record-only/'),
+        // `Ⱥ` and `ⱥ` differ in byte length, and `ß` and `SS` in character count
+        'unicodeMoved' => $store($unicodeFolder = $store($root->id, 'Ⱥ/'), 'ⱥ/moved/'),
+        'foldedMoved' => $store($foldedFolder = $store($root->id, 'Straße/'), 'STRASSE/moved/'),
+    ];
+
+    try {
+        $this->folders->renameFolderById($folder, 'Renamed');
+        $this->folders->renameFolderById($unicodeFolder, 'Unicode');
+        $this->folders->renameFolderById($foldedFolder, 'Folded');
+
+        $paths = VolumeFolderModel::whereIn('id', $folderIds)->pluck('path', 'id');
+
+        expect(array_map(fn (int $id) => $paths[$id], $folderIds))->toBe([
+            'moved' => 'Renamed/moved/',
+            'nested' => 'Renamed/moved/nested/',
+            'photos' => 'Renamed/Photos/',
+            'trip' => 'Renamed/photos/trip/',
+            // On case-insensitive storage, `uploads/separate` was inside `Uploads` and moved along with it
+            'separate' => $disk->directoryExists('uploads/separate') ? 'uploads/separate/' : 'Renamed/separate/',
+            'inside' => 'Renamed/separate/inside/',
+            'recordOnly' => 'Renamed/record-only/',
+            'unicodeMoved' => 'Unicode/moved/',
+            'foldedMoved' => 'Folded/moved/',
+        ]);
+    } finally {
+        $disk->deleteDirectory('');
+    }
 });
 
 it('can ensure folder by full path and volume', function () {

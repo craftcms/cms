@@ -37,6 +37,23 @@ enum ReleaseStatus: string
         };
     }
 
+    /**
+     * Whether a release can move from this status to the given one.
+     *
+     * Publishing runs in a transaction that rolls back when publication fails, so a failed
+     * attempt moves the release to Failed from the status it had before publishing.
+     */
+    public function canTransitionTo(self $status): bool
+    {
+        return match ($this) {
+            self::Draft => in_array($status, [self::Scheduled, self::Publishing, self::Failed], true),
+            self::Scheduled => in_array($status, [self::Draft, self::Publishing, self::Failed], true),
+            self::Failed => in_array($status, [self::Scheduled, self::Publishing, self::Failed], true),
+            self::Publishing => in_array($status, [self::Published, self::Failed], true),
+            self::Published => false,
+        };
+    }
+
     public function isMutable(): bool
     {
         return in_array($this, [self::Draft, self::Failed], true);

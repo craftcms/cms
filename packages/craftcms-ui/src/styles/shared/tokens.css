@@ -128,7 +128,7 @@
   --c-shadow-overlay: var(--c-shadow-lg);
 
   /* Color mixes */
-  --c-color-mix-hover: currentColor 10%;
+  --c-color-mix-hover: currentColor 7%;
   --c-color-mix-active: currentColor 20%;
 
   --c-font-body:
@@ -397,6 +397,7 @@
 ) {
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
+  --c-form-control-placeholder: var(--color-slate-600);
   --c-form-control-border-color: var(--color-slate-400);
 }
 
