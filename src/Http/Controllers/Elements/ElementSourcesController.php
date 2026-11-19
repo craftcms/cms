@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -209,6 +210,15 @@ readonly class ElementSourcesController
                     $sourceConfig['defaultViewMode'] = $postedSettings['defaultViewMode'];
                 }
 
+                if (isset($postedSettings['defaultThumbSizes'])) {
+                    $sourceConfig['defaultThumbSizes'] = ChipThumbSize::indexDefaults([
+                        ...($oldSourceConfigs[$key]['defaultThumbSizes'] ?? []),
+                        ...(array) $postedSettings['defaultThumbSizes'],
+                    ]);
+                } elseif (isset($oldSourceConfigs[$key]['defaultThumbSizes'])) {
+                    $sourceConfig['defaultThumbSizes'] = $oldSourceConfigs[$key]['defaultThumbSizes'];
+                }
+
                 if (isset($postedSettings['showBadgeCount'])) {
                     $sourceConfig['showBadgeCount'] = filter_var($postedSettings['showBadgeCount'], FILTER_VALIDATE_BOOLEAN);
                 }
@@ -303,6 +313,10 @@ readonly class ElementSourcesController
             'defaultSort' => ['nullable', 'array'],
             'defaultViewMode' => ['nullable', 'string'],
             'tableAttributes' => ['nullable', 'array'],
+            'defaultThumbSizes' => ['nullable', 'array:'.implode(',', array_keys(ChipThumbSize::INDEX_VIEW_SIZES))],
+            ...collect(ChipThumbSize::INDEX_VIEW_SIZES)->mapWithKeys(fn (array $sizes, string $view) => [
+                "defaultThumbSizes.$view" => ['nullable', Rule::in($sizes)],
+            ])->all(),
             'condition' => ['nullable', 'array'],
         ]);
 
@@ -325,6 +339,11 @@ readonly class ElementSourcesController
 
         if ($request->has('tableAttributes')) {
             $settings['tableAttributes'] = $this->tableAttributeKeys($request->array('tableAttributes'));
+        }
+
+        // Only the views posted change; the source keeps its size for the other.
+        if ($thumbSizes = array_filter($request->array('defaultThumbSizes'))) {
+            $settings['defaultThumbSizes'] = [...($source['defaultThumbSizes'] ?? []), ...$thumbSizes];
         }
 
         // A custom source's filters are its whole condition, as the index showed it.

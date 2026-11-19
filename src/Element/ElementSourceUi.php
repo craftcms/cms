@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
@@ -240,6 +242,7 @@ readonly class ElementSourceUi
         return [
             Field::make(t('Enabled'), Lightswitch::make('enabled')),
             $this->viewModeField($elementType, $source),
+            ...$this->thumbSizeFields($elementType, $source),
             ...$this->sortFields($elementType, $source, $values),
             $this->tableAttributesField($elementType, $source, false),
             $this->badgeCountField($elementType, $source),
@@ -281,6 +284,7 @@ readonly class ElementSourceUi
         [$sort, $direction] = $this->sortFields($elementType, $source, $values, $current);
         $view = [
             $mark($this->viewModeField($elementType, $source, $current), 'viewMode'),
+            ...array_map(fn (Field $field) => $mark($field, 'thumbSize'), $this->thumbSizeFields($elementType, $source, $current)),
             $mark($sort, 'sort'),
             $direction,
             $mark($this->tableAttributesField($elementType, $source, $isNew, $current), 'columns'),
@@ -388,6 +392,38 @@ readonly class ElementSourceUi
             $current ? t('View Mode') : t('Default View Mode'),
             Choice::make('defaultViewMode')->options($options)->presentation(ChoicePresentation::Buttons),
         );
+    }
+
+    /**
+     * A thumbnail size for each of the source's views that shows thumbnails:
+     * table rows, and thumbnail tiles where the element type has them.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $source
+     * @return list<Field>
+     */
+    private function thumbSizeFields(string $elementType, array $source, bool $current = false): array
+    {
+        $titles = array_column($this->viewModes($elementType, $source), 'title', 'mode');
+        $views = array_filter([
+            'table' => $titles[ElementIndexViewMode::Table->value] ?? null,
+            'thumbs' => $titles[ElementIndexViewMode::Thumbs->value] ?? null,
+        ]);
+        $label = $current ? t('Thumb Size') : t('Default Thumb Size');
+
+        return array_values(array_map(
+            fn (string $title, string $view) => Field::make(
+                count($views) > 1 ? t('{label} ({viewMode})', ['label' => $label, 'viewMode' => $title]) : $label,
+                Choice::make("defaultThumbSizes.$view")
+                    ->options(array_map(fn (string $size) => [
+                        'label' => ChipThumbSize::from($size)->label(),
+                        'value' => $size,
+                    ], ChipThumbSize::INDEX_VIEW_SIZES[$view]))
+                    ->presentation(ChoicePresentation::Buttons),
+            ),
+            $views,
+            array_keys($views),
+        ));
     }
 
     /**
@@ -579,6 +615,7 @@ readonly class ElementSourceUi
         $shared = [
             'defaultSort' => $this->seedSort($elementType, $source),
             'defaultViewMode' => $this->seedViewMode($elementType, $source),
+            'defaultThumbSizes' => ChipThumbSize::indexDefaults($source['defaultThumbSizes'] ?? null),
             'tableAttributes' => $this->seedTableAttributes($elementType, $source),
         ];
 

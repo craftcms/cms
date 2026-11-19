@@ -650,6 +650,24 @@ it('renders title chips at the requested thumbnail size, in a chip size to suit'
     'unknown' => ['huge', 'sm', 'small'],
 ]);
 
+it('opens a source’s table rows at the thumbnail size it saved', function () {
+    EntryModel::factory()->createElement(['title' => 'Homepage']);
+    app(ElementSources::class)->saveSources(EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'defaultThumbSizes' => ['table' => 'lg']],
+    ]);
+
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => 'table']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('defaultThumbSizes', ['table' => 'lg', 'thumbs' => 'lg'])
+            ->where('data.0.title', function (string $html) {
+                expect(new Crawler($html)->filter('craft-chip')->attr('thumb-size'))->toBe('lg');
+
+                return true;
+            })
+        );
+});
+
 it('renders tile thumbnails at the requested size', function (?string $thumbSize, int $size) {
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')
         ->createElementWithFields()->element;

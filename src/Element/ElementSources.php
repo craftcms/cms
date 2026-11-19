@@ -607,6 +607,7 @@ class ElementSources
                 'tableAttributes' => $s['tableAttributes'] ?? null,
                 'defaultSort' => $s['defaultSort'] ?? null,
                 'defaultViewMode' => $s['defaultViewMode'] ?? null,
+                'defaultThumbSizes' => $s['defaultThumbSizes'] ?? null,
                 ...match ($s['type'] ?? self::TYPE_NATIVE) {
                     self::TYPE_CUSTOM => [
                         // Blank labels post as null; store them as '' as Craft 5 did.

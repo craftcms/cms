@@ -146,4 +146,48 @@ describe('useElementIndexThumbSize', () => {
     source.value = 'volume:a';
     expect(thumbSize.value).toBe('xl');
   });
+  describe('with sizes the source saved', () => {
+    const sourceSizes = {table: 'md', thumbs: 'xl'} as const;
+
+    it('opens at them', () => {
+      const mode = ref<ViewMode['mode']>('table');
+      const {thumbSize, isDefault} = useElementIndexThumbSize(
+        viewStateRef(),
+        visitor,
+        () => mode.value,
+        sourceA,
+        () => sourceSizes
+      );
+
+      expect([thumbSize.value, isDefault.value]).toEqual(['md', true]);
+      mode.value = 'thumbs';
+      expect(thumbSize.value).toBe('xl');
+    });
+
+    it('asks for a size apart from them, and forgets one that matches them', () => {
+      const viewState = viewStateRef();
+      const {thumbSize, isDefault} = useElementIndexThumbSize(
+        viewState,
+        visitor,
+        () => 'table',
+        sourceA,
+        () => sourceSizes
+      );
+
+      thumbSize.value = 'sm';
+      expect(isDefault.value).toBe(false);
+      expect(merge).toHaveBeenLastCalledWith(
+        {thumbSize: 'sm'},
+        {only: ['data'], silent: true}
+      );
+
+      thumbSize.value = 'md';
+      expect(isDefault.value).toBe(true);
+      expect(viewState.value.sources?.['volume:a']?.thumbSizes).toEqual({});
+      expect(merge).toHaveBeenLastCalledWith(
+        {thumbSize: null},
+        {only: ['data'], silent: true}
+      );
+    });
+  });
 });

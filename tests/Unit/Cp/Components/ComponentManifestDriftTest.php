@@ -189,8 +189,10 @@ function cpDriftWcOnlyAllowlist(): array
         // Inherited from <craft-popover>. `without-invoker-aria` is for a
         // consumer whose invoker is a positioning anchor rather than the
         // control, which only client-side composition can know. `opened` is
-        // runtime state, and `manual` would stop a menu opening on click.
-        'craft-action-menu' => ['without-invoker-aria', 'open', 'manual'],
+        // runtime state, `manual` would stop a menu opening on click, and a
+        // menu has no form inside it to open a modal from, which is what
+        // `keep-open-behind-modals` is for.
+        'craft-action-menu' => ['without-invoker-aria', 'open', 'manual', 'keep-open-behind-modals'],
         // The reveal toggle owns `type`, switching it between password and
         // text, so the server leaves it to the component.
         'craft-input-password' => ['type'],

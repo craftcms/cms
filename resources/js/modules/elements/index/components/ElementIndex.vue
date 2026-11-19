@@ -45,7 +45,10 @@
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
-  import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
+  import {
+    resizeThumbs,
+    viewFor,
+  } from '@/modules/elements/index/composables/useElementIndexThumbSize';
   import type {ThumbSize} from '@/modules/elements/types/view-state';
   import {elementIndexContextKey} from '@/modules/elements/index/index-context';
 
@@ -117,6 +120,7 @@
     conditions,
     mode,
     thumbSize,
+    thumbSizes,
     thumbSizeOptions,
     cardThumbs,
     sortField,
@@ -367,7 +371,9 @@
       .filter((kind) =>
         kind === 'rule'
           ? isCustomSource.value
-          : (['sort', 'columns', 'viewMode'] as string[]).includes(kind)
+          : (['sort', 'columns', 'viewMode', 'thumbSize'] as string[]).includes(
+              kind
+            )
       )
   );
   const updateBlockedReason = computed(() => {
@@ -382,7 +388,7 @@
 
     return savableKinds.value.length
       ? null
-      : t('Search, status and thumbnail size aren’t saved with a source.');
+      : t('Search and status aren’t saved with a source.');
   });
   /** The settings modal's mode while it's open. */
   const savingNew = shallowRef(false);
@@ -390,7 +396,7 @@
   /** What sets the index apart from its source, as the sources editor marks it. */
   const editedParts = computed(() => {
     const kinds: string[] = changes.value.map((change) => change.kind);
-    const parts = ['sort', 'columns', 'viewMode'].filter((kind) =>
+    const parts = ['sort', 'columns', 'viewMode', 'thumbSize'].filter((kind) =>
       kinds.includes(kind)
     );
 
@@ -400,6 +406,7 @@
   });
 
   const savingSource = shallowRef(false);
+  const thumbView = computed(() => viewFor(mode.value));
 
   async function saveToSource(): Promise<void> {
     const key = elementIndex.source?.key;
@@ -422,6 +429,14 @@
           ...(kinds.includes('columns')
             ? {tableAttributes: [...tableColumns.value]}
             : {}),
+          // Just the size of the view on screen, the one that changed.
+          ...(kinds.includes('thumbSize') && thumbView.value
+            ? {
+                defaultThumbSizes: {
+                  [thumbView.value]: thumbSizes.value[thumbView.value],
+                },
+              }
+            : {}),
         }
       );
 
@@ -439,6 +454,7 @@
     ...(conditions.value ? {condition: conditions.value} : {}),
     defaultSort: {attr: sortField.value, dir: sortDirection.value},
     defaultViewMode: mode.value,
+    defaultThumbSizes: {...thumbSizes.value},
     tableAttributes: [...tableColumns.value],
   }));
 

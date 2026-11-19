@@ -66,6 +66,8 @@ export interface ElementIndexView {
   conditions: Ref<ConditionConfig | null>;
   mode: Ref<ViewMode['mode']>;
   thumbSize: Ref<ThumbSize>;
+  /** Both views' thumbnail sizes as they stand, table rows and tiles. */
+  thumbSizes: ComputedRef<Record<'table' | 'thumbs', ThumbSize>>;
   /** The thumbnail sizes the current view mode offers; empty for cards. */
   thumbSizeOptions: ComputedRef<ThumbSize[]>;
   /** How cards show a thumbnail, or null when the index has no thumbnails. */

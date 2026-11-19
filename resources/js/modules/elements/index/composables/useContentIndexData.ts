@@ -11,6 +11,7 @@ import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {
   SortOption,
+  ThumbSize,
   ViewMode,
   ViewState,
 } from '@/modules/elements/types/view-state';
@@ -52,6 +53,7 @@ export type ContentIndexData = Omit<
   | 'sites'
   | 'currentCondition'
   | 'sourceCondition'
+  | 'defaultThumbSizes'
   | 'currentConditionSummary'
   | 'viewState'
   | 'viewModes'
@@ -69,6 +71,8 @@ export type ContentIndexData = Omit<
   currentCondition: ConditionConfig | null;
   /** A custom source's own condition, which the filters start from. */
   sourceCondition?: ConditionConfig | null;
+  /** The thumbnail sizes the source opens with, by view. */
+  defaultThumbSizes?: Partial<Record<'table' | 'thumbs', ThumbSize>> | null;
   /** The applied filters' rules, at any depth, as the builder renders them. */
   currentConditionSummary?: ConditionRuleSummary[];
   /** The view mode the source opens in. */
@@ -156,6 +160,7 @@ export function useContentIndexData<
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
     sourceCondition: computed(() => props().sourceCondition ?? null),
+    defaultThumbSizes: computed(() => props().defaultThumbSizes ?? null),
     currentConditionSummary: computed(
       () => props().currentConditionSummary ?? []
     ),

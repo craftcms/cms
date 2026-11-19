@@ -189,6 +189,7 @@ it('returns fully normalized source customization data', function () {
     expect(controlPaths($structured['ui']))->toBe([
         ['sources', 'structured', 'enabled'],
         ['sources', 'structured', 'defaultViewMode'],
+        ['sources', 'structured', 'defaultThumbSizes', 'table'],
         ['sources', 'structured', 'defaultSort', 'attr'],
         ['sources', 'structured', 'defaultSort', 'dir'],
         ['sources', 'structured', 'tableAttributes'],
@@ -197,6 +198,7 @@ it('returns fully normalized source customization data', function () {
             ['sources', 'custom:existing', 'label'],
             ['sources', 'custom:existing', 'condition'],
             ['sources', 'custom:existing', 'defaultViewMode'],
+            ['sources', 'custom:existing', 'defaultThumbSizes', 'table'],
             ['sources', 'custom:existing', 'defaultSort', 'attr'],
             ['sources', 'custom:existing', 'defaultSort', 'dir'],
             ['sources', 'custom:existing', 'tableAttributes'],
@@ -1154,4 +1156,43 @@ it('won’t save onto a source that doesn’t exist', function () {
         'source' => 'custom:nope',
         'defaultViewMode' => 'cards',
     ])->assertNotFound();
+});
+
+it('saves the thumbnail size of the view on screen, keeping the other view’s', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'defaultThumbSizes' => ['table' => 'md', 'thumbs' => 'xl']],
+    ]);
+
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => '*',
+        'defaultThumbSizes' => ['table' => 'lg'],
+    ])->assertOk();
+
+    expect(collect(entrySourceConfigs())->firstWhere('key', '*')['defaultThumbSizes'])
+        ->toBe(['table' => 'lg', 'thumbs' => 'xl']);
+
+    // Table rows stop at a card's thumbnail size.
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => '*',
+        'defaultThumbSizes' => ['table' => '2xl'],
+    ])->assertUnprocessable()->assertJsonValidationErrors('defaultThumbSizes.table');
+});
+
+it('keeps a source’s thumbnail sizes when its settings are saved without them', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'defaultThumbSizes' => ['table' => 'md', 'thumbs' => 'lg']],
+    ]);
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => Entry::class,
+        'sourceOrder' => ['*'],
+        'sourcePages' => ['*' => 'Entries'],
+        'pageSettings' => ['Entries' => ['label' => 'Entries']],
+        'sources' => ['*' => ['enabled' => true, 'defaultViewMode' => 'cards']],
+    ])->assertOk();
+
+    expect(collect(entrySourceConfigs())->firstWhere('key', '*')['defaultThumbSizes'])
+        ->toBe(['table' => 'md', 'thumbs' => 'lg']);
 });

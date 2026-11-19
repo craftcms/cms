@@ -1681,21 +1681,37 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * The thumbnail sizes the source opens with, for table rows and for tiles.
+     *
+     * @return array{table: string, thumbs: string}
+     */
+    public function defaultThumbSizes(): array
+    {
+        return ChipThumbSize::indexDefaults($this->sourceState()[1]['defaultThumbSizes'] ?? null);
+    }
+
+    /**
      * The size of the index's thumbnails, as chosen in the View menu (see the
-     * `useElementIndexThumbSize` composable); their chips take a size to suit.
-     * Tiles come in every size and default to a card's thumbnail size; table
-     * rows stop at that size and default to small.
+     * `useElementIndexThumbSize` composable), else the source's default for
+     * the view; their chips take a size to suit.
      */
     protected function thumbSize(): ChipThumbSize
     {
-        $thumbs = $this->mode() === ElementIndexViewMode::Thumbs->value;
-        $size = ChipThumbSize::tryFrom((string) $this->request->input('thumbSize'));
+        $view = match ($this->mode()) {
+            ElementIndexViewMode::Thumbs->value => 'thumbs',
+            ElementIndexViewMode::Table->value, ElementIndexViewMode::Structure->value => 'table',
+            default => null,
+        };
 
-        if ($size !== null && ($thumbs || in_array($size, [ChipThumbSize::Sm, ChipThumbSize::Md, ChipThumbSize::Lg], true))) {
-            return $size;
+        if ($view === null) {
+            return ChipThumbSize::Sm;
         }
 
-        return $thumbs ? ChipThumbSize::Lg : ChipThumbSize::Sm;
+        $requested = (string) $this->request->input('thumbSize');
+
+        return ChipThumbSize::from(
+            in_array($requested, ChipThumbSize::INDEX_VIEW_SIZES[$view], true) ? $requested : $this->defaultThumbSizes()[$view],
+        );
     }
 
     /**

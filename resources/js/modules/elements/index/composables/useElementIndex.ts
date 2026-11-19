@@ -20,6 +20,7 @@ import type {
 import {
   thumbSizeLabel,
   useElementIndexThumbSize,
+  viewFor,
 } from '@/modules/elements/index/composables/useElementIndexThumbSize';
 import {useElementIndexColumns} from '@/modules/elements/index/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/index/composables/useElementIndexFilters';
@@ -237,7 +238,15 @@ export function useElementIndex(options: UseElementIndexOptions) {
     modeParams: thumbSizeModeParams,
     isDefault: thumbSizeIsDefault,
     resetToDefault: resetThumbSize,
-  } = useElementIndexThumbSize(viewState, visitor, () => mode.value, sourceKey);
+    sizes: thumbSizes,
+    forget: forgetThumbSize,
+  } = useElementIndexThumbSize(
+    viewState,
+    visitor,
+    () => mode.value,
+    sourceKey,
+    () => elementIndex.defaultThumbSizes ?? null
+  );
   // The View menu only offers table columns in table and structure views, so
   // only there do they count toward, or get reset by, "Use defaults".
   const showsTableColumns = () =>
@@ -664,9 +673,17 @@ export function useElementIndex(options: UseElementIndexOptions) {
   }
 
   function forgetSaved(kinds: ElementIndexChange['kind'][]): void {
+    const thumbView = viewFor(mode.value);
+    if (kinds.includes('thumbSize') && thumbView) forgetThumbSize(thumbView);
+
     const key = sourceKey();
-    const {mode, sort, visible, filters, ...rest} =
-      viewState.value.sources?.[key] ?? {};
+    const {
+      mode: savedViewMode,
+      sort,
+      visible,
+      filters,
+      ...rest
+    } = viewState.value.sources?.[key] ?? {};
     const keptFilters = kinds.includes('rule')
       ? {...filters, condition: null}
       : filters;
@@ -675,7 +692,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
       ...viewState.value.sources,
       [key]: {
         ...rest,
-        ...(kinds.includes('viewMode') ? {} : {mode}),
+        ...(kinds.includes('viewMode') ? {} : {mode: savedViewMode}),
         ...(kinds.includes('sort') ? {} : {sort}),
         ...(kinds.includes('columns') ? {} : {visible}),
         filters: hasFilters(keptFilters) ? keptFilters : undefined,
@@ -950,6 +967,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     forgetSaved,
     mode,
     thumbSize,
+    thumbSizes,
     thumbSizeOptions,
     cardThumbs,
     loading,

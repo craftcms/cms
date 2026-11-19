@@ -1,5 +1,5 @@
 import {t} from '@craftcms/ui';
-import {computed, type Ref} from 'vue';
+import {computed, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {
   IndexQueryParams,
   IndexRestore,
@@ -12,7 +12,7 @@ import type {
   ViewState,
 } from '@/modules/elements/types/view-state';
 
-type ThumbSizeView = keyof NonNullable<SourceViewState['thumbSizes']>;
+export type ThumbSizeView = keyof NonNullable<SourceViewState['thumbSizes']>;
 
 /** Thumbnail tiles come in every size; table rows stop at a card's. */
 const sizesByView: Record<ThumbSizeView, ThumbSizeValue[]> = {
@@ -26,7 +26,7 @@ const defaultSizes: Record<ThumbSizeView, ThumbSizeValue> = {
   thumbs: 'lg',
 };
 
-function viewFor(mode: ViewMode['mode']): ThumbSizeView | null {
+export function viewFor(mode: ViewMode['mode']): ThumbSizeView | null {
   switch (mode) {
     case 'table':
     case 'structure':
@@ -56,47 +56,69 @@ export function thumbSizeLabel(size: ThumbSizeValue): string {
  * size to suit. The server renders the thumbnails at their size, so changing
  * it updates the local view state and then quietly re-requests the rows with
  * a `thumbSize` param, the same way `useElementIndexViewMode` handles
- * `viewMode`. A view's default size is left out of the URL.
+ * `viewMode`. The source's own size for a view is left out of the URL.
  */
 export function useElementIndexThumbSize(
   viewState: Ref<ViewState>,
   visitor: IndexVisitor,
   mode: () => ViewMode['mode'],
-  sourceKey: () => string
+  sourceKey: () => string,
+  /** The current source's sizes, where it saved its own. */
+  sourceDefaults?: MaybeRefOrGetter<Partial<
+    Record<ThumbSizeView, ThumbSizeValue>
+  > | null>
 ) {
+  function defaultFor(view: ThumbSizeView): ThumbSizeValue {
+    return toValue(sourceDefaults)?.[view] ?? defaultSizes[view];
+  }
+
+  function storedFor(
+    view: ThumbSizeView,
+    source: string = sourceKey()
+  ): ThumbSizeValue | undefined {
+    return viewState.value.sources?.[source]?.thumbSizes?.[view];
+  }
+
+  // Another source's own sizes only arrive with its rows.
   function sizeFor(
     view: ThumbSizeView,
     source: string = sourceKey()
   ): ThumbSizeValue {
     return (
-      viewState.value.sources?.[source]?.thumbSizes?.[view] ??
-      defaultSizes[view]
+      storedFor(view, source) ??
+      (source === sourceKey() ? defaultFor(view) : defaultSizes[view])
     );
   }
 
-  function store(view: ThumbSizeView, size: ThumbSizeValue): void {
+  /** Keeps a size other than the source's own, or forgets it. */
+  function store(view: ThumbSizeView, size: ThumbSizeValue | null): void {
     const source = viewState.value.sources?.[sourceKey()];
+    const {[view]: _previous, ...others} = source?.thumbSizes ?? {};
+
     viewState.value.sources = {
       ...viewState.value.sources,
       [sourceKey()]: {
         ...source,
-        thumbSizes: {...source?.thumbSizes, [view]: size},
+        thumbSizes:
+          size && size !== defaultFor(view)
+            ? {...others, [view]: size}
+            : others,
       },
     };
   }
 
-  /** The `thumbSize` param for a mode's rows, or null for its default. */
+  /** The `thumbSize` param for a mode's rows, or null for the source's own. */
   function param(
     forMode: ViewMode['mode'],
     source: string = sourceKey()
   ): ThumbSizeValue | null {
     const view = viewFor(forMode);
+    const stored = view ? storedFor(view, source) : undefined;
 
-    if (!view || sizeFor(view, source) === defaultSizes[view]) {
-      return null;
-    }
+    if (!view || !stored) return null;
+    if (source === sourceKey() && stored === defaultFor(view)) return null;
 
-    return sizeFor(view, source);
+    return stored;
   }
 
   /** The sizes the current view offers, or none for a view without thumbnails. */
@@ -142,13 +164,13 @@ export function useElementIndexThumbSize(
     const requested = visitor.currentQuery().thumbSize;
 
     if (requested !== undefined) {
-      // The server falls back to the default for a size the view doesn't
+      // The server falls back to the source's size for one the view doesn't
       // offer.
       store(
         view,
         sizesByView[view].includes(requested as ThumbSizeValue)
           ? (requested as ThumbSizeValue)
-          : defaultSizes[view]
+          : null
       );
 
       return null;
@@ -174,7 +196,7 @@ export function useElementIndexThumbSize(
   const isDefault = computed(() => {
     const view = viewFor(mode());
 
-    return !view || sizeFor(view) === defaultSizes[view];
+    return !view || sizeFor(view) === defaultFor(view);
   });
 
   /**
@@ -188,12 +210,32 @@ export function useElementIndexThumbSize(
       return null;
     }
 
-    store(view, defaultSizes[view]);
+    store(view, null);
 
     return {params: {thumbSize: null}, only: ['data']};
   }
 
-  return {thumbSize, options, restore, modeParams, isDefault, resetToDefault};
+  /** Both views' sizes as they stand, as a source would save them. */
+  const sizes = computed<Record<ThumbSizeView, ThumbSizeValue>>(() => ({
+    table: sizeFor('table'),
+    thumbs: sizeFor('thumbs'),
+  }));
+
+  /** Forgets a view's size once the source saves it as its own. */
+  function forget(view: ThumbSizeView): void {
+    store(view, null);
+  }
+
+  return {
+    thumbSize,
+    options,
+    restore,
+    modeParams,
+    isDefault,
+    resetToDefault,
+    sizes,
+    forget,
+  };
 }
 
 type Chip = HTMLElement & {
