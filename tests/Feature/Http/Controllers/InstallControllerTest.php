@@ -123,7 +123,9 @@ it('shows the install page', function () {
                         ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'))
                         ->has('localeOptions')
                         ->has('timezoneOptions')
-                        ->where('timezoneOptions', fn ($options) => collect($options)->pluck('value')->contains('America/New_York'));
+                        ->where('timezoneOptions', fn ($options) => collect($options)->contains(
+                            fn ($option) => ($option['value'] ?? null) === 'America/New_York' && str_ends_with($option['label'], '– New York'),
+                        ));
                 });
         })
         ->assertOk();

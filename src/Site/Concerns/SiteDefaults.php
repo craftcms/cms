@@ -63,6 +63,12 @@ trait SiteDefaults
         return 'en';
     }
 
+    protected function defaultTimezone(): ?string
+    {
+        // Is there a project.yaml that defines the system time zone?
+        return app(ProjectConfig::class)->get('system.timeZone', true);
+    }
+
     /** @return array<string, mixed>|null */
     private function primarySiteConfig(): ?array
     {

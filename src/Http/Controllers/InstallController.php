@@ -12,7 +12,6 @@ use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
@@ -113,14 +112,21 @@ readonly class InstallController
             ])),
             'timezoneOptions' => Inertia::defer(function () {
                 $timezoneOptions = SelectOptions::getTimeZoneOptions();
+                $envOptions = SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value'));
 
-                return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+                // Put the city in the label, so it can be searched for and still shows once selected
+                $timezoneOptions = array_map(fn (array $option) => [
+                    'value' => $option['value'],
+                    'label' => isset($option['data']['hint']) ? "{$option['label']} – {$option['data']['hint']}" : $option['label'],
+                ], $timezoneOptions);
+
+                return array_merge($timezoneOptions, $envOptions);
             }),
             'baseUrlTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
-            'defaultTimezone' => app(ProjectConfig::class)->get('system.timeZone', true),
+            'defaultTimezone' => $this->defaultTimezone(),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'dbConfig' => [
                 'driver' => $this->dbDriver($dbConfig['driver'] ?? null),

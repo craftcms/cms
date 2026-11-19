@@ -1405,6 +1405,10 @@ class Install extends Migration
             $site->setLanguage($this->site->getLanguage(false));
             $site->setName($this->site->getName(false));
             Sites::saveSite($site);
+
+            if ($this->timezone !== null) {
+                $projectConfig->set('system.timeZone', $this->timezone);
+            }
         }
 
         app()->setLocale($this->site->getLanguage());
