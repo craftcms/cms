@@ -880,6 +880,7 @@ return [
     'Groups' => 'Skupiny',
     'Guest Required' => 'Je vyžadován Host',
     'HTML Email Template' => 'HTML šablona emailu',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Identifikátor',
     'Has Descendants' => 'Má podřízené prvky',
     'Has URL' => 'Má URL',

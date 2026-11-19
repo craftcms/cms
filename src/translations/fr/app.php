@@ -880,6 +880,7 @@ return [
     'Groups' => 'Groupes',
     'Guest Required' => 'Seulement pour les invités',
     'HTML Email Template' => 'Template d\'email HTML',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Identificateur',
     'Has Descendants' => 'Possède des descendants',
     'Has URL' => 'Possède une URL',

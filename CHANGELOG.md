@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added `craft\helpers\UrlHelper::absoluteUrl()`.
+- `craft\elements\db\NestedElementQueryTrait::owner()` now accepts an array of owner elements.
+- Fixed a bug where garbage collection could block other requests’ database writes for minutes while deleting orphaned foreign key rows. Orphaned rows are now found without locking anything and deleted in small batches, with foreign key checks enabled, so the deletions also cascade to rows that reference them. ([#20885](https://github.com/craftcms/cms/issues/20885))
+- Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
+- Fixed a bug where tests extending `craft\test\console\ConsoleTest` were run with a web application rather than a console application.
+- Fixed a bug where control panel templates could fail to render with an “Unknown function” error after an email was sent to a user affiliated with a different site. ([#20855](https://github.com/craftcms/cms/issues/20855))
+- Fixed an n+1 query bug when working with Content Block fields. ([#20776](https://github.com/craftcms/cms/issues/20776))
 - Fixed a bug where the stdio MCP server (`mcp/serve`) didn’t see project config changes made by other processes, such as in the control panel or via the CLI, and rejected all project config changes after them until it was restarted. ([#20597](https://github.com/craftcms/cms/pull/20597))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes in the control panel. ([#20613](https://github.com/craftcms/cms/issues/20613))
@@ -14,6 +21,12 @@
 - Fixed a bug where the default temporary asset upload filesystem couldn’t be replaced via `craft\fs\Temp`’s dependency injection container definition, such as with shared storage for load-balanced servers.
 - Fixed a bug where Preview never loaded for users who could view an entry but not save it. ([#20572](https://github.com/craftcms/cms/issues/20572))
 - Fixed a bug where the “Save and send activation email” button on users’ Permissions screens didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
+- Fixed a bug where project config handlers for a path weren’t called when a value nested within it was set before the path existed. ([#20717](https://github.com/craftcms/cms/pull/20717))
+- Fixed a bug where `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place. ([#20775](https://github.com/craftcms/cms/pull/20775))
+- Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails, so updates and plugin installs that relied on that, such as for private VCS repositories without a GitHub token, now fail instead. ([#20742](https://github.com/craftcms/cms/pull/20742))
+- Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath, when the filesystem moved them along with it. ([#20773](https://github.com/craftcms/cms/issues/20773))
+- Fixed a bug where the `assets_transform_url` MCP tool and MCP element data returned root-relative URLs for assets in volumes with root-relative base URLs, which MCP clients can’t resolve.
+- Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
 
 ## 5.12.1 - 2026-11-10
 

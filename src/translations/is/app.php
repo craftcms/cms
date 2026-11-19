@@ -880,6 +880,7 @@ return [
     'Groups' => 'Hópar',
     'Guest Required' => 'Gesta krafist',
     'HTML Email Template' => 'HTML tölvupóstsniðmát',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Auðkenni',
     'Has Descendants' => 'Er með afkomendur',
     'Has URL' => 'Er með slóð',

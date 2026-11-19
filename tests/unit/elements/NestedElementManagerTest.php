@@ -616,4 +616,64 @@ class NestedElementManagerTest extends TestCase
             self::assertSame('Site 2 content', $nested[0]->getFieldValue('nemText'));
         }
     }
+
+    // Fixed #20838: when a non-propagating Matrix field was required, maintainNestedElements() always
+    // saved the nested elements rather than merging canonical changes, even though the owner's
+    // propagateRequired flag wasn't set. Merging canonical changes into a draft created before
+    // another site's nested entry was replaced copied the current site's nested entries to that
+    // site, and applying the draft then deleted the other site's live nested entry.
+    public function testMergingCanonicalChangesWithRequiredFieldKeepsOtherSitesNestedElements(): void
+    {
+        $layoutElement = Craft::$app->getEntries()->getEntryTypeById(3000)
+            ->getFieldLayout()
+            ->getFieldByHandle('nemMatrix')
+            ->layoutElement;
+        $layoutElement->required = true;
+
+        try {
+            $owner = $this->_makeOwner([
+                'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Site 1 block']],
+            ], ['siteId' => 1]);
+
+            $ownerInSite2 = Entry::find()->id($owner->id)->siteId(1000)->status(null)->one();
+            $ownerInSite2->setFieldValue('nemMatrix', [
+                'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'Site 2 block']],
+            ]);
+            if (!$this->elements->saveElement($ownerInSite2)) {
+                throw new InvalidElementException($ownerInSite2);
+            }
+
+            /** @var Entry $draft */
+            $draft = $this->drafts->createDraft($owner, 1, provisional: true);
+
+            // Replace the other site's block on the canonical entry after the draft was created
+            sleep(1);
+            $ownerInSite2 = Entry::find()->id($owner->id)->siteId(1000)->status(null)->one();
+            $ownerInSite2->setFieldValue('nemMatrix', [
+                'new1' => ['type' => 'nemBlock', 'fields' => ['nemText' => 'New site 2 block']],
+            ]);
+            if (!$this->elements->saveElement($ownerInSite2)) {
+                throw new InvalidElementException($ownerInSite2);
+            }
+            $site2Block = $this->_nestedEntries($ownerInSite2)[0];
+
+            $draft = Entry::find()->id($draft->id)->siteId(1)->drafts()->provisionalDrafts()->status(null)->one();
+            $this->elements->mergeCanonicalChanges($draft);
+
+            $draftInSite2 = Entry::find()->id($draft->id)->siteId(1000)->drafts()->provisionalDrafts()->status(null)->one();
+            $draftSite2Blocks = $this->_nestedEntries($draftInSite2);
+            self::assertCount(1, $draftSite2Blocks);
+            self::assertSame($site2Block->id, $draftSite2Blocks[0]->id);
+
+            $draft = Entry::find()->id($draft->id)->siteId(1)->drafts()->provisionalDrafts()->status(null)->one();
+            $this->drafts->applyDraft($draft);
+
+            $site2Blocks = $this->_nestedEntries(Entry::find()->id($owner->id)->siteId(1000)->status(null)->one());
+            self::assertCount(1, $site2Blocks);
+            self::assertSame($site2Block->id, $site2Blocks[0]->id);
+            self::assertSame('New site 2 block', $site2Blocks[0]->getFieldValue('nemText'));
+        } finally {
+            $layoutElement->required = false;
+        }
+    }
 }
