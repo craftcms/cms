@@ -697,22 +697,31 @@ class Gc extends Component
                     $keyColumns = $table->primaryKey ?: array_keys($fk);
 
                     foreach ($fk as $fkColumn => $pkColumn) {
-                        $keys = (new Query())
+                        $query = (new Query())
                             ->select(array_map(fn(string $column) => "t.$column", $keyColumns))
                             ->distinct()
                             ->from(['t' => $table->name])
                             ->leftJoin(['t2' => $refTable], "[[t2.$pkColumn]] = [[t.$fkColumn]]")
                             ->where(['not', ["t.$fkColumn" => null]])
-                            ->andWhere(["t2.$pkColumn" => null])
-                            ->all($this->db);
+                            ->andWhere(["t2.$pkColumn" => null]);
 
-                        try {
-                            foreach (array_chunk($keys, 1000) as $keysChunk) {
-                                Db::delete($table->name, ['in', $keyColumns, $keysChunk], db: $this->db);
+                        // Recheck that each row is still orphaned, in case it changed since the SELECT
+                        $stillOrphaned = [
+                            'and',
+                            ['not', ["$table->name.$fkColumn" => null]],
+                            ['not exists', (new Query())
+                                ->from(['t2' => $refTable])
+                                ->where("[[t2.$pkColumn]] = [[$table->name.$fkColumn]]"),
+                            ],
+                        ];
+
+                        foreach (Db::batch($query, 1000) as $keys) {
+                            try {
+                                Db::delete($table->name, ['and', ['in', $keyColumns, $keys], $stillOrphaned], db: $this->db);
+                            } catch (DbException $e) {
+                                // Most likely another foreign key restricts the deletion
+                                Craft::warning("Couldn't delete orphaned rows from $table->name: {$e->getMessage()}", __METHOD__);
                             }
-                        } catch (DbException $e) {
-                            // Most likely another foreign key restricts the deletion
-                            Craft::warning("Couldn't delete orphaned rows from $table->name: {$e->getMessage()}", __METHOD__);
                         }
                     }
                 }
