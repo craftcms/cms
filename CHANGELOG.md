@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `craft\helpers\UrlHelper::absoluteUrl()`.
 - `craft\elements\db\NestedElementQueryTrait::owner()` now accepts an array of owner elements.
 - Fixed an n+1 query bug when working with Content Block fields. ([#20776](https://github.com/craftcms/cms/issues/20776))
 - Fixed a bug where the stdio MCP server (`mcp/serve`) didn’t see project config changes made by other processes, such as in the control panel or via the CLI, and rejected all project config changes after them until it was restarted. ([#20597](https://github.com/craftcms/cms/pull/20597))
@@ -20,6 +21,7 @@
 - Fixed a bug where `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place. ([#20775](https://github.com/craftcms/cms/pull/20775))
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails, so updates and plugin installs that relied on that, such as for private VCS repositories without a GitHub token, now fail instead. ([#20742](https://github.com/craftcms/cms/pull/20742))
 - Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath, when the filesystem moved them along with it. ([#20773](https://github.com/craftcms/cms/issues/20773))
+- Fixed a bug where the `assets_transform_url` MCP tool and MCP element data returned root-relative URLs for assets in volumes with root-relative base URLs, which MCP clients can’t resolve.
 
 ## 5.12.1 - 2026-11-10
 
