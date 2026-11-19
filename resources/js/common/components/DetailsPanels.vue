@@ -387,6 +387,20 @@
     background-color: transparent;
   }
 
+  /* On phones, its tabs center under the header's 24px avatar, which sits
+     the header's padding from the edge. */
+  @media (width < var(--breakpoint-sm)) {
+    .details-panels__rail--detached {
+      --_rail-padding-inline: calc(
+        var(--c-spacing-md) + (24rem / 16 - var(--cp-rail-item-size)) / 2
+      );
+      inline-size: calc(
+        var(--cp-rail-item-size) + var(--_rail-padding-inline) * 2
+      );
+      padding-inline: var(--_rail-padding-inline);
+    }
+  }
+
   .details-panels__trigger {
     --c-icon-size: var(--cp-chrome-icon-size);
     display: grid;
