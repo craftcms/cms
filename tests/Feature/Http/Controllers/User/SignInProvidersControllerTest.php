@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -308,7 +309,7 @@ it('requires an elevated session to disconnect a provider', function () {
 
 it('disconnects only the current user provider identity', function () {
     configureSignInProvider();
-    $user = signInProviderRemoveCurrentPassword();
+    $user = signInProviderUser();
     $otherUser = UserModel::factory()->active()->createElement([
         'email' => 'other-disconnect-user@example.com',
         'username' => 'other-disconnect-user',
@@ -325,7 +326,7 @@ it('disconnects only the current user provider identity', function () {
         ->and(signInProviderHasIdentity('provider-user-2', $otherUser->id))->toBeTrue();
 });
 
-it('warns when disconnecting the last primary sign in method', function () {
+it('does not disconnect the last sign in method', function () {
     configureSignInProvider();
     $user = signInProviderRemoveCurrentPassword();
 
@@ -335,5 +336,33 @@ it('warns when disconnecting the last primary sign in method', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('providers.0.connected', true)
-            ->where('providers.0.disconnectWarning', fn (?string $warning) => str_contains($warning ?? '', 'without a password or connected sign-in provider')));
+            ->where('providers.0.canDisconnect', false)
+            ->where('providers.0.disabledReason', fn (?string $reason) => str_contains($reason ?? '', 'only way to sign in')));
+
+    delete(cp_url('myaccount/sign-in-providers/test'))
+        ->assertMessage('error');
+
+    expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeTrue();
+});
+
+it('disconnects the last provider when the user has a passkey', function () {
+    configureSignInProvider();
+    $user = signInProviderRemoveCurrentPassword();
+
+    app(OAuth::class)->linkIdentity($user, signInProviderDefinition(), 'provider-user-1');
+    WebAuthn::factory()->create([
+        'userId' => $user->id,
+        'credentialId' => 'test-credential-id',
+    ]);
+
+    get(cp_url('myaccount/sign-in-providers'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('providers.0.canDisconnect', true));
+
+    delete(cp_url('myaccount/sign-in-providers/test'))
+        ->assertRedirect(cp_url('myaccount/sign-in-providers'))
+        ->assertMessage('success');
+
+    expect(signInProviderHasIdentity('provider-user-1', $user->id))->toBeFalse();
 });

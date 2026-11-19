@@ -66,6 +66,7 @@ export default class CraftTooltip extends LitElement {
         width: max-content;
         max-inline-size: var(--c-tooltip-max-width, min(45ch, 100vw - 2rem));
         overflow-wrap: break-word;
+        white-space: normal;
       }
     `,
   ];
