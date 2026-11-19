@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use yii\base\Event as YiiEvent;
@@ -32,6 +33,12 @@ beforeEach(function(): void {
         $event->rules['api/webhook'] = 'test-plugin/webhook/handle';
         $event->rules['api/form'] = 'test-plugin/form/handle';
     });
+
+    YiiEvent::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+        $event->rules['test-plugin/webhook'] = 'test-plugin/webhook/handle';
+        $event->rules['test-plugin/hook'] = 'test-plugin/hook/handle';
+        $event->rules['test-plugin/form'] = 'test-plugin/form/handle';
+    });
 });
 
 afterEach(function(): void {
@@ -39,6 +46,7 @@ afterEach(function(): void {
     PreventRequestForgery::useOriginOnly(false);
 
     YiiEvent::off(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES);
+    YiiEvent::off(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES);
 });
 
 it('honors a legacy controller’s CSRF opt-out', function(bool $originOnly, string $path, int $status): void {
@@ -58,6 +66,16 @@ it('honors a legacy controller’s CSRF opt-out', function(bool $originOnly, str
     'action, protected, origin-only' => [true, '/actions/test-plugin/form/handle', 403],
     'control panel action, opted out in beforeAction()' => [false, '/admin/actions/test-plugin/hook/handle', 200],
     'control panel action, protected' => [false, '/admin/actions/test-plugin/form/handle', 419],
+]);
+
+it('honors a legacy controller’s CSRF opt-out for control panel URL rules', function(string $path, int $status): void {
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->postJson($path)->assertStatus($status);
+})->with([
+    'opted out' => ['/admin/test-plugin/webhook', 200],
+    'opted out in beforeAction()' => ['/admin/test-plugin/hook', 200],
+    'protected' => ['/admin/test-plugin/form', 419],
 ]);
 
 it('accepts token-less requests whose Origin matches the host when Sec-Fetch-Site is missing', function(bool $originOnly): void {
