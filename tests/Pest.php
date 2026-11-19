@@ -230,6 +230,27 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
         JS, []);
 }
 
+/**
+ * Asserts axe finds no serious or critical accessibility issues on the page. Links in running text are told apart
+ * from it by color alone unless the user turns on the “Underline links” preference, so axe's `link-in-text-block`
+ * rule is off, as it is in Storybook. Axe takes longer than the usual assertion timeout on large pages, such as
+ * project config with the workbench content, so it gets 30 seconds.
+ */
+function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
+{
+    $page->script((string) file_get_contents(InstalledVersions::getInstallPath('pestphp/pest-plugin-browser').'/resources/js/axe.min.js'));
+    $page->script("axe.configure({rules: [{id: 'link-in-text-block', enabled: false}]})");
+
+    $timeout = Playwright::timeout();
+    Playwright::setTimeout(30_000);
+
+    try {
+        return $page->assertNoAccessibilityIssues();
+    } finally {
+        Playwright::setTimeout($timeout);
+    }
+}
+
 function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void
 {
     app()->instance('request', Request::create($uri, $method, $parameters));

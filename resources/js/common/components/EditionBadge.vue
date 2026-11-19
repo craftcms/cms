@@ -13,9 +13,12 @@
 </script>
 
 <template>
+  <!-- Its padding is uneven to offset the letter spacing after the last
+    letter, which follows the edition name's own direction, not the page's -->
   <span
     class="edition-badge"
     :class="{'edition-badge--large': size === 'large'}"
+    dir="auto"
   >
     <span class="edition-badge__label" aria-hidden="true">{{ edition }}</span
     >{{ ' ' }}

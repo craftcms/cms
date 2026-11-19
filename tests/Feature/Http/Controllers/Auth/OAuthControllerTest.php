@@ -130,7 +130,7 @@ describe('callback flow', function () {
     test('callback rejects user creation without maintenance access', function (bool $isCpRequest) {
         configureOAuthControllerProvider([
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
         app()->maintenanceMode()->activate([]);
 
@@ -181,7 +181,7 @@ describe('callback flow', function () {
 
         configureOAuthControllerProvider([
             'groups' => [$group->handle],
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
 
         completeOAuthControllerCallback([
@@ -203,7 +203,7 @@ describe('callback flow', function () {
         Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
         Sites::refreshSites();
         Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
-        configureOAuthControllerProvider(['activatesUsers' => true]);
+        configureOAuthControllerProvider(['controlsAccess' => true]);
         FakeOAuthProvider::$fakeUser = FakeOAuthProvider::fakeUser([
             'id' => 'provider-user-fr',
             'email' => 'oauth-fr@example.com',
@@ -256,7 +256,7 @@ describe('callback flow', function () {
 
         configureOAuthControllerProvider([
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
 
         completeOAuthControllerCallback([

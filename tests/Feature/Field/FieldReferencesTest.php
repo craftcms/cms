@@ -43,9 +43,14 @@ function fieldReferenceRows(): array
 
 function markdownReferenceFixture(string $value)
 {
-    return EntryModel::factory()
-        ->withField('body', MarkdownField::class, value: $value)
+    $result = EntryModel::factory()
+        ->withField('body', MarkdownField::class)
         ->createElementWithFields();
+
+    $result->element->setFieldValueFromRequest('body', $value);
+    Elements::saveElement($result->element);
+
+    return $result;
 }
 
 it('tracks valid numeric and named markdown reference tags', function () {
@@ -75,13 +80,24 @@ it('tracks valid numeric and named markdown reference tags', function () {
     ]);
 });
 
+it('tracks and replaces markdown reference tags whose refs look like emoji shortcodes', function () {
+    $target = EntryModel::factory()->createElement(['slug' => 'smile']);
+    $newTarget = EntryModel::factory()->createElement();
+    $result = markdownReferenceFixture('{entry:smile:url}');
+    $source = $result->element;
+
+    expect(DB::table(Table::FIELDREFERENCES)->pluck('targetId')->all())->toBe([$target->id])
+        ->and($source->getFieldLayout()->getFieldByHandle('body')->replaceReferences($source, [$target->id], $newTarget->id))->toBeTrue()
+        ->and($source->getFieldValue('body')->getRaw())->toBe("{entry:$newTarget->id:url}");
+});
+
 it('updates and removes markdown reference rows when content changes', function () {
     $oldTarget = EntryModel::factory()->createElement();
     $newTarget = EntryModel::factory()->createElement();
     $result = markdownReferenceFixture("{entry:$oldTarget->id:url}");
     $source = $result->element;
 
-    $source->setFieldValue('body', "{entry:$newTarget->id:url}");
+    $source->setFieldValueFromRequest('body', "{entry:$newTarget->id:url}");
     Elements::saveElement($source);
 
     expect(DB::table(Table::FIELDREFERENCES)->pluck('targetId')->all())->toBe([$newTarget->id]);
@@ -98,10 +114,10 @@ it('tracks drafts but not revisions', function () {
     $source = $result->element;
 
     $draft = app(Drafts::class)->createDraft($source, User::findOne()->id);
-    $draft->setFieldValue('body', "{entry:$target->id:url}");
+    $draft->setFieldValueFromRequest('body', "{entry:$target->id:url}");
     Elements::saveElement($draft);
 
-    $source->setFieldValue('body', "{entry:$target->id:url}");
+    $source->setFieldValueFromRequest('body', "{entry:$target->id:url}");
     Elements::saveElement($source);
     $revisionId = app(Revisions::class)->createRevision($source, force: true);
 
@@ -134,7 +150,7 @@ it('cleans references when tracking fields are deleted', function () {
     $source = EntryModel::factory()
         ->withFieldLayout(FieldLayout::factory()->forField($field))
         ->createElement();
-    $source->setFieldValue('body', "{entry:$target->id:url}");
+    $source->setFieldValueFromRequest('body', "{entry:$target->id:url}");
     Elements::saveElement($source);
 
     expect(DB::table(Table::FIELDREFERENCES)->count())->toBe(1);
@@ -157,7 +173,7 @@ it('cleans references when tracking fields are converted to non-tracking fields'
     $source = EntryModel::factory()
         ->withFieldLayout(FieldLayout::factory()->forField($field))
         ->createElement();
-    $source->setFieldValue('body', "{entry:$target->id:url}");
+    $source->setFieldValueFromRequest('body', "{entry:$target->id:url}");
     Elements::saveElement($source);
 
     expect(DB::table(Table::FIELDREFERENCES)->count())->toBe(1);
