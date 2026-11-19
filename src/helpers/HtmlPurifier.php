@@ -78,8 +78,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         $configInstance = HTMLPurifier_Config::create($config instanceof Closure ? null : $config);
         $configInstance->autoFinalize = false;
         $purifier = \HTMLPurifier::instance($configInstance);
-        $purifier->config->set('Cache.SerializerPath', self::cachePath());
-        $purifier->config->set('Cache.SerializerPermissions', 0775);
+        self::useCraftCache($purifier->config);
 
         static::configure($configInstance);
         if ($config instanceof Closure) {
@@ -125,11 +124,20 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         self::$cachedConfigs ??= new WeakMap();
         self::$cachedConfigs[$config] = true;
 
-        // process() sets these too, but the definition may be looked up before then
+        // process() calls this too, but the definition may be looked up before then
+        self::useCraftCache($config);
+    }
+
+    /**
+     * Configures a config to cache definitions in Craft’s cache path.
+     */
+    private static function useCraftCache(HTMLPurifier_Config $config): void
+    {
         $config->set('Cache.SerializerPath', self::cachePath());
         $config->set('Cache.SerializerPermissions', 0775);
 
-        // Write cache files atomically, unless the config chose another cache implementation or disabled it
+        // Write cache files atomically, and tolerate ones removed by clearing caches, unless the config chose
+        // another cache implementation or disabled caching
         if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
             HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
             $config->set('Cache.DefinitionImpl', 'CraftSerializer');

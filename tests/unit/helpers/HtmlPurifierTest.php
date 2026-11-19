@@ -66,6 +66,9 @@ class HtmlPurifierTest extends TestCase
 
         // Closures can look up other definitions before purifying
         self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->getCSSDefinition()));
+
+        // Caches cleared while purifying don't cause errors
+        self::assertSame($html, HtmlPurifier::process($html, fn() => FileHelper::removeDirectory($basePath)));
         FileHelper::removeDirectory($basePath);
 
         // Run each config twice, so the second call is served from the definition cache
@@ -126,6 +129,7 @@ class HtmlPurifierTest extends TestCase
         $option = ArrayHelper::firstWhere(ClearCaches::cacheOptions(), 'key', 'html-purifier');
         $option['action']();
         self::assertDirectoryDoesNotExist($cachePath);
+        self::assertDirectoryExists(dirname($cachePath));
     }
 
     public function testProcessIgnoresCacheCleanupFailures(): void

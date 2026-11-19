@@ -230,7 +230,12 @@ class ClearCaches extends Utility
                     'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getHtmlPurifierCachePath(false), Craft::getAlias('@root'))),
                 ]),
                 'action' => function() use ($pathService) {
-                    FileHelper::removeDirectory($pathService->getHtmlPurifierCachePath(false));
+                    // Keep the directory itself, which requests that are purifying may be using
+                    try {
+                        FileHelper::clearDirectory($pathService->getHtmlPurifierCachePath(false));
+                    } catch (InvalidArgumentException) {
+                        // the directory doesn't exist
+                    }
 
                     // Craft before 5.13, and yii\helpers\HtmlPurifier, cache them directly in storage/runtime/
                     $runtimePath = $pathService->getRuntimePath();

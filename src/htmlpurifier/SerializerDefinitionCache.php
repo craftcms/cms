@@ -34,7 +34,7 @@ class SerializerDefinitionCache extends HTMLPurifier_DefinitionCache_Serializer
         $dir = dirname($file);
         $chmod = $config->get('Cache.SerializerPermissions');
 
-        if (!is_dir($dir) && !@mkdir($dir, $chmod ?? 0777) && !is_dir($dir)) {
+        if (!is_dir($dir) && !@mkdir($dir, $chmod ?? 0777, true) && !is_dir($dir)) {
             return false;
         }
 
