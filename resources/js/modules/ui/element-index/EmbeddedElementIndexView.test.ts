@@ -160,6 +160,29 @@ describe('EmbeddedElementIndexView', () => {
     });
   });
 
+  it('sorts search results by relevance', async () => {
+    const container = mount(false);
+    await vi.waitFor(() =>
+      expect(container.querySelector('tr')).not.toBeNull()
+    );
+    const search = container.querySelector<HTMLElement & {value: string}>(
+      'craft-input-search[name="search"]'
+    )!;
+
+    search.value = 'needle';
+    search.dispatchEvent(new Event('input', {bubbles: true}));
+    search.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
+    );
+
+    await vi.waitFor(() =>
+      expect(postsTo(request.post, 'get-elements').at(-1)).toMatchObject({
+        search: 'needle',
+        sort: [{field: 'score', direction: 'desc'}],
+      })
+    );
+  });
+
   it('asks for inline inputs when editing inline', async () => {
     const container = mount(false);
     await vi.waitFor(() =>

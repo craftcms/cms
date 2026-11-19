@@ -12,7 +12,9 @@
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import ElementBulkActionsBar from '@/modules/elements/index/components/ElementBulkActionsBar.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
+  import type {SortItem} from '@/common/types';
   import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
+  import {normalizeSort} from '@/modules/elements/index/composables/useElementIndexSort';
   import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
   import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
   import {saveInlineElements} from '@/modules/elements/index/save-inline-elements';
@@ -60,12 +62,13 @@
         ? Object.values(value)
         : [];
 
-    return items.filter(
-      (item): item is {field: string; direction: 'asc' | 'desc'} =>
-        item instanceof Object &&
-        typeof item.field === 'string' &&
-        (item.direction === 'asc' || item.direction === 'desc') &&
-        item.field !== 'score'
+    return normalizeSort(
+      items.filter(
+        (item): item is SortItem =>
+          item instanceof Object &&
+          typeof item.field === 'string' &&
+          (item.direction === 'asc' || item.direction === 'desc')
+      )
     );
   }
 
