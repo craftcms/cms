@@ -11,11 +11,13 @@ use Craft;
 use craft\db\Table;
 use craft\elements\User;
 use craft\filters\BasicHttpAuthLogin;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\mcp\Settings;
 use craft\oauth\User as OAuthUser;
 use craft\services\Mcp;
+use DateTime;
 use FunctionalTester;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -160,6 +162,11 @@ class McpServersCest
             $I->dontSeeResponseCodeIs(401);
             $I->assertSame($user->id, Craft::$app->getUser()->getId());
             $I->assertEqualsCanonicalizing([Mcp::SCOPE_READ, Mcp::SCOPE_WRITE, Mcp::SCOPE_ADMIN], Craft::$app->get('mcp')->tokenScopes);
+
+            // Locked accounts are rejected, as with access tokens
+            Craft::$app->getDb()->createCommand()->update(Table::USERS, ['locked' => true, 'lockoutDate' => Db::prepareDateForDb(new DateTime())], ['id' => $user->id])->execute();
+            $I->sendAjaxPostRequest('/mcp');
+            $I->seeResponseCodeIs(401);
         } finally {
             $config->filters = [];
         }

@@ -85,7 +85,9 @@ class McpController extends Controller
 
             try {
                 if ($session->getIdentity() !== null) {
-                    // Basic auth isn't scoped, so the user's permissions alone determine their access
+                    // Check the account state and resource permissions, as for access tokens. Basic auth isn't
+                    // scoped, so the user's permissions alone determine their access.
+                    $session->setIdentity($oauth->authorizedUser((string)$session->getId(), 'mcp'));
                     Craft::$app->get('mcp')->tokenScopes = array_keys($oauth->getResource('mcp')->scopes);
                 } else {
                     $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp', scopes: $scopes));
