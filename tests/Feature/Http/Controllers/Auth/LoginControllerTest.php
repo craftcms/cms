@@ -411,6 +411,28 @@ test('login routes are registered for localized loginPath values', function () {
     expect(Auth::check())->toBeTrue();
 });
 
+test('login and logout routes are registered under site base paths', function () {
+    Cms::config()->loginPath = 'member/login';
+    Cms::config()->logoutPath = 'member/logout';
+    Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
+    Sites::refreshSites();
+
+    Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
+
+    get('https://localhost/fr/member/login')->assertOk();
+
+    postJson('https://localhost/fr/member/login', [
+        'loginName' => User::findOne()->email,
+        'password' => 'craftcms2018!!',
+    ])->assertOk();
+
+    expect(Auth::check())->toBeTrue();
+
+    get('https://localhost/fr/member/logout')->assertRedirect('https://localhost/fr');
+
+    expect(Auth::check())->toBeFalse();
+});
+
 test('attemptLogin respects LoginUserRetrieving event', function () {
     $user = UserModel::factory()->admin()->create([
         'email' => 'event-user@example.com',

@@ -23,7 +23,7 @@ use CraftCms\Cms\Support\Str;
 trait Searchable
 {
     /**
-     * @var int|null The element's search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
+     * @var int|null The element's search score, if the [[\CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface::search()]] parameter was used when querying for the element
      */
     #[ElementProperty(ElementPropertyType::Int, 'The {element}’s search score, if the `search` parameter was used when querying for the {element}.', readable: true, writable: false)]
     public ?int $searchScore = null;

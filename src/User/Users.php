@@ -134,7 +134,7 @@ class Users
      * Returns a user by their ID.
      *
      * ```php
-     * $user = Craft::$app->users->getUserById($userId);
+     * $user = \CraftCms\Cms\Support\Facades\Users::getUserById($userId);
      * ```
      *
      * @param  int  $userId  The user’s ID.
@@ -149,7 +149,7 @@ class Users
      * Returns a user by their username or email.
      *
      * ```php
-     * $user = Craft::$app->users->getUserByUsernameOrEmail($loginName);
+     * $user = \CraftCms\Cms\Support\Facades\Users::getUserByUsernameOrEmail($loginName);
      * ```
      *
      * @param  string  $usernameOrEmail  The user’s username or email.
@@ -174,7 +174,7 @@ class Users
      * Returns a user by their UID.
      *
      * ```php
-     * $user = Craft::$app->users->getUserByUid($userUid);
+     * $user = \CraftCms\Cms\Support\Facades\Users::getUserByUid($userUid);
      * ```
      *
      * @param  string  $uid  The user’s UID.

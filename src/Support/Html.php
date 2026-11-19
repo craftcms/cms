@@ -863,7 +863,7 @@ class Html
         // convert any remaining consecutive non-alphanumeric characters to hyphens
         $id = trim((string) preg_replace('/[^A-Za-z0-9_.-]+/', '-', (string) $id), '-');
 
-        return $id ?: Str::random(10);
+        return $id ?: Str::random(10, extendedChars: false);
     }
 
     /**
@@ -1405,7 +1405,7 @@ class Html
 
         // Namespace class names and IDs
         if ($namespace) {
-            $ns = Str::random(10);
+            $ns = Str::random(10, extendedChars: false);
             $svg = self::namespaceAttributes($svg, $ns, true);
         }
 

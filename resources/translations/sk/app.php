@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'Skupiny',
     'Guest Required' => 'Hosť je povinný',
     'HTML Email Template' => 'HTML Šablóna Emailu',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'Sanitizér HTML',
     'Handle' => 'Identifikátor',
     'Has Descendants' => 'Má podmnožinu',

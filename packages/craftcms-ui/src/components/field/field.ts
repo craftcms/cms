@@ -195,9 +195,11 @@ export default class CraftField extends FormControl(LitElement) {
   override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
 
-    // Help text gaining or losing content, by property or by slotted
-    // content, updates the field.
-    this.__wireDescribedBy();
+    // The light DOM observer catches help text nodes being added or swapped,
+    // but not the help text property gaining or losing content.
+    if (changedProperties.has('helpText')) {
+      this.__wireDescribedBy();
+    }
 
     if (changedProperties.has('fieldset')) {
       this.__syncFieldsetSemantics();

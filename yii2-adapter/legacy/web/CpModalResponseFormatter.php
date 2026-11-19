@@ -53,7 +53,7 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
     {
         $response->format = Response::FORMAT_JSON;
 
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
 
         if ($behavior->prepareModal) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');

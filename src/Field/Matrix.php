@@ -628,6 +628,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 $entry->getFieldLayout(),
                 $entry,
                 new UiContext(
+                    namespace: [...$context->resolvedPath(), 'entries', $uid],
                     mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
                     preview: $context->ui->preview,
                 ),

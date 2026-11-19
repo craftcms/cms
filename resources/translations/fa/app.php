@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'گروه ها',
     'Guest Required' => 'تنها به عنوان مهمان',
     'HTML Email Template' => 'قالب پست الکترونیکی HTML',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'پاک‌ساز HTML',
     'Handle' => 'مشخصه',
     'Has Descendants' => 'دارای نوادگان',

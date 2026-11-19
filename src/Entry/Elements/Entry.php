@@ -97,6 +97,7 @@ use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
+use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
@@ -163,7 +164,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @var DateTimeInterface|null Post date
      *                             ---
      *                             ```php
-     *                             echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     *                             echo \CraftCms\Cms\Support\Facades\I18N::getFormatter()->asDate($entry->postDate, 'short');
      *                             ```
      *                             ```twig
      *                             {{ entry.postDate|date('short') }}
@@ -178,7 +179,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ---
      *                             ```php
      *                             if ($entry->expiryDate) {
-     *                             echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     *                             echo \CraftCms\Cms\Support\Facades\I18N::getFormatter()->asDate($entry->expiryDate, 'short');
      *                             }
      *                             ```
      *                             ```twig
@@ -2229,16 +2230,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * The Ui-system counterpart to {@see metaFieldsHtml()}. Mirrors the same
-     * visibility rules so the Inertia editor shows exactly the fields the
-     * legacy editor does.
+     * The entry's editor sidebar fields, for both the Inertia editor and the
+     * HTML editor. Dispatches {@see EntryMetaFieldsResolving} so listeners can
+     * change them.
      *
      * @return list<Node>
      */
     #[Override]
     protected function metaFieldsNodes(bool $static): array
     {
-        $nodes = [];
+        $fields = [];
         $section = $this->getSection();
         $user = currentUserElement();
 
@@ -2248,7 +2249,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if (count($entryTypes) > 1 || ! $this->isEntryTypeAllowed($entryTypes)) {
-            $nodes[] = Field::make(t('Entry Type'))
+            $fields['type'] = Field::make(t('Entry Type'))
                 ->control(
                     Choice::make('typeId')
                         ->options(array_map(fn (EntryType $entryType) => [
@@ -2275,13 +2276,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     );
             }
 
-            $nodes[] = Field::make(t('Slug'))
+            $fields['slug'] = Field::make(t('Slug'))
                 ->icon('link')
                 ->control($slug);
         }
 
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
-            $nodes[] = Field::make(t('Parent'))
+            $fields['parent'] = Field::make(t('Parent'))
                 ->icon('sitemap')
                 ->control(
                     ElementSelect::make('parentId')
@@ -2298,7 +2299,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if ($section && $section->type !== SectionType::Single) {
             if ($section->maxAuthors !== 0 && Edition::get() !== Edition::Solo) {
-                $nodes[] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
+                $fields['authors'] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
                     'max' => $section->maxAuthors ?? PHP_INT_MAX,
                 ]))
                     ->icon('user')
@@ -2316,8 +2317,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             }
         }
 
+        // Only registered while delta tracking is active, which getSidebarHtml() turns on for the HTML editor.
+        DeltaRegistry::registerName('postDate');
+        DeltaRegistry::registerName('expiryDate');
+
         if ($this->getType()->showPostDateField) {
-            $nodes[] = Field::make(t('Post Date'))
+            $fields['postDate'] = Field::make(t('Post Date'))
                 ->icon('calendar')
                 ->control(
                     DateTime::make('postDate')
@@ -2334,7 +2339,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if ($this->getType()->showExpiryDateField) {
-            $nodes[] = Field::make(t('Expiry Date'))
+            $fields['expiryDate'] = Field::make(t('Expiry Date'))
                 ->icon('calendar-xmark')
                 ->control(
                     DateTime::make('expiryDate')
@@ -2350,7 +2355,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 );
         }
 
-        return $nodes;
+        event($event = new EntryMetaFieldsResolving($this, $static, $fields));
+
+        return array_values(array_filter($event->fields, fn (mixed $field) => $field instanceof Node));
     }
 
     /**
@@ -2393,7 +2400,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $parent?->id;
     }
 
+    /**
+     * @deprecated in 6.0.0. The editor sidebar is built from {@see metaFieldsNodes()}, including the HTML editor's.
+     */
     #[Override]
+    #[Deprecated(message: 'in 6.0.0. [[metaFieldsNodes()]] should be used instead.')]
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];

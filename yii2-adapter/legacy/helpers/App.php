@@ -634,12 +634,12 @@ class App
      */
     public static function assetManagerConfig(): array
     {
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
 
         return [
             'class' => AssetManager::class,
-            'basePath' => $generalConfig->resourceBasePath ?? '@webroot/cpresources',
-            'baseUrl' => $generalConfig->resourceBaseUrl ?? '@web/cpresources',
+            'basePath' => $generalConfig->resourceBasePath,
+            'baseUrl' => $generalConfig->resourceBaseUrl,
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
             'appendTimestamp' => true,
@@ -830,7 +830,7 @@ class App
      */
     public static function mutexConfig(): array
     {
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
 
         return [
             'class' => FileMutex::class,
@@ -926,7 +926,7 @@ class App
      */
     public static function webRequestConfig(): array
     {
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
 
         $config = [
             'class' => WebRequest::class,

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -28,6 +27,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+    Schema::dropIfExists('test_comments');
     Schema::dropIfExists('test_posts');
     Schema::dropIfExists('test_authors');
     Schema::enableForeignKeyConstraints();
@@ -67,25 +67,60 @@ test('it keeps valid and nullable composite keys without a child id', function (
     expect(DB::table('test_posts')->orderBy('title')->pluck('title')->all())->toBe(['null author', 'null region', 'valid']);
 });
 
-// https://github.com/craftcms/cms/issues/20386
-test('it re-enables foreign key constraints when deleting orphaned rows fails', function () {
-    DB::table('test_authors')->insert(['id' => 1, 'region' => 1]);
-    DB::table('test_posts')->insert(['author_id' => 99, 'title' => 'orphan']);
+/**
+ * Gives test_posts IDs, and adds test_comments, whose rows reference them.
+ */
+function createTestComments(Closure $foreignKey): void
+{
+    Schema::table('test_posts', function (Blueprint $table) {
+        $table->unsignedBigInteger('id');
+        $table->unique('id');
+    });
+    Schema::create('test_comments', function (Blueprint $table) use ($foreignKey) {
+        $table->unsignedBigInteger('post_id')->nullable();
+        $foreignKey($table->foreign('post_id')->references('id')->on('test_posts'));
+    });
+}
+
+function addTestPostsAuthorForeignKey(): void
+{
     Schema::table('test_posts', function (Blueprint $table) {
         $table->foreign('author_id')->references('id')->on('test_authors')->cascadeOnDelete()->notValid();
     });
+}
 
-    $enableSql = DB::getSchemaGrammar()->compileEnableForeignKeyConstraints();
-    $reenabled = false;
+// https://github.com/craftcms/cms/issues/20885
+test('it applies the foreign key actions of rows that reference deleted orphans', function () {
+    createTestComments(fn ($foreign) => $foreign->nullOnDelete());
+    DB::table('test_posts')->insert(['id' => 1, 'author_id' => 99, 'title' => 'orphan']);
+    DB::table('test_comments')->insert(['post_id' => 1]);
+    addTestPostsAuthorForeignKey();
+    Schema::enableForeignKeyConstraints();
 
-    DB::listen(function (QueryExecuted $query) use ($enableSql, &$reenabled): void {
-        if ($query->sql === $enableSql) {
-            $reenabled = true;
-        } elseif (str_starts_with(strtolower($query->sql), 'delete')) {
-            throw new RuntimeException('Delete failed');
-        }
-    });
+    app(DeleteOrphanedForeignKeyRows::class)();
 
-    expect(fn () => app(DeleteOrphanedForeignKeyRows::class)())->toThrow(RuntimeException::class, 'Delete failed')
-        ->and($reenabled)->toBeTrue();
+    expect(DB::table('test_posts')->count())->toBe(0)
+        ->and(DB::table('test_comments')->count())->toBe(1)
+        ->and(DB::table('test_comments')->value('post_id'))->toBeNull();
+});
+
+test('it skips orphaned rows it can’t delete, and keeps deleting the rest', function () {
+    createTestComments(fn ($foreign) => $foreign->restrictOnDelete());
+    foreach (array_chunk(range(1, 1500), 500) as $ids) {
+        DB::table('test_posts')->insert(array_map(fn (int $id) => ['id' => $id, 'author_id' => $id, 'title' => "orphan $id"], $ids));
+    }
+    DB::table('test_comments')->insert(['post_id' => 1]);
+    addTestPostsAuthorForeignKey();
+    Schema::enableForeignKeyConstraints();
+
+    // MySQL commits the test's transaction when tables are changed, so reopen it for the action's savepoints
+    if (! DB::getPdo()->inTransaction()) {
+        DB::getPdo()->beginTransaction();
+    }
+
+    app(DeleteOrphanedForeignKeyRows::class)();
+
+    expect(DB::table('test_posts')->where('id', 1)->exists())->toBeTrue()
+        ->and(DB::table('test_posts')->where('id', '>', 1000)->count())->toBe(0)
+        ->and(DB::table('test_comments')->value('post_id'))->toBe(1);
 });

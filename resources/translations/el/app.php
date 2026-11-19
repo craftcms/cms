@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'Ομάδες',
     'Guest Required' => 'Απαιτείται επισκέπτης',
     'HTML Email Template' => 'Πρότυπο email HTML',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'Εργαλείο καθαρισμού HTML',
     'Handle' => 'Αναγνωριστικό',
     'Has Descendants' => 'Has Descendants',

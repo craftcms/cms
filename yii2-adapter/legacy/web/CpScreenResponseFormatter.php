@@ -66,7 +66,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     {
         $response->format = Response::FORMAT_JSON;
 
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
 
         if ($behavior->prepareScreen) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');

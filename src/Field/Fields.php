@@ -431,7 +431,7 @@ class Fields
     /**
      * Returns a memoizable array of fields.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return MemoizableArray<FieldInterface>
      */
@@ -462,7 +462,7 @@ class Fields
     /**
      * Returns all fields within a field context(s).
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, FieldInterface> The fields
      */
@@ -474,7 +474,7 @@ class Fields
     /**
      * Returns all fields that store content in the `elements_sites.content` table.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, FieldInterface> The fields
      */
@@ -487,7 +487,7 @@ class Fields
     /**
      * Returns all fields that don’t store content in the `elements_sites.content` table.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, FieldInterface> The fields
      */
@@ -511,7 +511,7 @@ class Fields
      * @template T of FieldInterface
      *
      * @param  class-string<T>  $type  The field type
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, T> The fields
      */
@@ -557,7 +557,7 @@ class Fields
      * ```
      *
      * @param  string  $handle  The field’s handle
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
@@ -570,7 +570,7 @@ class Fields
      * Returns whether a field exists with a given handle and context.
      *
      * @param  string  $handle  The field handle
-     * @param  string|null  $context  The field context (defauts to [[\craft\services\Fields::$fieldContext]])
+     * @param  string|null  $context  The field context (defauts to [[\CraftCms\Cms\Field\Fields::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool

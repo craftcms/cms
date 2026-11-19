@@ -59,6 +59,7 @@
     type ResultRow,
   } from '../types';
   import {useCommandPaletteSearch} from '../useCommandPaletteSearch';
+  import AboutView from './AboutView.vue';
   import ConfirmView from './ConfirmView.vue';
   import DocsSearchView from './DocsSearchView.vue';
   import NotificationsView from './NotificationsView.vue';
@@ -69,6 +70,7 @@
   import {showError, showNotice} from '@/modules/messages/messages';
 
   const BUILT_IN_VIEWS: Record<string, Component> = {
+    about: AboutView,
     confirm: ConfirmView,
     docs: DocsSearchView,
     notifications: NotificationsView,
