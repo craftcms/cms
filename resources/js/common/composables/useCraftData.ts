@@ -48,6 +48,11 @@ export interface CraftData {
       handle: 'solo' | 'team' | 'pro' | 'enterprise';
       value: 0 | 1 | 2 | 3;
     };
+    /**
+     * Whether the “About Craft CMS” view has updates or trials to act on, as
+     * far as Craft knows without checking.
+     */
+    needsAttention: boolean;
   };
   site: {
     id: number;

@@ -21,6 +21,7 @@ class RequirePermissionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
+            /** @see Gate::authorize() */
             ->write(Gate::class.'::authorize(')
             ->subcompile($this->getNode('permissionName'))
             ->raw(");\n");

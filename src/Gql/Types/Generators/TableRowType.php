@@ -34,6 +34,7 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
 
         return GqlEntityRegistry::getOrCreate($typeName, fn () => new TableRow([
             'name' => $typeName,
+            'columns' => $context->columns,
             'fields' => function () use ($context, $typeName) {
                 /** @var TableField $context */
                 $contentFields = TableRow::prepareRowFieldDefinition($context->columns);

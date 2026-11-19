@@ -4,9 +4,11 @@ import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 export default css`
   :host {
     display: inline-flex;
-    padding-inline: var(--c-tab-spacing-inline, 0);
-    padding-block: var(--c-tab-spacing-block, 0.5em);
+    padding-inline: var(--c-tab-padding-inline, 0);
+    padding-block: var(--c-tab-padding-block, 0.5em);
     position: relative;
+    /* Keeps the hover fill below behind the label, but not behind the page. */
+    isolation: isolate;
     cursor: pointer;
   }
 
@@ -41,7 +43,7 @@ export default css`
 
   :host([selected])::after {
     background-color: var(
-      --c-tab-border-active,
+      --c-tab-indicator-fill-active,
       var(--c-color-accent-fill-loud)
     );
   }
@@ -49,6 +51,45 @@ export default css`
   @media (forced-colors: active) {
     :host([selected])::after {
       background-color: Highlight;
+    }
+  }
+
+  /*
+   * The hover fill, like the sidebar nav's: shorter than the tab and centered
+   * in it, so it stays clear of the strip's rule and the selected indicator.
+   * It's drawn on ::before rather than the host's background for that reason.
+   */
+  @media (hover: hover) {
+    :host(:hover:not([selected]):not([disabled]))::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      inset-block: 0;
+      /* The set height for a one-line label, growing a line at a time as the
+         label wraps: the tab's content box less one line is the extra lines. */
+      --_fill-block-size: var(--c-tab-fill-block-size, calc(30em / 14));
+      block-size: min(
+        100%,
+        max(
+          var(--_fill-block-size),
+          100% - 2 * var(--c-tab-padding-block, 0.5em) - 1lh +
+            var(--_fill-block-size)
+        )
+      );
+      margin-block: auto;
+      z-index: -1;
+      border-radius: var(--c-radius-md);
+      background-color: var(
+        --c-tab-fill-hover,
+        color-mix(in oklab, var(--c-color-mix-hover), transparent)
+      );
+    }
+  }
+
+  /* Forced colors drop the fill, so a hovered tab shows the indicator instead. */
+  @media (forced-colors: active) {
+    :host(:hover:not([selected]):not([disabled]))::after {
+      background-color: CanvasText;
     }
   }
 

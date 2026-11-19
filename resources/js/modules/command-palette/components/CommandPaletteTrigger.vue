@@ -38,5 +38,6 @@
   /* Matches the other icons around the content (see cp.css). */
   .command-palette-trigger {
     --c-icon-size: var(--cp-chrome-icon-size, 1em);
+    margin-inline: -6.5px;
   }
 </style>

@@ -13,6 +13,7 @@
   import InstallingScreen from '@/modules/install/components/InstallingScreen.vue';
   import Modal from '@/common/components/Modal.vue';
   import StepScreen from '@/modules/install/components/StepScreen.vue';
+  import type {SelectItem} from '@/common/types';
 
   type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
   type InstallFormStep = 'account' | 'db' | 'site';
@@ -42,6 +43,7 @@
       name: string;
       baseUrl: string;
       language: string;
+      timezone: string;
     };
   };
 
@@ -51,11 +53,13 @@
       driver: DbDriver;
     };
     dbDefaults: Record<DbDriver, DbDefaults>;
-    localeOptions?: Array<{id: string; name: string; selected: boolean}>;
+    localeOptions?: Array<{id: string; value: string; label: string}>;
+    timezoneOptions?: Array<SelectItem>;
     licenseHtml?: string;
     defaultSystemName: string;
     defaultSiteUrl: string;
     defaultSiteLanguage: string;
+    defaultTimezone: string | null;
     showDbScreen: boolean;
   }>();
 
@@ -68,14 +72,6 @@
     goToPrevious,
     isCurrent,
   } = useInstall({showDbScreen: () => props.showDbScreen});
-
-  const siteLocaleOptions = computed(() =>
-    (props.localeOptions ?? []).map((option) => ({
-      id: option.id,
-      label: option.name,
-      value: option.id,
-    }))
-  );
 
   function beginInstall() {
     goTo('license');
@@ -114,7 +110,20 @@
       name: props.defaultSystemName,
       baseUrl: props.defaultSiteUrl,
       language: props.defaultSiteLanguage,
+      timezone:
+        props.defaultTimezone ??
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
+  });
+
+  /**
+   * Leaves out the database settings when the database screen was skipped
+   * because the configured connection already works, so the install keeps it.
+   */
+  const installData = computed(() => {
+    const {account, db, site} = formData.data();
+
+    return props.showDbScreen ? {account, db, site} : {account, site};
   });
 
   const modalActive = computed(() => !isCurrent('start'));
@@ -159,7 +168,7 @@
       <craft-button
         type="button"
         @click="beginInstall"
-        variant="accent"
+        variant="primary"
         class="begin-button"
       >
         {{ t('Install Craft CMS') }}
@@ -171,6 +180,7 @@
       :is-active="modalActive"
       :label="t('Install Craft CMS')"
       :overlay="false"
+      :hold-height="false"
       width="2xl"
     >
       <!-- License screen -->
@@ -193,7 +203,7 @@
           <div slot="actions" class="flex justify-center w-full">
             <craft-button
               type="button"
-              variant="accent"
+              variant="primary"
               @click="goTo('account')"
             >
               {{ t('Got it') }}
@@ -204,7 +214,7 @@
 
       <!-- Installing -->
       <template v-else-if="isCurrent('installing')">
-        <InstallingScreen :data="formData" @success="goToNext()" />
+        <InstallingScreen :data="installData" @success="goToNext()" />
       </template>
 
       <!-- Form screens -->
@@ -255,7 +265,7 @@
               v-if="isCurrent('site')"
               class="screen"
             >
-              <Deferred data="localeOptions">
+              <Deferred :data="['localeOptions', 'timezoneOptions']">
                 <template #fallback>
                   <craft-spinner></craft-spinner>
                 </template>
@@ -264,7 +274,9 @@
                   v-model:name="formData.site.name"
                   v-model:base-url="formData.site.baseUrl"
                   v-model:language="formData.site.language"
-                  :locale-options="siteLocaleOptions"
+                  v-model:timezone="formData.site.timezone"
+                  :locale-options="localeOptions ?? []"
+                  :timezone-options="timezoneOptions ?? []"
                   :errors="errors.site"
                 />
               </Deferred>
@@ -300,7 +312,7 @@
               <craft-button
                 class="justify-self-end"
                 type="submit"
-                variant="accent"
+                variant="primary"
                 .loading="formData.processing"
               >
                 {{ current.submitLabel ?? t('Next') }}

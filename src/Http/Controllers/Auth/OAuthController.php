@@ -104,7 +104,7 @@ readonly class OAuthController extends AuthenticationController
                 );
             }
 
-            if ($isNew && $definition->activatesUsers) {
+            if ($isNew && $definition->controlsAccess) {
                 $user->active = true;
                 $user->pending = false;
             }
@@ -115,7 +115,7 @@ readonly class OAuthController extends AuthenticationController
 
             if (
                 ! $isNew &&
-                $definition->activatesUsers &&
+                $definition->controlsAccess &&
                 $user->getStatus() !== User::STATUS_ACTIVE
             ) {
                 $users->activateUser($user);
@@ -143,6 +143,12 @@ readonly class OAuthController extends AuthenticationController
                 );
             }
 
+            /*
+             * Skipping Craft's two-step verification here is intentional, not a bypass. Craft fully trusts
+             * the OAuth provider's authentication, so users who sign in through a provider aren't asked for
+             * a Craft 2FA code, even when they have a 2FA method set up. MFA for these sign-ins belongs to
+             * the provider, and sites that need it should only configure providers that enforce it.
+             */
             return $this->finalizeLogin($request, $user, true, skipTwoFactor: true);
         } catch (InvalidElementException $e) {
             /** @var User $user */

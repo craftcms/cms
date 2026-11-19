@@ -156,6 +156,30 @@ describe('craft-input-search', () => {
     expect(parseFloat(style.outlineOffset)).toBeGreaterThanOrEqual(0);
   });
 
+  it('keeps room for the search icon and clear button in a table cell', async () => {
+    const element = await render(`
+      <table class="cp-table cp-table--editable">
+        <tr><td><craft-input-search style="width: 300px"></craft-input-search></td></tr>
+      </table>`);
+    await type(element, 'foo');
+    const input = element.querySelector('input')!;
+    const inputBox = input.getBoundingClientRect();
+    const style = getComputedStyle(input);
+    const icon = element
+      .querySelector(':scope > craft-icon[slot="prefix"]')!
+      .getBoundingClientRect();
+    const button = element
+      .querySelector(':scope > [data-search-clear]')!
+      .getBoundingClientRect();
+
+    expect(icon.right).toBeLessThanOrEqual(
+      inputBox.left + parseFloat(style.paddingInlineStart)
+    );
+    expect(button.left).toBeGreaterThanOrEqual(
+      inputBox.right - parseFloat(style.paddingInlineEnd)
+    );
+  });
+
   it('keeps other suffix content in its own segment, with an inset focus ring', async () => {
     const element = await render(`
       <craft-input-search style="width: 300px">

@@ -64,7 +64,7 @@ readonly class LoginController extends AuthenticationController
                 'action' => $request->isCpRequest() ? route('craft.cp.login.attempt') : action_url('users/login'),
             ],
             data: [
-                'action' => $request->isCpRequest() ? route('craft.cp.login.attempt') : action([self::class, 'attemptLogin']),
+                'action' => $request->isCpRequest() ? route('craft.cp.login.attempt') : action_url('users/login'),
                 'oauthLoginButtons' => $oauthLoginButtons,
             ],
         );

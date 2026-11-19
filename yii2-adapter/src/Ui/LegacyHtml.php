@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\InputNamespace;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
@@ -304,6 +305,126 @@ class LegacyHtml
         parse_str(implode('&', $parts), $expanded);
 
         return $expanded;
+    }
+
+    /**
+     * Returns a field's value from the flat input map its legacy HTML captured, or `$value` itself when it isn't one.
+     *
+     * A nested field's legacy HTML submits that map as-is until its inputs are edited, such as when a sibling Matrix
+     * entry changes, rather than the expanded value its inputs post.
+     *
+     * @param string|null $paramNamespace The element's field param namespace, such as `fields.links.entries.uid:<uid>.fields`
+     */
+    public function capturedFieldValue(mixed $value, string $handle, ?string $paramNamespace = null): mixed
+    {
+        if (!is_array($value) || $value === [] || array_is_list($value)) {
+            return $value;
+        }
+
+        $root = null;
+        $inputs = [];
+
+        foreach ($value as $name => $item) {
+            $segments = is_string($name) ? $this->inputSegments($name) : null;
+            // Requests convert empty strings to null, including in lists
+            $item = is_array($item) ? array_map(fn(mixed $option) => $option ?? '', $item) : $item ?? '';
+            $isInputValue = is_string($item) || (is_array($item) && array_is_list($item) && array_all($item, fn(mixed $option) => is_string($option)));
+
+            if ($segments === null || !$isInputValue) {
+                return $value;
+            }
+
+            $inputs[] = [$segments, $item];
+
+            $length = 0;
+
+            while (isset($segments[$length]) && ($root === null || ($root[$length] ?? null) === $segments[$length])) {
+                $length++;
+            }
+
+            $root = array_slice($segments, 0, $length);
+        }
+
+        // The field's inputs are named after the request param it's posted to, with nested entries keyed by their bare UID
+        $valueIndex = null;
+
+        if ($paramNamespace !== null) {
+            $path = [
+                ...array_map(fn(string $segment) => Str::chopStart($segment, 'uid:'), explode('.', $paramNamespace)),
+                $handle,
+            ];
+
+            if (array_slice($root, 0, count($path)) === $path) {
+                $valueIndex = count($path);
+            }
+        }
+
+        // Without it, the field's path is taken to end at the last `[fields][<handle>]` pair its inputs share
+        if ($valueIndex === null) {
+            foreach ($root as $index => $segment) {
+                if ($index > 0 && $segment === $handle && $root[$index - 1] === 'fields') {
+                    $valueIndex = $index + 1;
+                }
+            }
+        }
+
+        if ($valueIndex === null) {
+            return $value;
+        }
+
+        // Unlike `parse_str()`, this isn't limited to `max_input_vars` inputs
+        $field = null;
+
+        foreach ($inputs as [$segments, $item]) {
+            foreach ((array) $item as $option) {
+                $this->setInputValue($field, array_slice($segments, $valueIndex), $option);
+            }
+        }
+
+        return $field;
+    }
+
+    /**
+     * Returns the segments of a bracketed input name, as `parse_str()` reads them, with `''` for list appends.
+     *
+     * @return list<string>|null
+     */
+    private function inputSegments(string $name): ?array
+    {
+        if (!preg_match('/^([^\[\]]+)((?:\[[^\[\]]*\])+)$/', $name, $match)) {
+            return null;
+        }
+
+        preg_match_all('/\[([^\[\]]*)\]/', $match[2], $keys);
+
+        return [str_replace(['.', ' '], '_', $match[1]), ...$keys[1]];
+    }
+
+    /**
+     * Sets an input's value at its path, as `parse_str()` does.
+     *
+     * @param list<string> $path
+     */
+    private function setInputValue(mixed &$target, array $path, string $value): void
+    {
+        if ($path === []) {
+            $target = $value;
+
+            return;
+        }
+
+        if (!is_array($target)) {
+            $target = [];
+        }
+
+        $segment = array_shift($path);
+
+        if ($segment === '') {
+            $target[] = null;
+            $segment = array_key_last($target);
+        }
+
+        $this->setInputValue($target[$segment], $path, $value);
     }
 
     /** @param array<string, string|list<string>> $values */

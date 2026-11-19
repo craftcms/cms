@@ -11,6 +11,7 @@ import {
   overlayModifiers,
   showLayer,
   supportsPopover,
+  placementForDirection,
 } from '../../utilities/overlay-layer.js';
 import {uniqueId} from '../../utilities/unique-id.js';
 
@@ -66,6 +67,7 @@ export default class CraftTooltip extends LitElement {
         width: max-content;
         max-inline-size: var(--c-tooltip-max-width, min(45ch, 100vw - 2rem));
         overflow-wrap: break-word;
+        white-space: normal;
       }
     `,
   ];
@@ -511,7 +513,7 @@ export default class CraftTooltip extends LitElement {
       // Position relative to the viewport, which is also what the top layer
       // places against.
       strategy: 'fixed' as const,
-      placement: this.placement as PopperInstance['state']['placement'],
+      placement: placementForDirection(this.placement, this),
       // craft-popover's default distance, so a tooltip lines up with a flyout
       // opened from the same row.
       modifiers: overlayModifiers(4),

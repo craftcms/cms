@@ -263,6 +263,14 @@ export function onPageActions(crumbs: BreadcrumbItem[]): CommandPaletteItem[] {
       view: {type: 'shortcuts'},
     },
     {
+      id: 'about-craft',
+      label: t('About Craft CMS'),
+      description: t('Help'),
+      icon: 'custom-icons/craft-cms',
+      keywords: 'version edition license trial',
+      view: {type: 'about'},
+    },
+    {
       id: 'search-docs',
       label: t('Search Craft CMS documentation'),
       description: t('Help'),

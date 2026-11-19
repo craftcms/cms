@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
@@ -374,9 +375,10 @@ abstract class ContentIndexViewModel extends ViewModel
     /**
      * The status menu's options: All, the element statuses, then Drafts and
      * Trashed. Element types without statuses only get All, Drafts and
-     * Trashed, since filtering by status is a no-op for them.
+     * Trashed, since filtering by status is a no-op for them. A status defined
+     * with a `label` and `color` passes its color on to the option.
      *
-     * @return list<array{label: string, value: string, icon?: string}>
+     * @return list<array{label: string, value: string, icon?: string, color?: string}>
      */
     public function statusOptions(): array
     {
@@ -391,7 +393,19 @@ abstract class ContentIndexViewModel extends ViewModel
             ['label' => t('All'), 'value' => ''],
             ...($showStatusMenu
                 ? collect($this->elementType::statuses())
-                    ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+                    ->map(function ($status, $value) {
+                        if (! is_array($status)) {
+                            return ['label' => $status, 'value' => $value];
+                        }
+
+                        $color = $status['color'] ?? null;
+
+                        return array_filter([
+                            'label' => $status['label'] ?? ucfirst((string) $value),
+                            'value' => $value,
+                            'color' => $color instanceof Color ? $color->value : $color,
+                        ], fn ($option) => $option !== null);
+                    })
                     ->values()
                     ->all()
                 : []),
@@ -730,9 +744,10 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * Selectable columns: common attributes plus the source's field columns.
+     * Selectable columns: common attributes plus the source's field columns,
+     * with how each one's values align (numbers align to the end).
      *
-     * @return array<int, array{label: string, value: string}>
+     * @return array<int, array{label: string, value: string, align: 'start'|'end'}>
      */
     public function tableColumns(): array
     {
@@ -1102,6 +1117,7 @@ abstract class ContentIndexViewModel extends ViewModel
                 ->map(fn (array $attribute, string $key): array => [
                     'label' => $attribute['label'],
                     'value' => $key,
+                    'align' => $attribute['align'] ?? 'start',
                 ])
                 ->values()
                 ->all();

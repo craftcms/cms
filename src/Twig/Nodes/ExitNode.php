@@ -35,6 +35,7 @@ class ExitNode extends Node
 
             $compiler->raw(");\n");
         } else {
+            /** @see TemplateExitException */
             $compiler->write(sprintf("throw new \\%s;\n", TemplateExitException::class));
         }
     }

@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Crypt;
@@ -282,9 +283,15 @@ it('sets no-cache headers for responses that contain the CSRF token', function (
 it('keeps cache headers for responses without the CSRF token', function () {
     TemplateMode::set(TemplateMode::Site);
 
-    Route::middleware(['web', 'craft', 'craft.web'])->get('cached-page', fn () => app(TemplateManager::class)->renderString('{{ csrfInput({async: true}) }}{% expires in 1 hour %}'));
+    PreventRequestForgery::useOriginOnly();
 
-    $response = $this->get('/cached-page')->assertOk();
+    Route::middleware(['web', 'craft', 'craft.web'])->get('cached-page', fn () => app(TemplateManager::class)->renderString('{{ csrfInput() }}{% expires in 1 hour %}'));
+
+    try {
+        $response = $this->get('/cached-page')->assertOk();
+    } finally {
+        PreventRequestForgery::useOriginOnly(false);
+    }
 
     expect($response->headers->get('Cache-Control'))->toBe('max-age=3600, public');
 });

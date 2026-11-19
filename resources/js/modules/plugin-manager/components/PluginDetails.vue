@@ -49,6 +49,10 @@
           class="license-key-status"
           :status="plugin.licenseIssues.length === 0 ? 'valid' : 'invalid'"
         />
+        <span v-if="plugin.pluginStoreUrl" class="sr-only">
+          {{ plugin.name }}, {{ t('Plugin Store') }},
+          {{ t('Opens in a new window') }}
+        </span>
       </component>
     </div>
     <div>

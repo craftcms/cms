@@ -181,6 +181,21 @@ describe('Vue table rows', () => {
     expect(referencedText(input, 'aria-labelledby')).toContain('Required');
   });
 
+  it('treats column widths without a unit as pixels, as Craft 5 did', async () => {
+    await mountTable(false, undefined, {
+      columns: {
+        title: {type: 'singleline', heading: 'Title', width: ' 25 '},
+        count: {type: 'number', heading: 'Count', width: 75},
+        url: {type: 'url', heading: 'URL', width: '40%'},
+      },
+    });
+
+    const widths = [...form.querySelectorAll<HTMLElement>('thead th')]
+      .slice(0, 3)
+      .map((th) => th.style.width);
+    expect(widths).toEqual(['25px', '75px', '40%']);
+  });
+
   it.each([
     {includeRowId: true, field: 'rowId'},
     {includeRowId: 'uid', field: 'uid'},

@@ -32,6 +32,10 @@ class ProfileNode extends Node
     public function compile(Compiler $compiler): void
     {
         $compiler
+            /**
+             * @see TemplateProfiler::beginProfile()
+             * @see TemplateProfiler::endProfile()
+             */
             ->write(sprintf("app('%s')->%sProfile(", TemplateProfiler::class, $this->getAttribute('stage')))
             ->repr($this->getAttribute('type'))
             ->raw(', ')

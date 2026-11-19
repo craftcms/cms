@@ -87,8 +87,6 @@ class CustomField extends BaseField
 
     private ?FieldInterface $_field = null;
 
-    private ?FieldInterface $_sourceField = null;
-
     private ?string $_fieldUid = null;
 
     private ?string $_originalName = null;
@@ -495,7 +493,6 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
-        $this->_sourceField = $field;
         $this->_field = clone $field;
         $this->_fieldUid = $this->_field->uid;
         $this->_field->layoutElement = $this;
@@ -530,7 +527,6 @@ class CustomField extends BaseField
     {
         $this->_fieldUid = $uid;
         $this->_field = null;
-        $this->_sourceField = null;
 
         $this->getLayout()?->reset();
     }
@@ -907,12 +903,10 @@ class CustomField extends BaseField
     protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         try {
-            $this->getField();
+            $field = $this->getField();
         } catch (FieldNotFoundException) {
             return null;
         }
-
-        $field = $this->_sourceField;
 
         if ($field instanceof MissingField) {
             return MissingControl::make(['fields', $this->attribute()])

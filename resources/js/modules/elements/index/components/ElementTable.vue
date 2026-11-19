@@ -214,6 +214,7 @@
     :reorderable="reorderable && !structure"
     :interactions-disabled="interactionsDisabled"
     :placeholder-rows="placeholderRows"
+    :align-columns="!inlineEditing"
     :leading-column-tracks="leadingColumnTracks"
     :row-attributes="rowAttributes"
     :row-behavior="itemBehavior"

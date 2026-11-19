@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -46,7 +48,23 @@ describe('renderViewWithFallback', function () {
 
             get('/member/login')
                 ->assertOk()
-                ->assertSeeText('site-login-template '.action([LoginController::class, 'attemptLogin']));
+                ->assertSeeText('site-login-template '.action_url('users/login'));
+        });
+
+        test('renders the site template within each site’s base path, posting to that site', function () {
+            Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
+            Sites::refreshSites();
+            Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
+            File::ensureDirectoryExists($this->templatesDir.'/member');
+            File::put($this->templatesDir.'/member/login.twig', 'site-login-template {{ action }}');
+
+            get('https://localhost/member/login')
+                ->assertOk()
+                ->assertSeeText('site-login-template https://localhost/actions/users/login');
+
+            get('https://localhost/fr/member/login')
+                ->assertOk()
+                ->assertSeeText('site-login-template https://localhost/fr/actions/users/login');
         });
 
         test('falls back to the Inertia page with shared props when no site template exists', function () {
