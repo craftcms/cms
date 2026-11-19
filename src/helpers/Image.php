@@ -464,15 +464,29 @@ class Image
         $bytesRead = 2;
 
         while ($xmp === null || $iptc === null) {
-            $header = stream_get_contents($stream, 4);
-
-            if ($header === false || strlen($header) < 4 || $header[0] !== "\xFF") {
+            if (stream_get_contents($stream, 1) !== "\xFF") {
                 break;
             }
 
-            $type = ord($header[1]);
-            $length = unpack('n', $header, 2)[1] - 2;
-            $bytesRead += 4 + $length;
+            // Markers can be preceded by any number of 0xFF fill bytes
+            $type = 0xFF;
+            while ($type === 0xFF && $bytesRead <= self::MAX_METADATA_STREAM_BYTES) {
+                $byte = fgetc($stream);
+                if ($byte === false) {
+                    break 2;
+                }
+                $type = ord($byte);
+                $bytesRead++;
+            }
+
+            $lengthBytes = stream_get_contents($stream, 2);
+
+            if ($lengthBytes === false || strlen($lengthBytes) < 2) {
+                break;
+            }
+
+            $length = unpack('n', $lengthBytes)[1] - 2;
+            $bytesRead += 3 + $length;
 
             // Stop at the image data, at the end of the file, or once the read would pass the limit
             if ($type === 0xDA || $type === 0xD9 || $length < 0 || $bytesRead > self::MAX_METADATA_STREAM_BYTES) {
