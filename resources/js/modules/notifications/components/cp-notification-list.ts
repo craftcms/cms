@@ -30,14 +30,12 @@ class CpNotificationList extends LitElement {
       display: block;
     }
 
-    /* Spaced like the dashboard's entry lists: 12px between items, and
-       between the first and last and the list's edges. Padding rather than a
-       gap, so the command palette can trim it through the item parts. */
+    /* Padding rather than a gap, so the command palette can trim it through the item parts. */
     .notification-item {
       position: relative;
       display: block;
       padding-block: calc(var(--c-spacing) * 1.5);
-      padding-inline: calc(var(--c-spacing) * 4);
+      padding-inline: var(--c-spacing-lg);
     }
 
     .notification-item:first-child {
@@ -52,17 +50,10 @@ class CpNotificationList extends LitElement {
       opacity: 0.7;
     }
 
-    /* A notification that links somewhere is tinted on hover, as a plain
-       button is, and its title underlined. Not while the pointer is on one
-       of its own buttons, which do something else. */
     .notification-item:has(.notification-card-link):hover:not(
       :has(craft-button:hover)
     ) {
-      background-color: color-mix(
-        in oklab,
-        var(--c-color-mix-hover),
-        transparent
-      );
+      background-color: color-mix(in oklab, currentColor 5%, transparent);
 
       .notification-title {
         text-decoration-line: underline;
@@ -95,8 +86,6 @@ class CpNotificationList extends LitElement {
       line-height: 1.25;
     }
 
-    /* The media item draws its supporting text quiet; a message is what the
-       notification says, so it's drawn as body text. */
     .notification-message {
       position: relative;
       color: var(--c-text-default);
@@ -116,7 +105,7 @@ class CpNotificationList extends LitElement {
       flex-wrap: wrap;
       align-items: center;
       gap: var(--c-spacing-sm);
-      margin-block-start: calc(var(--c-spacing) * 0.5);
+      margin-block-start: var(--c-spacing-xs);
     }
 
     .notification-mark-read {

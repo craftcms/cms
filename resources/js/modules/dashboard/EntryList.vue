@@ -78,7 +78,7 @@
         <span v-if="$slots.details">
           <slot name="details" :item="item" />
         </span>
-        <div v-if="$slots.aside" slot="aside" class="entry-list__aside">
+        <div v-if="$slots.aside" slot="suffix">
           <slot name="aside" :item="item" />
         </div>
       </craft-media-item>
@@ -111,10 +111,5 @@
     .entry-list__thumb
     :deep(.icon-thumb[data-color]) {
     color: var(--c-color-neutral-fill-loud);
-  }
-
-  .entry-list__aside {
-    display: flex;
-    align-items: center;
   }
 </style>

@@ -831,8 +831,6 @@ Content: the secondary nav, content, and details panes
     min-height: calc(var(--cp-footer-height) + 1px);
   }
 
-  /* On phones the panel runs edge to edge, with square corners, keeping its
-     shadow. Beside the details rail, the corner next to it stays rounded. */
   @media (width < var(--breakpoint-sm)) {
     .cp-body {
       --cp-body-inset: 0px;

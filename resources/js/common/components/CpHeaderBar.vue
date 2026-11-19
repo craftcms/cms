@@ -301,8 +301,7 @@
     margin-inline-start: 1px;
   }
 
-  /* In line with a secondary nav's labels: past the panel's inset, the nav's
-     padding, and a nav item's 1px border and padding. */
+  /* In line with a secondary nav's labels. */
   .cp-header-bar__crumbs--indented {
     margin-inline-start: calc(
       var(--cp-body-inset) + var(--c-spacing-md) * 2 + 1px

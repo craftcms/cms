@@ -1,6 +1,10 @@
-import type {CSSResultGroup, PropertyValues} from 'lit';
+import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
-import {property, state} from 'lit/decorators.js';
+import {property} from 'lit/decorators.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController';
 import '../icon/icon.js';
 import styles from './media-item.styles.js';
 
@@ -16,14 +20,14 @@ import styles from './media-item.styles.js';
  * @slot thumbnail - An image or thumbnail, cropped to a 40px square. Without
  * one, `icon` is drawn in its place.
  * @slot heading - The item's name, such as a link to it.
- * @slot aside - Content at the item's end, such as an avatar or a button.
+ * @slot suffix - Content at the item's end, such as an avatar or a button.
  *
  * @csspart base - The item's layout wrapper.
  * @csspart thumbnail - The 40px square holding the thumbnail or icon.
- * @csspart text - The wrapper around the heading and supporting text.
+ * @csspart content - The wrapper around the heading and supporting text.
  * @csspart heading - The heading region.
- * @csspart details - The supporting text region.
- * @csspart aside - The region at the item's end.
+ * @csspart body - The supporting text region.
+ * @csspart suffix - The region at the item's end.
  *
  * @cssproperty [--c-media-item-thumbnail-size=calc(40rem / 16)] - The thumbnail square’s size.
  */
@@ -36,57 +40,25 @@ export default class CraftMediaItem extends LitElement {
   /** Keeps the heading and supporting text to one line each, ending in an ellipsis. */
   @property({type: Boolean, reflect: true}) truncate = false;
 
-  @state() private _hasThumbnail = false;
+  /**
+   * Regions render only when they have something in them, so their slots
+   * can't report their own changes. The controller re-renders the item
+   * whenever its light DOM changes.
+   */
+  private _lightDom = new LightDomController(this, {characterData: true});
 
-  @state() private _hasHeading = false;
-
-  @state() private _hasDetails = false;
-
-  @state() private _hasAside = false;
-
-  private _lightDomObserver = new MutationObserver(() =>
-    this._syncSlotPresence()
-  );
-
-  override connectedCallback() {
-    super.connectedCallback();
-    this._syncSlotPresence();
-    this._lightDomObserver.observe(this, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['slot'],
-    });
-  }
-
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this._lightDomObserver.disconnect();
-  }
-
-  protected override willUpdate(changed: PropertyValues<this>) {
-    super.willUpdate(changed);
-    if (!this.hasUpdated) {
-      this._syncSlotPresence();
-    }
-  }
-
-  private _syncSlotPresence() {
-    this._hasThumbnail = !!this.querySelector(':scope > [slot="thumbnail"]');
-    this._hasHeading = !!this.querySelector(':scope > [slot="heading"]');
-    this._hasAside = !!this.querySelector(':scope > [slot="aside"]');
-    this._hasDetails = [...this.childNodes].some((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return !!node.textContent?.trim();
-      }
-
-      return node instanceof HTMLElement && !node.slot;
-    });
+  /** Whether the default slot has an element or non-blank text in it. */
+  private _hasBody(): boolean {
+    return (
+      hasSlotted(this, '') ||
+      [...this.childNodes].some(
+        (node) => node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim()
+      )
+    );
   }
 
   private _renderThumbnail() {
-    if (this._hasThumbnail) {
+    if (hasSlotted(this, 'thumbnail')) {
       return html`<div class="media-item__thumbnail" part="thumbnail">
         <slot name="thumbnail"></slot>
       </div>`;
@@ -108,21 +80,21 @@ export default class CraftMediaItem extends LitElement {
     return html`
       <div class="media-item" part="base">
         ${this._renderThumbnail()}
-        <div class="media-item__text" part="text">
-          ${this._hasHeading
+        <div class="media-item__content" part="content">
+          ${hasSlotted(this, 'heading')
             ? html`<div class="media-item__heading" part="heading">
                 <slot name="heading"></slot>
               </div>`
             : nothing}
-          ${this._hasDetails
-            ? html`<div class="media-item__details" part="details">
+          ${this._hasBody()
+            ? html`<div class="media-item__body" part="body">
                 <slot></slot>
               </div>`
             : nothing}
         </div>
-        ${this._hasAside
-          ? html`<div class="media-item__aside" part="aside">
-              <slot name="aside"></slot>
+        ${hasSlotted(this, 'suffix')
+          ? html`<div class="media-item__suffix" part="suffix">
+              <slot name="suffix"></slot>
             </div>`
           : nothing}
       </div>

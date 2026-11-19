@@ -387,9 +387,7 @@
     background-color: transparent;
   }
 
-  /* Below lg, its tabs center under the header's 24px avatar, which sits the
-     header's padding from the edge. Wider, the header gives the avatar a box
-     as wide as the rail. */
+  /* Centers the tabs under the header's 24px avatar. */
   @media (width < var(--breakpoint-lg)) {
     .details-panels__rail--detached {
       --_rail-padding-inline: calc(

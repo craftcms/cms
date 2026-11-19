@@ -8,7 +8,7 @@ import {
   setNotifications,
 } from '../store';
 
-import '@craftcms/ui/components/badge-indicator/badge-indicator';
+import {badgeIndicatorCutoutStyles} from '@craftcms/ui/components/badge-indicator/badge-indicator';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/popover/popover';
@@ -34,20 +34,14 @@ class CpNotificationCenter extends LitElement {
       translate: 0 1.5px;
     }
 
-    /* Cut away around the dot rather than ringing it, so whatever's behind
-       the button shows through in every state. Centered on the dot, 2px
-       wider than it. */
-    .notification-trigger__icon--dotted {
-      --_cutout-x: calc(100% - 2px);
-      mask-image: radial-gradient(
-        circle at var(--_cutout-x) -2px,
-        transparent 6px,
-        #000 6.5px
-      );
+    .notification-trigger__icon--indicated {
+      --c-badge-indicator-cutout-x: calc(100% - 2px);
+      --c-badge-indicator-cutout-y: -2px;
+      ${badgeIndicatorCutoutStyles}
     }
 
-    .notification-trigger__icon--dotted:dir(rtl) {
-      --_cutout-x: 2px;
+    .notification-trigger__icon--indicated:dir(rtl) {
+      --c-badge-indicator-cutout-x: 2px;
     }
 
     .notification-trigger__badge {
@@ -158,7 +152,7 @@ class CpNotificationCenter extends LitElement {
           <span slot="prefix">
             <craft-icon
               class="notification-trigger__icon ${this.#unread.length
-                ? 'notification-trigger__icon--dotted'
+                ? 'notification-trigger__icon--indicated'
                 : ''}"
               name="bell"
             ></craft-icon>

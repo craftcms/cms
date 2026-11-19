@@ -420,7 +420,6 @@ describe('plain', () => {
 
 describe('link', () => {
   async function mountLink(decoration = ''): Promise<CraftButton> {
-    // With the tokens the CP supplies, which its padding and flush come from.
     document.body.innerHTML = `<div class="frame" style="display: flex; align-items: flex-start; font: 16px/normal sans-serif; --c-size-control-sm: 24px; --c-spacing-sm: 6px; --c-text-link: rgb(200, 100, 0); ${decoration}"><craft-button variant="link" size="small" style="box-sizing: border-box">Mark as read</craft-button></div>`;
     const button = document.querySelector('craft-button') as CraftButton;
     await button.updateComplete;
@@ -484,7 +483,6 @@ describe('link', () => {
     const frame = document.querySelector('.frame')!;
     const text = document.createRange();
     text.selectNodeContents(button);
-    const s = getComputedStyle(button);
 
     expect(text.getBoundingClientRect().left).toBeCloseTo(
       frame.getBoundingClientRect().left,

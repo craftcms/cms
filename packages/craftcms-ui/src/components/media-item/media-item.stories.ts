@@ -61,12 +61,12 @@ export const Thumbnail: Story = {
 };
 
 /** Content at the item's end, such as the author's avatar. */
-export const Aside: Story = {
+export const Suffix: Story = {
   render: () => html`
     <craft-media-item icon="newspaper" style="max-width: 22rem;">
       <a slot="heading" href="#">Museum shop launches online</a>
       Nov 1, 2026 · News articles
-      <craft-avatar slot="aside" label="Sam Wilson"></craft-avatar>
+      <craft-avatar slot="suffix" label="Sam Wilson"></craft-avatar>
     </craft-media-item>
   `,
 };

@@ -30,7 +30,7 @@
         <EditionBadge
           :edition="info.edition"
           class="about-craft-trigger__badge"
-          :class="{'about-craft-trigger__badge--dotted': app.needsAttention}"
+          :class="{'about-craft-trigger__badge--indicated': app.needsAttention}"
         />
         <craft-badge-indicator
           v-if="app.needsAttention"
@@ -64,23 +64,22 @@
     display: inline-flex;
   }
 
-  /* Cut away around the dot rather than ringing it, so whatever's behind the
-     button shows through in every state. Centered on the dot, 2px wider than
-     it. */
-  .about-craft-trigger__badge--dotted {
-    --_cutout-x: calc(100% - 2px);
+  /* Mirrors badgeIndicatorCutoutStyles, which a scoped style can't import. */
+  .about-craft-trigger__badge--indicated {
+    --c-badge-indicator-cutout-x: calc(100% - 2px);
+    --c-badge-indicator-cutout-y: 2px;
     mask-image: radial-gradient(
-      circle at var(--_cutout-x) 2px,
+      circle at var(--c-badge-indicator-cutout-x)
+        var(--c-badge-indicator-cutout-y),
       transparent 6px,
       #000 6.5px
     );
 
     &:dir(rtl) {
-      --_cutout-x: 2px;
+      --c-badge-indicator-cutout-x: 2px;
     }
   }
 
-  /* Within the button's top corner. */
   .about-craft-trigger__dot {
     position: absolute;
     inset-block-start: -2px;

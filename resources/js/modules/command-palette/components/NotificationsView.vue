@@ -77,8 +77,7 @@
 </template>
 
 <style scoped>
-  /* Reaches past the view's padding to its edges, so a notification's hover
-     fill does, while its content still lines up with the view's heading. */
+  /* Bleeds to the view's edges, so a notification's hover fill does too. */
   .command-palette-notifications__list {
     margin-inline: calc(var(--c-modal-padding) * -1);
   }

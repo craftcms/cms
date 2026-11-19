@@ -530,7 +530,13 @@ export default css`
 
   :host([variant~='link']:not([inherit])),
   :host([variant~='link'][inherit]) {
-    --c-color-fill-loud: color-mix(in srgb, var(--_link-tint) 12%, transparent);
+    --c-color-mix-hover: var(--_link-tint) 5%;
+    --c-color-mix-active: var(--_link-tint) 12%;
+    --c-color-fill-loud: color-mix(
+      in srgb,
+      var(--c-color-mix-active),
+      transparent
+    );
     --c-color-on-loud: var(--_link-color);
     --c-color-border-loud: transparent;
   }
@@ -538,7 +544,11 @@ export default css`
   @media (hover: hover) {
     :host([variant~='link']:not(:disabled):not(.loading):hover) {
       color: var(--_link-color);
-      background-color: color-mix(in srgb, var(--_link-tint) 5%, transparent);
+      background-color: color-mix(
+        in srgb,
+        var(--c-color-mix-hover),
+        transparent
+      );
     }
   }
 
@@ -549,7 +559,11 @@ export default css`
     [variant~='link'][slot='invoker'][aria-expanded='true']:not(:disabled)
   ) {
     color: var(--_link-color);
-    background-color: color-mix(in srgb, var(--_link-tint) 12%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--c-color-mix-active),
+      transparent
+    );
     box-shadow: none;
   }
 

@@ -1,5 +1,6 @@
 import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
+import {badgeIndicatorCutoutStyles} from '../badge-indicator/badge-indicator.styles.js';
 
 export default css`
   :host {
@@ -97,21 +98,18 @@ export default css`
   }
 
   .nav-item__prefix--indicated {
-    --_cutout-x: calc(50% + 6px);
+    --c-badge-indicator-cutout-x: calc(50% + 6px);
+    --c-badge-indicator-cutout-y: calc(50% + 6px);
   }
 
   .nav-item__prefix--indicated:dir(rtl) {
-    --_cutout-x: calc(50% - 6px);
+    --c-badge-indicator-cutout-x: calc(50% - 6px);
   }
 
   .nav-item__prefix--indicated .nav-icon,
   .nav-item__prefix--indicated .nav-item__initial,
   .nav-item__prefix--indicated ::slotted([slot='icon']) {
-    mask-image: radial-gradient(
-      circle at var(--_cutout-x) calc(50% + 6px),
-      transparent 6px,
-      #000 6.5px
-    );
+    ${badgeIndicatorCutoutStyles}
   }
 
   .nav-item__prefix craft-button,

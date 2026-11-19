@@ -632,9 +632,10 @@ export default class CraftNavItem extends LitElement {
 
     return html`
       <span
-        class="nav-item__prefix ${this.indicator
-          ? 'nav-item__prefix--indicated'
-          : ''}"
+        class="${classMap({
+          'nav-item__prefix': true,
+          'nav-item__prefix--indicated': this.indicator,
+        })}"
       >
         <slot name="prefix">
           <slot name="icon">

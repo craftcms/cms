@@ -50,15 +50,15 @@ describe('craft-media-item', () => {
 
   it('renders its regions in a fixed order, whatever the order of its children', async () => {
     const item = await mount(
-      `<craft-media-item icon="newspaper"><span slot="aside">PR</span>Nov 1, 2026<span slot="heading">Annual report</span></craft-media-item>`
+      `<craft-media-item icon="newspaper"><span slot="suffix">PR</span>Nov 1, 2026<span slot="heading">Annual report</span></craft-media-item>`
     );
     const order = [
       ...item.shadowRoot!.querySelectorAll(
-        '[part~="thumbnail"], [part~="heading"], [part~="details"], [part~="aside"]'
+        '[part~="thumbnail"], [part~="heading"], [part~="body"], [part~="suffix"]'
       ),
     ].map((element) => element.getAttribute('part'));
 
-    expect(order).toEqual(['thumbnail', 'heading', 'details', 'aside']);
+    expect(order).toEqual(['thumbnail', 'heading', 'body', 'suffix']);
   });
 
   it('renders no region for an empty slot', async () => {
@@ -68,8 +68,8 @@ describe('craft-media-item', () => {
     );
 
     expect(part(item, 'thumbnail')).toBeNull();
-    expect(part(item, 'details')).toBeNull();
-    expect(part(item, 'aside')).toBeNull();
+    expect(part(item, 'body')).toBeNull();
+    expect(part(item, 'suffix')).toBeNull();
     expect(part(item, 'heading')).not.toBeNull();
   });
 
@@ -77,19 +77,19 @@ describe('craft-media-item', () => {
     const item = await mount(
       `<craft-media-item><span slot="heading">Annual report</span></craft-media-item>`
     );
-    const aside = document.createElement('span');
-    aside.slot = 'aside';
-    aside.textContent = 'PR';
-    item.append(aside);
+    const suffix = document.createElement('span');
+    suffix.slot = 'suffix';
+    suffix.textContent = 'PR';
+    item.append(suffix);
     await new Promise((resolve) => setTimeout(resolve));
     await item.updateComplete;
 
-    expect(part(item, 'aside')).not.toBeNull();
+    expect(part(item, 'suffix')).not.toBeNull();
   });
 
   it('adds no role of its own', async () => {
     const item = await mount(
-      `<craft-media-item icon="newspaper"><span slot="heading">Annual report</span>Nov 1, 2026<span slot="aside">PR</span></craft-media-item>`
+      `<craft-media-item icon="newspaper"><span slot="heading">Annual report</span>Nov 1, 2026<span slot="suffix">PR</span></craft-media-item>`
     );
     const roles = [item, ...item.shadowRoot!.querySelectorAll('[part]')].map(
       (element) => element.getAttribute('role')
@@ -112,13 +112,13 @@ describe('craft-media-item', () => {
     expect(heading.getClientRects().length).toBeGreaterThan(1);
   });
 
-  it('keeps the heading and details to one line each when truncated', async () => {
+  it('keeps the heading and body to one line each when truncated', async () => {
     const item = await mount(
       `<craft-media-item icon="newspaper" truncate><span slot="heading">Museum joins a European collections network for shared research</span><span>Nov 1, 2026 · News articles, events and exhibitions</span></craft-media-item>`,
       'width: 200px'
     );
     const heading = item.querySelector<HTMLElement>('[slot="heading"]')!;
-    const details = item.querySelector<HTMLElement>('span:not([slot])')!;
+    const body = item.querySelector<HTMLElement>('span:not([slot])')!;
     const lineHeight = parseFloat(getComputedStyle(heading).lineHeight);
 
     expect(heading.getBoundingClientRect().height).toBeLessThanOrEqual(
@@ -126,8 +126,8 @@ describe('craft-media-item', () => {
     );
     expect(heading.scrollWidth).toBeGreaterThan(heading.clientWidth);
     expect(getComputedStyle(heading).textOverflow).toBe('ellipsis');
-    expect(details.getBoundingClientRect().height).toBeLessThanOrEqual(
-      parseFloat(getComputedStyle(details).lineHeight)
+    expect(body.getBoundingClientRect().height).toBeLessThanOrEqual(
+      parseFloat(getComputedStyle(body).lineHeight)
     );
     expect(item.getBoundingClientRect().right).toBeLessThanOrEqual(
       document.querySelector('.frame')!.getBoundingClientRect().right

@@ -1,6 +1,22 @@
 import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
+/**
+ * Masks a circle 2px wider than a dot out of the element it overlaps, so
+ * whatever is behind both shows through instead of a ring in one surface
+ * color. Include it in the rule for that element, and set
+ * `--c-badge-indicator-cutout-x` and `--c-badge-indicator-cutout-y` to the
+ * dot's center in that element's box.
+ */
+export const badgeIndicatorCutoutStyles = css`
+  mask-image: radial-gradient(
+    circle at var(--c-badge-indicator-cutout-x)
+      var(--c-badge-indicator-cutout-y),
+    transparent 6px,
+    #000 6.5px
+  );
+`;
+
 export default css`
   :host {
     display: inline-flex;

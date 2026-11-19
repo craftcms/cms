@@ -51,32 +51,32 @@ export default css`
     }
   }
 
-  .media-item__text {
+  .media-item__content {
     flex: 1;
     min-width: 0;
   }
 
-  .media-item__details {
-    margin-block-start: calc(var(--c-spacing) * 0.5);
+  .media-item__body {
+    margin-block-start: var(--c-spacing-xs);
     font-size: var(--c-text-sm);
     color: var(--c-text-quiet);
   }
 
   .media-item__heading:only-child,
-  .media-item__details:only-child {
+  .media-item__body:only-child {
     margin-block-start: 0;
   }
 
-  :host([truncate]) :is(.media-item__heading, .media-item__details),
+  :host([truncate]) :is(.media-item__heading, .media-item__body),
   :host([truncate]) ::slotted([slot='heading']),
-  :host([truncate]) .media-item__details ::slotted(*) {
+  :host([truncate]) .media-item__body ::slotted(*) {
     display: block;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
-  .media-item__aside {
+  .media-item__suffix {
     display: flex;
     flex: none;
     align-items: center;
