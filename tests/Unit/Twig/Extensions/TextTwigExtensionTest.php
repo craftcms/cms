@@ -75,4 +75,10 @@ describe('TextTwigExtension', function () {
         expect($extension->replaceFilter('a1b2', '/\d/', '#', true))->toBe('a#b#');
         expect($extension->hashFilter('abc', 'sha256'))->toBe(hash('sha256', 'abc'));
     });
+
+    it('generates lowercase random strings unless extendedChars is set', function () {
+        expect($this->env->createTemplate('{{ randomString() }}')->render())->toMatch('/^[a-z]{36}$/')
+            ->and($this->env->createTemplate('{{ randomString(40) }}')->render())->toMatch('/^[a-z]{40}$/')
+            ->and($this->env->createTemplate('{{ randomString(200, extendedChars=true) }}')->render())->toMatch('/^[a-zA-Z0-9]{200}$/')->toMatch('/[A-Z0-9]/');
+    });
 });
