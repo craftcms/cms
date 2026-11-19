@@ -126,7 +126,8 @@ readonly class Assets
         }
 
         return [
-            'url' => $url,
+            // Volumes can have root-relative URLs, which MCP clients can’t resolve
+            'url' => $url !== null ? UrlHelper::absoluteUrl($url, $asset->getSite()->getBaseUrl()) : null,
             'mimeType' => $asset->getMimeType($transform),
             'width' => $width,
             'height' => $height,
