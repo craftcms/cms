@@ -73,7 +73,19 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
             self::enableDefinitionCache($config, 'craft');
         }
 
-        return parent::process($content, $config);
+        // Same as parent::process(), except for the cache path
+        $configInstance = HTMLPurifier_Config::create($config instanceof Closure ? null : $config);
+        $configInstance->autoFinalize = false;
+        $purifier = \HTMLPurifier::instance($configInstance);
+        $purifier->config->set('Cache.SerializerPath', Craft::$app->getPath()->getHtmlPurifierCachePath());
+        $purifier->config->set('Cache.SerializerPermissions', 0775);
+
+        static::configure($configInstance);
+        if ($config instanceof Closure) {
+            $config($configInstance);
+        }
+
+        return $purifier->purify($content);
     }
 
     /**
@@ -98,7 +110,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      * change whenever the definition edits do, such as by including a revision number or a hash of the
      * settings that determine them. Otherwise the old cached definition will keep being used.
      *
-     * Cached definitions are stored in `storage/runtime/HTML/`, and can be cleared via the Caches utility.
+     * Cached definitions are stored in `storage/runtime/htmlpurifier/HTML/`, and can be cleared via the Caches utility.
      *
      * @param HTMLPurifier_Config $config The config. It must not be finalized yet.
      * @param string $id An ID that identifies all of the HTML definition edits that will be made.
@@ -113,7 +125,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         self::$cachedConfigs[$config] = true;
 
         // process() sets these too, but the definition may be looked up before then
-        $config->set('Cache.SerializerPath', Craft::$app->getRuntimePath());
+        $config->set('Cache.SerializerPath', Craft::$app->getPath()->getHtmlPurifierCachePath());
         $config->set('Cache.SerializerPermissions', 0775);
 
         // Write cache files atomically, unless the config chose another cache implementation or disabled it

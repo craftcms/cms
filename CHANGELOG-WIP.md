@@ -25,13 +25,14 @@
 - Added `craft\helpers\App::isDdev()`. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - Added `craft\helpers\ElementHelper::getProvisionalDraftUser()`. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - Added `craft\helpers\HtmlPurifier::enableDefinitionCache()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
+- Added `craft\services\Path::getHtmlPurifierCachePath()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
 
 ### Performance
 
 - Improved the performance of address queries filtered by owner on PostgreSQL. ([#20834](https://github.com/craftcms/cms/issues/20834))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Requests now read only the parts of the project config they use from the cache, rather than the whole config, which cuts cache traffic on sites with a networked cache such as Redis or Valkey. After a project config change, only one request rewrites the cached config. ([#20809](https://github.com/craftcms/cms/pull/20809))
-- `craft\helpers\HtmlPurifier::process()` now caches HTML Purifier’s HTML definition in the runtime folder when it’s passed a config array or no config, rather than rebuilding it on every call. ([#20847](https://github.com/craftcms/cms/issues/20847))
+- `craft\helpers\HtmlPurifier::process()` now caches HTML Purifier’s HTML definition when it’s passed a config array or no config, rather than rebuilding it on every call. HTML Purifier’s definition caches are now stored in `storage/runtime/htmlpurifier/`. ([#20847](https://github.com/craftcms/cms/issues/20847))
 
 ### Dependencies
 

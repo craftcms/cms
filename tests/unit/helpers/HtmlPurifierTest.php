@@ -50,7 +50,7 @@ class HtmlPurifierTest extends TestCase
 
     public function testProcessCachesHtmlDefinition(): void
     {
-        $cachePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'HTML';
+        $cachePath = Craft::$app->getPath()->getHtmlPurifierCachePath() . DIRECTORY_SEPARATOR . 'HTML';
         FileHelper::removeDirectory($cachePath);
         $html = '<figure><a href="https://example.com" download="file.pdf">Link</a><figcaption>Caption</figcaption></figure>';
 
@@ -82,7 +82,7 @@ class HtmlPurifierTest extends TestCase
 
     public function testEnableDefinitionCache(): void
     {
-        $cachePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'HTML';
+        $cachePath = Craft::$app->getPath()->getHtmlPurifierCachePath() . DIRECTORY_SEPARATOR . 'HTML';
         FileHelper::removeDirectory($cachePath);
         $html = '<p data-foo="bar">Hi</p><figure><figcaption>Caption</figcaption></figure>';
 
@@ -120,7 +120,7 @@ class HtmlPurifierTest extends TestCase
 
     public function testProcessIgnoresCacheCleanupFailures(): void
     {
-        $cachePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'HTML';
+        $cachePath = Craft::$app->getPath()->getHtmlPurifierCachePath() . DIRECTORY_SEPARATOR . 'HTML';
         FileHelper::removeDirectory($cachePath);
         // An old cache entry that can't be removed
         FileHelper::createDirectory($cachePath . DIRECTORY_SEPARATOR . '1.0.0,abc,1.ser');

@@ -274,7 +274,6 @@ return [
     'Buy {name}' => 'Buy {name}',
     'Bytes' => 'Bytes',
     'Cache remote images' => 'Cache remote images',
-    'Cached HTML Purifier definitions' => 'Cached HTML Purifier definitions',
     'Caches' => 'Caches',
     'Can be dismissed?' => 'Can be dismissed?',
     'Can be exploited by DoS attacks.' => 'Can be exploited by DoS attacks.',
