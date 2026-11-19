@@ -110,15 +110,23 @@ readonly class InstallController
                 'label' => $locale->getDisplayName(app()->getLocale()),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ])),
-            'timezone' => Inertia::defer(function () {
+            'timezoneOptions' => Inertia::defer(function () {
                 $timezoneOptions = SelectOptions::getTimeZoneOptions();
+                $envOptions = SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value'));
 
-                return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+                // Put the city in the label, so it can be searched for and still shows once selected
+                $timezoneOptions = array_map(fn (array $option) => [
+                    'value' => $option['value'],
+                    'label' => isset($option['data']['hint']) ? "{$option['label']} – {$option['data']['hint']}" : $option['label'],
+                ], $timezoneOptions);
+
+                return array_merge($timezoneOptions, $envOptions);
             }),
             'baseUrlTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
+            'defaultTimezone' => $this->defaultTimezone(),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'dbConfig' => [
                 'driver' => $this->dbDriver($dbConfig['driver'] ?? null),

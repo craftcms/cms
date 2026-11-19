@@ -46,19 +46,17 @@
     <p>{{ errors['*'] }}</p>
   </craft-callout>
 
-  <div class="grid grid-cols-5 gap-2">
-    <div :class="isSqlite ? 'col-span-3' : 'col-span-2'">
-      <Select
-        :label="t('Driver')"
-        name="driver"
-        id="db-driver"
-        v-model="driver"
-        :options="options"
-        :error="errors?.driver"
-      />
-    </div>
+  <Select
+    :label="t('Driver')"
+    name="driver"
+    id="db-driver"
+    v-model="driver"
+    :options="options"
+    :error="errors?.driver"
+  />
 
-    <div class="col-span-2" v-if="!isSqlite">
+  <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-2" v-if="!isSqlite">
+    <div>
       <CraftInput
         :label="t('Host')"
         name="host"
@@ -69,18 +67,20 @@
       />
     </div>
 
-    <div v-if="!isSqlite">
+    <div>
       <CraftInput
         :label="t('Port')"
         name="port"
         id="db-port"
         v-model="port"
+        width="auto"
+        .inputSize="5"
         :placeholder="currentDefaults.port ?? undefined"
         :error="errors?.port"
       />
     </div>
 
-    <ul class="error-list col-span-5" v-if="errors?.server">
+    <ul class="error-list col-span-full" v-if="errors?.server">
       <li>{{ errors?.server }}</li>
     </ul>
   </div>
