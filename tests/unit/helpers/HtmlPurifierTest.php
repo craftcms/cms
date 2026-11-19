@@ -55,10 +55,18 @@ class HtmlPurifierTest extends TestCase
         FileHelper::removeDirectory($basePath);
         $html = '<figure><a href="https://example.com" download="file.pdf">Link</a><figcaption>Caption</figcaption></figure>';
 
-        // Configs that disable caching are respected, and don't need the cache directory
-        self::assertSame($html, HtmlPurifier::process($html, ['Cache.DefinitionImpl' => null]));
-        self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->set('Cache.DefinitionImpl', null)));
-        self::assertDirectoryDoesNotExist($basePath);
+        // Configs that disable caching are respected, and work when the cache directory can't be created
+        file_put_contents($basePath, '');
+        try {
+            self::assertSame($html, HtmlPurifier::process($html, ['Cache.DefinitionImpl' => null]));
+            self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->set('Cache.DefinitionImpl', null)));
+        } finally {
+            unlink($basePath);
+        }
+
+        // Closures can look up other definitions before purifying
+        self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->getCSSDefinition()));
+        FileHelper::removeDirectory($basePath);
 
         // Run each config twice, so the second call is served from the definition cache
         for ($i = 0; $i < 2; $i++) {
