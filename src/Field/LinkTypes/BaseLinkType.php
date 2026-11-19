@@ -22,7 +22,7 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
 
     /**
      * Returns the link type’s unique identifier, which will be stored within
-     * Link fields’ [[\craft\fields\Link::types]] settings.
+     * Link fields’ [[\CraftCms\Cms\Field\Link::$types]] settings.
      */
     abstract public static function id(): string;
 

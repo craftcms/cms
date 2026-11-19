@@ -462,7 +462,7 @@ trait QueriesFields
      *
      * ```twig
      * {# Get the requested {element} slug from the URL #}
-     * {% set requestedSlug = craft.app.request.getSegment(3) %}
+     * {% set requestedSlug = Request.segment(3) %}
      *
      * {# Fetch the {element} with that slug #}
      * {% set {element-var} = {twig-method}
@@ -472,11 +472,11 @@ trait QueriesFields
      *
      * ```php
      * // Get the requested {element} slug from the URL
-     * $requestedSlug = \Craft::$app->request->getSegment(3);
+     * $requestedSlug = request()->segment(3);
      *
      * // Fetch the {element} with that slug
      * ${element-var} = {php-method}
-     *     ->slug(\craft\helpers\Db::escapeParam($requestedSlug))
+     *     ->slug(\CraftCms\Cms\Support\Query::escapeParam($requestedSlug))
      *     ->one();
      * ```
      */
@@ -507,7 +507,7 @@ trait QueriesFields
      *
      * ```twig
      * {# Get the requested URI #}
-     * {% set requestedUri = craft.app.request.getPathInfo() %}
+     * {% set requestedUri = Sites.getRequestPath(Request.instance()) %}
      *
      * {# Fetch the {element} with that URI #}
      * {% set {element-var} = {twig-method}
@@ -517,11 +517,11 @@ trait QueriesFields
      *
      * ```php
      * // Get the requested URI
-     * $requestedUri = \Craft::$app->request->getPathInfo();
+     * $requestedUri = \CraftCms\Cms\Support\Facades\Sites::getRequestPath(request());
      *
      * // Fetch the {element} with that URI
      * ${element-var} = {php-method}
-     *     ->uri(\craft\helpers\Db::escapeParam($requestedUri))
+     *     ->uri(\CraftCms\Cms\Support\Query::escapeParam($requestedUri))
      *     ->one();
      * ```
      */

@@ -82,7 +82,7 @@ class RequestMixin
          * $clientOs = request()->clientOs();
          * ```
          * ```twig
-         * {% set clientOs = request.clientOs %}
+         * {% set clientOs = Request.clientOs %}
          * ```
          *
          * @return string The OS the client is running.

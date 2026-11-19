@@ -51,7 +51,7 @@ class Entries
      * Returns an entry by its ID.
      *
      * ```php
-     * $entry = \Craft::$app->entries->getEntryById($entryId);
+     * $entry = \CraftCms\Cms\Support\Facades\Entries::getEntryById($entryId);
      * ```
      *
      * @param  int  $entryId  The entry’s ID.

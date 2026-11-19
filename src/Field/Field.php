@@ -782,7 +782,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     /**
      * Returns the search keywords that should be associated with this field.
      *
-     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
+     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\CraftCms\Cms\Search\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
      * @param  mixed  $value  The field’s value
