@@ -60,7 +60,7 @@ class ElementIndexRequest extends FormRequest
     }
 
     /**
-     * Returns the scope of an embedded index: the one in its token, its owner, or the criteria the request posts.
+     * Returns the scope of an embedded index: the one in its token, its owner, or the `embeddedCriteria` the request posts.
      */
     public function embeddedIndexScope(): EmbeddedIndexScope
     {
@@ -72,7 +72,7 @@ class ElementIndexRequest extends FormRequest
             return new EmbeddedNestedElementScope($this);
         }
 
-        return new EmbeddedElementIndexScope(EmbeddedElementIndex::make($this->elementType())->criteria($this->criteria()));
+        return new EmbeddedElementIndexScope(EmbeddedElementIndex::make($this->elementType())->criteria($this->array('embeddedCriteria')));
     }
 
     public function isAdministrative(?string $context = null): bool

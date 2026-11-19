@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Jobs\PerformElementAction;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
 use Illuminate\Support\Facades\DB;
@@ -61,11 +63,12 @@ class PerformElementActionController
         $elementIds = $validated['elementIds'] ?? [];
         $context = $request->context();
         $embedded = $context === ElementSources::CONTEXT_EMBEDDED_INDEX;
+        $nestedElementScope = $embedded ? $request->embeddedIndexScope() : null;
+        $nested = $nestedElementScope instanceof EmbeddedNestedElementScope;
         // Every element the index lists, other than any deselected since
         $selectAll = ! $embedded && $request->boolean('selectAll');
 
-        if ($embedded) {
-            $nestedElementScope = new EmbeddedNestedElementScope($request);
+        if ($nested) {
             $nestedSource = $nestedElementScope->indexSource($elementType);
             [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
             $owner = $nestedElementScope->owner();
@@ -78,6 +81,9 @@ class PerformElementActionController
                 baseCriteria: $nestedSource->criteria,
                 criteria: $this->elementIndexes->statusSelectionCriteria($statusSelection),
             )['query'];
+        } elseif ($embedded) {
+            $sourceKey = ElementIndexSourceSettings::NESTED_KEY;
+            $elementQuery = EmbeddedIndexViewModel::editableQuery($request);
         } else {
             [$sourceKey, $source] = $this->elementIndexes->resolveSource(
                 $elementType,
@@ -119,7 +125,7 @@ class PerformElementActionController
             }
         }
 
-        if ($embedded) {
+        if ($nested) {
             $selectedElements = $nestedElementScope->selectedElements($elementIds, ! $action->isDownload(), $statusSelection['trashed']);
         }
 
@@ -134,6 +140,9 @@ class PerformElementActionController
             if ($exceptIds = $validated['exceptIds'] ?? []) {
                 $actionQuery->id(['not', ...$exceptIds]);
             }
+        } elseif ($embedded && ! $nested) {
+            // Narrows the index's own criteria, which can include IDs, rather than replacing them
+            $actionQuery->whereIn('elements.id', $elementIds)->status(null);
         } else {
             $actionQuery->id($elementIds)->status(null);
         }
@@ -152,7 +161,7 @@ class PerformElementActionController
             }
         }
 
-        if ($embedded && ! $action->isDownload()) {
+        if ($nested && ! $action->isDownload()) {
             DB::beginTransaction();
 
             try {

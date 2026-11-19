@@ -15,7 +15,7 @@ use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Support\Traits\Conditionable;
 
 /**
- * A read-only listing of the elements matching an {@see EmbeddedElementIndex}’s criteria.
+ * An element index listing the elements matching an {@see EmbeddedElementIndex}’s criteria.
  *
  * @since 6.0.0
  */

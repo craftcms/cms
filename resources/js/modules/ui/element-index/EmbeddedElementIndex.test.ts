@@ -19,7 +19,7 @@ vi.mock('./EmbeddedElementIndexView.vue', async () => {
   return {
     default: define({
       name: 'EmbeddedElementIndexViewStub',
-      props: ['elementType', 'initial', 'params', 'storageKey'],
+      props: ['elementType', 'initial', 'params', 'storageKey', 'readOnly'],
       emits: ['error'],
       setup(props, {emit}) {
         view.emit = emit as (event: string, payload?: unknown) => void;
@@ -83,13 +83,21 @@ describe('EmbeddedElementIndex', () => {
       elementType: 'Order',
       context: 'embeddedIndex',
       source: '__IMP__',
-      criteria: {customerId: 1},
+      embeddedCriteria: {customerId: 1},
     });
     expect(view.props).toMatchObject({
       initial: {marker: 'first'},
-      params: {criteria: {customerId: 1}},
+      params: {embeddedCriteria: {customerId: 1}},
       storageKey: 'embeddedindex.orders',
     });
+  });
+
+  it('passes read-only on to the view', async () => {
+    post.mockResolvedValue(response('first'));
+    mount({readOnly: true});
+    await flush();
+
+    expect(view.props?.readOnly).toBe(true);
   });
 
   it('shows a token’s first page without requesting it', async () => {
@@ -119,10 +127,10 @@ describe('EmbeddedElementIndex', () => {
 
     expect(post).toHaveBeenCalledTimes(2);
     expect(post.mock.lastCall?.[1]).toMatchObject({
-      criteria: {customerId: 2},
+      embeddedCriteria: {customerId: 2},
     });
     expect(view.props?.initial).toEqual({marker: 'second'});
-    expect(view.props?.params.criteria).toEqual({customerId: 2});
+    expect(view.props?.params.embeddedCriteria).toEqual({customerId: 2});
   });
 
   it('shows an error with a retry when the request fails', async () => {

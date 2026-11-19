@@ -73,7 +73,7 @@ readonly class ElementIndexSourceSettings
     }
 
     /**
-     * Builds the settings for a read-only embedded index that lists elements matching fixed criteria,
+     * Builds the settings for an embedded index that lists elements matching fixed criteria,
      * without an owner element.
      *
      * @param  class-string<ElementInterface>  $elementType
@@ -82,7 +82,7 @@ readonly class ElementIndexSourceSettings
      */
     public static function forCriteria(string $elementType, array $criteria, array $config): self
     {
-        return self::fromConfig($elementType, null, null, $criteria, [...$config, 'static' => true]);
+        return self::fromConfig($elementType, null, null, $criteria, [...$config, 'static' => (bool) ($config['readOnly'] ?? false)]);
     }
 
     /**
@@ -102,6 +102,12 @@ readonly class ElementIndexSourceSettings
             $config['fieldLayouts'] ?? [],
             fn (mixed $layout): bool => $layout instanceof FieldLayout,
         ));
+
+        // Without an owner, the element type’s own field layouts stand in for the source’s, as they do for `__IMP__`
+        if (! $nested && $fieldLayouts === []) {
+            $fieldLayouts = $elementType::fieldLayouts(null);
+        }
+
         $allowedViewModes = array_map(
             fn (mixed $mode): string => $mode instanceof ElementIndexViewMode ? $mode->value : (string) $mode,
             $config['allowedViewModes'] ?? [],
@@ -209,9 +215,7 @@ readonly class ElementIndexSourceSettings
     {
         return [
             'showHeaderColumn' => $this->showHeaderColumn,
-            ...($this->owner !== null
-                ? ['static' => $this->static]
-                : ($this->fieldLayouts !== null ? ['fieldLayouts' => $this->fieldLayouts] : [])),
+            ...($this->owner !== null ? ['static' => $this->static] : []),
         ];
     }
 

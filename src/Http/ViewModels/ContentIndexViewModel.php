@@ -1334,7 +1334,7 @@ abstract class ContentIndexViewModel extends ViewModel
             : $this->defaultTableColumns();
     }
 
-    private function resolveQuery(): ElementQueryInterface
+    protected function resolveQuery(): ElementQueryInterface
     {
         if ($this->query !== null) {
             return $this->query;

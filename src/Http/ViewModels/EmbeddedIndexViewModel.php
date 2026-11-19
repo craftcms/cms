@@ -23,6 +23,7 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Routing\Redirector;
 use Override;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @since 6.0.0
@@ -59,6 +60,29 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     public static function forRequest(ElementIndexRequest $request): self
     {
         return new self($request->elementType(), $request, $request->embeddedIndexScope());
+    }
+
+    /**
+     * Returns the query an embedded index request lists its elements from, with its scope, filters, search, status and site,
+     * such as for exports.
+     */
+    public static function listedQuery(ElementIndexRequest $request): ElementQueryInterface
+    {
+        return self::forRequest($request)->resolveQuery();
+    }
+
+    /**
+     * Returns the query an embedded index request lists its elements from, for element actions and inline editing.
+     *
+     * @throws HttpException if the index is read-only
+     */
+    public static function editableQuery(ElementIndexRequest $request): ElementQueryInterface
+    {
+        $viewModel = self::forRequest($request);
+
+        abort_if($viewModel->readOnly(), 403, 'This element index is read-only.');
+
+        return $viewModel->resolveQuery();
     }
 
     /**
@@ -151,6 +175,14 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             'headHtml' => $fragment->headHtml,
             'bodyHtml' => $fragment->bodyHtml,
         ];
+    }
+
+    /**
+     * Returns whether the index only lists and exports its elements, without element actions or inline editing.
+     */
+    public function readOnly(): bool
+    {
+        return $this->indexSource->static;
     }
 
     #[Override]

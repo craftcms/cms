@@ -77,7 +77,8 @@ class EmbeddedElementIndex
     }
 
     /**
-     * Sets the field layouts whose custom fields can be shown as columns, sorted by, and filtered on.
+     * Sets the field layouts whose custom fields can be shown as columns, sorted by, and filtered on,
+     * in place of all the element type’s field layouts.
      *
      * @param  list<FieldLayout>  $fieldLayouts
      *
@@ -147,6 +148,16 @@ class EmbeddedElementIndex
     public function showHeaderColumn(bool $show = true): static
     {
         $this->config['showHeaderColumn'] = $show;
+
+        return $this;
+    }
+
+    /**
+     * Sets whether the index only lists and exports its elements, without element actions or inline editing.
+     */
+    public function readOnly(bool $readOnly = true): static
+    {
+        $this->config['readOnly'] = $readOnly;
 
         return $this;
     }

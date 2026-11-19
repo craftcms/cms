@@ -16,7 +16,8 @@
   /**
    * An element index embedded in a screen: it lists the elements matching
    * `criteria`, or those an `EmbeddedElementIndex` token was made for, each
-   * linked to its edit page.
+   * linked to its edit page, and can export them. Unless it's read-only, its
+   * elements can be selected for element actions and edited inline.
    */
   const props = defineProps<{
     elementType: string;
@@ -27,12 +28,14 @@
     initial?: NestedContentIndexData;
     /** Keeps this index's view settings apart from other indexes of the same element type. */
     storageKey?: string;
+    /** Only lists and exports the elements, without element actions or inline editing. A read-only token is always read-only. */
+    readOnly?: boolean;
   }>();
 
   const params = computed<Record<string, unknown>>(() =>
     props.token
       ? {embeddedIndexToken: props.token}
-      : {criteria: {...props.criteria}}
+      : {embeddedCriteria: {...props.criteria}}
   );
   const payload = shallowRef<NestedContentIndexData | null>(
     props.initial ?? null
@@ -150,10 +153,11 @@
     </div>
     <EmbeddedElementIndexView
       v-else-if="payload"
-      :key="generation"
+      :key="`${generation}-${readOnly}`"
       :element-type="elementType"
       :initial="payload"
       :params="params"
+      :read-only="readOnly"
       :storage-key="`embeddedindex.${storageKey ?? elementType}`"
       @error="showFailure()"
     />

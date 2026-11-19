@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\EmbeddedElementIndex;
+use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Models\Field;
@@ -13,11 +15,18 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
+use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 
@@ -35,6 +44,17 @@ beforeEach(function () {
             'source' => '__IMP__',
             'viewMode' => 'table',
             'viewState' => ['mode' => 'table'],
+            ...$payload,
+        ],
+    );
+
+    $this->postToIndex = fn (string $controller, EmbeddedElementIndex $index, array $payload) => postJson(
+        action($controller),
+        [
+            'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+            'elementType' => $index->elementType(),
+            'source' => '__IMP__',
+            'embeddedIndexToken' => $index->token(),
             ...$payload,
         ],
     );
@@ -130,6 +150,18 @@ it('resolves a Ui node carrying the token and initial payload', function () {
         ->and($props['initial'])->toHaveKey('data');
 });
 
+it('resolves as a Ui node when the element type has custom fields', function () {
+    $field = Field::factory()->create(['type' => PlainText::class, 'name' => 'Tracking Number', 'handle' => 'trackingNumber']);
+    FieldLayoutModel::factory()->forField($field)->create(['type' => User::class]);
+    Fields::refreshFields();
+
+    $payload = app(UiResolver::class)->resolve(Ui::make([
+        EmbeddedElementIndex::make(User::class)->uiNode('users'),
+    ]), new UiContext);
+
+    expect(Json::encode($payload))->toContain('craft:element-index');
+});
+
 it('lists elements from every site when the criteria ask for all sites', function () {
     $entry = EntryModel::factory()->create();
     $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id, 'siteId' => '*']);
@@ -142,7 +174,7 @@ it('lists elements from every site when the criteria ask for all sites', functio
 it('lists the elements matching criteria posted without a token', function () {
     $entries = EntryModel::factory()->count(3)->create();
 
-    $payload = ($this->postEmbedded)(['criteria' => ['id' => [$entries[0]->id, $entries[2]->id]]])
+    $payload = ($this->postEmbedded)(['embeddedCriteria' => ['id' => [$entries[0]->id, $entries[2]->id]]])
         ->assertOk()
         ->json();
 
@@ -154,7 +186,7 @@ it('lists assets from any volume', function () {
     AssetModel::factory()->createElement();
     $asset = AssetModel::factory()->createElement();
 
-    $payload = ($this->postEmbedded)(['elementType' => Asset::class, 'criteria' => ['id' => $asset->id]])
+    $payload = ($this->postEmbedded)(['elementType' => Asset::class, 'embeddedCriteria' => ['id' => $asset->id]])
         ->assertOk()
         ->json();
 
@@ -205,8 +237,94 @@ it('offers the custom fields of the given field layouts as columns', function ()
     expect(collect($payload['tableColumns'])->pluck('label')->all())->toContain('Tracking Number');
 });
 
+it('offers the custom fields of the element type’s field layouts when none are given', function () {
+    $field = Field::factory()->create(['type' => PlainText::class, 'name' => 'Tracking Number', 'handle' => 'trackingNumber']);
+    FieldLayoutModel::factory()->forField($field)->create(['type' => User::class]);
+    Fields::refreshFields();
+
+    $payload = EmbeddedIndexViewModel::forDefinition(EmbeddedElementIndex::make(User::class))->payload(false);
+
+    expect(collect($payload['tableColumns'])->pluck('label')->all())->toContain('Tracking Number')
+        ->and(collect($payload['sortOptions'])->pluck('label')->all())->toContain('Tracking Number');
+});
+
 it('defaults to the element type’s table columns', function () {
     $payload = EmbeddedIndexViewModel::forDefinition(EmbeddedElementIndex::make(User::class))->payload();
 
     expect($payload['defaultTableColumns'])->toBe(['status', 'fullName', 'email', 'dateCreated', 'lastLoginDate']);
+});
+
+it('offers element actions unless it’s read-only', function () {
+    $editable = EmbeddedIndexViewModel::forDefinition(EmbeddedElementIndex::make(Entry::class))->payload(false);
+    $readOnly = EmbeddedIndexViewModel::forDefinition(EmbeddedElementIndex::make(Entry::class)->readOnly())->payload(false);
+
+    expect($editable['readOnly'])->toBeFalse()
+        ->and(collect($editable['actions'])->pluck('action.body.elementAction')->all())->toContain(SetStatus::class)
+        ->and($readOnly['readOnly'])->toBeTrue()
+        ->and($readOnly['actions'])->toBeEmpty();
+});
+
+it('runs element actions only on the elements it lists', function () {
+    [$listed, $unlisted] = EntryModel::factory()->count(2)->create();
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $listed->id]);
+
+    ($this->postToIndex)(PerformElementActionController::class, $index, [
+        'elementAction' => SetStatus::class,
+        'elementIds' => [$listed->id, $unlisted->id],
+        'status' => SetStatus::DISABLED,
+    ])->assertOk();
+
+    expect(Entry::find()->id($listed->id)->status(null)->one()->enabled)->toBeFalse()
+        ->and(Entry::find()->id($unlisted->id)->status(null)->one()->enabled)->toBeTrue();
+});
+
+it('saves inline edits to the elements it lists', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Before']);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id]);
+
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $entry->siteId,
+        'namespace' => 'inline',
+        'inline' => ["element-$entry->id" => ['title' => 'After']],
+    ])->assertOk();
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->title)->toBe('After');
+});
+
+it('exports the elements it lists', function () {
+    [$listed] = EntryModel::factory()->count(2)->create();
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $listed->id]);
+
+    $payload = ($this->postToIndex)(ExportElementIndexController::class, $index, [
+        'type' => Raw::class,
+        'format' => 'json',
+    ])->assertOk()->json();
+
+    expect(collect($payload)->pluck('id')->all())->toBe([$listed->id]);
+});
+
+it('rejects element actions and inline edits but allows exports when it’s read-only', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Before']);
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id])->readOnly();
+
+    ($this->postToIndex)(PerformElementActionController::class, $index, [
+        'elementAction' => SetStatus::class,
+        'elementIds' => [$entry->id],
+        'status' => SetStatus::DISABLED,
+    ])->assertForbidden();
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'siteId' => $entry->siteId,
+        'namespace' => 'inline',
+        'inline' => ["element-$entry->id" => ['title' => 'After']],
+    ])->assertForbidden();
+    $exported = ($this->postToIndex)(ExportElementIndexController::class, $index, [
+        'type' => Raw::class,
+        'format' => 'json',
+    ])->assertOk()->json();
+
+    $entry = Entry::find()->id($entry->id)->status(null)->one();
+
+    expect($entry->enabled)->toBeTrue()
+        ->and($entry->title)->toBe('Before')
+        ->and(collect($exported)->pluck('id')->all())->toBe([$entry->id]);
 });

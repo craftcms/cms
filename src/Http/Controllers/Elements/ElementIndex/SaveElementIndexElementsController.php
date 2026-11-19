@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -50,7 +51,8 @@ class SaveElementIndexElementsController
 
         $data = $this->request->array($namespace);
         $originalIds = $this->elementIds($data);
-        $embedded = $request->context() === ElementSources::CONTEXT_EMBEDDED_INDEX;
+        $embeddedScope = $request->context() === ElementSources::CONTEXT_EMBEDDED_INDEX ? $request->embeddedIndexScope() : null;
+        $embedded = $embeddedScope instanceof EmbeddedNestedElementScope;
 
         if ($embedded) {
             DB::beginTransaction();
@@ -58,13 +60,22 @@ class SaveElementIndexElementsController
 
         try {
             if ($embedded) {
-                $nestedElementScope = new EmbeddedNestedElementScope($request);
+                $nestedElementScope = $embeddedScope;
                 $owner = $nestedElementScope->owner();
                 $preparedByOriginalId = $nestedElementScope->selectedElements($originalIds)
                     ->mapWithKeys(fn ($element) => [
                         $element->id => NestedElementManager::prepareElementForOwner($element, $owner),
                     ]);
                 $elements = collect($originalIds)->map(fn (int $id) => $preparedByOriginalId[$id]);
+            } elseif ($embeddedScope !== null) {
+                $elements = EmbeddedIndexViewModel::editableQuery($request)
+                    ->whereIn('elements.id', $originalIds)
+                    ->status(null)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
+                    ->offset(0)
+                    ->limit(null)
+                    ->get();
             } else {
                 $elements = $this->getElements(
                     elementType: $elementType,
