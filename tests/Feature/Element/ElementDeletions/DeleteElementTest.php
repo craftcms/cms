@@ -239,6 +239,21 @@ it('moves structure children up before removing the deleted element node', funct
         ->and($childElementIds)->toBe([$grandChild->id, $child2->id]);
 });
 
+it('invalidates element caches only after the delete is committed', function () {
+    $entry = EntryModel::factory()->createElement();
+    $outerLevel = DB::transactionLevel();
+    $invalidationLevels = [];
+
+    Event::listen(function (ElementCachesInvalidated $event) use ($entry, &$invalidationLevels) {
+        if ($event->element?->id === $entry->id) {
+            $invalidationLevels[] = DB::transactionLevel();
+        }
+    });
+
+    expect($this->deletions->deleteElement($entry))->toBeTrue()
+        ->and($invalidationLevels)->toBe([$outerLevel]);
+});
+
 it('rolls back the delete when afterDelete throws', function () {
     $entry = EntryModel::factory()->createElement();
 
