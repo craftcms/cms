@@ -304,6 +304,7 @@
 - Fixed an error that occurred when saving an element from a front-end form with a file uploaded to an Assets field. ([#20881](https://github.com/craftcms/cms/issues/20881))
 - Fixed a bug where menus, popovers, and tooltips opened toward the wrong side in right-to-left languages. ([#20900](https://github.com/craftcms/cms/pull/20900))
 - Fixed a bug where the Utilities wrench, external-link icons, checkmarks, and magnifying glass icons weren’t mirrored in right-to-left languages, and global nav flyout chevrons pointed away from their flyouts. ([#20900](https://github.com/craftcms/cms/pull/20900))
+- Fixed a bug where Markdown fields didn’t track references to elements with the ID 100 or 1234, or other ref tags that look like emoji shortcodes, such as `{entry:smile:url}`. Deleting the element didn’t list those references or replace them. ([#20901](https://github.com/craftcms/cms/pull/20901))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
