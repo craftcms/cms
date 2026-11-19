@@ -4,6 +4,7 @@
 
 - Added `craft\helpers\UrlHelper::absoluteUrl()`.
 - `craft\elements\db\NestedElementQueryTrait::owner()` now accepts an array of owner elements.
+- Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
 - Fixed a bug where control panel templates could fail to render with an “Unknown function” error after an email was sent to a user affiliated with a different site. ([#20855](https://github.com/craftcms/cms/issues/20855))
 - Fixed an n+1 query bug when working with Content Block fields. ([#20776](https://github.com/craftcms/cms/issues/20776))
 - Fixed a bug where the stdio MCP server (`mcp/serve`) didn’t see project config changes made by other processes, such as in the control panel or via the CLI, and rejected all project config changes after them until it was restarted. ([#20597](https://github.com/craftcms/cms/pull/20597))
