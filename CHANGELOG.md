@@ -75,6 +75,7 @@
 - Dashboard widgets’ settings now load when they’re opened, rather than with the dashboard.
 - Saved element conditions, such as custom sources’ and Recent Entries widgets’ criteria, now load faster on sites with many custom fields. Their rules are checked without loading every field layout, unless they’re rules for fields.
 - Requests now read only the parts of the project config they use from the cache, rather than the whole config, which cuts cache traffic on sites with a networked cache such as Redis or Valkey. After a project config change, only one request rewrites the cached config. ([#20809](https://github.com/craftcms/cms/pull/20809))
+- Improved the performance of address queries filtered by owner on PostgreSQL. ([#20834](https://github.com/craftcms/cms/issues/20834))
 - Element index tables now right-align Number, Money, and Range field columns, and assets’ File Size, Image Width, and Image Height columns, along with their headers, so the digits of their values line up. Number fields with the “None” preview format, which suit years and codes, stay left-aligned. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - Tabs now show a light fill behind their label when hovered, like the sidebar nav, and sit a little further apart to make room for it. Tabs, nav items, and plain, outline, and dashed buttons now share one hover fill: a translucent tint that’s equally subtle on any surface, and a little lighter (`--c-color-mix-hover` is now `currentColor 7%`). Tab strips placed beside their panels now have a minimum width (`--c-tabs-strip-min-inline-size`), and tabs in the `fill` appearance are shorter. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
@@ -285,6 +286,7 @@
 - Deprecated `CraftCms\Cms\Entry\Elements\Entry::metaFieldsHtml()`. `metaFieldsNodes()` should be used instead. The element editor sidebar’s HTML now renders element types’ `metaFieldsNodes()` when they override it along with `metaFieldsHtml()`. ([#20846](https://github.com/craftcms/cms/issues/20846))
 - Fixed a bug where `CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving` listeners and `craft\elements\Entry::EVENT_DEFINE_META_FIELDS` handlers didn’t affect the entry edit screen. ([#20846](https://github.com/craftcms/cms/issues/20846))
 - Fixed a bug where PHP scripts that booted Craft with the Yii2 adapter installed exited with status 0 when an exception went uncaught. ([#20822](https://github.com/craftcms/cms/issues/20822), [#20830](https://github.com/craftcms/cms/pull/20830))
+- Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
