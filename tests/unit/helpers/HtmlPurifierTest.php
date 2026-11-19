@@ -52,6 +52,10 @@ class HtmlPurifierTest extends TestCase
         FileHelper::removeDirectory($cachePath);
         $html = '<figure><a href="https://example.com" download="file.pdf">Link</a><figcaption>Caption</figcaption></figure>';
 
+        // Configs that disable caching are respected
+        self::assertSame($html, HtmlPurifier::process($html, ['Cache.DefinitionImpl' => null]));
+        self::assertDirectoryDoesNotExist($cachePath);
+
         // Run each config twice, so the second call is served from the definition cache
         for ($i = 0; $i < 2; $i++) {
             self::assertSame($html, HtmlPurifier::process($html));
@@ -60,6 +64,7 @@ class HtmlPurifierTest extends TestCase
 
         $cacheFiles = glob($cachePath . DIRECTORY_SEPARATOR . '*.ser');
         self::assertCount(2, $cacheFiles);
+        self::assertCount(2, array_diff(scandir($cachePath), ['.', '..']), 'No temp files are left behind');
 
         // A cache file that's still being written is treated as a cache miss, and replaced
         foreach ($cacheFiles as $file) {

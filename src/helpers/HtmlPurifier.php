@@ -58,11 +58,16 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         // directives. Config objects, closures, and subclasses can edit the definition themselves, so they
         // aren't cached.
         if (($config === null || is_array($config)) && static::class === self::class) {
-            HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
-            $config ??= [];
-            $config['HTML.DefinitionID'] = 'craft';
-            $config['HTML.DefinitionRev'] = self::HTML_DEFINITION_REV;
-            $config['Cache.DefinitionImpl'] = 'CraftSerializer';
+            $config = HTMLPurifier_Config::create($config);
+            $config->autoFinalize = false;
+            $config->set('HTML.DefinitionID', 'craft');
+            $config->set('HTML.DefinitionRev', self::HTML_DEFINITION_REV);
+
+            // Write cache files atomically, unless the config chose another cache implementation or disabled it
+            if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
+                HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
+                $config->set('Cache.DefinitionImpl', 'CraftSerializer');
+            }
         }
 
         return parent::process($content, $config);
