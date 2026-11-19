@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Events\BackupCreating;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Shared\Models\Info;
@@ -14,9 +15,11 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -105,6 +108,27 @@ test('index returns Inertia Updater page', function () {
             ->where('initialState.finishUrl', action([UpdaterController::class, 'finish']))
             ->has('returnUrl')
         );
+});
+
+test('aborting after a failed backup turns maintenance mode off', function () {
+    $updates = Mockery::mock(app(Updates::class));
+    $updates->shouldReceive('areMigrationsPending')->andReturn(true);
+    app()->instance(Updates::class, $updates);
+    Event::listen(BackupCreating::class, fn () => throw new RuntimeException('Backup failed'));
+    app()->maintenanceMode()->activate([]);
+    $data = Crypt::encrypt(Json::encode(['migrate' => ['craft']]));
+
+    $abort = postJson(action([UpdaterController::class, 'backup']), ['data' => $data])
+        ->assertOk()
+        ->json('options.0');
+
+    expect($abort['label'])->toBe(t('Abort the update'));
+
+    postJson($abort['nextUrl'], ['data' => $data])
+        ->assertOk()
+        ->assertJsonPath('finished', true);
+
+    expect(app()->isDownForMaintenance())->toBeFalse();
 });
 
 test('finish returns a control panel return URL', function (?string $returnUrl, string $expected) {

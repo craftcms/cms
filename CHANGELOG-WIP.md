@@ -353,6 +353,7 @@
 - Fixed a bug where the PostgreSQL password could be included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
 - Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20887](https://github.com/craftcms/cms/pull/20887))
+- Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode, and the updater’s Cancel buttons didn’t do anything. ([#20887](https://github.com/craftcms/cms/pull/20887))
 
 ### Extensibility
 
