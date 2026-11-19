@@ -1473,6 +1473,7 @@ return [
     'Custom color:' => 'Custom color:',
     'Custom' => 'Custom',
     'Custom:' => 'Custom:',
+    'Customize navigation' => 'Customize navigation',
     'Customize sources' => 'Customize sources',
     'Custom…' => 'Custom…',
     'Cyan' => 'Cyan',

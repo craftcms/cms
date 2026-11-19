@@ -3,6 +3,8 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
+  import CustomizeMenu from '@/common/components/CustomizeMenu.vue';
+  import useCraftData from '@/common/composables/useCraftData';
   import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
   import {useResizeObserver} from '@vueuse/core';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
@@ -50,6 +52,8 @@
   );
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
+
+  const {customizeMenu} = useCraftData();
 
   // Whether the nav overflows its body, so the footer can show it's floating
   // above more of it. Watching the nav as well as the body catches branches
@@ -133,6 +137,9 @@
           {{ collapsed ? t('Expand') : t('Collapse') }}
         </craft-nav-item>
       </craft-nav-list>
+      <!-- Collapsed, the footer is one rail item wide, with room only for
+        Expand. -->
+      <CustomizeMenu v-if="customizeMenu && !collapsed" :menu="customizeMenu" />
     </div>
   </nav>
 </template>
@@ -223,6 +230,8 @@
   .cp-sidebar__footer {
     flex: 0 0 auto;
     display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--c-spacing-xs);
     align-items: center;
     margin-block-start: auto;
     padding-block: var(--c-spacing-sm);

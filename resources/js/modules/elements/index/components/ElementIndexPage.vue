@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
@@ -16,7 +15,7 @@
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
-  import {useNavItemAction} from '@/common/composables/useNavItemActions';
+  import {useCustomizeSourcesHandler} from '@/common/composables/useCustomizeSourcesHandlers';
   import useCraftData from '@/common/composables/useCraftData';
   import {router} from '@inertiajs/vue3';
   import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
@@ -36,9 +35,10 @@
     /** Additional type-specific params included with filter submissions. */
     filterParams?: IndexQueryParams;
     /**
-     * Offers Customize Sources from the nav item this index lives under. Opt-in
-     * rather than automatic, since not every index that uses this page should
-     * offer it.
+     * Opens Customize Sources for this index's element type when it's chosen
+     * from the nav footer's Customize menu, on this index's page and source.
+     * Opt-in rather than automatic, since not every index that uses this page
+     * should offer it.
      */
     customizableSources?: boolean;
     /** Items for the menu beside the `primary-action` slot's button. */
@@ -87,19 +87,20 @@
 
   const {currentUser, allowAdminChanges} = useCraftData();
 
-  // The sources are edited from the nav now rather than from a sidebar on the
-  // page, so the page lends the nav the gear that opens the editor. Only for
-  // admins, where admin changes are allowed — the server refuses anyone else.
+  // The sources are edited from the nav footer's Customize menu, which offers
+  // every element type's from any page. This index takes over for its own
+  // type, so the editor starts where the index is and saving lands back on
+  // it. Only for admins, where admin changes are allowed — the server refuses
+  // anyone else.
   if (
     props.customizableSources &&
     currentUser.value?.admin &&
     allowAdminChanges.value
   ) {
-    useNavItemAction(() => props.route.url(), {
-      label: t('Customize sources'),
-      icon: 'gear',
-      onClick: () => (customizeSourcesActive.value = true),
-    });
+    useCustomizeSourcesHandler(
+      () => elementIndex.elementType,
+      () => (customizeSourcesActive.value = true)
+    );
   }
 
   /**

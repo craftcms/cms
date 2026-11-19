@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -70,8 +71,9 @@ beforeEach(function () {
         ->andReturnUsing(fn () => $this->totalEditableSections);
     Volumes::shouldReceive('getTotalViewableVolumes')->andReturn(0);
 
+    $this->isAdmin = true;
     $user = Mockery::mock(CraftUser::class);
-    $user->shouldReceive('isAdmin')->andReturnTrue();
+    $user->shouldReceive('isAdmin')->andReturnUsing(fn () => $this->isAdmin);
     $user->shouldReceive('can')->andReturnTrue();
 
     $this->authGuard = Mockery::mock(Guard::class);
@@ -857,4 +859,50 @@ it('names source headings by their handle, or else as they were typed, whoever s
         'nav-content-entries-source-heading-featured',
         'nav-content-entries-source-heading-featured-2',
     ]);
+});
+
+/** A navigation for the Customize menu tests, whose tree they never build. */
+function customizeMenuNavigation(): Navigation
+{
+    return new Navigation(
+        Request::create('/admin/dashboard'),
+        Mockery::mock(Plugins::class, ['getAllPlugins' => []]),
+        Mockery::mock(Utilities::class, ['getAuthorizedUtilityTypes' => new Collection]),
+        Cms::config(),
+        Mockery::mock(ElementSources::class),
+        cpSettings(),
+        // A customized nav can hide Settings, so the menu must not depend on it.
+        Mockery::mock(CustomNavigations::class)->shouldNotReceive('navigationFor')->getMock(),
+        new NavCustomizer,
+    );
+}
+
+it('offers the CP Navigation settings and each listed element type\'s sources from the Customize menu', function () {
+    $this->totalEditableSections = 1;
+
+    $menu = customizeMenuNavigation()->getCustomizeMenu();
+
+    expect($menu['navigation'])->toBe([
+        'label' => 'Customize navigation',
+        'href' => route('craft.cp.settings.cp-nav.index'),
+        // The icon the CP Navigation setting has in the nav, not the light one
+        // the settings index draws.
+        'icon' => 'custom-icons/sidebar-nav',
+    ])
+        ->and(collect($menu['sources'])->pluck('elementType')->all())
+        ->toContain(Entry::class)
+        // No viewable volumes, so the nav lists no asset sources.
+        ->not->toContain(Asset::class);
+});
+
+it('leaves out the Customize menu when admin changes aren\'t allowed', function () {
+    Cms::config()->allowAdminChanges(false);
+
+    expect(customizeMenuNavigation()->getCustomizeMenu())->toBeNull();
+});
+
+it('leaves out the Customize menu for non-admins', function () {
+    $this->isAdmin = false;
+
+    expect(customizeMenuNavigation()->getCustomizeMenu())->toBeNull();
 });

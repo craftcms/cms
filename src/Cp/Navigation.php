@@ -431,6 +431,71 @@ readonly class Navigation
     }
 
     /**
+     * The nav footer's Customize menu: a link to the CP Navigation settings,
+     * and an item per element type whose sources the nav lists.
+     *
+     * It lives outside the nav tree on purpose. A customized nav can hide
+     * Settings, and one made up only of singles has no element index for an
+     * item to carry the sources' gear, so neither customization would be
+     * reachable from the nav itself.
+     *
+     * Null for anyone the endpoints behind it would refuse: non-admins, and
+     * everyone when admin changes aren't allowed.
+     *
+     * @return array{navigation: array{label: string, href: string, icon: ?string}, sources: list<array{elementType: class-string<ElementInterface>, label: string, icon: ?string}>}|null
+     */
+    public function getCustomizeMenu(): ?array
+    {
+        $user = currentUser();
+
+        if (! $user?->isAdmin() || ! $this->generalConfig->allowAdminChanges) {
+            return null;
+        }
+
+        // The same icon the CP Navigation setting shows in the nav.
+        $navigationIcon = null;
+
+        foreach ($this->settings->all() as $settings) {
+            if (isset($settings['cp-nav'])) {
+                $navigationIcon = $this->settingNavItem('cp-nav', $settings['cp-nav'])->icon;
+                break;
+            }
+        }
+
+        $sources = [];
+        $icons = [Entry::class => 'newspaper', Asset::class => 'image', User::class => 'user-group'];
+
+        foreach (self::SOURCE_ELEMENT_TYPES as $elementType) {
+            if ($this->listsSources($elementType)) {
+                $sources[] = [
+                    'elementType' => $elementType,
+                    'label' => $elementType::pluralDisplayName(),
+                    'icon' => $icons[$elementType],
+                ];
+            }
+        }
+
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            if ($elementType::cpIndexUri() !== null && $elementType::canViewIndex($user)) {
+                $sources[] = [
+                    'elementType' => $elementType,
+                    'label' => $elementType::pluralDisplayName(),
+                    'icon' => $elementType::cpNavIcon(),
+                ];
+            }
+        }
+
+        return [
+            'navigation' => [
+                'label' => t('Customize navigation'),
+                'href' => route('craft.cp.settings.cp-nav.index'),
+                'icon' => $navigationIcon,
+            ],
+            'sources' => $sources,
+        ];
+    }
+
+    /**
      * Whether the nav lists an element type's sources for the current user.
      *
      * @param  class-string<ElementInterface>  $elementType
