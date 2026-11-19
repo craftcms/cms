@@ -198,6 +198,18 @@ it('applies array general configs through the legacy settings', function(): void
         ->and($config->usePathInfo)->toBeTrue();
 });
 
+it('passes the deprecated IP headers setting to the Yii request', function(GeneralConfig $config): void {
+    app()->instance(\CraftCms\Cms\Config\GeneralConfig::class, $config);
+
+    $request = Craft::createObject(\craft\helpers\App::webRequestConfig());
+
+    expect($request->ipHeaders)->toBe(['CF-Connecting-IP'])
+        ->and($config->getDeprecatedSettings())->toHaveKey('ipHeaders');
+})->with([
+    'fluent config' => fn() => GeneralConfig::create()->ipHeaders(['CF-Connecting-IP']),
+    'array config' => fn() => new GeneralConfigCompatibility()->convert(['ipHeaders' => ['CF-Connecting-IP']]),
+]);
+
 it('maps the renamed temp asset upload setting', function(): void {
     expect(GeneralConfig::create()->tempAssetUploadFs('uploads')->tempAssetUploadDisk)->toBe('uploads');
 });

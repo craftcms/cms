@@ -946,7 +946,7 @@ class App
             $config['secureHeaders'] = $generalConfig->secureHeaders;
         }
 
-        if ($generalConfig->ipHeaders !== null) {
+        if ($generalConfig instanceof \craft\config\GeneralConfig && $generalConfig->ipHeaders !== null) {
             $config['ipHeaders'] = $generalConfig->ipHeaders;
         }
 
