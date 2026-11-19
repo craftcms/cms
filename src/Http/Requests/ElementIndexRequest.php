@@ -9,8 +9,12 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\Contracts\EmbeddedIndexScope;
+use CraftCms\Cms\Http\EmbeddedElementIndexScope;
+use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Url;
@@ -53,6 +57,22 @@ class ElementIndexRequest extends FormRequest
     public function hasEmbeddedIndexToken(): bool
     {
         return $this->filled('embeddedIndexToken');
+    }
+
+    /**
+     * Returns the scope of an embedded index: the one in its token, its owner, or the criteria the request posts.
+     */
+    public function embeddedIndexScope(): EmbeddedIndexScope
+    {
+        if ($this->hasEmbeddedIndexToken()) {
+            return EmbeddedElementIndexScope::fromToken((string) $this->input('embeddedIndexToken'));
+        }
+
+        if ($this->hasAny(['ownerElementType', 'ownerId', 'ownerSiteId', 'attribute'])) {
+            return new EmbeddedNestedElementScope($this);
+        }
+
+        return new EmbeddedElementIndexScope(EmbeddedElementIndex::make($this->elementType())->criteria($this->criteria()));
     }
 
     public function isAdministrative(?string $context = null): bool

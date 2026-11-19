@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -135,6 +137,28 @@ it('lists elements from every site when the criteria ask for all sites', functio
     $payload = EmbeddedIndexViewModel::forDefinition($index)->payload();
 
     expect(collect($payload['data'])->pluck('id')->all())->toBe([$entry->id]);
+});
+
+it('lists the elements matching criteria posted without a token', function () {
+    $entries = EntryModel::factory()->count(3)->create();
+
+    $payload = ($this->postEmbedded)(['criteria' => ['id' => [$entries[0]->id, $entries[2]->id]]])
+        ->assertOk()
+        ->json();
+
+    expect(collect($payload['data'])->pluck('id')->sort()->values()->all())
+        ->toBe([$entries[0]->id, $entries[2]->id]);
+});
+
+it('lists assets from any volume', function () {
+    AssetModel::factory()->createElement();
+    $asset = AssetModel::factory()->createElement();
+
+    $payload = ($this->postEmbedded)(['elementType' => Asset::class, 'criteria' => ['id' => $asset->id]])
+        ->assertOk()
+        ->json();
+
+    expect(collect($payload['data'])->pluck('id')->all())->toBe([$asset->id]);
 });
 
 it('lists the site the index requests', function () {

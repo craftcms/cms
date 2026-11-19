@@ -54,13 +54,11 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * Builds an embedded index for a request that carries an {@see EmbeddedElementIndex} token.
+     * Builds an embedded index for a request, scoped by its {@see EmbeddedElementIndex} token, its owner, or its criteria.
      */
-    public static function forToken(ElementIndexRequest $request): self
+    public static function forRequest(ElementIndexRequest $request): self
     {
-        $scope = EmbeddedElementIndexScope::fromToken((string) $request->input('embeddedIndexToken'));
-
-        return new self($request->elementType(), $request, $scope);
+        return new self($request->elementType(), $request, $request->embeddedIndexScope());
     }
 
     /**

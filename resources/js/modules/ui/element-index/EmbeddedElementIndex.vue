@@ -8,32 +8,35 @@
     useTemplateRef,
     watch,
   } from 'vue';
-  import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
-  import ElementPicker from './ElementPicker.vue';
-  import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
+  import {getElements} from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ElementIndexController';
+  import ElementPickerPlaceholder from '@/modules/element-selector-modal/ElementPickerPlaceholder.vue';
+  import type {NestedContentIndexData} from '../nested-elements/nested-elements';
+  import EmbeddedElementIndexView from './EmbeddedElementIndexView.vue';
 
   /**
    * An element index embedded in a screen: it lists the elements matching
-   * `criteria`, each linked to its edit page, with no selection.
+   * `criteria`, or those an `EmbeddedElementIndex` token was made for, each
+   * linked to its edit page.
    */
   const props = defineProps<{
     elementType: string;
     criteria?: Record<string, unknown>;
-    /** The source to list, for element types whose default source would exclude the criteria's matches. */
-    source?: string;
+    /** The token of a PHP `EmbeddedElementIndex`, used in place of `criteria`. */
+    token?: string;
+    /** The first page, when the screen already has it. */
+    initial?: NestedContentIndexData;
     /** Keeps this index's view settings apart from other indexes of the same element type. */
     storageKey?: string;
   }>();
 
-  const action = 'element-selector-modals/body';
-  const params = computed(() => ({
-    context: 'modal',
-    elementType: props.elementType,
-    criteria: {...props.criteria},
-    ...(props.source ? {source: props.source} : {}),
-    readOnly: true,
-  }));
-  const initial = shallowRef<ContentIndexData | null>(null);
+  const params = computed<Record<string, unknown>>(() =>
+    props.token
+      ? {embeddedIndexToken: props.token}
+      : {criteria: {...props.criteria}}
+  );
+  const payload = shallowRef<NestedContentIndexData | null>(
+    props.initial ?? null
+  );
   const failed = ref(false);
   const generation = ref(0);
   const root = useTemplateRef<HTMLElement>('root');
@@ -65,22 +68,34 @@
   const focusableControl =
     'input:not([disabled]), button:not([disabled]), a[href]';
 
+  function show(next: NestedContentIndexData, hadFocus: boolean): void {
+    payload.value = next;
+    generation.value++;
+
+    if (hadFocus) {
+      void restoreFocus(focusableControl);
+    }
+  }
+
   async function load(retried = false): Promise<void> {
     const request = ++latestRequest;
     const hadFocus = retried || focusIsInside();
-    initial.value = null;
+    payload.value = null;
     failed.value = false;
 
     try {
-      const {data} = await actionClient.post(action, params.value);
+      const {data} = await actionClient.post<NestedContentIndexData>(
+        getElements.url(),
+        {
+          elementType: props.elementType,
+          context: 'embeddedIndex',
+          source: '__IMP__',
+          ...params.value,
+        }
+      );
 
       if (request === latestRequest) {
-        initial.value = data.props as ContentIndexData;
-        generation.value++;
-
-        if (hadFocus) {
-          void restoreFocus(focusableControl);
-        }
+        show(data, hadFocus);
       }
     } catch {
       if (request === latestRequest) {
@@ -103,9 +118,22 @@
   }
 
   watch(
-    () => JSON.stringify(params.value),
-    () => void load(),
-    {immediate: true}
+    [
+      () => JSON.stringify([props.elementType, params.value]),
+      () => props.initial,
+    ],
+    ([, initial], previous) => {
+      if (initial && initial !== previous?.[1]) {
+        latestRequest++;
+        failed.value = false;
+        show(initial, focusIsInside());
+
+        return;
+      }
+
+      void load();
+    },
+    {immediate: !props.initial}
   );
 </script>
 
@@ -120,14 +148,13 @@
         >{{ t('Try again') }}</craft-button
       >
     </div>
-    <ElementPicker
-      v-else-if="initial"
+    <EmbeddedElementIndexView
+      v-else-if="payload"
       :key="generation"
-      :action="action"
-      :initial="initial"
+      :element-type="elementType"
+      :initial="payload"
       :params="params"
-      read-only
-      :storage-key="storageKey"
+      :storage-key="`embeddedindex.${storageKey ?? elementType}`"
       @error="showFailure()"
     />
     <ElementPickerPlaceholder v-else :element-type="elementType" />

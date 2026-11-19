@@ -12,8 +12,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Http\EmbeddedElementIndexScope;
-use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
@@ -36,12 +34,7 @@ class ElementIndexController
     public function getElements(ElementIndexRequest $request): ElementIndexResource|JsonResponse
     {
         if ($request->context() === ElementSources::CONTEXT_EMBEDDED_INDEX) {
-            return new JsonResponse(
-                ($request->hasEmbeddedIndexToken()
-                    ? EmbeddedIndexViewModel::forToken($request)
-                    : new EmbeddedIndexViewModel($request->elementType(), $request)
-                )->payload(),
-            );
+            return new JsonResponse(EmbeddedIndexViewModel::forRequest($request)->payload());
         }
 
         return new ElementIndexResource;
@@ -93,10 +86,7 @@ class ElementIndexController
         $nestedSource = null;
 
         if ($context === ElementSources::CONTEXT_EMBEDDED_INDEX) {
-            $nestedSource = ($request->hasEmbeddedIndexToken()
-                ? EmbeddedElementIndexScope::fromToken((string) $request->input('embeddedIndexToken'))
-                : new EmbeddedNestedElementScope($request)
-            )->indexSource($elementType);
+            $nestedSource = $request->embeddedIndexScope()->indexSource($elementType);
         }
 
         [$sourceKey, $source] = $nestedSource
