@@ -203,11 +203,8 @@
 
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
-    /* Centers the first item on the content's header bar, which starts below
-       the body's border. */
-    padding-block-start: calc(
-      var(--cp-body-border-width) + var(--cp-header-touch-target-offset)
-    );
+    /* Centers the first item on the content's header bar. */
+    padding-block-start: var(--cp-header-touch-target-offset);
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;
