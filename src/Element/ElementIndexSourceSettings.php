@@ -169,7 +169,9 @@ readonly class ElementIndexSourceSettings
                 'key' => self::NESTED_KEY,
                 'label' => t('All elements'),
                 'hasThumbs' => $elementType::hasThumbs(),
-                // The index query falls back to the source's `status` criteria when no status is picked
+                // The index query falls back to the source's `status` criteria when no status is picked.
+                // Request params can override these, so `EmbeddedElementIndexScope::restrictQuery()` also
+                // applies the index's criteria as a subquery, which they can only narrow.
                 ...($nested ? [] : ['criteria' => $criteria]),
             ],
             siteId: is_numeric($criteria['siteId'] ?? null)
