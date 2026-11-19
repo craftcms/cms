@@ -235,7 +235,7 @@
         'cs-item--focus-ring': focusRingRowId === row.id,
       }"
     >
-      <span class="cs-item__control cs-item__control--handle">
+      <span class="cs-item__control">
         <craft-reorder-button
           class="cs-item__handle"
           :position="position(row.index)"
@@ -449,13 +449,6 @@
     flex: none;
     align-items: center;
     height: calc(1lh + 2 * var(--c-spacing-sm) + 2px);
-  }
-
-  // Except the handle's, which stretches to the row so the handle sits in its
-  // middle, beside a label and handle alike.
-  .cs-item__control--handle {
-    align-self: stretch;
-    height: auto;
   }
 
   // A block, so it doesn't sit on the text's baseline in the item's suffix,

@@ -20,6 +20,8 @@ export interface SourceRow {
   handle: string | null;
   page: string;
   ui: UiPayload | null;
+  /** Sent with each rebuild of its settings, so they're built the same way. */
+  params?: Record<string, unknown>;
   /** Settings are built on first select and kept, as the legacy modal did. */
   mounted: boolean;
 }

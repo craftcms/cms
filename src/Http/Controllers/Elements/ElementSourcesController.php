@@ -78,16 +78,42 @@ readonly class ElementSourcesController
             'settings' => ['nullable', 'array'],
             'scope' => ['nullable', 'array'],
             'scope.*' => ['string'],
+            'withUserGroups' => ['nullable', 'boolean'],
+            'withLabel' => ['nullable', 'boolean'],
+            'forProjectConfig' => ['nullable', 'boolean'],
+            'part' => ['nullable', Rule::in(['filters', 'view'])],
+            'edited' => ['nullable', 'array'],
+            'edited.*' => [Rule::in(['filters', 'sort', 'columns', 'viewMode'])],
         ]);
+        $withUserGroups = $data['withUserGroups'] ?? true;
+        // A source kept to yourself never goes into project config.
+        $forProjectConfig = ($data['forProjectConfig'] ?? true)
+            && ($data['settings']['visibility'] ?? null) !== 'me';
 
         $source = $elementSources->getSources($elementType, ElementSources::CONTEXT_INDEX, true)
             ->firstWhere('key', $data['sourceKey']);
 
+        $settings = $data['settings'] ?? [];
+        $dropped = [];
+
+        // A new source can start from an index's filters, which may hold rules
+        // project config can't.
+        if ($source === null && $forProjectConfig && is_array($settings['condition'] ?? null)) {
+            ['condition' => $settings['condition'], 'dropped' => $dropped] =
+                $sourceUi->storableCondition($elementType, $settings['condition']);
+        }
+
         $payload = $sourceUi->payload(
             $elementType,
             $source ?? $sourceUi->blankSource($data['type'], $data['sourceKey']),
-            $data['settings'] ?? [],
+            $settings,
             isNew: $source === null,
+            withUserGroups: $withUserGroups,
+            withLabel: $data['withLabel'] ?? true,
+            forProjectConfig: $forProjectConfig,
+            part: $data['part'] ?? null,
+            edited: $data['edited'] ?? [],
+            droppedRules: $dropped,
         );
 
         $scope = $data['scope'] ?? [];
@@ -98,6 +124,8 @@ readonly class ElementSourcesController
         // A server-rendered Control fetches its own assets when it renders.
         return new JsonResponse([
             'ui' => $scope === [] ? $payload : $payload->forScope($scope),
+            'droppedRules' => $dropped,
+            'userGroupOptions' => $withUserGroups ? null : $sourceUi->userGroupOptions(),
         ]);
     }
 
@@ -120,6 +148,12 @@ readonly class ElementSourcesController
     public function store(ElementIndexRequest $request, ElementSources $elementSources, ProjectConfig $projectConfig, Navigation $navigation): Response
     {
         $elementType = $request->elementType();
+
+        // Sources kept to yourself aren't project config, so they can't come
+        // through here.
+        $request->validate([
+            'sources.*.visibility' => ['nullable', Rule::in(['everyone', 'groups'])],
+        ]);
         $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
@@ -187,7 +221,11 @@ readonly class ElementSourcesController
                         $sourceConfig['sites'] = $this->sourceScope($postedSettings['sites']);
                     }
 
-                    if (isset($postedSettings['userGroups']) && ! self::isAllScope($postedSettings['userGroups'])) {
+                    // Without a visibility, as the legacy modal posts, the
+                    // groups decide.
+                    $forGroups = ($postedSettings['visibility'] ?? 'groups') === 'groups';
+
+                    if ($forGroups && isset($postedSettings['userGroups']) && ! self::isAllScope($postedSettings['userGroups'])) {
                         $sourceConfig['userGroups'] = $this->sourceScope($postedSettings['userGroups']);
                     }
                 } elseif ($type === ElementSources::TYPE_HEADING) {
