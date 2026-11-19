@@ -28,6 +28,10 @@
     disabled?: boolean;
     /** Whether the view differs from the source's own. */
     edited?: boolean;
+    /** Whether the filters differ from the source's own condition. */
+    conditionEdited?: boolean;
+    /** Whether the view can be saved as a source. */
+    canSave?: boolean;
     /** The source's name, when its saved view can be overwritten. */
     updatableSource?: string | null;
     /** Why the source can't take these changes, if it can't. */
@@ -156,7 +160,7 @@
 
 <template>
   <div
-    v-if="root.rules.length || viewChips.length"
+    v-if="root.rules.length || viewChips.length || conditionEdited"
     class="filter-bar"
     role="region"
     :aria-label="t('Applied filters')"
@@ -221,6 +225,7 @@
         <span class="filter-bar__rule" aria-hidden="true"></span>
       </template>
       <craft-button
+        v-if="edited"
         type="button"
         variant="plain"
         size="small"
@@ -229,7 +234,7 @@
         >{{ t('Clear') }}</craft-button
       >
       <SaveViewButton
-        v-if="edited"
+        v-if="edited && canSave"
         :updatable-source="updatableSource"
         :update-blocked-reason="updateBlockedReason"
         :disabled="disabled"

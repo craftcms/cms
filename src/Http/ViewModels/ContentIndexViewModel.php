@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementIndexSourceSettings;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -337,13 +339,43 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * A custom source's own condition, which the index's filters start from.
+     * Filters changed from it replace it, rather than narrowing it further.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function sourceCondition(): ?array
+    {
+        return $this->sourceConditionModel()?->getConfig();
+    }
+
+    private function sourceConditionModel(): ?ElementConditionInterface
+    {
+        $source = $this->sourceState()[1];
+
+        if (
+            static::RENDER_CONTEXT !== ElementSources::CONTEXT_INDEX ||
+            ($source['type'] ?? null) !== ElementSources::TYPE_CUSTOM ||
+            empty($source['condition'])
+        ) {
+            return null;
+        }
+
+        /** @var ElementConditionInterface $condition */
+        $condition = Conditions::createCondition($source['condition']);
+        $condition->forQuery = true;
+
+        return $condition;
+    }
+
+    /**
      * The applied filters' rules, as the condition builder renders them.
      *
      * @return list<array<string, mixed>>
      */
     public function currentConditionSummary(): array
     {
-        $condition = $this->request->condition();
+        $condition = $this->request->condition() ?? $this->sourceConditionModel();
 
         return $condition ? app(ConditionSummary::class)->rules($condition) : [];
     }
@@ -1374,6 +1406,7 @@ abstract class ContentIndexViewModel extends ViewModel
             collapsedElementIds: $this->mode() === ElementIndexViewMode::Structure->value
                 ? $this->request->collapsedElementIds()
                 : [],
+            conditionReplacesSource: $this->sourceConditionModel() !== null,
         )['query'];
 
         // Applied on top of the filters, which the user can change, so they can't widen what's selectable

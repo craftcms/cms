@@ -324,6 +324,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
             Route::post('element-index-settings/save-customize-sources-modal-settings', [ElementSourcesController::class, 'store']);
             Route::post('element-index-settings/source-settings-ui', [ElementSourcesController::class, 'ui']);
+            Route::post('element-index-settings/save-source', [ElementSourcesController::class, 'update']);
         });
 
         // Entries

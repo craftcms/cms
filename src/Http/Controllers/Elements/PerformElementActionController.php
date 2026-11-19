@@ -96,6 +96,7 @@ class PerformElementActionController
                 criteria: $request->criteria(),
                 filterConditionConfig: $request->filterConditionConfig(),
                 collapsedElementIds: $request->collapsedElementIds(),
+                conditionReplacesSource: $context === ElementSources::CONTEXT_INDEX,
             );
             $elementQuery = $queryState['query'];
         }

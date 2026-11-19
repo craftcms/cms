@@ -33,6 +33,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\currentUserElement;
@@ -634,6 +635,58 @@ class ElementSources
         // Resolved sources are memoized per request; drop them so anything read
         // after saving — the URL to land on, say — sees what was just saved.
         unset($this->sources[$elementType]);
+    }
+
+    /**
+     * Saves `$settings` onto one top-level source, leaving the others as they
+     * are. Before anything is configured, the element type's own sources are
+     * written out first, in their own order.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $settings
+     *
+     * @throws InvalidArgumentException if there's no such source
+     */
+    public function updateSource(string $elementType, string $key, array $settings): void
+    {
+        $nativeSources = $this->nativeSources($elementType, self::CONTEXT_INDEX);
+        $configs = $this->sourceConfigs($elementType) ?: array_map(
+            fn (array $source) => array_filter([
+                'type' => $source['type'],
+                'key' => $source['key'] ?? null,
+                'heading' => $source['type'] === self::TYPE_HEADING ? ($source['heading'] ?? '') : null,
+                'page' => $source['page'] ?? null,
+            ], fn (mixed $value) => $value !== null),
+            $nativeSources,
+        );
+
+        $index = array_find_key(
+            $configs,
+            fn (array $source) => $source['type'] !== self::TYPE_HEADING && ($source['key'] ?? null) === $key,
+        );
+
+        if ($index === null) {
+            // A native source added since the sources were last saved.
+            $isNative = array_any(
+                $nativeSources,
+                fn (array $source) => $source['type'] === self::TYPE_NATIVE && $source['key'] === $key,
+            );
+
+            if (! $isNative) {
+                throw new InvalidArgumentException("No source “{$key}” to update.");
+            }
+
+            $configs[] = array_filter([
+                'type' => self::TYPE_NATIVE,
+                'key' => $key,
+                'page' => $this->getSources($elementType)->firstWhere('key', $key)['page'] ?? null,
+            ], fn (mixed $value) => $value !== null);
+            $index = array_key_last($configs);
+        }
+
+        $configs[$index] = array_merge($configs[$index], $settings);
+
+        $this->saveSources($elementType, $configs);
     }
 
     /**

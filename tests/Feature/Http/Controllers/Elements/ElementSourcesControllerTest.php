@@ -1059,3 +1059,99 @@ it('ignores user groups on a source visible to everyone', function () {
 
     expect($config['custom:shared'])->not->toHaveKey('userGroups');
 });
+
+/** @return list<array<string, mixed>> */
+function entrySourceConfigs(): array
+{
+    return app(ProjectConfig::class)->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class)) ?? [];
+}
+
+function slugRule(string $value): array
+{
+    return ['class' => SlugConditionRule::class, 'uid' => Str::uuid()->toString(), 'operator' => '=', 'value' => $value];
+}
+
+it('saves an index’s view onto a built-in source, writing out the others first', function () {
+    $section = Section::factory()->create();
+    app(ProjectConfig::class)->remove(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class));
+
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => '*',
+        'defaultSort' => ['attr' => 'title', 'dir' => 'asc'],
+        'tableAttributes' => ['slug', 'postDate'],
+    ])->assertOk();
+
+    $configs = collect(entrySourceConfigs());
+    $all = $configs->firstWhere('key', '*');
+
+    expect($all['defaultSort'])->toBe(['title', 'asc'])
+        ->and($all['tableAttributes'])->toBe(['slug', 'postDate'])
+        ->and($all)->not->toHaveKey('defaultViewMode')
+        ->and($configs->firstWhere('key', "section:$section->uid"))->not->toBeNull();
+});
+
+it('saves an index’s filters as a custom source’s condition', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        [
+            'type' => ElementSources::TYPE_CUSTOM,
+            'key' => 'custom:either',
+            'label' => 'Either',
+            'condition' => [
+                'class' => Entry::createCondition()::class,
+                'conditionRules' => ['operator' => 'or', 'rules' => [slugRule('a'), slugRule('b')]],
+            ],
+        ],
+    ]);
+
+    // The index starts from the source's rules, so one removed is gone.
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => 'custom:either',
+        'condition' => [
+            'class' => Entry::createCondition()::class,
+            'conditionRules' => ['operator' => 'or', 'rules' => [slugRule('a'), slugRule('c')]],
+            'forQuery' => true,
+        ],
+    ])->assertOk()->assertJsonPath('message', 'Saved changes to “Either”.');
+
+    $condition = collect(entrySourceConfigs())->firstWhere('key', 'custom:either')['condition'];
+
+    expect($condition['forQuery'] ?? false)->toBeFalse()
+        ->and($condition['conditionRules']['operator'])->toBe('or')
+        ->and(array_column($condition['conditionRules']['rules'], 'value'))->toBe(['a', 'c']);
+});
+
+it('won’t save filters onto a built-in source', function () {
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => '*',
+        'condition' => ['class' => Entry::createCondition()::class, 'conditionRules' => [slugRule('c')]],
+    ])->assertUnprocessable()->assertJsonValidationErrors('condition');
+});
+
+it('won’t save filters a source can’t keep in project config, and says which', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:mine', 'label' => 'Mine', 'condition' => Entry::createCondition()->getConfig()],
+    ]);
+    $before = entrySourceConfigs();
+    $idLabel = Conditions::createConditionRule(['class' => IdConditionRule::class])->getLabel();
+
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => 'custom:mine',
+        'condition' => idAndSlugCondition(),
+    ])->assertUnprocessable()->assertJsonValidationErrors(['condition' => $idLabel]);
+
+    expect(entrySourceConfigs())->toBe($before);
+});
+
+it('won’t save onto a source that doesn’t exist', function () {
+    postJson(action([ElementSourcesController::class, 'update']), [
+        'elementType' => Entry::class,
+        'source' => 'custom:nope',
+        'defaultViewMode' => 'cards',
+    ])->assertNotFound();
+});

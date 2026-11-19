@@ -51,6 +51,7 @@ export type ContentIndexData = Omit<
   | 'sources'
   | 'sites'
   | 'currentCondition'
+  | 'sourceCondition'
   | 'currentConditionSummary'
   | 'viewState'
   | 'viewModes'
@@ -66,6 +67,8 @@ export type ContentIndexData = Omit<
   sources: Source[];
   sites: IndexSite[];
   currentCondition: ConditionConfig | null;
+  /** A custom source's own condition, which the filters start from. */
+  sourceCondition?: ConditionConfig | null;
   /** The applied filters' rules, at any depth, as the builder renders them. */
   currentConditionSummary?: ConditionRuleSummary[];
   /** The view mode the source opens in. */
@@ -152,6 +155,7 @@ export function useContentIndexData<
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
     currentCondition: computed(() => props().currentCondition),
+    sourceCondition: computed(() => props().sourceCondition ?? null),
     currentConditionSummary: computed(
       () => props().currentConditionSummary ?? []
     ),

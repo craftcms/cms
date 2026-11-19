@@ -79,8 +79,15 @@ export interface ElementIndexView {
   resetView(this: void, kinds?: ViewSettingKind[]): void;
   /** How the index differs from its source's saved view. */
   changes: ComputedRef<ElementIndexChange[]>;
+  /** Whether the filters differ from the source's own condition, if any. */
+  conditionEdited: ComputedRef<boolean>;
   /** Puts the source back to its saved view: filters, search and view. */
   resetAll(this: void): void;
+  /**
+   * Drops the overrides of `kinds` the source now stores itself, so they
+   * don't come back as changes once the index reloads.
+   */
+  forgetSaved(this: void, kinds: ElementIndexChange['kind'][]): void;
   tableColumns: Ref<string[]>;
   columnOptions: ComputedRef<CheckboxOption[]>;
   visibleViewModes: ComputedRef<ViewMode[]>;

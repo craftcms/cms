@@ -1,6 +1,7 @@
 import {useTimeoutFn} from '@vueuse/core';
 import {shallowRef, toValue, watch, type MaybeRefOrGetter, type Ref} from 'vue';
 import type {SortItem} from '@/common/types';
+import {sameRules, withoutRules} from '@/modules/conditions/conditionTree';
 import type {ConditionConfig} from '@/modules/conditions/types';
 import type {
   IndexQueryParams,
@@ -14,6 +15,11 @@ export interface UseElementIndexFiltersOptions {
   search?: string | null;
   status?: string | null;
   conditions?: ConditionConfig | null;
+  /**
+   * The condition the filters start from — a custom source's own — which
+   * filters changed from it replace.
+   */
+  baseline?: MaybeRefOrGetter<ConditionConfig | null>;
   busy?: MaybeRefOrGetter<boolean>;
   preferredSort?: MaybeRefOrGetter<Array<SortItem>>;
   params?: MaybeRefOrGetter<IndexQueryParams>;
@@ -40,17 +46,29 @@ export function useElementIndexFilters(
 ): ElementIndexFilters {
   const search = shallowRef(options.search ?? '');
   const status = shallowRef(options.status ?? '');
+  const baseline = () => toValue(options.baseline) ?? null;
   const conditions = shallowRef<ConditionConfig | null>(
-    options.conditions ?? null
+    options.conditions ?? baseline()
   );
   let pending = false;
+
+  /** The filters as the query has them: none while they're the baseline's. */
+  function conditionParam(): ConditionConfig | null {
+    const base = baseline();
+
+    if (!base) return conditions.value;
+    if (sameRules(conditions.value, base)) return null;
+
+    // Every rule removed still differs from the baseline's.
+    return conditions.value ?? withoutRules(base);
+  }
 
   function parameters(): IndexQueryParams {
     return {
       ...toValue(options.params),
       search: search.value || null,
       status: status.value || null,
-      condition: (conditions.value ?? null) as IndexQueryValue,
+      condition: conditionParam() as IndexQueryValue,
     };
   }
 
@@ -132,6 +150,13 @@ export function useElementIndexFilters(
     applySearch.start();
   });
   watch([status, conditions], () => apply());
+  // A new source brings its own baseline, which unchanged filters follow.
+  watch(baseline, (next, previous) => {
+    if (sameRules(conditions.value, previous)) {
+      conditions.value = next;
+      applied = parameters();
+    }
+  });
   watch(
     () => toValue(options.busy) ?? false,
     (busy) => {
@@ -149,7 +174,7 @@ export function useElementIndexFilters(
     applySearch.stop();
     search.value = values.search ?? '';
     status.value = values.status ?? '';
-    conditions.value = values.conditions ?? null;
+    conditions.value = values.conditions ?? baseline();
     applied = parameters();
     lastRequestedSearch = Boolean(applied.search);
   }

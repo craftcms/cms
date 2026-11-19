@@ -90,6 +90,7 @@ class ExportElementIndexController
             criteria: $criteria,
             filterConditionConfig: $request->filterConditionConfig(),
             collapsedElementIds: $request->collapsedElementIds(),
+            conditionReplacesSource: $context === ElementSources::CONTEXT_INDEX,
         )['query'];
 
         $sort = array_values(array_filter(

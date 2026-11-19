@@ -174,3 +174,26 @@ export function replaceGroup(
 ): ConditionConfig | null {
   return updateGroup(condition, path, () => replacement);
 }
+
+/** Whether two conditions have the same rules, however their keys are ordered. */
+export function sameRules(
+  a: ConditionConfig | null,
+  b: ConditionConfig | null
+): boolean {
+  return stableJson(rootGroup(a)) === stableJson(rootGroup(b));
+}
+
+/** The condition with none of its rules. */
+export function withoutRules(condition: ConditionConfig): ConditionConfig {
+  return {...condition, conditionRules: {operator: 'and', rules: []}};
+}
+
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_key, item: unknown) =>
+    item && typeof item === 'object' && !Array.isArray(item)
+      ? Object.fromEntries(
+          Object.entries(item).sort(([a], [b]) => a.localeCompare(b))
+        )
+      : item
+  );
+}

@@ -55,7 +55,11 @@ import type {
   SourceFilterState,
   ViewMode,
 } from '@/modules/elements/types/view-state';
-import {isGroup, rootGroup} from '@/modules/conditions/conditionTree';
+import {
+  isGroup,
+  rootGroup,
+  sameRules,
+} from '@/modules/conditions/conditionTree';
 
 /** Something about the index that differs from its source's saved view. */
 export interface ElementIndexChange {
@@ -217,6 +221,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     search: elementIndex.search,
     status: elementIndex.statusMenuValue,
     conditions: elementIndex.currentCondition,
+    baseline: () => elementIndex.sourceCondition ?? null,
     busy: options.busy,
     preferredSort: () => defaultSort(sourceKey()),
     params: () => ({
@@ -555,21 +560,38 @@ export function useElementIndex(options: UseElementIndexOptions) {
     return option?.label ?? sortField.value;
   };
 
-  /** How the index differs from its source's saved view. */
-  const changes = computed<ElementIndexChange[]>(() => [
-    // Each top-level rule or group, as the filter bar shows them.
-    ...rootGroup(filters.conditions.value).rules.map((item) =>
+  /** Whether the filters differ from the source's own condition, if any. */
+  const conditionEdited = computed(
+    () =>
+      !sameRules(filters.conditions.value, elementIndex.sourceCondition ?? null)
+  );
+
+  /** Each top-level rule or group, or just that they all went. */
+  function editedRules(): ElementIndexChange[] {
+    const {rules} = rootGroup(filters.conditions.value);
+
+    if (!rules.length) {
+      return [{kind: 'rule', label: t('Filters')}];
+    }
+
+    return rules.map((item) =>
       isGroup(item)
-        ? {kind: 'rule' as const, label: t('Filter group')}
+        ? {kind: 'rule', label: t('Filter group')}
         : {
-            kind: 'rule' as const,
+            kind: 'rule',
             label:
               elementIndex.currentConditionSummary?.find(
                 (summary) => summary.uid === item.uid
               )?.label ?? t('Filter'),
             uid: item.uid,
           }
-    ),
+    );
+  }
+
+  /** How the index differs from its source's saved view. */
+  const changes = computed<ElementIndexChange[]>(() => [
+    // Each top-level rule or group, as the filter bar shows them.
+    ...(conditionEdited.value ? editedRules() : []),
     ...(filters.status.value
       ? [
           {
@@ -639,6 +661,26 @@ export function useElementIndex(options: UseElementIndexOptions) {
       ),
       {resetPage: true}
     );
+  }
+
+  function forgetSaved(kinds: ElementIndexChange['kind'][]): void {
+    const key = sourceKey();
+    const {mode, sort, visible, filters, ...rest} =
+      viewState.value.sources?.[key] ?? {};
+    const keptFilters = kinds.includes('rule')
+      ? {...filters, condition: null}
+      : filters;
+
+    viewState.value.sources = {
+      ...viewState.value.sources,
+      [key]: {
+        ...rest,
+        ...(kinds.includes('viewMode') ? {} : {mode}),
+        ...(kinds.includes('sort') ? {} : {sort}),
+        ...(kinds.includes('columns') ? {} : {visible}),
+        filters: hasFilters(keptFilters) ? keptFilters : undefined,
+      },
+    };
   }
 
   /**
@@ -903,7 +945,9 @@ export function useElementIndex(options: UseElementIndexOptions) {
     viewCustomized,
     resetView,
     changes,
+    conditionEdited,
     resetAll,
+    forgetSaved,
     mode,
     thumbSize,
     thumbSizeOptions,

@@ -11,7 +11,7 @@
   } from 'vue';
   import {onLongPress, useEventListener} from '@vueuse/core';
   import {router, usePage} from '@inertiajs/vue3';
-  import {ButtonVariant, t} from '@craftcms/ui';
+  import {actionClient, ButtonVariant, t} from '@craftcms/ui';
   import PaginationControls from '@/common/components/PaginationControls.vue';
   import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
   import {
@@ -40,8 +40,9 @@
   import ExportModal from '@/modules/elements/index/components/ExportModal.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {CraftData} from '@/common/composables/useCraftData';
-  import {showNotice} from '@/modules/messages/messages';
   import type {ActionItems} from '@/common/types';
+  import {showError} from '@/modules/messages/messages';
+  import ElementSourcesController from '@actions/Elements/ElementSourcesController';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
@@ -122,7 +123,9 @@
     sortDirection,
     resetView,
     changes,
+    conditionEdited,
     resetAll,
+    forgetSaved,
     tableColumns,
     columnOptions,
     visibleViewModes,
@@ -353,19 +356,34 @@
   const viewChangedKinds = computed(() =>
     viewChanges.value.map((change) => change.kind as ViewSettingKind)
   );
-  /** Changes to what the index shows, which built-in sources can't store. */
-  const hasFilterChanges = computed(() =>
-    changes.value.some((change) =>
-      ['rule', 'status', 'search'].includes(change.kind)
-    )
+  const isCustomSource = computed(() => elementIndex.source?.type === 'custom');
+  /**
+   * The changes Save stores on the source. Filters only fit in a custom
+   * source's condition; search and status always stay the index's own.
+   */
+  const savableKinds = computed(() =>
+    changes.value
+      .map((change) => change.kind)
+      .filter((kind) =>
+        kind === 'rule'
+          ? isCustomSource.value
+          : (['sort', 'columns', 'viewMode'] as string[]).includes(kind)
+      )
   );
-  const updateBlockedReason = computed(() =>
-    elementIndex.source?.type === 'native' && hasFilterChanges.value
-      ? t(
-          'Built-in sources can’t store filters. Remove them, or save as a new source.'
-        )
-      : null
-  );
+  const updateBlockedReason = computed(() => {
+    if (
+      !isCustomSource.value &&
+      changes.value.some((change) => change.kind === 'rule')
+    ) {
+      return t(
+        'Built-in sources can’t store filters. Remove them, or save as a new source.'
+      );
+    }
+
+    return savableKinds.value.length
+      ? null
+      : t('Search, status and thumbnail size aren’t saved with a source.');
+  });
   /** The settings modal's mode while it's open. */
   const savingNew = shallowRef(false);
 
@@ -381,12 +399,39 @@
       : parts;
   });
 
-  function saveToSource(): void {
-    showNotice(
-      t('Prototype: would save these changes to “{source}”.', {
-        source: elementIndex.source?.label ?? '',
-      })
-    );
+  const savingSource = shallowRef(false);
+
+  async function saveToSource(): Promise<void> {
+    const key = elementIndex.source?.key;
+    if (!key || savingSource.value || updateBlockedReason.value) return;
+
+    const kinds = [...new Set(savableKinds.value)];
+    savingSource.value = true;
+
+    try {
+      const {data} = await actionClient.post<{redirect?: string}>(
+        ElementSourcesController.update().url,
+        {
+          elementType: filterContext.value?.elementType,
+          source: key,
+          ...(kinds.includes('rule') ? {condition: conditions.value} : {}),
+          ...(kinds.includes('sort')
+            ? {defaultSort: {attr: sortField.value, dir: sortDirection.value}}
+            : {}),
+          ...(kinds.includes('viewMode') ? {defaultViewMode: mode.value} : {}),
+          ...(kinds.includes('columns')
+            ? {tableAttributes: [...tableColumns.value]}
+            : {}),
+        }
+      );
+
+      forgetSaved(kinds);
+      emit('sources-saved', {sourceKey: key, url: data.redirect ?? null});
+    } catch (error: any) {
+      showError(error?.response?.data?.message);
+    } finally {
+      savingSource.value = false;
+    }
   }
 
   /** The current view, as a new source's settings. */
@@ -510,6 +555,7 @@
         v-model:search="search"
         v-model:status="status"
         v-model:conditions="conditions"
+        :filters-edited="offersSaveView ? conditionEdited : undefined"
         v-model:mode="mode"
         v-model:sort-field="sortField"
         v-model:sort-direction="sortDirection"
@@ -616,8 +662,10 @@
         v-if="offersSaveView && !isInlineEditing"
         :condition="conditions"
         :summaries="elementIndex.currentConditionSummary ?? []"
-        :disabled="processing"
-        :edited="canEditSources && changes.length > 0"
+        :disabled="processing || savingSource"
+        :edited="changes.length > 0"
+        :condition-edited="conditionEdited"
+        :can-save="canEditSources"
         :updatable-source="canEditSources ? elementIndex.source?.label : null"
         :update-blocked-reason="updateBlockedReason"
         @update-condition="conditions = $event"

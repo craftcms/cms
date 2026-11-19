@@ -44,8 +44,13 @@
       /** The active site's handle, when `sites` are being offered. */
       siteHandle?: string | null;
       asForm?: boolean;
+      /**
+       * Whether the filters differ from where they started. By default, any
+       * filter counts.
+       */
+      filtersEdited?: boolean;
     }>(),
-    {asForm: true}
+    {asForm: true, filtersEdited: undefined}
   );
 
   const search = defineModel<string>('search', {required: true});
@@ -73,6 +78,9 @@
   const filterActive = ref(false);
   /** How many filters are applied: the condition's top-level rules and groups. */
   const filterCount = computed(() => rootGroup(conditions.value).rules.length);
+  const showFilterIndicator = computed(
+    () => props.filtersEdited ?? filterCount.value > 0
+  );
   const filterButton = ref<HTMLElement>();
 
   // One site is no choice at all, so the menu only earns its place from two.
@@ -207,7 +215,7 @@
           >
             {{ t('Filter') }}
             <craft-badge-indicator
-              v-if="filterCount"
+              v-if="showFilterIndicator"
               slot="suffix"
               style="margin-inline-start: var(--c-spacing-xs)"
               :alt-text="t('Filters applied')"

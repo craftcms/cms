@@ -132,6 +132,7 @@ class ElementIndexes
      * @param  array<string,mixed>  $criteria
      * @param  array<string,mixed>|null  $filterConditionConfig
      * @param  int[]  $collapsedElementIds
+     * @param  bool  $conditionReplacesSource  Whether `$condition` stands in for a custom source's own condition, as the index's filters start from it.
      * @return array{query: ElementQueryInterface, unfilteredQuery: ElementQueryInterface|null}
      */
     public function buildQueryState(
@@ -142,6 +143,7 @@ class ElementIndexes
         array $criteria = [],
         ?array $filterConditionConfig = null,
         array $collapsedElementIds = [],
+        bool $conditionReplacesSource = false,
     ): array {
         $query = $elementType::find();
 
@@ -181,10 +183,12 @@ class ElementIndexes
         };
 
         if ($source['type'] === ElementSources::TYPE_CUSTOM) {
-            /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = Conditions::createCondition($source['condition']);
-            $sourceCondition->forQuery = true;
-            $sourceCondition->modifyQuery($query);
+            if (! $condition || ! $conditionReplacesSource) {
+                /** @var ElementConditionInterface $sourceCondition */
+                $sourceCondition = Conditions::createCondition($source['condition']);
+                $sourceCondition->forQuery = true;
+                $sourceCondition->modifyQuery($query);
+            }
         } else {
             $applyCriteria($source['criteria'] ?? []);
         }

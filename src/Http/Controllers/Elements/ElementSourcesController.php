@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\ElementSourceUi;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Ui\Controls\Choice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -287,6 +289,76 @@ readonly class ElementSourcesController
         return $this->asSuccess(t('Source settings saved'), data: [
             'disabledSourceKeys' => $disabledSourceKeys,
         ], redirect: $redirect);
+    }
+
+    /**
+     * Saves an index's changes onto the source it's showing: its view, and on
+     * a custom source, its filters, which join the source's own condition.
+     */
+    public function update(ElementIndexRequest $request, ElementSources $elementSources, ElementSourceUi $sourceUi, Navigation $navigation): Response
+    {
+        $elementType = $request->elementType();
+        $request->validate([
+            'source' => ['required', 'string'],
+            'defaultSort' => ['nullable', 'array'],
+            'defaultViewMode' => ['nullable', 'string'],
+            'tableAttributes' => ['nullable', 'array'],
+            'condition' => ['nullable', 'array'],
+        ]);
+
+        $key = $request->string('source')->value();
+        $source = $elementSources->findSource($elementType, $key);
+
+        if ($source === null || isset($source['keyPath'])) {
+            abort(404, t('That source can’t be saved.'));
+        }
+
+        $settings = [];
+
+        if ($request->filled('defaultSort')) {
+            $settings['defaultSort'] = $this->defaultSort($request->input('defaultSort'));
+        }
+
+        if ($request->filled('defaultViewMode')) {
+            $settings['defaultViewMode'] = $request->string('defaultViewMode')->value();
+        }
+
+        if ($request->has('tableAttributes')) {
+            $settings['tableAttributes'] = $this->tableAttributeKeys($request->array('tableAttributes'));
+        }
+
+        // A custom source's filters are its whole condition, as the index showed it.
+        $condition = $request->array('condition');
+
+        if ($source['type'] !== ElementSources::TYPE_CUSTOM) {
+            if (! empty($condition['conditionRules'])) {
+                throw ValidationException::withMessages([
+                    'condition' => t('Built-in sources can’t store filters.'),
+                ]);
+            }
+        } elseif ($condition !== []) {
+            ['condition' => $storable, 'dropped' => $dropped] = $sourceUi->storableCondition($elementType, $condition);
+
+            if ($dropped !== []) {
+                throw ValidationException::withMessages([
+                    'condition' => t('These filters can’t be saved to a source: {rules}. Remove them, or save as a new source.', [
+                        'rules' => implode(', ', array_unique($dropped)),
+                    ]),
+                ]);
+            }
+
+            /** @var ElementConditionInterface $sourceCondition */
+            $sourceCondition = Conditions::createCondition($storable);
+            $sourceCondition->forQuery = false;
+            $settings['condition'] = $sourceCondition->getConfig();
+        }
+
+        $elementSources->updateSource($elementType, $key, $settings);
+
+        return $this->asSuccess(
+            t('Saved changes to “{source}”.', ['source' => $source['label'] ?? $key]),
+            redirect: $navigation->sourceUrl($elementType, $key),
+        );
     }
 
     /**

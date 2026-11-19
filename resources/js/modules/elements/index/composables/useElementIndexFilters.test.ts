@@ -195,4 +195,74 @@ describe('useElementIndexFilters', () => {
     expect(indexVisitor.load).toHaveBeenCalledTimes(2);
     expect(indexVisitor.load).toHaveBeenLastCalledWith({sort: []});
   });
+  describe('starting from a baseline condition', () => {
+    const rule = (uid: string) => ({class: 'Slug', uid, value: uid});
+    const condition = (...uids: string[]) => ({
+      class: 'EntryCondition',
+      conditionRules: {operator: 'and' as const, rules: uids.map(rule)},
+    });
+
+    function setup(baseline = shallowRef(condition('a', 'b'))) {
+      const indexVisitor = detachedVisitor();
+      scope = effectScope();
+      const filters = scope.run(() =>
+        useElementIndexFilters(indexVisitor.visitor, {baseline})
+      )!;
+
+      return {filters, baseline, load: indexVisitor.load};
+    }
+
+    it('shows the baseline without asking for it', async () => {
+      const {filters, load} = setup();
+      await nextTick();
+
+      expect(filters.conditions.value).toEqual(condition('a', 'b'));
+      expect(load).not.toHaveBeenCalled();
+    });
+
+    it('sends filters changed from the baseline, and none once they match it again', async () => {
+      const {filters, load} = setup();
+
+      filters.conditions.value = condition('a');
+      await nextTick();
+      expect(load).toHaveBeenLastCalledWith({condition: condition('a')});
+
+      filters.conditions.value = condition('a', 'b');
+      await nextTick();
+      expect(load).toHaveBeenLastCalledWith({});
+    });
+
+    it('sends an empty condition when every rule is removed', async () => {
+      const {filters, load} = setup();
+
+      filters.conditions.value = null;
+      await nextTick();
+
+      expect(load).toHaveBeenLastCalledWith({
+        condition: {
+          ...condition(),
+          conditionRules: {operator: 'and', rules: []},
+        },
+      });
+    });
+
+    it('follows a new baseline while unchanged, without another request', async () => {
+      const {filters, baseline, load} = setup();
+
+      baseline.value = condition('c');
+      await nextTick();
+      await nextTick();
+
+      expect(filters.conditions.value).toEqual(condition('c'));
+      expect(load).not.toHaveBeenCalled();
+    });
+
+    it('resets to the baseline', () => {
+      const {filters} = setup();
+
+      filters.sync({conditions: null});
+
+      expect(filters.conditions.value).toEqual(condition('a', 'b'));
+    });
+  });
 });

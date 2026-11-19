@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -1619,3 +1620,39 @@ function saveUnpublishedEntryDraft(EntryElement $sibling): EntryElement
 
     return $draft;
 }
+
+it('starts a custom source’s filters from its condition, and lets them replace it', function () {
+    $sectionIn = fn (Section $section) => tap(EntryElement::createCondition(), function (EntryCondition $condition) use ($section) {
+        $rule = $condition->createConditionRule(SectionConditionRule::class);
+        $rule->operator = 'in';
+        $rule->values = [$section->uid];
+        $condition->addConditionRule($rule);
+    });
+    $news = Section::factory()->create();
+    $blog = Section::factory()->create();
+    $newsEntry = EntryModel::factory()->forSection($news)->createElement();
+    $blogEntry = EntryModel::factory()->forSection($blog)->createElement();
+
+    app(ElementSources::class)->saveSources(EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:news', 'label' => 'News', 'condition' => $sectionIn($news)->getConfig()],
+    ]);
+
+    $props = fn (array $query = []) => get(route('craft.cp.content.index', [
+        'page' => 'entries',
+        'source' => 'custom:news',
+        'viewMode' => 'table',
+        ...$query,
+    ]))->assertOk()->viewData('page')['props'];
+
+    $unfiltered = $props();
+
+    expect($unfiltered['currentCondition'])->toBeNull()
+        ->and($unfiltered['sourceCondition']['conditionRules']['rules'][0]['values'])->toBe([$news->uid])
+        ->and($unfiltered['currentConditionSummary'])->toHaveCount(1)
+        ->and(collect($unfiltered['data'])->pluck('id')->all())->toBe([$newsEntry->id]);
+
+    $replaced = $props(['condition' => [...$sectionIn($blog)->getConfig(), 'forQuery' => true]]);
+
+    expect(collect($replaced['data'])->pluck('id')->all())->toBe([$blogEntry->id]);
+});
