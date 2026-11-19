@@ -182,7 +182,7 @@ class CpNotificationCenter extends LitElement {
                   <craft-button
                     type="button"
                     size="small"
-                    variant="plain"
+                    variant="link"
                     @click=${() => this.#markAllRead()}
                   >
                     ${t('Mark all as read')}

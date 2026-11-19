@@ -62,8 +62,7 @@
         <craft-button
           type="button"
           size="small"
-          variant="plain"
-          flush="inline-end"
+          variant="link"
           @click="markNotificationsRead(unreadIds)"
         >
           {{ t('Mark all as read') }}

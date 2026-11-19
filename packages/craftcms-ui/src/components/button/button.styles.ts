@@ -510,40 +510,39 @@ export default css`
     }
   }
 
-  /* Link — renders as a text hyperlink: no fill or border, underlined. */
   :host([variant~='link']) {
-    display: inline-flex;
-    appearance: none;
+    --_link-color: var(--c-text-link);
+    font: inherit;
+    min-width: auto;
+    color: var(--_link-color);
     background-color: transparent;
     border-color: transparent;
-    color: var(--c-color-fill-loud, var(--c-color-neutral-fill-loud));
-    font: inherit;
-    padding: 0;
-    min-height: auto;
-    min-width: auto;
-    text-decoration: underline;
+    text-decoration-line: var(--c-link-decoration, none);
+    margin-inline: calc(var(--_flush-inline) * -1);
+    margin-block: calc(var(--_flush-block) * -1);
 
     &::before {
       /* No minimum-target sizer around a text link. */
       display: none;
     }
+  }
 
-    .button-content {
-      padding: 0;
+  @media (hover: hover) {
+    :host([variant~='link']:not(:disabled):not(.loading):hover) {
+      color: var(--_link-color);
+      background-color: color-mix(in srgb, currentColor 5%, transparent);
     }
   }
 
-  :host([variant~='link']:not(:disabled):not(.loading):hover) {
-    background-color: transparent;
-    color: hsl(
-      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
-        calc(l - 10)
-    );
-    text-decoration: none;
-  }
-
-  :host([variant~='link']:not(:disabled):not(.loading):active) {
-    background-color: transparent;
+  :host([variant~='link']:not(:disabled):not(.loading):active),
+  :host([variant~='link'][active]:not(:disabled):not(.loading)),
+  :host([variant~='link'].is-active:not(:disabled):not(.loading)),
+  :host(
+    [variant~='link'][slot='invoker'][aria-expanded='true']:not(:disabled)
+  ) {
+    color: var(--_link-color);
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+    box-shadow: none;
   }
 
   /* Skipping the palette block isn't enough on a surface that sets only its

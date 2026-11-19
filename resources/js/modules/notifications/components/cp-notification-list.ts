@@ -315,8 +315,7 @@ class CpNotificationList extends LitElement {
                     class="notification-mark-read"
                     type="button"
                     size="small"
-                    variant="plain"
-                    flush
+                    variant="link"
                     @click=${(event: MouseEvent) => {
                       event.stopPropagation();
                       const item = (event.currentTarget as HTMLElement).closest(
