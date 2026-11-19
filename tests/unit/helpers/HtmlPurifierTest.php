@@ -8,9 +8,11 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
 use craft\test\TestCase;
+use craft\utilities\ClearCaches;
 use HTMLPurifier_Config;
 use HTMLPurifier_HTMLDefinition;
 
@@ -76,6 +78,37 @@ class HtmlPurifierTest extends TestCase
         foreach ($cacheFiles as $file) {
             self::assertInstanceOf(HTMLPurifier_HTMLDefinition::class, unserialize(file_get_contents($file)));
         }
+    }
+
+    public function testEnableDefinitionCache(): void
+    {
+        $cachePath = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($cachePath);
+        $html = '<p data-foo="bar">Hi</p><figure><figcaption>Caption</figcaption></figure>';
+
+        $process = function(string $id, bool $addAttribute) use ($html): string {
+            $config = HTMLPurifier_Config::createDefault();
+            HtmlPurifier::enableDefinitionCache($config, $id);
+            if ($addAttribute && $def = $config->maybeGetRawHTMLDefinition()) {
+                $def->addAttribute('p', 'data-foo', 'Text');
+            }
+            return HtmlPurifier::process($html, $config);
+        };
+
+        // Run each config twice, so the second call is served from the definition cache.
+        // Craft's own customizations (<figure>) must be cached along with the caller's.
+        for ($i = 0; $i < 2; $i++) {
+            self::assertSame($html, $process('test-with-attr', true));
+            // A different ID must not get the other config's cached definition
+            self::assertSame('<p>Hi</p><figure><figcaption>Caption</figcaption></figure>', $process('test-without-attr', false));
+        }
+
+        self::assertCount(2, glob($cachePath . DIRECTORY_SEPARATOR . '*.ser'));
+
+        // The Caches utility clears them
+        $option = ArrayHelper::firstWhere(ClearCaches::cacheOptions(), 'key', 'html-purifier');
+        $option['action']();
+        self::assertDirectoryDoesNotExist($cachePath);
     }
 
     public function testProcessIgnoresCacheCleanupFailures(): void

@@ -51,7 +51,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     private const HTML_DEFINITION_REV = 1;
 
     /**
-     * @var WeakMap<HTMLPurifier_Config,true>|null Configs that [[process()]] opted into HTML definition caching
+     * @var WeakMap<HTMLPurifier_Config,true>|null Configs that opted into HTML definition caching
      */
     private static ?WeakMap $cachedConfigs = null;
 
@@ -64,33 +64,66 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      */
     public static function process($content, $config = null)
     {
-        // Give array configs a definition ID so HTML Purifier caches the customized HTML definition,
-        // rather than rebuilding it on every call. Its cache keys already account for the other HTML.*
-        // directives. Config objects, closures, and subclasses can edit the definition themselves, so they
-        // aren't cached.
+        // Cache the customized HTML definition for array configs, rather than rebuilding it on every call.
+        // Config objects, closures, and subclasses can edit the definition themselves, so they're only
+        // cached if they opt in via enableDefinitionCache().
         if (($config === null || is_array($config)) && static::class === self::class) {
             $config = HTMLPurifier_Config::create($config);
-            $config->autoFinalize = false;
-            $config->set('HTML.DefinitionID', 'craft');
-            $config->set('HTML.DefinitionRev', self::HTML_DEFINITION_REV);
-            self::$cachedConfigs ??= new WeakMap();
-            self::$cachedConfigs[$config] = true;
-
-            // Write cache files atomically, unless the config chose another cache implementation or disabled it
-            if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
-                HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
-                $config->set('Cache.DefinitionImpl', 'CraftSerializer');
-            }
+            self::enableDefinitionCache($config, 'craft');
         }
 
         return parent::process($content, $config);
     }
 
     /**
+     * Enables caching of the HTML definition for a config that will be passed to [[process()]].
+     *
+     * HTML Purifier rebuilds the HTML definition on every [[process()]] call unless it’s cached. Call this before
+     * anything accesses the config’s HTML definition, and only edit the definition when
+     * `$config->maybeGetRawHTMLDefinition()` returns one. When it returns `null`, the cached definition will
+     * be used, which already includes the edits.
+     *
+     * ```php
+     * $config = HTMLPurifier_Config::createDefault();
+     * $config->autoFinalize = false;
+     * HtmlPurifier::enableDefinitionCache($config, 'my-plugin-1');
+     * if ($def = $config->maybeGetRawHTMLDefinition()) {
+     *     $def->addAttribute('p', 'data-foo', 'Text');
+     * }
+     * $html = HtmlPurifier::process($html, $config);
+     * ```
+     *
+     * Definitions are cached by `$id`, HTML Purifier’s version, and the config’s `HTML.*` settings. `$id` must
+     * change whenever the definition edits do, such as by including a revision number or a hash of the
+     * settings that determine them. Otherwise the old cached definition will keep being used.
+     *
+     * Cached definitions are stored in `storage/runtime/HTML/`, and can be cleared via the Caches utility.
+     *
+     * @param HTMLPurifier_Config $config The config. It must not be finalized yet.
+     * @param string $id An ID that identifies all of the HTML definition edits that will be made.
+     * @since 5.13.0
+     */
+    public static function enableDefinitionCache(HTMLPurifier_Config $config, string $id): void
+    {
+        $config->autoFinalize = false;
+        $config->set('HTML.DefinitionID', $id);
+        $config->set('HTML.DefinitionRev', self::HTML_DEFINITION_REV);
+        self::$cachedConfigs ??= new WeakMap();
+        self::$cachedConfigs[$config] = true;
+
+        // Write cache files atomically, unless the config chose another cache implementation or disabled it
+        if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
+            HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
+            $config->set('Cache.DefinitionImpl', 'CraftSerializer');
+        }
+    }
+
+    /**
      * Configures HTML Purifier with Craft’s defaults and HTML definition customizations.
      *
-     * When [[process()]] is passed a config array or no config, the customizations are only applied when the
-     * HTML definition isn’t cached yet. Otherwise the definition is customized each time, and isn’t cached.
+     * For configs passed to [[enableDefinitionCache()]], including the configs [[process()]] creates from
+     * config arrays, the customizations are only applied when the HTML definition isn’t cached yet. Otherwise
+     * the definition is customized each time, and isn’t cached.
      *
      * @param HTMLPurifier_Config $config
      */

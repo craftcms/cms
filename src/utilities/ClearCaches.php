@@ -224,6 +224,17 @@ class ClearCaches extends Utility
                 },
             ],
             [
+                'key' => 'html-purifier',
+                'label' => Craft::t('app', 'HTML Purifier caches'),
+                'info' => Craft::t('app', 'Cached HTML Purifier definitions'),
+                'action' => function() use ($pathService) {
+                    $runtimePath = $pathService->getRuntimePath();
+                    foreach (['HTML', 'CSS', 'URI'] as $type) {
+                        FileHelper::removeDirectory($runtimePath . DIRECTORY_SEPARATOR . $type);
+                    }
+                },
+            ],
+            [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
                 'info' => Craft::t('app', 'Contents of {path}', [
