@@ -57,6 +57,18 @@ if (OAuth::isAvailable()) {
         Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
         Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
+        /*
+         * OAuth URLs are built from the current site’s base URL, so sites with a base path,
+         * such as `https://example.com/fr/`, need these routes under it. Changing the sites
+         * requires re-running `route:cache` on installs that cache routes.
+         */
+        if (Cms::isInstalled()) {
+            foreach ($routes->siteBasePaths() as $path) {
+                Route::get("$path/oauth/{provider}/redirect", [OAuthController::class, 'redirect']);
+                Route::get("$path/oauth/{provider}/callback", [OAuthController::class, 'callback']);
+            }
+        }
+
         Route::prefix($routes->cpTriggerRoutePrefix())->middleware('craft.cp')->group(function () {
             Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect']);
         });
