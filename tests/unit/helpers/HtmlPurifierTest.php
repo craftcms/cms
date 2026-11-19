@@ -50,13 +50,15 @@ class HtmlPurifierTest extends TestCase
 
     public function testProcessCachesHtmlDefinition(): void
     {
-        $cachePath = Craft::$app->getPath()->getHtmlPurifierCachePath() . DIRECTORY_SEPARATOR . 'HTML';
-        FileHelper::removeDirectory($cachePath);
+        $basePath = Craft::$app->getPath()->getHtmlPurifierCachePath(false);
+        $cachePath = $basePath . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($basePath);
         $html = '<figure><a href="https://example.com" download="file.pdf">Link</a><figcaption>Caption</figcaption></figure>';
 
-        // Configs that disable caching are respected
+        // Configs that disable caching are respected, and don't need the cache directory
         self::assertSame($html, HtmlPurifier::process($html, ['Cache.DefinitionImpl' => null]));
-        self::assertDirectoryDoesNotExist($cachePath);
+        self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->set('Cache.DefinitionImpl', null)));
+        self::assertDirectoryDoesNotExist($basePath);
 
         // Run each config twice, so the second call is served from the definition cache
         for ($i = 0; $i < 2; $i++) {

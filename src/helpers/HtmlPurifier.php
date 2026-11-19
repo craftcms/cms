@@ -15,6 +15,7 @@ use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
 use HTMLPurifier_DefinitionCacheFactory;
 use HTMLPurifier_Encoder;
+use Throwable;
 use WeakMap;
 
 /**
@@ -77,7 +78,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         $configInstance = HTMLPurifier_Config::create($config instanceof Closure ? null : $config);
         $configInstance->autoFinalize = false;
         $purifier = \HTMLPurifier::instance($configInstance);
-        $purifier->config->set('Cache.SerializerPath', Craft::$app->getPath()->getHtmlPurifierCachePath());
+        $purifier->config->set('Cache.SerializerPath', Craft::$app->getPath()->getHtmlPurifierCachePath(false));
         $purifier->config->set('Cache.SerializerPermissions', 0775);
 
         static::configure($configInstance);
@@ -85,6 +86,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
             $config($configInstance);
         }
 
+        self::ensureCachePath($configInstance);
         return $purifier->purify($content);
     }
 
@@ -125,13 +127,34 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         self::$cachedConfigs[$config] = true;
 
         // process() sets these too, but the definition may be looked up before then
-        $config->set('Cache.SerializerPath', Craft::$app->getPath()->getHtmlPurifierCachePath());
+        $config->set('Cache.SerializerPath', Craft::$app->getPath()->getHtmlPurifierCachePath(false));
         $config->set('Cache.SerializerPermissions', 0775);
 
         // Write cache files atomically, unless the config chose another cache implementation or disabled it
         if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
             HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
             $config->set('Cache.DefinitionImpl', 'CraftSerializer');
+        }
+
+        self::ensureCachePath($config);
+    }
+
+    /**
+     * Creates the cache directory if the config caches definitions in it.
+     */
+    private static function ensureCachePath(HTMLPurifier_Config $config): void
+    {
+        if (!in_array($config->get('Cache.DefinitionImpl'), ['Serializer', 'CraftSerializer'], true)) {
+            return;
+        }
+
+        $path = $config->get('Cache.SerializerPath');
+        if (!is_dir($path)) {
+            try {
+                FileHelper::createDirectory($path);
+            } catch (Throwable) {
+                // HTML Purifier will report it if it needs the directory
+            }
         }
     }
 
