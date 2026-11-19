@@ -10,6 +10,7 @@ namespace crafttests\functional;
 use Craft;
 use craft\db\Table;
 use craft\elements\User;
+use craft\filters\BasicHttpAuthLogin;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\mcp\Settings;
@@ -138,6 +139,30 @@ class McpServersCest
         $I->sendAjaxPostRequest('/mcp');
         $I->dontSeeResponseCodeIs(401);
         $I->dontSeeResponseCodeIs(403);
+    }
+
+    public function testBasicHttpAuthLogin(FunctionalTester $I): void
+    {
+        $this->settings(['enabled' => true, 'route' => '/mcp']);
+        $config = Craft::$app->getConfig()->getMcp();
+        $config->filters = [BasicHttpAuthLogin::class];
+        $user = $this->user([]);
+        $user->newPassword = 'correct horse';
+        Craft::$app->getElements()->saveElement($user, false);
+
+        try {
+            // Craft only signs in requests with a user agent and IP address
+            $I->haveHttpHeader('User-Agent', 'MCP client');
+            $I->haveServerParameter('REMOTE_ADDR', '127.0.0.1');
+            // Basic auth isn't scoped, so the user gets every MCP scope
+            $I->haveHttpHeader('Authorization', 'Basic ' . base64_encode("$user->username:correct horse"));
+            $I->sendAjaxPostRequest('/mcp');
+            $I->dontSeeResponseCodeIs(401);
+            $I->assertSame($user->id, Craft::$app->getUser()->getId());
+            $I->assertEqualsCanonicalizing([Mcp::SCOPE_READ, Mcp::SCOPE_WRITE, Mcp::SCOPE_ADMIN], Craft::$app->get('mcp')->tokenScopes);
+        } finally {
+            $config->filters = [];
+        }
     }
 
     public function testControlPanelDomainWithoutTrigger(FunctionalTester $I): void
