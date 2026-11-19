@@ -55,6 +55,7 @@
   import ContentToolbar from './page/ContentToolbar.vue';
   import ScreenOverlays from './page/ScreenOverlays.vue';
   import ScreenSkipLinks from './page/ScreenSkipLinks.vue';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {
     ScreenPanelsKey,
     screenPanels,
@@ -323,7 +324,9 @@
               sits in the panel. -->
               <div class="cp-body__panel">
                 <slot name="page-main">
-                  <main id="main" tabindex="-1">
+                  <!-- `#main` is what legacy `Craft.cp.$main` looks for. The landmark is `#content-main`, so the
+                  secondary nav and details beside it are landmarks of their own. -->
+                  <div id="main">
                     <form
                       method="post"
                       accept-charset="UTF-8"
@@ -378,8 +381,9 @@
                           </LayoutSlotOutlet>
                         </div>
 
-                        <div
+                        <main
                           id="content-main"
+                          tabindex="-1"
                           class="cp-content__main"
                           :style="contentMainStyle"
                         >
@@ -498,7 +502,7 @@
                               </ContentFooter>
                             </div>
                           </div>
-                        </div>
+                        </main>
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
                         <ContentDetailsAside
                           ref="detailsAside"
@@ -516,14 +520,17 @@
                         </ContentDetailsAside>
                       </div>
                     </form>
-                  </main>
+                  </div>
                 </slot>
               </div>
-              <div
+              <!-- Holds only the buttons that open each panel, which DetailsPanels teleports in. The panels
+                themselves are in the details aside. -->
+              <nav
                 v-show="regions.hasDetails()"
                 id="cp-details-rail"
                 class="cp-details-rail"
-              ></div>
+                :aria-label="t('Panels')"
+              ></nav>
             </div>
           </div>
 
@@ -636,7 +643,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     margin-inline-end: 0;
   }
 
-  main,
+  #main,
   .cp-main {
     height: 100%;
   }

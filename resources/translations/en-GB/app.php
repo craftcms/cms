@@ -2430,6 +2430,7 @@ return [
     'Pagination' => 'Pagination',
     'Palette cannot be blank if custom colors aren’t allowed.' => 'Palette cannot be blank if custom colors aren’t allowed.',
     'Palette' => 'Palette',
+    'Panels' => 'Panels',
     'Parent {type} Title' => 'Parent {type} Title',
     'Parent' => 'Parent',
     'Parish' => 'Parish',

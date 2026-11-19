@@ -11,14 +11,17 @@ use function Pest\Laravel\actingAs;
 it('creates a user and sets their permissions', function () {
     actingAs(User::first());
 
-    visitCp('users/new')
+    $page = visitCp('users/new')
         ->type('input[name="username"]', 'ada')
         ->type('input[name="email"]', 'ada@example.com')
         ->click('#main >> role=button[name="Create and set permissions"]')
-        ->assertPathEndsWith('/permissions')
+        ->assertPathEndsWith('/permissions');
+
+    assertNoAccessibilityIssues($page
         ->click('#main >> role=checkbox[name="Access the control panel"]')
         ->click('#main >> role=checkbox[name="View users"]')
         ->click('#main >> role=button[name="Save"]')
+        ->assertVisible('role=textbox[name="Password"]'))
         ->type('role=textbox[name="Password"]', 'craftcms2018!!')
         ->click('role=button[name="Sign in"]')
         ->assertSee('Permissions saved.');
@@ -42,4 +45,21 @@ it('keeps a user without admin rights out of the settings', function () {
         ->assertMissing('nav[aria-label="Primary"] >> role=link[name="Users"]');
 
     visit('/'.Cms::config()->cpTrigger.'/settings')->assertSee('User is not permitted to perform this action.');
+});
+
+describe('with the workbench content', function () {
+    beforeEach(function () {
+        seedWorkbenchContent();
+        actingAs(User::first());
+    });
+
+    it('renders the user pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'users' => ['users', 'Users'],
+        'new user' => ['users/new', 'New user'],
+        'user' => [fn () => 'users/'.User::query()->where('username', 'ada')->value('id'), 'Ada Lovelace'],
+        'user addresses' => [fn () => 'users/'.User::query()->where('username', 'ada')->value('id').'/addresses', 'Ada Lovelace'],
+        'user permissions' => [fn () => 'users/'.User::query()->where('username', 'ada')->value('id').'/permissions', 'Ada Lovelace'],
+    ]);
 });

@@ -12,6 +12,7 @@ use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Pest\Browser\Api\AwaitableWebpage;
@@ -32,6 +34,7 @@ use Pest\Browser\Support\PackageJsonDirectory;
 use Pest\Browser\Support\Port;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\DomCrawler\Crawler;
+use Workbench\Database\Seeders\ContentSeeder;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
@@ -231,24 +234,92 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
 }
 
 /**
- * Asserts axe finds no serious or critical accessibility issues on the page. Links in running text are told apart
- * from it by color alone unless the user turns on the “Underline links” preference, so axe's `link-in-text-block`
- * rule is off, as it is in Storybook. Axe takes longer than the usual assertion timeout on large pages, such as
- * project config with the workbench content, so it gets 30 seconds.
+ * Asserts axe finds no accessibility issues on the page, down to minor ones.
+ *
+ * Axe's WCAG rules all run. Of its best-practice rules, only those that check a requirement in
+ * `.github/instructions/a11y.instructions.md` run: heading order, content inside landmarks, one main landmark, an
+ * `h1`, and a working skip link. The others are advice that the control panel's layout doesn't always follow on
+ * purpose, such as a details column nested in an editor pane.
+ *
+ * The browser tests turn on the “Underline links” preference (see `BrowserTestCase`), so `link-in-text-block` checks
+ * the case where someone relies on it. Without it, links in running text are told apart by color alone.
+ *
+ * Axe runs once the CSS transitions and animations that end have ended. Halfway through a fade, such as a message
+ * appearing, text has less contrast than it will have, and axe reports it. Scroll-driven animations and the
+ * navigation progress bar's script animation aren't waited for. Axe takes longer than the usual
+ * assertion timeout on large pages, such as project config with the workbench content, so it gets 30 seconds.
+ *
+ * `$outsideLandmarks` names popups that legacy code attaches to `<body>`, outside every landmark, such as the field
+ * layout designer's field library. The landmark check skips them; every other rule still checks them.
+ *
+ * @param  list<string>  $outsideLandmarks
  */
-function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
+function assertNoAccessibilityIssues(AwaitableWebpage $page, array $outsideLandmarks = []): AwaitableWebpage
 {
     $page->script((string) file_get_contents(InstalledVersions::getInstallPath('pestphp/pest-plugin-browser').'/resources/js/axe.min.js'));
-    $page->script("axe.configure({rules: [{id: 'link-in-text-block', enabled: false}]})");
+    $page->script(sprintf(<<<'JS'
+        ((bestPractices, outsideLandmarks) => axe.configure({
+            rules: [
+                ...axe.getRules(['best-practice'])
+                    .filter(rule => ! bestPractices.includes(rule.ruleId))
+                    .map(rule => ({id: rule.ruleId, enabled: false})),
+                ...outsideLandmarks.length
+                    ? [{id: 'region', selector: `body *:not(${outsideLandmarks.map(s => `${s}, ${s} *`).join(', ')})`}]
+                    : [],
+            ],
+        }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'], %s)
+        JS, Json::encode($outsideLandmarks)));
+    $page->script(<<<'JS'
+        Promise.all(document.getAnimations()
+            .filter(animation => (animation instanceof CSSTransition || animation instanceof CSSAnimation)
+                && animation.timeline === document.timeline
+                && animation.effect?.getComputedTiming().iterations !== Infinity)
+            .map(animation => animation.finished.catch(() => {})))
+        JS);
 
     $timeout = Playwright::timeout();
     Playwright::setTimeout(30_000);
 
     try {
-        return $page->assertNoAccessibilityIssues();
+        return $page->assertNoAccessibilityIssues(3);
     } finally {
         Playwright::setTimeout($timeout);
     }
+}
+
+/**
+ * Seeds the workbench's sample content, as in a site someone has worked on. Each test's database is rolled back but
+ * its files aren't, so the volumes get a disk of their own, removed after the test.
+ */
+function seedWorkbenchContent(): void
+{
+    $root = public_path('test-assets');
+    File::deleteDirectory($root);
+    config()->set('filesystems.disks.assets.root', $root);
+    config()->set('filesystems.disks.assets.url', '/test-assets');
+
+    test()->seed(ContentSeeder::class);
+    test()->beforeApplicationDestroyed(fn () => File::deleteDirectory($root));
+}
+
+/**
+ * The path of an element's edit page, as `visitCp()` takes it.
+ */
+function cpEditPath(ElementInterface $element): string
+{
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    return ltrim(str_replace("/$cpTrigger/", '/', (string) parse_url((string) $element->getCpEditUrl(), PHP_URL_PATH)), '/');
+}
+
+/**
+ * Asserts a control panel page renders with the given heading, no JavaScript errors and no accessibility issues.
+ */
+function assertCpPageRenders(string $path, string $heading): void
+{
+    test()->withoutExceptionHandling();
+
+    assertNoAccessibilityIssues(assertNoJavaScriptErrors(visitCp($path))->assertSeeIn('#main h1', $heading));
 }
 
 function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void

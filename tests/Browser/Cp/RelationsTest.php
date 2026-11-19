@@ -64,8 +64,11 @@ function relatedTitles(EntryElement $entry): array
 it('relates entries chosen in the element selector', function () {
     $home = $this->entries['Home'];
 
-    visitCp("content/entries/articles/$home->id")
+    $page = visitCp("content/entries/articles/$home->id")
         ->click('#main >> role=button[name="Add an entry"]')
+        ->assertVisible('craft-element-selector-modal >> role=checkbox[name="Select Bravo"]');
+
+    assertNoAccessibilityIssues($page)
         ->click('craft-element-selector-modal >> role=checkbox[name="Select Bravo"]')
         ->click('craft-element-selector-modal >> role=checkbox[name="Select Alpha"]')
         ->click('craft-element-selector-modal >> role=button[name="Add an entry"]')
@@ -101,9 +104,12 @@ it('updates a related entry’s chip when the entry is saved in a slideout', fun
     $home->setFieldValue('related', [$this->entries['Alpha']->id]);
     Elements::saveElement($home);
 
-    visitCp("content/entries/articles/$home->id")
+    $page = visitCp("content/entries/articles/$home->id")
         ->click('role=group[name="Related"] >> craft-chip:has-text("Alpha") >> role=button[name="Actions"]')
         ->click('role=button[name="Edit entry"]')
+        ->assertVisible('role=dialog >> input[name="title"]');
+
+    assertNoAccessibilityIssues($page)
         ->type('role=dialog >> input[name="title"]', 'Alpha Prime')
         ->click('role=dialog >> role=button[name="Save"]')
         ->assertMissing('role=dialog')

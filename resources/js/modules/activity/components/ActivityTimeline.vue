@@ -68,9 +68,12 @@
           :key="group.key"
           :data-activity-day="group.key"
         >
-          <h4 class="activity-timeline__day">
+          <component
+            :is="`h${props.dayHeadingLevel ?? 4}`"
+            class="activity-timeline__day"
+          >
             <span class="activity-timeline__day-label">{{ group.label }}</span>
-          </h4>
+          </component>
           <component
             v-for="(event, index) in group.events"
             :key="event.id"

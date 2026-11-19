@@ -301,7 +301,7 @@
         class="details-panels__rail"
         :class="{'details-panels__rail--detached': rail}"
         role="group"
-        :aria-label="t('Details')"
+        :aria-label="t('Panels')"
         :data-open="String(openPanelId !== null)"
       >
         <craft-disclosure

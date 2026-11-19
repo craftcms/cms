@@ -12,10 +12,11 @@
     additionalSkipLinks?: Array<{label: string; url: string}>;
   }>();
 
+  // Pages that take over `page-main` give their own `<main>` this id too.
   const skipLinks = computed(() => [
-    {label: t('Skip to main section'), url: '#main'},
+    {label: t('Skip to main section'), url: '#content-main'},
     ...(props.hasSidebar
-      ? [{label: t('Skip to secondary navigation'), url: '#secondary-nav'}]
+      ? [{label: t('Skip to secondary navigation'), url: '#content-sidebar'}]
       : []),
     ...(props.additionalSkipLinks ?? []),
   ]);
