@@ -529,6 +529,7 @@ return [
     'Press Tab for actions' => 'Press Tab for actions',
     'Previous page' => 'Previous page',
     'Project config changes' => 'Project config changes',
+    'Project config YAML files can’t be written in this environment.' => 'Project config YAML files can’t be written in this environment.',
     'Prompts' => 'Prompts',
     'Provider' => 'Provider',
     'Provider default' => 'Provider default',
