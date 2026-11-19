@@ -260,7 +260,9 @@
 - Fixed a bug where element chips’ labels and status indicators were hard to see in highlighted options, such as in relation fields’ search results. ([#20778](https://github.com/craftcms/cms/issues/20778), [#20807](https://github.com/craftcms/cms/pull/20807))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability.
 - Added `CraftCms\Cms\Dashboard\Dashboard::isWidgetTypeAvailable()`.
+- Added `CraftCms\Cms\Http\RequestBodyLogProcessor`.
 
 ## 6.0.0-beta.1 - 2026-11-10
 
