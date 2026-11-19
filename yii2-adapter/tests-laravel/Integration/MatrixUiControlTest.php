@@ -20,6 +20,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
@@ -33,6 +34,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Yii2Adapter\Field\BaseRelationField as LegacyBaseRelationField;
 use CraftCms\Yii2Adapter\Field\Field as LegacyField;
 use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -309,8 +311,59 @@ it('names legacy field inputs inside nested blocks by the block namespace and la
     'Content Block' => ContentBlock::class,
 ]);
 
+it('saves untouched legacy relation fields in nested entries from the values their HTML captured', function() {
+    $targetIds = [EntryModel::factory()->createElement()->id, EntryModel::factory()->createElement()->id];
+    $legacyField = Field::factory()->create(['name' => 'Target', 'handle' => 'target3', 'type' => NestedLegacyEntriesField::class]);
+    $entryType = EntryTypeModel::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([new CustomField(config: [
+            'uid' => Str::uuid()->toString(),
+            'fieldUid' => $legacyField->uid,
+            'handle' => 'target',
+        ])]))
+        ->create(['name' => 'Link', 'handle' => 'link', 'hasTitleField' => false]);
+    $fieldModel = Field::factory()->create([
+        'name' => 'Links', 'handle' => 'links', 'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$entryType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+    ]);
+    $model = EntryModel::factory()->withFieldLayout(FieldLayout::factory()->forField($fieldModel))->create();
+    $owner = Entry::find()->id($model->id)->one();
+    $owner->setFieldValue('links', ['new1' => ['type' => 'link', 'fields' => ['target' => $targetIds]]]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    $owner = Entry::find()->id($model->id)->one();
+
+    $payload = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner);
+
+    $this->app->forgetInstance(ElementRequest::class);
+    $this->postJson(action([ElementDraftsController::class, 'store']), [
+        'elementType' => Entry::class,
+        'elementId' => $owner->id,
+        'siteId' => $owner->siteId,
+        'provisional' => true,
+        'fields' => ['links' => $payload->values['fields']['links']],
+    ])->assertOk();
+
+    $draft = Entry::find()->draftOf($owner)->provisionalDrafts()->status(null)->one();
+
+    expect($draft->getFieldValue('links')->status(null)->one()->getFieldValue('target')->ids())->toBe($targetIds);
+});
+
 class PluginMatrixUiField extends LegacyMatrix
 {
+}
+
+class NestedLegacyEntriesField extends LegacyBaseRelationField
+{
+    #[Override]
+    public static function displayName(): string
+    {
+        return 'Legacy entries';
+    }
+
+    #[Override]
+    public static function elementType(): string
+    {
+        return Entry::class;
+    }
 }
 
 class NestedLegacyTargetField extends LegacyField

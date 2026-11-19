@@ -306,6 +306,81 @@ class LegacyHtml
         return $expanded;
     }
 
+    /**
+     * Returns a field's value from the flat input map its legacy HTML captured, or `$value` itself when it isn't one.
+     *
+     * A nested field's legacy HTML submits that map as-is until its inputs are edited, such as when a sibling Matrix
+     * entry changes, rather than the expanded value its inputs post.
+     */
+    public function capturedFieldValue(mixed $value, string $handle): mixed
+    {
+        if (!is_array($value) || $value === [] || array_is_list($value)) {
+            return $value;
+        }
+
+        $root = null;
+        $inputs = [];
+
+        foreach ($value as $name => $item) {
+            $segments = is_string($name) ? $this->inputSegments($name) : null;
+            // Requests convert empty strings to null
+            $item ??= '';
+            $isInputValue = is_string($item) || (is_array($item) && array_is_list($item) && array_all($item, fn(mixed $option) => is_string($option)));
+
+            if ($segments === null || !$isInputValue) {
+                return $value;
+            }
+
+            $inputs[$name] = $item;
+
+            $length = 0;
+
+            while (isset($segments[$length]) && ($root === null || ($root[$length] ?? null) === $segments[$length])) {
+                $length++;
+            }
+
+            $root = array_slice($segments, 0, $length);
+        }
+
+        // The field's own inputs are named after its handle, so its value sits at the last match within their shared root
+        $handleIndex = array_search($handle, array_reverse($root, true), true);
+
+        if ($handleIndex === false) {
+            return $value;
+        }
+
+        $field = $this->expand($inputs);
+
+        foreach (array_slice($root, 0, $handleIndex + 1) as $segment) {
+            if (!is_array($field) || !array_key_exists($segment, $field)) {
+                return $value;
+            }
+
+            $field = $field[$segment];
+        }
+
+        return $field;
+    }
+
+    /**
+     * Returns the segments of a bracketed input name, as `parse_str()` reads them, leaving out list appends.
+     *
+     * @return list<string>|null
+     */
+    private function inputSegments(string $name): ?array
+    {
+        if (!preg_match('/^([^\[\]]+)((?:\[[^\[\]]*\])+)$/', $name, $match)) {
+            return null;
+        }
+
+        preg_match_all('/\[([^\[\]]*)\]/', $match[2], $keys);
+
+        return array_values(array_filter(
+            [str_replace(['.', ' '], '_', $match[1]), ...$keys[1]],
+            fn(string $segment) => $segment !== '',
+        ));
+    }
+
     /** @param array<string, string|list<string>> $values */
     private function append(array &$values, string $name, string $value): void
     {
