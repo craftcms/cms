@@ -278,6 +278,8 @@
     <ElementIndex
       :view="model.view"
       :toolbar-as-form="false"
+      show-sites
+      @site-change="model.changeSite"
       table-appearance="plain"
       :quick-edit="editable ? quickEdit : undefined"
       :footer-active="editable && selection.hasSelection.value"

@@ -261,6 +261,43 @@ describe('EmbeddedElementIndexView', () => {
     );
   });
 
+  it('lists the site picked in its site menu', async () => {
+    restoreElementInternals = stubElementInternals();
+    const payload = nestedIndexPayload([nestedElement(11)]);
+    payload.showSiteMenu = true;
+    payload.sites = [
+      {id: 1, handle: 'default', name: 'Default', group: null},
+      {id: 2, handle: 'fr', name: 'French', group: null},
+    ];
+    request.post.mockResolvedValue({data: payload});
+    root = document.createElement('div');
+    document.body.append(root);
+    app = createApp({
+      render: () =>
+        h(EmbeddedElementIndexView, {
+          elementType: 'Entry',
+          initial: payload,
+          params: {embeddedIndexToken: 'sealed'},
+          storageKey: 'embeddedindex.test',
+        }),
+    });
+    app.mount(root);
+    await vi.waitFor(() => expect(root!.querySelector('tr')).not.toBeNull());
+
+    const select = root.querySelector(
+      '.element-toolbar__site craft-select-rich'
+    )!;
+    Object.assign(select, {value: 'fr'});
+    select.dispatchEvent(new Event('change'));
+
+    await vi.waitFor(() =>
+      expect(postsTo(request.post, 'get-elements').at(-1)).toMatchObject({
+        site: 'fr',
+        embeddedIndexToken: 'sealed',
+      })
+    );
+  });
+
   it('offers exports but no bulk actions when it’s read-only', async () => {
     const container = mount(true);
     await vi.waitFor(() =>
