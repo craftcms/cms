@@ -123,10 +123,15 @@
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
 - Renamed `<craft-tab>`’s `--c-tab-spacing-inline`, `--c-tab-spacing-block`, and `--c-tab-border-active` custom properties to `--c-tab-padding-inline`, `--c-tab-padding-block`, and `--c-tab-indicator-fill-active`. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - The web installer now has a “Time Zone” field, which defaults to the time zone in the project config, or the browser’s time zone. Previously, sites installed from the web installer were always set to America/Los_Angeles.
+- Fixed a bug where OAuth providers’ `clientId` and `clientSecret` settings weren’t parsed for environment variables, such as `$GITHUB_CLIENT_SECRET`. ([#20882](https://github.com/craftcms/cms/issues/20882), [#20890](https://github.com/craftcms/cms/pull/20890))
+- Fixed a bug where signing in with an OAuth provider returned a 404 error on sites whose base URL has a path, such as `https://example.com/fr/`. ([#20884](https://github.com/craftcms/cms/issues/20884), [#20889](https://github.com/craftcms/cms/pull/20889))
+- Fixed a bug where users could disconnect their last sign-in provider from **My Account** → **Sign-in Providers** when they had no password or passkey, leaving them unable to sign in. ([#20883](https://github.com/craftcms/cms/issues/20883), [#20891](https://github.com/craftcms/cms/pull/20891))
+- Fixed a bug where element editors autosaved a provisional draft as soon as they loaded when they had a legacy relation field from the Yii2 adapter, such as a Categories field, including within Matrix entries and Content Blocks. ([#20869](https://github.com/craftcms/cms/issues/20869), [#20871](https://github.com/craftcms/cms/pull/20871))
 - Fixed a bug where Live Preview kept showing discarded changes after “Discard changes” was clicked. ([#20839](https://github.com/craftcms/cms/issues/20839), [#20858](https://github.com/craftcms/cms/pull/20858))
 - Fixed a bug where the web installer’s Port field was too narrow to show its value.
 - Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer showed “[object Object]” rather than the error message when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed a bug where the front-end login, logout, set password, and verify email paths returned a 404 error on sites whose base URL has a path, such as `https://example.com/fr/`. ([#20892](https://github.com/craftcms/cms/pull/20892))
 - Fixed a bug where the web installer’s “Language” options didn’t include the languages’ names. ([#20818](https://github.com/craftcms/cms/issues/20818), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer’s fields extended past the right edge of the installer, and later steps kept the height of the license screen. ([#20817](https://github.com/craftcms/cms/issues/20817), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed an error that occurred when installing Craft from the web installer with a blank Base URL. ([#20824](https://github.com/craftcms/cms/pull/20824))
@@ -288,6 +293,8 @@
 - Fixed a bug where `CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving` listeners and `craft\elements\Entry::EVENT_DEFINE_META_FIELDS` handlers didn’t affect the entry edit screen. ([#20846](https://github.com/craftcms/cms/issues/20846))
 - Fixed a bug where PHP scripts that booted Craft with the Yii2 adapter installed exited with status 0 when an exception went uncaught. ([#20822](https://github.com/craftcms/cms/issues/20822), [#20830](https://github.com/craftcms/cms/pull/20830))
 - Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
+- Fixed a bug where changing a Link field’s label in a draft could make autosave run repeatedly, so Live Preview never opened. ([#20870](https://github.com/craftcms/cms/pull/20870))
+- Fixed a bug where `<craft-tooltip>` text didn’t wrap when the tooltip was inside an element that doesn’t wrap text, such as an admin table’s actions cell. ([#20891](https://github.com/craftcms/cms/pull/20891))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

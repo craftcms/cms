@@ -19,11 +19,13 @@ use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUserGroups;
 use CraftCms\Cms\Auth\OAuth\Data\ButtonData;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\Auth\OAuth\Exceptions\ProviderConfigurationException;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -311,6 +313,20 @@ class OAuth
         return SsoIdentity::query()->where('userId', $userId)->exists();
     }
 
+    /**
+     * Returns whether the user can still sign in without the given provider:
+     * with a password, a passkey, or another configured provider.
+     */
+    public function canUnlinkIdentity(User $user, ProviderDefinition $provider): bool
+    {
+        return $user->getHasPassword()
+            || app(Passkeys::class)->hasPasskeys($user)
+            || $this->getProviderDefinitions()->contains(
+                fn (ProviderDefinition $other): bool => $other->handle !== $provider->handle
+                    && $this->identityFor($user, $other) !== null,
+            );
+    }
+
     public function unlinkIdentity(User $user, ProviderDefinition $provider): void
     {
         SsoIdentity::query()
@@ -400,8 +416,8 @@ class OAuth
         }
 
         $driver = $config['driver'];
-        $clientId = $config['clientId'] ?? null;
-        $clientSecret = $config['clientSecret'] ?? null;
+        $clientId = Env::parse($config['clientId'] ?? null);
+        $clientSecret = Env::parse($config['clientSecret'] ?? null);
         $providerClass = $this->resolveProviderClass($handle, $driver);
         $name = ($config['name'] ?? null) ?: Str::headline($handle);
         $label = ($config['label'] ?? null) ?: t('Sign in with {name}', ['name' => $name]);
@@ -413,8 +429,8 @@ class OAuth
             providerClass: $providerClass,
             name: $name,
             label: $label,
-            clientId: $clientId !== null ? (string) $clientId : null,
-            clientSecret: $clientSecret !== null ? (string) $clientSecret : null,
+            clientId: $clientId,
+            clientSecret: $clientSecret,
             icon: $icon,
             stateless: (bool) ($config['stateless'] ?? false),
             createsUsers: array_key_exists('createsUsers', $config)
