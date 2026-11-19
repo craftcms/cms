@@ -58,7 +58,10 @@ document.addEventListener(
       event.submitter?.form === form ? event.submitter : undefined;
 
     settle(form).then(() => {
-      waiting.delete(form);
+      // Resetting the form cancels the submission
+      if (!waiting.delete(form)) {
+        return;
+      }
       form.requestSubmit(submitter?.isConnected ? submitter : undefined);
     });
   },
@@ -66,6 +69,7 @@ document.addEventListener(
 );
 
 document.addEventListener('reset', (event) => {
+  waiting.delete(event.target);
   // `elements` includes controls outside the form that name it with a `form` attribute
   for (const element of [...event.target.elements]) {
     if (element.matches(hiddenSelector)) {

@@ -108,16 +108,19 @@ Craft.UploadSessionUploader = Craft.BaseUploader.extend(
       this._inProgressCounter += validFiles.length;
       this._totalBytes += validFiles.reduce((sum, file) => sum + file.size, 0);
 
+      // The destination can change while the batch uploads, such as when another folder is selected
+      const parameters = this._parameters();
+
       for (const file of validFiles) {
-        await this._upload(file);
+        await this._upload(file, parameters);
       }
     },
 
-    _upload: async function (file) {
+    _upload: async function (file, parameters) {
       const upload = new FileUpload(file, {
         url: Craft.getActionUrl('uploads/start'),
         csrfToken: Craft.csrfTokenValue,
-        parameters: this._parameters(),
+        parameters,
         onProgress: (loaded) => {
           this._loaded.set(file, loaded);
           this._dispatch('fileuploadprogressall', {
