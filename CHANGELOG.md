@@ -117,6 +117,7 @@
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
+- Fixed a bug where Live Preview kept showing discarded changes after “Discard changes” was clicked. ([#20839](https://github.com/craftcms/cms/issues/20839), [#20858](https://github.com/craftcms/cms/pull/20858))
 - Fixed a bug where the web installer replaced a working database connection with default settings when the database step was skipped, so installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer showed “[object Object]” rather than the error message when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer’s “Language” options didn’t include the languages’ names. ([#20818](https://github.com/craftcms/cms/issues/20818), [#20824](https://github.com/craftcms/cms/pull/20824))
