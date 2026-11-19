@@ -139,7 +139,7 @@ describe('craft-pane header/footer presence', () => {
   it.each([
     'footer',
     'footer-content',
-    'feedback',
+    'footer-start',
     'actions',
     'primary-action',
     'secondary-action',
@@ -182,13 +182,16 @@ describe('craft-pane header/footer presence', () => {
   });
 
   it('nests the default footer layout inside footer-content and actions', async () => {
-    const element = await createPane({}, '<span slot="feedback">Saved</span>');
+    const element = await createPane(
+      {},
+      '<span slot="footer-start">Saved</span>'
+    );
     await settle(element);
 
     const footerContent = shadow(element, 'slot[name="footer-content"]');
     expect(footerContent).not.toBeNull();
     expect(
-      footerContent!.querySelector('slot[name="feedback"]')
+      footerContent!.querySelector('slot[name="footer-start"]')
     ).not.toBeNull();
 
     const actions = footerContent!.querySelector('slot[name="actions"]');

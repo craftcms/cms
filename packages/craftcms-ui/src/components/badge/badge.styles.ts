@@ -72,6 +72,23 @@ export default css`
     color: inherit;
   }
 
+  /*
+   * A leading icon is the label's size, centered in the rounded end: as far
+   * from the edge as from the top and bottom.
+   */
+  ::slotted(craft-icon[slot='prefix']) {
+    --c-icon-size: 1em;
+    width: 1em;
+  }
+
+  .badge--labeled.badge--icon-prefix {
+    padding-inline-start: calc((var(--c-size-control-sm) - 1em) / 2 - 1px);
+  }
+
+  .badge--small.badge--labeled.badge--icon-prefix {
+    padding-inline-start: calc((var(--c-size-control-xs) - 1em) / 2 - 1px);
+  }
+
   .badge__label--text {
     display: block;
     text-box: trim-both cap alphabetic;

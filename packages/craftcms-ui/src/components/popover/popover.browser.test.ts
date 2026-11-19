@@ -193,6 +193,88 @@ it('leaves a click outside a select’s open list to close only the list', async
   expect(popover.open).toBe(false);
 });
 
+it('stays open while a modal opened over it is used, when kept open behind modals', async () => {
+  document.body.innerHTML = `
+    <main tabindex="-1"><p>Outside</p></main>
+    <craft-popover keep-open-behind-modals>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>
+    <dialog><button type="button">Choose</button></dialog>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const dialog = document.querySelector('dialog')!;
+  await popover.updateComplete;
+  popover.open = true;
+  await popover.updateComplete;
+  page.getByRole('button', {name: 'Pick'}).element().focus();
+
+  dialog.showModal();
+  await userEvent.click(page.getByRole('button', {name: 'Choose'}));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(popover.open).toBe(true);
+
+  dialog.close();
+  await userEvent.click(page.getByText('Outside'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(popover.open).toBe(false);
+});
+
+it('leaves an Escape pressed in a modal over it to the modal', async () => {
+  document.body.innerHTML = `
+    <craft-popover keep-open-behind-modals>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>
+    <dialog><button type="button">Choose</button></dialog>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const dialog = document.querySelector('dialog')!;
+  const pick = popover.querySelector<HTMLElement>('[slot="content"] button')!;
+  // The modal hands focus back as it closes, before the key comes up.
+  dialog.addEventListener('close', () => pick.focus());
+  await popover.updateComplete;
+  popover.open = true;
+  await popover.updateComplete;
+  pick.focus();
+  dialog.showModal();
+
+  await userEvent.keyboard('{Escape}');
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(dialog.open).toBe(false);
+  expect(popover.open).toBe(true);
+
+  await userEvent.keyboard('{Escape}');
+  await popover.updateComplete;
+
+  expect(popover.open).toBe(false);
+});
+
+it('closes on a press elsewhere in the modal it sits in', async () => {
+  document.body.innerHTML = `
+    <dialog>
+      <p>Elsewhere</p>
+      <craft-popover keep-open-behind-modals>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content"><button type="button">Pick</button></div>
+      </craft-popover>
+    </dialog>
+  `;
+  document.querySelector('dialog')!.showModal();
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+  popover.open = true;
+  await popover.updateComplete;
+
+  await userEvent.click(page.getByText('Elsewhere'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(popover.open).toBe(false);
+});
+
 it('returns focus to the invoker, and stays closed, when Enter inside it calls hide()', async () => {
   document.body.innerHTML = `
     <craft-popover>

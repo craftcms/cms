@@ -2,6 +2,7 @@ import {html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './badge-indicator.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {Size} from '@src/constants/size';
 import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden.js';
 
 /**
@@ -39,6 +40,10 @@ export default class CraftBadgeIndicator extends LitElement {
 
   /** Theme variant of the badge indicator. Defaults to "primary" */
   @property() variant: 'primary' | 'secondary' | 'inverse' = 'primary';
+
+  /** `small` for a badge on a compact control, such as an icon button. */
+  @property({reflect: true}) size: typeof Size.Small | typeof Size.Medium =
+    Size.Medium;
 
   #labelId = `badge-label-${Math.floor(Math.random() * 1000000000).toString()}`;
 
@@ -92,6 +97,7 @@ export default class CraftBadgeIndicator extends LitElement {
           'badge-indicator--with-number': this.showCount(),
           'badge-indicator--secondary': this.variant === 'secondary',
           'badge-indicator--inverse': this.variant === 'inverse',
+          'badge-indicator--small': this.size === Size.Small,
         })}"
         role="${this.getBadgeRole()}"
         aria-labelledby="${this.altText ? this.#labelId : nothing}"

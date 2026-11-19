@@ -56,7 +56,7 @@ const OVERFLOW_TOLERANCE = 1;
  *
  * The header region only renders when the `label` attribute is set or one of
  * the `header`, `title`, or `header-actions` slots is filled; the footer only
- * renders when one of the `footer`, `footer-content`, `feedback`, `actions`,
+ * renders when one of the `footer`, `footer-content`, `footer-start`, `actions`,
  * `primary-action`, or `secondary-action` slots is filled. Presence is tracked
  * with reactive state fed by a light-DOM `MutationObserver` — `slotchange`
  * alone can't cover it, since a slot that isn't rendered can never fire one.
@@ -85,9 +85,9 @@ const OVERFLOW_TOLERANCE = 1;
  * @slot footer - The full footer region. Replaces the default footer layout
  *   when provided, padding included.
  * @slot footer-content - The contents of the footer region. Replaces the
- *   default `feedback` + `actions` layout while keeping the footer chrome.
- * @slot feedback - Content shown at the start of the footer, e.g. a save
- *   status message.
+ *   default `footer-start` + `actions` layout while keeping the footer chrome.
+ * @slot footer-start - Content at the start of the footer, opposite the
+ *   actions: a save status message, or a Cancel button.
  * @slot actions - Action content shown at the end of the footer. Replaces the
  *   default `secondary-action` + `primary-action` group.
  * @slot secondary-action - The footer's secondary action, e.g. a cancel button.
@@ -251,7 +251,7 @@ export default class CraftPane extends Paddable(LitElement, {
       this,
       'footer',
       'footer-content',
-      'feedback',
+      'footer-start',
       'actions',
       'primary-action',
       'secondary-action'
@@ -421,7 +421,7 @@ export default class CraftPane extends Paddable(LitElement, {
           ? html`<slot name="footer">
               <div class="cp-pane__footer" part="footer">
                 <slot name="footer-content">
-                  <slot name="feedback"></slot>
+                  <slot name="footer-start"></slot>
                   <div class="cp-pane__spacer"></div>
                   <slot name="actions">
                     <div class="cp-pane__footer-actions" part="footer-actions">

@@ -69,6 +69,14 @@ export default class CraftRadio extends ChoiceInput(LitElement) {
           gap: 0 var(--c-spacing-md);
         }
 
+        /* Help text lines up with the label. Radios share the checkbox's size
+           token. Cards and buttons lay out their own. */
+        :host(:not([data-card]):not([data-button])) .choice-field__help-text {
+          padding-inline-start: calc(
+            var(--c-checkbox-size) + var(--c-spacing-md)
+          );
+        }
+
         /* Without a box of its own, an empty icon slot takes up no space. */
         .choice-field__icon {
           display: contents;

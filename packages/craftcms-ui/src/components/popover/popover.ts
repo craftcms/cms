@@ -10,7 +10,11 @@ import {
 } from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
-import {focusStaysWithin} from '@src/utilities/focus-out.js';
+import {
+  composedContains,
+  composedParent,
+  focusStaysWithin,
+} from '@src/utilities/focus-out.js';
 import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
 import {isOutsidePressClaimedWithin} from '@src/utilities/overlay-outside-press.js';
 import {announceOverlayState} from '@src/utilities/overlay-events.js';
@@ -24,6 +28,35 @@ import {
 } from '@src/utilities/overlay-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
+
+/**
+ * Whether `node` is in a modal dialog opened over `overlay`, such as a picker
+ * one of its controls opened, rather than one holding it. The page behind such
+ * a dialog is inert, so pressing or focusing in it never leaves the overlay.
+ * A dialog rendered in a shadow root is found through its host, which is what
+ * focus moving into it is retargeted to.
+ */
+function inModalOver(node: Node, overlay: Element): boolean {
+  for (
+    let current: Node | null = node;
+    current;
+    current = composedParent(current)
+  ) {
+    if (!(current instanceof Element)) {
+      continue;
+    }
+
+    const dialog = current.matches('dialog:modal')
+      ? current
+      : current.shadowRoot?.querySelector('dialog:modal');
+
+    if (dialog) {
+      return !composedContains(dialog, overlay);
+    }
+  }
+
+  return false;
+}
 
 /**
  * Caps the pane at the room left between it and the viewport edge it opens
@@ -169,6 +202,10 @@ const matchReferenceWidth: Partial<Modifier<'matchReferenceWidth', {}>> = {
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
  * @fires craft-after-hide - The overlay has closed and its update has settled.
+ *
+ * @cssproperty --popover-min-inline-size - The pane's minimum width.
+ * @cssproperty --popover-max-inline-size - The pane's maximum width.
+ * @cssproperty --popover-max-block-size - The pane's maximum height.
  */
 export default class CraftPopover extends LitElement {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
@@ -222,6 +259,19 @@ export default class CraftPopover extends LitElement {
    */
   @property({type: Boolean, reflect: true}) manual = false;
 
+  /**
+   * Keeps the popover open while a modal opened over it, such as a picker one
+   * of its controls opened, takes presses and focus. Set it on a popover
+   * holding a draft that the modal adds to. Without it, focus moving into the
+   * modal closes the popover, as for a menu item that opens a dialog.
+   */
+  @property({
+    type: Boolean,
+    attribute: 'keep-open-behind-modals',
+    reflect: true,
+  })
+  keepOpenBehindModals = false;
+
   #contentWrapper: HTMLElement | null = null;
 
   /**
@@ -257,6 +307,9 @@ export default class CraftPopover extends LitElement {
   /** The `pointerdown` that started the press in progress. */
   #pressStart: PointerEvent | null = null;
 
+  /** Whether the press in progress started in a modal opened over the popover. */
+  #pressInModal = false;
+
   constructor() {
     super();
     this.addEventListener('keydown', this.#claimEscape);
@@ -285,6 +338,7 @@ export default class CraftPopover extends LitElement {
     if (
       focusStaysWithin(event, this, this.invoker) ||
       this.#controlsContent(event.relatedTarget) ||
+      (this.keepOpenBehindModals && inModalOver(event.relatedTarget, this)) ||
       this.#pressClosedInside()
     ) {
       return;
@@ -444,6 +498,7 @@ export default class CraftPopover extends LitElement {
           ownsAria: false,
         };
         node.addEventListener('click', this.#onInvokerClick);
+        node.addEventListener('keydown', this.#onEscapeDown);
         node.addEventListener('keyup', this.#onEscape);
         node.addEventListener('focusout', this.#onInvokerFocusOut);
         if (this.#shown) {
@@ -477,6 +532,7 @@ export default class CraftPopover extends LitElement {
 
     const {node, ariaExpanded, ownsAria} = this.#invoker;
     node.removeEventListener('click', this.#onInvokerClick);
+    node.removeEventListener('keydown', this.#onEscapeDown);
     node.removeEventListener('keyup', this.#onEscape);
     node.removeEventListener('focusout', this.#onInvokerFocusOut);
     this.#removePointerListeners(node);
@@ -555,6 +611,19 @@ export default class CraftPopover extends LitElement {
   #escapeHandledInside = false;
 
   /**
+   * Whether the Escape being released was pressed in the popover or on its
+   * invoker. One pressed in a modal over it, which closes on keydown and hands
+   * focus back, is that modal's alone.
+   */
+  #escapePressedHere = false;
+
+  #onEscapeDown = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape') {
+      this.#escapePressedHere = true;
+    }
+  };
+
+  /**
    * The popover closes on Escape's keyup, so its keydown would otherwise reach
    * an ancestor's own Escape handling, such as a panel that closes on it.
    * Marking it handled leaves the key to the popover alone — unless something
@@ -565,6 +634,7 @@ export default class CraftPopover extends LitElement {
       return;
     }
 
+    this.#escapePressedHere = true;
     this.#escapeHandledInside = event.defaultPrevented;
 
     if (this.open) {
@@ -573,12 +643,20 @@ export default class CraftPopover extends LitElement {
   };
 
   /**
-   * Closes on an Escape released in the content or on the invoker. A nested
+   * Closes on an Escape pressed and released in the content or on the
+   * invoker. A nested
    * popover that closes on it marks the event, so the one around it stays
    * open; a closed popover's invoker passes it on to the popover around it.
    */
   #onEscape = (event: KeyboardEvent): void => {
-    if (event.key !== 'Escape' || isEscapeClaimed(event)) {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    const pressedHere = this.#escapePressedHere;
+    this.#escapePressedHere = false;
+
+    if (!pressedHere || isEscapeClaimed(event)) {
       return;
     }
 
@@ -611,29 +689,32 @@ export default class CraftPopover extends LitElement {
 
   #onDocumentPointerDown = (event: PointerEvent): void => {
     this.#pressStart = event;
+    const target = event.composedPath()[0];
+    this.#pressInModal =
+      this.keepOpenBehindModals &&
+      target instanceof Node &&
+      inModalOver(target, this);
   };
 
   /**
    * Closes on a click that both started and ended outside the content and the
    * invoker, unless an overlay in the content, such as a select's list, closed
-   * on it instead. The document sees the mouseup first, in its capture phase,
+   * on it instead, or it was in a modal opened over a popover kept open
+   * behind modals. The document sees the mouseup first, in its capture phase,
    * so the decision waits a task for the inside listeners to report.
    */
   #onDocumentPointerUp = (): void => {
-    const pressClosedInside = this.#pressClosedInside();
+    const keepOpen = this.#pressClosedInside() || this.#pressInModal;
 
     setTimeout(() => {
-      if (
-        !this.#pointerDownInside &&
-        !this.#pointerUpInside &&
-        !pressClosedInside
-      ) {
+      if (!this.#pointerDownInside && !this.#pointerUpInside && !keepOpen) {
         this.#request(false);
       }
 
       this.#pointerDownInside = false;
       this.#pointerUpInside = false;
       this.#pressStart = null;
+      this.#pressInModal = false;
     });
   };
 
@@ -828,6 +909,7 @@ export default class CraftPopover extends LitElement {
     this.#pointerDownInside = false;
     this.#pointerUpInside = false;
     this.#pressStart = null;
+    this.#pressInModal = false;
 
     if (focusWasInContent) {
       this.#returnFocus();

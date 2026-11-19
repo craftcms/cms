@@ -218,14 +218,14 @@ export const CustomTitle: Story = {
 };
 
 /**
- * The footer's default layout puts `feedback` at the start and the
+ * The footer's default layout puts `footer-start` at the start and the
  * `secondary-action` + `primary-action` group at the end.
  */
 export const WithFooter: Story = {
   render: () => html`
     <craft-pane>
       ${bodyCopy}
-      <span slot="feedback">All changes saved</span>
+      <span slot="footer-start">All changes saved</span>
       <craft-button slot="secondary-action" appearance="plain">
         Cancel
       </craft-button>
@@ -267,7 +267,7 @@ export const FullComposition: Story = {
         scrolls inside a height-constrained pane.
       </p>
 
-      <span slot="feedback">Last saved 2 minutes ago</span>
+      <span slot="footer-start">Last saved 2 minutes ago</span>
       <craft-button slot="secondary-action" appearance="plain">
         Cancel
       </craft-button>

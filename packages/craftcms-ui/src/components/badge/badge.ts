@@ -58,6 +58,9 @@ export default class CraftBadge extends LitElement {
   /** Whether anything is slotted into `suffix`. */
   @state() private hasSuffix = false;
 
+  /** Whether the prefix is an icon, which sits in the badge's rounded end. */
+  @state() private hasIconPrefix = false;
+
   /**
    * Watches the light DOM for what the label and suffix slots would hold. They
    * aren't rendered while empty, so there's no slot to fire `slotchange`.
@@ -98,6 +101,12 @@ export default class CraftBadge extends LitElement {
     this.hasTextLabel =
       this.hasLabel &&
       !children.some((node) => node instanceof Element && !node.slot);
+    this.hasIconPrefix = children.some(
+      (node) =>
+        node instanceof Element &&
+        node.slot === 'prefix' &&
+        node.localName === 'craft-icon'
+    );
     this.hasSuffix = children.some(
       (node) => node instanceof Element && node.slot === 'suffix'
     );
@@ -125,6 +134,7 @@ export default class CraftBadge extends LitElement {
           'badge--small': this.size === Size.Small,
           'badge--large': this.size === Size.Large,
           'badge--labeled': this.hasLabel,
+          'badge--icon-prefix': this.hasIconPrefix && !this.noPrefix,
         })}"
       >
         ${this.noPrefix
