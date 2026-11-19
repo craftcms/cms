@@ -6,6 +6,8 @@ New core work is Laravel-first. The Yii adapter exists only for plugins and inte
 
 Boost's `search-docs` covers Laravel ecosystem documentation. Use Craft's source and documentation for Craft-specific APIs; detecting `craftcms/cms` does not mean Boost has indexed its documentation.
 
+Boost's tools (`search-docs`, `database-query`, `database-schema`, `get-absolute-url`, and the rest) come from the `laravel-boost` MCP server in `.mcp.json`, which not every agent loads. When they aren't available, use `php artisan` commands, the package source under `vendor/`, and the packages' online documentation instead.
+
 This is a large codebase with some large files. Search narrowly before reading full files.
 
 All UI — PHP view components, Twig templates, Vue components, and the Lit web components in `packages/craftcms-ui` — must conform to WCAG 2.2 Level AA. See `.ai/rules/accessibility.md` for what that means in practice here. Before planning or making any UI change, read `.github/instructions/a11y.instructions.md` in full and apply every section relevant to the change.
@@ -109,9 +111,14 @@ queues. The `merging-pull-requests` skill's safeguards still apply.
 
 ## Working through tasks
 
-- When a step doesn't need my input, keep going. Put status notes in the same message as your next action. Stop and ask only when you can't continue without me, or before anything destructive.
+- When a step doesn't need my input, keep going. Put status notes and recommendations on open decisions in the same message as your next action, and carry on with the work that doesn't depend on my answer.
+- End a turn only when the work is done, when nothing can move without me, or when the blocker is deliberate, such as a protected branch or access I withheld. Don't end it with a summary that announces the next step instead of taking it, with an offer to continue, or with a list of decisions that don't block the rest of the work.
+- Treat errors, timeouts, failing tests, and failing tools as problems to diagnose: read the error, fix the command, wait and retry, or use another tool.
+- Ask before you push, open a pull request or edit its title or body, post comments or reviews on GitHub, merge, delete remote branches, or discard changes you didn't make, such as with `git reset --hard` or `git checkout -- <path>`.
+- Don't ask before running tests, `composer ci`, `composer fix-cs`, `composer phpstan`, Pint, or `pnpm` scripts, installing dependencies from the lockfiles, starting dev servers, or creating local branches and worktrees.
 
 ## Reporting
 
+- Write reports for someone who hasn't seen your tool calls or the files you opened. Put the key point first, use full sentences in plain words, and call things by their names in the code or product, not by terms you coined during the work.
 - End every long run (one that edits files or spans many steps) with three headings: **Blocked** (decisions or approvals you need, or omit if nothing), **Changed** (what you changed), **Found** (issues noticed but not acted on).
 - When a run changes UI (any path covered by `.ai/rules/accessibility.md`), add an **Accessibility** heading after **Changed**. Name each section of `.github/instructions/a11y.instructions.md` that applied, say how you verified it (a test name, a keyboard pass, a forced-colors check, a screen reader), and list what you didn't verify so a person can check it by hand.
