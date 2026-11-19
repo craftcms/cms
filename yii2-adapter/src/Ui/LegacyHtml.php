@@ -331,7 +331,7 @@ class LegacyHtml
                 return $value;
             }
 
-            $inputs[$name] = $item;
+            $inputs[] = [$segments, $item];
 
             $length = 0;
 
@@ -342,28 +342,33 @@ class LegacyHtml
             $root = array_slice($segments, 0, $length);
         }
 
-        // The field's own inputs are named after its handle, so its value sits at the last match within their shared root
-        $handleIndex = array_search($handle, array_reverse($root, true), true);
+        // The field's inputs are named after its path, which ends with `[fields][<handle>]`
+        $valueIndex = null;
 
-        if ($handleIndex === false) {
+        foreach ($root as $index => $segment) {
+            if ($index > 0 && $segment === $handle && $root[$index - 1] === 'fields') {
+                $valueIndex = $index + 1;
+            }
+        }
+
+        if ($valueIndex === null) {
             return $value;
         }
 
-        $field = $this->expand($inputs);
+        // Unlike `parse_str()`, this isn't limited to `max_input_vars` inputs
+        $field = null;
 
-        foreach (array_slice($root, 0, $handleIndex + 1) as $segment) {
-            if (!is_array($field) || !array_key_exists($segment, $field)) {
-                return $value;
+        foreach ($inputs as [$segments, $item]) {
+            foreach ((array) $item as $option) {
+                $this->setInputValue($field, array_slice($segments, $valueIndex), $option);
             }
-
-            $field = $field[$segment];
         }
 
         return $field;
     }
 
     /**
-     * Returns the segments of a bracketed input name, as `parse_str()` reads them, leaving out list appends.
+     * Returns the segments of a bracketed input name, as `parse_str()` reads them, with `''` for list appends.
      *
      * @return list<string>|null
      */
@@ -375,10 +380,34 @@ class LegacyHtml
 
         preg_match_all('/\[([^\[\]]*)\]/', $match[2], $keys);
 
-        return array_values(array_filter(
-            [str_replace(['.', ' '], '_', $match[1]), ...$keys[1]],
-            fn(string $segment) => $segment !== '',
-        ));
+        return [str_replace(['.', ' '], '_', $match[1]), ...$keys[1]];
+    }
+
+    /**
+     * Sets an input's value at its path, as `parse_str()` does.
+     *
+     * @param list<string> $path
+     */
+    private function setInputValue(mixed &$target, array $path, string $value): void
+    {
+        if ($path === []) {
+            $target = $value;
+
+            return;
+        }
+
+        if (!is_array($target)) {
+            $target = [];
+        }
+
+        $segment = array_shift($path);
+
+        if ($segment === '') {
+            $target[] = null;
+            $segment = array_key_last($target);
+        }
+
+        $this->setInputValue($target[$segment], $path, $value);
     }
 
     /** @param array<string, string|list<string>> $values */

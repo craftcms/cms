@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\elements\GlobalSet;
+use craft\fields\Entries as LegacyEntries;
 use craft\fields\Matrix as LegacyMatrix;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Auth\SessionAuth;
@@ -311,9 +312,9 @@ it('names legacy field inputs inside nested blocks by the block namespace and la
     'Content Block' => ContentBlock::class,
 ]);
 
-it('saves untouched legacy relation fields in nested entries from the values their HTML captured', function() {
+it('saves untouched legacy relation fields in nested entries from the values their HTML captured', function(string $fieldType) {
     $targetIds = [EntryModel::factory()->createElement()->id, EntryModel::factory()->createElement()->id];
-    $legacyField = Field::factory()->create(['name' => 'Target', 'handle' => 'target3', 'type' => NestedLegacyEntriesField::class]);
+    $legacyField = Field::factory()->create(['name' => 'Target', 'handle' => 'target3', 'type' => $fieldType]);
     $entryType = EntryTypeModel::factory()
         ->withFieldLayout(FieldLayout::factory()->withContentTab([new CustomField(config: [
             'uid' => Str::uuid()->toString(),
@@ -345,9 +346,16 @@ it('saves untouched legacy relation fields in nested entries from the values the
     $draft = Entry::find()->draftOf($owner)->provisionalDrafts()->status(null)->one();
 
     expect($draft->getFieldValue('links')->status(null)->one()->getFieldValue('target')->ids())->toBe($targetIds);
-});
+})->with([
+    'adapter relation field' => NestedLegacyEntriesField::class,
+    'plugin subclass of a built-in relation field' => PluginEntriesField::class,
+]);
 
 class PluginMatrixUiField extends LegacyMatrix
+{
+}
+
+class PluginEntriesField extends LegacyEntries
 {
 }
 

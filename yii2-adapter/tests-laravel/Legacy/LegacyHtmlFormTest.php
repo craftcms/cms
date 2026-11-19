@@ -272,6 +272,26 @@ it('round-trips zero, one, and multiple named roots through a flat map', functio
     ],
 ]);
 
+it('reads a field’s value from the flat input map its HTML captured', function(array $captured, string $handle, mixed $expected) {
+    expect(app(LegacyHtml::class)->capturedFieldValue($captured, $handle))->toBe($expected);
+})->with([
+    'more selections than max_input_vars' => [
+        ['fields[target]' => null, 'fields[target][]' => array_map(strval(...), range(1, 1001))],
+        'target',
+        array_map(strval(...), range(1, 1001)),
+    ],
+    'a value keyed by the field’s handle' => [
+        ['fields[width][width]' => '12'],
+        'width',
+        ['width' => '12'],
+    ],
+    'a nested field with its Matrix field’s handle' => [
+        ['fields[links][entries][abc][fields][links]' => '', 'fields[links][entries][abc][fields][links][]' => ['2', '3']],
+        'links',
+        ['2', '3'],
+    ],
+]);
+
 it('reads editable table rows from their UI payload', function() {
     $legacyHtml = app(LegacyHtml::class);
     $html = '<input type="hidden" name="fields[hours]" value="">' . FormFields::editableTableHtml([
