@@ -2,8 +2,6 @@
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import FieldTip from '@/common/components/FieldTip.vue';
-  import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import Select from '@/common/form/Select.vue';
   import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {usePage} from '@inertiajs/vue3';
@@ -47,18 +45,7 @@
     name="baseUrl"
     :error="errors?.baseUrl"
     :text-expander-triggers="page.props.baseUrlTextExpanderTriggers"
-  >
-    <FieldTip
-      slot="tip"
-      :message="
-        t(
-          'Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'
-        )
-      "
-      :href="envVarsDocsUrl"
-      html
-    />
-  </CraftInput>
+  />
 
   <Select
     v-model="language"
