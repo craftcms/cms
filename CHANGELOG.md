@@ -294,6 +294,7 @@
 - Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
 - Fixed a bug where changing a Link field’s label in a draft could make autosave run repeatedly, so Live Preview never opened. ([#20870](https://github.com/craftcms/cms/pull/20870))
 - Fixed a bug where `<craft-tooltip>` text didn’t wrap when the tooltip was inside an element that doesn’t wrap text, such as an admin table’s actions cell. ([#20891](https://github.com/craftcms/cms/pull/20891))
+- Fixed an error that occurred when saving an element from a front-end form with a file uploaded to an Assets field. ([#20881](https://github.com/craftcms/cms/issues/20881))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
