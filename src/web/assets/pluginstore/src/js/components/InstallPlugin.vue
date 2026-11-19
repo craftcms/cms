@@ -5,39 +5,15 @@
         {{ 'Installation Instructions' | t('app') }}
       </template>
       <template #content>
-        <!-- Install Modes -->
-        <div>
-          <ul class="tw-flex tw-space-x-4 tw-text-sm">
-            <li
-              v-for="(installMode, installModeKey) in installModes"
-              :key="installModeKey"
-              class="tw-py-1"
-            >
-              <button
-                :class="{
-                  'tw-text-gray-700': !(
-                    installMode.handle === currentInstallModeHandle
-                  ),
-                  'tw-font-medium tw-text-black tw-border-b-2 tw-border-orange-500':
-                    installMode.handle === currentInstallModeHandle,
-                }"
-                @click="changeInstallMode(installMode.handle)"
-              >
-                {{ installMode.name }}
-              </button>
-            </li>
-          </ul>
-        </div>
-
         <!-- Installation instructions -->
         <div class="copy-package">
-          <div class="tw-mt-2 tw-flex">
+          <div class="tw-flex">
             <c-textbox
               ref="input"
               class="tw-w-full tw-flex tw-rounded-r-none tw-font-mono focus:tw-relative focus:tw-z-10 tw-text-sm"
               readonly="readonly"
               type="text"
-              :value="currentInstallMode.copyValue"
+              :value="command"
               @focus="select"
             />
             <c-btn
@@ -88,31 +64,15 @@
 
     data() {
       return {
-        copyTimeout: null,
         showSuccess: false,
-        currentInstallModeHandle: 'shell',
       };
     },
 
     computed: {
-      currentInstallMode() {
-        return this.installModes.find(
-          (mode) => mode.handle === this.currentInstallModeHandle
-        );
-      },
-      installModes() {
-        return [
-          {
-            name: 'Shell',
-            handle: 'shell',
-            copyValue: `composer require "${this.plugin.packageName}:^${this.plugin.version}" -w && php craft plugin/install ${this.plugin.handle}`,
-          },
-          {
-            name: 'DDEV',
-            handle: 'ddev',
-            copyValue: `ddev composer require "${this.plugin.packageName}:^${this.plugin.version}" -w && ddev craft plugin/install ${this.plugin.handle}`,
-          },
-        ];
+      command() {
+        const composer = window.isDdev ? 'ddev composer' : 'composer';
+        const craft = window.isDdev ? 'ddev craft' : 'php craft';
+        return `${composer} require "${this.plugin.packageName}:^${this.plugin.version}" -w && ${craft} plugin/install ${this.plugin.handle}`;
       },
     },
 
@@ -135,13 +95,6 @@
         setTimeout(() => {
           this.showSuccess = false;
         }, 3000);
-      },
-
-      changeInstallMode(installMode) {
-        clearTimeout(this.copyTimeout);
-        this.showSuccess = false;
-
-        this.currentInstallModeHandle = installMode;
       },
     },
   };

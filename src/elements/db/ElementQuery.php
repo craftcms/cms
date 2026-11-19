@@ -3785,6 +3785,28 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
 
+        if (
+            $db->getDriverName() === Connection::DRIVER_PGSQL &&
+            !$this->subQuery->distinct &&
+            empty($this->subQuery->groupBy)
+        ) {
+            // Pick each element's preferred row with a single DISTINCT ON subquery, rather than
+            // a correlated subquery that PostgreSQL ends up evaluating against all elements_sites rows
+            $subSelectSql = (clone $this->subQuery)
+                ->select([new Expression('distinct on ([[elements.id]]) [[elements_sites.id]]')])
+                ->orderBy([
+                    'elements.id' => SORT_ASC,
+                    new Expression($caseSql, $caseParams),
+                    'elements_sites.id' => SORT_ASC,
+                ])
+                ->offset(null)
+                ->limit(null)
+                ->getRawSql();
+
+            $this->subQuery->andWhere(new Expression("[[elements_sites.id]] in ($subSelectSql)"));
+            return;
+        }
+
         $subSelectSql = (clone $this->subQuery)
             ->select(['elements_sites.id'])
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')

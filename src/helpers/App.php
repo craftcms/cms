@@ -927,6 +927,49 @@ class App
     }
 
     /**
+     * Returns whether Craft is running in a [DDEV](https://ddev.com) project.
+     *
+     * @return bool
+     * @since 5.13.0
+     */
+    public static function isDdev(): bool
+    {
+        return static::normalizeBooleanValue(static::env('IS_DDEV_PROJECT')) ?? false;
+    }
+
+    /**
+     * Returns a Craft console command, as it should be run from a terminal for the current environment.
+     *
+     * ```php
+     * App::craftCommand('oauth/generate-keys'); // php craft oauth/generate-keys, or ddev craft oauth/generate-keys on DDEV
+     * ```
+     *
+     * @param string $command The command and its arguments, without the `craft` executable
+     * @return string
+     * @since 5.13.0
+     */
+    public static function craftCommand(string $command): string
+    {
+        return (static::isDdev() ? 'ddev craft' : 'php craft') . " $command";
+    }
+
+    /**
+     * Returns a Composer command, as it should be run from a terminal for the current environment.
+     *
+     * ```php
+     * App::composerCommand('install'); // composer install, or ddev composer install on DDEV
+     * ```
+     *
+     * @param string $command The command and its arguments, without the `composer` executable
+     * @return string
+     * @since 5.13.0
+     */
+    public static function composerCommand(string $command): string
+    {
+        return (static::isDdev() ? 'ddev composer' : 'composer') . " $command";
+    }
+
+    /**
      * Returns whether Craft is running on a Windows environment
      *
      * @since 5.0.0

@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\events\ConfigEvent;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -328,7 +329,7 @@ class ProjectConfigController extends Controller
         $updatesService = Craft::$app->getUpdates();
 
         if ($updatesService->getIsCraftUpdatePending() || $updatesService->getIsPluginUpdatePending()) {
-            $this->stderr('Craft has pending migrations. Please run `craft migrate/all` first.' . PHP_EOL, Console::FG_RED);
+            $this->stderr('Craft has pending migrations. Please run `' . App::craftCommand('migrate/all') . '` first.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -591,7 +592,7 @@ class ProjectConfigController extends Controller
             $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
         }
 
-        $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+        $this->stderr(PHP_EOL . 'Try running `' . App::composerCommand('install') . '` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
         return false;
     }
 
