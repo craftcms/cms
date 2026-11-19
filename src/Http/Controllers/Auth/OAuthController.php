@@ -104,7 +104,7 @@ readonly class OAuthController extends AuthenticationController
                 );
             }
 
-            if ($isNew && $definition->activatesUsers) {
+            if ($isNew && $definition->controlsAccess) {
                 $user->active = true;
                 $user->pending = false;
             }
@@ -115,7 +115,7 @@ readonly class OAuthController extends AuthenticationController
 
             if (
                 ! $isNew &&
-                $definition->activatesUsers &&
+                $definition->controlsAccess &&
                 $user->getStatus() !== User::STATUS_ACTIVE
             ) {
                 $users->activateUser($user);
