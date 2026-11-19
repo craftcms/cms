@@ -20,8 +20,10 @@ use CraftCms\Cms\Http\Contracts\EmbeddedIndexScope;
 use CraftCms\Cms\Http\EmbeddedElementIndexScope;
 use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Collection;
 use Override;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -280,40 +282,82 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
         return $this->indexSource->criteria;
     }
 
+    /**
+     * Lists one site at a time, so each row is a single localization that its element ID identifies,
+     * for selection, element actions and inline editing.
+     */
     #[Override]
     protected function applySite(ElementQueryInterface $query): void
     {
-        if ($this->hasFixedSite()) {
-            $query->siteId($this->indexSource->criteria['siteId']);
+        if ($this->indexSource->owner !== null) {
+            parent::applySite($query);
 
             return;
         }
 
-        parent::applySite($query);
+        $query->siteId($this->siteId());
     }
 
     #[Override]
     public function siteId(): int
     {
-        if ($this->indexSource->owner === null && ! $this->hasFixedSite()) {
+        if ($this->indexSource->owner !== null) {
+            return parent::siteId();
+        }
+
+        $criteriaSiteIds = $this->criteriaSiteIds();
+
+        if ($criteriaSiteIds === null || in_array($this->site()->id, $criteriaSiteIds, true)) {
             return $this->site()->id;
         }
 
-        return parent::siteId();
+        return $this->selectableSites()->first()->id ?? $criteriaSiteIds[0];
     }
 
     #[Override]
     public function showSiteMenu(): bool
     {
-        return ! $this->hasFixedSite() && parent::showSiteMenu();
+        if ($this->indexSource->owner === null && count($this->criteriaSiteIds() ?? []) === 1) {
+            return false;
+        }
+
+        return parent::showSiteMenu();
+    }
+
+    #[Override]
+    protected function selectableSites(): Collection
+    {
+        $sites = parent::selectableSites();
+        $criteriaSiteIds = $this->indexSource->owner === null ? $this->criteriaSiteIds() : null;
+
+        if ($criteriaSiteIds === null) {
+            return $sites;
+        }
+
+        return $sites
+            ->filter(fn (Site $site): bool => in_array($site->id, $criteriaSiteIds, true))
+            ->values();
     }
 
     /**
-     * Returns whether an index without an owner was given the site(s) to list in its criteria.
+     * Returns the sites an index without an owner can list, from the `siteId` in its criteria,
+     * or `null` if any site can be listed.
+     *
+     * Values that don't name sites by ID, like `*` or a `not` list, allow any site;
+     * the criteria still limit which elements each site lists.
+     *
+     * @return non-empty-list<int>|null
      */
-    private function hasFixedSite(): bool
+    private function criteriaSiteIds(): ?array
     {
-        return $this->indexSource->owner === null && array_key_exists('siteId', $this->indexSource->criteria);
+        $siteId = $this->indexSource->criteria['siteId'] ?? null;
+        $siteIds = is_array($siteId) ? $siteId : [$siteId];
+
+        if ($siteIds === [] || array_any($siteIds, fn (mixed $id): bool => ! is_numeric($id))) {
+            return null;
+        }
+
+        return array_values(array_unique(array_map(intval(...), $siteIds)));
     }
 
     #[Override]

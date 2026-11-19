@@ -165,13 +165,49 @@ it('resolves as a Ui node when the element type has custom fields', function () 
     expect(Json::encode($payload))->toContain('craft:element-index');
 });
 
-it('lists elements from every site when the criteria ask for all sites', function () {
-    $entry = EntryModel::factory()->create();
+it('lists one site at a time when the criteria allow every site', function () {
+    [$entry, $otherSite] = embeddedIndexEntryInTwoSites();
     $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id, 'siteId' => '*']);
 
-    $payload = EmbeddedIndexViewModel::forDefinition($index)->payload();
+    $payload = ($this->postEmbedded)(['embeddedIndexToken' => $index->token(), 'site' => $otherSite->handle])
+        ->assertOk()
+        ->json();
 
-    expect(collect($payload['data'])->pluck('id')->all())->toBe([$entry->id]);
+    expect(collect($payload['data'])->pluck('id')->all())->toBe([$entry->id])
+        ->and($payload['siteId'])->toBe($otherSite->id)
+        ->and(collect($payload['sites'])->pluck('id')->all())->toContain($entry->siteId, $otherSite->id);
+});
+
+it('offers only the sites the criteria list, and lists the menu’s first when another is requested', function () {
+    [$entry, $otherSite] = embeddedIndexEntryInTwoSites();
+    $unlistedSite = SiteModel::factory()->create();
+    app(Sites::class)->refreshSites();
+    $index = EmbeddedElementIndex::make(Entry::class)
+        ->criteria(['id' => $entry->id, 'siteId' => [$otherSite->id, $entry->siteId]]);
+
+    $payload = ($this->postEmbedded)(['embeddedIndexToken' => $index->token(), 'site' => $unlistedSite->handle])
+        ->assertOk()
+        ->json();
+
+    expect(collect($payload['sites'])->pluck('id')->sort()->values()->all())
+        ->toBe(collect([$entry->siteId, $otherSite->id])->sort()->values()->all())
+        ->and($payload['siteId'])->toBe(app(Sites::class)->getPrimarySite()->id)
+        ->and(collect($payload['data'])->pluck('id')->all())->toBe([$entry->id]);
+});
+
+it('saves inline edits only to the site it lists when the criteria allow every site', function () {
+    [$entry, $otherSite] = embeddedIndexEntryInTwoSites();
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id, 'siteId' => '*']);
+
+    ($this->postToIndex)(SaveElementIndexElementsController::class, $index, [
+        'site' => $otherSite->handle,
+        'siteId' => $otherSite->id,
+        'namespace' => 'inline',
+        'inline' => ["element-$entry->id" => ['title' => 'Translated']],
+    ])->assertOk();
+
+    expect(Entry::find()->id($entry->id)->siteId($otherSite->id)->status(null)->one()->title)->toBe('Translated')
+        ->and(Entry::find()->id($entry->id)->siteId($entry->siteId)->status(null)->one()->title)->toBe('Original');
 });
 
 it('lists the elements matching criteria posted without a token', function () {
@@ -504,3 +540,20 @@ it('authorizes inline edits after applying them', function () {
     expect($entry->sectionId)->toBe($section->id)
         ->and($entry->title)->toBe('Before saved');
 });
+
+/**
+ * @return array{0: Entry, 1: SiteModel}
+ */
+function embeddedIndexEntryInTwoSites(): array
+{
+    $otherSite = SiteModel::factory()->create();
+    app(Sites::class)->refreshSites();
+    $entryType = EntryTypeModel::factory()->create();
+    $section = SectionModel::factory()->withEntryTypes($entryType)->withSites($otherSite)->create();
+    $model = EntryModel::factory()->forSection($section)->forEntryType($entryType)->create();
+    $entry = Entry::find()->id($model->id)->one();
+    $entry->title = 'Original';
+    Elements::saveElement($entry);
+
+    return [Entry::find()->id($entry->id)->one(), $otherSite];
+}

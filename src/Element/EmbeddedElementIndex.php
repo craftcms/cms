@@ -65,6 +65,9 @@ class EmbeddedElementIndex
      * Elements are stored as their IDs, dates as ISO 8601 strings and backed enums as their values,
      * so the criteria can be carried in the index's token.
      *
+     * The index lists one site at a time. A `siteId` decides which sites it can list:
+     * one site ID fixes it to that site, and a list of IDs limits its site menu to those sites.
+     *
      * @param  array<string, mixed>  $criteria
      *
      * @throws InvalidArgumentException if a criteria value can't be stored in the token
