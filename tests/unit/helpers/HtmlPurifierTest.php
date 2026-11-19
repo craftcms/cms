@@ -12,6 +12,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
 use craft\test\TestCase;
 use HTMLPurifier_Config;
+use HTMLPurifier_HTMLDefinition;
 
 /**
  * Class HtmlPurifierTest.
@@ -57,7 +58,32 @@ class HtmlPurifierTest extends TestCase
             self::assertSame('<a href="https://example.com">Link</a>Caption', HtmlPurifier::process($html, ['HTML.Allowed' => 'a[href]']));
         }
 
-        self::assertCount(2, glob($cachePath . DIRECTORY_SEPARATOR . '*.ser'));
+        $cacheFiles = glob($cachePath . DIRECTORY_SEPARATOR . '*.ser');
+        self::assertCount(2, $cacheFiles);
+
+        // A cache file that's still being written is treated as a cache miss, and replaced
+        foreach ($cacheFiles as $file) {
+            $contents = file_get_contents($file);
+            file_put_contents($file, substr($contents, 0, intdiv(strlen($contents), 2)));
+        }
+        self::assertSame($html, HtmlPurifier::process($html));
+        self::assertSame('<a href="https://example.com">Link</a>Caption', HtmlPurifier::process($html, ['HTML.Allowed' => 'a[href]']));
+        foreach ($cacheFiles as $file) {
+            self::assertInstanceOf(HTMLPurifier_HTMLDefinition::class, unserialize(file_get_contents($file)));
+        }
+    }
+
+    public function testProcessWithSubclassCanEditHtmlDefinition(): void
+    {
+        $purifier = new class() extends HtmlPurifier {
+            public static function configure($config): void
+            {
+                parent::configure($config);
+                $config->getHTMLDefinition(true)->addAttribute('p', 'data-foo', 'Text');
+            }
+        };
+
+        self::assertSame('<p data-foo="bar">Hi</p>', $purifier::process('<p data-foo="bar">Hi</p>'));
     }
 
     public function testProcessWithClosureCanEditHtmlDefinition(): void

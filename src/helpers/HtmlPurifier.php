@@ -8,8 +8,10 @@
 namespace craft\helpers;
 
 use craft\htmlpurifier\RelAttrLinkTypeDef;
+use craft\htmlpurifier\SerializerDefinitionCache;
 use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
+use HTMLPurifier_DefinitionCacheFactory;
 use HTMLPurifier_Encoder;
 
 /**
@@ -53,11 +55,14 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     {
         // Give array configs a definition ID so HTML Purifier caches the customized HTML definition,
         // rather than rebuilding it on every call. Its cache keys already account for the other HTML.*
-        // directives. Config objects and closures can edit the definition themselves, so they aren't cached.
-        if ($config === null || is_array($config)) {
+        // directives. Config objects, closures, and subclasses can edit the definition themselves, so they
+        // aren't cached.
+        if (($config === null || is_array($config)) && static::class === self::class) {
+            HTMLPurifier_DefinitionCacheFactory::instance()->register('CraftSerializer', SerializerDefinitionCache::class);
             $config ??= [];
             $config['HTML.DefinitionID'] = 'craft';
             $config['HTML.DefinitionRev'] = self::HTML_DEFINITION_REV;
+            $config['Cache.DefinitionImpl'] = 'CraftSerializer';
         }
 
         return parent::process($content, $config);
