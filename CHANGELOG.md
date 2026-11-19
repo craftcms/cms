@@ -46,7 +46,8 @@
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - The global nav’s labels and every breadcrumb but the current one are now a little lighter, and return to full strength when hovered. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - The global header’s Dev Mode and Maintenance Mode badges are now icons that say what they mean when clicked, and the header’s badges and icons are now evenly spaced by their visible edges, rather than by their buttons. ([#20848](https://github.com/craftcms/cms/pull/20848))
-- Breadcrumbs now line up with the content below them, following the main content’s side padding as it grows with its width. ([#20848](https://github.com/craftcms/cms/pull/20848))
+- Breadcrumbs now line up with the icons of secondary navs, such as the Plugin Store’s categories, on every page. ([#20848](https://github.com/craftcms/cms/pull/20848))
+- The Upgrade Craft CMS page now shows each edition’s name as an edition badge, like the one in the global header.
 - Plain buttons, such as the global header’s icons, breadcrumbs’ menu buttons, and the global nav’s chevrons, are now tinted with their own color while hovered, pressed, or open, rather than filled with gray, and global nav items and details tabs now show a pressed state. ([#20848](https://github.com/craftcms/cms/pull/20848))
 - Info icons now show a help cursor. ([#20848](https://github.com/craftcms/cms/pull/20848))
 - The warning color’s loud fill is now more saturated. ([#20848](https://github.com/craftcms/cms/pull/20848))

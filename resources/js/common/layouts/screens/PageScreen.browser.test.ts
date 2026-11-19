@@ -76,35 +76,3 @@ it('keeps a panel opened on a narrow page without a details column open', async 
   await vi.waitFor(() => expect(panel()?.hidden).toBe(false));
   expect(screenPanels.openPanelId.value).toBe('chat');
 });
-
-it('tells the header where its content starts, gutter included', async () => {
-  await page.viewport(1280, 800);
-
-  const container = document.createElement('div');
-  document.body.append(container);
-  app = createApp({
-    render: () => h(PageScreen, {title: 'Dashboard'}, () => h('p', 'Hi')),
-  });
-  app.mount(container);
-
-  const screen = container.querySelector<HTMLElement>('.page-screen')!;
-  const contentStart = () =>
-    parseFloat(screen.style.getPropertyValue('--cp-content-start'));
-  // 16px up to a 400px column, 4% of it, and 48px from 1200px.
-  const expected = () => {
-    const main = container.querySelector('main')!.getBoundingClientRect();
-    const column = container
-      .querySelector('.cp-content__main')!
-      .getBoundingClientRect();
-    return (
-      column.left - main.left + Math.min(48, Math.max(16, column.width * 0.04))
-    );
-  };
-
-  await vi.waitFor(() => expect(contentStart()).toBeCloseTo(expected(), 1));
-
-  await page.viewport(700, 800);
-
-  await vi.waitFor(() => expect(contentStart()).toBeCloseTo(expected(), 1));
-  expect(contentStart()).toBeLessThan(48);
-});

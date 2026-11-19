@@ -15,9 +15,7 @@
   import {
     computed,
     defineAsyncComponent,
-    nextTick,
     provide,
-    ref,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -228,47 +226,7 @@
     updateDetailsBounds()
   );
 
-  // Where the main column's content starts, from the main element's edge, so
-  // the header's breadcrumbs can line up with it. The column's gutter is
-  // resolved against the column's own width (see `.cp-content__main` below),
-  // which the header can't query, so it's read from what's in the column.
-  const contentMain = useTemplateRef<HTMLElement>('contentMain');
-  const {left: contentMainLeft, width: contentMainWidth} =
-    useElementBounding(contentMain);
-  const contentStart = ref<number | null>(null);
-  watch(
-    [contentMainLeft, contentMainWidth],
-    async () => {
-      await nextTick();
-      const column = contentMain.value;
-      const child = column?.firstElementChild;
-      const main = column?.closest('main');
-      const gutter = child
-        ? parseFloat(
-            getComputedStyle(child).getPropertyValue(
-              '--cp-content-inline-padding'
-            )
-          )
-        : NaN;
-      if (!column || !main || Number.isNaN(gutter)) {
-        contentStart.value = null;
-        return;
-      }
-      const columnRect = column.getBoundingClientRect();
-      const mainRect = main.getBoundingClientRect();
-      const offset =
-        getComputedStyle(main).direction === 'rtl'
-          ? mainRect.right - columnRect.right
-          : columnRect.left - mainRect.left;
-      contentStart.value = offset + gutter;
-    },
-    {immediate: true}
-  );
-
   const pageScreenStyle = computed(() => ({
-    ...(contentStart.value === null
-      ? {}
-      : {'--cp-content-start': `${contentStart.value}px`}),
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
     '--cp-visible-viewport-top': `${visibleViewport.top.value}px`,
     '--cp-visible-viewport-height': `${visibleViewport.height.value}px`,
@@ -422,7 +380,6 @@
 
                         <div
                           id="content-main"
-                          ref="contentMain"
                           class="cp-content__main"
                           :style="contentMainStyle"
                         >
