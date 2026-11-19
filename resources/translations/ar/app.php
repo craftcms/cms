@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'المجموعات',
     'Guest Required' => 'يتطلب وجود ضيف',
     'HTML Email Template' => 'قالب الرسالة بتنسيق HTML',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'منقّي HTML',
     'Handle' => 'المقبض',
     'Has Descendants' => 'لديها تبعيات',

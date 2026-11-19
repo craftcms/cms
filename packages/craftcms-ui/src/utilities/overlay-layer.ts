@@ -1,5 +1,5 @@
 import {css} from 'lit';
-import type {Modifier} from '@popperjs/core';
+import type {Modifier, Placement} from '@popperjs/core';
 import {viewportEscapingModifiers} from './overlay-position.js';
 
 /** How far a positioned overlay keeps from the viewport's edge when it flips. */
@@ -27,6 +27,35 @@ export function hideLayer(layer: HTMLElement): void {
   }
 
   layer.removeAttribute('data-open');
+}
+
+/**
+ * A placement as it reads in `element`'s direction. Popper's placements are
+ * physical, so in a right-to-left layout an overlay placed `bottom-start`
+ * would still line up with its anchor's left edge and open out to the right.
+ * This mirrors it: `-start` and `-end` swap on the top and bottom, and
+ * `left` and `right` swap sides, keeping their alignment along the side.
+ */
+export function placementForDirection<T extends string>(
+  placement: T,
+  element: Element
+): Placement {
+  if (getComputedStyle(element).direction !== 'rtl') {
+    return placement as unknown as Placement;
+  }
+
+  const [side, alignment] = placement.split('-') as [string, string?];
+
+  if (side === 'left' || side === 'right') {
+    const mirrored = side === 'left' ? 'right' : 'left';
+    return (alignment ? `${mirrored}-${alignment}` : mirrored) as Placement;
+  }
+
+  if (alignment === 'start' || alignment === 'end') {
+    return `${side}-${alignment === 'start' ? 'end' : 'start'}` as Placement;
+  }
+
+  return placement as unknown as Placement;
 }
 
 /** Popper modifiers shared by the overlays, `distance` px from their anchor. */

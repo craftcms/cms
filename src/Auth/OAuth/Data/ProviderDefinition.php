@@ -32,7 +32,7 @@ readonly class ProviderDefinition
         public ?string $clientSecret,
         public bool $stateless = false,
         public ?bool $createsUsers = null,
-        public bool $activatesUsers = false,
+        public bool $controlsAccess = false,
         public bool $trustsEmail = false,
         /** @var string[] */
         public array $scopes = [],

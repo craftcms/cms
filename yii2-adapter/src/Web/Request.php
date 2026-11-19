@@ -9,7 +9,7 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
-use CraftCms\Cms\Config\GeneralConfig;
+use craft\config\GeneralConfig;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request as IlluminateRequest;
@@ -165,7 +165,7 @@ class Request extends \yii\web\Request
     {
         $cookies = [];
 
-        $this->enableCookieValidation = !empty(app(GeneralConfig::class)->securityKey);
+        $this->enableCookieValidation = !empty(GeneralConfig::current()->securityKey);
 
         if ($this->enableCookieValidation && $this->cookieValidationKey !== '') {
             foreach ($this->getIlluminateRequest()->cookies as $name => $value) {

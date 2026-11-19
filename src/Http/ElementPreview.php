@@ -153,7 +153,7 @@ class ElementPreview
 
     private function token(): string
     {
-        return $this->token ??= Str::random(32, extendedChars: true);
+        return $this->token ??= Str::random(32);
     }
 
     /** @return array<string, mixed> */

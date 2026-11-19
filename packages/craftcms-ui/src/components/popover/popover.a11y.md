@@ -39,6 +39,11 @@ Its open and close behavior comes from APG's [Disclosure Navigation Menu](https:
 - [ ] The popover doesn't trap focus: Tab and Shift+Tab can leave the panel. Per WCAG 2.1.2 (No Keyboard Trap). Not yet verified.
 - [ ] A panel that overflows its `max-height` and holds no focusable element can still be scrolled from the keyboard. Per WCAG 2.1.1 (Keyboard). Not yet verified. It depends on the browser making scroll containers focusable.
 
+### Pointer
+
+- [x] A click that starts and ends outside the panel and invoker closes the popover, including on an element that cancels `pointerdown`, such as a drag handle. Per WCAG 1.4.13 (Content on Hover or Focus) and 2.4.11 (Focus Not Obscured (Minimum)). Verified by `closes on a click outside whose pointerdown is canceled, as a drag handle’s is` in `popover.browser.test.ts`.
+- [x] A click outside a popover or select open in the panel closes only that one, so the user stays where they were, as Escape does. Per WCAG 3.2.2 (On Input). Verified by `leaves a click outside a nested popover to close only the nested one` and `leaves a click outside a select’s open list to close only the list` in `popover.browser.test.ts`.
+
 ### Visual
 
 - [ ] The panel's 1px border (`--c-color-neutral-border-quiet`) marks its edge against the page, since the shadow that also does so disappears in forced colors. Whether that border needs 3:1 under WCAG 1.4.11 (Non-text Contrast) depends on whether the edge is needed to identify the panel. Not yet verified.

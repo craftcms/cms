@@ -14,12 +14,13 @@
     "sail": false,
     "skills": [
         "infer-conventions",
+        "ai-sdk-development",
         "laravel-best-practices",
         "passport-development",
         "wayfinder-development",
+        "octane-development",
         "socialite-development",
         "inertia-vue-development",
-        "tailwindcss-development",
         "pest-plugin-agent"
     ]
 }

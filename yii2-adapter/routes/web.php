@@ -6,7 +6,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
-use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
 use CraftCms\Yii2Adapter\Http\FallbackTransformController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\LooseEndsController;
@@ -52,7 +51,6 @@ Route::middleware([
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::middleware([
         'craft',
-        ExcludeCsrfValidationForLegacyController::class,
         ...$middleware,
         LegacyMiddleware::class,
     ])
@@ -79,7 +77,6 @@ Route::middleware([
     'craft.cp',
     'auth',
     'can:accessCp',
-    ExcludeCsrfValidationForLegacyController::class,
     LegacyMiddleware::class,
 ])
     ->name('craft.cp.legacy')

@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\AboutCraft;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Enums\Theme;
@@ -233,6 +234,7 @@ class HandleInertiaRequests extends Middleware
                 'app' => [
                     'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
+                    'needsAttention' => app(AboutCraft::class)->needsAttention(),
                 ],
                 'site' => $currentSite ? [
                     'id' => $currentSite->id,

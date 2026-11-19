@@ -294,13 +294,7 @@ class LooseEndsChecks
      */
     public function generalConfigSettings(): array
     {
-        $config = Cms::config();
-
-        if (!$config instanceof LegacyGeneralConfig) {
-            return [];
-        }
-
-        $settings = $config->getDeprecatedSettings();
+        $settings = LegacyGeneralConfig::current()->getDeprecatedSettings();
 
         if ($settings === []) {
             return [];

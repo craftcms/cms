@@ -144,6 +144,20 @@ it('still reports removed settings once the config is cached', function(): void 
         ->toContain('`enableCsrfProtection`:');
 });
 
+it('reports removed settings set by environment overrides on a core config', function(): void {
+    $config = GeneralConfig::create();
+    Config::set('craft.general', $config);
+    app()->instance(GeneralConfig::class, $config);
+    putenv('CRAFT_BUILD_ID=abc123');
+
+    try {
+        expect(app(LooseEndsChecks::class)->generalConfigSettings()[0]->detail ?? '')
+            ->toContain('`buildId`:');
+    } finally {
+        putenv('CRAFT_BUILD_ID');
+    }
+});
+
 it('reads config files without running them', function(): void {
     $configPath = sys_get_temp_dir() . '/loose-ends-config-' . uniqid();
     mkdir("$configPath/craft", recursive: true);

@@ -3,7 +3,12 @@ import {
   type Instance as PopperInstance,
   type Modifier,
 } from '@popperjs/core';
-import {hideLayer, overlayModifiers, showLayer} from './overlay-layer.js';
+import {
+  hideLayer,
+  overlayModifiers,
+  placementForDirection,
+  showLayer,
+} from './overlay-layer.js';
 
 export interface DropdownParts {
   /** The `.overlay-layer` element, given `popover="manual"` where supported. */
@@ -56,7 +61,7 @@ export class Dropdown {
     parts.pane.style.minWidth = `${parts.reference.getBoundingClientRect().width}px`;
     this.#popper = createPopper(parts.reference, parts.pane, {
       strategy: 'fixed',
-      placement: 'bottom-start',
+      placement: placementForDirection('bottom-start', parts.reference),
       modifiers: [...overlayModifiers(0), minWidthOfReference],
     });
     this.#popper.forceUpdate();

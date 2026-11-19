@@ -1988,6 +1988,7 @@ return [
     'Groups' => 'Grupper',
     'Guest Required' => 'Gäst krävs',
     'HTML Email Template' => 'HTML e-postmall',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'HTML Sanitizer' => 'HTML-sanerare',
     'Handle' => 'Handle',
     'Has Descendants' => 'Har underordnade',

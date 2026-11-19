@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\App\AboutCraftController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
 use CraftCms\Cms\Http\Controllers\App\LicensesController;
@@ -217,6 +218,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
 
         // App
+        Route::get('app/about', AboutCraftController::class);
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::post('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
         Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);

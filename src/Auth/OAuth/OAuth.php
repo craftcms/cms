@@ -19,11 +19,14 @@ use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUserGroups;
 use CraftCms\Cms\Auth\OAuth\Data\ButtonData;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\Auth\OAuth\Exceptions\ProviderConfigurationException;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -311,6 +314,20 @@ class OAuth
         return SsoIdentity::query()->where('userId', $userId)->exists();
     }
 
+    /**
+     * Returns whether the user can still sign in without the given provider:
+     * with a password, a passkey, or another configured provider.
+     */
+    public function canUnlinkIdentity(User $user, ProviderDefinition $provider): bool
+    {
+        return $user->getHasPassword()
+            || app(Passkeys::class)->hasPasskeys($user)
+            || $this->getProviderDefinitions()->contains(
+                fn (ProviderDefinition $other): bool => $other->handle !== $provider->handle
+                    && $this->identityFor($user, $other) !== null,
+            );
+    }
+
     public function unlinkIdentity(User $user, ProviderDefinition $provider): void
     {
         SsoIdentity::query()
@@ -393,6 +410,11 @@ class OAuth
         }
 
         $config = $this->validateProviderConfig($handle, $config);
+
+        if (array_key_exists('activatesUsers', $config)) {
+            Deprecator::log("oauthProviders.$handle.activatesUsers", "The `activatesUsers` setting for the `$handle` OAuth provider has been renamed to `controlsAccess`.");
+        }
+
         $enabled = (bool) ($config['enabled'] ?? true);
 
         if (! $enabled) {
@@ -400,8 +422,8 @@ class OAuth
         }
 
         $driver = $config['driver'];
-        $clientId = $config['clientId'] ?? null;
-        $clientSecret = $config['clientSecret'] ?? null;
+        $clientId = Env::parse($config['clientId'] ?? null);
+        $clientSecret = Env::parse($config['clientSecret'] ?? null);
         $providerClass = $this->resolveProviderClass($handle, $driver);
         $name = ($config['name'] ?? null) ?: Str::headline($handle);
         $label = ($config['label'] ?? null) ?: t('Sign in with {name}', ['name' => $name]);
@@ -413,14 +435,14 @@ class OAuth
             providerClass: $providerClass,
             name: $name,
             label: $label,
-            clientId: $clientId !== null ? (string) $clientId : null,
-            clientSecret: $clientSecret !== null ? (string) $clientSecret : null,
+            clientId: $clientId,
+            clientSecret: $clientSecret,
             icon: $icon,
             stateless: (bool) ($config['stateless'] ?? false),
             createsUsers: array_key_exists('createsUsers', $config)
                 ? ($config['createsUsers'] === null ? null : (bool) $config['createsUsers'])
                 : null,
-            activatesUsers: (bool) ($config['activatesUsers'] ?? false),
+            controlsAccess: (bool) ($config['controlsAccess'] ?? $config['activatesUsers'] ?? false),
             trustsEmail: array_key_exists('trustsEmail', $config) && (bool) $config['trustsEmail'],
             scopes: array_values($config['scopes'] ?? []),
             with: $config['with'] ?? [],
@@ -462,6 +484,7 @@ class OAuth
                 'stateless' => ['sometimes', 'boolean'],
                 'groups' => ['sometimes'],
                 'createsUsers' => ['sometimes', 'nullable', 'boolean'],
+                'controlsAccess' => ['sometimes', 'boolean'],
                 'activatesUsers' => ['sometimes', 'boolean'],
                 'trustsEmail' => ['sometimes', 'boolean'],
                 'identityResolver' => ['sometimes', 'string'],

@@ -759,12 +759,12 @@ import './dashboard.scss';
       );
 
       // Initialize the colspan picker
-      this.colspanPicker = document.createElement('craft-slide-picker');
+      this.colspanPicker = document.createElement('craft-slide-picker-button');
       this.colspanPicker.min = 1;
       this.colspanPicker.step = 1;
       this.colspanPicker.value = this.getColspan();
-      this.colspanPicker.label = Craft.t('app', 'Number of columns');
-      this.colspanPicker.labelSrOnly = true;
+      this.colspanPicker.sliderLabel = Craft.t('app', 'Columns');
+      this.colspanPicker.itemLabel = this.title || this.getTypeInfo('name');
       this.colspanPicker.valueLabel = (colspan) => {
         return Craft.t(
           'app',
@@ -774,7 +774,6 @@ import './dashboard.scss';
           }
         );
       };
-      this.colspanPicker.setAttribute('described-by', this.getWidgetLabelId());
 
       const refreshColspanPicker = () => {
         const maxCols = window.dashboard.grid.totalCols;

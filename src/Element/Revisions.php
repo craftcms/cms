@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -64,14 +65,15 @@ readonly class Revisions
         }
 
         $lockKey = 'revision:'.$canonical->id;
-        $mutex = Cache::lock($lockKey);
+        $mutex = Cache::lock($lockKey, 30);
         $mutex->block(3);
 
         $num = Arr::pull($newAttributes, 'revisionNum');
+        $allocateNum = ! $force || ! $num;
         $lastRevisionInfo = null;
 
         try {
-            if (! $force || ! $num) {
+            if ($allocateNum) {
                 $lastRevisionInfo = DB::useWriteConnectionWhenReading()
                     ->table(Table::ELEMENTS, 'e')
                     ->select(['e.id', 'r.num', 'e.dateCreated'])
@@ -120,10 +122,15 @@ readonly class Revisions
 
             DB::beginTransaction();
             try {
-                // Even if no existing revision info was found, there could be an orphaned row in there
+                // Even if no existing revision info was found, there could be an orphaned row in there.
+                // When the number was allocated here, a row that has an element belongs to a concurrent
+                // request, so leave it for the unique index to reject this one.
                 DB::table(Table::REVISIONS)
                     ->where('canonicalId', $canonical->id)
                     ->where('num', $num)
+                    ->when($allocateNum, fn (Builder $query) => $query->whereNotExists(
+                        DB::table(Table::ELEMENTS.' as e')->selectRaw('1')->whereColumn('e.revisionId', Table::REVISIONS.'.id'),
+                    ))
                     ->delete();
 
                 // Create the revision row

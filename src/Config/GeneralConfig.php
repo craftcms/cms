@@ -383,22 +383,6 @@ class GeneralConfig extends BaseConfig
     ];
 
     /**
-     * @var bool Whether users should be allowed to create similarly-named tags.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->allowSimilarTags(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_SIMILAR_TAGS=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $allowSimilarTags = false;
-
-    /**
      * @var bool Whether uppercase letters should be allowed in slugs.
      *
      * ::: code
@@ -588,24 +572,6 @@ class GeneralConfig extends BaseConfig
      * @group Image Handling
      */
     public ?string $brokenImagePath = null;
-
-    /**
-     * @var string|null A unique ID representing the current build of the codebase.
-     *
-     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
-     * ```
-     * ```shell Environment Override
-     * CRAFT_BUILD_ID=$GIT_SHA
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public ?string $buildId = null;
 
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
@@ -901,24 +867,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public mixed $defaultDirMode = 0775;
-
-    /**
-     * @var int|null The default permission to be set for newly-generated files.
-     *
-     * If set to `null`, the permission will be determined by the current environment.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultFileMode(0744)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_FILE_MODE=0744
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?int $defaultFileMode = null;
 
     /**
      * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
@@ -1676,26 +1624,6 @@ class GeneralConfig extends BaseConfig
     public mixed $invalidUserTokenPath = null;
 
     /**
-     * @var string[]|null List of headers where proxies store the real client IP.
-     *
-     * See [[\yii\web\Request::ipHeaders]] for more details.
-     *
-     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_IP_HEADERS=X-Forwarded-For,CF-Connecting-IP
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?array $ipHeaders = null;
-
-    /**
      * @var bool Whether GraphQL types should be generated lazily.
      *
      * ::: code
@@ -1795,7 +1723,7 @@ class GeneralConfig extends BaseConfig
      * - `stateless`: Whether the provider should bypass Socialite state checks.
      * - `groups`: User group IDs, UIDs, or handles to assign to new users.
      * - `createsUsers`: Whether the provider may create new users when no existing account can be matched. Defaults to the public registration setting when `null` or omitted.
-     * - `activatesUsers`: Whether matched or newly-created users should be activated automatically.
+     * - `controlsAccess`: Whether the provider becomes the source of truth for whether users can access Craft. When `true`, anyone the provider lets sign in gets access: Craft saves new users as active and activates any matched user who isn't active, which also lifts suspensions and locks. Disabled and archived users still can't sign in. Defaults to `false`.
      * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `false`.
      * - `identityResolver`: A custom identity resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
      * - `userResolver`: A custom linked-user resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
@@ -2403,24 +2331,6 @@ class GeneralConfig extends BaseConfig
     public mixed $purgeUnsavedDraftsDuration = 2592000;
 
     /**
-     * @var bool Whether SVG thumbnails should be rasterized.
-     *
-     * This requires SVG decoding support from the active image driver.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->rasterizeSvgThumbs(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RASTERIZE_SVG_THUMBS=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $rasterizeSvgThumbs = false;
-
-    /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
@@ -2613,25 +2523,6 @@ class GeneralConfig extends BaseConfig
     public bool $safeMode = false;
 
     /**
-     * @var string|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
-     *
-     * @phpstan-var 'None'|'Lax'|'Strict'|null
-     *
-     * ::: warning
-     * This setting is deprecated. Configure `session.same_site` or set the `SESSION_SAME_SITE` environment variable instead.
-     * :::
-     *
-     * ```shell
-     * SESSION_SAME_SITE=strict
-     * ```
-     *
-     * @group System
-     *
-     * @since 3.1.33
-     */
-    public ?string $sameSiteCookieValue = null;
-
-    /**
      * @var bool Whether images uploaded via the control panel should be sanitized.
      *
      * ::: code
@@ -2664,98 +2555,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $sanitizeSvgUploads = true;
-
-    /**
-     * @var list<string>|null Lists of headers that are, by default, subject to the trusted host configuration.
-     *
-     * ::: warning
-     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead,
-     * passing the headers to trust in `bootstrap/app.php`.
-     * :::
-     *
-     * ```php bootstrap/app.php
-     * return Application::configure(basePath: dirname(__DIR__))
-     *     ->withMiddleware(function (Middleware $middleware): void {
-     *         $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
-     *             Request::HEADER_X_FORWARDED_HOST |
-     *             Request::HEADER_X_FORWARDED_PROTO
-     *         );
-     *     })
-     *     // ...
-     * ```
-     *
-     * @group Security
-     */
-    public ?array $secureHeaders = null;
-
-    /**
-     * @var array<string, list<string>>|null List of headers to check for determining whether the connection is made via HTTPS.
-     *
-     * ::: warning
-     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
-     * Requests from trusted proxies are treated as secure when their `X-Forwarded-Proto` header is `https`.
-     * :::
-     *
-     * ```php bootstrap/app.php
-     * return Application::configure(basePath: dirname(__DIR__))
-     *     ->withMiddleware(function (Middleware $middleware): void {
-     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
-     *     })
-     *     // ...
-     * ```
-     *
-     * @group Security
-     */
-    public ?array $secureProtocolHeaders = null;
-
-    /**
-     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
-     *
-     * ::: warning
-     * This setting is deprecated. Configure `app.key` or set the `APP_KEY` environment variable instead.
-     * :::
-     *
-     * ::: warning
-     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
-     * :::
-     *
-     * ```shell
-     * APP_KEY=base64:2cf24dba5...
-     * ```
-     *
-     * In the event that the key is compromised, a new key can be generated with the command:
-     *
-     * ```sh
-     * php artisan key:generate
-     * ```
-     *
-     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
-     *
-     * @see https://craftcms.com/knowledge-base/securing-craft
-     *
-     * @group Security
-     */
-    public string $securityKey = '';
-
-    /**
-     * @var bool Whether a `Content-Length` header should be sent with responses.
-     *
-     * This only affects template responses rendered through the Yii2 adapter.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sendContentLengthHeader(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
-     * ```
-     * :::
-     *
-     * @group System
-     *
-     * @since 3.7.3
-     */
-    public bool $sendContentLengthHeader = false;
 
     /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
@@ -3095,25 +2894,6 @@ class GeneralConfig extends BaseConfig
     public bool $translationDebugOutput = false;
 
     /**
-     * @var array<int|string, string|list<string>> The configuration for trusted security-related headers.
-     *
-     * ::: warning
-     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
-     * :::
-     *
-     * ```php bootstrap/app.php
-     * return Application::configure(basePath: dirname(__DIR__))
-     *     ->withMiddleware(function (Middleware $middleware): void {
-     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
-     *     })
-     *     // ...
-     * ```
-     *
-     * @group Security
-     */
-    public ?array $trustedHosts = ['any'];
-
-    /**
      * @var string The query string parameter name that Craft tokens should be set to.
      *
      * ::: code
@@ -3194,21 +2974,6 @@ class GeneralConfig extends BaseConfig
      * @since 5.9.0
      */
     public bool $useIdnaNontransitionalToUnicode = false;
-
-    /**
-     * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
-     *
-     * ::: warning
-     * This setting is deprecated. Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.
-     * :::
-     *
-     * ```shell
-     * SESSION_SECURE_COOKIE=true
-     * ```
-     *
-     * @group Security
-     */
-    public string|bool $useSecureCookies = 'auto';
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
@@ -3559,24 +3324,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether users should be allowed to create similarly-named tags.
-     *
-     * ```php
-     * ->allowSimilarTags(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $allowSimilarTags
-     */
-    public function allowSimilarTags(bool $value = true): self
-    {
-        $this->allowSimilarTags = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether uppercase letters should be allowed in slugs.
      *
      * ```php
@@ -3805,26 +3552,6 @@ class GeneralConfig extends BaseConfig
     public function brokenImagePath(?string $value): self
     {
         $this->brokenImagePath = $value;
-
-        return $this;
-    }
-
-    /**
-     * A unique ID representing the current build of the codebase.
-     *
-     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
-     *
-     * ```php
-     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $buildId
-     */
-    public function buildId(?string $value): self
-    {
-        $this->buildId = $value;
 
         return $this;
     }
@@ -4158,27 +3885,6 @@ class GeneralConfig extends BaseConfig
     public function defaultDirMode(mixed $value): self
     {
         $this->defaultDirMode = $value;
-
-        return $this;
-    }
-
-    /**
-     * The default permission to be set for newly-generated files.
-     *
-     * If set to `null`, the permission will be determined by the current environment.
-     *
-     * ```php
-     * ->defaultFileMode(0744)
-     * ```
-     *
-     * @group System
-     *
-     * @see $defaultFileMode
-     * @since 4.2.0
-     */
-    public function defaultFileMode(?int $value): self
-    {
-        $this->defaultFileMode = $value;
 
         return $this;
     }
@@ -5005,30 +4711,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * List of headers where proxies store the real client IP.
-     *
-     * See [[\yii\web\Request::ipHeaders]] for more details.
-     *
-     * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
-     *
-     * ```php
-     * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
-     * ```
-     *
-     * @group System
-     *
-     * @param  string[]|null  $value
-     *
-     * @see $ipHeaders
-     */
-    public function ipHeaders(?array $value): self
-    {
-        $this->ipHeaders = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether GraphQL types should be generated lazily.
      *
      * ```php
@@ -5760,26 +5442,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether SVG thumbnails should be rasterized.
-     *
-     * This requires SVG decoding support from the active image driver.
-     *
-     * ```php
-     * ->rasterizeSvgThumbs(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $rasterizeSvgThumbs
-     */
-    public function rasterizeSvgThumbs(bool $value = true): self
-    {
-        $this->rasterizeSvgThumbs = $value;
-
-        return $this;
-    }
-
-    /**
      * The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
@@ -6021,25 +5683,6 @@ class GeneralConfig extends BaseConfig
     public function sanitizeSvgUploads(bool $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether a `Content-Length` header should be sent with responses.
-     *
-     * ```php
-     * ->sendContentLengthHeader(true)
-     * ```
-     *
-     * @group System
-     *
-     * @since 6.0.0
-     * @see $sendContentLengthHeader
-     */
-    public function sendContentLengthHeader(bool $value = true): self
-    {
-        $this->sendContentLengthHeader = $value;
 
         return $this;
     }

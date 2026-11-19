@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Security as ModernSecurity;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
@@ -131,7 +130,7 @@ class Security extends \yii\base\Security
     public function encryptByKey(#[SensitiveParameter] $data, #[SensitiveParameter] $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
-            $inputKey = Cms::config()->securityKey;
+            $inputKey = \craft\config\GeneralConfig::current()->securityKey;
         }
 
         return parent::encryptByKey($data, $inputKey, $info);
@@ -152,7 +151,7 @@ class Security extends \yii\base\Security
             return Crypt::decrypt($data);
         } catch (DecryptException) {
             if ($inputKey === null) {
-                $inputKey = Cms::config()->securityKey;
+                $inputKey = \craft\config\GeneralConfig::current()->securityKey;
             }
 
             return parent::decryptByKey($data, $inputKey, $info);

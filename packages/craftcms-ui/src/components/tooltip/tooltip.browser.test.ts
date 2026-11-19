@@ -119,11 +119,13 @@ it('shows for a keyboard-focused slotted invoker and hides on Escape, keeping fo
   expect(document.activeElement).toBe(invoker);
 });
 
-it('wraps long content at a readable width', async () => {
+it('wraps long content at a readable width, even in a container that doesn’t wrap', async () => {
   document.body.innerHTML = `
-    <button id="invoker" type="button">Info</button>
-    <craft-tooltip for="invoker">${'Words that go on and on. '.repeat(20)}</craft-tooltip>
-    <craft-tooltip for="invoker">Short</craft-tooltip>`;
+    <div style="white-space: nowrap">
+      <button id="invoker" type="button">Info</button>
+      <craft-tooltip for="invoker">${'Words that go on and on. '.repeat(20)}</craft-tooltip>
+      <craft-tooltip for="invoker">Short</craft-tooltip>
+    </div>`;
   const [long, short] = document.querySelectorAll('craft-tooltip');
   await long!.updateComplete;
   await short!.updateComplete;

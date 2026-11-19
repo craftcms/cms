@@ -153,6 +153,7 @@
 <template>
   <craft-button
     :id="ASSISTANT_TOGGLE_ID"
+    class="assistant-toggle"
     icon
     :variant="ButtonVariant.Plain"
     type="button"
@@ -175,6 +176,10 @@
 
 <style scoped>
   /* Matches the other icons around the content (see cp.css). */
+  .assistant-toggle {
+    margin-inline: -5.75px;
+  }
+
   .assistant-toggle__icon {
     --c-icon-size: var(--cp-chrome-icon-size, 1em);
   }

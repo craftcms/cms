@@ -107,6 +107,31 @@ it('gives the link picker every advanced field and the link’s default label', 
         ]);
 });
 
+it('preserves the edited link control value across save round trips', function () {
+    $field = new Link(['types' => ['url'], 'showLabelField' => true]);
+    $editedValue = [
+        'type' => 'url',
+        'value' => 'https://craftcms.com/',
+        'label' => 'Read more',
+        'defaultLabel' => 'craftcms.com',
+        'urlSuffix' => '',
+        'target' => '',
+        'title' => '',
+        'class' => '',
+        'id' => '',
+        'rel' => '',
+        'ariaLabel' => '',
+        'download' => false,
+        'filename' => '',
+    ];
+
+    $normalized = $field->normalizeValue($editedValue, null);
+    $saved = $field->normalizeValue($normalized->serialize(), null);
+    $control = $field->uiControl(new FieldContext('value', $saved));
+
+    expect($control->getValue())->toEqual($editedValue);
+});
+
 it('passes element link type settings to the Markdown link picker', function () {
     $field = new Markdown([
         'linkSettingsTypes' => ['asset'],
