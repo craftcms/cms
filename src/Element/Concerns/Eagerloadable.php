@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadInfo;
@@ -12,11 +13,23 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementEagerLoadingMapResolving;
 use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
+use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementCaches;
+use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -80,6 +93,10 @@ trait Eagerloadable
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
+        if (str_starts_with($handle, 'relatedBy:')) {
+            return self::_mapRelatedBy($sourceElements, substr($handle, strlen('relatedBy:')));
+        }
+
         switch ($handle) {
             case 'descendants':
             case 'children':
@@ -518,6 +535,204 @@ trait Eagerloadable
             'elementType' => User::class,
             'map' => $map,
         ];
+    }
+
+    /**
+     * Returns an eager-loading map for the elements that relate to or reference the source elements through a field.
+     *
+     * @param  ElementInterface[]  $sourceElements  An array of the source elements
+     * @param  string  $fieldHandle  The handle of the field that holds the relations or references
+     * @return EagerLoadingMap|false The eager-loading element ID mappings, or `false` if the field doesn’t store relations or references
+     */
+    private static function _mapRelatedBy(array $sourceElements, string $fieldHandle): array|false
+    {
+        $field = Fields::getFieldByHandle($fieldHandle);
+
+        $tables = array_keys(array_filter([
+            Table::RELATIONS => $field instanceof RelationalFieldInterface,
+            Table::FIELDREFERENCES => $field instanceof TracksReferencesFieldInterface,
+        ]));
+
+        if (empty($tables)) {
+            Log::warning("Attempting to eager-load relatedBy elements for a field that doesn’t store relations or references: $fieldHandle");
+
+            return false;
+        }
+
+        // Any element that uses the field can start relating to the source elements, so caches need to be
+        // invalidated when any of them are saved, as they are for a relatedBy() query
+        if (ElementCaches::isCollectingCacheInfo()) {
+            ElementCaches::collectCacheTags(array_map(
+                fn (string $elementType) => "element::$elementType::*",
+                self::_elementTypesWithField($field),
+            ));
+        }
+
+        // Relations and references point to canonical elements
+        $sourceElementIdsByCanonicalId = [];
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIdsByCanonicalId[$sourceElement->getCanonicalId()][] = $sourceElement->id;
+        }
+
+        // The sites each relation or reference was saved for, indexed by the related element and the target,
+        // unless it counts in every site
+        $siteIds = [];
+        $countsInEverySite = [];
+        $elementTypes = [];
+
+        foreach ($tables as $table) {
+            $rows = DB::table($table, 'r')
+                ->join(Table::ELEMENTS.' as e', 'e.id', '=', 'r.sourceId')
+                ->select(['r.sourceId', 'r.targetId', 'r.sourceSiteId', 'e.type'])
+                ->where('r.fieldId', $field->id)
+                ->whereIn('r.targetId', array_keys($sourceElementIdsByCanonicalId))
+                ->orderBy('r.sourceId')
+                ->get();
+
+            foreach ($rows as $row) {
+                $elementTypes[$row->sourceId] = $row->type;
+
+                // Relations and references stored for one site count for every site of elements that aren't
+                // localized, such as users, which store them for the primary site
+                $siteId = $row->sourceSiteId !== null && (! is_subclass_of($row->type, ElementInterface::class) || $row->type::isLocalized())
+                    ? (int) $row->sourceSiteId
+                    : null;
+
+                $siteIds[$row->sourceId][$row->targetId] ??= [];
+
+                if ($siteId === null) {
+                    $countsInEverySite[$row->sourceId][$row->targetId] = true;
+                } else {
+                    $siteIds[$row->sourceId][$row->targetId][] = $siteId;
+                }
+            }
+        }
+
+        // The eager loader only keeps the mappings saved for one of the sites it queries, so the results match
+        // the `relatedTo` param's, even when the query asks for another site than the source elements'
+        $map = [];
+        foreach ($siteIds as $relatedElementId => $siteIdsByTargetId) {
+            foreach ($siteIdsByTargetId as $targetId => $targetSiteIds) {
+                foreach ($sourceElementIdsByCanonicalId[$targetId] as $sourceElementId) {
+                    $mapping = ['source' => $sourceElementId, 'target' => $relatedElementId, 'elementType' => $elementTypes[$relatedElementId]];
+                    if (! isset($countsInEverySite[$relatedElementId][$targetId])) {
+                        $mapping['siteId'] = $targetSiteIds;
+                    }
+                    $map[] = $mapping;
+                }
+            }
+        }
+
+        // Each mapping has its element's type, so the elements are grouped by type. They're returned in each
+        // element type's default order, as they are when relatedBy() queries them.
+        return [
+            'map' => $map,
+            'criteria' => ['orderBy' => new OrderByPlaceholderExpression],
+        ];
+    }
+
+    /**
+     * Returns the elements that relate to or reference this element through a field, such as the entries that
+     * select a category in their `categories` field.
+     *
+     * The field can be a relation field or a reference-tracking field, such as a Link field. Pass a path like
+     * `myMatrix.categories` to get the owners of the nested entries that hold the field.
+     *
+     * Eager-load the elements with `relatedBy:<fieldHandle>`, such as `with(['relatedBy:categories'])`, or with
+     * `eagerly()` on the returned query. Matrix fields and paths, and queries for an element type passed to this
+     * method, can’t be eager-loaded.
+     *
+     * @param  string  $field  The field handle
+     * @param  class-string<ElementInterface>|null  $elementType  The type of the elements to return. Required when
+     *                                                            more than one element type uses the field.
+     * @return ElementQueryInterface|ElementCollection<array-key,ElementInterface>
+     *
+     * @throws InvalidArgumentException if the field doesn’t exist, or the element type can’t be determined
+     */
+    public function relatedBy(string $field, ?string $elementType = null): ElementQueryInterface|ElementCollection
+    {
+        $eagerLoadedElements = $this->getEagerLoadedElements("relatedBy:$field");
+
+        if ($eagerLoadedElements !== null) {
+            return $elementType === null
+                ? $eagerLoadedElements
+                : $eagerLoadedElements->filter(fn (ElementInterface $element) => $element instanceof $elementType)->values();
+        }
+
+        // Only fields that store relations or references can be eager-loaded, not Matrix fields
+        $eagerLoadable = $elementType === null && ! str_contains($field, '.') && (
+            ($fieldObject = Fields::getFieldByHandle($field)) instanceof RelationalFieldInterface ||
+            $fieldObject instanceof TracksReferencesFieldInterface
+        );
+        $elementType ??= self::_relatedByElementType($field);
+
+        $relatedTo = ['targetElement' => $this, 'field' => $field];
+
+        // The inverse condition is applied when the query runs rather than through the `relatedTo` param, so it
+        // stays out of the eager-loading criteria (it only targets this element), while any `relatedTo` or
+        // `andRelatedTo()` criteria the caller adds still apply to eager-loaded results.
+        $query = Elements::createElementQuery($elementType)
+            ->siteId($this->siteId)
+            ->beforeQuery(static fn (ElementQuery $elementQuery) => ElementQuery::applyRelatedTo($elementQuery, $relatedTo, $elementQuery));
+
+        // Let `eagerly()` load the elements for all of this element's query results at once, when the field is
+        // used by a single element type. The handle doesn't get the field layout provider's prefix, as the
+        // inverse relations are the same for every provider.
+        if ($eagerLoadable) {
+            // The eager loader queries each source element's own site, unless the query asks for another one
+            $query->prepForEagerLoading("relatedBy:$field", $this)
+                ->excludeImplicitEagerLoadCriteria('siteId');
+            $query->eagerLoadHandle = "relatedBy:$field";
+        }
+
+        return $query;
+    }
+
+    /**
+     * Returns the element type whose field layouts include a field.
+     *
+     * @return class-string<ElementInterface>
+     *
+     * @throws InvalidArgumentException if the field doesn’t exist, or it isn’t used by exactly one element type
+     */
+    private static function _relatedByElementType(string $fieldPath): string
+    {
+        $fieldHandle = explode('.', $fieldPath, 2)[0];
+        $field = Fields::getFieldByHandle($fieldHandle);
+
+        if (! $field) {
+            throw new InvalidArgumentException("Invalid field handle: $fieldHandle");
+        }
+
+        $elementTypes = self::_elementTypesWithField($field);
+
+        if (count($elementTypes) !== 1) {
+            throw new InvalidArgumentException(
+                empty($elementTypes)
+                    ? "No element type uses the field “{$fieldHandle}”, so pass the element type to relatedBy()."
+                    : "More than one element type uses the field “{$fieldHandle}”, so pass the element type to relatedBy().",
+            );
+        }
+
+        return $elementTypes[0];
+    }
+
+    /**
+     * Returns the element types whose field layouts include a field.
+     *
+     * @return list<class-string<ElementInterface>>
+     */
+    private static function _elementTypesWithField(FieldInterface $field): array
+    {
+        return Fields::getAllLayouts()
+            ->filter(fn (FieldLayout $layout) => $layout->type !== null && Arr::first(
+                $layout->getCustomFields(),
+                fn (FieldInterface $layoutField) => $layoutField->id === $field->id,
+            ) !== null)
+            ->pluck('type')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
@@ -23,11 +24,12 @@ use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 /**
  * @internal
  *
- * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
+ * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int,siteId?:int[],position?:int}
  * @phpstan-type NormalizedEagerLoadingMap array{elementType:class-string<ElementInterface>,map?:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  * @phpstan-type EagerLoadingMap NormalizedEagerLoadingMap|array{map:EagerLoadingMapItem[],criteria?:array<array-key, mixed>,createElement?:callable(ElementQueryInterface, array<string, mixed>, ElementInterface): ElementInterface}
  *
@@ -223,8 +225,24 @@ readonly class ElementEagerLoader
 
                 $maps = $this->normalizeEagerLoadingMaps($maps);
 
+                // Each map can cover a different element type, so collect the results of every map
+                // before handing them to the source elements, indexed by the sources' positions
+                $loadedElements = [];
+                $loadedPositions = [];
+                $loadedCounts = [];
+
+                // With several maps, the plan's inReverse, offset, and limit apply to each source's combined
+                // elements, while each map keeps its own
+                $planCriteria = ElementHelper::cleanseQueryCriteria($plan->criteria);
+                $combinedReverse = count($maps) > 1 && ! empty($planCriteria['inReverse']);
+                $combinedOffset = count($maps) > 1 ? max(0, (int) ($planCriteria['offset'] ?? 0)) : 0;
+                $combinedLimit = count($maps) > 1 ? (int) ($planCriteria['limit'] ?? 0) : 0;
+                // Like a query's limit, a limit of zero or less means no limit
+                $combinedLimit = $combinedLimit > 0 ? $combinedLimit : null;
+
                 foreach ($maps as $map) {
                     $targetElementIdsBySourceIds = null;
+                    $targetSiteIdsBySourceIds = [];
                     $query = null;
                     $offset = 0;
                     $limit = null;
@@ -236,10 +254,14 @@ readonly class ElementEagerLoader
                         $uniqueTargetElementIds = [];
                         $targetElementIdsBySourceIds = [];
 
+                        // Also find the sites a mapping was saved for, if it's limited to some
                         foreach ($map['map'] as $mapping) {
                             if (! empty($mapping['target'])) {
                                 $uniqueTargetElementIds[$mapping['target']] = true;
-                                $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
+                                $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = $mapping['position'] ?? 0;
+                                if (isset($mapping['siteId'])) {
+                                    $targetSiteIdsBySourceIds[$mapping['source']][$mapping['target']] = $mapping['siteId'];
+                                }
                             }
                         }
 
@@ -264,9 +286,13 @@ readonly class ElementEagerLoader
                         );
 
                         // Allow custom ordering, as long as it can't contain raw SQL, and the mapping criteria
-                        // doesn't define its own (see https://github.com/craftcms/cms/issues/19992)
+                        // doesn't define its own, other than asking for the element type's default order
+                        // (see https://github.com/craftcms/cms/issues/19992)
                         $planOrderBy = null;
-                        if (! empty($plan->criteria['orderBy']) && ! isset($otherCriteria['orderBy'])) {
+                        if (
+                            ! empty($plan->criteria['orderBy']) &&
+                            (! isset($otherCriteria['orderBy']) || $otherCriteria['orderBy'] instanceof OrderByPlaceholderExpression)
+                        ) {
                             $planOrderBy = $this->safeOrderBy($plan->criteria['orderBy']);
 
                             if ($planOrderBy === null) {
@@ -280,6 +306,14 @@ readonly class ElementEagerLoader
                         // Save the offset & limit params for later
                         $offset = Arr::pull($criteria, 'offset', 0);
                         $limit = Arr::pull($criteria, 'limit');
+
+                        $reverse = ! empty($criteria['inReverse']);
+
+                        if (count($maps) > 1) {
+                            $offset = $otherCriteria['offset'] ?? 0;
+                            $limit = $otherCriteria['limit'] ?? null;
+                            $reverse = ! empty($otherCriteria['inReverse']);
+                        }
 
                         Typecast::configure(
                             $query,
@@ -316,6 +350,25 @@ readonly class ElementEagerLoader
                         if ($plan->configureQuery !== null) {
                             ($plan->configureQuery)($query);
                         }
+
+                        // Like the `relatedTo` param, only map a target element to a source element if the mapping
+                        // was saved for one of the sites being queried. The criteria set siteId without normalizing
+                        // it, such as '*', so normalize it on a copy. Invalid values match no sites, and the query
+                        // returns no elements for them either.
+                        $querySiteIds = [];
+                        if (! empty($targetSiteIdsBySourceIds)) {
+                            try {
+                                $querySiteIds = array_map(intval(...), (array) (clone $query)->siteId($query->siteId)->siteId);
+                            } catch (InvalidArgumentException) {
+                            }
+                        }
+                        foreach ($targetSiteIdsBySourceIds as $sourceElementId => $siteIdsByTargetId) {
+                            foreach ($siteIdsByTargetId as $targetElementId => $targetSiteIds) {
+                                if (empty(array_intersect($targetSiteIds, $querySiteIds))) {
+                                    unset($targetElementIdsBySourceIds[$sourceElementId][$targetElementId]);
+                                }
+                            }
+                        }
                     }
 
                     // Do we just need the count?
@@ -333,7 +386,7 @@ readonly class ElementEagerLoader
                         }
 
                         // Loop through the source elements and count up their targets
-                        foreach ($filteredElements as $sourceElement) {
+                        foreach ($filteredElements as $i => $sourceElement) {
                             if (! empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
                                 $count = 0;
                                 foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
@@ -341,9 +394,7 @@ readonly class ElementEagerLoader
                                         $count += $targetElementIdCounts[$targetElementId];
                                     }
                                 }
-                                if ($count !== 0) {
-                                    $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
-                                }
+                                $loadedCounts[$i] = ($loadedCounts[$i] ?? 0) + $count;
                             }
                         }
 
@@ -353,10 +404,11 @@ readonly class ElementEagerLoader
                     $targetElementData = $query ? Collection::make($query->asArray()->all())->groupBy('id')->all() : [];
                     $targetElements = [];
 
-                    // Tell the source elements about their eager-loaded elements
-                    foreach ($filteredElements as $sourceElement) {
+                    // Collect the source elements' eager-loaded elements
+                    foreach ($filteredElements as $i => $sourceElement) {
                         $targetElementIdsForSource = [];
                         $targetElementsForSource = [];
+                        $positionsForSource = [];
 
                         if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
                             // Does the path mapping want a custom order?
@@ -376,7 +428,7 @@ readonly class ElementEagerLoader
                                 }
                             }
 
-                            if (! empty($criteria['inReverse'])) {
+                            if ($reverse) {
                                 $targetElementIdsForSource = array_reverse($targetElementIdsForSource);
                             }
 
@@ -400,6 +452,7 @@ readonly class ElementEagerLoader
                                         }
                                     }
                                     $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
+                                    $positionsForSource[] = $targetElementIdsBySourceIds[$sourceElement->id][$elementId];
 
                                     // If we're collecting cache info and the element is expirable, register its expiry date
                                     if (
@@ -422,11 +475,12 @@ readonly class ElementEagerLoader
                                 $targetElementsForSource = $this->drafts->withProvisionalDrafts($targetElementsForSource);
                             }
 
-                            $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
+                            $loadedElements[$i] = [...$loadedElements[$i] ?? [], ...$targetElementsForSource];
 
-                            if ($plan->count) {
-                                $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
-                            }
+                            // This map's elements take the mapping positions of its targets, in the order the map
+                            // gave them, so restoring the mapping order keeps a map's own order or reversal
+                            sort($positionsForSource);
+                            $loadedPositions[$i] = [...$loadedPositions[$i] ?? [], ...$positionsForSource];
                         }
                     }
 
@@ -458,6 +512,33 @@ readonly class ElementEagerLoader
                         );
                     }
                 }
+
+                // Tell the source elements about their eager-loaded elements
+                foreach ($filteredElements as $i => $sourceElement) {
+                    if (isset($loadedElements[$i]) && count($maps) > 1) {
+                        // Restore the order of the mappings, which were split up by element type
+                        asort($loadedPositions[$i]);
+                        $loadedElements[$i] = array_values(array_replace($loadedPositions[$i], $loadedElements[$i]));
+
+                        if ($combinedReverse) {
+                            $loadedElements[$i] = array_reverse($loadedElements[$i]);
+                        }
+                    }
+
+                    if (isset($loadedElements[$i]) && ($combinedOffset || $combinedLimit)) {
+                        $loadedElements[$i] = array_slice($loadedElements[$i], $combinedOffset, $combinedLimit);
+                    }
+
+                    if (! empty($loadedElements[$i])) {
+                        $sourceElement->setEagerLoadedElements($plan->alias, $loadedElements[$i], $plan);
+
+                        if ($plan->count) {
+                            $sourceElement->setEagerLoadedElementCount($plan->alias, count($loadedElements[$i]));
+                        }
+                    } elseif (! empty($loadedCounts[$i])) {
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, $loadedCounts[$i]);
+                    }
+                }
             }
         }
     }
@@ -466,8 +547,21 @@ readonly class ElementEagerLoader
      * @param  EagerLoadingMap|EagerLoadingMap[]|false  $map
      * @return NormalizedEagerLoadingMap[]|false[]
      */
-    private function normalizeEagerLoadingMaps(array|false $map): array
+    private function normalizeEagerLoadingMaps(array|false $map, int &$position = 0): array
     {
+        // Number the mappings, so the order they were given in can be restored once they're split up by element type.
+        // A map's own reversal applies to all of its mappings, so they're numbered in reverse.
+        if ($map !== false && isset($map['map'])) {
+            $reverse = ! empty($map['criteria']['inReverse']);
+            $first = $position;
+            $last = $position + count($map['map']) - 1;
+            foreach ($map['map'] as &$mapping) {
+                $mapping['position'] = $reverse ? $first + $last - $position : $position;
+                $position++;
+            }
+            unset($mapping);
+        }
+
         if ($map === false || isset($map['elementType'])) {
             // a normal, one-dimensional map
             return [$map];
@@ -490,7 +584,7 @@ readonly class ElementEagerLoader
         $maps = [];
         foreach ($map as $m) {
             if (isset($m['map'])) {
-                $maps += $this->normalizeEagerLoadingMaps($m);
+                array_push($maps, ...$this->normalizeEagerLoadingMaps($m, $position));
             }
         }
 
