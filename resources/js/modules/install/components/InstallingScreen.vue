@@ -25,9 +25,20 @@
       }, 1000);
     },
   });
-  const errorMessage = computed(() =>
-    error.value instanceof Error ? error.value.message : String(error.value)
-  );
+  /** `error` holds the response body for an HTTP error, or a message otherwise. */
+  const errorMessage = computed(() => {
+    const value = error.value;
+    if (
+      value &&
+      typeof value === 'object' &&
+      'message' in value &&
+      typeof value.message === 'string'
+    ) {
+      return value.message;
+    }
+
+    return typeof value === 'string' ? value : t('An error occurred.');
+  });
 
   const heading = useTemplateRef<HTMLElement>('heading');
 

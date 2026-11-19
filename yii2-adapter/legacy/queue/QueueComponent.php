@@ -211,6 +211,27 @@ class QueueComponent extends Queue
     }
 
     /**
+     * Returns a job's status from its progress entry, or from the failed jobs once the entry is gone.
+     *
+     * @param string $id The job ID.
+     */
+    public function status($id): int
+    {
+        $progress = app(JobProgress::class)->getProgress($id);
+
+        if ($progress === null) {
+            return app(FailedJobProviderInterface::class)->find($id) !== null ? self::STATUS_FAILED : self::STATUS_DONE;
+        }
+
+        return match ($progress->status) {
+            JobStatus::Pending, JobStatus::Delayed => self::STATUS_WAITING,
+            JobStatus::Reserved => self::STATUS_RESERVED,
+            JobStatus::Failed => self::STATUS_FAILED,
+            JobStatus::Done, JobStatus::Cancelled => self::STATUS_DONE,
+        };
+    }
+
+    /**
      * Returns detailed info about a single job.
      *
      * @param  string  $id  The job ID (UUID).

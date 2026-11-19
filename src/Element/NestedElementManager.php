@@ -894,6 +894,10 @@ class NestedElementManager extends Component
 
     private function propagateRequired(ElementInterface $owner, ?ElementInterface $localizedOwner = null): bool
     {
+        if (! $owner->propagateRequired) {
+            return false;
+        }
+
         foreach ($this->fieldInstances($owner) as $instance) {
             if (
                 $instance->layoutElement->required &&

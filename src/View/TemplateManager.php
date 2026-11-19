@@ -429,17 +429,13 @@ class TemplateManager extends Manager
 
     private function withRenderingState(string $template, TemplateMode $templateMode, callable $render): string
     {
-        $previousTemplateMode = TemplateMode::get();
         $previousTemplate = $this->renderingTemplate;
-
-        TemplateMode::set($templateMode);
         $this->renderingTemplate = $template;
 
         try {
-            return $render();
+            return TemplateMode::with($templateMode, $render);
         } finally {
             $this->renderingTemplate = $previousTemplate;
-            TemplateMode::set($previousTemplateMode);
         }
     }
 

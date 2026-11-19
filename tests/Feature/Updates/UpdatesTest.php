@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
+use CraftCms\Cms\Cp\AboutCraft;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Models\Info;
@@ -13,11 +13,14 @@ use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use CraftCms\Cms\Update\Events\CriticalUpdateReleased;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->updates = app(Updates::class);
@@ -99,16 +102,17 @@ it('can get updates', function () {
     expect($this->updates->totalAvailableUpdates())->toBe(0);
 });
 
-it('records when it fetched updates, and passes it to the Updates widget', function () {
+it('records when it fetched updates, and passes it to the About Craft CMS widget', function () {
+    actingAs(User::find()->one());
     $this->freezeSecond();
     $this->mock(Api::class)->shouldReceive('getUpdates')->andReturn(['cms' => ['status' => 'eligible'], 'plugins' => []]);
     app()->forgetInstance(Updates::class);
     $updates = app(Updates::class);
 
-    expect(app(UpdatesWidget::class)->props()['dateFetched'])->toBeNull();
+    expect(app(AboutCraft::class)->toArray()['updates']['dateFetched'])->toBeNull();
 
     expect($updates->getUpdates(true)->dateFetched?->getTimestamp())->toBe(now()->getTimestamp())
-        ->and(app(UpdatesWidget::class)->props()['dateFetched'])->toBe(now()->format(DATE_ATOM));
+        ->and(app(AboutCraft::class)->toArray()['updates']['dateFetched'])->toBe(now()->format(DATE_ATOM));
 });
 
 it('leaves out when it fetched updates that it couldn’t fetch', function () {

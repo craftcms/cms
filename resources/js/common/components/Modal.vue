@@ -33,6 +33,7 @@
     width: 'md',
     label: () => t('Dialog'),
     resizable: false,
+    holdHeight: true,
     dismissible: true,
     restoreFocus: true,
     instant: false,
@@ -138,7 +139,7 @@
   const resizer = useResizableBox({
     target: content,
     active: () => props.isActive,
-    fixedHeight: () => Boolean(props.height),
+    fixedHeight: () => Boolean(props.height) || !props.holdHeight,
   });
   const sizeAnimation = useAnimatedBoxSize({
     target: content,

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Dashboard\Widgets\Updates;
+use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ it('adds a color column that keeps existing widgets gray', function () {
 
     $id = DB::table(Table::WIDGETS)->insertGetId([
         'userId' => 1,
-        'type' => Updates::class,
+        'type' => Feed::class,
         'dateCreated' => now(),
         'dateUpdated' => now(),
     ]);

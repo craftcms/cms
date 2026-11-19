@@ -21,6 +21,7 @@ class RequireEditionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
+            /** @see Edition::require() */
             ->write(Edition::class.'::require(')
             ->subcompile($this->getNode('editionName'))
             ->raw(");\n");

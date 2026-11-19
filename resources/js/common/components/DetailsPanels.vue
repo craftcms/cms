@@ -415,6 +415,10 @@
     color: inherit;
   }
 
+  .details-panels__trigger:not([aria-expanded='true']):active {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
   .details-panels__trigger[aria-expanded='true'] {
     border-color: var(--c-color-accent-border-normal);
     background-color: var(--c-color-accent-fill-quiet);

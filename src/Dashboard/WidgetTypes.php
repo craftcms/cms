@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Dashboard;
 
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Dashboard\Widgets\AboutCraft;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
 use CraftCms\Cms\Dashboard\Widgets\NewUsers;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries;
-use CraftCms\Cms\Dashboard\Widgets\Updates;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -41,6 +41,6 @@ class WidgetTypes extends TypeRegistry
         QuickPost::class,
         RecentEntries::class,
         MyDrafts::class,
-        Updates::class,
+        AboutCraft::class,
     ];
 }

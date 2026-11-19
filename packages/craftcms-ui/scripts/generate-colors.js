@@ -153,10 +153,21 @@ function colorTokens(color, s) {
   ].join('\n');
 }
 
+/**
+ * Semantic colors that depart from their palette color's scale. Warning's loud
+ * fill is richer than its generated stop, at the same OKLCH lightness, so it
+ * keeps its contrast with the text on it and the surfaces around it.
+ */
+const semanticOverrides = {
+  warning: (color) => ({
+    fillLoud: `oklch(from var(--color-${color}-${colorIncrements.fill.loud}) l calc(c * 1.3) h)`,
+  }),
+};
+
 function buildSemanticTokens(semanticColors) {
   let declarations = [];
   for (const [meaning, color] of Object.entries(semanticColors)) {
-    const s = colorScale(color);
+    const s = {...colorScale(color), ...semanticOverrides[meaning]?.(color)};
     const variables = [
       `  /* Semantics colors - ${meaning} */`,
       `  --c-color-${meaning}-fill-quiet: ${s.fillQuiet};`,

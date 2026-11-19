@@ -33,6 +33,7 @@ class NavItemNode extends Node
     {
         $compiler
             // Get this item's level
+            /** @see TemplateHelper::attribute() */
             ->write('$_thisItemLevel = (int)'.TemplateHelper::class.'::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
             ->raw(', \'level\', [], '.Template::class."::ANY_CALL, false, true);\n")

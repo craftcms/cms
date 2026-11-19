@@ -43,9 +43,11 @@ class ProjectConfig
     public const string CACHE_KEY = 'projectConfig:files';
 
     /**
-     * The cache key that is used to store the loaded project config data.
+     * The cache key that is used to store the index of the loaded project config data.
+     *
+     * Top-level keys that aren’t in the index itself are stored under this key, followed by `:` and the top-level key.
      */
-    public const string STORED_CACHE_KEY = 'projectConfig:internal';
+    public const string STORED_CACHE_KEY = 'projectConfig:index';
 
     /**
      * The cache key that is used to store whether there were any issues writing the project config files out.
@@ -281,6 +283,7 @@ class ProjectConfig
         $this->current = null;
         $this->external = null;
         $this->original = null;
+        $this->storage->reset();
         $this->changes = [];
         $this->persistedChanges = 0;
         $this->loggedChanges = 0;
@@ -336,6 +339,23 @@ class ProjectConfig
      */
     public function get(?string $path = null, bool $getFromExternalConfig = false): mixed
     {
+        if ($path !== null && ! $getFromExternalConfig && $this->current === null) {
+            // Nothing has changed yet, so read the stored config, which only loads the top-level keys it’s asked for
+            $segments = ProjectConfigHelper::pathSegments($path);
+            $value = $this->storage->readRoot((string) array_shift($segments), $this->cacheDuration);
+
+            // Traversed by value, as traverseDataArray() would copy the shared arrays it descends by reference
+            foreach ($segments as $segment) {
+                if (! is_array($value)) {
+                    return null;
+                }
+
+                $value = $value[$segment] ?? null;
+            }
+
+            return $value;
+        }
+
         $this->current ??= $this->storage->readDatabase($this->cacheDuration);
         $this->original ??= $this->current;
         $data = $this->current;
@@ -598,6 +618,8 @@ class ProjectConfig
     /** @param array<string|int, mixed>|null $previousConfig */
     private function commit(string $path, mixed $value, ?string $message = null, bool $force = false, bool $triggerUpdate = false, ?array $previousConfig = null): void
     {
+        // Changes are made to the whole working config, so load it before anything changes
+        $this->get();
         $oldValue = $previousConfig === null ? $this->get($path) : ProjectConfigHelper::traverseDataArray($previousConfig, $path);
         $changed = $triggerUpdate || ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($value)
             || ($this->forceUpdate && ($oldValue !== null || $value !== null));
@@ -912,8 +934,6 @@ class ProjectConfig
         }
 
         if (array_filter($this->getPendingChanges())) {
-            Cache::forget(self::STORED_CACHE_KEY);
-
             return true;
         }
 

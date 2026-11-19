@@ -305,7 +305,7 @@ class ReleasesController
      */
     public function publishModal(Release $release, Request $request): JsonResponse
     {
-        abort_unless(Gate::check('publishReleases') && $release->status->isEditable(), Response::HTTP_FORBIDDEN);
+        abort_unless(Gate::check('publishReleases') && $release->status->canTransitionTo(ReleaseStatus::Publishing), Response::HTTP_FORBIDDEN);
 
         $viewModel = app(ReleaseViewModel::class, [
             'release' => $release,

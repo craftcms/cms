@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Gql as GqlFacade;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
@@ -127,6 +128,12 @@ it('rejects invalid access tokens and tokens without a GraphQL scope', function 
         app(ClientRepository::class)->createPersonalAccessGrantClient('Personal Access Client', 'craft');
 
         return UserModel::findOrFail($user->id)->createToken('MCP', ['mcp:read'])->accessToken;
+    }],
+    'user suspended after the token was issued' => [function (User $user): string {
+        $token = gqlUserToken($user);
+        Users::suspendUser($user);
+
+        return $token;
     }],
 ]);
 

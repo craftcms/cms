@@ -45,7 +45,7 @@ class TextTwigExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('randomString', Str::random(...)),
+            new TwigFunction('randomString', fn (int $length = 36, bool $extendedChars = false): string => Str::random($length, $extendedChars)),
             new TwigFunction('uuid', Str::uuid(...)),
             new TwigFunction('uuid7', Str::uuid7(...)),
         ];

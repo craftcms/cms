@@ -14,6 +14,13 @@ export interface ModalProps {
   /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
   resizable?: boolean;
   /**
+   * Whether it keeps the tallest height it has reached while open, so content
+   * that shrinks doesn't pull the box out from under the reader. Off for a
+   * modal whose content gets replaced by a different screen, such as the
+   * steps of a wizard.
+   */
+  holdHeight?: boolean;
+  /**
    * Whether Escape and a click on the overlay close it. Off for a modal
    * holding work that closing would throw away — only its own buttons do.
    */

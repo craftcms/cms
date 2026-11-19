@@ -65,6 +65,19 @@ class UserRules extends ElementRules
         }
     }
 
+    /**
+     * Fails when an active or pending user other than the given one has the value, ignoring case.
+     */
+    public static function unique(string $column, ?int $ignoreId): UniqueCaseInsensitiveRule
+    {
+        return new UniqueCaseInsensitiveRule(Table::USERS, $column)
+            ->where(fn (Builder $query) => $query
+                ->where('active', true)
+                ->orWhere('pending', true)
+            )
+            ->ignore($ignoreId);
+    }
+
     /** @return array<string, array<mixed>> */
     #[Override]
     public function rules(): array
@@ -76,12 +89,7 @@ class UserRules extends ElementRules
             self::SCENARIO_ACTIVATION,
         );
 
-        $unique = fn (string $column) => new UniqueCaseInsensitiveRule(Table::USERS, $column)
-            ->where(fn (Builder $query) => $query
-                ->where('active', true)
-                ->orWhere('pending', true)
-            )
-            ->ignore($this->subject->id);
+        $unique = fn (string $column) => self::unique($column, $this->subject->id);
 
         $noProtocol = function ($attribute, $value, $fail) {
             if (str_contains($value, '://')) {
