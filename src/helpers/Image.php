@@ -505,8 +505,14 @@ class Image
      */
     public static function altTextFromXmp(string $xmp): ?string
     {
+        $xmp = trim($xmp, "\0 \t\n\r");
+        // loadXML() throws on an empty string
+        if ($xmp === '') {
+            return null;
+        }
+
         $dom = new \DOMDocument();
-        if (!@$dom->loadXML(trim($xmp, "\0 \t\n\r"))) {
+        if (!@$dom->loadXML($xmp)) {
             return null;
         }
 
