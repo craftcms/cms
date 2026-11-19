@@ -122,6 +122,7 @@
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
 - Renamed `<craft-tab>`’s `--c-tab-spacing-inline`, `--c-tab-spacing-block`, and `--c-tab-border-active` custom properties to `--c-tab-padding-inline`, `--c-tab-padding-block`, and `--c-tab-indicator-fill-active`. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - The web installer now has a “Time Zone” field, which defaults to the time zone in the project config, or the browser’s time zone. Previously, sites installed from the web installer were always set to America/Los_Angeles.
+- Fixed a bug where users could disconnect their last sign-in provider from **My Account** → **Sign-in Providers** when they had no password or passkey, leaving them unable to sign in. ([#20883](https://github.com/craftcms/cms/issues/20883), [#20891](https://github.com/craftcms/cms/pull/20891))
 - Fixed a bug where element editors autosaved a provisional draft as soon as they loaded when they had a legacy relation field from the Yii2 adapter, such as a Categories field, including within Matrix entries and Content Blocks. ([#20869](https://github.com/craftcms/cms/issues/20869), [#20871](https://github.com/craftcms/cms/pull/20871))
 - Fixed a bug where Live Preview kept showing discarded changes after “Discard changes” was clicked. ([#20839](https://github.com/craftcms/cms/issues/20839), [#20858](https://github.com/craftcms/cms/pull/20858))
 - Fixed a bug where the web installer’s Port field was too narrow to show its value.
@@ -289,6 +290,7 @@
 - Fixed a bug where PHP scripts that booted Craft with the Yii2 adapter installed exited with status 0 when an exception went uncaught. ([#20822](https://github.com/craftcms/cms/issues/20822), [#20830](https://github.com/craftcms/cms/pull/20830))
 - Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
 - Fixed a bug where changing a Link field’s label in a draft could make autosave run repeatedly, so Live Preview never opened. ([#20870](https://github.com/craftcms/cms/pull/20870))
+- Fixed a bug where `<craft-tooltip>` text didn’t wrap when the tooltip was inside an element that doesn’t wrap text, such as an admin table’s actions cell. ([#20891](https://github.com/craftcms/cms/pull/20891))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
