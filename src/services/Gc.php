@@ -678,8 +678,8 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned foreign key rows ... ');
 
-        // Find the orphaned values with a plain SELECT, which doesn't lock any rows,
-        // then delete the rows that have them in small batches, each in its own transaction.
+        // Find the orphaned rows with a plain SELECT, which doesn't lock any rows,
+        // then delete them in small batches, each in its own transaction.
         // FK checks stay enabled, so the deletions cascade and set columns to NULL as the schema says,
         // and other connections' writes only wait on the rows being deleted.
         // (https://github.com/craftcms/cms/issues/20885)
@@ -692,19 +692,23 @@ class Gc extends Component
                     $fk = array_merge($fk);
                     $refTable = array_shift($fk);
 
+                    // Identify the orphaned rows by their primary key, so each batch deletes at most 1,000 rows.
+                    // Tables without one fall back to the FK value, which may match more rows.
+                    $keyColumns = $table->primaryKey ?: array_keys($fk);
+
                     foreach ($fk as $fkColumn => $pkColumn) {
-                        $values = (new Query())
-                            ->select("t.$fkColumn")
+                        $keys = (new Query())
+                            ->select(array_map(fn(string $column) => "t.$column", $keyColumns))
                             ->distinct()
                             ->from(['t' => $table->name])
                             ->leftJoin(['t2' => $refTable], "[[t2.$pkColumn]] = [[t.$fkColumn]]")
                             ->where(['not', ["t.$fkColumn" => null]])
                             ->andWhere(["t2.$pkColumn" => null])
-                            ->column($this->db);
+                            ->all($this->db);
 
                         try {
-                            foreach (array_chunk($values, 1000) as $valuesChunk) {
-                                Db::delete($table->name, [$fkColumn => $valuesChunk], db: $this->db);
+                            foreach (array_chunk($keys, 1000) as $keysChunk) {
+                                Db::delete($table->name, ['in', $keyColumns, $keysChunk], db: $this->db);
                             }
                         } catch (DbException $e) {
                             // Most likely another foreign key restricts the deletion
