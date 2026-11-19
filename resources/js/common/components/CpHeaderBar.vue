@@ -6,16 +6,14 @@
   import {computed, type ComponentPublicInstance} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import type {CraftData} from '@/common/composables/useCraftData';
-  import {index as generalSettings} from '@routes/cp/settings/general';
-  import CpLink from '@/common/components/CpLink.vue';
   import Breadcrumbs, {
     type BreadcrumbItem,
   } from '@/common/components/Breadcrumbs.vue';
-  import {fieldId} from '@/modules/ui/runtime';
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
   import AssistantToggle from '@/modules/ai/assistant/AssistantToggle.vue';
+  import AboutCraftMenu from '@/common/components/AboutCraftMenu.vue';
   import CommandPaletteTrigger from '@/modules/command-palette/components/CommandPaletteTrigger.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
@@ -27,15 +25,13 @@
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
-  type TopBarSection = 'start' | 'indicators' | 'end' | 'breadcrumbs';
+  type TopBarSection = 'start' | 'end' | 'breadcrumbs';
 
   // DOM order must match visual order per breakpoint for keyboard tab order —
   // CSS Grid areas (below) place these sections independent of source order,
   // so source order has to be made breakpoint-aware too.
   const sectionOrder = computed<TopBarSection[]>(() =>
-    isLarge.value
-      ? ['breadcrumbs', 'indicators', 'end']
-      : ['start', 'indicators', 'end', 'breadcrumbs']
+    isLarge.value ? ['breadcrumbs', 'end'] : ['start', 'end', 'breadcrumbs']
   );
 
   const {
@@ -73,16 +69,6 @@
         ? t('Bridged index')
         : null
   );
-  const generalSettingsUrl = computed(() =>
-    generalSettings.url({cpTrigger: page.props.craft.general.cpTrigger ?? ''})
-  );
-
-  // Deep-linked to the field itself, which `useFieldHighlight` scrolls to and
-  // rings on arrival. Built from the same helper the field's id comes from, so
-  // the badge and the field can't drift apart.
-  const maintenanceModeUrl = computed(
-    () => `${generalSettingsUrl.value}#${fieldId(['maintenanceMode'])}`
-  );
 </script>
 
 <template>
@@ -105,42 +91,37 @@
         </craft-button>
       </div>
 
-      <div
-        class="cp-header-bar__indicators"
-        v-else-if="section === 'indicators'"
-      >
-        <template v-if="devMode">
-          <craft-badge fill="warning">
-            <craft-icon name="code" slot="prefix"></craft-icon>
-            {{ t('Dev Mode') }}
-          </craft-badge>
-        </template>
-
-        <template v-if="devMode && bridged">
-          <craft-badge fill="violet">
-            <craft-icon name="bridge" slot="prefix"></craft-icon>
-            {{ bridged }}
-          </craft-badge>
-        </template>
-
-        <template v-if="maintenanceMode">
-          <craft-badge fill="warning">
-            <craft-icon name="person-digging" slot="prefix"></craft-icon>
-            <CpLink :href="maintenanceModeUrl">{{
-              t('Maintenance mode')
-            }}</CpLink>
-          </craft-badge>
-        </template>
-      </div>
-
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
         <div class="cp-header-bar__actions flex gap-sm items-center">
           <div class="cp-header-bar__icons flex items-center">
+            <craft-info-icon
+              v-if="devMode"
+              class="cp-header-bar__mode"
+              icon="code"
+              :label="t('Dev Mode')"
+              >{{ t('Dev Mode is enabled') }}</craft-info-icon
+            >
+            <craft-badge
+              v-if="devMode && bridged"
+              class="cp-header-bar__bridged"
+              fill="violet"
+              size="small"
+            >
+              <craft-icon name="bridge" slot="prefix"></craft-icon>
+              {{ bridged }}
+            </craft-badge>
+            <craft-info-icon
+              v-if="maintenanceMode"
+              class="cp-header-bar__mode"
+              icon="person-digging"
+              :label="t('Maintenance Mode')"
+              >{{ t('Maintenance Mode is enabled') }}</craft-info-icon
+            >
+            <AboutCraftMenu />
             <CommandPaletteTrigger />
             <AssistantToggle v-if="hasAssistant" />
             <cp-notification-center
               :notifications.prop="notifications"
-              :flush="isLarge ? 'inline-end' : undefined"
             ></cp-notification-center>
           </div>
           <div class="cp-header-bar__user">
@@ -169,7 +150,14 @@
               aria-hidden="true"
               >/</span
             >
-            <Breadcrumbs v-if="crumbs" :items="crumbs" />
+            <Breadcrumbs
+              v-if="crumbs"
+              :items="crumbs"
+              class="cp-header-bar__crumbs"
+              :class="{
+                'cp-header-bar__crumbs--indented': isLarge && !sidebarCollapsed,
+              }"
+            />
             <div
               v-show="hasContextMenu"
               class="context-menu-container"
@@ -198,10 +186,10 @@
     min-height: var(--cp-header-height);
     display: grid;
     gap: var(--c-spacing-sm);
-    grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
+    grid-template-areas: 'start . end' 'breadcrumbs breadcrumbs breadcrumbs';
     grid-template-columns:
       var(--c-size-touch-target)
-      1fr auto auto;
+      1fr auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
     position: relative;
@@ -220,9 +208,9 @@
       padding-inline-start: var(--c-spacing-md);
       padding-inline-end: var(--cp-scrollbar-width, 0px);
       gap: calc(var(--spacing) * 3);
-      grid-template-areas: 'breadcrumbs indicators end';
+      grid-template-areas: 'breadcrumbs end';
       grid-template-rows: auto;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr auto;
     }
   }
 
@@ -244,6 +232,12 @@
       gap: 0;
     }
 
+    /* The bell sits as far from the avatar as the avatar does from the
+       details panel's first tab. */
+    .cp-header-bar__icons {
+      margin-inline-end: 18px;
+    }
+
     .cp-header-bar__user {
       display: flex;
       justify-content: center;
@@ -251,10 +245,33 @@
     }
   }
 
-  .cp-header-bar__indicators {
-    grid-area: indicators;
-    display: flex;
-    gap: var(--c-spacing-sm);
+  /* As tall as the edition badge beside it, with text as large, the same
+     corners, and its text as far from its edges. */
+  .cp-header-bar__bridged {
+    --c-size-control-xs: 18px;
+    --c-text-xs: 10px;
+    --c-color-fill-quiet: transparent;
+    --c-color-border-quiet: color-mix(
+      in srgb,
+      var(--c-color-border-normal) 70%,
+      transparent
+    );
+  }
+
+  .cp-header-bar__mode {
+    --c-icon-size: var(--cp-chrome-icon-size);
+    /* The light theme's quiet text is brown; the loud fill is amber, and
+       still 4.6:1 against the header. */
+    --c-color-neutral-on-quiet: light-dark(
+      var(--c-color-warning-fill-loud),
+      var(--c-color-warning-on-quiet)
+    );
+    margin-inline: -5.25px;
+  }
+
+  .cp-header-bar__bridged::part(badge) {
+    border-radius: var(--c-radius-sm);
+    padding-inline: 4.25px 5px;
   }
 
   .cp-header-bar__breadcrumbs {
@@ -279,6 +296,16 @@
   .cp-header-bar__system--collapsed {
     inline-size: auto;
     max-inline-size: calc(var(--cp-sidebar-width) - var(--c-spacing-md) * 2);
+  }
+
+  .cp-header-bar__crumbs {
+    margin-inline-start: 1px;
+  }
+
+  /* In line with a secondary nav's icons: past the content's 1px border, its
+     sidebar's padding, and a nav item's inset before its icon. */
+  .cp-header-bar__crumbs--indented {
+    margin-inline-start: calc(var(--c-spacing-md) + var(--c-spacing-sm) + 1px);
   }
 
   /* Matches craft-breadcrumb-item's separators. */
@@ -340,6 +367,16 @@
   /* Plain buttons draw their icons in this, so it recolors them alone. */
   .cp-header-bar__icons {
     --c-color-neutral-on-quiet: var(--cp-chrome-icon-color);
+  }
+
+  /* Each button trims the space either side of its badge or icon, so this is
+     the space between them. */
+  .cp-header-bar__icons {
+    gap: var(--c-spacing-lg);
+
+    @media (width < var(--breakpoint-lg)) {
+      margin-inline-end: calc(var(--c-spacing-lg) - var(--c-spacing-sm));
+    }
   }
 
   .cp-header-bar__breadcrumbs

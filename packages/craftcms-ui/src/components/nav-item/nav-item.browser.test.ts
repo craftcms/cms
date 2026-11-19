@@ -195,6 +195,26 @@ it('lines a subnav label up with its parent label', async () => {
   expect(labelLeft(current)).toBeCloseTo(labelLeft(parent), 0);
 });
 
+it('leaves an open subnav’s toggle unfilled, tinted as any while hovered and pressed', async () => {
+  const {parent} = await subnavFixture();
+  const toggle = parent.shadowRoot!.querySelector<
+    HTMLElement & {active: boolean; updateComplete: Promise<unknown>}
+  >('craft-button.subnav-toggle')!;
+
+  expect(toggle.getAttribute('aria-expanded')).toBe('true');
+  expect(getComputedStyle(toggle).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+  const {userEvent} = await import('vite-plus/test/browser');
+  await userEvent.hover(toggle);
+
+  expect(getComputedStyle(toggle).backgroundColor).toMatch(/\/ 0\.05\)$/);
+
+  toggle.active = true;
+  await toggle.updateComplete;
+
+  expect(getComputedStyle(toggle).backgroundColor).toMatch(/\/ 0\.12\)$/);
+});
+
 const pressEvents = ['mousedown', 'mouseup', 'click', 'keydown', 'keyup'];
 
 async function lentActionFixture() {

@@ -1,7 +1,8 @@
 ---
 name: changelog-entries
 description: >
-  Write changelog entries for CHANGELOG.md, and CHANGELOG-WIP.md when it exists. Use when work has been completed
+  Write changelog entries for CHANGELOG.md, and for CHANGELOG-WIP.md when it exists and the change matters to
+  people upgrading from the previous major/minor version. Use when work has been completed
   and changelog entries need to be added, or when the user asks to write, add, or update changelog
   entries, release notes, or document changes. Triggers on requests like "add changelog entry",
   "update the changelog", "write release notes", or after completing a feature/fix that needs documenting.
@@ -27,7 +28,7 @@ If it isn't released, don't add an entry. If the fix changes how an unreleased f
 ## Determine Target Files
 
 1. If the user specifies a file, use that, otherwise use `CHANGELOG.md`.
-2. If a `CHANGELOG-WIP.md` file exists, also update it whenever a change will be relevant to someone upgrading from the previous version (see [CHANGELOG-WIP.md Format](#changelog-wipmd-format)), even if the user only mentions `CHANGELOG.md`.
+2. If a `CHANGELOG-WIP.md` file exists, also update it only when the change passes the test in [CHANGELOG-WIP.md Format](#changelog-wipmd-format): it must matter to someone upgrading from the version before the one named in the file's h1. Most changes don't, including anything that changes or extends a feature that's new in this release. When a change passes the test, update the file even if the user only mentions `CHANGELOG.md`.
 3. Read the first ~80 lines of each target file to confirm its current format and find the insertion point.
 
 ## CHANGELOG.md Format
@@ -57,14 +58,41 @@ Each entry is a `- ` prefixed line. No blank lines between entries within a sect
 
 ## CHANGELOG-WIP.md Format
 
-`CHANGELOG-WIP.md` collects the release notes for an upcoming major or minor release while it's in development, such as `# Release Notes for Craft CMS 6.0 (WIP)`. When it exists, it must always be updated alongside `CHANGELOG.md` for any change that will be relevant to someone upgrading from the previous version.
+`CHANGELOG-WIP.md` is **not** a second copy of `CHANGELOG.md`. It holds the release notes for an upcoming major or minor release as a whole, written for **one audience: people upgrading from the previous major or minor version**. Most changes made while that release is in development don't belong in it.
 
-Which version that is depends on the current branch, or the target branch of the pull request:
+### Who it's for
 
-- **`<new version>.x`** (e.g. `6.x` while 6.0 is in development): the previous **major** version. Anything someone upgrading from Craft 5 would notice or need to act on belongs in it.
-- **`<version>.<new minor version>`** (e.g. `5.9`): the previous **minor** version. Anything someone upgrading from 5.8 would notice or need to act on belongs in it.
+Read the h1 at the top of the file. It names the release, and the audience is whoever is coming from the version before it:
 
-A change is relevant when it adds something that isn't in the previous version, or changes, deprecates, or removes something users, developers, or plugins rely on in it. Changes that only refine or fix something that's new in this release don't need their own WIP entry, since there's nothing to compare them to in the previous version. Instead, update the existing WIP entry for that feature if it no longer describes it accurately.
+- `# Release Notes for Craft CMS 6.0 (WIP)` → people upgrading from **Craft 5**.
+- `# Release Notes for Craft CMS 5.9 (WIP)` → people upgrading from **Craft 5.8**.
+
+Use the h1, not the branch name or the latest tag, to decide this.
+
+### The test
+
+Before touching `CHANGELOG-WIP.md`, ask: **would someone upgrading from the previous version, who has never run any alpha, beta, or RC of this release, see a difference from what they have today?** Compare against the previous version only, never against earlier pre-releases of this one.
+
+Add or change a WIP entry only when the change:
+
+- adds something that doesn't exist in the previous version, and isn't part of a feature that already has a WIP entry, or
+- changes, deprecates, or removes something that exists in the previous version and that users, developers, or plugins rely on.
+
+### Never add a WIP entry for changes to things that are new in this release
+
+If the thing being changed or extended didn't exist in the previous version, the change does **not** get its own WIP entry, even when it's a whole new capability with its own `CHANGELOG.md` entry. To the upgrader, the feature is simply new, and its existing WIP entry already covers it. This includes:
+
+- New functionality, options, checks, or integrations added to a feature introduced in this release.
+- Fixes, refinements, and behavior changes to such a feature.
+- Anything first released in an alpha, beta, or RC of this release.
+
+For example, the Yii2 Loose Ends utility is new in Craft 6.0 (it shipped in 6.0.0-beta.1). A later change that makes it report Craft 5 Yii cache components gets a `CHANGELOG.md` entry, but `CHANGELOG-WIP.md` must not be touched: someone coming from Craft 5 never had the utility, so to them it's all part of "Added the Yii2 Loose Ends utility."
+
+The only time such a change touches `CHANGELOG-WIP.md` is when the feature's existing WIP entry now says something false or misleading. Then edit that entry so it stays accurate. Don't append a new entry, and don't expand the existing one just to mention the new capability.
+
+When it's unclear whether something existed in the previous version, check that version's source or ask, rather than adding an entry.
+
+### Format
 
 Entries are grouped by area under the file's `###` and `####` headings (e.g. `### Assets`, `#### AI`, `### Extensibility`), not by version. Add each entry under the heading that fits, following the same writing rules and ordering as `CHANGELOG.md`. Describe the end state relative to the previous version, rather than the steps it took during development.
 
@@ -120,8 +148,8 @@ For the full set of templates and examples, see `references/entry-templates.md`.
 
 1. Identify what changed (from conversation context, git diff, or user description).
    Leave out fixes for behavior that was never released (see [Skip Fixes for Unreleased Changes](#skip-fixes-for-unreleased-changes)).
-2. Determine the target files (`CHANGELOG.md`, plus `CHANGELOG-WIP.md` when it exists and the change is relevant to someone upgrading from the previous version) and each one's section/insertion point.
+2. Determine the target files and each one's section/insertion point. That's `CHANGELOG.md`, plus `CHANGELOG-WIP.md` only when it exists and the change passes its test. Read the WIP file's h1, then check whether the thing being changed existed in that previous version. If it's new in this release, leave `CHANGELOG-WIP.md` alone unless its existing entry is now inaccurate.
 3. Write entries following the format and writing rules above.
 4. Insert entries into the section, positioned per the Entry Ordering rules above.
 
-Done when: each user-facing change in the diff has exactly one entry in `CHANGELOG.md`, except fixes for behavior that was never released, which have none, and, when `CHANGELOG-WIP.md` exists, each change relevant to someone upgrading from the previous version is covered there too, all in the right sections and order, with existing entries unchanged except where they no longer describe the change accurately.
+Done when: each user-facing change in the diff has exactly one entry in `CHANGELOG.md`, except fixes for behavior that was never released, which have none, and, when `CHANGELOG-WIP.md` exists, each change that someone upgrading from the version before the one in its h1 would notice is covered there too, with no WIP entries added for changes to things that are new in this release, all in the right sections and order, with existing entries unchanged except where they no longer describe the change accurately.

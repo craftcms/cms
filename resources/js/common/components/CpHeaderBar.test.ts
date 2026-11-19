@@ -104,7 +104,6 @@ it('orders sections to match the desktop visual layout (breadcrumbs first)', asy
 
   expect(sectionClasses(container)).toEqual([
     'cp-header-bar__breadcrumbs',
-    'cp-header-bar__indicators',
     'cp-header-bar__end',
   ]);
 });
@@ -114,7 +113,6 @@ it('orders sections to match the mobile visual layout (breadcrumbs last)', async
 
   expect(sectionClasses(container)).toEqual([
     'cp-header-bar__start',
-    'cp-header-bar__indicators',
     'cp-header-bar__end',
     'cp-header-bar__breadcrumbs',
   ]);

@@ -564,6 +564,36 @@ export default css`
     color: inherit;
   }
 
+  /* A plain button has no fill of its own, so it's tinted with its own color
+     instead: hovered, pressed (marked active) and, as a popover's invoker,
+     open. A selected one, such as in a button group, keeps the loud fill. */
+  :host([variant~='plain']:not([inherit])),
+  :host([variant~='plain'][inherit]) {
+    --c-color-fill-quiet: transparent;
+    --c-color-mix-hover: currentColor 5%;
+    --c-color-mix-active: currentColor 12%;
+  }
+
+  :host([variant~='plain']:not([aria-pressed='true'])) {
+    --c-color-fill-loud: color-mix(in srgb, currentColor 12%, transparent);
+    --c-color-on-loud: var(--c-color-on-quiet);
+    --c-color-border-loud: transparent;
+  }
+
+  :host([variant~='plain'][inherit]:not([aria-pressed='true'])) {
+    --c-color-on-loud: currentColor;
+  }
+
+  :host(
+    [variant~='plain'][slot='invoker'][aria-expanded='true']:not(:disabled)
+  ) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  :host([variant~='plain']:not(:disabled):not(.loading):active) {
+    box-shadow: none;
+  }
+
   /* After the variants, which switch the sizer off: xsmall draws under
      the minimum target size, so the hit area has to come from the sizer. */
   :host([size~='xsmall'])::before {

@@ -15,7 +15,6 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\Responses\BridgedScreen;
 use CraftCms\Cms\License\License;
-use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
@@ -25,7 +24,6 @@ use CraftCms\Cms\View\LegacyScreenFragments;
 use DateTimeInterface;
 use Deprecated;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Stringable;
 
@@ -148,56 +146,7 @@ class Cp extends Component
     /** @return array<string, mixed>|null */
     public function trialInfo(): ?array
     {
-        $issues = collect(app(License::class)->issues([
-            LicenseKeyStatus::Trial->value,
-            LicenseKeyStatus::Astray->value,
-            'wrong_edition',
-        ]));
-
-        if ($issues->isEmpty()) {
-            return null;
-        }
-
-        $cmsIssues = $issues->filter(fn ($issue) => in_array($issue[2]['type'], ['cms-edition', 'cms-renewal']));
-        $pluginEditionIssues = $issues->filter(fn ($issue) => $issue[2]['type'] === 'plugin-edition');
-        $pluginRenewalIssues = $issues->filter(fn ($issue) => $issue[2]['type'] === 'plugin-renewal');
-
-        $names = $cmsIssues->map(fn ($issue) => $issue[0])->all();
-        foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
-            $count = $group->count();
-            if ($count === 1) {
-                $names[] = $group->first()[0];
-            } elseif ($count !== 0) {
-                if ($group->first()[2]['type'] === 'plugin-edition') {
-                    $name = t('{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
-                        'count' => $count,
-                    ]);
-                } else {
-                    $name = t('{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
-                        'count' => $count,
-                    ]);
-                }
-                if (empty($names)) {
-                    $name = ucfirst($name);
-                }
-                $names[] = $name;
-            }
-        }
-
-        $message = t('{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
-            'names' => collect($names)->sentence(),
-            'total' => $issues->count(),
-        ]);
-
-        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = Uri::of("$consoleUrl/cart/new")
-            ->withQuery(['items' => $issues->map(fn ($issue) => $issue[2])->all()])
-            ->value();
-
-        return [
-            'message' => $message,
-            'cartUrl' => $cartUrl,
-        ];
+        return app(License::class)->trialInfo();
     }
 
     /**

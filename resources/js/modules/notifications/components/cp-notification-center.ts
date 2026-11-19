@@ -27,12 +27,17 @@ class CpNotificationCenter extends LitElement {
     .notification-trigger {
       --c-icon-size: var(--cp-chrome-icon-size, 1em);
       position: relative;
+      margin-inline: -7.25px;
+    }
+
+    .notification-trigger__icon {
+      translate: 0 1.5px;
     }
 
     .notification-trigger__badge {
       --badge-border-width: 2px;
       position: absolute;
-      inset-block-start: 0;
+      inset-block-start: -2.5px;
       inset-inline-end: 0;
     }
 

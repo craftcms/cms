@@ -212,6 +212,13 @@ export default css`
     );
   }
 
+  /* Pressed, more so, as a tinted button is. A press on one of its controls
+     is that control's. */
+  :host(:not([current], [appearance='tabs']))
+    .nav-item:not(.nav-item--static):active:not(:has(craft-button:active)) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
   /* No href: render as a plain label, not an interactive item. */
   .nav-item--static {
     cursor: default;
