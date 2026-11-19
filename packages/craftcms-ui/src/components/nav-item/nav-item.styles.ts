@@ -205,7 +205,11 @@ export default css`
   :host(:not([current], [appearance='tabs']))
     .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
   :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
-    background-color: color-mix(in srgb, currentColor, transparent 95%);
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-mix-hover),
+      transparent
+    );
   }
 
   /* Pressed, more so, as a tinted button is. A press on one of its controls
