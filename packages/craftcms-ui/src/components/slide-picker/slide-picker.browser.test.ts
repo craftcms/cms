@@ -1,4 +1,6 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
+import {contrast} from '../../../test/contrast';
+import {movePointerAway} from '../../../test/pointer';
 import type CraftSlidePicker from './slide-picker.js';
 import './slide-picker.js';
 
@@ -6,9 +8,19 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-async function render(attributes = '', value = 100): Promise<CraftSlidePicker> {
+afterEach(async () => {
+  const {cdp} = await import('vite-plus/test/browser');
+  await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  await movePointerAway();
+});
+
+async function render(
+  attributes = '',
+  value = 100,
+  theme?: 'light' | 'dark'
+): Promise<CraftSlidePicker> {
   await import('../../styles/cp.css');
-  document.body.innerHTML = `<craft-slide-picker min="25" max="100" step="25" value="${value}" ${attributes}></craft-slide-picker>`;
+  document.body.innerHTML = `<div class="surface" ${theme ? `data-theme="${theme}"` : ''} style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker min="25" max="100" step="25" value="${value}" ${attributes}></craft-slide-picker><p class="elsewhere">Elsewhere</p></div>`;
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
   await picker.updateComplete;
@@ -26,6 +38,29 @@ function segments(picker: CraftSlidePicker): HTMLElement[] {
       '.slide-picker__segment'
     ),
   ];
+}
+
+function surface(): string {
+  return getComputedStyle(document.querySelector('.surface')!).backgroundColor;
+}
+
+/** The colors a divider's gradient is drawn in, from start to end. */
+function gradientColors(image: string): string[] {
+  return image.match(/(?:rgba?|color|oklab|oklch|lab|lch)\([^)]*\)/g) ?? [];
+}
+
+/** How each segment is drawn: its edge's width and color, and its fill. */
+function looks(picker: CraftSlidePicker): string[] {
+  return segments(picker).map((segment) => {
+    const style = getComputedStyle(segment);
+    return `${style.borderTopWidth} ${style.borderTopColor} ${style.backgroundColor}`;
+  });
+}
+
+function previewed(picker: CraftSlidePicker): boolean[] {
+  return segments(picker).map(
+    (segment) => getComputedStyle(segment).borderTopWidth === '2px'
+  );
 }
 
 function fills(picker: CraftSlidePicker): string[] {
@@ -49,7 +84,7 @@ it('fills only the segments up to the hovered one', async () => {
   expect(fourth).toBe('rgba(0, 0, 0, 0)');
 });
 
-it('draws every segment at one height, with the selected ones filled darker', async () => {
+it('draws every segment at one height, with the selected ones filled alike', async () => {
   const picker = await render('', 50);
   const heights = segments(picker).map(
     (segment) => segment.getBoundingClientRect().height
@@ -59,15 +94,104 @@ it('draws every segment at one height, with the selected ones filled darker', as
   expect(new Set(heights).size).toBe(1);
   expect(second).toBe(first);
   expect(third).not.toBe(first);
-  // The divider between selected segments is as light as unselected
-  // segments' borders, not their dark outline.
-  const firstStyle = getComputedStyle(segments(picker)[0]!);
-  const divider = getComputedStyle(segments(picker)[0]!, '::after');
-  const unselectedBorder = getComputedStyle(
-    segments(picker)[2]!
-  ).borderTopColor;
-  expect(unselectedBorder).not.toBe(firstStyle.borderTopColor);
-  expect(divider.backgroundImage).toContain(unselectedBorder);
+});
+
+it.each(['light', 'dark'] as const)(
+  'edges empty segments, and fills, outlines and divides selected ones, at 3:1 in the %s theme',
+  async (theme) => {
+    const picker = await render('', 50, theme);
+    const back = surface();
+    const [first, , empty] = segments(picker).map((segment) =>
+      getComputedStyle(segment)
+    );
+    const divider = getComputedStyle(segments(picker)[0]!, '::after');
+    const stops = gradientColors(divider.backgroundImage);
+    const [dividerStart, dividerMiddle] = stops;
+    const dividerEnd = stops.at(-1);
+    const ratios: Record<string, number> = {
+      'empty edge vs surface': contrast(empty!.borderTopColor, back),
+      'empty edge vs its fill': contrast(
+        empty!.borderTopColor,
+        empty!.backgroundColor,
+        back
+      ),
+      'selected fill vs surface': contrast(first!.backgroundColor, back),
+      'selected outline vs surface': contrast(first!.borderTopColor, back),
+      'selected outline vs empty fill': contrast(
+        first!.borderTopColor,
+        empty!.backgroundColor,
+        back
+      ),
+      'divider vs selected fill': contrast(
+        dividerMiddle ?? 'transparent',
+        first!.backgroundColor,
+        back
+      ),
+    };
+
+    expect(
+      Object.entries(ratios)
+        .filter(([, ratio]) => ratio < 3)
+        .map(([part, ratio]) => `${part}: ${ratio.toFixed(2)}`)
+    ).toEqual([]);
+    expect([dividerStart, dividerEnd]).toEqual([
+      first!.borderTopColor,
+      first!.borderTopColor,
+    ]);
+  }
+);
+
+it.each(['light', 'dark'] as const)(
+  'outlines the previewed run 2px thick at 3:1, unlike the selected run, in the %s theme',
+  async (theme) => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const picker = await render('', 25, theme);
+    const back = surface();
+    const resting = getComputedStyle(segments(picker)[0]!).borderTopWidth;
+
+    await userEvent.hover(segments(picker)[2]!);
+    const previewed = segments(picker)
+      .slice(0, 3)
+      .map((segment) => getComputedStyle(segment));
+
+    expect(parseFloat(resting)).toBe(1);
+    for (const style of previewed) {
+      expect(style.borderTopWidth).toBe('2px');
+      expect(contrast(style.borderTopColor, back)).toBeGreaterThanOrEqual(3);
+      expect(
+        contrast(style.borderTopColor, style.backgroundColor, back)
+      ).toBeGreaterThanOrEqual(3);
+    }
+    expect(segments(picker)[0]!.getBoundingClientRect().height).toBe(
+      segments(picker)[3]!.getBoundingClientRect().height
+    );
+  }
+);
+
+it('outlines the previewed run 2px thick in forced colors mode', async () => {
+  const {cdp, userEvent} = await import('vite-plus/test/browser');
+  await cdp().send('Emulation.setEmulatedMedia', {
+    features: [{name: 'forced-colors', value: 'active'}],
+  });
+  const picker = await render('', 25);
+
+  await userEvent.hover(segments(picker)[2]!);
+  const previewed = getComputedStyle(segments(picker)[2]!);
+  const rest = getComputedStyle(segments(picker)[3]!);
+
+  expect(previewed.borderTopWidth).toBe('2px');
+  expect(previewed.borderTopColor).not.toBe(rest.borderTopColor);
+  expect(
+    contrast(previewed.borderTopColor, previewed.backgroundColor)
+  ).toBeGreaterThanOrEqual(3);
+});
+
+it('draws read-only segments at full strength', async () => {
+  const picker = await render('readonly', 50);
+
+  expect(
+    segments(picker).map((segment) => getComputedStyle(segment).opacity)
+  ).toEqual(['1', '1', '1', '1']);
 });
 
 it('leaves a read-only picker’s fills alone while hovered', async () => {
@@ -94,6 +218,86 @@ it('previews the current value like any other', async () => {
   expect(getComputedStyle(segments(picker)[1]!).cursor).toBe('pointer');
 });
 
+it.each([
+  {path: 'from a middle segment', from: 1, to: 'elsewhere'},
+  {path: 'from the last segment', from: 3, to: 'elsewhere'},
+  {path: 'onto its label', from: 1, to: 'label'},
+] as const)(
+  'goes back to the selected value when the pointer leaves $path',
+  async ({from, to}) => {
+    const {page, userEvent} = await import('vite-plus/test/browser');
+    const picker = await render('label="Columns"', 50);
+    const resting = looks(picker);
+
+    await userEvent.hover(segments(picker)[from]!);
+    expect(looks(picker)).not.toEqual(resting);
+    await userEvent.hover(
+      to === 'elsewhere'
+        ? page.getByText('Elsewhere')
+        : page.getByText('Columns', {exact: true})
+    );
+
+    expect(looks(picker)).toEqual(resting);
+  }
+);
+
+it.each([
+  {value: 25, enter: 3, preview: [true, true, true, true]},
+  {value: 25, enter: 1, preview: [true, true, false, false]},
+  {value: 100, enter: 2, preview: [true, true, true, false]},
+])(
+  'previews every segment up to the pointer when it enters on segment $enter with $value selected',
+  async ({value, enter, preview}) => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const picker = await render('', value);
+
+    await userEvent.hover(segments(picker)[enter]!);
+
+    expect(previewed(picker)).toEqual(preview);
+    expect(fills(picker).filter((_, index) => !preview[index])).toEqual(
+      preview.filter((on) => !on).map(() => 'rgba(0, 0, 0, 0)')
+    );
+  }
+);
+
+it('shrinks the preview when the pointer moves back', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const picker = await render('', 100);
+
+  await userEvent.hover(segments(picker)[3]!);
+  await userEvent.hover(segments(picker)[1]!);
+
+  expect(previewed(picker)).toEqual([true, true, false, false]);
+  expect(fills(picker).slice(2)).toEqual([
+    'rgba(0, 0, 0, 0)',
+    'rgba(0, 0, 0, 0)',
+  ]);
+});
+
+it('shows a clicked value as selected while the pointer stays on it, and previews again on the next segment', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `<div class="surface" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker id="clicked" min="25" max="100" step="25" value="25"></craft-slide-picker><craft-slide-picker id="reference" min="25" max="100" step="25" value="75"></craft-slide-picker></div>`;
+  const [picker, reference] = [
+    ...document.querySelectorAll<CraftSlidePicker>('craft-slide-picker'),
+  ] as [CraftSlidePicker, CraftSlidePicker];
+  for (const element of [picker, reference]) {
+    await element.updateComplete;
+    await slider(element).updateComplete;
+  }
+
+  await userEvent.click(segments(picker)[2]!);
+  await slider(picker).updateComplete;
+
+  expect(picker.value).toBe(75);
+  expect(segments(picker)[2]!.matches(':hover')).toBe(true);
+  expect(looks(picker)).toEqual(looks(reference));
+
+  await userEvent.hover(segments(picker)[3]!);
+
+  expect(previewed(picker)).toEqual([true, true, true, true]);
+});
+
 it('is one Tab stop, on the slider', async () => {
   const {page, userEvent} = await import('vite-plus/test/browser');
   await render();
@@ -103,15 +307,97 @@ it('is one Tab stop, on the slider', async () => {
   await expect.element(page.getByRole('slider')).toHaveFocus();
 });
 
-it('draws one focus ring, around the current segment', async () => {
-  const {userEvent} = await import('vite-plus/test/browser');
+it.each(['light', 'dark'] as const)(
+  'draws one focus ring, around the current segment, at 3:1 in the %s theme',
+  async (theme) => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const picker = await render('', 50, theme);
+
+    await userEvent.tab();
+
+    const current =
+      slider(picker).shadowRoot!.querySelector('.is-last-active')!;
+    const ring = getComputedStyle(current);
+    expect(getComputedStyle(slider(picker)).outlineStyle).toBe('none');
+    expect(ring.outlineStyle).not.toBe('none');
+    expect(parseFloat(ring.outlineOffset)).toBeGreaterThan(0);
+    expect(contrast(ring.outlineColor, surface())).toBeGreaterThanOrEqual(3);
+  }
+);
+
+it('tells selected and empty segments apart, divides selected ones, and shows the focus ring, in forced colors mode', async () => {
+  const {cdp, userEvent} = await import('vite-plus/test/browser');
+  await cdp().send('Emulation.setEmulatedMedia', {
+    features: [{name: 'forced-colors', value: 'active'}],
+  });
   const picker = await render('', 50);
 
   await userEvent.tab();
+  const [selected, , empty] = segments(picker).map((segment) =>
+    getComputedStyle(segment)
+  );
+  const ring = getComputedStyle(segments(picker)[1]!);
+  const probe = document.createElement('span');
+  probe.style.forcedColorAdjust = 'none';
+  document.body.append(probe);
+  const system = (color: string) => {
+    probe.style.color = color;
+    return getComputedStyle(probe).color;
+  };
 
-  const current = slider(picker).shadowRoot!.querySelector('.is-last-active')!;
-  expect(getComputedStyle(slider(picker)).outlineStyle).toBe('none');
-  expect(getComputedStyle(current).outlineStyle).not.toBe('none');
+  expect(selected!.backgroundColor).toBe(system('Highlight'));
+  expect(empty!.backgroundColor).toBe(system('Canvas'));
+  expect(empty!.borderTopColor).toBe(system('ButtonBorder'));
+  expect(
+    gradientColors(
+      getComputedStyle(segments(picker)[0]!, '::after').backgroundImage
+    )
+  ).toEqual([
+    system('Highlight'),
+    system('Canvas'),
+    system('Canvas'),
+    system('Highlight'),
+  ]);
+  expect(ring.outlineStyle).not.toBe('none');
+  expect(ring.outlineColor).not.toBe(empty!.backgroundColor);
+});
+
+it('scales its segments with the text size', async () => {
+  const picker = await render('', 50);
+  // The first segment adds a fixed 1px border on each side, which doesn't scale.
+  const border = 2;
+  const before = segments(picker)[0]!.getBoundingClientRect();
+
+  document.documentElement.style.fontSize = '200%';
+  try {
+    const after = segments(picker)[0]!.getBoundingClientRect();
+
+    expect(after.width - border).toBeCloseTo((before.width - border) * 2, 0);
+    expect(after.height - border).toBeCloseTo((before.height - border) * 2, 0);
+  } finally {
+    document.documentElement.style.fontSize = '';
+  }
+});
+
+it('fits a 320px-wide viewport without scrolling sideways', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  const [width, height] = [window.innerWidth, window.innerHeight];
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `<craft-slide-picker min="0" max="100" step="10" value="50"></craft-slide-picker>`;
+  const picker =
+    document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
+  await picker.updateComplete;
+  await slider(picker).updateComplete;
+
+  await page.viewport(320, 640);
+  try {
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(320);
+    expect(
+      segments(picker).at(-1)!.getBoundingClientRect().right
+    ).toBeLessThanOrEqual(320);
+  } finally {
+    await page.viewport(width, height);
+  }
 });
 
 it('is named by its label, and focused when the label is clicked', async () => {

@@ -763,10 +763,8 @@ import './dashboard.scss';
       this.colspanPicker.min = 1;
       this.colspanPicker.step = 1;
       this.colspanPicker.value = this.getColspan();
-      this.colspanPicker.label = Craft.t('app', 'Columns');
-      this.colspanPicker.buttonLabel = `${Craft.t('app', 'Columns')} ${
-        this.title || this.getTypeInfo('name')
-      }`;
+      this.colspanPicker.sliderLabel = Craft.t('app', 'Columns');
+      this.colspanPicker.itemLabel = this.title || this.getTypeInfo('name');
       this.colspanPicker.valueLabel = (colspan) => {
         return Craft.t(
           'app',

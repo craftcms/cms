@@ -1,4 +1,8 @@
 import {css} from 'lit';
+import {
+  activeSegmentDividerForcedColorsStyles,
+  segmentDividerStyles,
+} from './segment-divider.styles.js';
 
 export default css`
   :host {
@@ -13,23 +17,18 @@ export default css`
   .slide-picker {
     --_segment-height: var(--c-slide-picker-segment-height, 1rem);
     --_segment-width: var(--c-slide-picker-segment-width, calc(8rem / 16));
-    --_segment-border: var(--c-color-neutral-border-quiet);
-    --_segment-active-border: var(--c-color-neutral-border-loud);
-    --_segment-fill: var(
-      --c-slide-picker-segment-fill,
-      var(--c-color-neutral-fill-quiet)
-    );
+    --_segment-border: var(--c-color-neutral-border-normal);
+    --_segment-active-border: var(--c-color-accent-border-loud);
+    --_segment-divider: var(--c-color-accent-fill-quiet);
+    --_segment-preview-border: var(--c-color-accent-border-loud);
+    --_segment-fill: var(--c-slide-picker-segment-fill, transparent);
     --_segment-active-fill: var(
       --c-slide-picker-segment-active-fill,
-      color-mix(
-        in oklab,
-        var(--c-color-neutral-fill-loud),
-        var(--c-color-neutral-fill-normal) 70%
-      )
+      var(--c-color-accent-fill-loud)
     );
     --_segment-hover-fill: var(
       --c-slide-picker-segment-hover-fill,
-      var(--c-color-neutral-fill-normal)
+      var(--c-color-accent-fill-quiet)
     );
     display: inline-flex;
     align-items: stretch;
@@ -39,8 +38,9 @@ export default css`
 
   .slide-picker__segment {
     position: relative;
-    inline-size: var(--_segment-width);
-    block-size: var(--_segment-height);
+    box-sizing: border-box;
+    inline-size: calc(var(--_segment-width) + 1px);
+    block-size: calc(var(--_segment-height) + 2px);
 
     border: 1px solid var(--_segment-border);
     border-inline-start-width: 0;
@@ -50,6 +50,7 @@ export default css`
   }
 
   .slide-picker__segment:first-child {
+    inline-size: calc(var(--_segment-width) + 2px);
     border-inline-start-width: 1px;
     border-start-start-radius: var(--c-radius-sm);
     border-end-start-radius: var(--c-radius-sm);
@@ -65,48 +66,34 @@ export default css`
     border-color: var(--_segment-active-border);
   }
 
-  /* An end border in a lighter color than the top and bottom ones would cut
-     into their corners, so the divider between active segments is drawn over
-     a transparent one, keeping the active color at the top and bottom. */
   .slide-picker__segment.is-active:not(.is-last-active) {
     border-inline-end-color: transparent;
   }
 
   .slide-picker__segment.is-active:not(.is-last-active)::after {
-    content: '';
-    position: absolute;
-    inset-block: -1px;
-    inset-inline-end: -1px;
-    inline-size: 1px;
-    background-image: linear-gradient(
-      var(--_segment-active-border) 1px,
-      var(--_segment-border) 1px calc(100% - 1px),
-      var(--_segment-active-border) calc(100% - 1px)
-    );
+    --_divider-edge: var(--_segment-active-border);
+    --_divider: var(--_segment-divider);
+    ${segmentDividerStyles}
   }
 
-  /* While a value is previewed, the current value's outline and the preview
-     both take the accent color. */
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover) {
-    --_segment-active-border: var(--c-color-accent-border-normal);
-    --_segment-hover-fill: var(
-      --c-slide-picker-segment-hover-fill,
-      var(--c-color-accent-fill-normal)
-    );
-  }
-
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover)
-    .slide-picker__segment {
+  .slide-picker.is-previewing .slide-picker__segment {
     background-color: transparent;
+    border-color: var(--_segment-border);
   }
 
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover)
-    .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
-    --_segment-border: var(--c-color-accent-border-quiet);
+  .slide-picker.is-previewing .slide-picker__segment::after {
+    content: none;
+  }
+
+  .slide-picker.is-previewing .slide-picker__segment.is-previewed {
     background-color: var(--_segment-hover-fill);
+    border-color: var(--_segment-preview-border);
+    border-block-width: 2px;
+    border-inline-end-width: 2px;
+  }
+
+  .slide-picker.is-previewing .slide-picker__segment.is-previewed:first-child {
+    border-inline-start-width: 2px;
   }
 
   :host(:focus-visible) .slide-picker__segment.is-last-active {
@@ -118,7 +105,6 @@ export default css`
 
   :host([readonly]) .slide-picker__segment {
     cursor: default;
-    opacity: 0.7;
   }
 
   @media (forced-colors: active) {
@@ -129,6 +115,20 @@ export default css`
 
     .slide-picker__segment.is-active {
       background: Highlight;
+      border-color: Highlight;
+    }
+
+    .slide-picker__segment.is-active:not(.is-last-active)::after {
+      ${activeSegmentDividerForcedColorsStyles}
+    }
+
+    .slide-picker.is-previewing .slide-picker__segment {
+      background: Canvas;
+      border-color: ButtonBorder;
+    }
+
+    .slide-picker.is-previewing .slide-picker__segment.is-previewed {
+      background: Canvas;
       border-color: Highlight;
     }
   }

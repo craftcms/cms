@@ -4,7 +4,7 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 **Not for:**
 
-- A slide picker with room for its full-size segments. Use `craft-slide-picker`, which takes one less step.
+- A slide picker with room for segments of at least 24×24 CSS px. `craft-slide-picker` takes one less step there.
 - A continuous range, or fine adjustment by dragging. Use `craft-slide-rule`.
 - Named choices that aren't points on a scale. Use `craft-select` or `craft-radio-group`.
 
@@ -12,15 +12,16 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 ### Semantics
 
-- [x] The button is named by `button-label`, falling back to `label`, followed by the value as `value-unit` or `valueLabel` formats it, so the name starts with the visible label and says the value the segments draw. The segments add nothing to the name. Per WCAG 1.1.1 (Non-text Content), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Verified by `names the button $name` and `names the button with valueLabel` in `slide-picker-button.browser.test.ts`.
-- [x] The popover's slider is named by the visible `label`, shown below it. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `names the popover’s slider by the label below it` in `slide-picker-button.browser.test.ts`.
+- [x] The button is named by its tooltip's text alone, the value as `value-unit` or `valueLabel` formats it. The tooltip is the button's only visible label, so the name matches it, and the name says the value the segments draw. The segments add nothing to the name. `item-label` describes the button, so buttons on several items are told apart. Per WCAG 1.1.1 (Non-text Content), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Verified by `names the button by the value its tooltip shows, and describes it by the item it sizes: $name` and `names the button with valueLabel` in `slide-picker-button.browser.test.ts`.
+- [x] The tooltip names the button and doesn't also describe it, so the value isn't read twice. Per WCAG 4.1.2 (Name, Role, Value). Verified by `names the button by exactly its tooltip’s text, without the tooltip also describing it` in `slide-picker-button.browser.test.ts`.
+- [x] The popover's slider is named by the visible `slider-label`, shown below it. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `names the popover’s slider by the label below it` in `slide-picker-button.browser.test.ts`.
 - [x] `disabled`, or a disabled `<fieldset>` around the button, disables the button, and clearing it enables the button again. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables the button when disabled, or inside a disabled fieldset, and enables it again` in `slide-picker-button.browser.test.ts`.
 - [x] `readonly` still opens the popover, with a read-only slider, so the value can be reached and read. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps the popover’s slider from changing while read-only` in `slide-picker-button.browser.test.ts`.
 
 ### Keyboard and focus
 
 - [x] Enter opens the popover, Tab moves to its slider, a key on the slider commits the value and updates the button's name, and Escape closes the popover with focus back on the button. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Verified by `opens with Enter, sets the value from the slider and returns focus on Escape` in `slide-picker-button.browser.test.ts`.
-- [ ] A keyboard-focused button shows a ring at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
+- [x] A keyboard-focused button shows a ring at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Verified by `shows a focus ring at 3:1 on a keyboard-focused button in the %s theme` in `slide-picker-button.browser.test.ts`.
 
 ### Pointer
 
@@ -28,8 +29,8 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 ### Visual
 
-- [ ] The button's segments, and the active fill against the inactive fill, reach 3:1 against the surface in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
-- [ ] In forced colors mode, the button's active segments use `Highlight` and inactive ones `Canvas` with a `ButtonBorder` edge. Not yet verified.
+- [x] The outline around the button's segments, and the outline around its filled run, reach 3:1 against the surface and the empty segments in the light and dark themes. The lines between segments are decoration. Per WCAG 1.4.11 (Non-text Contrast). Verified by `outlines the whole picker, and its filled run, at 3:1 in the %s theme` in `slide-picker-button.browser.test.ts`.
+- [x] In forced colors mode, the button's active segments use `Highlight` and inactive ones `Canvas` with a `ButtonBorder` edge, with a `Canvas` line between active segments and a `ButtonBorder` line between inactive ones. Verified by `draws filled segments in Highlight and empty ones in Canvas with a ButtonBorder edge, with lines between them, in forced colors mode` in `slide-picker-button.browser.test.ts`.
 
 ### Reflow and zoom
 
@@ -37,5 +38,5 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 ## Depends on usage
 
-- 2.4.6 (Headings and Labels): set `button-label` when several buttons share a `label`. See [Accessibility](./SlidePickerButton.mdx#accessibility).
+- 2.4.6 (Headings and Labels): set `item-label` when there are buttons on several items. See [Accessibility](./SlidePickerButton.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `value-unit` or `valueLabel` when the number alone doesn't say what it counts. See [Accessibility](./SlidePickerButton.mdx#accessibility).

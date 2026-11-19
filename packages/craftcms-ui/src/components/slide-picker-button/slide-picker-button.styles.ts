@@ -1,4 +1,8 @@
 import {css} from 'lit';
+import {
+  activeSegmentDividerForcedColorsStyles,
+  segmentDividerStyles,
+} from '../slide-picker/segment-divider.styles.js';
 
 export default css`
   :host {
@@ -15,11 +19,12 @@ export default css`
   }
 
   .segment {
+    --_edge: var(--c-color-neutral-border-normal);
     position: relative;
     box-sizing: border-box;
     inline-size: calc(9rem / 16);
     block-size: 1rem;
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--_edge);
     border-inline-start-width: 0;
     background-color: var(
       --c-slide-picker-segment-fill,
@@ -39,6 +44,7 @@ export default css`
   }
 
   .segment.is-active {
+    --_edge: var(--c-color-neutral-border-loud);
     background-color: var(
       --c-slide-picker-segment-active-fill,
       color-mix(
@@ -47,26 +53,16 @@ export default css`
         var(--c-color-neutral-fill-normal) 70%
       )
     );
-    border-color: var(--c-color-neutral-border-loud);
   }
 
-  /* Divides active segments the way craft-slide-picker-slider does, so the
-     divider doesn't cut into the top and bottom borders' corners. */
-  .segment.is-active:not(.is-last-active) {
+  .segment:not(:last-child, .is-last-active) {
     border-inline-end-color: transparent;
   }
 
-  .segment.is-active:not(.is-last-active)::after {
-    content: '';
-    position: absolute;
-    inset-block: -1px;
-    inset-inline-end: -1px;
-    inline-size: 1px;
-    background-image: linear-gradient(
-      var(--c-color-neutral-border-loud) 1px,
-      var(--c-color-neutral-border-quiet) 1px calc(100% - 1px),
-      var(--c-color-neutral-border-loud) calc(100% - 1px)
-    );
+  .segment:not(:last-child, .is-last-active)::after {
+    --_divider-edge: var(--_edge);
+    --_divider: var(--c-color-neutral-border-quiet);
+    ${segmentDividerStyles}
   }
 
   craft-popover::part(popup) {
@@ -107,6 +103,17 @@ export default css`
     .segment.is-active {
       background: Highlight;
       border-color: Highlight;
+    }
+
+    /* Forced colors would recolor the dividers to vanish on Highlight. */
+    .segment:not(:last-child, .is-last-active)::after {
+      forced-color-adjust: none;
+      --_divider-edge: ButtonBorder;
+      --_divider: ButtonBorder;
+    }
+
+    .segment.is-active:not(:last-child, .is-last-active)::after {
+      ${activeSegmentDividerForcedColorsStyles}
     }
   }
 `;

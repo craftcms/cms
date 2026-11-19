@@ -362,7 +362,7 @@
 - Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
 
 ### Extensibility
-- Added the `craft-slide-picker-button` component, a button that shows a value as a small copy of a slide picker’s segments and opens a full-size `craft-slide-picker` in a popover, for slide pickers in dense rows. ([#20681](https://github.com/craftcms/cms/pull/20681))
+- Added the `craft-slide-picker-button` component, a button that shows a value as a small copy of a slide picker’s segments and opens a full-size `craft-slide-picker` in a popover, for slide pickers in dense rows. Its tooltip shows the value and is its label, so it’s named by the value, such as “3 columns”, and described by its `item-label`, such as “Recent Entries”. Its `slider-label` labels the slider in the popover. Its `value-unit`, such as `% width`, is shown and announced after the value. ([#20681](https://github.com/craftcms/cms/pull/20681))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 
 #### Plugins

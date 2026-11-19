@@ -1,4 +1,4 @@
-import {html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -20,7 +20,12 @@ import '../tooltip/tooltip.js';
  * For a slide picker that sits in a dense row, such as a widget's column
  * count or a field layout element's width, where full-size segments don't
  * fit. The button is the target, so the segments drawn in it can stay small.
- * The popover's slide picker is labeled from below by `label`.
+ *
+ * The button shows no text, so its tooltip, the value, is its visible label
+ * and its name: "3 columns". `item-label`, the name of the item it sizes,
+ * describes it, so buttons on several items are told apart. `slider-label` is
+ * shown only in the popover, below its slide picker, and names that slide
+ * picker.
  *
  * @attr name - Field name. The button posts its value under it, like any
  * other input.
@@ -33,20 +38,29 @@ import '../tooltip/tooltip.js';
  *
  * @cssproperty --c-slide-picker-segment-fill - Fill of the segments past the
  * value, in the button and the popover. Defaults to
- * `--c-color-neutral-fill-quiet`.
+ * `--c-color-neutral-fill-quiet` in the button and `transparent` in the
+ * popover.
  * @cssproperty --c-slide-picker-segment-active-fill - Fill of the segments up
- * to the value, in the button and the popover.
+ * to the value, in the button and the popover. Defaults to a dark neutral in
+ * the button and `--c-color-accent-fill-loud` in the popover. Set it only
+ * with a fill that holds 3:1 against the surface.
  */
 export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
   static override styles = styles;
 
-  /** Labels the popover's slide picker, and names the button by default. */
-  @property() label = '';
   /**
-   * Names the button, when it needs more context than `label`, such as the
-   * name of the item it sizes. Start it with `label`.
+   * The label of the slide picker in the popover, shown below it and naming
+   * it. It isn't shown on the button, whose tooltip shows the value, and it
+   * isn't part of the button's name.
    */
-  @property({attribute: 'button-label'}) buttonLabel = '';
+  @property({attribute: 'slider-label'}) sliderLabel = '';
+  /**
+   * The name of the item the button sizes, such as a widget's title. It
+   * describes the button, so the buttons on several items are told apart:
+   * "3 columns", described by "Recent Entries". Keep it in step with the
+   * item's name.
+   */
+  @property({attribute: 'item-label'}) itemLabel = '';
   /** The selected value. */
   @property({type: Number}) value = 0;
   /** Lowest selectable value. */
@@ -57,7 +71,9 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
   @property({type: Number}) step = 10;
   /**
    * Unit shown and announced after the value, as `craft-slide-picker` takes
-   * it: a word gets a space ("3 columns"), a symbol doesn't ("100%").
+   * it: a word gets a space ("3 columns"), a symbol doesn't ("100%"). The
+   * value starts the button's name, so set this or `valueLabel` whenever the
+   * number alone doesn't say what it counts: "50% width", not "50".
    */
   @property({attribute: 'value-unit'}) valueUnit = '';
   /**
@@ -128,7 +144,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           variant="plain"
           size="small"
           flush=${ifDefined(this.flush)}
-          aria-label=${`${this.buttonLabel || this.label} ${valueText}`}
+          aria-describedby=${this.itemLabel ? 'item-label' : nothing}
         >
           <span class="segments" aria-hidden="true">
             ${steps.map(
@@ -145,7 +161,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
         </craft-button>
         <div class="content" slot="content-body">
           <craft-slide-picker
-            labelled-by="label"
+            labelled-by="slider-label"
             value-unit=${this.valueUnit}
             .valueLabel=${this.valueLabel}
             .min=${this.min}
@@ -156,12 +172,15 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
             @input=${this.#onPickerInput}
             @change=${this.#onPickerChange}
           ></craft-slide-picker>
-          <span id="label" class="label" @click=${this.#onLabelClick}
-            >${this.label}</span
+          <span id="slider-label" class="label" @click=${this.#onLabelClick}
+            >${this.sliderLabel}</span
           >
         </div>
       </craft-popover>
-      <craft-tooltip for="invoker">${valueText}</craft-tooltip>
+      <span id="item-label" hidden>${this.itemLabel}</span>
+      <craft-tooltip for="invoker" invoker-relation="label"
+        >${valueText}</craft-tooltip
+      >
     `;
   }
 }
