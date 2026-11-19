@@ -287,6 +287,7 @@
 - Fixed a bug where `CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving` listeners and `craft\elements\Entry::EVENT_DEFINE_META_FIELDS` handlers didn’t affect the entry edit screen. ([#20846](https://github.com/craftcms/cms/issues/20846))
 - Fixed a bug where PHP scripts that booted Craft with the Yii2 adapter installed exited with status 0 when an exception went uncaught. ([#20822](https://github.com/craftcms/cms/issues/20822), [#20830](https://github.com/craftcms/cms/pull/20830))
 - Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
+- Fixed a bug where changing a Link field’s label in a draft could make autosave run repeatedly, so Live Preview never opened. ([#20870](https://github.com/craftcms/cms/pull/20870))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

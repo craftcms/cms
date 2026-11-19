@@ -83,7 +83,20 @@ class LinkResolver
             ->types($this->pickerConfigs)
             ->showLabelField($this->showLabelField)
             ->advancedFields(array_values($this->advancedFields))
-            ->value($value instanceof LinkData ? [...$value->serialize(), 'defaultLabel' => $value->getLabel(false)] : $value);
+            ->value($value instanceof LinkData ? [
+                'label' => '',
+                'urlSuffix' => '',
+                'target' => '',
+                'title' => '',
+                'class' => '',
+                'id' => '',
+                'rel' => '',
+                'ariaLabel' => '',
+                'download' => false,
+                'filename' => '',
+                ...$value->serialize(),
+                'defaultLabel' => $value->getLabel(false),
+            ] : $value);
     }
 
     /**
