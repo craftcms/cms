@@ -880,6 +880,7 @@ return [
     'Groups' => 'Gruplar',
     'Guest Required' => 'Misafir girişi gerekli',
     'HTML Email Template' => 'HTML Eposta Şablonu',
+    'HTML Purifier caches' => 'HTML Purifier caches',
     'Handle' => 'Simge',
     'Has Descendants' => 'Alt Öğeleri Var',
     'Has URL' => 'URL var',
