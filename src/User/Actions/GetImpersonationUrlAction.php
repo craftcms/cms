@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Actions;
 
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 
-use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\currentUser;
 
 /**
@@ -22,8 +22,10 @@ readonly class GetImpersonationUrlAction
 
     public function __invoke(User $user): string|false
     {
+        // The front end's action path, which the route is under, wherever the
+        // URL is made from.
         $token = $this->tokens->createToken([
-            action_url('/users/impersonate-with-token'), [
+            ActionRoute::uriForSegments(['users', 'impersonate-with-token'], false), [
                 'userId' => $user->id,
                 'prevUserId' => currentUser()?->getCraftUserId() ?? $user->id,
             ],
