@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Conditions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -48,7 +49,7 @@ class VolumeConditionRule extends BaseMultiSelectConditionRule implements Elemen
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        AssetQuery::applyVolumeId($query, $this->paramValue(fn ($uid) => Volumes::getVolumeByUid($uid)->id ?? null));
+        AssetQuery::applyVolumeId($query, $this->paramIds(Table::VOLUMES, fn ($uid) => Volumes::getVolumeByUid($uid)->id ?? null));
     }
 
     public function matchElement(ElementInterface $element): bool

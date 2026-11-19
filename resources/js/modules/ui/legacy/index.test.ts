@@ -1,7 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {
   createSwitch,
-  createSlidePicker,
   createInputColor,
   createInputPassword,
   createTextInput,
@@ -104,41 +103,6 @@ describe('createSwitch', () => {
     const button = el.querySelector('craft-switch-button');
     expect(button?.classList.contains('fieldtoggle')).toBe(true);
     expect(button?.getAttribute('data-target')).toBe('target');
-  });
-});
-
-describe('createSlidePicker', () => {
-  it('sets the numeric props and posts under its name', () => {
-    const el = createSlidePicker({
-      min: 0,
-      max: 100,
-      step: 25,
-      value: 50,
-      name: 'cols',
-    });
-
-    expect(el.tagName.toLowerCase()).toBe('craft-slide-picker');
-    expect(el.min).toBe(0);
-    expect(el.max).toBe(100);
-    expect(el.step).toBe(25);
-    expect(el.value).toBe(50);
-    expect(el.name).toBe('cols');
-  });
-
-  it('resolves function min/max', () => {
-    const el = createSlidePicker({min: () => 10, max: () => 90, step: 20});
-    expect(el.min).toBe(10);
-    expect(el.max).toBe(90);
-  });
-
-  it('references the elements that label and describe it', () => {
-    const el = createSlidePicker({
-      labelledBy: 'width-label',
-      describedBy: 'width-instructions',
-    });
-
-    expect(el.getAttribute('labelled-by')).toBe('width-label');
-    expect(el.getAttribute('described-by')).toBe('width-instructions');
   });
 });
 

@@ -22,9 +22,14 @@ export default css`
     color: var(--c-color-neutral-on-normal);
   }
 
+  /* The loud fill is a surface of its own, like a colored card: content that
+     takes the default text color, such as a plain chip's label, takes its
+     text color instead, and status dots get a ring in it. */
   :host([active]) {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
+    --c-text-default: var(--c-color-neutral-on-loud);
+    --c-indicator-ring: var(--c-color-neutral-on-loud);
   }
 
   :host([disabled]) {

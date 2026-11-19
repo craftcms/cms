@@ -7,6 +7,14 @@ import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {NativeField} from '@src/mixins/NativeField';
 
 /**
+ * Whether the browser sizes a textarea to its content in CSS. Where it does,
+ * the stylesheet sizes it, and `autosize`, which measures the textarea's
+ * layout on every update, never runs.
+ */
+const sizesToContent =
+  typeof CSS !== 'undefined' && CSS.supports?.('field-sizing', 'content');
+
+/**
  * @summary A multi-line text input, with the same label and help text as
  * `craft-input`. It grows with its content, up to `max-rows`, until it's
  * resized by hand.
@@ -18,6 +26,10 @@ import {NativeField} from '@src/mixins/NativeField';
  * @slot label - The field's label, as an alternative to the `label` attribute.
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
+ *
+ * @cssproperty [--c-textarea-spacing-block=--c-spacing-md] - Block (vertical)
+ * padding. Change the padding with this rather than on the textarea itself,
+ * so `rows` and `max-rows` still fit whole lines.
  */
 export default class CraftTextarea extends NativeField(LitElement) {
   static override styles = [
@@ -78,7 +90,7 @@ export default class CraftTextarea extends NativeField(LitElement) {
     super.connectedCallback();
 
     const input = this._control;
-    if (input) {
+    if (input && !sizesToContent) {
       autosize(input);
       // Grows once it's laid out, which it may not be yet.
       this.#intersectionObserver = new IntersectionObserver(() =>
@@ -110,17 +122,30 @@ export default class CraftTextarea extends NativeField(LitElement) {
     }
   }
 
-  /** Re-measures the height for the current value. */
+  /** Re-measures the height for the current value, where CSS can't size it. */
   resizeTextarea(): void {
-    if (this._control) {
+    if (this._control && !sizesToContent) {
       autosize.update(this._control);
     }
   }
 
-  /** Caps the height at `max-rows`, measured from an empty textarea. */
+  /**
+   * Caps the height at `max-rows`. The stylesheet does it from `rows` and
+   * `max-rows` where it can; otherwise it's measured from an empty textarea.
+   */
   #setMaxHeight(): void {
     const input = this._control;
     if (!input) {
+      return;
+    }
+
+    if (sizesToContent) {
+      input.style.setProperty('--_rows', String(this.rows));
+      if (Number.isFinite(this.maxRows)) {
+        input.style.setProperty('--_max-rows', String(this.maxRows));
+      } else {
+        input.style.removeProperty('--_max-rows');
+      }
       return;
     }
 
@@ -191,6 +216,11 @@ export default class CraftTextarea extends NativeField(LitElement) {
    */
   #watchForManualResize() {
     const input = this._control;
+    if (sizesToContent) {
+      // Nothing to hand over: a size set by hand outranks the content's.
+      return;
+    }
+
     if (
       !input ||
       typeof ResizeObserver === 'undefined' ||

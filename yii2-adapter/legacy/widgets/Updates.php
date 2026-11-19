@@ -12,9 +12,9 @@ namespace craft\widgets;
 
 /**
  * @since 3.0.0
- * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Updates` instead.
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\AboutCraft`, which replaced the Updates widget, instead.
  */
-class Updates extends \CraftCms\Cms\Dashboard\Widgets\Updates
+class Updates extends \CraftCms\Cms\Dashboard\Widgets\AboutCraft
 {
     use BuiltInWidgetTrait;
 }

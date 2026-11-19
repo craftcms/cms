@@ -988,18 +988,18 @@ class Asset extends Element
         return parent::tableAttributes();
     }
 
-    /** @return array<string, array{label: string, icon?: string}> */
+    /** @return array<string, array{label: string, icon?: string, align?: 'start'|'end'}> */
     #[Override]
     protected static function defineTableAttributes(): array
     {
         $attributes = array_merge(parent::defineTableAttributes(), [
             'dateCreated' => ['label' => t('Date Uploaded')],
             'filename' => ['label' => t('Filename')],
-            'size' => ['label' => t('File Size')],
+            'size' => ['label' => t('File Size'), 'align' => 'end'],
             'kind' => ['label' => t('File Kind')],
             'imageSize' => ['label' => t('Dimensions')],
-            'width' => ['label' => t('Image Width')],
-            'height' => ['label' => t('Image Height')],
+            'width' => ['label' => t('Image Width'), 'align' => 'end'],
+            'height' => ['label' => t('Image Height'), 'align' => 'end'],
             'alt' => ['label' => t('Alternative Text')],
             'location' => ['label' => t('Folder')],
             'link' => ['label' => t('Link'), 'icon' => 'world'],

@@ -11,6 +11,8 @@ use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
+use function CraftCms\Cms\craftAuth;
+
 /**
  * @since 6.0.0
  */
@@ -22,6 +24,7 @@ class RequireAdminNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
+            /** @see craftAuth() */
             ->write("if (! \$user = \\CraftCms\\Cms\\craftAuth()->user()) {\n")
             ->indent()
             ->write('throw new '.AuthenticationException::class."('Unauthenticated.');\n")
@@ -37,6 +40,7 @@ class RequireAdminNode extends Node
             $compiler
                 ->write('if (')
                 ->subcompile($this->getNode('requireAdminChanges'))
+                /** @see Cms::config() */
                 ->raw(' && ! '.Cms::class."::config()->allowAdminChanges) {\n")
                 ->indent()
                 ->write("abort(403, 'Administrative changes are disallowed in this environment.');\n")
@@ -44,6 +48,7 @@ class RequireAdminNode extends Node
                 ->write("}\n");
         } else {
             $compiler
+                /** @see Cms::config() */
                 ->write('if (! '.Cms::class."::config()->allowAdminChanges) {\n")
                 ->indent()
                 ->write("abort(403, 'Administrative changes are disallowed in this environment.');\n")

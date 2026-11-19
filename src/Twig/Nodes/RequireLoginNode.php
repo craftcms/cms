@@ -10,6 +10,8 @@ use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
+use function CraftCms\Cms\craftAuth;
+
 /**
  * @since 6.0.0
  */
@@ -24,6 +26,7 @@ class RequireLoginNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
+            /** @see craftAuth() */
             ->write("if (\\CraftCms\\Cms\\craftAuth()->guest()) {\n")
             ->indent()
             ->write('throw new '.AuthenticationException::class."('Unauthenticated.');\n")

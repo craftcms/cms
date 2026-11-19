@@ -28,4 +28,18 @@ readonly class FieldContext
         public ControlMode $mode = ControlMode::Editable,
         public bool $inline = false,
     ) {}
+
+    /**
+     * Returns the field's path within the whole UI, prefixed with the containing UI's namespace.
+     *
+     * @return list<string>
+     */
+    public function resolvedPath(): array
+    {
+        $segments = fn (string|array $path): array => is_string($path)
+            ? ($path === '' ? [] : explode('.', $path))
+            : array_values($path);
+
+        return [...$segments($this->ui->namespace), ...$segments($this->path)];
+    }
 }

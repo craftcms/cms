@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Models;
 
 use CraftCms\Cms\Asset\Enums\AssetIndexStatus;
+use CraftCms\Cms\Database\Claim;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
@@ -49,6 +50,30 @@ class AssetIndexData extends BaseModel implements Stringable
     public function __toString(): string
     {
         return (string) $this->uri;
+    }
+
+    /**
+     * Entries that have been processing for more than 5 minutes count as abandoned, so another worker can claim them.
+     */
+    public static function processingClaim(): Claim
+    {
+        return new Claim('status', AssetIndexStatus::Processing, AssetIndexStatus::Pending, ttl: 300);
+    }
+
+    /**
+     * Moves a pending entry, or one abandoned while processing, to processing.
+     *
+     * @return bool Whether this call claimed the entry. `false` means another worker is processing it, or it has finished.
+     */
+    public function claim(): bool
+    {
+        if (! self::processingClaim()->claim(static::query()->whereKey($this->getKey()))) {
+            return false;
+        }
+
+        $this->refresh();
+
+        return true;
     }
 
     public function transitionTo(AssetIndexStatus $status, ?int $recordId = null): void

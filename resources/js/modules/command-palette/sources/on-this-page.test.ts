@@ -182,6 +182,20 @@ describe('onThisPageProvider', () => {
     ).toEqual([]);
   });
 
+  it('finds headings, but not ones that are only there for screen readers', async () => {
+    document.body.innerHTML = `
+      <main>
+        <h2>About the exhibition</h2>
+        <h2 class="sr-only">About Craft CMS</h2>
+        <div class="visually-hidden"><h3>About this page</h3></div>
+      </main>
+    `;
+
+    expect((await fieldResults('about')).map(({label}) => label)).toEqual([
+      'About the exhibition',
+    ]);
+  });
+
   it('leaves out an editable table’s cells, and fields whose labels are hidden', async () => {
     await renderPage();
 

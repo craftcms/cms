@@ -458,7 +458,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ];
         }
         // The URI and Route columns share the remaining width equally
-        $uriWidth = Cms::config()->headlessMode ? [] : ['width' => 50];
+        $uriWidth = Cms::config()->headlessMode ? [] : ['width' => '50%'];
         $siteColumns = [
             'heading' => ['heading' => t('Site'), 'type' => 'heading', 'class' => 'thin'],
             'uriFormat' => [
@@ -474,7 +474,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         if (! Cms::config()->headlessMode) {
             $siteColumns['destination'] = [
                 ...ElementSiteSettings::destinationColumn(Entry::class),
-                'width' => 50,
+                'width' => '50%',
             ];
         }
 
@@ -637,6 +637,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 $entry->getFieldLayout(),
                 $entry,
                 new UiContext(
+                    namespace: [...$context->resolvedPath(), 'entries', $uid],
                     mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
                     preview: $context->ui->preview,
                 ),

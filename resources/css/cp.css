@@ -271,6 +271,20 @@ Temporary holding for cp-pane styles until craft-pane is a thing
   }
 }
 
+/* An icon leading an item in a list, such as a widget's links or statuses: in the
+   color of the tinted card or other colorable it's in, or the link color
+   outside one. Layered so a component's own color for it still applies. */
+@layer components {
+  .cp-item-icon {
+    color: var(--c-color-fill-loud, var(--c-text-link));
+  }
+
+  /* White's loud fill is white, which would vanish on its card. */
+  [data-color='white'] .cp-item-icon {
+    color: var(--c-text-link);
+  }
+}
+
 .markdown-field > .markdown-field-editor {
   display: block;
   min-height: 0;

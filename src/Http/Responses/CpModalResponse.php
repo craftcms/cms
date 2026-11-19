@@ -179,7 +179,7 @@ class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
 
         if ($this->prepareModal) {
             $containerId = $request->header('X-Craft-Container-Id');

@@ -10,6 +10,7 @@ use Override;
 /**
  * @method static \CraftCms\Cms\Twig\Environment get(\CraftCms\Cms\View\TemplateMode|null $mode = null)
  * @method static void set(\CraftCms\Cms\Twig\Environment $twig, \CraftCms\Cms\View\TemplateMode|null $mode = null)
+ * @method static mixed with(\CraftCms\Cms\Twig\Environment $twig, \CraftCms\Cms\View\TemplateMode $mode, callable $callback)
  * @method static \CraftCms\Cms\Twig\Environment create()
  * @method static void registerExtension(\Twig\Extension\ExtensionInterface $extension, \CraftCms\Cms\View\TemplateMode|null $mode = null)
  *

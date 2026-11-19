@@ -389,15 +389,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     {
         parent::__construct($config);
 
-        // Is this user in cooldown mode, and are they past their window?
-        if (
-            $this->locked &&
-            Cms::config()->cooldownDuration &&
-            ! $this->getRemainingCooldownTime()
-        ) {
-            Users::unlockUser($this);
-        }
-
         // Convert IDNA ASCII to Unicode
         if ($this->username) {
             $this->username = Str::idnToUtf8Email($this->username);
@@ -1303,7 +1294,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return match (true) {
             $status !== self::STATUS_ENABLED => $status,
             $this->suspended => self::STATUS_SUSPENDED,
-            $this->archived => self::STATUS_ARCHIVED,
             $this->pending => self::STATUS_PENDING,
             $this->active => self::STATUS_ACTIVE,
             default => self::STATUS_INACTIVE,
@@ -1412,6 +1402,18 @@ XML;
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether the user is locked out after too many failed logins.
+     *
+     * A user whose cooldown has ended counts as unlocked, even though their `locked` column stays set until
+     * {@see \CraftCms\Cms\User\Users::handleValidLogin()} or {@see \CraftCms\Cms\User\Users::handleInvalidLogin()}
+     * clears it.
+     */
+    public function isLocked(): bool
+    {
+        return $this->locked && (! Cms::config()->cooldownDuration || $this->getRemainingCooldownTime() !== null);
     }
 
     /**
@@ -1582,7 +1584,7 @@ XML;
 
             case self::STATUS_ACTIVE:
                 if (
-                    $this->locked &&
+                    $this->isLocked() &&
                     ! $isCurrentUser &&
                     ($currentUser->isAdmin() || ! $this->admin) &&
                     $currentUser->can('moderateUsers') &&
@@ -1781,7 +1783,7 @@ XML;
                     }
                     break;
                 case self::STATUS_ACTIVE:
-                    if ($this->locked) {
+                    if ($this->isLocked()) {
                         if (
                             ! $isCurrentUser &&
                             ($currentUser->isAdmin() || ! $this->admin) &&
@@ -2195,14 +2197,14 @@ XML;
                 return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             t('Last login fail') => function () use ($formatter) {
-                if (! $this->locked || ! $this->lastInvalidLoginDate) {
+                if (! $this->isLocked() || ! $this->lastInvalidLoginDate) {
                     return false;
                 }
 
                 return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             t('Login fail count') => function () use ($formatter) {
-                if (! $this->locked) {
+                if (! $this->isLocked()) {
                     return false;
                 }
 

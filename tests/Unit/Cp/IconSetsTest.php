@@ -89,6 +89,31 @@ it('registers icon sets', function () {
         ->and(Icons::svg('my-icons:dot'))->toContain('<circle');
 });
 
+it('runs callbacks deferred after the icon sets were first read', function () {
+    $iconSets = app(IconSets::class);
+    $iconSets->getIconSets();
+
+    $iconSets->defer(fn (IconSets $iconSets) => $iconSets->register(new class('late-icons', 'Late Icons') extends IconSet
+    {
+        public function getIcons(): array
+        {
+            return [];
+        }
+
+        public function getKeywords(string $icon): array
+        {
+            return [];
+        }
+
+        public function getSvg(string $icon): ?string
+        {
+            return null;
+        }
+    }));
+
+    expect($iconSets->getIconSets())->toHaveKey('late-icons');
+});
+
 it('rejects icon sets with invalid handles', function (string $handle) {
     app(IconSets::class)->register(new class($handle, 'Bad') extends IconSet
     {
