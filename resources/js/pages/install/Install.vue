@@ -13,6 +13,7 @@
   import InstallingScreen from '@/modules/install/components/InstallingScreen.vue';
   import Modal from '@/common/components/Modal.vue';
   import StepScreen from '@/modules/install/components/StepScreen.vue';
+  import type {SelectItem} from '@/common/types';
 
   type DbDriver = 'mysql' | 'mariadb' | 'pgsql' | 'sqlite';
   type InstallFormStep = 'account' | 'db' | 'site';
@@ -42,6 +43,7 @@
       name: string;
       baseUrl: string;
       language: string;
+      timezone: string;
     };
   };
 
@@ -52,10 +54,12 @@
     };
     dbDefaults: Record<DbDriver, DbDefaults>;
     localeOptions?: Array<{id: string; value: string; label: string}>;
+    timezoneOptions?: Array<SelectItem>;
     licenseHtml?: string;
     defaultSystemName: string;
     defaultSiteUrl: string;
     defaultSiteLanguage: string;
+    defaultTimezone: string | null;
     showDbScreen: boolean;
   }>();
 
@@ -106,6 +110,9 @@
       name: props.defaultSystemName,
       baseUrl: props.defaultSiteUrl,
       language: props.defaultSiteLanguage,
+      timezone:
+        props.defaultTimezone ??
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
   });
 
@@ -258,7 +265,7 @@
               v-if="isCurrent('site')"
               class="screen"
             >
-              <Deferred data="localeOptions">
+              <Deferred :data="['localeOptions', 'timezoneOptions']">
                 <template #fallback>
                   <craft-spinner></craft-spinner>
                 </template>
@@ -267,7 +274,9 @@
                   v-model:name="formData.site.name"
                   v-model:base-url="formData.site.baseUrl"
                   v-model:language="formData.site.language"
+                  v-model:timezone="formData.site.timezone"
                   :locale-options="localeOptions ?? []"
+                  :timezone-options="timezoneOptions ?? []"
                   :errors="errors.site"
                 />
               </Deferred>

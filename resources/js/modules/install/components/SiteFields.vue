@@ -5,20 +5,23 @@
   import FieldTip from '@/common/components/FieldTip.vue';
   import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import Select from '@/common/form/Select.vue';
+  import CraftCombobox from '@/common/form/CraftCombobox.vue';
   import {usePage} from '@inertiajs/vue3';
   import type {BaseOption, SelectItem} from '@/common/types';
 
   withDefaults(
     defineProps<{
       localeOptions: Array<BaseOption & {id: string}>;
+      timezoneOptions?: Array<SelectItem>;
       errors?: Record<string, string>;
     }>(),
-    {errors: () => ({}), localeOptions: () => []}
+    {errors: () => ({}), localeOptions: () => [], timezoneOptions: () => []}
   );
 
   const name = defineModel<string>('name');
   const baseUrl = defineModel<string>('baseUrl');
   const language = defineModel<string>('language', {required: true});
+  const timezone = defineModel<string>('timezone');
 
   const page = usePage<{
     baseUrlTextExpanderTriggers: TextExpanderTriggers;
@@ -68,6 +71,17 @@
       {{ option.value }} ({{ option.label }})
     </template>
   </Select>
+
+  <CraftCombobox
+    v-model="timezone"
+    :label="t('Time Zone')"
+    id="site-timezone"
+    name="timezone"
+    :options="timezoneOptions"
+    :error="errors?.timezone"
+    require-option-match
+    show-all-on-empty
+  />
 </template>
 
 <style scoped lang="scss"></style>

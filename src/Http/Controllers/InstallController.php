@@ -12,6 +12,7 @@ use CraftCms\Cms\Database\ConnectionConfig;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
@@ -110,7 +111,7 @@ readonly class InstallController
                 'label' => $locale->getDisplayName(app()->getLocale()),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ])),
-            'timezone' => Inertia::defer(function () {
+            'timezoneOptions' => Inertia::defer(function () {
                 $timezoneOptions = SelectOptions::getTimeZoneOptions();
 
                 return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
@@ -119,6 +120,7 @@ readonly class InstallController
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
+            'defaultTimezone' => app(ProjectConfig::class)->get('system.timeZone', true),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'dbConfig' => [
                 'driver' => $this->dbDriver($dbConfig['driver'] ?? null),

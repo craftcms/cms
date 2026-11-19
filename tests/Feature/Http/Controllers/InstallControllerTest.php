@@ -117,13 +117,13 @@ it('shows the install page', function () {
             $page->component('install/Install')
                 ->missing('licenseHtml')
                 ->missing('localeOptions')
-                ->missing('timezone')
+                ->missing('timezoneOptions')
                 ->loadDeferredProps(function (AssertableInertia $reload) {
                     $reload->has('licenseHtml')
                         ->where('licenseHtml', fn ($html) => str_contains($html, 'Copyright © Pixel &amp; Tonic, Inc.'))
                         ->has('localeOptions')
-                        ->has('timezone')
-                        ->where('timezone', fn ($options) => collect($options)->pluck('value')->contains('America/New_York'));
+                        ->has('timezoneOptions')
+                        ->where('timezoneOptions', fn ($options) => collect($options)->pluck('value')->contains('America/New_York'));
                 });
         })
         ->assertOk();
