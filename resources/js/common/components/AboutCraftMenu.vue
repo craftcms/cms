@@ -30,6 +30,7 @@
         <EditionBadge
           :edition="info.edition"
           class="about-craft-trigger__badge"
+          :class="{'about-craft-trigger__badge--indicated': app.needsAttention}"
         />
         <craft-badge-indicator
           v-if="app.needsAttention"
@@ -63,11 +64,26 @@
     display: inline-flex;
   }
 
+  /* Mirrors badgeIndicatorCutoutStyles, which a scoped style can't import. */
+  .about-craft-trigger__badge--indicated {
+    --c-badge-indicator-cutout-x: calc(100% - 2px);
+    --c-badge-indicator-cutout-y: 2px;
+    mask-image: radial-gradient(
+      circle at var(--c-badge-indicator-cutout-x)
+        var(--c-badge-indicator-cutout-y),
+      transparent 6px,
+      #000 6.5px
+    );
+
+    &:dir(rtl) {
+      --c-badge-indicator-cutout-x: 2px;
+    }
+  }
+
   .about-craft-trigger__dot {
-    --badge-border-width: 2px;
     position: absolute;
-    inset-block-start: -4.5px;
-    inset-inline-end: -4.5px;
+    inset-block-start: -2px;
+    inset-inline-end: -2px;
   }
 
   craft-popover::part(popup) {

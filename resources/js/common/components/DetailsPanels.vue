@@ -387,6 +387,19 @@
     background-color: transparent;
   }
 
+  /* Centers the tabs under the header's 24px avatar. */
+  @media (width < var(--breakpoint-lg)) {
+    .details-panels__rail--detached {
+      --_rail-padding-inline: calc(
+        var(--c-spacing-md) + (24rem / 16 - var(--cp-rail-item-size)) / 2
+      );
+      inline-size: calc(
+        var(--cp-rail-item-size) + var(--_rail-padding-inline) * 2
+      );
+      padding-inline: var(--_rail-padding-inline);
+    }
+  }
+
   .details-panels__trigger {
     --c-icon-size: var(--cp-chrome-icon-size);
     display: grid;
