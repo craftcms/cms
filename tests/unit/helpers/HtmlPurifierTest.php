@@ -86,11 +86,16 @@ class HtmlPurifierTest extends TestCase
         FileHelper::removeDirectory($cachePath);
         $html = '<p data-foo="bar">Hi</p><figure><figcaption>Caption</figcaption></figure>';
 
-        $process = function(string $id, bool $addAttribute) use ($html): string {
+        $builds = 0;
+        $process = function(string $id, bool $addAttribute) use ($html, &$builds): string {
             $config = HTMLPurifier_Config::createDefault();
             HtmlPurifier::enableDefinitionCache($config, $id);
-            if ($addAttribute && $def = $config->maybeGetRawHTMLDefinition()) {
-                $def->addAttribute('p', 'data-foo', 'Text');
+            // Look up the definition before process(), as callers like CKEditor do
+            if ($def = $config->maybeGetRawHTMLDefinition()) {
+                $builds++;
+                if ($addAttribute) {
+                    $def->addAttribute('p', 'data-foo', 'Text');
+                }
             }
             return HtmlPurifier::process($html, $config);
         };
@@ -103,6 +108,8 @@ class HtmlPurifierTest extends TestCase
             self::assertSame('<p>Hi</p><figure><figcaption>Caption</figcaption></figure>', $process('test-without-attr', false));
         }
 
+        // Each definition is only built once
+        self::assertSame(2, $builds);
         self::assertCount(2, glob($cachePath . DIRECTORY_SEPARATOR . '*.ser'));
 
         // The Caches utility clears them

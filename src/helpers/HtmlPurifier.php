@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Closure;
+use Craft;
 use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\SerializerDefinitionCache;
 use craft\htmlpurifier\VideoEmbedUrlDef;
@@ -110,6 +111,10 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         $config->set('HTML.DefinitionRev', self::HTML_DEFINITION_REV);
         self::$cachedConfigs ??= new WeakMap();
         self::$cachedConfigs[$config] = true;
+
+        // process() sets these too, but the definition may be looked up before then
+        $config->set('Cache.SerializerPath', Craft::$app->getRuntimePath());
+        $config->set('Cache.SerializerPermissions', 0775);
 
         // Write cache files atomically, unless the config chose another cache implementation or disabled it
         if ($config->get('Cache.DefinitionImpl') === 'Serializer') {
