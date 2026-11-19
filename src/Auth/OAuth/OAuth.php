@@ -26,6 +26,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -409,6 +410,11 @@ class OAuth
         }
 
         $config = $this->validateProviderConfig($handle, $config);
+
+        if (array_key_exists('activatesUsers', $config)) {
+            Deprecator::log("oauthProviders.$handle.activatesUsers", "The `activatesUsers` setting for the `$handle` OAuth provider has been renamed to `controlsAccess`.");
+        }
+
         $enabled = (bool) ($config['enabled'] ?? true);
 
         if (! $enabled) {
@@ -436,7 +442,7 @@ class OAuth
             createsUsers: array_key_exists('createsUsers', $config)
                 ? ($config['createsUsers'] === null ? null : (bool) $config['createsUsers'])
                 : null,
-            activatesUsers: (bool) ($config['activatesUsers'] ?? false),
+            controlsAccess: (bool) ($config['controlsAccess'] ?? $config['activatesUsers'] ?? false),
             trustsEmail: array_key_exists('trustsEmail', $config) && (bool) $config['trustsEmail'],
             scopes: array_values($config['scopes'] ?? []),
             with: $config['with'] ?? [],
@@ -478,6 +484,7 @@ class OAuth
                 'stateless' => ['sometimes', 'boolean'],
                 'groups' => ['sometimes'],
                 'createsUsers' => ['sometimes', 'nullable', 'boolean'],
+                'controlsAccess' => ['sometimes', 'boolean'],
                 'activatesUsers' => ['sometimes', 'boolean'],
                 'trustsEmail' => ['sometimes', 'boolean'],
                 'identityResolver' => ['sometimes', 'string'],

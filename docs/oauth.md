@@ -60,7 +60,7 @@ Each provider supports the following keys:
 - `stateless` optional. Set to `true` to bypass Socialite state validation.
 - `groups` optional. Array of user group IDs, UIDs, or handles to assign to newly-created users.
 - `createsUsers` optional. Defaults to `null`, which inherits Craft's public registration setting.
-- `activatesUsers` optional. Defaults to `false`.
+- `controlsAccess` optional. Defaults to `false`. Set to `true` to make the provider the source of truth for whether users can access Craft. See [Access Control](#access-control). This setting was called `activatesUsers` before, and Craft still accepts that name but logs a deprecation warning.
 - `trustsEmail` optional. Defaults to `false`. Set to `true` only when the provider is trusted to verify ownership of the returned email address; this allows first-time matching to existing Craft users by email.
 - `identityResolver` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
 - `userResolver` optional. Class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
@@ -88,7 +88,7 @@ return GeneralConfig::create()
             'scopes' => ['read:user', 'user:email'],
             'groups' => ['members', 'editors'],
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
             'trustsEmail' => true,
             'userPopulator' => GitHubUserPopulator::class,
             'buttonRenderer' => GitHubButtonRenderer::class,
@@ -150,14 +150,16 @@ The default user populator:
   - otherwise to the provider email
   - otherwise to `{providerHandle}_{identity}`
 
-### Activation
+### Access Control
 
-If `activatesUsers` is `true`:
+If `controlsAccess` is `true`, the provider becomes the source of truth for whether users can access Craft:
 
 - newly-created users are saved active
-- matched inactive users are activated after save
+- matched users who aren't active are activated after save
 
-If `activatesUsers` is `false`, Craft leaves account state alone. If you need custom activation rules, set `activatesUsers` accordingly and handle the rest in a custom `userPopulator`.
+If the provider lets someone sign in, Craft activates their account even when it's pending, inactive, suspended, or locked, and logs them in. A suspension in Craft doesn't block a user who can still sign in at the provider, so revoke their access at the provider. Disabled and archived users still can't sign in.
+
+If `controlsAccess` is `false`, Craft leaves account state alone, and only users Craft considers active can sign in. If you need custom activation rules, set `controlsAccess` accordingly and handle the rest in a custom `userPopulator`.
 
 ### User Creation
 
