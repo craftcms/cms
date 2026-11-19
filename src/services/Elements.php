@@ -3578,6 +3578,15 @@ class Elements extends Component
 
                 $maps = $this->normalizeEagerLoadingMaps($maps);
 
+                // Each map can cover a different element type, so collect the results of every map
+                // before handing them to the source elements, indexed by the sources' positions
+                $loadedElements = [];
+                $loadedCounts = [];
+
+                // With several maps, the plan's offset and limit apply to each source's combined elements
+                $combinedOffset = 0;
+                $combinedLimit = null;
+
                 foreach ($maps as $map) {
                     $targetElementIdsBySourceIds = null;
                     $query = null;
@@ -3634,6 +3643,13 @@ class Elements extends Component
                         $offset = ArrayHelper::remove($criteria, 'offset', 0);
                         $limit = ArrayHelper::remove($criteria, 'limit');
 
+                        if (count($maps) > 1) {
+                            $combinedOffset = $offset;
+                            $combinedLimit = $limit;
+                            $offset = 0;
+                            $limit = null;
+                        }
+
                         Craft::configure($query, $criteria);
 
                         // inReverse is applied to each source's target elements below, so make sure the query doesn't
@@ -3676,7 +3692,7 @@ class Elements extends Component
                         }
 
                         // Loop through the source elements and count up their targets
-                        foreach ($filteredElements as $sourceElement) {
+                        foreach ($filteredElements as $i => $sourceElement) {
                             if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
                                 $count = 0;
                                 foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
@@ -3684,9 +3700,7 @@ class Elements extends Component
                                         $count += $targetElementIdCounts[$targetElementId];
                                     }
                                 }
-                                if ($count !== 0) {
-                                    $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
-                                }
+                                $loadedCounts[$i] = ($loadedCounts[$i] ?? 0) + $count;
                             }
                         }
 
@@ -3696,8 +3710,8 @@ class Elements extends Component
                     $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
                     $targetElements = [];
 
-                    // Tell the source elements about their eager-loaded elements
-                    foreach ($filteredElements as $sourceElement) {
+                    // Collect the source elements' eager-loaded elements
+                    foreach ($filteredElements as $i => $sourceElement) {
                         $targetElementIdsForSource = [];
                         $targetElementsForSource = [];
 
@@ -3763,11 +3777,7 @@ class Elements extends Component
                                 ElementHelper::swapInProvisionalDrafts($targetElementsForSource);
                             }
 
-                            $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
-
-                            if ($plan->count) {
-                                $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
-                            }
+                            $loadedElements[$i] = [...$loadedElements[$i] ?? [], ...$targetElementsForSource];
                         }
                     }
 
@@ -3794,6 +3804,23 @@ class Elements extends Component
                             array_map('array_values', $targetElements),
                             $plan->nested,
                         );
+                    }
+                }
+
+                // Tell the source elements about their eager-loaded elements
+                foreach ($filteredElements as $i => $sourceElement) {
+                    if (isset($loadedElements[$i]) && ($combinedOffset || $combinedLimit)) {
+                        $loadedElements[$i] = array_slice($loadedElements[$i], (int)$combinedOffset, $combinedLimit);
+                    }
+
+                    if (!empty($loadedElements[$i])) {
+                        $sourceElement->setEagerLoadedElements($plan->alias, $loadedElements[$i], $plan);
+
+                        if ($plan->count) {
+                            $sourceElement->setEagerLoadedElementCount($plan->alias, count($loadedElements[$i]));
+                        }
+                    } elseif (!empty($loadedCounts[$i])) {
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, $loadedCounts[$i]);
                     }
                 }
             }
@@ -3829,7 +3856,7 @@ class Elements extends Component
         foreach ($map as $m) {
             if (isset($m['map'])) {
                 /** @phpstan-ignore-next-line */
-                $maps += $this->normalizeEagerLoadingMaps($m);
+                array_push($maps, ...$this->normalizeEagerLoadingMaps($m));
             }
         }
         return $maps;
