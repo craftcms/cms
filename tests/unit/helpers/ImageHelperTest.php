@@ -248,6 +248,8 @@ class ImageHelperTest extends TestCase
         self::assertSame('Caption', Image::altTextByStream($stream("\xFF\xD8$withoutAlt$iptc\xFF\xDA")));
         // So does an empty XMP packet
         self::assertSame('Caption', Image::altTextByStream($stream("\xFF\xD8" . $xmp(" \n") . "$iptc\xFF\xDA")));
+        // Fill bytes before a marker are skipped
+        self::assertSame('Description', Image::altTextByStream($stream("\xFF\xD8\xFF\xFF\xFF$withAlt\xFF\xDA")));
         // Metadata after the image data or past the read limit is ignored
         self::assertNull(Image::altTextByStream($stream("\xFF\xD8\xFF\xDA\0\x02$withAlt")));
         self::assertNull(Image::altTextByStream($stream("\xFF\xD8" . str_repeat($filler, 9) . "$withAlt\xFF\xDA")));
