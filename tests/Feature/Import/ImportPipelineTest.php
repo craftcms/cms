@@ -285,7 +285,7 @@ it('counts what happened to each item, and records the source it read', function
 it('records each validation error of an item that couldn’t be saved in the run state', function () {
     Event::fake([ImportChunkFinished::class]);
     Event::listen(ItemImporting::class, function () {
-        $entry = new Entry(['id' => 317]);
+        $entry = new Entry(['id' => 317, 'title' => 'Set up your project']);
         $entry->errors()->add('title', 'Title cannot be blank.');
 
         throw new InvalidElementException($entry, 'Unable to save element being imported.');
@@ -297,6 +297,7 @@ it('records each validation error of an item that couldn’t be saved in the run
         'item' => 1,
         'message' => 'Unable to save element being imported.',
         'elementId' => 317,
+        'title' => 'Set up your project',
         'problems' => [['path' => [], 'message' => 'Title cannot be blank.']],
     ]);
 });

@@ -21,7 +21,7 @@
   import MatchCell from './cells/MatchCell.vue';
   import PreviewCell from './cells/PreviewCell.vue';
   import WhenEmptyCell from './cells/WhenEmptyCell.vue';
-  import {emptyValueModes} from './empty-values';
+  import {emptyValueModes, handlesEmptyUnmapped} from './empty-values';
   import {isMatchKey} from './matching';
   import {getAt, isChecked} from './paths';
   import {
@@ -49,9 +49,9 @@
     () => props.groups ?? [{label: null, cols: props.cols ?? []}]
   );
 
-  // a template error has to be seen to be fixed, so a search that hides its row is cleared
+  // an error has to be seen to be fixed, so a search that hides its row is cleared
   watch(
-    () => context.templateErrors.value,
+    () => ({...context.templateErrors.value, ...context.mapErrors.value}),
     (errors) => {
       const shown = new Set(
         rows.value.flatMap((row) =>
@@ -66,13 +66,15 @@
   );
 
   /**
-   * Only a mapped column has an empty value to handle, and one with a single choice has
-   * nothing to pick. Nor does a column rows are matched on: an empty value matches nothing.
+   * Only a mapped column, or a required attribute, has an empty value to handle, and one
+   * with a single choice has nothing to pick. Nor does a column rows are matched on: an
+   * empty value matches nothing.
    */
   function hasEmptyValueChoice(col: MappingColumn): boolean {
     return (
       !col.isContainer &&
-      isChecked(getAt(context.values.map, col.prefixedHandleAsArray)) &&
+      (isChecked(getAt(context.values.map, col.prefixedHandleAsArray)) ||
+        handlesEmptyUnmapped(col)) &&
       !isMatchKey(context.values, col) &&
       emptyValueModes(col).length > 1
     );

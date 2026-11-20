@@ -1318,7 +1318,8 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     /**
      * Looks up the elements an import’s values identify by an attribute, among those the field lets you select, and
      * returns their IDs in the order of the values. A value matching several elements gets the first live one, or else
-     * the first one, by ID; a value matching none is left out and logged.
+     * the first one, by ID; a value matching none is left out and logged. An integer is already an ID, as a default's
+     * are.
      *
      * @param  list<mixed>  $values
      * @return list<int>
@@ -1326,16 +1327,17 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     private function importedElementIds(array $values, string $attribute, ?ElementInterface $rootOwner): array
     {
         $values = array_values(array_unique(array_filter(
-            array_map(fn (mixed $value) => is_scalar($value) ? trim((string) $value) : '', $values),
-            fn (string $value) => $value !== '',
+            array_map(fn (mixed $value) => is_int($value) ? $value : (is_scalar($value) ? trim((string) $value) : ''), $values),
+            fn (int|string $value) => $value !== '',
         )));
+        $wanted = array_values(array_filter($values, is_string(...)));
 
         if ($values === []) {
             return [];
         }
 
-        $ids = $this->selectableElementIds($values, $attribute, $rootOwner, live: true);
-        $missing = array_values(array_filter($values, fn (string $value) => ! isset($ids[mb_strtolower($value)])));
+        $ids = $wanted === [] ? [] : $this->selectableElementIds($wanted, $attribute, $rootOwner, live: true);
+        $missing = array_values(array_filter($wanted, fn (string $value) => ! isset($ids[mb_strtolower($value)])));
 
         // values without a live match fall back to elements in any status, as the element selector offers them too
         if ($missing !== []) {
@@ -1345,6 +1347,12 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         $elementIds = [];
 
         foreach ($values as $value) {
+            if (is_int($value)) {
+                $elementIds[] = $value;
+
+                continue;
+            }
+
             $id = $ids[mb_strtolower($value)] ?? null;
 
             if ($id === null) {

@@ -1059,7 +1059,7 @@ abstract class BaseImporter
      * A container field's nested columns are keyed by their whole path in `$map`, joined with dots,
      * both as uids and as handles, and read as “Entry type › Label”.
      *
-     * @return array<string, array{label: string, handle: string, icon: string|null}>
+     * @return array<string, array{label: string, handle: string, icon: string|null, defaultElementType?: string}>
      */
     public function getDestinationLabels(): array
     {
@@ -1067,6 +1067,13 @@ abstract class BaseImporter
 
         foreach (self::flattenCompoundColumns($this->getDestinationCols()) as [$col, $label]) {
             $entry = ['label' => $label, 'handle' => $col->handle, 'icon' => $col->icon];
+            $elementType = $col->defaultValueInput['control']['props']['elementType'] ?? null;
+
+            // a default of elements is stored as their IDs, so it's named by looking them up
+            if (is_string($elementType)) {
+                $entry['defaultElementType'] = $elementType;
+            }
+
             $labels[$col->prefixedHandleAsArray[0]] ??= $entry;
             $labels[$col->handle] ??= $entry;
 
@@ -1081,7 +1088,7 @@ abstract class BaseImporter
     /**
      * Adds the labels of a container column's nested columns, and of theirs in turn.
      *
-     * @param  array<string, array{label: string, handle: string, icon: string|null}>  $labels
+     * @param  array<string, array{label: string, handle: string, icon: string|null, defaultElementType?: string}>  $labels
      * @param  list<string>  $handlePath  The container's path in `$map`, as handles.
      * @param  list<string>  $seen  The containers' field uids along the path, so a field nested in itself stops.
      */

@@ -11,7 +11,7 @@
  * nested column's absolute `prefixedHandleAsArray` addresses the same place in the
  * panel as it does on the page, and nesting works to any depth without rebasing paths.
  */
-import {actionClient} from '@craftcms/ui';
+import {actionClient, t} from '@craftcms/ui';
 import {nestedMappingCols} from '@actions/Import/ImportPlansController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
 import {
@@ -111,7 +111,9 @@ export async function openNestedMapping(
       step: options.step,
       apply: options.apply,
     },
-    data.title,
+    options.editable
+      ? data.title
+      : t('View map for {fieldName}', {fieldName: data.fieldName}),
     options.opener
   );
 }

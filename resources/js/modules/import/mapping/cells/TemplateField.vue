@@ -65,9 +65,7 @@
       <input
         :id="inputId"
         slot="input"
-        :data-mapping-template-invalid="
-          errors.length ? context.panelId : undefined
-        "
+        :data-mapping-invalid="errors.length ? context.panelId : undefined"
       />
     </craft-input>
     <craft-text-expander

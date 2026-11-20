@@ -58,7 +58,7 @@ readonly class MappingColumn implements JsonSerializable
          * `DefaultValueInputs`. Unset means the column takes no default.
          */
         #[Optional]
-        #[LiteralTypeScriptType("{type: 'text' | 'textarea' | 'email' | 'color' | 'number' | 'date' | 'datetime' | 'time' | 'lightswitch' | 'select' | 'multiselect', options?: Array<{value: string, label: string}>, placeholder?: string, maxLength?: number, min?: number | string, max?: number | string, step?: number, prefix?: string, suffix?: string, onLabel?: string, offLabel?: string}")]
+        #[LiteralTypeScriptType("{type: 'text' | 'textarea' | 'email' | 'color' | 'number' | 'date' | 'datetime' | 'time' | 'lightswitch' | 'select' | 'multiselect' | 'elements', control?: Record<string, unknown>, options?: Array<{value: string, label: string}>, placeholder?: string, maxLength?: number, min?: number | string, max?: number | string, step?: number, prefix?: string, suffix?: string, onLabel?: string, offLabel?: string}")]
         public ?array $defaultValueInput = null,
         /** The icon of the destination's field type, for telling columns apart at a glance. */
         #[Optional]

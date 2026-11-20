@@ -107,7 +107,8 @@ class ElementTransformer extends BaseTransformer
     }
 
     /**
-     * Calls a `normalize{PropName}()` method on a raw property value if one is defined on the transformer, else returns the raw or default value.
+     * Calls a `normalize{PropName}()` method on a raw property value if one is defined on the transformer, with the
+     * element and the importer, else returns the raw or default value.
      * A property that takes a list gets a list-holding string split into its values first.
      *
      * @param  array<string, mixed>  $prop
@@ -120,7 +121,7 @@ class ElementTransformer extends BaseTransformer
             }
 
             if (method_exists($this, 'normalize'.ucfirst((string) $prop['name']))) {
-                return $this->{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);
+                return $this->{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element, $importer);
             }
 
             return $rawValue;

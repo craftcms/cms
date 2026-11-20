@@ -314,6 +314,12 @@ describe('matching related elements by an attribute', function () {
         expect(($this->importEntries)(['nested-only.jpg'], 'filename', 'myAssets'))->toBe([$nested->id]);
     });
 
+    it('keeps an integer as an ID, as a default’s are, whatever it’s matched by', function () {
+        $other = ($this->createEntry)('Rock, Paper');
+
+        expect(($this->importEntries)([$this->relatedEntry->id, 'rock, paper']))->toBe([$this->relatedEntry->id, $other->id]);
+    });
+
     it('relates by ID unless asked to match by another attribute', function () {
         expect(($this->importEntries)([$this->relatedEntry->id], 'id'))->toBe([$this->relatedEntry->id]);
     });

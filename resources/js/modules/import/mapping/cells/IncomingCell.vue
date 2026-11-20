@@ -22,6 +22,17 @@
 
   const {mapValue, isSuggested, choose} = useSourceMapping(() => col);
 
+  /** The server's errors for what fills this column, keyed by its path joined with dots. */
+  const errorKey = computed(() => col.prefixedHandleAsArray.join('.'));
+  const errors = computed<string[]>(
+    () => context.mapErrors.value[errorKey.value] ?? []
+  );
+
+  function onChoose(value: string): void {
+    choose(value);
+    delete context.mapErrors.value[errorKey.value];
+  }
+
   /**
    * The column the server suggested, which its option goes on saying in the list once
    * another is chosen.
@@ -65,8 +76,13 @@
       :options="options"
       :label="col.label"
       :disabled="!context.editable"
-      @change="choose"
+      :invalid="errors.length > 0"
+      :data-mapping-invalid="errors.length ? context.panelId : undefined"
+      @change="onChoose"
     />
+    <ul v-if="errors.length" class="error-list">
+      <li v-for="error in errors" :key="error">{{ error }}</li>
+    </ul>
     <ImportSettings
       v-if="importSettings.length"
       :col="col"

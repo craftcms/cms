@@ -13,8 +13,12 @@
   import '@craftcms/ui/components/switch/switch';
   import '@craftcms/ui/components/textarea/textarea';
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, useId} from 'vue';
+  import ElementSelectControl from '@/modules/ui/ElementSelectControl.vue';
+  import type {ElementSelectProps} from '@/modules/ui/element-select/types';
+  import type {UiControlPayload} from '@/modules/ui/types';
   import {
+    defaultIdsOf,
     defaultValueInputOf,
     defaultValueOf,
     defaultValuesOf,
@@ -30,6 +34,22 @@
   const value = computed(() => defaultValueOf(context.values, col));
   const values = computed(() => defaultValuesOf(context.values, col));
   const label = t('Default value');
+  const labelId = useId();
+
+  const control = computed(
+    () =>
+      input.value.control as unknown as
+        | UiControlPayload<ElementSelectProps>
+        | undefined
+  );
+
+  function onElementsChange(ids: number[] | number | null): void {
+    setDefaultValue(
+      context.values,
+      col,
+      JSON.stringify(ids === null ? [] : [ids].flat())
+    );
+  }
 
   type ChangeTarget = HTMLElement & {value?: unknown; checked?: boolean};
 
@@ -58,8 +78,23 @@
 </script>
 
 <template>
+  <div
+    v-if="input.type === 'elements' && control"
+    class="default-value-elements"
+    role="group"
+    :aria-labelledby="labelId"
+  >
+    <span :id="labelId" class="default-value-elements__label">{{ label }}</span>
+    <ElementSelectControl
+      :control="control"
+      :value="defaultIdsOf(context.values, col)"
+      :editable="context.editable"
+      @update:value="onElementsChange"
+    />
+  </div>
+
   <craft-switch
-    v-if="input.type === 'lightswitch'"
+    v-else-if="input.type === 'lightswitch'"
     :label="label"
     :on-label="input.onLabel"
     :off-label="input.offLabel"
@@ -159,3 +194,14 @@
     <span v-if="input.suffix" slot="suffix">{{ input.suffix }}</span>
   </craft-input>
 </template>
+
+<style scoped>
+  .default-value-elements {
+    display: grid;
+    gap: var(--c-spacing-xs);
+  }
+
+  .default-value-elements__label {
+    font-weight: bold;
+  }
+</style>

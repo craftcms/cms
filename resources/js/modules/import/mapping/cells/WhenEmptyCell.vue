@@ -6,6 +6,8 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {
+    defaultElementTypeOf,
+    defaultIdsOf,
     defaultValueInputOf,
     defaultValueOf,
     defaultValuesOf,
@@ -15,6 +17,8 @@
     type EmptyValueMode,
   } from '../empty-values';
   import {useMappingContext, type MappingColumn} from '../types';
+  import {useElementNames} from '../useElementNames';
+  import {getAt, isChecked} from '../paths';
   import DefaultValueInput from './DefaultValueInput.vue';
   import SettingPopover from './SettingPopover.vue';
 
@@ -23,9 +27,19 @@
   const context = useMappingContext();
 
   const mode = computed(() => emptyValueModeOf(context.values, col));
-  const modes = computed(() => emptyValueModes(col));
+  // with nothing mapped there's no incoming value to erase with, only one to stand in for
+  const modes = computed(() =>
+    isChecked(getAt(context.values.map, col.prefixedHandleAsArray))
+      ? emptyValueModes(col)
+      : emptyValueModes(col).filter((option) => option.value !== 'erase')
+  );
 
-  /** The default as it reads rather than as it's stored: an option's label, or On or Off. */
+  const elementNames = useElementNames(
+    () => defaultElementTypeOf(col),
+    () => defaultIdsOf(context.values, col)
+  );
+
+  /** The default as it reads rather than as it's stored: an option's label, On or Off, or elements' names. */
   const defaultLabel = computed(() => {
     const value = defaultValueOf(context.values, col);
     const input = defaultValueInputOf(col);
@@ -43,6 +57,8 @@
         return value ? labelOf(value) : '';
       case 'multiselect':
         return defaultValuesOf(context.values, col).map(labelOf).join(', ');
+      case 'elements':
+        return elementNames.value.join(', ');
       default:
         return value;
     }

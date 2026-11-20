@@ -65,7 +65,12 @@ export interface MappingContext {
    * dots. Set when the panel is applied.
    */
   templateErrors: Ref<Record<string, string[]>>;
-  /** Marks this panel's invalid template inputs, so Apply can focus the first one. */
+  /**
+   * The server's errors for what fills the columns, such as a required one left
+   * unmapped, keyed like `templateErrors`. Set when the panel is applied.
+   */
+  mapErrors: Ref<Record<string, string[]>>;
+  /** Marks this panel's invalid inputs, so Apply can focus the first one. */
   panelId: string;
   editable: boolean;
   /** Opens a container column's own mapping in a nested panel. */

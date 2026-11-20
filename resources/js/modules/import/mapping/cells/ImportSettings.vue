@@ -1,5 +1,6 @@
 <script setup lang="ts">
   /** The field type's own per-field choices, such as what to do with a conflicting file. */
+  import '@craftcms/ui/components/field/field';
   import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/select/select';
   import {getAt, setAt} from '../paths';
@@ -40,21 +41,27 @@
 </script>
 
 <template>
-  <div class="import-settings">
+  <craft-field
+    v-for="setting in settings"
+    :key="setting.name"
+    class="import-settings"
+    layout="inline"
+  >
+    <!-- A span, not a label: the info icon is a button, which a label would also activate. -->
+    <span slot="label">
+      {{ setting.label }}
+      <craft-info-icon v-if="setting.instructions">{{
+        setting.instructions
+      }}</craft-info-icon>
+    </span>
     <craft-select
-      v-for="setting in settings"
-      :key="setting.name"
+      slot="input"
+      :label="setting.label"
+      label-sr-only
       .value="valueOf(setting)"
       .disabled="!context.editable"
       @change="onChange(setting, $event)"
     >
-      <!-- A span, not a label: the info icon is a button, which a label would also activate. -->
-      <span slot="label">
-        {{ setting.label }}
-        <craft-info-icon v-if="setting.instructions">{{
-          setting.instructions
-        }}</craft-info-icon>
-      </span>
       <select slot="input">
         <option
           v-for="option in setting.options"
@@ -65,17 +72,23 @@
         </option>
       </select>
     </craft-select>
-  </div>
+  </craft-field>
 </template>
 
 <style scoped>
   .import-settings {
-    display: flex;
-    flex-direction: column;
-    gap: var(--c-spacing-md);
+    /* the cell is narrow, so the label and select share it evenly */
+    --c-field-inline-label-size: fit-content(50%);
     margin-block-start: var(--c-spacing-md);
-    margin-inline-start: var(--c-spacing-lg);
-    padding: var(--c-spacing-md);
-    padding-inline-end: 0;
+  }
+
+  /* runs as text, so a wrapped label keeps its info icon after the last word */
+  .import-settings > [slot='label'] {
+    display: block;
+  }
+
+  .import-settings craft-info-icon {
+    display: inline-flex;
+    vertical-align: middle;
   }
 </style>
