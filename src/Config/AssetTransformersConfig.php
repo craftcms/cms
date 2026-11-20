@@ -96,13 +96,14 @@ class AssetTransformersConfig extends BaseConfig
      *
      * @param  array<string, mixed>  $config
      *
-     * @throws InvalidArgumentException if the name is empty or `0`, which would resolve to the default transformer, or
+     * @throws InvalidArgumentException if the name is empty or an integer, which PHP turns into an integer array key, or
      *                                  `craft`, whose settings have their own methods.
      */
     public function transformer(string $name, array $config): self
     {
-        if ($name === '' || $name === '0') {
-            throw new InvalidArgumentException('Asset transformer names can’t be empty or “0”.');
+        // PHP turns integer-like array keys into integers, and `0` would resolve to the default transformer
+        if ($name === '' || (string) (int) $name === $name) {
+            throw new InvalidArgumentException('Asset transformer names can’t be empty or integers.');
         }
 
         if ($name === 'craft') {

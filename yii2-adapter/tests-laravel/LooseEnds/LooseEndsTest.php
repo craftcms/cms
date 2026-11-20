@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Composer\InstalledVersions;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\mail\transportadapters\Smtp;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -333,14 +334,19 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
     Cms::config()->assetTransformers->transformer('craft-private', ['driver' => 'craft'])->default('craft-private');
     $craftDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
-    // The default doesn't store transforms, and the craft transformer has no output disk
+    // The default's driver isn't registered, so volumes fall back to craft, which has no output disk
     Cms::config()->assetTransformers->outputDisk(null)->transformer('imgix', ['driver' => 'imgix'])->default('imgix');
+    $unregisteredDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    // The default doesn't store transforms
+    app(AssetTransformers::class)->extend('imgix', fn() => null);
     $otherDriverDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     expect($finding?->detail)->toBe('photos → transforms, unsetEnv → transforms')
         ->and($emptyDisk?->detail)->toBe('photos → transforms, unsetEnv → transforms')
         ->and($afterChoosing)->toBeNull()
         ->and($craftDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($unregisteredDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
         ->and($otherDriverDefault)->toBeNull();
 });
 

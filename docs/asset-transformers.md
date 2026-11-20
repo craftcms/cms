@@ -1,7 +1,7 @@
 # Asset Transformers
 
 A **transformer** turns an Asset and a transform definition into an `AssetTransformResult` with a URL and MIME type.
-Transformers are set with the `assetTransformers` setting in `config/general.php`. Each transformer has a name, a
+Transformers are set with the `assetTransformers` setting in `config/craft/general.php`. Each transformer has a name, a
 `driver` such as `craft` or `imgix`, and that driver's settings. Craft defines the `craft` transformer. Plugins register
 other drivers.
 
@@ -292,7 +292,7 @@ public function boot(AssetTransformers $transformers): void
 
 Volumes can only choose transformers that are defined in config, so registering a driver doesn't make it available
 yet. Like a Flysystem adapter package that documents the disk to add to `config/filesystems.php`, document the
-`transformer()` call users should add to `config/general.php`, as in [Settings](#settings). Don't add it to the
+`transformer()` call users should add to `config/craft/general.php`, as in [Settings](#settings). Don't add it to the
 project's config from your plugin. Once it's defined, users choose `remote-images` in a volume's Asset Transformer
 setting, or set `CRAFT_ASSET_TRANSFORMERS_DEFAULT=remote-images`.
 

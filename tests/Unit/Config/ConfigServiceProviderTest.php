@@ -304,7 +304,7 @@ it('overrides asset transformer settings with environment variables and keeps na
 
 it('rejects asset transformer names that would resolve to the default', function (string $name) {
     AssetTransformersConfig::create()->transformer($name, ['driver' => 'imgix']);
-})->throws(InvalidArgumentException::class)->with(['empty' => '', 'zero' => '0']);
+})->throws(InvalidArgumentException::class)->with(['empty' => '', 'zero' => '0', 'integer' => '123', 'negative integer' => '-1']);
 
 it('fails when an environment override cannot be normalized', function () {
     app(ConfigRepository::class)->set('craft.general', [
