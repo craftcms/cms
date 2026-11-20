@@ -273,7 +273,8 @@ it('forwards the renamed GraphQL settings to the gql setting', function () {
 
     $config = app(GeneralConfig::class)
         ->enableGraphqlIntrospection(false)
-        ->setGraphqlDatesToSystemTimeZone();
+        ->setGraphqlDatesToSystemTimeZone()
+        ->maxGraphqlBatchSize('3');
     $config->maxGraphqlResults = 20;
 
     expect($config->gql->enabled)->toBeFalse()
@@ -283,6 +284,7 @@ it('forwards the renamed GraphQL settings to the gql setting', function () {
         ->and($config->gql->enableIntrospection)->toBeFalse()
         ->and($config->gql->setDatesToSystemTimeZone)->toBeTrue()
         ->and($config->gql->maxResults)->toBe(20)
+        ->and($config->gql->maxBatchSize)->toBe(3)
         ->and($config->enableGql)->toBeFalse()
         ->and($config['maxGraphqlDepth'])->toBe(7)
         ->and($config->gql->enableCaching)->toBeTrue()

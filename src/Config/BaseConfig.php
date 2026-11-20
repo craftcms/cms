@@ -135,6 +135,14 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
 
             if (method_exists($config, $setting)) {
                 $this->deprecateRenamedSetting($name);
+
+                // Calls are forwarded from this strictly typed file, so coerce the value as a non-strict caller's would be
+                if (array_key_exists(0, $arguments)) {
+                    $values = [$setting => $arguments[0]];
+                    Typecast::properties($config::class, $values);
+                    $arguments[0] = $values[$setting];
+                }
+
                 $config->$setting(...$arguments);
 
                 return $this;
