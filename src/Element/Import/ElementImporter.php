@@ -95,6 +95,8 @@ abstract class ElementImporter extends BaseImporter
 
     private ?ImportItemOutcome $lastItemOutcome = null;
 
+    private ?int $lastItemElementId = null;
+
     #[Override]
     public static function getDefaultTransformer(): ?string
     {
@@ -420,6 +422,8 @@ abstract class ElementImporter extends BaseImporter
             // properties declared outside ImportHelper may carry no icon
             icon: $prop['icon'] ?? null,
             defaultValueInput: $prop['defaultValueInput'] ?? null,
+            required: $prop['required'] ?? null,
+            importSettings: $prop['importSettings'] ?? null,
         ), $props));
 
         if ($this->fieldLayout === null) {
@@ -498,6 +502,7 @@ abstract class ElementImporter extends BaseImporter
     public function importItem(array $data): ?ElementInterface
     {
         $this->lastItemOutcome = null;
+        $this->lastItemElementId = null;
         $prepared = $this->prepareItem($data);
 
         if ($prepared === null) {
@@ -508,6 +513,7 @@ abstract class ElementImporter extends BaseImporter
 
         if (! $hasChanges) {
             $this->lastItemOutcome = ImportItemOutcome::Unchanged;
+            $this->lastItemElementId = $element->getCanonicalId();
 
             return $element;
         }
@@ -539,6 +545,8 @@ abstract class ElementImporter extends BaseImporter
         }
 
         $this->lastItemOutcome = $prepared['isNew'] ? ImportItemOutcome::Created : ImportItemOutcome::Updated;
+        // a draft is recorded as the element it's a draft of, which is what's listed and linked to
+        $this->lastItemElementId = $element->getCanonicalId();
 
         return $element;
     }
@@ -549,6 +557,14 @@ abstract class ElementImporter extends BaseImporter
     public function lastItemOutcome(): ?ImportItemOutcome
     {
         return $this->lastItemOutcome;
+    }
+
+    /**
+     * Returns the element the last call to `importItem()` imported its item into, if it imported one.
+     */
+    public function lastItemElementId(): ?int
+    {
+        return $this->lastItemElementId;
     }
 
     /**
@@ -1038,7 +1054,7 @@ abstract class ElementImporter extends BaseImporter
         }
 
         foreach ($fields as $handle => $value) {
-            if (empty($value) || ! empty($oldValues[$handle])) {
+            if (! self::hasValue($value) || ! empty($oldValues[$handle])) {
                 continue;
             }
 
@@ -1048,6 +1064,17 @@ abstract class ElementImporter extends BaseImporter
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether incoming data holds any value at all: a mapped container field the row has
+     * no data for still comes through as its nested elements' shape, with every value null.
+     */
+    private static function hasValue(mixed $value): bool
+    {
+        return is_array($value)
+            ? array_any($value, self::hasValue(...))
+            : $value !== null && $value !== '';
     }
 
     /**

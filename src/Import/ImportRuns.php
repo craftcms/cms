@@ -10,10 +10,17 @@ use CraftCms\Cms\Import\Enums\ImportRunStatus;
 use CraftCms\Cms\Import\Enums\ImportRunTrigger;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Models\ImportRun;
+use CraftCms\Cms\Import\Models\ImportRunItem;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Translation\Locale;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+
+use function CraftCms\Cms\t;
 
 /**
  * Keeps the record of each import plan's runs: how many items each step run created, updated, left unchanged, skipped or failed, and the items that failed.
@@ -132,10 +139,19 @@ class ImportRuns
      * @param  int  $total  How many items the step has.
      * @param  array<value-of<ImportItemOutcome>, int>  $counts  How many of the batch's items came to each outcome.
      * @param  list<Failure>  $failures  The batch's failed items, in order.
+     * @param  list<array{item: int, outcome: ImportItemOutcome, elementId: int|null}>  $items  What each of the batch's items came to.
      */
-    public function recordItems(string $runId, string $stepUid, int $done, int $total, array $counts, array $failures = []): void
+    public function recordItems(string $runId, string $stepUid, int $done, int $total, array $counts, array $failures = [], array $items = []): void
     {
-        $this->updateStep($runId, $stepUid, function (array $step) use ($done, $total, $counts, $failures): array {
+        $this->updateStep($runId, $stepUid, function (array $step, ImportRun $run) use ($stepUid, $done, $total, $counts, $failures, $items): array {
+            ImportRunItem::query()->insert(array_map(fn (array $item): array => [
+                'runId' => $run->id,
+                'stepUid' => $stepUid,
+                'item' => $item['item'],
+                'outcome' => $item['outcome']->value,
+                'elementId' => $item['elementId'],
+            ], $items));
+
             foreach ($counts as $outcome => $count) {
                 $step['counts'][$outcome] = ($step['counts'][$outcome] ?? 0) + $count;
             }
@@ -204,11 +220,13 @@ class ImportRuns
 
         return [
             'id' => $run->uid,
+            'url' => Url::cpUrl("import/activity/$run->uid"),
             'status' => $status->value,
             'progress' => $run->progress,
             'trigger' => $run->trigger?->value,
             'user' => $run->user?->username,
             'dateCreated' => $run->dateCreated->toIso8601String(),
+            'started' => self::started($run->dateCreated),
             'dateStarted' => $run->dateStarted?->toIso8601String(),
             'dateFinished' => $run->dateFinished?->toIso8601String(),
             'steps' => array_map(fn (array $step): array => [
@@ -220,6 +238,25 @@ class ImportRuns
                 'counts' => $step['counts'],
                 ...($withFailures ? ['failures' => $step['failures']] : []),
             ], $steps),
+        ];
+    }
+
+    /**
+     * When a run started, named as an entry index names a date (today, yesterday, a day this week, or the date), with
+     * the time; and in full, with the time zone.
+     *
+     * @return array{label: string, title: string}
+     */
+    public static function started(DateTimeInterface $date): array
+    {
+        $formatter = I18N::getFormatter();
+        $date = Date::instance($date)->setTimezone($formatter->timeZone);
+        $time = $formatter->asTime($date, Locale::LENGTH_SHORT);
+        $day = $date->isToday() ? t('Today') : $formatter->asTimestamp($date, Locale::LENGTH_SHORT);
+
+        return [
+            'label' => $day.' '.t('at {time}', ['time' => $time]),
+            'title' => $formatter->asDatetime($date, Locale::LENGTH_SHORT, true),
         ];
     }
 
@@ -303,9 +340,11 @@ class ImportRuns
     }
 
     /**
+     * Returns a query for an import plan's runs.
+     *
      * @return Builder<ImportRun>
      */
-    private function forPlan(ImportPlanData $importPlan): Builder
+    public function forPlan(ImportPlanData $importPlan): Builder
     {
         // plans registered in code may not have a UID, so they're known by their handle
         return $importPlan->uid !== null

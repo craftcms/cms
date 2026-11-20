@@ -705,7 +705,6 @@ class Install extends Migration
             $table->string('handle');
             $table->text('description')->nullable();
             $table->mediumText('steps');
-            $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->dateTime('dateDeleted')->nullable()->default(null);
@@ -726,6 +725,16 @@ class Install extends Migration
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->unique();
+        });
+
+        Schema::create(Table::IMPORT_RUN_ITEMS, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->integer('runId');
+            $table->char('stepUid', 36);
+            $table->unsignedInteger('item');
+            $table->string('outcome', 20);
+            // not a foreign key, as a failed new item's element was never saved
+            $table->integer('elementId')->nullable();
         });
 
         /** @todo Change when Larastan is updated */
@@ -1150,6 +1159,7 @@ class Install extends Migration
         Schema::createIndex(Table::AGENT_GUIDANCE, ['userId']);
         Schema::createIndex(Table::AGENT_SKILLS, ['title'], unique: true);
         Schema::createIndex(Table::IMPORT_RUNS, ['planUid', 'planHandle', 'dateCreated']);
+        Schema::createIndex(Table::IMPORT_RUN_ITEMS, ['runId', 'stepUid', 'outcome', 'item']);
         Schema::createIndex(Table::RELEASES, ['status', 'publishedAt']);
         Schema::createIndex(Table::RELEASE_ITEMS, ['draftId'], unique: true);
         Schema::createIndex(Table::RELEASE_ITEMS, ['releaseId', 'canonicalId'], unique: true);
@@ -1317,6 +1327,9 @@ class Install extends Migration
         Schema::table(Table::AGENT_GUIDANCE, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
         Schema::table(Table::AGENT_GUIDANCE, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::IMPORT_RUNS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete());
+        Schema::table(Table::IMPORT_RUN_ITEMS, function (Blueprint $table) {
+            $table->foreign('runId')->references('id')->on(Table::IMPORT_RUNS)->cascadeOnDelete();
+        });
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('createdById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('scheduledById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('releaseId')->references('id')->on(Table::RELEASES)->cascadeOnDelete());

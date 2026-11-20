@@ -45,6 +45,8 @@ use Override;
  *     item: int,
  *     message: string,
  *     elementId: int|null,
+ *     title: string|null,
+ *     match: list<array{label: string, value: string}>,
  *     problems: list<array{path: list<string>, message: string}>,
  *     data: mixed,
  * }

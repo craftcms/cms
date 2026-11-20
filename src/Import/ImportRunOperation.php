@@ -28,14 +28,19 @@ class ImportRunOperation implements ActivityOperationTypeInterface
         );
     }
 
+    public static function label(string $id, array $snapshot): ?string
+    {
+        return null;
+    }
+
     public static function url(string $id, array $snapshot, User $viewer): ?string
     {
         $importPlan = app(ImportPlans::class)->getImportPlanByUid((string) ($snapshot['planUid'] ?? ''));
 
-        if (! $importPlan?->handle || ! $importPlan->isEditable() || ! Gate::forUser($viewer)->allows('viewImportPlans')) {
+        if (! $importPlan?->handle || ! Gate::forUser($viewer)->allows('viewImportPlans')) {
             return null;
         }
 
-        return Url::cpUrl("import/$importPlan->handle");
+        return Url::cpUrl("import/activity/$id");
     }
 }

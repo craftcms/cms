@@ -14,6 +14,7 @@ use CraftCms\Cms\Import\Events\ImportChunkStarted;
 use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Import\ImportPreviews;
 use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -157,6 +158,9 @@ class Import extends Job
         // normalizing the UI/config-based matchCriteria only depends on the importer, so it
         // could be done once per step's chunk rather than for each root item that is being imported
         $matchCriteria = ImportHelper::normalizeMatchCriteriaFromImporterConfig($step);
+        // a failed item is recorded with the values it was matched on, labeled as the step shows them
+        $matchKeys = array_map(strval(...), array_keys($matchCriteria));
+        $destinationLabels = $matchKeys !== [] ? $step->getDestinationLabels() : [];
 
         // with chunking disabled, we want to go through all the data in one go
         if ($chunkingDisabled) {
@@ -184,6 +188,7 @@ class Import extends Job
         // what's happened to the items since the run was last told, which it is whenever the step's progress moves on
         $counts = [];
         $failures = [];
+        $items = [];
         $recordedProgress = null;
         $canceled = false;
         $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
@@ -206,8 +211,15 @@ class Import extends Job
             $itemNumber = $this->start + $processedCount;
 
             // import data
+            $elementId = null;
+
             try {
                 $outcome = ImportFacade::importItem($step, $data[$i], $matchCriteria, $this->runId);
+
+                // a skipped item may not have reached the importer, which would still hold the item before's element
+                if ($outcome !== ImportItemOutcome::Skipped && $step instanceof ElementImporter) {
+                    $elementId = $step->lastItemElementId();
+                }
             } catch (Throwable $e) {
                 // log, record why it failed and proceed further
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), [
@@ -217,12 +229,15 @@ class Import extends Job
                 ]);
                 $outcome = ImportItemOutcome::Failed;
                 $chunkHasFailures = true;
+                $elementId = $e instanceof InvalidElementException ? $e->element->id : null;
 
                 if (count($failures) < ImportRuns::MAX_FAILURES_PER_STEP) {
                     $failures[] = [
                         'item' => $itemNumber,
                         'message' => $e->getMessage(),
-                        'elementId' => $e instanceof InvalidElementException ? $e->element->id : null,
+                        'elementId' => $elementId,
+                        'title' => $e instanceof InvalidElementException ? ImportPreviews::itemTitle($e->element) : null,
+                        'match' => $e instanceof InvalidElementException ? ImportHelper::matchedValues($e->element, $matchKeys, $destinationLabels) : [],
                         'problems' => $e instanceof InvalidElementException ? ElementImporter::listErrors($e->element) : [],
                         'data' => $data[$i],
                     ];
@@ -230,11 +245,12 @@ class Import extends Job
             }
 
             $counts[$outcome->value] = ($counts[$outcome->value] ?? 0) + 1;
+            $items[] = ['item' => $itemNumber, 'outcome' => $outcome, 'elementId' => $elementId];
             $progress = (int) (($itemNumber / $totalCount) * 100);
 
             if ($progress !== $recordedProgress) {
-                $this->importRuns()->recordItems($this->runId, $this->stepUid, $itemNumber, $totalCount, $counts, $failures);
-                $counts = $failures = [];
+                $this->importRuns()->recordItems($this->runId, $this->stepUid, $itemNumber, $totalCount, $counts, $failures, $items);
+                $counts = $failures = $items = [];
                 $recordedProgress = $progress;
             }
 
@@ -250,7 +266,7 @@ class Import extends Job
         }
 
         if ($counts !== []) {
-            $this->importRuns()->recordItems($this->runId, $this->stepUid, $this->start + $processedCount, $totalCount, $counts, $failures);
+            $this->importRuns()->recordItems($this->runId, $this->stepUid, $this->start + $processedCount, $totalCount, $counts, $failures, $items);
         }
 
         event(new ImportChunkFinished($this->importPlan, $step, $this->runId, $this->start, $processedCount, $chunkHasFailures));

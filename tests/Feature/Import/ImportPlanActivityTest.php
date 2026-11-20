@@ -70,7 +70,7 @@ it('credits whoever started a run with running the plan', function () {
         ->and((string) Activities::format($ran))->toBe('Ran the Guides import plan');
 });
 
-it('links what a run did to its import plan, for those who can view import plans', function () {
+it('links what a run did to the run, for those who can view import plans', function () {
     expect(app(ImportPlans::class)->saveImportPlan($this->importPlan))->toBeTrue();
     Bus::fake();
     app(Import::class)->dispatchImport($this->importPlan);
@@ -81,6 +81,6 @@ it('links what a run did to its import plan, for those who can view import plans
         UserModel::factory()->withPermissions($canView ? ['accessCp', 'viewImportPlans'] : ['accessCp'])->createElement(),
     )->sole()['operation'];
 
-    expect($operation(true))->toBe(['label' => 'Guides', 'url' => Url::cpUrl('import/guides')])
+    expect($operation(true))->toBe(['label' => 'Guides', 'url' => Url::cpUrl("import/activity/{$ran->operationId}")])
         ->and($operation(false))->toBe(['label' => 'Guides', 'url' => null]);
 });
