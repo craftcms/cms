@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 6
 
-## Unreleased
+## 6.0.0-beta.2 - 2026-11-20
 
 - Added Croatian translations, and completed the Indonesian, Kyrgyz, and Welsh translations.
 - Improved the performance of control panel requests. ([#20704](https://github.com/craftcms/cms/pull/20704))
