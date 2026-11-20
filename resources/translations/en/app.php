@@ -253,7 +253,7 @@ return [
     'Data caches invalidated.' => 'Data caches invalidated.',
     'Data saved.' => 'Data saved.',
     'Database File Path' => 'Database File Path',
-    'Default ({driver})' => 'Default ({driver})',
+    'Default ({transformer})' => 'Default ({transformer})',
     'Default Row Values' => 'Default Row Values',
     'Default Upload Subpath' => 'Default Upload Subpath',
     'Defaults' => 'Defaults',

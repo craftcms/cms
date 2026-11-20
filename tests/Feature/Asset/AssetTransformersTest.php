@@ -83,6 +83,19 @@ it('builds each transformer from its own entry, so two can share a driver', func
         ->and($transformers->forVolume($second->getVolume())->name)->toBe('remote-v2');
 });
 
+it('reports and skips a transformer that can’t be built when listing definitions', function () {
+    Exceptions::fake();
+    app(AssetTransformers::class)->extend('imgix', fn ($app, array $config) => isset($config['domain'])
+        ? new TestAssetTransformDriver
+        : throw new InvalidAssetTransformException('The imgix driver needs a domain.'));
+    defineAssetTransformer('imgix');
+    defineAssetTransformer('remote');
+    app(AssetTransformers::class)->extend('remote', fn () => new TestAssetTransformDriver);
+
+    expect(array_keys(app(AssetTransformers::class)->definitions()))->toEqualCanonicalizing(['craft', 'remote']);
+    Exceptions::assertReported(fn (InvalidAssetTransformException $e) => $e->getMessage() === 'The imgix driver needs a domain.');
+});
+
 it('builds the craft driver from its settings', function () {
     configureCraftTransformer(['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true]);
     $driver = app(AssetTransformers::class)->transformer('craft');

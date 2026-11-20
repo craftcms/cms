@@ -111,7 +111,8 @@ transformer shares them. Two transformers with the same driver keep separate val
 ## The `craft` driver
 
 The `craft` driver generates transforms with Craft's own image processing. The `craft` transformer takes these
-settings from `AssetTransformersConfig`. A second transformer with the `craft` driver takes the same names as keys.
+settings from `AssetTransformersConfig`. A second transformer with the `craft` driver takes the same names as keys,
+with `generateTransformsBeforePageLoad` as a boolean. It ignores other keys.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -124,10 +125,10 @@ disk is publicly readable, point it at a private disk, or give private volumes a
 output disk, as in [Different output disks per volume](#different-output-disks-per-volume). Temporary uploads always
 keep their transforms on the temporary upload disk.
 
-Transforms have URLs when the volume does, and either they're stored on the volume's own disk or the output disk's
-config in `config/filesystems.php` sets a `url`. A `scoped` disk uses the `url` of the disk it wraps, and Laravel ignores its own. Without a `url`,
-Laravel disks still build URLs, such as `/storage/...` for local disks, and those don't serve the files. In that case
-Craft serves each transform through an action URL instead.
+Transforms have URLs when the volume does, built by the disk they're stored on, the same way the volume's own files
+get theirs. The output disk must serve its files at those URLs, such as with a `url` in its config in
+`config/filesystems.php`. A local disk without a `url` builds `/storage/...` URLs, which only work after
+`php artisan storage:link`. Transforms of volumes without public URLs are served through an action URL.
 
 A Craft 5 volume's Transform Filesystem and Transform Subpath become `outputDisk`, pointing at a `scoped` disk when
 there was a subpath. Craft doesn't carry them over. The Yii2 Loose Ends utility lists volumes that had a

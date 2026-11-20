@@ -264,9 +264,9 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
      */
     public function getAssetTransformer(bool $parse = true): ?string
     {
-        $driver = $parse ? Env::parse($this->assetTransformer) : $this->assetTransformer;
+        $name = $parse ? Env::parse($this->assetTransformer) : $this->assetTransformer;
 
-        return is_string($driver) && $driver !== '' ? $driver : null;
+        return is_string($name) && $name !== '' ? $name : null;
     }
 
     /** @return array<string, mixed> */

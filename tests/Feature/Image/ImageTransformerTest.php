@@ -316,13 +316,11 @@ it('uses Craft driver output disk settings', function () {
         ->and(Storage::disk('configured-transform-target')->allFiles())->toHaveCount(1);
 });
 
-it('gives transforms direct URLs only for public volumes whose output disk sets a url', function (bool $volumeHasUrls, ?string $outputDisk, bool $direct) {
+it('gives transforms direct URLs on their output disk only for public volumes', function (bool $volumeHasUrls, ?string $outputDisk, bool $direct) {
     $root = storage_path('framework/testing/image-transformer-test/url-cases');
     config()->set('filesystems.disks.url-source', ['driver' => 'local', 'root' => "{$root}/source"]);
     config()->set('filesystems.disks.url-output', ['driver' => 'local', 'root' => "{$root}/output", 'url' => 'https://transforms.example.test']);
-    config()->set('filesystems.disks.url-output-scoped', ['driver' => 'scoped', 'disk' => 'url-output', 'prefix' => 'scoped']);
     config()->set('filesystems.disks.no-url-output', ['driver' => 'local', 'root' => "{$root}/no-url-output"]);
-    config()->set('filesystems.disks.no-url-output-scoped', ['driver' => 'scoped', 'disk' => 'no-url-output', 'prefix' => 'scoped', 'url' => 'https://ignored.example.test']);
     configureCraftTransformer(['outputDisk' => $outputDisk]);
     $volume = Volume::factory()->create(['fs' => 'url-source', 'hasUrls' => $volumeHasUrls]);
     $asset = ($this->createImageAsset)([
@@ -340,9 +338,7 @@ it('gives transforms direct URLs only for public volumes whose output disk sets 
     'own disk without a url key, public' => [true, null, true],
     'own disk, private' => [false, null, false],
     'output disk with a url, public' => [true, 'url-output', true],
-    'scoped output disk whose parent has a url, public' => [true, 'url-output-scoped', true],
-    'output disk without a url, public' => [true, 'no-url-output', false],
-    'scoped output disk with its own url but a parent without one, public' => [true, 'no-url-output-scoped', false],
+    'output disk without a url, public' => [true, 'no-url-output', true],
     'output disk with a url, private' => [false, 'url-output', false],
 ]);
 

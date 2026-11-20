@@ -178,7 +178,12 @@ class AssetTransformers extends MultipleInstanceManager
         $definitions = [];
 
         foreach ($this->names() as $name) {
-            $definitions[$name] = $this->transformer($name)->definition();
+            // One transformer whose settings aren’t valid in this environment shouldn’t break the others
+            try {
+                $definitions[$name] = $this->transformer($name)->definition();
+            } catch (AssetTransformException $exception) {
+                report($exception);
+            }
         }
 
         return $definitions;

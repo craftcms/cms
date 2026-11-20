@@ -96,10 +96,15 @@ class AssetTransformersConfig extends BaseConfig
      *
      * @param  array<string, mixed>  $config
      *
-     * @throws InvalidArgumentException if the name is `craft`, whose settings have their own methods.
+     * @throws InvalidArgumentException if the name is empty or `0`, which would resolve to the default transformer, or
+     *                                  `craft`, whose settings have their own methods.
      */
     public function transformer(string $name, array $config): self
     {
+        if ($name === '' || $name === '0') {
+            throw new InvalidArgumentException('Asset transformer names can’t be empty or “0”.');
+        }
+
         if ($name === 'craft') {
             throw new InvalidArgumentException('Set the craft transformer with outputDisk() and generateTransformsBeforePageLoad().');
         }

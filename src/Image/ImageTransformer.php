@@ -79,7 +79,7 @@ class ImageTransformer
 
         $index = $this->getTransformIndex($asset, $imageTransform);
         $disk = $this->transformDisk($asset, $transformer);
-        $transformHasUrls = $this->transformHasUrls($asset, $transformer);
+        $transformHasUrls = $this->transformHasUrls($asset);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
@@ -190,7 +190,7 @@ class ImageTransformer
 
     public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
     {
-        return $this->transformHasUrls($asset, $this->currentTransformer($asset));
+        return $this->transformHasUrls($asset);
     }
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
@@ -762,44 +762,12 @@ class ImageTransformer
     }
 
     /**
-     * Returns whether transforms get direct URLs on their output disk. The source volume must have public URLs, and
-     * the transforms must be stored on the volume’s own disk, or on an output disk whose config sets a `url`. Other
+     * Returns whether transforms get direct URLs on their output disk: when the source volume has public URLs. Other
      * transforms are served through Craft’s action URL.
      */
-    private function transformHasUrls(Asset $asset, AssetTransformer $transformer): bool
+    private function transformHasUrls(Asset $asset): bool
     {
-        $volume = $asset->getVolume();
-
-        if (! $volume->sourceHasUrls()) {
-            return false;
-        }
-
-        $outputDisk = $this->outputDisk($asset, $transformer);
-
-        return $outputDisk === $volume->getResolvedFsTarget() || $this->diskSetsUrl($outputDisk);
-    }
-
-    /**
-     * Returns whether a disk’s config sets a `url`. A scoped disk follows the disk it wraps and ignores its own `url`,
-     * as Laravel does. Laravel builds URLs for disks without one, so this reads the config instead of calling `url()`.
-     *
-     * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
-     */
-    private function diskSetsUrl(string|array $disk, int $depth = 0): bool
-    {
-        $config = is_string($disk) ? (config('filesystems.disks')[$disk] ?? null) : $disk;
-
-        if (! is_array($config) || $depth > 8) {
-            return false;
-        }
-
-        if (($config['driver'] ?? null) === 'scoped') {
-            $wrapped = $config['disk'] ?? null;
-
-            return (is_string($wrapped) || is_array($wrapped)) && $this->diskSetsUrl($wrapped, $depth + 1);
-        }
-
-        return is_string($config['url'] ?? null) && $config['url'] !== '';
+        return $asset->getVolume()->sourceHasUrls();
     }
 
     /**
@@ -853,8 +821,9 @@ class ImageTransformer
     }
 
     /**
-     * Returns the `craft` transformer for an asset’s disk. A disk that uses another driver gets the `craft` defaults,
-     * for when that driver hands a file to `craft` or a caller uses this class directly.
+     * Returns the transformer for an asset’s volume when it uses the `craft` driver. A volume whose transformer uses
+     * another driver gets the `craft` transformer, for when that driver hands a file to `craft` or a caller uses this
+     * class directly.
      */
     private function currentTransformer(Asset $asset): AssetTransformer
     {

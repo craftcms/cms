@@ -233,7 +233,7 @@ class VolumeEditViewModel extends ViewModel
 
     private function defaultTransformerLabel(): string
     {
-        return t('Default ({driver})', ['driver' => Cms::config()->assetTransformers->default ?? 'craft']);
+        return t('Default ({transformer})', ['transformer' => Cms::config()->assetTransformers->default ?? 'craft']);
     }
 
     /**

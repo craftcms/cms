@@ -8,7 +8,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Volumes choose their asset transform driver.
+ * Volumes choose their asset transformer.
  */
 return new class extends Migration
 {

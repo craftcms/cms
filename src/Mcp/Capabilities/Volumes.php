@@ -64,7 +64,7 @@ readonly class Volumes
      * @param  string  $name  Volume name.
      * @param  string  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
-     * @param  string|null  $assetTransformer  Asset transform driver name, or an environment variable. Uses the configured default when null.
+     * @param  string|null  $assetTransformer  Asset transformer name, or an environment variable. Uses the configured default when null.
      * @param  TranslationMethod  $titleTranslationMethod  Asset title translation method.
      * @param  string|null  $titleTranslationKeyFormat  Custom asset title translation key format.
      * @param  TranslationMethod  $altTranslationMethod  Asset alternative-text translation method.
@@ -118,7 +118,7 @@ readonly class Volumes
      * @param  string|null  $handle  New volume handle.
      * @param  string|null  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
-     * @param  string|null  $assetTransformer  Asset transform driver name, or an environment variable. Uses the configured default when null.
+     * @param  string|null  $assetTransformer  Asset transformer name, or an environment variable. Uses the configured default when null.
      * @param  TranslationMethod  $titleTranslationMethod  Asset title translation method.
      * @param  string|null  $titleTranslationKeyFormat  Custom asset title translation key format.
      * @param  TranslationMethod  $altTranslationMethod  Asset alternative-text translation method.
