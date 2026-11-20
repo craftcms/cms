@@ -12,6 +12,10 @@
 - Commands suggested by the `entrify/*`, `entry-types/merge`, `fields/merge`, `fields/auto-merge`, `setup`, `setup/welcome`, and `update` console commands now use `ddev craft` when Craft is running in DDEV, and `php craft` otherwise. ([#20702](https://github.com/craftcms/cms/pull/20702))
 - Added the “HTML Purifier caches” option to the Caches utility and the `clear-caches/html-purifier` command. ([#20861](https://github.com/craftcms/cms/pull/20861))
 
+### Control Panel
+
+- The control panel is now available in Croatian, and its Indonesian, Kyrgyz, and Welsh translations are now complete. Previously, most of their strings were shown in English.
+
 ### Development
 
 - Added the `craftCommand()` Twig function. ([#20487](https://github.com/craftcms/cms/pull/20487))
