@@ -15,12 +15,16 @@ export interface DetailsPanel {
   order?: number;
   /** A status shown in the panel header. */
   statusData?: DetailsPanelStatus | null;
+  /** Something in the panel that needs attention, which its trigger marks so it's noticed while the panel is closed. */
+  alert?: string | null;
   /**
    * Whether the panel belongs to the shell rather than a page, so it stays
    * from page to page. A page’s details column opens on the page’s own first
    * panel rather than one of these.
    */
   persistent?: boolean;
+  /** Left closed when the page opens, so the column only opens on it when asked to. */
+  closedByDefault?: boolean;
   /** Whether the panel scrolls its own content, so its body doesn't scroll or keep room for a scrollbar. */
   scrollsItself?: boolean;
   /** What gets focus when the panel is opened from its trigger. Defaults to its heading. */

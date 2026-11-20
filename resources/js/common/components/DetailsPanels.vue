@@ -9,6 +9,7 @@
    * panel from it moves focus to the panel's heading, and Escape or the
    * panel's close button hands focus back to the rail.
    */
+  import '@craftcms/ui/components/badge-indicator/badge-indicator';
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
   import {useEventListener, useLocalStorage} from '@vueuse/core';
@@ -331,6 +332,13 @@
               v-html="panel.iconSvg"
             />
             <craft-icon v-else :name="panel.icon" :label="panel.label" />
+            <template v-if="panel.alert">
+              <craft-badge-indicator
+                class="details-panels__alert"
+                aria-hidden="true"
+              ></craft-badge-indicator>
+              <span class="sr-only">{{ panel.alert }}</span>
+            </template>
           </button>
         </craft-disclosure>
       </div>
@@ -389,6 +397,7 @@
 
   .details-panels__trigger {
     --c-icon-size: var(--cp-chrome-icon-size);
+    position: relative;
     display: grid;
     inline-size: var(--cp-rail-item-size);
     aspect-ratio: 1;
@@ -400,6 +409,18 @@
     color: var(--cp-chrome-icon-color);
     font-size: var(--c-text-base);
     cursor: pointer;
+  }
+
+  /* the same marker as the notification bell's */
+  .details-panels__alert {
+    --badge-border-width: 2px;
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-end: 2px;
+  }
+
+  .details-panels__alert::part(badge) {
+    background-color: var(--c-color-danger-fill-loud);
   }
 
   .details-panels__trigger :deep(craft-icon > svg) {

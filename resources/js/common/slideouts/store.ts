@@ -27,6 +27,9 @@ import type {ScreenPageProps} from '@/common/composables/screen';
  */
 const panels = reactive<SlideoutInstance[]>([]);
 
+/** Closed panels, still shown while they slide back off the screen. */
+const leavingPanels = reactive<SlideoutInstance[]>([]);
+
 let nextId = 0;
 
 type SlideoutPageLoader = (
@@ -49,6 +52,20 @@ export function useSlideoutStack(): readonly SlideoutInstance[] {
 
 export function slideoutPanels(): SlideoutInstance[] {
   return panels;
+}
+
+/** Closed panels still sliding off the screen, which are gone as far as anything else is concerned. */
+export function leavingSlideoutPanels(): SlideoutInstance[] {
+  return leavingPanels;
+}
+
+/** Lets go of a closed panel once it's off the screen. */
+export function finishLeaving(id: string): void {
+  const index = leavingPanels.findIndex((panel) => panel.id === id);
+
+  if (index !== -1) {
+    leavingPanels.splice(index, 1);
+  }
 }
 
 export function findSlideout(id: string): SlideoutInstance | undefined {
@@ -353,6 +370,13 @@ function removePanel(id: string, {restoreFocus = true} = {}): void {
 
   const [panel] = panels.splice(index, 1);
   dirtyChecks.delete(id);
+
+  if (panel) {
+    // before focus moves, so the panel has already let go of it
+    panel.leaving = true;
+    leavingPanels.push(panel);
+  }
+
   panel?.onClosed?.();
 
   if (restoreFocus && panel) {

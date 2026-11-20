@@ -14,7 +14,7 @@
   import {watch} from 'vue';
   import {usePage} from '@inertiajs/vue3';
   import SlideoutPanel from './SlideoutPanel.vue';
-  import {slideoutPanels} from './store';
+  import {leavingSlideoutPanels, slideoutPanels} from './store';
   import {setAssetVersion} from './request';
 
   const props = defineProps<{
@@ -22,6 +22,7 @@
   }>();
 
   const panels = slideoutPanels();
+  const leaving = leavingSlideoutPanels();
   const page = props.assetVersion === undefined ? usePage() : null;
 
   // Keep the version a slideout fetch sends in step with the loaded page.
@@ -35,7 +36,7 @@
 <template>
   <!-- One teleport per panel, so each is appended to `<body>` as it opens and
     lands above a legacy slideout opened before it. -->
-  <Teleport v-for="panel in panels" :key="panel.id" to="body">
+  <Teleport v-for="panel in [...panels, ...leaving]" :key="panel.id" to="body">
     <SlideoutPanel :instance="panel" />
   </Teleport>
 </template>
