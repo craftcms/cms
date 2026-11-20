@@ -232,6 +232,10 @@ it('keeps the pixels of indexed PNGs when cleaning them with imagick', function 
         $this->markTestSkipped('Need Imagick to verify PNG palettes.');
     }
 
+    if (! extension_loaded('gd')) {
+        $this->markTestSkipped('Need GD to create the indexed PNG.');
+    }
+
     $path = $this->sandboxPath.'/indexed.png';
     $image = imagecreate(200, 50);
     for ($x = 0; $x < 200; $x++) {
