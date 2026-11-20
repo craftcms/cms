@@ -873,7 +873,15 @@ class Raster extends Image
                     $format = 'png32';
                 }
 
-                $options['png_format'] = $format;
+                // Imagine quantizes PNG8 images, which merges similar colors even when the image already fits in a
+                // palette. Without a format, Imagick saves those losslessly, keeping the palette.
+                if (
+                    $format !== 'png8' ||
+                    !Craft::$app->getImages()->getIsImagick() ||
+                    $this->_image->getImagick()->getImageColors() > 256
+                ) {
+                    $options['png_format'] = $format;
+                }
 
                 return $options;
 
