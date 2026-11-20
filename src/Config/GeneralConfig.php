@@ -12,7 +12,6 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
@@ -22,8 +21,6 @@ use RuntimeException;
  */
 class GeneralConfig extends BaseConfig
 {
-    use Conditionable;
-
     /** @deprecated in 6.0.0. [[ImagesConfig::DRIVER_AUTO]] should be used instead. */
     public const string IMAGE_DRIVER_AUTO = ImagesConfig::DRIVER_AUTO;
 

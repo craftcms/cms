@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Override;
 use ReflectionProperty;
@@ -22,6 +23,8 @@ use ReflectionProperty;
  */
 abstract class BaseConfig implements Arrayable, ArrayAccess
 {
+    use Conditionable;
+
     /**
      * @var array<string, string> Old setting names, mapped to their new names. A new name with dots, such as
      *                            `gql.enabled`, names a setting of a config object that a setting holds.
