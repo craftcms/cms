@@ -4,6 +4,8 @@ import styles from './badge-indicator.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden.js';
 
+export {badgeIndicatorCutoutStyles} from './badge-indicator.styles.js';
+
 /**
  * @summary A small marker showing that something is new or has changed, with
  * an optional count.

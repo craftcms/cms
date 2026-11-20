@@ -8,7 +8,7 @@ import {
   watch,
 } from 'vue';
 import type {ComputedRef, MaybeRefOrGetter, Ref} from 'vue';
-import {useElementSize} from '@vueuse/core';
+import {useElementSize, useEventListener} from '@vueuse/core';
 import {BaseDrag, X_AXIS} from '@craftcms/garnish';
 import type {ResizeHandleControls} from '@/common/composables/resizeHandle';
 import {useLocalStorage} from '@/common/composables/useStorage';
@@ -358,6 +358,45 @@ export function useResizable(options: UseResizableOptions): UseResizableReturn {
       },
     });
   });
+
+  /**
+   * A press on the handle isn't a click on the page. Its `click` is held back
+   * from everything else, so something that closes on a click elsewhere, such
+   * as a details panel overlaying the content, stays open while it's resized.
+   * That includes the click a drag ends with, which the browser fires on
+   * whatever the handle and the release point have in common.
+   */
+  let pressedHandle = false;
+
+  useEventListener(handle, 'pointerdown', () => {
+    pressedHandle = true;
+  });
+
+  useEventListener(
+    window,
+    ['pointerup', 'pointercancel'],
+    () => {
+      if (pressedHandle) {
+        // The click follows the pointerup in the same task, when there is one.
+        setTimeout(() => {
+          pressedHandle = false;
+        });
+      }
+    },
+    {capture: true}
+  );
+
+  useEventListener(
+    window,
+    'click',
+    (event: MouseEvent) => {
+      if (pressedHandle) {
+        pressedHandle = false;
+        event.stopPropagation();
+      }
+    },
+    {capture: true}
+  );
 
   onScopeDispose(() => {
     dragger?.destroy();

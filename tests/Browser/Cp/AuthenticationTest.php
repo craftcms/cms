@@ -22,12 +22,12 @@ it('signs in and continues to the requested page', function () {
 });
 
 it('rejects an incorrect password', function () {
-    visitCp('login')
+    assertNoAccessibilityIssues(visitCp('login')
         ->type('role=textbox[name="Username or Email"]', 'craftcms')
         ->type('role=textbox[name="Password"]', 'not-the-password')
         ->click('role=button[name="Sign in"]')
         ->assertSee('Invalid username or password.')
-        ->assertPathEndsWith('/login');
+        ->assertPathEndsWith('/login'));
 
     assertGuest();
 });
@@ -47,10 +47,13 @@ it('asks for an authenticator code after the password', function () {
     $secret = (new Google2FA)->generateSecretKey();
     Authenticator::create(['userId' => User::first()->id, 'auth2faSecret' => $secret]);
 
-    visitCp('settings')
+    $page = visitCp('settings')
         ->type('role=textbox[name="Username or Email"]', 'craftcms')
         ->type('role=textbox[name="Password"]', 'craftcms2018!!')
         ->click('role=button[name="Sign in"]')
+        ->assertVisible('role=textbox[name="Verification Code"]');
+
+    assertNoAccessibilityIssues($page)
         ->type('role=textbox[name="Verification Code"]', (new Google2FA)->getCurrentOtp($secret))
         ->click('role=button[name="Verify"]')
         ->assertPathEndsWith('/settings');

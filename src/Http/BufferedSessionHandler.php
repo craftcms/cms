@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http;
 
 use Illuminate\Session\ExistenceAwareInterface;
+use RuntimeException;
 use SessionHandlerInterface;
 
 /**
@@ -38,6 +39,30 @@ class BufferedSessionHandler implements ExistenceAwareInterface, SessionHandlerI
     public function close(): bool
     {
         return $this->handler->close();
+    }
+
+    /**
+     * PHP 8.6 warns about session handlers without this method.
+     */
+    public function create_sid(): string
+    {
+        if (method_exists($this->handler, 'create_sid')) {
+            return $this->handler->create_sid();
+        }
+
+        return session_create_id() ?: throw new RuntimeException('Unable to create a session ID.');
+    }
+
+    /**
+     * PHP 8.6 warns about session handlers without this method.
+     */
+    public function validateId(string $id): bool
+    {
+        if (method_exists($this->handler, 'validateId')) {
+            return $this->handler->validateId($id);
+        }
+
+        return true;
     }
 
     public function read(string $id): string|false

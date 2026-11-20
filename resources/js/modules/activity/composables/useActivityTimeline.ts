@@ -63,6 +63,8 @@ export interface ActivityTimelineProps {
   elementId: number | null;
   siteId: number | null;
   refreshToken?: number;
+  /** The level of each day's heading: 4 under a panel's `h3`, the default, or 2 directly under a page's `h1`. */
+  dayHeadingLevel?: 2 | 3 | 4;
 }
 
 export function useActivityTimeline(

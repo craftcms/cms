@@ -35,9 +35,11 @@ beforeEach(function () {
 });
 
 it('rearranges entries from the reorder menu', function () {
-    visitCp('content/entries/pages?viewMode=structure')
+    $page = assertNoAccessibilityIssues(visitCp('content/entries/pages?viewMode=structure')
         ->click('#main tbody tr:has-text("Bravo") >> role=button[name="Reorder"]')
-        ->click('role=button[name="Indent"]')
+        ->assertVisible('role=button[name="Indent"]'));
+
+    $page->click('role=button[name="Indent"]')
         ->assertSeeIn('#main tbody tr:has-text("Bravo")', 'Level 2')
         ->click('#main >> role=heading[level=1]')
         ->click('#main tbody tr:has-text("Charlie") >> role=button[name="Reorder"]')

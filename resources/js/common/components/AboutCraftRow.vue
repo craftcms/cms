@@ -116,13 +116,13 @@
     translate: calc((var(--c-size-icon-md) - var(--c-size-icon-sm)) / 2) 0;
   }
 
-  /* The button's hover fill is made for on-quiet text, not the link color. */
-  :slotted(.about-craft-row__link:active) {
+  /* A plain button's hover fill is made for on-quiet text, not the link color. */
+  :slotted(.about-craft-row__link:not([variant~='link']):active) {
     color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
   }
 
   @media (hover: hover) {
-    :slotted(.about-craft-row__link:hover) {
+    :slotted(.about-craft-row__link:not([variant~='link']):hover) {
       color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     }
   }

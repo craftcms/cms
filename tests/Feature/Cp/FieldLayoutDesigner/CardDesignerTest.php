@@ -49,6 +49,19 @@ it('shows the sample entry as live', function () {
         ->and($preview->filter('craft-card ul')->text())->not->toContain('Pending');
 });
 
+it('lays out the card’s content as element cards do', function (string $elementType, bool $hasBody) {
+    $content = cardPreview($elementType)->filter('craft-card > .card-content');
+
+    expect($content->count())->toBe(1)
+        ->and($content->filter(':scope > .card-heading .label')->text())->toContain($elementType === User::class ? 'Olive Craften' : 'The Quick Brown Fox')
+        ->and($content->filter(':scope > .card-body')->count())->toBe((int) $hasBody);
+})->with([
+    // The sample entry's status badge is in the body.
+    'entries' => [Entry::class, true],
+    // Nothing goes under a user's name, so there's no empty body to space out.
+    'users' => [User::class, false],
+]);
+
 it('previews users as an active sample user with a default avatar and no status badge', function () {
     $preview = cardPreview(User::class);
     $chip = $preview->filter('craft-chip.cvd-chip');

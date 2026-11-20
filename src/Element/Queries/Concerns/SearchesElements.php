@@ -125,7 +125,7 @@ trait SearchesElements
      *
      * ```twig
      * {# Get the search query from the 'q' query string param #}
-     * {% set searchQuery = craft.app.request.getQueryParam('q') %}
+     * {% set searchQuery = Request.query('q') %}
      *
      * {# Fetch all {elements} that match the search query #}
      * {% set {elements-var} = {twig-method}
@@ -135,7 +135,7 @@ trait SearchesElements
      *
      * ```php
      * // Get the search query from the 'q' query string param
-     * $searchQuery = \Craft::$app->request->getQueryParam('q');
+     * $searchQuery = request()->query('q');
      *
      * // Fetch all {elements} that match the search query
      * ${elements-var} = {php-method}

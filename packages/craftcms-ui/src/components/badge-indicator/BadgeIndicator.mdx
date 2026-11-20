@@ -33,6 +33,22 @@ If the thing needs naming, use a badge. If it needs pointing at, use this.
 
 `inverse` is for placing the badge on a dark or colored surface, where the primary treatment would disappear.
 
+## Overlapping an Icon
+
+When the dot sits on top of an icon or another badge, cut a gap out of what's beneath it instead of ringing the dot in a surface color, so the gap stays right over every background and hover state. Include `badgeIndicatorCutoutStyles` in the rule for the element beneath, and set `--c-badge-indicator-cutout-x` and `--c-badge-indicator-cutout-y` to the dot's center in that element's box:
+
+```ts
+import {badgeIndicatorCutoutStyles} from '@craftcms/ui/components/badge-indicator/badge-indicator';
+
+css`
+  .trigger__icon--indicated {
+    --c-badge-indicator-cutout-x: calc(100% - 2px);
+    --c-badge-indicator-cutout-y: -2px;
+    ${badgeIndicatorCutoutStyles}
+  }
+`;
+```
+
 ## Accessibility
 
 A bare dot conveys nothing — it is a colored shape with no text.

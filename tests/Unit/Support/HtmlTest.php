@@ -459,4 +459,6 @@ test('Svg', function (): void {
     $svg = Html::svg($contents, namespace: false);
     $this->assertStringStartsWith('<svg', $svg);
     $this->assertStringContainsString('id="Symbols"', $svg);
+
+    $this->assertSame('', Html::svg("file://$path"));
 });

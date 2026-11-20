@@ -319,6 +319,50 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   document.body.innerHTML = '';
 });
 
+it('shows the preview’s status only while the owner shows the Status field', () => {
+  document.body.innerHTML = `
+    <form>
+      <craft-switch data-ui-control-path='["showStatusField"]'></craft-switch>
+      <div class="cvd">
+        <div class="cvd-preview">
+          <craft-chip class="cvd-chip" show-status>
+            <div slot="status" data-cvd-status></div>
+            <div>Title</div>
+          </craft-chip>
+          <craft-card><ul data-cvd-status><li>Live</li></ul></craft-card>
+        </div>
+      </div>
+    </form>`;
+  const control = document.querySelector<HTMLElement & {checked: boolean}>(
+    'craft-switch'
+  )!;
+  control.checked = false;
+
+  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
+  const designer = Object.create(
+    CardViewDesigner.prototype
+  ) as CardViewDesigner;
+  designer.$container = document.querySelector('.cvd')!;
+  designer.$previewContainer = document.querySelector('.cvd-preview');
+  designer.syncPreviewAppearance();
+
+  const chip = document.querySelector('craft-chip')!;
+  const badges = document.querySelector<HTMLElement>('craft-card ul')!;
+  const indicator = chip.querySelector<HTMLElement>('[slot="status"]')!;
+  expect(badges.hidden).toBe(true);
+  expect(indicator.hidden).toBe(true);
+  expect(chip.hasAttribute('show-status')).toBe(false);
+
+  control.checked = true;
+  designer.syncPreviewAppearance();
+
+  expect(badges.hidden).toBe(false);
+  expect(indicator.hidden).toBe(false);
+  expect(chip.hasAttribute('show-status')).toBe(true);
+
+  document.body.innerHTML = '';
+});
+
 it('keeps the icon thumb source until the Icon control renders without an icon', async () => {
   document.body.innerHTML = '<form><div class="cvd"></div></form>';
   const iconOption = {label: 'Entry type icon', value: 'entryTypeIcon'};

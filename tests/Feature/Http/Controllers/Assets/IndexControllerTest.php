@@ -153,6 +153,68 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
     'square' => [600, 600, [[30, 30], [60, 60]]],
 ]);
 
+it('preloads thumbnail indexes for the assets that no ThumbUrlResolving listener handles', function () {
+    Queue::fake();
+    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $folder = Folders::getRootFolderByVolumeId($volume->id);
+    $imageTransformer = new ImageTransformer;
+    $assets = [];
+
+    foreach (['font.ttf', 'image-1.jpg', 'image-2.jpg'] as $filename) {
+        $assets[] = $asset = Asset::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => $filename,
+            'kind' => 'image',
+            'width' => 800,
+            'height' => 400,
+            'dateModified' => now()->subMinute(),
+        ]);
+
+        foreach ([30, 60] as $size) {
+            $imageTransformer->getTransformIndex($asset, new ImageTransform([
+                'width' => $size,
+                'height' => $size,
+                'mode' => 'fit',
+            ]));
+        }
+    }
+
+    $fontId = $assets[0]->id;
+    $requests = [];
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use ($fontId, &$requests): void {
+        $requests[] = [$event->asset->id, $event->width];
+
+        if ($event->asset->id === $fontId) {
+            $event->url = "https://example.test/specimen-{$event->width}.png";
+        }
+    });
+
+    $queries = [];
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, Table::IMAGETRANSFORMINDEX)) {
+            $queries[] = $query;
+        }
+    });
+
+    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(3, 'props.data');
+
+    $imageIds = [$assets[1]->id, $assets[2]->id];
+    $titles = array_column($response->json('props.data'), 'title', 'id');
+
+    expect($queries)->toHaveCount(2)
+        ->and(array_map(fn (QueryExecuted $query): array => array_values(array_filter($query->bindings, is_int(...))), $queries))
+        ->each->toEqualCanonicalizing($imageIds)
+        ->and($titles[$fontId])->toContain('https://example.test/specimen-30.png')
+        ->and($requests)->toEqualCanonicalizing([
+            [$fontId, 30], [$fontId, 60],
+            [$imageIds[0], 30], [$imageIds[0], 60],
+            [$imageIds[1], 30], [$imageIds[1], 60],
+        ]);
+});
+
 it('preserves custom thumbnail URLs without resolving the configured transformer', function () {
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $asset = Asset::factory()->createElement([

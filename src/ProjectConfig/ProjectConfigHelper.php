@@ -304,9 +304,9 @@ class ProjectConfigHelper
      * ];
      *
      * // "Pack" the array so it doesn't get reordered to [bar=>2,foo=>1]
-     * $packedArray = \craft\helpers\ProjectConfig::packAssociativeArray($myArray);
+     * $packedArray = \CraftCms\Cms\ProjectConfig\ProjectConfigHelper::packAssociativeArray($myArray);
      *
-     * Craft::$app->projectConfig->set($configKey, $packedArray);
+     * \CraftCms\Cms\Support\Facades\ProjectConfig::set($configKey, $packedArray);
      * ```
      *
      * @param  bool  $recursive  Whether to process nested associative arrays as well

@@ -1,0 +1,52 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as MediaItemStories from './media-item.stories';
+
+<Meta of={MediaItemStories} name="Docs" />
+
+# Media Item
+
+`<craft-media-item>` lays out a thumbnail beside a heading and a line or two of supporting text, for lists of entries, notifications and the like.
+
+<Canvas of={MediaItemStories.Default} sourceState="shown" />
+
+Put the item's name in the `heading` slot, usually as a link to it, and supporting text such as a date or a short message in the default slot. The supporting text is drawn smaller and quieter than the heading. Anything else that belongs to the item, such as buttons or a status, can go in the default slot too.
+
+## Thumbnails
+
+Slot an image or thumbnail into `thumbnail`, and it's cropped to a 40px square:
+
+<Canvas of={MediaItemStories.Thumbnail} sourceState="shown" />
+
+When there's no thumbnail, `icon` draws an icon faintly on a light fill in its place, so items with and without thumbnails line up. Leave both out and the text starts at the item's edge.
+
+`--c-media-item-thumbnail-size` changes the square's size.
+
+## Suffix
+
+The `suffix` slot holds content at the item's end, such as the author's avatar:
+
+<Canvas of={MediaItemStories.Suffix} sourceState="shown" />
+
+## Truncating
+
+`truncate` keeps the heading and supporting text to one line each, cut off with an ellipsis, and centers the thumbnail beside them. Use it for dense lists, such as a dashboard widget's, where every item should take the same space:
+
+<Canvas of={MediaItemStories.Truncate} sourceState="shown" />
+
+## Lists
+
+The item adds no list semantics of its own, so put each one in a list item, and space them `calc(var(--c-spacing) * 3)` apart:
+
+<Canvas of={MediaItemStories.List} sourceState="shown" />
+
+## Accessibility
+
+Place items in a list, with each one in an `<li>`, or in another element that gives it a role, such as an `<article>` for an item that stands on its own.
+
+A thumbnail usually shows what the heading already names, so give a slotted image `alt=""`. When it shows something the text doesn't say, give it a text alternative instead. The `icon` is decorative and hidden from screen readers.
+
+Use `truncate` only where the full text can be read another way, such as on the page the heading links to, since text cut off by the ellipsis can't be reached at narrow widths.
+
+## Properties
+
+<ArgTypes of={MediaItemStories} />

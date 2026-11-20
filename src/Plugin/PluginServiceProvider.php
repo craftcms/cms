@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Commands\DisableCommand;
 use CraftCms\Cms\Plugin\Commands\EnableCommand;
 use CraftCms\Cms\Plugin\Commands\InstallCommand;
 use CraftCms\Cms\Plugin\Commands\ListCommand;
 use CraftCms\Cms\Plugin\Commands\UninstallCommand;
+use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -27,6 +30,12 @@ class PluginServiceProvider extends ServiceProvider
         if (! $this->app->runningInConsole()) {
             return;
         }
+
+        Event::listen(CommandStarting::class, function (CommandStarting $event) {
+            if ($event->command === 'vendor:publish' && ! Cms::isInstalled()) {
+                $this->app->make(Plugins::class)->registerPublishablesFromProjectConfigFiles();
+            }
+        });
 
         $this->commands([
             ListCommand::class,

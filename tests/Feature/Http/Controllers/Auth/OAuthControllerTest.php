@@ -121,6 +121,14 @@ describe('redirect flow', function () {
             ->and(session('url.intended'))->toContain(app(GeneralConfig::class)->getPostCpLoginRedirect());
     });
 
+    test('redirect sends inertia visits to the provider with a full page load', function () {
+        configureOAuthControllerProvider();
+
+        get(oauthControllerRedirectUrl(true), ['X-Inertia' => 'true'])
+            ->assertConflict()
+            ->assertHeader('X-Inertia-Location', 'https://provider.test/oauth/authorize');
+    });
+
     test('unknown providers return 404', function () {
         get('oauth/missing')->assertNotFound();
     });

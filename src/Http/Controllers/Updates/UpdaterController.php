@@ -192,7 +192,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function pageTitle(): string
     {
-        return t('updater/Index');
+        return t('Updater');
     }
 
     #[Override]
