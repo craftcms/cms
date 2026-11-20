@@ -325,7 +325,7 @@
 - Fixed a bug where element indexes didn’t show the “Edit inline” button in Structure view. ([#20867](https://github.com/craftcms/cms/issues/20867), [#20909](https://github.com/craftcms/cms/pull/20909))
 - Fixed a bug where deleting a global set deleted every field layout. ([#20915](https://github.com/craftcms/cms/issues/20915))
 - Fixed a bug where the updater’s page title was “updater/Index”. ([#20925](https://github.com/craftcms/cms/pull/20925))
-- Fixed a bug where asset indexes didn’t preload any thumbnails when a `CraftCms\Cms\Asset\Events\ThumbUrlResolving` or `craft\services\Assets::EVENT_DEFINE_THUMB_URL` listener was registered, even for assets it didn’t set a thumbnail URL for. ([#20831](https://github.com/craftcms/cms/discussions/20831))
+- Fixed a bug where asset indexes didn’t preload any thumbnails when a `CraftCms\Cms\Asset\Events\ThumbUrlResolving` or `craft\services\Assets::EVENT_DEFINE_THUMB_URL` listener was registered, even for assets it didn’t set a thumbnail URL for. ([#20831](https://github.com/craftcms/cms/discussions/20831), [#20927](https://github.com/craftcms/cms/pull/20927))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
