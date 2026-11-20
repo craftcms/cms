@@ -15,7 +15,3 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: craftcms/translation-sync@v1
-        with:
-          # Reports what the sync would do without pushing or opening pull requests.
-          # Remove once the output looks right.
-          dry-run: 'true'
