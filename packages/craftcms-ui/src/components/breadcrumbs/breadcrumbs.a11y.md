@@ -22,6 +22,7 @@ Follows the WAI-ARIA APG [Breadcrumb](https://www.w3.org/WAI/ARIA/apg/patterns/b
 
 - [x] At 320px wide and at 400% zoom, the trail fits its container without scrolling the page sideways. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Crumbs that don't fit collapse into a menu, and the current page truncates when it alone is too wide. Verified by `collapses from the middle, keeping the first and last crumbs` and `truncates the last crumb when nothing else fits beside it` in `breadcrumbs.browser.test.ts`.
 - [x] Crumbs collapsed out of the trail get `hidden`, leaving the accessibility tree, and stay reachable from the keyboard through a `craft-action-menu` named "More items", whose items are links to the same places. Per WCAG 2.1.1 (Keyboard) and 1.4.10 (Reflow). Verified by `follows the collapsed crumb’s own link from the menu` in `breadcrumbs.browser.test.ts`.
+- [x] The menu comes between the first crumb and the rest in focus and reading order, where it sits on screen. Per WCAG 2.4.3 (Focus Order) and 1.3.2 (Meaningful Sequence). Verified by `puts the menu between the first crumb and the rest in focus order` in `breadcrumbs.browser.test.ts`.
 
 ## Depends on usage
 

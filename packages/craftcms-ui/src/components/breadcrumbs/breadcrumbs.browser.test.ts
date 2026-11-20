@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import './breadcrumbs.js';
 import '../breadcrumb-item/breadcrumb-item.js';
 import type CraftBreadcrumbs from './breadcrumbs.js';
@@ -165,5 +166,105 @@ describe('craft-breadcrumbs', () => {
 
     action.onClick(new MouseEvent('click', {cancelable: true}));
     expect(followed).toBe(true);
+  });
+
+  it('puts the menu between the first crumb and the rest in focus order', async () => {
+    const {element, items, shown} = await trail('520px');
+    // Partly collapsed: the menu and at least one middle crumb are visible.
+    expect(shown().length).toBeGreaterThan(2);
+    expect(shown().length).toBeLessThan(items.length);
+
+    const focused = () =>
+      document.activeElement === element
+        ? 'menu'
+        : document.activeElement!.firstChild!.textContent!.trim();
+    // The last crumb has no link, so it takes no focus.
+    const expected = ['Site Name', 'menu', ...shown().slice(1, -1)];
+
+    const forward = [];
+    for (const _ of expected) {
+      await userEvent.tab();
+      forward.push(focused());
+    }
+    expect(forward).toEqual(expected);
+
+    const backward = [focused()];
+    for (const _ of expected.slice(1)) {
+      await userEvent.tab({shift: true});
+      backward.push(focused());
+    }
+    expect(backward).toEqual([...expected].reverse());
+  });
+
+  it('keeps the menu and truncation in place around a custom separator', async () => {
+    const separator = '<span slot="separator">/</span>';
+    const {element, items, overflow} = await trail(
+      '120px',
+      separator + TRAIL + separator
+    );
+
+    const label = items
+      .at(-1)!
+      .shadowRoot!.querySelector<HTMLElement>('[part~="label"]')!;
+    expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+    expect(element.getBoundingClientRect().right).toBeLessThanOrEqual(121);
+    expect(overflow.getBoundingClientRect().right).toBeLessThanOrEqual(
+      items.at(-1)!.getBoundingClientRect().left
+    );
+  });
+
+  it('follows a crumb replaced at the same place, with the same label', async () => {
+    const {element, items, menu} = await trail('120px');
+    const replacement = document.createElement('craft-breadcrumb-item');
+    replacement.href = '#elsewhere';
+    replacement.textContent = 'Entries';
+    items[1]!.replaceWith(replacement);
+    await replacement.updateComplete;
+    await frame();
+    await frame();
+
+    const link = replacement.shadowRoot!.querySelector('a')!;
+    let followed = false;
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      followed = true;
+    });
+
+    const action = (menu.actions as ActionMenuItem[])[1] as {
+      href: string;
+      onClick: (event: Event) => void;
+    };
+    expect(element.contains(replacement)).toBe(true);
+    expect(action.href).toBe(link.href);
+    action.onClick(new MouseEvent('click', {cancelable: true}));
+    expect(followed).toBe(true);
+  });
+
+  it('remeasures when a crumb’s label or link changes in place', async () => {
+    const {items, overflow, shown, menuLabels, menu} = await trail('400px');
+    // Let any measurement still queued from the first layout run first.
+    await frame();
+    await frame();
+    const collapsed = items.find((item) => item.hidden)!;
+
+    collapsed.firstChild!.textContent = 'Renamed';
+    collapsed.setAttribute('href', '#renamed');
+    await frame();
+    await frame();
+    expect(menuLabels()).toContain('Renamed');
+    expect(
+      (menu.actions as ActionMenuItem[]).map((action) =>
+        'href' in action ? String(action.href) : ''
+      )
+    ).toContainEqual(expect.stringMatching(/#renamed$/));
+
+    // Short labels all fit at the same width.
+    items.forEach((item, index) => {
+      item.firstChild!.textContent = `C${index}`;
+    });
+    await frame();
+    await frame();
+    expect(shown()).toHaveLength(items.length);
+    expect(overflow.hidden).toBe(true);
   });
 });

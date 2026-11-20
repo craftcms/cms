@@ -24,25 +24,15 @@ export default css`
 
   /* Crumbs hold their natural width: the trail makes room by collapsing whole
      crumbs into the menu, not by squeezing them. */
-  ::slotted(*) {
-    flex: none;
-    order: 2;
-  }
-
-  /* The menu takes the place of the crumbs between the first and the rest. */
-  ::slotted(:first-child) {
-    order: 0;
-  }
-
+  ::slotted(*),
   .breadcrumbs__overflow {
     flex: none;
-    order: 1;
   }
 
   /* Except the current page, which is never collapsed: when there's no room
      left for it, it truncates. Not while measuring, which needs every crumb's
      natural width. */
-  .breadcrumbs:not(.breadcrumbs--measuring) ::slotted(:last-child) {
+  .breadcrumbs:not(.breadcrumbs--measuring) ::slotted([aria-current='page']) {
     flex: 0 1 auto;
     min-width: 0;
   }

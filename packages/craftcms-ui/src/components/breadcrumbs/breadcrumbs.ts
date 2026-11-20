@@ -53,16 +53,24 @@ export default class CraftBreadcrumbs extends LitElement {
   #menuSignature: string | null = null;
 
   #resizeObserver?: ResizeObserver;
+  #contentObserver?: MutationObserver;
   #measureQueued = false;
 
+  /** The crumbs, in trail order, across the `first` slot and the default. */
   get #items(): CraftBreadcrumbItem[] {
-    const slot =
-      this.shadowRoot?.querySelector<HTMLSlotElement>('slot:not([name])');
-
-    return (slot?.assignedElements({flatten: true}) ?? []).filter(
-      (el): el is CraftBreadcrumbItem =>
-        el.tagName.toLowerCase() === 'craft-breadcrumb-item'
+    const slots = this.shadowRoot?.querySelectorAll<HTMLSlotElement>(
+      'slot[name="first"], slot:not([name])'
     );
+
+    return [...(slots ?? [])]
+      .flatMap((slot) => slot.assignedElements({flatten: true}))
+      .filter(
+        (el): el is CraftBreadcrumbItem =>
+          el.tagName.toLowerCase() === 'craft-breadcrumb-item'
+      )
+      .sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+      );
   }
 
   get #nav(): HTMLElement | null {
@@ -98,6 +106,17 @@ export default class CraftBreadcrumbs extends LitElement {
 
     items.forEach((item, index) => {
       const isLast = index === items.length - 1;
+
+      // The first crumb goes in a slot of its own, ahead of the menu, so the
+      // menu follows it in focus and reading order, not only on screen.
+      // Crumbs forwarded through another slot stay where they are.
+      if (item.parentElement === this) {
+        if (index === 0) {
+          item.slot = 'first';
+        } else if (item.slot === 'first') {
+          item.removeAttribute('slot');
+        }
+      }
       const separator = item.querySelector('[slot="separator"]');
 
       if (isLast) {
@@ -143,13 +162,37 @@ export default class CraftBreadcrumbs extends LitElement {
     super.connectedCallback();
     this.#resizeObserver = new ResizeObserver(this.#queueMeasure);
     this.#resizeObserver.observe(this);
+
+    // A crumb's label or link can change in place, as when a framework patches
+    // the trail for the next page, without resizing the trail or changing
+    // which crumbs are slotted.
+    this.#contentObserver = new MutationObserver((records) => {
+      if (!records.every(this.#isOwnSeparatorChange)) {
+        this.#queueMeasure();
+      }
+    });
+    this.#contentObserver.observe(this, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributeFilter: ['href'],
+    });
   }
 
   override disconnectedCallback() {
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = undefined;
+    this.#contentObserver?.disconnect();
+    this.#contentObserver = undefined;
     super.disconnectedCallback();
   }
+
+  /** Whether a mutation only adds or removes the separators drawn here. */
+  #isOwnSeparatorChange = (record: MutationRecord) =>
+    record.type === 'childList' &&
+    [...record.addedNodes, ...record.removedNodes].every(
+      (node) => node instanceof Element && node.hasAttribute('data-default')
+    );
 
   #queueMeasure = () => {
     if (this.#measureQueued) {
@@ -255,9 +298,14 @@ export default class CraftBreadcrumbs extends LitElement {
     }
 
     // New actions rebuild the menu's items, which drops focus out of an open
-    // menu, so a measurement that collapsed the same crumbs leaves them alone.
+    // menu, so a measurement that collapsed the same crumbs to the same places
+    // leaves them alone.
     const signature = JSON.stringify(
-      collapsed.map((index) => [index, this.#labelOf(items[index]!)])
+      collapsed.map((index) => [
+        index,
+        this.#labelOf(items[index]!),
+        this.#linkOf(items[index]!)?.href ?? null,
+      ])
     );
 
     if (signature !== this.#menuSignature) {
@@ -283,10 +331,15 @@ export default class CraftBreadcrumbs extends LitElement {
         // Follow the crumb's own link rather than the menu's copy of it, so
         // whatever handles clicks on that link handles this one too. A
         // modified click is left to open the copy wherever it asked to.
+        // The link is looked up on click: the crumb at this place may have
+        // been replaced since the menu was built.
         onClick: (event: Event) => {
           const mouse = event as MouseEvent;
+          const current = this.#items[index];
+          const currentLink = current ? this.#linkOf(current) : null;
 
           if (
+            !currentLink ||
             mouse.metaKey ||
             mouse.ctrlKey ||
             mouse.shiftKey ||
@@ -296,7 +349,7 @@ export default class CraftBreadcrumbs extends LitElement {
           }
 
           event.preventDefault();
-          link.click();
+          currentLink.click();
         },
       };
     });
@@ -334,7 +387,7 @@ export default class CraftBreadcrumbs extends LitElement {
   override render() {
     return html`
       <nav class="breadcrumbs" aria-label="${this.label}">
-        <slot @slotchange="${this.handleSlotChange}"></slot>
+        <slot name="first" @slotchange="${this.handleSlotChange}"></slot>
         <!--
           A crumb of its own so it lays out, and is separated, like the ones it
           stands in for. Its \`hidden\` state and the menu's \`actions\` are driven
@@ -365,6 +418,7 @@ export default class CraftBreadcrumbs extends LitElement {
             </craft-button>
           </craft-action-menu>
         </craft-breadcrumb-item>
+        <slot @slotchange="${this.handleSlotChange}"></slot>
       </nav>
 
       <span hidden aria-hidden="true">
