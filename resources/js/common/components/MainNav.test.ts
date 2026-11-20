@@ -185,17 +185,15 @@ it('marks a count with a dot on an item with children', async () => {
   ).toBeNull();
 });
 
-it('marks a count with a dot in the icon-only rail', async () => {
+it('leaves the dot off an item without children in the icon-only rail', async () => {
   const items = await mount(
     '/admin/content/entries',
     {'nav-admin-utilities': 3},
     {iconOnly: true}
   );
 
-  expect(byLabel(items, 'Utilities').indicator).toBe(true);
-  expect(
-    byLabel(items, 'Utilities').querySelector('craft-badge-indicator')
-  ).toBeNull();
+  expect(byLabel(items, 'Utilities').hasAttribute('icon-only')).toBe(true);
+  expect(byLabel(items, 'Utilities').indicator).toBe(false);
 });
 
 it('links each item where it says it does', async () => {
