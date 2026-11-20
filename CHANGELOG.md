@@ -23,7 +23,7 @@
 - Dialogs and slideouts now move focus to their heading when opened, and then to their `autofocus` field or their first field if it’s editable, unless the user has enabled “Disable autofocus”. On phones and tablets, focus stays on the heading. ([#20642](https://github.com/craftcms/cms/pull/20642))
 - Addresses’ Address Line 1–3, State, City, and Zip Code inputs are now labeled by their visible labels. ([#20642](https://github.com/craftcms/cms/pull/20642))
 - Password inputs’ Show/Hide button is now at least 24px tall, and the help button beside “Add a comment” and breadcrumbs’ section menu buttons are now 24×24px, with the menu button no longer overlapping the links beside it. ([#20642](https://github.com/craftcms/cms/pull/20642))
-- Error summaries shown when a save fails now show field names in bold, and each error links to its field, including custom fields and fields within settings screens’ scoped or sidebar layouts. Errors within Table fields’ cells, and within Matrix and Addresses fields shown as cards or an index, are no longer listed separately from their field’s own error, and the links are now at least 24px tall.
+- Error summaries shown when a save fails now show field names in bold, and each error links to its field, including custom fields and fields within settings screens’ scoped or sidebar layouts. Errors within Table fields’ cells, and within Matrix and Addresses fields shown as cards or an index, are no longer listed separately from their field’s own error, and the links are now at least 24px tall. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - The control panel’s grays and accent blue now match Craft 5’s, and the page background, the details pane, and dashboard widgets each have their own surface. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Uncolored and white element cards and Matrix blocks now have a filled header bar, gray ones now use the control panel’s blue-gray, and asset thumbnails now have a light background. ([#20646](https://github.com/craftcms/cms/pull/20646))
 - Element index table rows now have a light fill when hovered. ([#20645](https://github.com/craftcms/cms/pull/20645))
@@ -126,7 +126,7 @@
 - Added `CraftCms\Cms\Update\Maintenance::startUpdate()` and `finishUpdate()`. `finishUpdate()` only turns off maintenance mode if `startUpdate()` turned it on. ([#20797](https://github.com/craftcms/cms/pull/20797))
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
-- Added `CraftCms\Cms\Validation\Concerns\LabelsAttributes`, which gives validation rules the label of the attribute they’re validating, for the `{attribute}` placeholder in their messages, and `CraftCms\Cms\Support\Str::stripEmphasis()`.
+- Added `CraftCms\Cms\Validation\Concerns\LabelsAttributes`, which gives validation rules the label of the attribute they’re validating, for the `{attribute}` placeholder in their messages, and `CraftCms\Cms\Support\Str::stripEmphasis()`. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
 - Renamed `<craft-tab>`’s `--c-tab-spacing-inline`, `--c-tab-spacing-block`, and `--c-tab-border-active` custom properties to `--c-tab-padding-inline`, `--c-tab-padding-block`, and `--c-tab-indicator-fill-active`. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - The web installer now has a “Time Zone” field, which defaults to the time zone in the project config, or the browser’s time zone. Previously, sites installed from the web installer were always set to America/Los_Angeles.
@@ -314,8 +314,8 @@
 - Fixed a bug where Markdown fields didn’t track references to elements with the ID 100 or 1234, or other ref tags that look like emoji shortcodes, such as `{entry:smile:url}`. Deleting the element didn’t list those references or replace them. ([#20901](https://github.com/craftcms/cms/pull/20901))
 - Fixed a bug where garbage collection could block other requests’ database writes while deleting orphaned foreign key rows. Orphaned rows are now found without locking anything and deleted in small batches, with foreign key checks enabled, so the deletions also apply the foreign key actions of rows that reference them. ([#20885](https://github.com/craftcms/cms/issues/20885))
 - Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
-- Fixed a bug where some validation errors, such as Time fields’ minimum and maximum time errors, and Color, “Entry URI Format”, and 4-byte character errors, showed “{attribute}” rather than the field’s name.
-- Fixed a bug where validation errors showed asterisks around field names, such as “The \*Title\* field is required.”
+- Fixed a bug where some validation errors, such as Time fields’ minimum and maximum time errors, and Color, “Entry URI Format”, and 4-byte character errors, showed “{attribute}” rather than the field’s name. ([#20935](https://github.com/craftcms/cms/pull/20935))
+- Fixed a bug where validation errors showed asterisks around field names, such as “The \*Title\* field is required.” ([#20935](https://github.com/craftcms/cms/pull/20935))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
