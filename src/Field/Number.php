@@ -110,7 +110,7 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
                     ->value($this->previewFormat)
                     ->reactive()),
         ])
-            ->when($this->previewFormat === self::FORMAT_CURRENCY, function ($ui) {
+            ->when($this->previewFormat === self::FORMAT_CURRENCY, function (Ui $ui): void {
                 $currencies = [['label' => t('Choose a currency…'), 'value' => '']];
                 foreach (new ISOCurrencies as $currency) {
                     $currencies[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
