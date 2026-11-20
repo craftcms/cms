@@ -3516,7 +3516,6 @@ return [
     'today' => 'i dag',
     'two' => 'to',
     'unknown' => 'ukendt',
-    'updater/Index' => 'updater/Index',
     'user' => 'bruger',
     'users' => 'brugere',
     'validation.required' => 'validation.required',

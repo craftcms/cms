@@ -3516,7 +3516,6 @@ return [
     'today' => 'σήμερα',
     'two' => 'δύο',
     'unknown' => 'άγνωστο',
-    'updater/Index' => 'updater/Index',
     'user' => 'χρήστης',
     'users' => 'χρήστες',
     'validation.required' => 'validation.required',
