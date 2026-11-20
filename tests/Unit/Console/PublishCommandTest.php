@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Path;
@@ -179,4 +180,37 @@ describe('without a database', function () {
 
         expect(File::exists("{$this->directory}/public/vendor/craftcms/test-plugin/js/test.js"))->toBe($enabled);
     })->with(['enabled' => true, 'disabled' => false]);
+
+    it('skips plugins that are not native plugins', function () {
+        File::writeToFile("{$this->directory}/project/project.yaml", Yaml::dump([
+            'plugins' => [
+                'legacy-plugin' => ['enabled' => true, 'schemaVersion' => '1.0.0'],
+                'test-plugin' => ['enabled' => true, 'schemaVersion' => '1.0.0'],
+            ],
+        ]));
+
+        app()->instance(Plugins::class, app()->make(Plugins::class, ['composerPlugins' => [
+            'acme/legacy-plugin' => [
+                'class' => LegacyPlugin::class,
+                'handle' => 'legacy-plugin',
+            ],
+            'craftcms/test-plugin' => [
+                'class' => TestPlugin::class,
+                'handle' => 'test-plugin',
+                'basePath' => dirname(__DIR__, 2).'/TestClasses/TestPlugin/src',
+            ],
+        ]]));
+
+        app(Plugins::class)->publishPluginAssets();
+
+        expect(File::exists("{$this->directory}/public/vendor/craftcms/test-plugin/js/test.js"))->toBeTrue();
+    });
 });
+
+abstract class LegacyPlugin implements PluginInterface
+{
+    public static function create(array $config): PluginInterface
+    {
+        throw new RuntimeException('Legacy plugins can need a database when they are created.');
+    }
+}

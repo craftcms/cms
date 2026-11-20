@@ -400,7 +400,7 @@ class Plugins
 
         return Collection::make($configs)
             ->filter(fn (mixed $config, string $handle) => ! empty($config['enabled'])
-                && isset($this->composerPluginInfo[$handle])
+                && is_subclass_of($this->composerPluginInfo[$handle]['class'] ?? '', Plugin::class)
                 && ! $this->isPluginForceDisabled($handle))
             ->map(fn (mixed $config, string $handle) => $this->createPlugin($handle))
             ->filter()
