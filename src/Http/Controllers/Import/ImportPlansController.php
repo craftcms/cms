@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Import;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Data\FieldComparisonRow;
 use CraftCms\Cms\Element\FieldChangeComparisons;
@@ -35,6 +34,7 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Import\ImportPreviews;
+use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
@@ -64,6 +64,7 @@ class ImportPlansController
         private readonly Import $importService,
         private readonly ImportPlans $importsService,
         private readonly Fields $fieldsService,
+        private readonly ImportRuns $importRuns,
     ) {}
 
     public function index(): InertiaResponse
@@ -119,6 +120,7 @@ class ImportPlansController
             running: $running,
             progress: $running && $run !== null && $run['status'] === ImportRunStatus::Running->value ? $run['progress'] : null,
             run: $run,
+            runsUrl: route('craft.cp.import.activity.index', ['plan' => $importPlan->handle]),
         );
     }
 
@@ -146,7 +148,6 @@ class ImportPlansController
         }
 
         abort_if(is_null($found = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
-        abort_if(! $found->isEditable(), 400, "This import plan is not editable: $found->handle");
 
         $old = $this->request->session()->get('import');
 
@@ -177,6 +178,38 @@ class ImportPlansController
             'planUid' => $importPlan->uid,
             'step' => $step,
             'stepUi' => $this->stepUiPayload($importer, $step['batchSize'] ?? null),
+            'mappingUrl' => route('craft.cp.import.steps.mapping', ['handle' => $importPlan->handle, 'uid' => $uid]),
+            'editable' => (bool) $this->request->craftUser()?->can('saveImportPlans'),
+            'submit' => ['method' => 'post', 'url' => action([self::class, 'storeStep'])],
+        ]);
+    }
+
+    /** One saved step's mapping on a page of its own, which its mapping slideout links to. */
+    public function editStepMapping(string $handle, string $uid): InertiaResponse
+    {
+        abort_if(is_null($importPlan = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable: $importPlan->handle");
+
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $step) => $step['uid'] === $uid);
+
+        abort_if($index === false, 404, 'Import step not found');
+
+        $step = $steps[$index];
+        $importer = ! empty($step['type']) ? ImportPlans::createImporter($step) : null;
+        $stepUrl = route('craft.cp.import.steps.edit', ['handle' => $importPlan->handle, 'uid' => $uid]);
+
+        return Inertia::render('import/StepMappingEdit', [
+            'title' => t('Edit mapping'),
+            'crumbs' => [
+                new ActionItem()->label(t('Import'))->href(route('craft.cp.import.index')),
+                new ActionItem()->label((string) $importPlan->name)->href(route('craft.cp.import.edit', ['handle' => $importPlan->handle])),
+                new ActionItem()->label(t('Step {number}', ['number' => $index + 1]))->href($stepUrl),
+            ],
+            'planUid' => $importPlan->uid,
+            'step' => $step,
+            'mapping' => $this->mappingPayload($importer)->jsonSerialize(),
+            'stepUrl' => $stepUrl,
             'editable' => (bool) $this->request->craftUser()?->can('saveImportPlans'),
             'submit' => ['method' => 'post', 'url' => action([self::class, 'storeStep'])],
         ]);
@@ -299,8 +332,8 @@ class ImportPlansController
             $importPlan,
             $run ? $this->startAfterSaving($importPlan) : t('Import plan saved.'),
             'import',
-            // the plan's own page shows how the run is going
-            redirect: $run ? route('craft.cp.import.edit', ['handle' => $importPlan->handle]) : null,
+            // the run's page shows how it's going
+            redirect: $run ? ($this->latestRunUrl($importPlan) ?? route('craft.cp.import.edit', ['handle' => $importPlan->handle])) : null,
         );
     }
 
@@ -382,8 +415,14 @@ class ImportPlansController
      */
     public function stepMapping(): JsonResponse
     {
-        $importer = $this->mappingImporter();
+        return $this->asJsonSuccess(null, $this->mappingPayload($this->mappingImporter())->jsonSerialize());
+    }
 
+    /**
+     * The columns a step maps between, or why it can't be mapped yet.
+     */
+    private function mappingPayload(?BaseImporter $importer): StepMappingPayload
+    {
         // the panel's mapping button is hidden until this passes, so reaching here means the step
         // changed between the last refresh and the click
         if (! $this->hasDestination($importer)) {
@@ -410,14 +449,14 @@ class ImportPlansController
 
         $destinationCols = $importer->getDestinationCols();
 
-        return $this->asJsonSuccess(null, new StepMappingPayload(
+        return new StepMappingPayload(
             available: true,
             destinationCols: $destinationCols,
             sourceDataCols: $sourceDataCols,
             values: MappingValues::fromImporter($importer),
             suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
             templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
-        )->jsonSerialize());
+        );
     }
 
     /**
@@ -575,13 +614,13 @@ class ImportPlansController
      * Returns the response for a step whose data can't be mapped, naming the step attribute
      * the message is about, if it's about one.
      */
-    private function mappingUnavailable(string $message, ?string $attribute = null): JsonResponse
+    private function mappingUnavailable(string $message, ?string $attribute = null): StepMappingPayload
     {
-        return $this->asJsonSuccess(null, new StepMappingPayload(
+        return new StepMappingPayload(
             available: false,
             message: $message,
             attribute: $attribute,
-        )->jsonSerialize());
+        );
     }
 
     /**
@@ -786,21 +825,6 @@ class ImportPlansController
         }, $uids);
     }
 
-    public function reorder(): Response
-    {
-        $uids = $this->request->validate([
-            'uids' => ['required', 'array'],
-            'uids.*' => [
-                'string',
-                Rule::exists(Table::IMPORT_PLANS, 'uid')->whereNull('dateDeleted'),
-            ],
-        ])['uids'];
-
-        $this->importsService->reorderImportPlans($uids);
-
-        return $this->asSuccess(t('New order saved.'));
-    }
-
     public function destroy(): Response
     {
         $importPlans = $this->editableImportPlansFromRequest('deleted');
@@ -843,7 +867,16 @@ class ImportPlansController
             return $this->asFailure(t('Import could not be started.'));
         }
 
-        return $this->asSuccess(t('Import started.'));
+        // the run's page shows how it's going, unless it was asked to run in the background
+        return $this->asSuccess(t('Import started.'), redirect: $this->request->boolean('background') ? null : $this->latestRunUrl($importPlan));
+    }
+
+    /** The page of the plan's latest run, to follow one that was just started. */
+    private function latestRunUrl(ImportPlanData $importPlan): ?string
+    {
+        $run = $this->importRuns->latest($importPlan);
+
+        return $run !== null ? route('craft.cp.import.activity.show', ['runId' => $run->uid]) : null;
     }
 
     /**
@@ -869,17 +902,20 @@ class ImportPlansController
     }
 
     /**
-     * The other editable import plans, to move between them without going back to the index.
+     * Every import plan, to move between them without going back to the index.
      *
      * @return list<NavItem>
      */
     private function planNav(ImportPlanData $importPlan): array
     {
-        return $this->importsService->getEditableImportPlans()
+        $saved = $importPlan->uid !== null || ! $importPlan->isEditable();
+
+        return $this->importsService->getAllImportPlans()
+            ->sortBy(fn (ImportPlanData $plan) => (string) $plan->name, SORT_NATURAL | SORT_FLAG_CASE)
             ->map(fn (ImportPlanData $plan) => new NavItem()
                 ->label((string) $plan->name)
                 ->href(route('craft.cp.import.edit', ['handle' => $plan->handle]))
-                ->selected($importPlan->uid !== null && $plan->uid === $importPlan->uid))
+                ->selected($saved && $plan->handle === $importPlan->handle))
             ->values()
             ->all();
     }
@@ -887,10 +923,15 @@ class ImportPlansController
     private function cpScreenResponse(ImportPlanData $importPlan): CpScreenResponse
     {
         $currentUser = $this->request->craftUser();
-        $canSave = (bool) $currentUser?->can('saveImportPlans');
+        // a plan registered in code is shown as it is, with nothing to save
+        $canSave = $importPlan->isEditable() && $currentUser?->can('saveImportPlans');
 
         return new CpScreenResponse()
-            ->title(! isset($importPlan->uid) ? t('Create a new import plan') : t('Edit {name} import plan', ['name' => $importPlan->name]))
+            ->title(match (true) {
+                ! $importPlan->isEditable() => (string) $importPlan->name,
+                ! isset($importPlan->uid) => t('Create a new import plan'),
+                default => t('Edit {name} import plan', ['name' => $importPlan->name]),
+            })
             ->addCrumb(t('Import'), route('craft.cp.import.index'))
             ->subnav($this->planNav($importPlan))
             ->formAttributes(['action' => action([self::class, 'store'])])
@@ -926,20 +967,24 @@ class ImportPlansController
                             'retainScroll' => true,
                         ]);
 
-                    if (! $importPlan->isEditable()) {
-                        return;
-                    }
-
                     if ($currentUser?->can('triggerImportPlans')) {
                         $response->addAltAction(t('Run this import plan'), [
                             'action' => [
                                 'type' => 'http',
                                 'method' => 'POST',
                                 'url' => action([self::class, 'run']),
-                                'body' => [
-                                    'uid' => $importPlan->uid,
-                                    'redirect' => Crypt::encrypt(route('craft.cp.import.edit', ['handle' => $importPlan->handle])),
-                                ],
+                                'body' => ['uid' => $importPlan->uid],
+                                'confirm' => t('Are you sure you want to run “{name}”?', [
+                                    'name' => $importPlan->name,
+                                ]),
+                            ],
+                        ]);
+                        $response->addAltAction(t('Run in the background'), [
+                            'action' => [
+                                'type' => 'http',
+                                'method' => 'POST',
+                                'url' => action([self::class, 'run']),
+                                'body' => ['uid' => $importPlan->uid, 'background' => true],
                                 'confirm' => t('Are you sure you want to run “{name}”?', [
                                     'name' => $importPlan->name,
                                 ]),

@@ -41,6 +41,8 @@ export interface StepSlideoutContext {
   editable: boolean;
   /** The step's own page, linked from the slideout's header. Unset for a step yet to be saved. */
   editUrl?: string | null;
+  /** The step's mapping page, linked from its mapping slideout. Unset for a step yet to be saved. */
+  mappingUrl?: string | null;
   /** The submit button's label: Apply in a slideout, Save on the step's own page. */
   submitLabel?: string;
   /** Offers Save and continue editing beside the submit button, as the step's own page does. */
@@ -72,6 +74,7 @@ export interface OpenStepSlideoutOptions {
   step: ImportStep;
   editable: boolean;
   editUrl?: string | null;
+  mappingUrl?: string | null;
   opener: HTMLElement | null;
   apply(step: ImportStep, summary: StepSummary): void;
 }
@@ -133,6 +136,7 @@ export async function openStepSlideout(
       summary,
       editable: options.editable,
       editUrl: options.editUrl ?? null,
+      mappingUrl: options.mappingUrl ?? null,
       apply: options.apply,
     },
     title,

@@ -20,7 +20,7 @@ const state = vi.hoisted(() => ({
     step: ImportStep;
   } | null,
   changeMapping: null as ((values: Partial<MappingValues>) => void) | null,
-  templateErrors: vi.fn(),
+  mappingErrors: vi.fn(),
   saveErrors: null as Record<string, string> | null,
 }));
 
@@ -42,7 +42,7 @@ vi.mock('./InlineStepMapping.vue', () => ({
     emits: ['change'],
     setup(props: any, {emit, expose}: any) {
       state.changeMapping = (values) => emit('change', values);
-      expose({showTemplateErrors: state.templateErrors});
+      expose({showMappingErrors: state.mappingErrors});
 
       return () => {
         state.mapping = {
@@ -206,7 +206,7 @@ beforeEach(() => {
   state.fetchStepUi.mockReset();
   state.validateStep.mockReset();
   state.errorHandler.mockReset();
-  state.templateErrors.mockReset();
+  state.mappingErrors.mockReset();
   state.mapping = null;
   state.changeMapping = null;
   state.refresh = null;
@@ -455,7 +455,7 @@ it('keeps the slideout open and shows the errors when the draft step is invalid'
   ]);
 });
 
-it('shows a template’s errors on its column in the mapping, which the form doesn’t render', async () => {
+it('shows errors about the mapping and its templates with the mapping, which the form doesn’t render', async () => {
   mount(true);
   state.validateStep.mockRejectedValue({
     response: {
@@ -463,6 +463,7 @@ it('shows a template’s errors on its column in the mapping, which the form doe
         errors: {
           source: ['Source must be provided.'],
           'settings.templates.title': ['Unexpected “}”.'],
+          'settings.map.authorIds': ['Map Author IDs or give it a default.'],
         },
       },
     },
@@ -473,8 +474,9 @@ it('shows a template’s errors on its column in the mapping, which the form doe
   await nextTick();
 
   expect(state.context.apply).not.toHaveBeenCalled();
-  expect(state.templateErrors).toHaveBeenCalledWith({
-    title: ['Unexpected “}”.'],
+  expect(state.mappingErrors).toHaveBeenCalledWith({
+    'settings.templates.title': ['Unexpected “}”.'],
+    'settings.map.authorIds': ['Map Author IDs or give it a default.'],
   });
   expect(state.errors).toEqual([
     {path: ['source'], messages: ['Source must be provided.']},

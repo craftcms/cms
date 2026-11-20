@@ -20,6 +20,7 @@
     planUid: string;
     step: ImportStep;
     stepUi: StepUiPayload;
+    mappingUrl: string;
     editable: boolean;
     submit: UrlMethodPair;
   }>();
@@ -77,6 +78,7 @@
     sourceError: props.stepUi.sourceError,
     summary: props.stepUi.summary,
     editable: props.editable,
+    mappingUrl: props.mappingUrl,
     submitLabel: t('Save'),
     canContinueEditing: true,
     formActions: props.editable

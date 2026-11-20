@@ -10,7 +10,6 @@
   import '@craftcms/ui/components/button/button';
   import {ButtonVariant, t, type BaseAction} from '@craftcms/ui';
   import {computed, shallowRef, useTemplateRef} from 'vue';
-  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import type {ActionItemButton, FormAction} from '@/common/types';
   import UiPage from '@/pages/Ui.vue';
   import type {UiPayload, UiValue} from '@/modules/ui/types';
@@ -19,7 +18,7 @@
   import StepList from '@/modules/import/steps/StepList.vue';
   import PlanPreview from '@/modules/import/preview/PlanPreview.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import RunCallout from '@/modules/import/run/RunCallout.vue';
+  import RunsPanel from '@/modules/import/run/RunsPanel.vue';
   import {useRunState, type RunState} from '@/modules/import/run/run-state';
 
   type ImporterType =
@@ -30,17 +29,24 @@
     submit: UrlMethodPair;
     importerTypes: ImporterType[];
     stepEditUrls: Record<string, string>;
+    stepMappingUrls: Record<string, string>;
     stepSummaries: Record<string, CraftCms.Cms.Import.Data.StepSummary>;
     formActions?: FormAction[];
     runState: RunState | null;
+    earlierRuns?: RunState[];
+    /** How many runs the plan has kept, and where they're listed. Missing until it's saved. */
+    runs?: {count: number; url: string} | null;
     canRun?: boolean;
     /** Deletes the plan once it's confirmed. Missing when it can't be deleted. */
     deleteAction?: BaseAction | null;
+    /** Whether the plan is only shown, as one registered in code is. */
+    readOnly?: boolean;
   }>();
 
-  /** The plan as it's saved: its handle field can be edited before then. */
+  /** The plan as it's saved, or registered: its handle field can be edited before then. */
   const savedHandle =
-    typeof props.ui.values.handle === 'string' && props.ui.values.uid
+    typeof props.ui.values.handle === 'string' &&
+    (props.ui.values.uid || props.readOnly)
       ? props.ui.values.handle
       : null;
   const run = useRunState(() => savedHandle, props.runState);
@@ -87,10 +93,6 @@
         .map((error) => [error.path.join('.'), error.messages])
     );
   }
-
-  const stepUids = computed(() =>
-    steps.value.flatMap((step) => (step.uid ? [step.uid] : []))
-  );
 </script>
 
 <template>
@@ -104,16 +106,18 @@
     </craft-button>
   </LayoutSlot>
 
-  <!-- fills the screen's error summary, so the form's own save errors are shown here too -->
-  <LayoutSlot v-if="run" name="error-summary">
-    <ErrorSummary v-if="page?.form.hasErrors" :errors="page.form.errors" />
-    <RunCallout :run="run" :step-uids="stepUids" />
-  </LayoutSlot>
+  <RunsPanel
+    v-if="runs"
+    :runs="run ? [run, ...(earlierRuns ?? [])] : []"
+    :count="runs.count"
+    :url="runs.url"
+  />
 
   <UiPage
     ref="page"
     :ui="ui"
     :submit="submit"
+    :content-max-width="false"
     :form-actions="formActions"
     :form-additional-buttons="additionalButtons"
   >
@@ -124,8 +128,8 @@
         :importer-types="importerTypes"
         v-model:step-summaries="stepSummaries"
         :step-edit-urls="stepEditUrls"
+        :step-mapping-urls="stepMappingUrls"
         :errors="stepErrors(errors)"
-        :run-steps="run?.steps ?? {}"
         @update:model-value="updateSteps($event, setValue)"
       />
     </template>

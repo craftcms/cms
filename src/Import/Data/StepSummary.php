@@ -6,12 +6,14 @@ namespace CraftCms\Cms\Import\Data;
 
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 use JsonSerializable;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
+use Throwable;
 
 /**
  * An import step at a glance, for the plan's list of steps: what its importer type's own
@@ -23,7 +25,7 @@ readonly class StepSummary implements JsonSerializable
 {
     /**
      * @param  list<array{key: string, label: string, value: string}>  $settings
-     * @param  array<string, array{label: string, handle: string, icon: string|null}>  $destinationLabels  Keyed by each column's top-level key in the step's map, and by its handle.
+     * @param  array<string, array{label: string, handle: string, icon: string|null, defaultElementType?: string}>  $destinationLabels  Keyed by each column's top-level key in the step's map, and by its handle.
      */
     public function __construct(
         #[LiteralTypeScriptType('Array<{label: string, value: string}>')]
@@ -44,6 +46,26 @@ readonly class StepSummary implements JsonSerializable
             settings: self::settings($importer),
             destinationLabels: $hasDestination ? $importer->getDestinationLabels() : [],
         );
+    }
+
+    /**
+     * Each of a plan's steps at a glance, by its uid. A step that can't be built is left out.
+     *
+     * @return array<string, self>
+     */
+    public static function forPlan(ImportPlan $importPlan): array
+    {
+        $summaries = [];
+
+        foreach ($importPlan->serializeSteps() ?? [] as $step) {
+            try {
+                $summaries[$step['uid']] = self::fromImporter(ImportPlans::createImporter($step));
+            } catch (Throwable) {
+                // it's summed up from what it holds itself
+            }
+        }
+
+        return $summaries;
     }
 
     /**

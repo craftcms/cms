@@ -1,30 +1,36 @@
 <script setup lang="ts">
   /**
    * A step's mapping at a glance: each mapped destination, what fills it, whether rows
-   * are matched on it, and what happens when it's empty. A container's nested
-   * destinations expand beneath it.
+   * are matched on it, and what happens when it's empty. A container's own mapping
+   * opens from its row.
    */
   import '@craftcms/ui/components/button/button';
   import {t} from '@craftcms/ui';
-  import {computed, ref, shallowRef, useId} from 'vue';
+  import {computed, shallowRef, useId} from 'vue';
   import type {ImportStep} from '@/modules/import/mapping/types';
-  import {
-    summarizeMapping,
-    type DestinationLabels,
-    type SummaryEntry,
-  } from './mapping-summary';
+  import {summarizeMapping, type DestinationLabels} from './mapping-summary';
   import StepMappingSummaryRow from './StepMappingSummaryRow.vue';
 
   const {
     step,
     labels = {},
     limit = 5,
+    editable = false,
+    openingNested = null,
   } = defineProps<{
     step: ImportStep;
     /** Keys can be layout element uids; a destination with no label shows its key alone. */
     labels?: DestinationLabels;
     /** How many mappings to list before summing up the rest. `Infinity` lists them all. */
     limit?: number;
+    /** Whether a container's mapping opens to be edited, rather than only viewed. */
+    editable?: boolean;
+    /** The key of the container whose mapping is opening. */
+    openingNested?: string | null;
+  }>();
+
+  const emit = defineEmits<{
+    editNested: [key: string, opener: HTMLElement];
   }>();
 
   const entries = computed(() => summarizeMapping(step, labels));
@@ -33,31 +39,8 @@
   const expanded = shallowRef(false);
   const listId = useId();
 
-  /** The containers whose nested destinations are shown, by key. */
-  const openContainers = ref(new Set<string>());
-
-  function toggleContainer(entry: SummaryEntry): void {
-    if (!openContainers.value.delete(entry.key)) {
-      openContainers.value.add(entry.key);
-    }
-  }
-
-  function withOpenChildren(
-    entry: SummaryEntry,
-    level: number
-  ): Array<{entry: SummaryEntry; level: number}> {
-    return [
-      {entry, level},
-      ...(openContainers.value.has(entry.key)
-        ? entry.children.flatMap((child) => withOpenChildren(child, level + 1))
-        : []),
-    ];
-  }
-
   const rows = computed(() =>
-    (expanded.value ? entries.value : entries.value.slice(0, limit)).flatMap(
-      (entry) => withOpenChildren(entry, 0)
-    )
+    expanded.value ? entries.value : entries.value.slice(0, limit)
   );
 
   const more = computed(() => Math.max(entries.value.length - limit, 0));
@@ -80,8 +63,8 @@
         >
           <colgroup>
             <col class="step-mapping-summary__field-col" />
+            <col class="step-mapping-summary__incoming-col" />
             <col />
-            <col class="step-mapping-summary__empty-col" />
           </colgroup>
           <thead>
             <tr>
@@ -92,17 +75,18 @@
           </thead>
           <tbody>
             <StepMappingSummaryRow
-              v-for="row in rows"
-              :key="row.entry.key"
-              :entry="row.entry"
-              :level="row.level"
-              :open="openContainers.has(row.entry.key)"
-              @toggle="toggleContainer(row.entry)"
+              v-for="entry in rows"
+              :key="entry.key"
+              :entry="entry"
+              :editable="editable"
+              :opening="openingNested === entry.key"
+              @edit-nested="(opener) => emit('editNested', entry.key, opener)"
             />
           </tbody>
         </table>
       </div>
-      <div v-if="more > 0">
+      <!-- set off from the table as an admin table's footer is -->
+      <div v-if="more > 0" class="step-mapping-summary__footer">
         <craft-button
           size="small"
           variant="plain"
@@ -119,6 +103,7 @@
 
 <style scoped>
   .step-mapping-summary {
+    container: mapping-summary / inline-size;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-md);
@@ -129,21 +114,62 @@
     overflow-x: auto;
   }
 
+  /* right under the table, its rule taking the place of the table's last one */
+  .step-mapping-summary__footer {
+    display: flex;
+    align-items: center;
+    padding-block-start: var(--c-spacing-sm);
+    margin-block-start: calc(var(--c-spacing-md) * -1);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .step-mapping-summary__scroll:has(+ .step-mapping-summary__footer)
+    :deep(tbody tr:last-child > *) {
+    border-block-end: 0;
+  }
+
   /* the columns keep their set widths, so expanding a container's longer nested names moves nothing */
   .step-mapping-summary__table {
     table-layout: fixed;
   }
 
-  /* cells otherwise shrink to nothing, which the incoming data column, with no width of its own, would take on */
+  /* cells otherwise shrink to nothing, which the when-empty column, with no width of its own, would take on */
   .step-mapping-summary__table :deep(:is(th, td)) {
     width: auto;
   }
 
+  /* incoming data is mostly a short column name, so what happens when it's empty, which can name a default, gets the rest */
   .step-mapping-summary__field-col {
-    width: 42%;
+    width: 40%;
   }
 
-  .step-mapping-summary__empty-col {
-    width: 9rem;
+  .step-mapping-summary__incoming-col {
+    width: 25%;
+  }
+
+  /* each row stacks (see its row); the column headings stay for assistive technology */
+  @container mapping-summary (width < 36rem) {
+    .step-mapping-summary__table,
+    .step-mapping-summary__table :deep(tbody) {
+      display: block;
+    }
+
+    .step-mapping-summary__table thead {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .step-mapping-summary__table :deep(tbody) {
+      border-block-start: 1px solid var(--c-table-border-color);
+    }
+
+    .step-mapping-summary__scroll:has(+ .step-mapping-summary__footer)
+      :deep(tbody tr:last-child) {
+      border-block-end: 0;
+    }
   }
 </style>

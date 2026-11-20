@@ -14,8 +14,7 @@
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import {uuid} from '@/common/craft/strings';
   import type {ImportStep} from '@/modules/import/mapping/types';
-  import type {StepRunState} from '@/modules/import/run/run-state';
-  import {openStepMapping} from './step-mapping';
+  import {openStepMapping, openStepNestedMapping} from './step-mapping';
   import {openStepSlideout, type StepSummary} from './step-slideout';
   import StepCard from './StepCard.vue';
 
@@ -27,8 +26,8 @@
     errors?: Record<string, string[]>;
     /** Each saved step's own page, by its uid. */
     stepEditUrls?: Record<string, string>;
-    /** Where each step of the plan's latest run has got, by its uid. */
-    runSteps?: Record<string, StepRunState>;
+    /** Each saved step's mapping page, by its uid. */
+    stepMappingUrls?: Record<string, string>;
   }>();
 
   const steps = defineModel<ImportStep[]>({required: true});
@@ -53,10 +52,12 @@
   /** The slideout being opened: a step's, by its uid, or `new` for Add. */
   const opening = shallowRef<{
     uid: string;
-    slideout: 'settings' | 'mapping';
+    slideout: 'settings' | 'mapping' | {nested: string};
   } | null>(null);
 
-  function openingFor(uid: string): 'settings' | 'mapping' | null {
+  function openingFor(
+    uid: string
+  ): 'settings' | 'mapping' | {nested: string} | null {
     return opening.value?.uid === uid ? opening.value.slideout : null;
   }
 
@@ -221,6 +222,7 @@
         step,
         editable: props.editable,
         editUrl: props.stepEditUrls?.[step.uid] ?? null,
+        mappingUrl: props.stepMappingUrls?.[step.uid] ?? null,
         opener,
         apply: (applied, summary) => {
           replace(step.uid, applied);
@@ -251,6 +253,7 @@
         {
           step,
           editable: props.editable,
+          editUrl: props.stepMappingUrls?.[step.uid] ?? null,
           opener,
           apply: (values) => {
             // PHP sends empty settings as `[]`, which can't be spread into
@@ -260,8 +263,45 @@
             replace(step.uid, {...step, settings: {...settings, ...values}});
           },
         },
-        t('Edit mapping')
+        props.editable ? t('Edit mapping') : t('View mapping')
       );
+    } catch (error) {
+      requestError.value =
+        error instanceof Error && error.message
+          ? error.message
+          : t('Couldn’t open the mapping.');
+    } finally {
+      opening.value = null;
+    }
+  }
+
+  /** Opens a container column's mapping straight from its row in the step's card. */
+  async function editNestedMapping(
+    step: ImportStep,
+    key: string,
+    opener: HTMLElement
+  ): Promise<void> {
+    if (opening.value !== null) {
+      return;
+    }
+
+    requestError.value = null;
+    opening.value = {uid: step.uid, slideout: {nested: key}};
+
+    try {
+      await openStepNestedMapping({
+        step,
+        key,
+        editable: props.editable,
+        opener,
+        apply: (values) => {
+          // PHP sends empty settings as `[]`, which can't be spread into
+          const settings = Array.isArray(step.settings)
+            ? {}
+            : (step.settings ?? {});
+          replace(step.uid, {...step, settings: {...settings, ...values}});
+        },
+      });
     } catch (error) {
       requestError.value =
         error instanceof Error && error.message
@@ -276,60 +316,89 @@
 <template>
   <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
 
-  <ol v-else class="grid gap-md" role="list">
-    <StepCard
-      v-for="(step, index) in steps"
-      :key="step.uid"
-      :ref="
-        (el) => setItemRef(el as Parameters<typeof setItemRef>[0], step.uid)
-      "
-      :step="step"
-      :number="index + 1"
-      :type-label="typeLabel(step)"
-      :summary="summaryFor(step.uid)"
-      :editable="editable"
-      :can-toggle="canToggle(step)"
-      :invalid="Boolean(errorsByStep[step.uid])"
-      :opening="openingFor(step.uid)"
-      :over="getDropState(step.uid).type === 'is-over'"
-      :run="runSteps?.[step.uid] ?? null"
-      @edit="edit(step, $event)"
-      @edit-mapping="editMapping(step, $event)"
-      @toggle-enabled="toggleEnabled(step)"
-      @remove="remove(step)"
-    >
-      <template #handle>
-        <craft-reorder-button
-          v-if="editable && steps.length > 1"
-          :ref="
-            (el: Parameters<typeof setHandleRef>[0]) =>
-              setHandleRef(el, step.uid)
-          "
-          :position="getRowPosition(index)"
-          size="small"
-          @craft-reorder="
-            reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
-          "
-        ></craft-reorder-button>
-      </template>
-    </StepCard>
-  </ol>
+  <div class="step-list" v-else>
+    <ol class="grid gap-md" role="list">
+      <StepCard
+        v-for="(step, index) in steps"
+        :key="step.uid"
+        :ref="
+          (el) => setItemRef(el as Parameters<typeof setItemRef>[0], step.uid)
+        "
+        :step="step"
+        :number="index + 1"
+        :type-label="typeLabel(step)"
+        :summary="summaryFor(step.uid)"
+        :editable="editable"
+        :can-toggle="canToggle(step)"
+        :invalid="Boolean(errorsByStep[step.uid])"
+        :opening="openingFor(step.uid)"
+        :over="getDropState(step.uid).type === 'is-over'"
+        @edit="edit(step, $event)"
+        @edit-mapping="editMapping(step, $event)"
+        @edit-nested-mapping="
+          (key, opener) => editNestedMapping(step, key, opener)
+        "
+        @toggle-enabled="toggleEnabled(step)"
+        @remove="remove(step)"
+      >
+        <template #handle>
+          <craft-reorder-button
+            v-if="editable && steps.length > 1"
+            :ref="
+              (el: Parameters<typeof setHandleRef>[0]) =>
+                setHandleRef(el, step.uid)
+            "
+            :position="getRowPosition(index)"
+            size="small"
+            @craft-reorder="
+              reorder(
+                index,
+                index + ($event.detail.direction === 'up' ? -1 : 1)
+              )
+            "
+          ></craft-reorder-button>
+        </template>
+      </StepCard>
+    </ol>
 
-  <ul v-if="listErrors.length" class="error-list" role="alert">
-    <li v-for="error in listErrors" :key="error">{{ error }}</li>
-  </ul>
+    <ul v-if="listErrors.length" class="error-list" role="alert">
+      <li v-for="error in listErrors" :key="error">{{ error }}</li>
+    </ul>
 
-  <div class="mt-md">
-    <craft-button
-      v-if="editable"
-      ref="addButton"
-      type="button"
-      icon="plus"
-      variant="dashed"
-      .loading="openingFor('new') !== null"
-      @click="add"
-    >
-      {{ t('Add a step') }}
-    </craft-button>
+    <div v-if="editable">
+      <craft-button
+        ref="addButton"
+        type="button"
+        icon="plus"
+        variant="plain"
+        .loading="openingFor('new') !== null"
+        @click="add"
+        class="step-list__add w-full"
+      >
+        {{ t('Add a step') }}
+      </craft-button>
+    </div>
   </div>
 </template>
+
+<style scoped>
+  .step-list {
+    /* as wide as the ring around a step on a run's page */
+    --_frame: 4px;
+    --c-run-indicator-size: calc(20rem / 16);
+    display: grid;
+    gap: var(--_frame);
+    /* room above and below for the tray, which takes none */
+    margin-block: var(--_frame);
+    margin-inline: 0;
+    /* the tray reaches past the cards as a spread shadow rather than padding, so their edges line up with the field's label */
+    background-color: var(--c-color-neutral-fill-quiet);
+    border-radius: var(--c-radius-lg);
+    box-shadow: 0 0 0 var(--_frame) var(--c-color-neutral-fill-quiet);
+  }
+
+  /* inset from the tray's corners as the cards are, so its corners follow the tray's */
+  .step-list__add {
+    --c-button-radius: var(--c-radius-lg);
+  }
+</style>

@@ -15,7 +15,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
+use CraftCms\Cms\Import\Events\ItemImporting;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Import\ImportRuns;
@@ -26,6 +28,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
@@ -518,13 +521,35 @@ it('lists a registered import plan alongside the saved ones, keyed by its regist
         ->and($imports->getImportPlanByHandle('registeredImport')?->isEditable())->toBeFalse();
 });
 
-it('saves an import plan and starts it running, then goes back to the plan to watch', function () {
+it('saves an import plan and starts it running, then goes to the run to watch', function () {
     Bus::fake();
 
-    ($this->saveImportPlan)([($this->entryStep)()], ['run' => true])
+    $response = ($this->saveImportPlan)([($this->entryStep)()], ['run' => true])
         ->assertOk()
-        ->assertJsonPath('message', 'Import plan saved and started.')
-        ->assertJsonPath('redirect', route('craft.cp.import.edit', ['handle' => 'fixtureImport']));
+        ->assertJsonPath('message', 'Import plan saved and started.');
+
+    $run = app(ImportRuns::class)->latest(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'));
+    expect($response->json('redirect'))->toBe(route('craft.cp.import.activity.show', ['runId' => $run->uid]));
+    Bus::assertDispatchedTimes(ImportPipeline::class, 1);
+});
+
+it('goes to a run once it’s started', function () {
+    Bus::fake();
+    ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+
+    $response = postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+
+    $run = app(ImportRuns::class)->latest(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'));
+    expect($response->json('redirect'))->toBe(route('craft.cp.import.activity.show', ['runId' => $run->uid]));
+});
+
+it('stays put when a run is started in the background', function () {
+    Bus::fake();
+    ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport', 'background' => true])
+        ->assertOk()
+        ->assertJsonPath('redirect', null);
 
     Bus::assertDispatchedTimes(ImportPipeline::class, 1);
 });
@@ -573,14 +598,14 @@ it('lists which import plans are running', function () {
 
     get(action([ImportPlansController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('editableImportPlans.0.handle', 'runningImport')
-            ->where('editableImportPlans.0.running', true)
-            // nothing to show until the queue picks it up
+            ->where('editableImportPlans.0.handle', 'idleImport')
+            ->where('editableImportPlans.0.running', false)
             ->where('editableImportPlans.0.progress', null)
-            ->where('editableImportPlans.0.run.status', 'pending')
-            ->where('editableImportPlans.1.handle', 'idleImport')
-            ->where('editableImportPlans.1.running', false)
-            ->where('editableImportPlans.1.progress', null));
+            ->where('editableImportPlans.1.handle', 'runningImport')
+            ->where('editableImportPlans.1.running', true)
+            // nothing to show until the queue picks it up
+            ->where('editableImportPlans.1.progress', null)
+            ->where('editableImportPlans.1.run.status', 'pending'));
 });
 
 it('lists how many fields each step maps, and what it does with rows it matches', function () {
@@ -637,6 +662,157 @@ it('reports a finished run, and each of its steps, as successful', function () {
         ->assertJsonPath("runState.steps.{$step['uid']}.failures", []);
 });
 
+it('lists an import plan’s runs, and shows one with the changes it made', function () {
+    $step = ($this->entryStep)(['map' => ['title' => 'title']]);
+    expect(app(ImportPlans::class)->saveImportPlan(
+        new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps([$step]),
+    ))->toBeTrue();
+
+    // the tests' queue runs the whole import within the request
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+    $runId = app(ImportRuns::class)->latest(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->uid;
+    $runUrl = Url::cpUrl("import/activity/$runId");
+
+    get(route('craft.cp.import.activity.index', ['plan' => 'fixtureImport']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('import/Runs')
+            ->has('runs', 1)
+            ->where('runs.0.status', 'successful')
+            ->where('runs.0.url', $runUrl)
+            ->where('runs.0.plan.name', 'Fixture Import')
+            ->missing("runs.0.steps.{$step['uid']}.failures"));
+
+    get($runUrl)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('import/Run')
+            ->where("run.steps.{$step['uid']}.counts.created", 3)
+            ->has("previewSteps.{$step['uid']}")
+            // every item is listed, with the element it created linked to
+            ->where("items.{$step['uid']}.result", 'all')
+            ->where("items.{$step['uid']}.results", ['new'])
+            ->has("items.{$step['uid']}.items", 3)
+            ->where("items.{$step['uid']}.items.0.result", 'new')
+            ->where("items.{$step['uid']}.items.0.url", fn (?string $url) => $url !== null));
+
+    $failure = ['item' => 2, 'message' => 'Couldn’t save it.', 'elementId' => null, 'title' => 'Second', 'match' => [['label' => 'Slug', 'value' => 'second']], 'problems' => [], 'data' => []];
+    app(ImportRuns::class)->recordItems($runId, $step['uid'], 3, 3, ['failed' => 1], [$failure], [
+        ['item' => 2, 'outcome' => ImportItemOutcome::Failed, 'elementId' => null],
+    ]);
+
+    get($runUrl)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where("items.{$step['uid']}.counts.problem", 1)
+            ->has("items.{$step['uid']}.items", 4));
+
+    getJson(route('craft.cp.import.activity.items', ['runId' => $runId, 'step' => $step['uid'], 'result' => 'problem']))
+        ->assertOk()
+        ->assertJsonPath('matching', 1)
+        ->assertJsonPath('items.0.item', 2)
+        ->assertJsonPath('items.0.result', 'problem')
+        ->assertJsonPath('items.0.match', ['Slug' => 'second']);
+
+    getJson(route('craft.cp.import.activity.items', ['runId' => $runId, 'step' => $step['uid'], 'result' => 'new']))
+        ->assertOk()
+        ->assertJsonPath('matching', 3)
+        ->assertJsonPath('items.*.item', [1, 2, 3]);
+
+    // a failed item's data is shown as a JSON file's preview shows it; others' wasn't kept
+    $failure['data'] = ['title' => 'Second'];
+    app(ImportRuns::class)->recordItems($runId, $step['uid'], 3, 3, ['failed' => 1], [['item' => 3, ...array_diff_key($failure, ['item' => 0])]]);
+    getJson(route('craft.cp.import.activity.item-data', ['runId' => $runId, 'step' => $step['uid'], 'item' => 3]))
+        ->assertOk()
+        ->assertJsonPath('previewHtml', fn (string $html) => str_contains($html, 'data-language="json"') && str_contains($html, 'Second'));
+    getJson(route('craft.cp.import.activity.item-data', ['runId' => $runId, 'step' => $step['uid'], 'item' => 1]))
+        ->assertNotFound();
+});
+
+it('tells a run’s page which of its failed items the preview would now skip', function () {
+    Bus::fake();
+    $step = ($this->entryStep)(['map' => ['title' => 'title']]);
+    expect(app(ImportPlans::class)->saveImportPlan(
+        new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps([$step]),
+    ))->toBeTrue();
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+    $runId = app(ImportRuns::class)->latest(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->uid;
+    $failure = fn (int $item) => ['item' => $item, 'message' => 'Couldn’t save it.', 'elementId' => null, 'title' => null, 'match' => [], 'problems' => [], 'data' => []];
+    app(ImportRuns::class)->recordItems($runId, $step['uid'], 3, 3, ['failed' => 2, 'created' => 1], [$failure(1), $failure(2)]);
+
+    Event::listen(function (ItemImporting $event): void {
+        if ($event->data['title'] === 'second file entry') {
+            $event->isValid = false;
+        }
+    });
+
+    get(Url::cpUrl("import/activity/$runId"))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('skippedInPreview')
+            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+                ->where("skippedInPreview.{$step['uid']}", [2])));
+});
+
+it('gives a plan’s edit page the runs before its latest, and how many it has', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+    $importPlan = app(ImportPlans::class)->getImportPlanByHandle('alpha');
+
+    foreach (range(1, 5) as $i) {
+        app(ImportRuns::class)->start($importPlan, "run-$i", null, null);
+    }
+
+    get(route('craft.cp.import.edit', ['handle' => 'alpha']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('import/Edit')
+            ->where('runState.id', 'run-5')
+            ->where('earlierRuns', fn ($runs) => collect($runs)->pluck('id')->all() === ['run-4', 'run-3', 'run-2'])
+            ->where('runs.count', 5)
+            ->where('runs.url', route('craft.cp.import.activity.index', ['plan' => 'alpha'])));
+});
+
+it('shows a plan registered in code on a read-only page, with its runs and nothing to save', function () {
+    $imports = app(ImportPlans::class);
+    $imports->register('registeredImport', fn () => new ImportPlanData()
+        ->name('Registered Import')
+        ->steps([($this->entryStep)()]));
+    app(ImportRuns::class)->start($imports->getImportPlanByHandle('registeredImport'), 'registered-run', null, null);
+
+    get(route('craft.cp.import.edit', ['handle' => 'registeredImport']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('import/Edit')
+            ->where('readOnly', true)
+            ->where('readOnlyNotice', 'This import plan is registered in code, so it can’t be edited here.')
+            ->where('canRun', false)
+            ->where('deleteAction', null)
+            ->where('runState.id', 'registered-run')
+            ->where('runs.count', 1));
+});
+
+it('lists every plan’s runs, or narrows them to one plan’s', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+    ($this->createImportPlan)('Bravo', 'bravo');
+    app(ImportRuns::class)->start(app(ImportPlans::class)->getImportPlanByHandle('alpha'), 'alpha-run', null, null);
+    app(ImportRuns::class)->start(app(ImportPlans::class)->getImportPlanByHandle('bravo'), 'bravo-run', null, null);
+
+    get(route('craft.cp.import.activity.index'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('runs', fn ($runs) => collect($runs)->pluck('id')->sort()->values()->all() === ['alpha-run', 'bravo-run'])
+            ->where('plan', null)
+            ->where('plans', fn ($plans) => collect($plans)->pluck('value')->contains('bravo')));
+
+    get(route('craft.cp.import.activity.index', ['plan' => 'bravo']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('runs', fn ($runs) => collect($runs)->pluck('id')->all() === ['bravo-run'])
+            ->where('runs.0.plan.name', 'Bravo')
+            ->where('runs.0.started.label', fn (string $label) => str_starts_with($label, 'Today at '))
+            ->where('plan', 'bravo'));
+});
+
+it('doesn’t let an import plan take the handle its runs are listed under', function () {
+    $importPlan = new ImportPlanData(['editable' => true])->name('Runs')->handle('runs');
+
+    expect(app(ImportPlans::class)->saveImportPlan($importPlan))->toBeFalse()
+        ->and($importPlan->errors()->has('handle'))->toBeTrue();
+});
+
 it('reports where each step of an import plan’s latest run got to', function () {
     Bus::fake();
     $steps = [($this->entryStep)(), ($this->entryStep)(), ($this->entryStep)(overrides: ['enabled' => false])];
@@ -670,24 +846,7 @@ it('reports where each step of an import plan’s latest run got to', function (
         ->assertJsonPath("runState.steps.{$steps[1]['uid']}.progress", 30);
 });
 
-it('saves the order the editable import plans are put in', function () {
-    ($this->createImportPlan)('Alpha', 'alpha');
-    ($this->createImportPlan)('Bravo', 'bravo');
-    ($this->createImportPlan)('Charlie', 'charlie');
-
-    $plans = app(ImportPlans::class);
-    $uids = array_map(
-        fn (string $handle) => $plans->getImportPlanByHandle($handle)->uid,
-        ['charlie', 'alpha', 'bravo'],
-    );
-
-    postJson(action([ImportPlansController::class, 'reorder']), ['uids' => $uids])->assertOk();
-
-    expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
-        ->toBe(['charlie', 'alpha', 'bravo']);
-});
-
-it('adds new and duplicated import plans after the existing ones', function () {
+it('lists the editable import plans by name, duplicates included', function () {
     ($this->createImportPlan)('Zulu', 'zulu');
     ($this->createImportPlan)('Alpha', 'alpha');
 
@@ -698,7 +857,7 @@ it('adds new and duplicated import plans after the existing ones', function () {
     ])->assertOk();
 
     expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
-        ->toBe(['zulu', 'alpha', 'zulu2']);
+        ->toBe(['alpha', 'zulu', 'zulu2']);
 });
 
 it('saves a duplicated import plan like any other new one, with fresh step uids', function () {
@@ -728,7 +887,7 @@ it('duplicates and deletes several import plans at once', function () {
         ->assertJsonPath('message', '2 import plans duplicated.');
 
     expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
-        ->toBe(['alpha', 'bravo', 'alpha2', 'bravo2']);
+        ->toEqualCanonicalizing(['alpha', 'bravo', 'alpha2', 'bravo2']);
 
     deleteJson(action([ImportPlansController::class, 'destroy']), ['uids' => $uids])
         ->assertOk()
@@ -747,23 +906,6 @@ it('deletes none of several import plans when one of them can’t be deleted', f
     ])->assertNotFound();
 
     expect($plans->getImportPlanByHandle('alpha'))->not->toBeNull();
-});
-
-it('rejects reordering an import plan that doesn’t exist', function () {
-    postJson(action([ImportPlansController::class, 'reorder']), [
-        'uids' => [Str::uuid7()->toString()],
-    ])->assertJsonValidationErrors('uids.0');
-});
-
-it('forbids reordering import plans without permission to save them', function () {
-    ($this->createImportPlan)('Alpha', 'alpha');
-    $uid = app(ImportPlans::class)->getImportPlanByHandle('alpha')->uid;
-
-    actingAs(UserModel::factory()->withPermissions(['accessCp'])->createElement());
-
-    postJson(action([ImportPlansController::class, 'reorder']), [
-        'uids' => [$uid],
-    ])->assertForbidden();
 });
 
 describe('data source suggestions', function () {
@@ -879,15 +1021,33 @@ describe('step pages', function () {
             ->assertNotFound();
     });
 
-    it('links each saved step to its own page from the plan', function () {
+    it('links each saved step to its own page and its mapping’s from the plan', function () {
         $uid = ($this->plan)()->steps[0]->uid;
 
         $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->where(
-                "stepEditUrls.$uid",
-                route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid]),
-            ));
+            ->assertInertia(fn ($page) => $page
+                ->where("stepEditUrls.$uid", route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid]))
+                ->where("stepMappingUrls.$uid", route('craft.cp.import.steps.mapping', ['handle' => 'fixtureImport', 'uid' => $uid])));
+    });
+
+    it('renders a step’s mapping on its own page, with the same columns as its slideout', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.steps.mapping', ['handle' => 'fixtureImport', 'uid' => $uid]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('import/StepMappingEdit')
+                ->where('step.uid', $uid)
+                ->where('planUid', ($this->plan)()->uid)
+                ->where('mapping.available', true)
+                ->has('mapping.destinationCols')
+                ->where('stepUrl', route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid])));
+    });
+
+    it('404s for the mapping of a step the plan doesn’t have', function () {
+        $this->get(route('craft.cp.import.steps.mapping', ['handle' => 'fixtureImport', 'uid' => Str::uuid()->toString()]))
+            ->assertNotFound();
     });
 
     it('returns to the plans after saving, with an option to keep editing the plan', function () {

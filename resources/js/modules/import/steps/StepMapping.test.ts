@@ -36,6 +36,32 @@ vi.mock('./step-slideout', () => ({
   validateStep: state.validateStep,
 }));
 
+vi.mock('@/modules/ui/ElementSelectControl.vue', async () => {
+  const {defineComponent, h} = await import('vue');
+
+  return {
+    default: defineComponent({
+      emits: ['update:value'],
+      setup(_, {emit}) {
+        return () =>
+          h('div', {
+            class: 'element-select-stub',
+            onPick: (event: CustomEvent<number[]>) =>
+              emit('update:value', event.detail),
+          });
+      },
+    }),
+  };
+});
+
+vi.mock('@/modules/elements/element-presentations', () => ({
+  useElementPresentations: () => ({
+    get: (id: number) => (id === 7 ? {id, label: 'Ada Lovelace'} : undefined),
+    seed: () => {},
+    load: () => Promise.resolve(),
+  }),
+}));
+
 vi.mock('./step-mapping', () => ({
   takeStepMappingContext: () => state.context,
 }));
@@ -623,6 +649,37 @@ it('sets a default in the When empty popover, with a pill that sums the rule up,
   expect(apply().defaultValues).toEqual({});
 });
 
+it('gives a required attribute a default of chosen elements without mapping it, named in its pill', async () => {
+  const authors = col({
+    prefixedHandle: 'authorIds',
+    required: true,
+    isProperty: true,
+    defaultValueInput: {
+      type: 'elements',
+      control: {props: {elementType: 'craft\\elements\\User'}},
+    },
+  });
+  mount([authors]);
+
+  const pill = () =>
+    cell('whenEmpty')
+      .querySelector('.setting-popover__summary')
+      ?.textContent!.trim();
+
+  // unmapped, and still offered a default
+  expect(pill()).toBe('Skip');
+
+  chooseEmptyValueMode('default');
+  await nextTick();
+  cell('whenEmpty')
+    .querySelector<HTMLElement>('.element-select-stub')!
+    .dispatchEvent(new CustomEvent('pick', {detail: [7]}));
+  await nextTick();
+
+  expect(pill()).toBe('Default · Ada Lovelace');
+  expect((await applyAsync())!.defaultValues).toEqual({authorIds: '[7]'});
+});
+
 /** Each shown row's handle, or a heading row's text. */
 function rowLabels(): string[] {
   return [...container.querySelectorAll('tbody tr:has(th)')].map((tr) =>
@@ -848,8 +905,8 @@ it('shows an import setting’s instructions in an info icon beside its label', 
   await nextTick();
 
   const [withInstructions, withoutInstructions] = Array.from(
-    cell('incoming').querySelectorAll('craft-select')
-  ).map((select) => select.querySelector('[slot="label"]')!);
+    cell('incoming').querySelectorAll('.import-settings')
+  ).map((field) => field.querySelector('[slot="label"]')!);
 
   expect(withInstructions!.textContent).toContain(
     'What should happen when an incoming file matches an existing one?'
@@ -1158,6 +1215,28 @@ it('clears a search that hides a column with a template error, so the error can 
   expect(
     (document.activeElement as HTMLElement | null)?.closest('tr')?.textContent
   ).toContain('The template couldn’t be parsed.');
+});
+
+it('keeps the panel open with the server’s error on a required attribute left unmapped', async () => {
+  state.validateStep.mockRejectedValue({
+    response: {
+      data: {
+        errors: {
+          'settings.map.authorIds': ['Map Author IDs or give it a default.'],
+        },
+      },
+    },
+  });
+  mount([col({prefixedHandle: 'authorIds', required: true, isProperty: true})]);
+
+  expect(await applyAsync()).toBeNull();
+  await nextTick();
+
+  expect(
+    [...cell('incoming').querySelectorAll('.error-list li')].map((li) =>
+      li.textContent!.trim()
+    )
+  ).toEqual(['Map Author IDs or give it a default.']);
 });
 
 it('doesn’t validate a mapping that uses no templates before handing it back', async () => {
