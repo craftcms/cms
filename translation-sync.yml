@@ -2,6 +2,7 @@
 # When branches translate a string differently, the newest branch's translation wins.
 branches:
   5.x: src/translations
+  '5.13': src/translations
   6.x: resources/translations
 files:
   - app.php
