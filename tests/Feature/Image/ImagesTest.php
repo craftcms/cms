@@ -227,6 +227,28 @@ it('cleans orientation with imagick when available', function () {
     expect($image->getImageOrientation())->toBe(0);
 });
 
+it('keeps the pixels of indexed PNGs when cleaning them with imagick', function () {
+    if (! $this->service->getIsImagick()) {
+        $this->markTestSkipped('Need Imagick to verify PNG palettes.');
+    }
+
+    $path = $this->sandboxPath.'/indexed.png';
+    $source = new Imagick;
+    $source->newPseudoImage(50, 200, 'gradient:#00ff00-#c73863');
+    $source->writeImage('png8:'.$path);
+    $source = new Imagick($path);
+
+    $this->service->cleanImage($path);
+    $this->service->cleanImage($path);
+
+    $cleaned = new Imagick($path);
+
+    expect(ord(file_get_contents($path, false, null, 25, 1)))->toBe(3)
+        ->and($source->getImageColors())->toBe(200)
+        ->and($cleaned->getImageColors())->toBe(200)
+        ->and($cleaned->getImageSignature())->toBe($source->getImageSignature());
+});
+
 it('removes orientation exif data when imagick and exif are available', function () {
     if (! $this->service->getIsImagick()) {
         $this->markTestSkipped('Need Imagick to verify EXIF cleanup.');

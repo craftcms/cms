@@ -319,6 +319,7 @@
 - Fixed a bug where Markdown fields didn’t track references to elements with the ID 100 or 1234, or other ref tags that look like emoji shortcodes, such as `{entry:smile:url}`. Deleting the element didn’t list those references or replace them. ([#20901](https://github.com/craftcms/cms/pull/20901))
 - Fixed a bug where the global sidebar’s shadow showed along the edge of the page while it was closed on smaller screens, and where the closed sidebar covered the page in right-to-left languages. ([#20897](https://github.com/craftcms/cms/pull/20897))
 - Fixed a bug where garbage collection could block other requests’ database writes while deleting orphaned foreign key rows. Orphaned rows are now found without locking anything and deleted in small batches, with foreign key checks enabled, so the deletions also apply the foreign key actions of rows that reference them. ([#20885](https://github.com/craftcms/cms/issues/20885))
+- Fixed a bug where uploading an indexed PNG with Imagick merged similar colors in its palette, and each later upload of the file merged more. ([#20916](https://github.com/craftcms/cms/issues/20916))
 - Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
 
 ## 6.0.0-beta.1 - 2026-11-10

@@ -724,7 +724,11 @@ class Raster extends Image
         $format = $channels === 2 ? 'PNG32' : 'PNG'.(8 * $channels);
 
         if ($format === 'PNG8') {
-            $output->quantizeImage(255, Imagick::COLORSPACE_YUV, 8, false, false);
+            // Quantizing merges similar colors even when the image already fits in a palette.
+            if ($output->getImageColors() > 256) {
+                $output->quantizeImage(255, Imagick::COLORSPACE_YUV, 8, false, false);
+            }
+
             $output->setImageFormat('PNG');
         } else {
             $output->setImageFormat($format);
