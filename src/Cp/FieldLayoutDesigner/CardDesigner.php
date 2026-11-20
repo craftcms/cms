@@ -146,6 +146,8 @@ class CardDesigner
             $bodyHtml .= Html::ul()
                 ->items(...array_map(fn ($label) => Html::li($label)->encode(false), $labels))
                 ->class('flex', 'gap-xs')
+                // Hidden in the browser while the owner's Show the Status field setting is off.
+                ->attribute('data-cvd-status', true)
                 ->render();
         }
 
