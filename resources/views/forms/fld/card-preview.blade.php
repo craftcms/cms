@@ -6,6 +6,7 @@
      * @var boolean $showThumb
      * @var string $thumbnailHtml
      * @var string $headingHtml
+     * @var string $bodyHtml
      * @var string|null $statusIndicatorHtml
      * @var string|null $avatarHtml
      * @var string $labelText
@@ -52,6 +53,10 @@
         @endif
     @endunless
 
-    {!! $headingHtml !!}
-    {!! $bodyHtml !!}
+    {{-- The same parts as an element card's content (`ElementHtml::cardContentHtml()`),
+         so it's laid out and spaced the same --}}
+    <div class="card-content">
+        <div class="card-heading">{!! $headingHtml !!}</div>
+        {!! $bodyHtml !!}
+    </div>
 </craft-card>
