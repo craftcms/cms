@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Volumes now have an “Asset Transformer” setting, which chooses a transformer and accepts an environment variable. Volumes without one use the `assetTransformers` config setting’s `default`, and otherwise `craft`. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- Added the `assetTransformers` config setting, which takes a `CraftCms\Cms\Config\AssetTransformersConfig` object. It sets the default transformer, the `craft` transformer’s `outputDisk` and `generateTransformsBeforePageLoad`, and other named transformers, each with a `driver` and that driver’s settings. Two transformers can use the same driver with different settings. The `default`, `outputDisk`, and `generateTransformsBeforePageLoad` settings can be overridden with `CRAFT_ASSET_TRANSFORMERS_*` environment variables. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- Disks’ `asset_transformer` key in `config/filesystems.php` is no longer read. Craft throws an exception for disks that still set it when debug mode is enabled, and logs an error otherwise. The `craft` transformer’s output disk and `generate_transforms_before_page_load` settings are now set with the `assetTransformers` config setting. After moving a disk’s output disk, clear the transform index with `php artisan craft:clear-caches transform-indexes`. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- The `craft` asset transformer no longer has a `has_urls` setting. Transforms have public URLs when their volume does and they’re stored on the volume’s disk, or the output disk sets a `url`. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- The Yii2 Loose Ends utility now lists volumes that stored transforms on a separate Craft 5 transform filesystem. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- `CraftCms\Cms\Asset\AssetTransformers` now extends `Illuminate\Support\MultipleInstanceManager`. Its `extend()` callbacks now receive the config of the transformer being built, including its `driver` key, as a second argument, and `craft` is a reserved driver name. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- Added `CraftCms\Cms\Asset\AssetTransformers::forVolume()`, `transformer()`, and `forgetTransformers()`. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- Renamed `CraftCms\Cms\Asset\Data\AssetTransformer::$driver` to `$name`, which is now the transformer’s name. Named image transforms’ custom parameters are now keyed by transformer name. ([#20906](https://github.com/craftcms/cms/pull/20906))
+- Removed `CraftCms\Cms\Asset\AssetTransformers::driver()`, `forDisk()`, `configForDisk()`, and `forgetDrivers()`, and `CraftCms\Cms\Asset\Data\AssetTransformer::$settings`. ([#20906](https://github.com/craftcms/cms/pull/20906))
+
 ## 6.0.0-beta.2 - 2026-11-20
 
 - Added Croatian translations, and completed the Indonesian, Kyrgyz, and Welsh translations.
