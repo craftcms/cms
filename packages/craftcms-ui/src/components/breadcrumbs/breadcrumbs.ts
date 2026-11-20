@@ -346,7 +346,10 @@ export default class CraftBreadcrumbs extends LitElement {
       .flatMap((menu) =>
         menu
           ? [...menu.querySelectorAll<CraftActionItem>('craft-action-item')]
-              .filter((source) => source.closest('craft-action-menu') === menu)
+              .filter(
+                (source) =>
+                  source.closest('craft-action-menu') === menu && !source.hidden
+              )
               .map((source) => {
                 const common = {
                   label: this.#textOf(source, '[slot]'),
@@ -389,12 +392,22 @@ export default class CraftBreadcrumbs extends LitElement {
       }
 
       event.preventDefault();
+
+      // A menu item's link or button is in its shadow root, and an item in a
+      // closed menu may not have rendered it yet. Pressing that, rather than
+      // the item, follows a plain link; the press still reaches the item.
+      const item = target as Partial<CraftActionItem>;
+      item.renderNow?.();
+      const control =
+        target.shadowRoot?.querySelector<HTMLElement>('[part~="control"]') ??
+        target;
+
       // A whole press, not just a click: some links go on `mouseup`, such as
       // Inertia's when they prefetch on click, and only cancel the click.
       const init = {bubbles: true, cancelable: true, composed: true, button: 0};
-      target.dispatchEvent(new MouseEvent('mousedown', init));
-      target.dispatchEvent(new MouseEvent('mouseup', init));
-      target.click();
+      control.dispatchEvent(new MouseEvent('mousedown', init));
+      control.dispatchEvent(new MouseEvent('mouseup', init));
+      control.click();
     };
   }
 

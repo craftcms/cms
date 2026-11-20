@@ -99,3 +99,44 @@ it('visits a collapsed crumb’s page when it’s chosen from the overflow menu'
     '/admin/content/entries/singles'
   );
 });
+
+it('visits a collapsed crumb’s switcher choice when it’s chosen from the overflow menu', async () => {
+  const visit = vi.spyOn(router, 'visit').mockImplementation(() => {});
+  vi.spyOn(router, 'prefetch').mockImplementation(() => {});
+  const container = document.createElement('div');
+  container.style.inlineSize = '120px';
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(Breadcrumbs, {
+        items: [
+          {
+            label: 'Singles',
+            href: '/admin/content/entries/singles',
+            items: [{type: 'link', label: 'Channels', href: '/admin/channels'}],
+          },
+          {label: 'My Homepage With A Long Title'},
+        ],
+      }),
+  });
+  app.mount(container);
+  await nextTick();
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const menu = container
+    .querySelector('craft-breadcrumbs')!
+    .shadowRoot!.querySelector<CraftActionMenu>('.breadcrumbs__menu')!;
+  // The menu reads its items when it opens.
+  const actions =
+    typeof menu.actions === 'function' ? menu.actions() : menu.actions!;
+  const group = actions[0] as {
+    items: Array<{label: string; onClick: (event: Event) => void}>;
+  };
+  const channels = group.items.find((item) => item.label === 'Channels')!;
+
+  channels.onClick(new MouseEvent('click', {cancelable: true}));
+
+  expect(visit).toHaveBeenCalledTimes(1);
+  expect(String(visit.mock.calls[0]![0])).toContain('/admin/channels');
+});

@@ -193,6 +193,7 @@ describe('craft-breadcrumbs', () => {
       <craft-breadcrumb-item href="#singles">Singles<craft-action-menu slot="suffix">
         <craft-action-item href="#singles" checked>Singles</craft-action-item>
         <craft-action-item href="#channels">Channels</craft-action-item>
+        <craft-action-item href="#structures" hidden>Structures</craft-action-item>
       </craft-action-menu></craft-breadcrumb-item>
       <craft-breadcrumb-item>Current Entry With A Long Title</craft-breadcrumb-item>`
     );
@@ -209,7 +210,8 @@ describe('craft-breadcrumbs', () => {
       ['French', undefined],
     ]);
     expect(section).toMatchObject({type: 'group', heading: 'Singles'});
-    // Listed once: the switcher already holds the crumb's own page.
+    // Listed once: the switcher already holds the crumb's own page. Its hidden
+    // choice stays hidden.
     expect(section!.items.map(({label, current}) => [label, current])).toEqual([
       ['Singles', true],
       ['Channels', undefined],
@@ -229,6 +231,31 @@ describe('craft-breadcrumbs', () => {
     };
     choice.onClick(new MouseEvent('click', {cancelable: true}));
     expect(pressed).toBe(true);
+  });
+
+  it('follows a collapsed crumb’s plain menu link when it’s chosen', async () => {
+    history.replaceState(null, '', '#start');
+    const {element} = await trail(
+      '120px',
+      `
+      <craft-breadcrumb-item href="#singles">Singles<craft-action-menu slot="suffix">
+        <craft-action-item href="#channels">Channels</craft-action-item>
+      </craft-action-menu></craft-breadcrumb-item>
+      <craft-breadcrumb-item>Current Entry With A Long Title</craft-breadcrumb-item>`
+    );
+
+    const overflowMenu =
+      element.shadowRoot!.querySelector('.breadcrumbs__menu')!;
+    await userEvent.click(overflowMenu.querySelector('[slot="invoker"]')!);
+    await frame();
+    const choice = [
+      ...overflowMenu.querySelectorAll<HTMLElement>('craft-action-item'),
+    ].find((item) => item.textContent!.trim() === 'Channels')!;
+    await userEvent.click(choice);
+    await frame();
+
+    expect(location.hash).toBe('#channels');
+    history.replaceState(null, '', location.pathname + location.search);
   });
 
   it('puts the menu between the first crumb and the rest in focus order', async () => {
