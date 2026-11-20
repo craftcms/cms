@@ -312,6 +312,28 @@ it('reports a Craft 5 mail transport adapter until a Laravel mailer is chosen', 
         ->and($afterChoosing)->toBe([]);
 });
 
+it('reports volumes with a separate Craft 5 transform filesystem until a transform disk is chosen', function(): void {
+    ProjectConfig::set('volumes', [
+        'uid-photos' => ['handle' => 'photos', 'fs' => 'photos', 'transformFs' => 'transforms'],
+        'uid-same' => ['handle' => 'same', 'fs' => 'same', 'transformFs' => 'same'],
+        'uid-chosen' => ['handle' => 'chosen', 'fs' => 'chosen', 'transformFs' => 'transforms', 'assetTransformer' => 'craft'],
+        'uid-unset-env' => ['handle' => 'unsetEnv', 'fs' => 'unsetEnv', 'transformFs' => 'transforms', 'assetTransformer' => '$LOOSE_ENDS_UNSET_TRANSFORMER'],
+    ]);
+    Cms::config()->assetTransformers->outputDisk(null);
+
+    $finding = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    Cms::config()->assetTransformers->outputDisk('');
+    $emptyDisk = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    Cms::config()->assetTransformers->outputDisk('transforms');
+    $afterChoosing = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    expect($finding?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($emptyDisk?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($afterChoosing)->toBeNull();
+});
+
 it('doesn’t claim nothing depends on the adapter when recorded usage can’t be read', function(): void {
     Schema::partialMock()->shouldReceive('hasTable')->with(LooseEndsStore::TABLE)->andThrow(new RuntimeException('Database unavailable.'));
 

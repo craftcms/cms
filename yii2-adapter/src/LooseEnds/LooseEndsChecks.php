@@ -502,6 +502,24 @@ class LooseEndsChecks
             );
         }
 
+        $transformFilesystems = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES) ?? [])
+            ->filter(fn(mixed $volume) => is_array($volume)
+                && !empty($volume['transformFs'])
+                && $volume['transformFs'] !== ($volume['fs'] ?? null)
+                && empty(Env::parse($volume['assetTransformer'] ?? null)))
+            ->mapWithKeys(fn(array $volume) => [(string) ($volume['handle'] ?? '') => (string) $volume['transformFs']]);
+
+        if ($transformFilesystems->isNotEmpty() && Cms::config()->assetTransformers->outputDisk === null) {
+            $findings[] = $this->finding(
+                'database.volume-transform-filesystems',
+                Section::Content,
+                Severity::ChangesBehavior,
+                t('Volumes store transforms on a separate Craft 5 transform filesystem, which Craft 6 ignores.', category: 'yii2-adapter'),
+                t('Set the `assetTransformers` general config setting’s `outputDisk` to the disk that should hold transforms. If volumes need different transform disks, add another transformer with the `craft` driver for each one and choose it in the volume’s Asset Transformer setting. Use a `scoped` disk to keep a transform subpath.', category: 'yii2-adapter'),
+                detail: $transformFilesystems->map(fn(string $fs, string $volume) => "$volume → $fs")->join(', '),
+            );
+        }
+
         $legacyMigrations = $this->pendingYiiMigrations();
 
         if ($legacyMigrations !== []) {
