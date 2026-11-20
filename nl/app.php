@@ -2991,7 +2991,7 @@ return [
     'The template receives `element` and `static` variables. Its output is sanitized and displayed as non-interactive content; form controls, scripts, and registered assets are not supported.' => 'Het sjabloon ontvangt de variabelen `element` en `static`. De uitvoer wordt opgeschoond en weergegeven als niet-interactieve inhoud; formulierelementen, scripts en geregistreerde resources worden niet ondersteund.',
     'The template will be rendered with an `element` variable.' => 'De sjabloon wordt weergegeven met een `element`-variabele.',
     'The text label for the entry creation button.' => 'Het tekstlabel voor de knop om inhoud te maken.',
-    'The text label for {type} selection buttons.' => 'Het tekstlabel voor selectieknoppen.',
+    'The text label for {type} selection buttons.' => 'Het tekstlabel voor {type}-selectieknoppen.',
     'The text that will be shown if the field doesn’t have a value.' => 'Tekst die wordt weergegeven als het veld leeg is.',
     'The total number of {type} to display per page within the element index.' => 'Het totale aantal {type} dat per pagina moet worden weergegeven binnen de elementindex.',
     'The update can’t be installed :( {message}' => 'De update kan niet worden geïnstalleerd :( {message}',

@@ -2902,7 +2902,7 @@ return [
     'Target' => 'Cél',
     'Teal' => 'Kékeszöld',
     'Team permissions can be managed from {link}.' => 'A csapatengedélyeket a {link} oldalon kezelheted.',
-    'Team permissions can be managed from {path} on a development environment.' => 'A csapatengedélyeket a {link} oldalon, egy fejlesztői környezetben kezelheted.',
+    'Team permissions can be managed from {path} on a development environment.' => 'A csapatengedélyeket a {path} oldalon, egy fejlesztői környezetben kezelheted.',
     'Temp files' => 'Temp fájlok',
     'Template caches' => 'Sablon cache',
     'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.' => 'Sablon, amely meghatározza a mező egyéni „propagálási kulcsának” a formátumát. A bejegyzések mentésre kerülnek az összes webhelyre, amely ezt a kulcsot hozza létre.',

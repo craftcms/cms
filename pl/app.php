@@ -3937,7 +3937,7 @@ return [
     '{client} wants to access your {system} account.' => '{client} chce uzyskać dostęp do Twojego konta {system}.',
     '{ctrl}C to copy.' => '{ctrl}C, aby skopiować.',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{dostępna aktualizacja} other{dostępne aktualizacje}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} {sekcji}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} w sekcji {section}',
     '{pct} width' => 'Szerokość {pct}',
     '{title} ({site})' => '{title} ({site})',
     '{total} jobs' => 'Zadania ({total})',
