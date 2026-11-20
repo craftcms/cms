@@ -145,9 +145,57 @@ it('applies badge counts that arrive alongside the tree', async () => {
   const items = await mount('/admin/content/entries', {
     'nav-admin-utilities': 3,
   });
+  const badge = byLabel(items, 'Utilities').querySelector(
+    'craft-badge-indicator[slot="actions"]'
+  );
+
+  expect(Number(badge?.badgeCount ?? badge?.getAttribute('badge-count'))).toBe(
+    3
+  );
+  expect(byLabel(items, 'Utilities').indicator).toBe(false);
+  expect(
+    byLabel(items, 'Entries').querySelector('craft-badge-indicator')
+  ).toBeNull();
+});
+
+it('marks a count with a dot on an item with children', async () => {
+  const tree = [
+    {
+      ...nav()[1],
+      subnav: [
+        {
+          ...nav()[1],
+          label: 'Updates',
+          href: '/admin/utilities/updates',
+          id: 'nav-admin-utilities-updates',
+        },
+      ],
+    },
+  ];
+  const items = await mount(
+    '/admin/content/entries',
+    {'nav-admin-utilities': 3},
+    {tree}
+  );
+  const utilities = items[0] as any;
+
+  expect(utilities.indicator).toBe(true);
+  expect(
+    utilities.querySelector(':scope > craft-badge-indicator[slot="actions"]')
+  ).toBeNull();
+});
+
+it('marks a count with a dot in the icon-only rail', async () => {
+  const items = await mount(
+    '/admin/content/entries',
+    {'nav-admin-utilities': 3},
+    {iconOnly: true}
+  );
 
   expect(byLabel(items, 'Utilities').indicator).toBe(true);
-  expect(byLabel(items, 'Entries').indicator).toBe(false);
+  expect(
+    byLabel(items, 'Utilities').querySelector('craft-badge-indicator')
+  ).toBeNull();
 });
 
 it('links each item where it says it does', async () => {

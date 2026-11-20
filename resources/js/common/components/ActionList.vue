@@ -405,7 +405,10 @@
       href: hrefOf(action),
       '.active': isSelected(action),
       '.current': isCurrent(action),
-      '.indicator': action.type !== 'group' && Boolean(action.indicator),
+      // The icon-only rail has no room for a number, so a count is a dot there.
+      '.indicator':
+        action.type !== 'group' &&
+        (Boolean(action.indicator) || (iconOnly && Boolean(countOf(action)))),
     };
 
     if (navIs(action) === 'craft-nav-item') {
@@ -518,7 +521,7 @@
       {{ labelOf(action) }}
 
       <craft-badge-indicator
-        v-if="countOf(action)"
+        v-if="countOf(action) && !iconOnly"
         slot="actions"
         variant="inverse"
         :badge-count="countOf(action)"

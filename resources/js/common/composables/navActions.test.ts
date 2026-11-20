@@ -81,6 +81,35 @@ it('carries a source’s status across, and leaves it off when there is none', (
   expect(all!).not.toHaveProperty('status');
 });
 
+it('counts a top-level badge on an item without children', () => {
+  const [posts] = navItemActions([
+    node('Posts', {
+      href: '/admin/content/posts/blog',
+      badgeCount: 4,
+      badgeLabel: '4 posts',
+    }),
+  ]) as ActionItemLink[];
+
+  expect(posts!.count).toBe(4);
+  expect(posts!.countLabel).toBe('4 posts');
+  expect(posts!).not.toHaveProperty('indicator');
+});
+
+it('counts a top-level badge in a group heading when the item has no children', () => {
+  const [collections] = navItemActions([
+    node('Collections', {
+      group: true,
+      subnav: [
+        node('Posts', {href: '/admin/content/posts/blog', badgeCount: 4}),
+      ],
+    }),
+  ]);
+  const posts = (collections as ActionItemGroup).items[0] as ActionItemLink;
+
+  expect(posts.count).toBe(4);
+  expect(posts).not.toHaveProperty('indicator');
+});
+
 it('marks a top-level badge with a dot and counts a nested one', () => {
   const [entries] = navItemActions([
     node('Entries', {
