@@ -8,8 +8,6 @@ use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Password;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;

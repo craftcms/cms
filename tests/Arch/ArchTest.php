@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use craft\web\twig\Extension;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\SecurityConfig;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
@@ -79,7 +79,7 @@ arch('Craft authentication uses its configured guard')
     ->not
     ->toBeUsed()
     ->ignoring([
-        GeneralConfig::class,
+        SecurityConfig::class,
         LaravelExtension::class,
         'CraftCms\\Cms\\craftAuth',
     ]);
