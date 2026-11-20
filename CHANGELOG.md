@@ -147,6 +147,7 @@
 - Fixed a bug where the web installer’s Port field was too narrow.
 - Fixed a bug where installing failed if the web installer’s database step was skipped. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed a bug where the web installer showed “[object Object]” when installing failed. ([#20819](https://github.com/craftcms/cms/issues/20819), [#20824](https://github.com/craftcms/cms/pull/20824))
+- Fixed a bug where the web installer’s success screen didn’t show its icon.
 - Fixed a bug where front-end login, logout, set password, and verify email paths returned a 404 error on sites whose base URL has a path. ([#20892](https://github.com/craftcms/cms/pull/20892))
 - Fixed a bug where the web installer’s “Language” options didn’t include the languages’ names. ([#20818](https://github.com/craftcms/cms/issues/20818), [#20824](https://github.com/craftcms/cms/pull/20824))
 - Fixed layout bugs in the web installer. ([#20817](https://github.com/craftcms/cms/issues/20817), [#20824](https://github.com/craftcms/cms/pull/20824))
