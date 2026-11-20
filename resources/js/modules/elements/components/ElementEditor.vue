@@ -16,6 +16,7 @@
     provide,
     ref,
     shallowReactive,
+    useId,
     useTemplateRef,
     watch,
     type Component,
@@ -71,6 +72,7 @@
   import {registerActions} from '@/modules/command-palette/registry';
   import type {CommandPaletteItem} from '@/modules/command-palette/types';
   import {firstFocusableWithin} from '@/common/utils/dom';
+  import {UiFieldIdScope} from '@/modules/ui/runtime';
 
   interface CreatedReleaseResponse {
     release?: {
@@ -100,6 +102,8 @@
     transform: props.transform,
     root: () => contentEl.value,
   });
+
+  provide(UiFieldIdScope, `element-editor-${useId()}`);
 
   const {
     activity,

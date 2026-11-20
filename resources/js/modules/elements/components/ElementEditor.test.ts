@@ -3,10 +3,12 @@ import {
   createApp,
   defineComponent,
   h,
+  inject,
   nextTick,
   provide,
   reactive,
   shallowRef,
+  type Component,
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {router} from '@inertiajs/vue3';
@@ -24,6 +26,7 @@ import {SlideoutControllerKey} from '@/common/slideouts/types';
 import {useReleasePreviewScope} from '@/modules/releases/releaseEditor';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import {registerUiComponents} from '@/modules/ui/register';
+import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
 import ElementEditor from './ElementEditor.vue';
 
 const state = vi.hoisted(() => ({
@@ -72,6 +75,7 @@ vi.mock('@/bootstrap/element-details-panels', () => ({
 
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
+let backgroundField: HTMLElement | undefined;
 let screenProps: ReturnType<typeof createScreenPropsStore>['props'];
 
 beforeEach(() => {
@@ -157,6 +161,8 @@ beforeEach(() => {
 afterEach(() => {
   app.unmount();
   container.remove();
+  backgroundField?.remove();
+  backgroundField = undefined;
   state.activePreview = null;
 });
 
@@ -165,7 +171,8 @@ function mount(
   {
     previewedReleaseId,
     workflowActionsOnly,
-  }: {previewedReleaseId?: number; workflowActionsOnly?: boolean} = {}
+  }: {previewedReleaseId?: number; workflowActionsOnly?: boolean} = {},
+  elementEditorProps?: {formWrapper?: Component}
 ): void {
   const Root = defineComponent({
     setup: () => {
@@ -200,7 +207,7 @@ function mount(
             h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
           ]),
           h(LayoutSlotOutlet, {name: 'content-toolbar-actions'}),
-          h(ElementEditor),
+          h(ElementEditor, elementEditorProps),
           h(ContentFooter, {
             ...screen.props,
             readOnly: false,
@@ -317,26 +324,38 @@ it('titles its error summary for the element rather than for settings', async ()
   expect(summary?.textContent).not.toContain('settings');
 });
 
-it('links a custom field’s error to the field its key resolves to', async () => {
-  const field = document.createElement('craft-field');
-  field.id = 'ui-fields-a11yDate';
-  document.body.append(field);
+it('links a slideout error to its own field', async () => {
+  const fieldIdWithoutScope = fieldId(['fields', 'a11yDate']);
+  backgroundField = document.createElement('craft-field');
+  backgroundField.id = fieldIdWithoutScope;
+  document.body.insertBefore(backgroundField, container);
+  const FieldWrapper = defineComponent({
+    props: {editor: Object, region: String},
+    setup() {
+      const fieldIdScope = inject(UiFieldIdScope, undefined);
+      const id = scopedId(fieldIdScope, fieldId(['fields', 'a11yDate']));
+
+      return () => h('div', [h('craft-field', {id})]);
+    },
+  });
   state.editor.errorPaths = (key: string) => [['fields', key]];
   Object.assign(state.editor.form, {
     hasErrors: true,
     errors: {a11yDate: 'The *Date* field is required.'},
   });
 
-  mount('page');
+  mount('slideout', {}, {formWrapper: FieldWrapper});
   await nextTick();
   await nextTick();
 
+  const field = container.querySelector<HTMLElement>('craft-field')!;
   const link = container.querySelector<HTMLAnchorElement>(
     'craft-callout[variant="danger"] a'
   );
-  expect(link?.getAttribute('href')).toBe('#ui-fields-a11yDate');
+  expect(field.id).not.toBe(fieldIdWithoutScope);
+  expect(link?.getAttribute('href')).toBe(`#${field.id}`);
+  expect(document.getElementById(field.id)).toBe(field);
   expect(link?.textContent?.trim()).toBe('The Date field is required.');
-  field.remove();
 });
 
 const release = {
