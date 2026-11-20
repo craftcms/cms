@@ -233,9 +233,11 @@ it('keeps the pixels of indexed PNGs when cleaning them with imagick', function 
     }
 
     $path = $this->sandboxPath.'/indexed.png';
-    $source = new Imagick;
-    $source->newPseudoImage(50, 200, 'gradient:#00ff00-#c73863');
-    $source->writeImage('png8:'.$path);
+    $image = imagecreate(200, 50);
+    for ($x = 0; $x < 200; $x++) {
+        imageline($image, $x, 0, $x, 49, imagecolorallocate($image, $x, 255 - $x, intdiv($x, 2)));
+    }
+    imagepng($image, $path);
     $source = new Imagick($path);
 
     $this->service->cleanImage($path);
