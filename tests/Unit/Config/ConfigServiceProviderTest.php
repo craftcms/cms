@@ -301,9 +301,9 @@ it('overrides the default asset transformer with an environment variable and kee
         ->and($config->transformerConfig('imgix'))->toBe(['driver' => 'imgix', 'domain' => 'example.imgix.net']);
 });
 
-it('rejects asset transformer names that would resolve to the default', function (string $name) {
+it('rejects asset transformer names that would resolve to the default or a disk', function (string $name) {
     AssetTransformersConfig::create()->transformer($name, ['driver' => 'imgix']);
-})->throws(InvalidArgumentException::class)->with(['empty' => '', 'zero' => '0', 'integer' => '123', 'negative integer' => '-1']);
+})->throws(InvalidArgumentException::class)->with(['empty' => '', 'zero' => '0', 'integer' => '123', 'negative integer' => '-1', 'disk prefix' => 'disk:photos']);
 
 it('rejects another driver for the craft asset transformer', function () {
     AssetTransformersConfig::create()->transformer('craft', ['driver' => 'imgix']);

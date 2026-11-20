@@ -141,9 +141,22 @@ it('logs invalid transformer config once and falls back to craft with debug mode
         ->and($transformers->forVolume($volume))->toEqual(new AssetTransformer('craft'));
 });
 
+it('falls back to craft with debug mode off when a transformer can’t be built', function () {
+    config()->set('app.debug', false);
+    app(AssetTransformers::class)->extend('imgix', fn () => throw new InvalidAssetTransformException('The imgix driver needs a domain.'));
+    defineAssetTransformer('imgix');
+    $volume = assetOnVolume('imgix-source', ['handle' => 'imgix', 'assetTransformer' => 'imgix'])->getVolume();
+    Log::shouldReceive('warning')
+        ->once()
+        ->withArgs(fn (string $message): bool => str_contains($message, 'needs a domain') && str_contains($message, '[imgix] volume'));
+
+    expect(app(AssetTransformers::class)->forVolume($volume))->toEqual(new AssetTransformer('craft'));
+});
+
 it('still reads a disk’s deprecated asset_transformer key, with a deprecation warning', function () {
     // Only the driver is registered, as in beta.1, so there's no transformer with its name
-    app(AssetTransformers::class)->extend('imgix', fn () => new TestAssetTransformDriver);
+    $imgix = new TestAssetTransformDriver;
+    app(AssetTransformers::class)->extend('imgix', fn () => $imgix);
     config()->set('filesystems.disks.legacy', ['driver' => 'local', 'root' => storage_path('framework/testing/legacy'), 'asset_transformer' => 'imgix']);
     config()->set('filesystems.disks.legacy-child', ['driver' => 'scoped', 'disk' => 'legacy', 'prefix' => 'child']);
     config()->set('filesystems.disks.legacy-craft', ['driver' => 'local', 'root' => storage_path('framework/testing/legacy-craft'), 'asset_transformer' => [
@@ -159,11 +172,13 @@ it('still reads a disk’s deprecated asset_transformer key, with a deprecation 
 
     $scopedAsset = Asset::factory()->createElement(['volumeId' => $scoped->id]);
     $scopedTransformer = $transformers->forVolume($scopedAsset->getVolume());
-    $transformers->transform($scopedAsset, ['width' => 100]);
+    // Named transforms keep beta's driver-keyed parameters
+    $transformers->transform($scopedAsset, new ImageTransform(['handle' => 'hero', 'width' => 100, 'parameters' => ['imgix' => ['q' => 50]]]));
     $craftTransformer = $transformers->forVolume(Asset::factory()->createElement(['volumeId' => $craft->id])->getVolume());
     $craftDriver = $transformers->transformer($craftTransformer->name);
 
-    expect($transformers->transformer($scopedTransformer->name))->toBeInstanceOf(TestAssetTransformDriver::class)
+    expect($transformers->transformer($scopedTransformer->name))->toBe($imgix)
+        ->and($imgix->request?->parameters['q'] ?? null)->toBe(50)
         ->and($craftDriver)->toBeInstanceOf(CraftAssetTransformDriver::class)
         ->and($craftDriver->outputDisk)->toBe('transforms')
         ->and($craftDriver->generateBeforePageLoad)->toBeTrue()

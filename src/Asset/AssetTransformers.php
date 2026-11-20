@@ -272,6 +272,21 @@ class AssetTransformers extends MultipleInstanceManager
         );
     }
 
+    /**
+     * Returns whether a volume chooses its transformer, with its Asset Transformer setting or its disk’s deprecated
+     * `asset_transformer` key, instead of using the default.
+     */
+    public function volumeChoosesTransformer(Volume $volume): bool
+    {
+        if ($volume->getAssetTransformer() !== null) {
+            return true;
+        }
+
+        $disk = $volume->getResolvedFsTarget();
+
+        return $disk !== null && $this->legacyDiskConfig($disk) !== null;
+    }
+
     public function transform(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
@@ -478,12 +493,14 @@ class AssetTransformers extends MultipleInstanceManager
         try {
             $transformer = $this->transformerFromConfig($config, $source);
 
-            if (! $this->has($transformer->name)) {
-                throw new AssetTransformDriverNotFoundException("Asset transformer [{$transformer->name}], set by {$source}, is not defined or its driver is not registered.");
+            try {
+                $this->transformer($transformer->name);
+            } catch (AssetTransformException $exception) {
+                throw new ($exception::class)("{$exception->getMessage()} It’s set by {$source}.", previous: $exception);
             }
 
             return $transformer;
-        } catch (InvalidAssetTransformException|AssetTransformDriverNotFoundException $exception) {
+        } catch (AssetTransformException $exception) {
             if (app()->hasDebugModeEnabled()) {
                 throw $exception;
             }
@@ -623,6 +640,12 @@ class AssetTransformers extends MultipleInstanceManager
             throw new InvalidAssetTransformException('A transform definition must be an array, object, or named transform handle.');
         }
 
-        return $transform->getParameters($transformer->name);
+        // Disks' deprecated asset_transformer keys have no transformer name to store parameters under, so they use the
+        // driver's, as beta.1 and beta.2 did
+        $key = str_starts_with($transformer->name, self::LEGACY_DISK_PREFIX)
+            ? $this->getInstanceConfig($transformer->name)['driver'] ?? $transformer->name
+            : $transformer->name;
+
+        return $transform->getParameters($key);
     }
 }

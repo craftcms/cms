@@ -298,7 +298,7 @@ it('routes registered legacy image transformers through adapter drivers', functi
     }
 });
 
-it('selects the volume before the legacy transformer candidate', function(string $volumeTransformer): void {
+it('selects the volume’s or disk’s transformer before the legacy transformer candidate', function(?string $volumeTransformer, ?string $diskTransformer = null): void {
     Event::on(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS, function(RegisterComponentTypesEvent $event): void {
         $event->types[] = RegisteredLegacyImageTransformer::class;
     });
@@ -306,6 +306,7 @@ it('selects the volume before the legacy transformer candidate', function(string
     config()->set('filesystems.disks.legacy-precedence-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/legacy-precedence-source'),
+        ...($diskTransformer !== null ? ['asset_transformer' => $diskTransformer] : []),
     ]);
     $volume = Volume::factory()->create([
         'fs' => 'legacy-precedence-source',
@@ -334,6 +335,7 @@ it('selects the volume before the legacy transformer candidate', function(string
 })->with([
     'another driver' => 'compatibility-test',
     'the default driver, named explicitly' => 'compatibility-default',
+    'a disk’s deprecated asset_transformer key' => [null, 'compatibility-test'],
 ]);
 
 it('does not use the legacy selector for typed transform calls', function(): void {

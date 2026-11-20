@@ -409,8 +409,8 @@ class ImageTransforms extends Component
         string $transformer,
         ?bool $immediately = null,
     ): ?AssetTransformRequest {
-        // A transformer chosen by the volume, including an explicit `craft` one, takes precedence over the legacy one.
-        if ($asset->getVolume()->getAssetTransformer() !== null) {
+        // A transformer chosen by the volume or its disk, including an explicit `craft` one, takes precedence over the legacy one.
+        if (app(AssetTransformers::class)->volumeChoosesTransformer($asset->getVolume())) {
             return null;
         }
 

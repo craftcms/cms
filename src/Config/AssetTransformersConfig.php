@@ -73,14 +73,15 @@ class AssetTransformersConfig extends BaseConfig
      *
      * @param  array<string, mixed>  $config
      *
-     * @throws InvalidArgumentException if the name is empty or an integer, which PHP turns into an integer array key, or
-     *                                  the `craft` transformer is given another driver.
+     * @throws InvalidArgumentException if the name is empty, an integer, which PHP turns into an integer array key, or
+     *                                  starts with `disk:`, which names disks’ deprecated `asset_transformer` keys, or
+     *                                  if the `craft` transformer is given another driver.
      */
     public function transformer(string $name, array $config): self
     {
         // PHP turns integer-like array keys into integers, and `0` would resolve to the default transformer
-        if ($name === '' || (string) (int) $name === $name) {
-            throw new InvalidArgumentException('Asset transformer names can’t be empty or integers.');
+        if ($name === '' || (string) (int) $name === $name || str_starts_with($name, 'disk:')) {
+            throw new InvalidArgumentException('Asset transformer names can’t be empty, integers, or start with “disk:”.');
         }
 
         if ($name === 'craft' && ($config['driver'] ?? 'craft') !== 'craft') {
