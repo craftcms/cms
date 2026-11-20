@@ -2,6 +2,8 @@ import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
 import './breadcrumbs.js';
 import '../breadcrumb-item/breadcrumb-item.js';
+import '../action-menu/action-menu.js';
+import '../action-item/action-item.js';
 import type CraftBreadcrumbs from './breadcrumbs.js';
 import type CraftActionMenu from '../action-menu/action-menu.js';
 import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
@@ -43,14 +45,26 @@ async function trail(width: string, innerHTML = TRAIL) {
     items
       .filter((item) => !item.hidden)
       .map((item) => item.firstChild!.textContent!.trim());
+  // The menu reads its items when it opens.
+  const actions = () => {
+    const value = menu.actions;
+    return typeof value === 'function' ? value() : (value ?? []);
+  };
   const menuLabels = () =>
     overflow.hidden
       ? []
-      : (menu.actions as ActionMenuItem[]).map((action) =>
-          'label' in action ? action.label : ''
-        );
+      : actions().map((action) => ('label' in action ? action.label : ''));
 
-  return {container, element, items, menu, overflow, shown, menuLabels};
+  return {
+    container,
+    element,
+    items,
+    menu,
+    overflow,
+    shown,
+    menuLabels,
+    actions,
+  };
 }
 
 describe('craft-breadcrumbs', () => {
@@ -150,7 +164,7 @@ describe('craft-breadcrumbs', () => {
   });
 
   it('follows the collapsed crumb’s own link from the menu', async () => {
-    const {items, menu} = await trail('120px');
+    const {items, actions} = await trail('120px');
     const link = items[1]!.shadowRoot!.querySelector('a')!;
     let followed = false;
     link.addEventListener('click', (event) => {
@@ -158,7 +172,7 @@ describe('craft-breadcrumbs', () => {
       followed = true;
     });
 
-    const action = (menu.actions as ActionMenuItem[])[1] as {
+    const action = actions()[1] as {
       href: string;
       onClick: (event: Event) => void;
     };
@@ -166,6 +180,55 @@ describe('craft-breadcrumbs', () => {
 
     action.onClick(new MouseEvent('click', {cancelable: true}));
     expect(followed).toBe(true);
+  });
+
+  it('keeps a collapsed crumb’s own menu, linked or not, in the overflow menu', async () => {
+    const {actions, shown} = await trail(
+      '120px',
+      `
+      <craft-breadcrumb-item>English<craft-action-menu slot="suffix">
+        <craft-action-item checked>English</craft-action-item>
+        <craft-action-item href="#french">French</craft-action-item>
+      </craft-action-menu></craft-breadcrumb-item>
+      <craft-breadcrumb-item href="#singles">Singles<craft-action-menu slot="suffix">
+        <craft-action-item href="#singles" checked>Singles</craft-action-item>
+        <craft-action-item href="#channels">Channels</craft-action-item>
+      </craft-action-menu></craft-breadcrumb-item>
+      <craft-breadcrumb-item>Current Entry With A Long Title</craft-breadcrumb-item>`
+    );
+    expect(shown()).toEqual(['Current Entry With A Long Title']);
+
+    const [site, section] = actions() as Array<{
+      type: string;
+      heading: string;
+      items: Array<{label: string; href?: string; current?: boolean}>;
+    }>;
+    expect(site).toMatchObject({type: 'group', heading: 'English'});
+    expect(site!.items.map(({label, current}) => [label, current])).toEqual([
+      ['English', true],
+      ['French', undefined],
+    ]);
+    expect(section).toMatchObject({type: 'group', heading: 'Singles'});
+    // Listed once: the switcher already holds the crumb's own page.
+    expect(section!.items.map(({label, current}) => [label, current])).toEqual([
+      ['Singles', true],
+      ['Channels', undefined],
+    ]);
+
+    // Choosing one presses the item it stands in for.
+    const channels = document.querySelector<HTMLElement>(
+      'craft-action-item[href="#channels"]'
+    )!;
+    let pressed = false;
+    channels.addEventListener('click', (event) => {
+      event.preventDefault();
+      pressed = true;
+    });
+    const choice = section!.items[1] as unknown as {
+      onClick: (event: Event) => void;
+    };
+    choice.onClick(new MouseEvent('click', {cancelable: true}));
+    expect(pressed).toBe(true);
   });
 
   it('puts the menu between the first crumb and the rest in focus order', async () => {
@@ -214,7 +277,7 @@ describe('craft-breadcrumbs', () => {
   });
 
   it('follows a crumb replaced at the same place, with the same label', async () => {
-    const {element, items, menu} = await trail('120px');
+    const {element, items, actions} = await trail('120px');
     const replacement = document.createElement('craft-breadcrumb-item');
     replacement.href = '#elsewhere';
     replacement.textContent = 'Entries';
@@ -230,7 +293,7 @@ describe('craft-breadcrumbs', () => {
       followed = true;
     });
 
-    const action = (menu.actions as ActionMenuItem[])[1] as {
+    const action = actions()[1] as {
       href: string;
       onClick: (event: Event) => void;
     };
@@ -241,7 +304,7 @@ describe('craft-breadcrumbs', () => {
   });
 
   it('remeasures when a crumb’s label or link changes in place', async () => {
-    const {items, overflow, shown, menuLabels, menu} = await trail('400px');
+    const {items, overflow, shown, menuLabels, actions} = await trail('400px');
     // Let any measurement still queued from the first layout run first.
     await frame();
     await frame();
@@ -253,9 +316,7 @@ describe('craft-breadcrumbs', () => {
     await frame();
     expect(menuLabels()).toContain('Renamed');
     expect(
-      (menu.actions as ActionMenuItem[]).map((action) =>
-        'href' in action ? String(action.href) : ''
-      )
+      actions().map((action) => ('href' in action ? String(action.href) : ''))
     ).toContainEqual(expect.stringMatching(/#renamed$/));
 
     // Short labels all fit at the same width.

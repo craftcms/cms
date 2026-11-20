@@ -1,7 +1,11 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
-import type CraftActionMenu from '../action-menu/action-menu.js';
-import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
+import type CraftActionItem from '../action-item/action-item.js';
+import type {
+  ActionMenuItem,
+  ActionMenuItemButton,
+  ActionMenuItemLink,
+} from '../action-menu/action-menu.types.js';
 import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
 import styles from './breadcrumbs.styles.js';
 import {t} from '../../utilities/translate';
@@ -49,9 +53,6 @@ export default class CraftBreadcrumbs extends LitElement {
   /** Indexes of the crumbs currently collapsed into the menu. */
   #collapsed: number[] = [];
 
-  /** What the menu's actions were last built from. */
-  #menuSignature: string | null = null;
-
   #resizeObserver?: ResizeObserver;
   #contentObserver?: MutationObserver;
   #measureQueued = false;
@@ -79,10 +80,6 @@ export default class CraftBreadcrumbs extends LitElement {
 
   get #overflowItem(): CraftBreadcrumbItem | null {
     return this.shadowRoot?.querySelector('.breadcrumbs__overflow') ?? null;
-  }
-
-  get #menu(): CraftActionMenu | null {
-    return this.shadowRoot?.querySelector('.breadcrumbs__menu') ?? null;
   }
 
   private getSeparator() {
@@ -287,78 +284,124 @@ export default class CraftBreadcrumbs extends LitElement {
     this.#collapsed = collapsed;
 
     const overflow = this.#overflowItem;
-    const menu = this.#menu;
 
     if (overflow) {
       overflow.hidden = collapsed.length === 0;
     }
-
-    if (!menu) {
-      return;
-    }
-
-    // New actions rebuild the menu's items, which drops focus out of an open
-    // menu, so a measurement that collapsed the same crumbs to the same places
-    // leaves them alone.
-    const signature = JSON.stringify(
-      collapsed.map((index) => [
-        index,
-        this.#labelOf(items[index]!),
-        this.#linkOf(items[index]!)?.href ?? null,
-      ])
-    );
-
-    if (signature !== this.#menuSignature) {
-      this.#menuSignature = signature;
-      menu.actions = this.#menuActions();
-    }
   }
 
-  #menuActions(): ActionMenuItem[] {
+  /**
+   * What the menu lists, read when it opens: the collapsed crumbs in trail
+   * order, as links. A crumb with a menu of its own beside it, such as a
+   * section or site switcher, brings that menu's items along under its label,
+   * so collapsing it doesn't take them away.
+   */
+  #menuActions = (): ActionMenuItem[] => {
     const items = this.#items;
 
-    return this.#collapsed.map((index) => {
-      const item = items[index]!;
-      const link = this.#linkOf(item);
+    return this.#collapsed.flatMap((index): ActionMenuItem[] => {
+      const item = items[index];
 
-      if (!link) {
-        return {label: this.#labelOf(item)};
+      if (!item) {
+        return [];
       }
 
-      return {
-        label: this.#labelOf(item),
-        href: link.href,
-        // Follow the crumb's own link rather than the menu's copy of it, so
-        // whatever handles clicks on that link handles this one too. A
-        // modified click is left to open the copy wherever it asked to.
-        // The link is looked up on click: the crumb at this place may have
-        // been replaced since the menu was built.
-        onClick: (event: Event) => {
-          const mouse = event as MouseEvent;
-          const current = this.#items[index];
-          const currentLink = current ? this.#linkOf(current) : null;
+      const label = this.#textOf(item, AFFIXES);
+      const link = this.#linkOf(item);
+      const crumb: ActionMenuItemButton | ActionMenuItemLink = link
+        ? {type: 'link', label, href: link.href, onClick: this.#follow(link)}
+        : {label};
+      const suffixItems = this.#suffixItemsOf(item);
 
-          if (
-            !currentLink ||
-            mouse.metaKey ||
-            mouse.ctrlKey ||
-            mouse.shiftKey ||
-            mouse.altKey
-          ) {
-            return;
-          }
+      if (suffixItems.length === 0) {
+        return [crumb];
+      }
 
-          event.preventDefault();
-          currentLink.click();
+      // A switcher usually lists the crumb's own page among its choices, so the
+      // crumb's link would only repeat it.
+      const listed =
+        !link || suffixItems.some((choice) => choice.href === link.href);
+
+      return [
+        {
+          type: 'group',
+          heading: label,
+          items: [...(listed ? [] : [crumb]), ...suffixItems],
         },
-      };
+      ];
     });
+  };
+
+  /** The items of a menu slotted beside a crumb's label, standing in for it. */
+  #suffixItemsOf(
+    item: CraftBreadcrumbItem
+  ): Array<ActionMenuItemButton | ActionMenuItemLink> {
+    return [...item.children]
+      .filter((el) => el.slot === 'suffix')
+      .map((el) =>
+        el.matches('craft-action-menu')
+          ? el
+          : el.querySelector('craft-action-menu')
+      )
+      .flatMap((menu) =>
+        menu
+          ? [...menu.querySelectorAll<CraftActionItem>('craft-action-item')]
+              .filter((source) => source.closest('craft-action-menu') === menu)
+              .map((source) => {
+                const common = {
+                  label: this.#textOf(source, '[slot]'),
+                  icon: source.icon ?? undefined,
+                  variant: source.variant,
+                  // The switcher's selected choice, such as the current
+                  // site, stays marked as the current one.
+                  current: source.current || source.checked || undefined,
+                  disabled: source.disabled || undefined,
+                  onClick: this.#follow(source),
+                };
+
+                return source.href
+                  ? {
+                      ...common,
+                      type: 'link' as const,
+                      href: new URL(source.href, document.baseURI).href,
+                    }
+                  : common;
+              })
+          : []
+      );
   }
 
-  /** A crumb's label, without what's slotted around it. */
-  #labelOf(item: CraftBreadcrumbItem): string {
-    const clone = item.cloneNode(true) as HTMLElement;
-    clone.querySelectorAll(AFFIXES).forEach((el) => el.remove());
+  /**
+   * Handles choosing a menu item by pressing the control it stands in for, so
+   * whatever handles that control handles this too. A modified click on a
+   * link is left to open the menu's copy wherever it asked to.
+   */
+  #follow(target: HTMLElement) {
+    return (event: Event) => {
+      const mouse = event as MouseEvent;
+      const isLink = target.matches('a[href], [href]');
+
+      if (
+        isLink &&
+        (mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.altKey)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      // A whole press, not just a click: some links go on `mouseup`, such as
+      // Inertia's when they prefetch on click, and only cancel the click.
+      const init = {bubbles: true, cancelable: true, composed: true, button: 0};
+      target.dispatchEvent(new MouseEvent('mousedown', init));
+      target.dispatchEvent(new MouseEvent('mouseup', init));
+      target.click();
+    };
+  }
+
+  /** An element's text, without the parts matching `skip`. */
+  #textOf(element: Element, skip: string): string {
+    const clone = element.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll(skip).forEach((el) => el.remove());
 
     return (clone.textContent ?? '').replace(/\s+/g, ' ').trim();
   }
@@ -390,14 +433,16 @@ export default class CraftBreadcrumbs extends LitElement {
         <slot name="first" @slotchange="${this.handleSlotChange}"></slot>
         <!--
           A crumb of its own so it lays out, and is separated, like the ones it
-          stands in for. Its \`hidden\` state and the menu's \`actions\` are driven
-          from the measurement, not bound here, so the two don't fight.
+          stands in for. Its \`hidden\` state is driven from the measurement, not
+          bound here, so the two don't fight. The menu reads its items when it
+          opens.
         -->
         <craft-breadcrumb-item class="breadcrumbs__overflow" hidden>
           <craft-action-menu
             class="breadcrumbs__menu"
             part="overflow-menu"
             placement="bottom-start"
+            .actions=${this.#menuActions}
             @craft-show=${this.#stopMenuEvent}
             @craft-hide=${this.#stopMenuEvent}
             @craft-after-show=${this.#stopMenuEvent}
