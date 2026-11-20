@@ -87,11 +87,6 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
     #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $currencies = [['label' => t('Choose a currency…'), 'value' => '']];
-        foreach (new ISOCurrencies as $currency) {
-            $currencies[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
-        }
-
         return Ui::make([
             UiField::make(t('Min Value'), NumberControl::make('min')->step('any')->value($this->min)),
             UiField::make(t('Max Value'), NumberControl::make('max')->step('any')->value($this->max)),
@@ -111,10 +106,19 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
                     ['label' => t('As decimal numbers'), 'value' => self::FORMAT_DECIMAL],
                     ['label' => t('As currency values'), 'value' => self::FORMAT_CURRENCY],
                     ['label' => t('Unformatted'), 'value' => self::FORMAT_NONE],
-                ])->value($this->previewFormat)),
-            UiField::make(t('Preview Currency'))
-                ->control(Choice::make('previewCurrency')->options($currencies)->value($this->previewCurrency)),
-        ]);
+                ])
+                    ->value($this->previewFormat)
+                    ->reactive()),
+        ])
+            ->when($this->previewFormat === self::FORMAT_CURRENCY, function ($ui) {
+                $currencies = [['label' => t('Choose a currency…'), 'value' => '']];
+                foreach (new ISOCurrencies as $currency) {
+                    $currencies[] = ['label' => $currency->getCode(), 'value' => $currency->getCode()];
+                }
+
+                $ui->add(UiField::make(t('Preview Currency'))
+                    ->control(Choice::make('previewCurrency')->options($currencies)->value($this->previewCurrency)));
+            });
     }
 
     #[Override]
