@@ -36,7 +36,7 @@ class AsciiFilenamesCommand extends Command
 
     public function handle(GeneralConfig $generalConfig, Elements $elements): int
     {
-        if (! $generalConfig->convertFilenamesToAscii) {
+        if (! $generalConfig->assets->convertFilenamesToAscii) {
             $this->components->warn(<<<'EOD'
             The convertFilenamesToAscii config setting is set to false.
             To avoid saving assets with non-ASCII filenames in the future,

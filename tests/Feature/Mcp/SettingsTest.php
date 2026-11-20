@@ -54,7 +54,7 @@ it('defaults the authenticated server to the control panel without public regist
     $projectConfig->set('users.allowPublicRegistration', $registration);
     $projectConfig->remove('mcp');
     app()->forgetInstance(Settings::class);
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
     expect(app(Settings::class))
         ->route->toBe(str_replace('{cp}', $cpTrigger, $route))
@@ -75,7 +75,7 @@ it('notes control panel endpoints, endpoints both servers share, and missing OAu
         config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     }
 
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
     $values = array_map(fn (mixed $value): mixed => is_string($value) ? str_replace('{cp}', $cpTrigger, $value) : $value, $values);
 
     $nodes = postJson(route('craft.cp.settings.mcp.render-ui'), ['values' => $values, 'scope' => []])

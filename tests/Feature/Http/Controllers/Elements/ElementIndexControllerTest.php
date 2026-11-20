@@ -342,8 +342,8 @@ it('preserves the legacy action route contract for get-elements', function () {
     EntryModel::factory()->create();
 
     postJson('/'.implode('/', array_filter([
-        Cms::config()->cpTrigger,
-        Cms::config()->actionTrigger,
+        Cms::config()->routing->cpTrigger,
+        Cms::config()->routing->actionTrigger,
         'element-indexes/get-elements',
     ])), [
         'context' => ElementSources::CONTEXT_INDEX,

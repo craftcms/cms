@@ -64,7 +64,7 @@ trait BackupTrait
             return $flag;
         }
 
-        $backupOnUpdate = Cms::config()->getBackupOnUpdate();
+        $backupOnUpdate = Cms::config()->backups->shouldBackUpOnUpdate();
 
         if (! $this->input->isInteractive()) {
             return $backupOnUpdate;

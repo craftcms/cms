@@ -147,7 +147,7 @@ readonly class SetPasswordController extends AuthenticationController
             $url = Url::cpUrl(CpAuthPath::Login->value);
         } else {
             // Send them to the 'setPasswordSuccessPath' by default
-            $setPasswordSuccessPath = Cms::config()->getSetPasswordSuccessPath();
+            $setPasswordSuccessPath = Cms::config()->routing->getSetPasswordSuccessPath();
             $url = Url::siteUrl($setPasswordSuccessPath);
         }
 

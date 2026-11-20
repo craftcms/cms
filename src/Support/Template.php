@@ -338,7 +338,7 @@ class Template
     /** @return array{Paginate, list<mixed>} */
     public static function paginateQuery(Builder $query): array
     {
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $perPage = $query->getLimit() ?: ($query instanceof EloquentBuilder ? $query->getModel()->getPerPage() : 100);
         $paginator = $query->paginate($perPage, ['*'], $pageParam);
 

@@ -8,7 +8,7 @@ use CraftCms\Cms\Cp\Data\NavNode;
 use CraftCms\Cms\Cp\NavCustomizer;
 
 beforeEach(function () {
-    Cms::config()->cpTrigger('admin');
+    Cms::config()->routing->cpTrigger('admin');
 });
 
 /** Dashboard, then Content (Entries with two sources, Assets) and Administration (Utilities). */

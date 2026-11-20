@@ -54,7 +54,7 @@ class HttpTransportMiddleware
     private function trustedEndpoints(): array
     {
         $urls = [config('app.url')];
-        $baseCpUrl = Cms::config()->baseCpUrl;
+        $baseCpUrl = Cms::config()->routing->baseCpUrl;
 
         if (is_string($baseCpUrl)) {
             $urls[] = Env::parse($baseCpUrl);

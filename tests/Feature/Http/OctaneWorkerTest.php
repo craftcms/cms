@@ -93,7 +93,7 @@ it('does not show a previewed draft to later requests', function () {
 });
 
 it('includes the legacy asset bundles on every control panel page', function () {
-    $loginUrl = '/'.Cms::config()->cpTrigger.'/login';
+    $loginUrl = '/'.Cms::config()->routing->cpTrigger.'/login';
 
     $responses = serveFromOctaneWorker([
         Request::create($loginUrl),

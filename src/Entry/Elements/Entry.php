@@ -3102,7 +3102,7 @@ JS;
             $templates[] = [
                 'template' => sprintf(
                     '%s/%s/%s',
-                    Cms::config()->partialTemplatesPath,
+                    Cms::config()->templates->partialsPath,
                     self::refHandle(),
                     $entryType->original->handle,
                 ),

@@ -64,7 +64,7 @@ test('gets pending users first', function () {
 });
 
 it('can query by status', function (string $status, array $attributes, int $expectedCount) {
-    Cms::config()->cooldownDuration = 0;
+    Cms::config()->security->cooldownDuration = 0;
 
     UserModel::factory()->create($attributes);
 
@@ -79,7 +79,7 @@ it('can query by status', function (string $status, array $attributes, int $expe
 ]);
 
 it('leaves users whose cooldown has ended out of the locked status', function () {
-    Cms::config()->cooldownDuration = 300;
+    Cms::config()->security->cooldownDuration = 300;
 
     UserModel::factory()->create(['locked' => true, 'lockoutDate' => now('UTC')->subMinute()]);
     UserModel::factory()->create(['locked' => true, 'lockoutDate' => now('UTC')->subMinutes(10)]);

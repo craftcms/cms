@@ -178,7 +178,7 @@ readonly class Revisions
                 elementType: $canonical::class,
                 canonicalId: $canonical->id,
                 siteId: $canonical->siteId,
-            ))->onQueue(Cms::config()->lowPriorityQueueName);
+            ))->onQueue(Cms::config()->queue->lowPriorityName);
         }
 
         return $revision->id;

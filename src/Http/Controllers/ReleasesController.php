@@ -74,8 +74,8 @@ class ReleasesController
             })
             ->orderByDesc('dateCreated')
             ->orderByDesc('id')
-            ->paginate($request->limit(), pageName: Cms::config()->getPageTriggerParam(), page: $request->page())
-            ->appends($request->except(Cms::config()->getPageTriggerParam()));
+            ->paginate($request->limit(), pageName: Cms::config()->routing->getPageTriggerParam(), page: $request->page())
+            ->appends($request->except(Cms::config()->routing->getPageTriggerParam()));
 
         $formatter = new IntlDateFormatter(I18N::getFormattingLocale()->id, IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, Cms::timezone(), IntlDateFormatter::TRADITIONAL);
         $actor = $request->craftUser();

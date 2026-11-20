@@ -44,7 +44,7 @@ readonly class RunQueue
             return false;
         }
 
-        if (! Cms::config()->runQueueAutomatically) {
+        if (! Cms::config()->queue->runAutomatically) {
             return false;
         }
 

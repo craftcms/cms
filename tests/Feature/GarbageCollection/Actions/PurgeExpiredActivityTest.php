@@ -31,7 +31,7 @@ it('leaves activity intact when retention is unlimited', function () {
 });
 
 it('retains expired comment trees while purging ordinary expired activity', function () {
-    Cms::config()->activityRetentionDuration(3600);
+    Cms::config()->garbageCollection->activityRetentionDuration(3600);
     $activities = app(Activities::class);
     $comments = app(ActivityComments::class);
     $author = User::factory()->createElement();
@@ -63,7 +63,7 @@ it('retains expired comment trees while purging ordinary expired activity', func
 });
 
 it('retains events until they cross the cutoff', function () {
-    Cms::config()->activityRetentionDuration(3600);
+    Cms::config()->garbageCollection->activityRetentionDuration(3600);
     Date::setTestNow('2026-08-26 11:00:00');
     $event = app(Activities::class)->record(new ElementCreated(
         subject: new ActivitySubject('document', 'one', 'Document one'),

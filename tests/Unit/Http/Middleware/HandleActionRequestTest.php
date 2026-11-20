@@ -8,8 +8,8 @@ use CraftCms\Cms\Http\Routing\ActionRoute;
 use Illuminate\Http\Request;
 
 beforeEach(function () {
-    Cms::config()->cpTrigger = 'admin';
-    Cms::config()->actionTrigger = 'actions';
+    Cms::config()->routing->cpTrigger = 'admin';
+    Cms::config()->routing->actionTrigger = 'actions';
 });
 
 it('rebinds rewritten action requests as the current request', function () {
@@ -29,7 +29,7 @@ it('rebinds rewritten action requests as the current request', function () {
 });
 
 it('rebinds rewritten root control panel action requests as the current request', function (?string $cpTrigger) {
-    Cms::config()->cpTrigger = $cpTrigger;
+    Cms::config()->routing->cpTrigger = $cpTrigger;
     $request = Request::create('/utilities/query', 'POST', [
         'action' => 'query/execute',
     ]);

@@ -67,7 +67,7 @@ class ImageHelper
             return [$width, $height];
         }
 
-        if ($upscale ?? Cms::config()->upscaleImages) {
+        if ($upscale ?? Cms::config()->images->upscale) {
             if ($mode === 'fit') {
                 $width = (int) round($sourceWidth / $factor);
                 $height = (int) round($sourceHeight / $factor);
@@ -810,10 +810,10 @@ class ImageHelper
 
     public static function cleanExifDataFromImagickImage(Imagick $imagick): void
     {
-        if (! Cms::config()->preserveExifData) {
+        if (! Cms::config()->images->preserveExifData) {
             $iccProfiles = null;
 
-            if (Cms::config()->preserveImageColorProfiles) {
+            if (Cms::config()->images->preserveColorProfiles) {
                 $iccProfiles = $imagick->getImageProfiles('icc', true);
             }
 

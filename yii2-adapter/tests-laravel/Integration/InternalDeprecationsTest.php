@@ -123,7 +123,7 @@ it('searches for tags shortest first without deprecated ordering', function() {
     ['groupId' => $groupId] = createTagGroupWithTags(['Parisian', 'Paris', 'Parisiana']);
     $this->actingAs(User::factory()->admin()->create());
 
-    $response = $this->postJson('/' . Cms::config()->cpTrigger . '/actions/tags/search-for-tags', [
+    $response = $this->postJson('/' . Cms::config()->routing->cpTrigger . '/actions/tags/search-for-tags', [
         'search' => 'Paris',
         'tagGroupId' => $groupId,
     ]);

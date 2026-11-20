@@ -73,7 +73,7 @@ test('authenticate without CP access', function () {
         'admin' => false,
     ]);
 
-    Cms::config()->cpTrigger = '/';
+    Cms::config()->routing->cpTrigger = '/';
 
     $result = $this->auth->authenticate($user, ['password' => 'password']);
 
@@ -90,7 +90,7 @@ test('authenticate without maintenance access', function (bool $isCpRequest, Aut
 
     if ($isCpRequest) {
         UserPermissions::saveUserPermissions($user->id, ['accessCp']);
-        Cms::config()->cpTrigger = '/';
+        Cms::config()->routing->cpTrigger = '/';
     }
 
     app()->maintenanceMode()->activate([]);

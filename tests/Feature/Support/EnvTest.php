@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\RoutingConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Filesystem\Filesystem;
@@ -183,7 +184,7 @@ test('parseBoolean', function (?bool $expected, mixed $value, array $values = []
     ],
 ]);
 
-test('config', function (mixed $expected, string $paramName, string $overrideName, mixed $overrideValue) {
+test('config', function (mixed $expected, string $paramName, string $overrideName, mixed $overrideValue, string $class = GeneralConfig::class, string $prefix = 'CRAFT_') {
     $envString = $overrideName;
 
     if ($overrideValue !== null) {
@@ -192,7 +193,7 @@ test('config', function (mixed $expected, string $paramName, string $overrideNam
 
     putenv($envString);
 
-    $config = Env::config(GeneralConfig::class, 'CRAFT_');
+    $config = Env::config($class, $prefix);
     if ($expected === null) {
         expect($config)->not()->toHaveKey($paramName);
     } else {
@@ -208,6 +209,6 @@ test('config', function (mixed $expected, string $paramName, string $overrideNam
     ['foo,bar', 'disabledPlugins', 'CRAFT_DISABLED_PLUGINS', 'foo,bar'],
     ['*', 'disabledPlugins', 'CRAFT_DISABLED_PLUGINS', '*'],
     [1, 'defaultWeekStartDay', 'CRAFT_DEFAULT_WEEK_START_DAY', '1'],
-    ['login,with,comma', 'loginPath', 'CRAFT_LOGIN_PATH', 'login,with,comma'],
-    [false, 'loginPath', 'CRAFT_LOGIN_PATH', 'false'],
+    ['login,with,comma', 'loginPath', 'CRAFT_ROUTING_LOGIN_PATH', 'login,with,comma', RoutingConfig::class, 'CRAFT_ROUTING_'],
+    [false, 'loginPath', 'CRAFT_ROUTING_LOGIN_PATH', 'false', RoutingConfig::class, 'CRAFT_ROUTING_'],
 ]);

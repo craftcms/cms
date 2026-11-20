@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Config;
 
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Typecast;
 use InvalidArgumentException;
 
 /**
@@ -42,28 +40,6 @@ class AnchorsConfig extends BaseConfig
      * heading itself.
      */
     public bool $useAdditionalTagToAnchorTo = true;
-
-    /** @param array<string, mixed>|string $value */
-    public static function fromConfig(array|string $value): self
-    {
-        $value = is_array($value) ? $value : Json::decode($value);
-
-        if (! is_array($value)) {
-            throw new InvalidArgumentException('The anchors configuration must be an array or a JSON object.');
-        }
-
-        Typecast::properties(self::class, $value);
-
-        $config = self::create();
-
-        foreach ($value as $property => $propertyValue) {
-            if (property_exists($config, $property) && method_exists($config, $property)) {
-                $config->{$property}($propertyValue);
-            }
-        }
-
-        return $config;
-    }
 
     public function anchorClass(?string $value): self
     {

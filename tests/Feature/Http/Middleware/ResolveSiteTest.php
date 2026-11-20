@@ -37,7 +37,7 @@ it('prefers a site token over the request url', function () {
     $this->sites->refreshSites();
 
     $request = Request::create('https://localhost/news', 'GET', [
-        config('craft.general.siteToken') => Crypt::encrypt((string) $site->id),
+        config('craft.general.routing.siteToken') => Crypt::encrypt((string) $site->id),
     ]);
 
     $this->middleware->handle($request, fn () => 'passed');

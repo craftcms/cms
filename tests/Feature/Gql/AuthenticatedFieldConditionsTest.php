@@ -43,7 +43,7 @@ use function Pest\Laravel\actingAs;
 const AUTHENTICATED_ENTRIES_QUERY = '{ entries(section: "news", title: ["One", "Two"], orderBy: "title ASC") { title ... on article_Entry { secret } } }';
 
 beforeEach(function (): void {
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 
     $secret = Field::factory()->create(['handle' => 'secret', 'type' => PlainText::class]);
     $subfield = Field::factory()->create(['handle' => 'subfield', 'type' => PlainText::class]);

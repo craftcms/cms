@@ -76,7 +76,7 @@ test('returns 419 json when pending_2fa_at is missing and request wants json', f
 });
 
 test('site request redirects to configured loginPath when session expired', function () {
-    Cms::config()->loginPath = 'member/login';
+    Cms::config()->routing->loginPath = 'member/login';
 
     $this->withSession(['user.pending_2fa_at' => now()->subSeconds(301)->timestamp])
         ->get('/test-2fa-recent')
@@ -84,7 +84,7 @@ test('site request redirects to configured loginPath when session expired', func
 });
 
 test('site request falls back to CP login when loginPath is not configured', function () {
-    Cms::config()->loginPath = null;
+    Cms::config()->routing->loginPath = null;
 
     $this->withSession(['user.pending_2fa_at' => now()->subSeconds(301)->timestamp])
         ->get('/test-2fa-recent')
@@ -92,7 +92,7 @@ test('site request falls back to CP login when loginPath is not configured', fun
 });
 
 test('CP request always redirects to CP login regardless of loginPath config', function () {
-    Cms::config()->loginPath = 'member/login';
+    Cms::config()->routing->loginPath = 'member/login';
 
     $this->withSession(['user.pending_2fa_at' => now()->subSeconds(301)->timestamp])
         ->get('/admin/test-2fa-recent')

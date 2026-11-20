@@ -56,11 +56,11 @@ readonly class ApiController extends GqlController
 
         [$singleQuery, $queries] = $this->resolveQueries($request);
 
-        if ($this->generalConfig->maxGraphqlBatchSize && count($queries) > $this->generalConfig->maxGraphqlBatchSize) {
+        if ($this->generalConfig->gql->maxBatchSize && count($queries) > $this->generalConfig->gql->maxBatchSize) {
             abort(400, sprintf(
                 'No more than %s GraphQL %s can be executed in a single batch.',
-                $this->generalConfig->maxGraphqlBatchSize,
-                Str::plural('query', $this->generalConfig->maxGraphqlBatchSize),
+                $this->generalConfig->gql->maxBatchSize,
+                Str::plural('query', $this->generalConfig->gql->maxBatchSize),
             ));
         }
 
@@ -68,8 +68,8 @@ readonly class ApiController extends GqlController
         $cache = $request->headers->get('x-craft-gql-cache') ? ($cacheHeader === 'cache') : null;
 
         if ($cache !== null) {
-            $cacheSetting = $this->generalConfig->enableGraphqlCaching;
-            $this->generalConfig->enableGraphqlCaching = $cache;
+            $cacheSetting = $this->generalConfig->gql->enableCaching;
+            $this->generalConfig->gql->enableCaching = $cache;
         }
 
         $result = [];
@@ -115,7 +115,7 @@ readonly class ApiController extends GqlController
         }
 
         if (isset($cacheSetting)) {
-            $this->generalConfig->enableGraphqlCaching = $cacheSetting;
+            $this->generalConfig->gql->enableCaching = $cacheSetting;
         }
 
         $response = new GqlResponse($singleQuery ? reset($result) : $result);

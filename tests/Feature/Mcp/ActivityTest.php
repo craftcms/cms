@@ -179,7 +179,7 @@ it('rejects ambiguous identities and invalid timezone bounds before returning ac
 ]);
 
 it('carries MCP provenance into queued work and clears it for unrelated worker jobs', function (): void {
-    Cms::config()->queueName('mcp-activity')->trackedQueueNames(['mcp-activity']);
+    Cms::config()->queue(['name' => 'mcp-activity', 'trackedNames' => ['mcp-activity']]);
     app(CapabilityRegistry::class)->register(QueuedActivityCapability::class);
     ($this->callActivity)('test_activity_queue')->assertOk()->assertJsonPath('result.isError', false);
     $queue = app(QueueManager::class)->connection('database');

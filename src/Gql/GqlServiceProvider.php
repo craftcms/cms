@@ -40,7 +40,7 @@ class GqlServiceProvider extends ServiceProvider
         ];
 
         // Users can create personal access tokens for the GraphQL API while it’s enabled
-        $personalAccessTokens->registerScopeGroup('graphql', fn (): ?ScopeGroup => Cms::config()->enableGql ? new ScopeGroup(
+        $personalAccessTokens->registerScopeGroup('graphql', fn (): ?ScopeGroup => Cms::config()->gql->enabled ? new ScopeGroup(
             handle: 'graphql',
             label: t('GraphQL API'),
             scopes: $scopes(),
@@ -48,11 +48,11 @@ class GqlServiceProvider extends ServiceProvider
 
         // …and authorize OAuth clients to access it on their behalf
         $oauthResources->register('graphql', function () use ($scopes): ?OAuthResource {
-            if (! Cms::config()->enableGql) {
+            if (! Cms::config()->gql->enabled) {
                 return null;
             }
 
-            $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+            $actionTrigger = trim(Cms::config()->routing->actionTrigger, '/');
             // Action URLs carry over the request’s site and preview tokens, which must stay out of public discovery
             // metadata and the resource’s identifier
             $resourceUrl = Url::stripQueryString(action_url('graphql/api'));
@@ -72,7 +72,7 @@ class GqlServiceProvider extends ServiceProvider
             );
         });
 
-        if (Cms::config()->enableGql && ! $this->app->routesAreCached()) {
+        if (Cms::config()->gql->enabled && ! $this->app->routesAreCached()) {
             $oauthResources->routes('graphql');
         }
     }

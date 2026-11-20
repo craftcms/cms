@@ -34,7 +34,7 @@ beforeEach(function () {
 
     $this->originalProjectConfigFolderName = app(ProjectConfig::class)->folderName;
     app(ProjectConfig::class)->folderName = 'project';
-    $this->originalCompiledTemplatesPath = app(GeneralConfig::class)->compiledTemplatesPath;
+    $this->originalCompiledTemplatesPath = app(GeneralConfig::class)->templates->compiledPath;
 
     $this->laravelPath = function (): CraftCms\Cms\Support\Path {
         $laravelPathClass = CraftCms\Cms\Support\Path::class;
@@ -48,7 +48,7 @@ beforeEach(function () {
 
 afterEach(function () {
     app(ProjectConfig::class)->folderName = $this->originalProjectConfigFolderName;
-    app(GeneralConfig::class)->compiledTemplatesPath = $this->originalCompiledTemplatesPath;
+    app(GeneralConfig::class)->templates->compiledPath = $this->originalCompiledTemplatesPath;
 
     foreach ($this->originalAliases as $alias => $path) {
         Aliases::set($alias, $path);
@@ -126,7 +126,7 @@ test('directory getters return the expected path and creation side effects', fun
 ]);
 
 test('compiled templates path can be configured', function () {
-    app(GeneralConfig::class)->compiledTemplatesPath = '@storage/custom-compiled-templates';
+    app(GeneralConfig::class)->templates->compiledPath = '@storage/custom-compiled-templates';
 
     $path = ($this->laravelPath)();
     $expectedPath = $this->aliases['@storage'].DIRECTORY_SEPARATOR.'custom-compiled-templates';

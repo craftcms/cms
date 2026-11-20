@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Config;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Override;
+use ReflectionProperty;
 
 /**
  * @since 6.0.0
@@ -160,6 +162,8 @@ class ConfigServiceProvider extends ServiceProvider
             }
         }
 
+        $this->applyRenamedEnvironmentOverrides($config);
+
         $envConfig = Env::config($config::class, 'CRAFT_');
         Typecast::properties($config::class, $envConfig);
 
@@ -180,6 +184,60 @@ class ConfigServiceProvider extends ServiceProvider
         $repository->set('craft.general', $config);
 
         return $config;
+    }
+
+    /**
+     * Applies environment variables named after renamed settings, such as `CRAFT_ENABLE_GQL` for `gql.enabled`.
+     * Variables named after the new settings, such as `CRAFT_GQL` and `CRAFT_GQL_ENABLED`, are applied after them, so
+     * they win. A variable that's named after both, such as `CRAFT_QUEUE_NAME` for `queueName` and `queue.name`, is
+     * left to the new setting.
+     */
+    private function applyRenamedEnvironmentOverrides(GeneralConfig $config): void
+    {
+        $cloned = [];
+
+        foreach ($config::renamedSettings() as $setting => $newSetting) {
+            $envName = 'CRAFT_'.$this->renamedSettingEnvName($config, $setting, $newSetting);
+
+            if ($envName === 'CRAFT_'.str($newSetting)->replace('.', '_')->snake()->upper()->value()) {
+                continue;
+            }
+
+            $value = Env::get($envName);
+
+            if ($value === null) {
+                continue;
+            }
+
+            // A cached config may share its nested objects with another copy, so change a clone
+            $nested = str($newSetting)->before('.')->value();
+
+            if ($nested !== $newSetting && ! isset($cloned[$nested])) {
+                $config->{$nested} = clone $config->{$nested};
+                $cloned[$nested] = true;
+            }
+
+            $config->{$setting} = $value;
+        }
+    }
+
+    /**
+     * Returns the environment variable name a renamed setting had, without the `CRAFT_` prefix. A setting that kept its
+     * name and has an `#[EnvName]` attribute, such as `disable2fa`, keeps the variable name it had, `DISABLE_2FA`.
+     */
+    private function renamedSettingEnvName(GeneralConfig $config, string $setting, string $newSetting): string
+    {
+        [$nested, $property] = array_pad(explode('.', $newSetting, 2), 2, null);
+
+        if ($property === $setting) {
+            $attribute = Arr::first(new ReflectionProperty($config->{$nested}, $property)->getAttributes(EnvName::class));
+
+            if ($attribute) {
+                return $attribute->newInstance()->name;
+            }
+        }
+
+        return str($setting)->snake()->upper()->value();
     }
 
     /**

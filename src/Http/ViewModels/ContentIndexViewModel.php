@@ -1451,7 +1451,7 @@ abstract class ContentIndexViewModel extends ViewModel
         $query = $this->resolveQuery();
 
         $perPage = $this->sourceSettings()->pageSize;
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
 
         $total = $this->elementType::indexElementCount($query, $sourceKey);
         $lastPage = max(1, (int) ceil($total / $perPage));

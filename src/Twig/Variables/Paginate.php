@@ -68,7 +68,7 @@ class Paginate extends Component
             return null;
         }
 
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $params = Arr::except(request()->query(), $pageParam);
 
         if ($page !== 1) {

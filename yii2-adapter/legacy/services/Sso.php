@@ -272,7 +272,7 @@ class Sso extends Component
         try {
             /** @var SessionGuard $guard */
             $guard = craftAuth();
-            $guard->setRememberDuration($sessionDuration ?? config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 576000))->login($user, $rememberMe);
+            $guard->setRememberDuration($sessionDuration ?? config(sprintf('auth.guards.%s.remember', Cms::config()->security->getAuthGuard()), 576000))->login($user, $rememberMe);
         } catch (Throwable $e) {
             throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'), previous: $e);
         }

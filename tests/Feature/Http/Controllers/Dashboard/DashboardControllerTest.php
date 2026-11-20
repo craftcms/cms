@@ -19,7 +19,7 @@ use function Pest\Laravel\get;
 
 it('requires login', function () {
     get(action([DashboardController::class, 'index']))
-        ->assertRedirect(Cms::config()->cpTrigger.'/login');
+        ->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
 });
 
 it('can be rendered', function () {

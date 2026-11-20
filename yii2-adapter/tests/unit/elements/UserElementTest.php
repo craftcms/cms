@@ -110,7 +110,7 @@ class UserElementTest extends TestCase
         self::assertNull($this->activeUser->getCooldownEndTime());
 
 
-        Cms::config()->cooldownDuration = 172800;
+        Cms::config()->security->cooldownDuration = 172800;
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
         $cooldown = $this->activeUser->getCooldownEndTime();
@@ -135,7 +135,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
-        Cms::config()->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
+        Cms::config()->security->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
 
         self::assertInstanceOf(DateInterval::class, $interval = $this->activeUser->getRemainingCooldownTime());
         self::assertSame('2', (string)$interval->d);

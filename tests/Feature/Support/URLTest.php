@@ -256,7 +256,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('adds token params to a URL', function (string $expected, string $url, string $token) {
-        Cms::config()->useSslOnTokenizedUrls = true;
+        Cms::config()->routing->useSslOnTokenizedUrls = true;
 
         expect(Url::urlWithToken($url, $token))->toBe($expected);
     })->with([
@@ -326,17 +326,17 @@ describe('path helpers', function () {
     ]);
 
     it('uses the configured tokenized URL scheme', function () {
-        Cms::config()->useSslOnTokenizedUrls = true;
+        Cms::config()->routing->useSslOnTokenizedUrls = true;
         expect(Url::getSchemeForTokenizedUrl())->toBe('https');
 
-        Cms::config()->useSslOnTokenizedUrls = false;
+        Cms::config()->routing->useSslOnTokenizedUrls = false;
         expect(Url::getSchemeForTokenizedUrl())->toBe('http');
 
-        Cms::config()->useSslOnTokenizedUrls = 'auto';
-        Cms::config()->baseCpUrl = 'https://cms.example.test';
+        Cms::config()->routing->useSslOnTokenizedUrls = 'auto';
+        Cms::config()->routing->baseCpUrl = 'https://cms.example.test';
         expect(Url::getSchemeForTokenizedUrl(cp: true))->toBe('https');
 
-        Cms::config()->baseCpUrl = 'http://cms.example.test';
+        Cms::config()->routing->baseCpUrl = 'http://cms.example.test';
         expect(Url::getSchemeForTokenizedUrl(cp: true))->toBe('http');
     });
 });
@@ -349,14 +349,14 @@ describe('base and control panel helpers', function () {
             ->and(Url::baseCpUrl())->toBe('https://localhost/')
             ->and(Url::siteHost())->toBe('https://localhost');
 
-        Cms::config()->baseCpUrl = 'https://cms.example.test';
+        Cms::config()->routing->baseCpUrl = 'https://cms.example.test';
         swapUrlRequest('https://localhost/admin/dashboard');
 
         expect(Url::baseCpUrl())->toBe('https://cms.example.test/');
     });
 
     test('prepends the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
-        Cms::config()->cpTrigger = $cpTrigger;
+        Cms::config()->routing->cpTrigger = $cpTrigger;
 
         expect(Url::prependCpTrigger($path))->toBe($expected);
     })->with([
@@ -368,7 +368,7 @@ describe('base and control panel helpers', function () {
     ]);
 
     test('strips the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
-        Cms::config()->cpTrigger = $cpTrigger;
+        Cms::config()->routing->cpTrigger = $cpTrigger;
 
         expect(Url::stripCpTrigger($path))->toBe($expected);
     })->with([
@@ -461,7 +461,7 @@ describe('generated URLs', function () {
     ]);
 
     it('applies addTrailingSlashesToUrls to base site URLs', function (string $baseUrl, bool $addTrailingSlashes, string $expected) {
-        Cms::config()->addTrailingSlashesToUrls = $addTrailingSlashes;
+        Cms::config()->routing->addTrailingSlashesToUrls = $addTrailingSlashes;
         $target = Site::factory()->create(['baseUrl' => $baseUrl]);
         Sites::refreshSites();
         Sites::getCurrentSite()->setBaseUrl($baseUrl);
@@ -484,7 +484,7 @@ describe('generated URLs', function () {
 
 it('appends active site tokens to site URLs', function () {
     $siteToken = 'site-token';
-    $siteTokenParam = Cms::config()->siteToken;
+    $siteTokenParam = Cms::config()->routing->siteToken;
 
     swapUrlRequest('https://localhost/news', parameters: [$siteTokenParam => $siteToken]);
 
@@ -496,7 +496,7 @@ it('appends active route tokens to site URLs', function () {
     $token = str_repeat('a', 32);
 
     app(RouteTokens::class)->createToken('token/route', 2, token: $token);
-    swapUrlRequest('https://localhost/news', parameters: [Cms::config()->tokenParam => $token]);
+    swapUrlRequest('https://localhost/news', parameters: [Cms::config()->routing->tokenParam => $token]);
 
     expect(Url::url('endpoint'))->toBe("https://localhost/endpoint?token=$token")
         ->and(Url::siteUrl('endpoint'))->toBe("https://localhost/endpoint?token=$token");

@@ -46,7 +46,7 @@ beforeEach(function () {
     Auth::provider('test-host-users', fn () => new ConfiguredGuardTestUserProvider);
     Auth::forgetGuards();
 
-    Cms::config()->authGuard = 'craft';
+    Cms::config()->security->authGuard = 'craft';
 });
 
 it('keeps Craft and host authentication isolated', function () {
@@ -105,8 +105,8 @@ it('uses an independently configured password broker', function () {
         ...config('auth.passwords.users'),
         'provider' => 'craft',
     ]);
-    Cms::config()->authPasswordBroker = 'craft-test';
-    expect(Password::broker(Cms::config()->getAuthPasswordBroker()))->toBe(Password::broker('craft-test'))
+    Cms::config()->security->authPasswordBroker = 'craft-test';
+    expect(Password::broker(Cms::config()->security->getAuthPasswordBroker()))->toBe(Password::broker('craft-test'))
         ->not->toBe(Password::broker());
 });
 

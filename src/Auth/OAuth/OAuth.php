@@ -115,7 +115,7 @@ class OAuth
             return $this->providerDefinitions = collect();
         }
 
-        return $this->providerDefinitions = collect($this->generalConfig->oauthProviders)
+        return $this->providerDefinitions = collect($this->generalConfig->users->oauthProviders)
             ->mapWithKeys(function (mixed $config, int|string $handle): array {
                 try {
                     [$handle, $config] = $this->normalizeProviderConfigEntry($handle, $config);

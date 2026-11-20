@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\AssetsConfig;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +15,14 @@ use Illuminate\Support\Facades\Storage;
  * Files are named after their asset’s ID, so any file whose ID doesn’t belong to an asset that’s still holding its file
  * there is left over.
  *
- * @see GeneralConfig::$trashedAssetDisk
+ * @see AssetsConfig::$trashDisk
  * @since 6.0.0
  */
 class DeleteTrashedAssetFiles extends GarbageCollectionAction
 {
     public function __invoke(): void
     {
-        $diskName = $this->generalConfig->getTrashedAssetDisk();
+        $diskName = $this->generalConfig->assets->getTrashDisk();
 
         if ($diskName === null) {
             return;

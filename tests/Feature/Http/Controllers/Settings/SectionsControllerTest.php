@@ -121,7 +121,7 @@ test('index filters sorts and paginates sections', function (string $field, stri
     Section::factory()->create(['name' => 'zzz Last Section', 'handle' => 'a_last', 'type' => SectionType::Single]);
     Section::factory()->create(['name' => 'aaa First Section', 'handle' => 'z_first', 'type' => SectionType::Structure]);
     Section::factory()->create(['name' => 'Ignored record', 'handle' => 'ignored_record']);
-    Cms::config()->pageTrigger = 'custom-page';
+    Cms::config()->routing->pageTrigger = 'custom-page';
 
     // MySQL sorts enum values by declaration order rather than alphabetically.
     $name = DB::isMysql() ? $mysqlName ?? $name : $name;

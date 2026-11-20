@@ -54,8 +54,8 @@ beforeEach(function () {
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('upload-parts');
     Storage::fake('upload-destination');
-    Cms::config()->uploadSessionDisk = 'upload-parts';
-    Cms::config()->uploadChunkSize = 3;
+    Cms::config()->assets->uploadSessionDisk = 'upload-parts';
+    Cms::config()->assets->uploadChunkSize = 3;
 
     $volume = Volume::factory()->create(['fs' => 'upload-destination']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
@@ -291,7 +291,7 @@ it('rejects invalid source combinations without downloading or consuming an uplo
 });
 
 it('does not save assets or retain temporary files after a failed download', function (string $body, int $status, array $headers): void {
-    Cms::config()->maxUploadFileSize = 4;
+    Cms::config()->assets->maxUploadFileSize = 4;
     Http::fake(['https://files.example.test/*' => $status === 0
         ? Http::failedConnection('Cannot connect to https://files.example.test/download?signature=secret')
         : Http::response($body, $status, $headers)]);
@@ -340,7 +340,7 @@ it('creates assets from base64 data and redirected download URLs without file ID
 ]);
 
 it('rejects invalid file references without saving an asset', function (array $reference, string $message): void {
-    Cms::config()->maxUploadFileSize = 16;
+    Cms::config()->assets->maxUploadFileSize = 16;
     Http::fake([
         'https://files.example.test/loop' => Http::response('', 302, ['Location' => 'https://files.example.test/loop']),
         'https://files.example.test/downgrade' => Http::response('', 302, ['Location' => 'http://files.example.test/file.txt']),
@@ -439,7 +439,7 @@ it('prepares uploads over stdio that clients transfer with the upload’s own cr
     $created = $serve('assets_create', ['uploadId' => $upload['id']]);
     $asset = Asset::findOne($created['structuredContent']['asset']['id'] ?? null);
 
-    expect(parse_url($upload['urls']['transfer'], PHP_URL_PATH))->toBe('/'.Cms::config()->actionTrigger."/mcp/upload-sessions/{$upload['id']}/transfer")
+    expect(parse_url($upload['urls']['transfer'], PHP_URL_PATH))->toBe('/'.Cms::config()->routing->actionTrigger."/mcp/upload-sessions/{$upload['id']}/transfer")
         ->and($upload['transport']['options']['url'])->toBe($upload['urls']['transfer'])
         ->and($asset->getFilename())->toBe('example.txt')
         ->and(Storage::disk('upload-destination')->get($asset->getPath()))->toBe('abc');
@@ -459,7 +459,7 @@ it('rejects stdio upload credentials once their session expires', function (): v
     $upload = app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id)['upload'];
     Context::forgetHidden(StdioTransport::ContextStdio);
     app(Factory::class)->forgetGuards();
-    $this->travel(Cms::config()->uploadSessionDuration + 1)->seconds();
+    $this->travel(Cms::config()->assets->uploadSessionDuration + 1)->seconds();
 
     $this->call('DELETE', $upload['urls']['transfer'], server: [
         'HTTP_TUS_RESUMABLE' => '1.0.0',
@@ -515,7 +515,7 @@ describe('field uploads', function (): void {
     beforeEach(function (): void {
         config()->set('filesystems.disks.temp-assets', ['driver' => 'local', 'root' => storage_path('framework/testing/temp-assets')]);
         Storage::fake('temp-assets');
-        Cms::config()->tempAssetUploadDisk = 'temp-assets';
+        Cms::config()->assets->tempUploadDisk = 'temp-assets';
 
         $caption = Field::factory()->create(['handle' => 'caption', 'type' => PlainText::class]);
         $this->volume = Volume::factory()->create([

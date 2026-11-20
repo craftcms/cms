@@ -39,8 +39,8 @@ readonly class ActionRoute
     public static function uriForSegments(array $segments, bool $isCp): string
     {
         return '/'.implode('/', array_filter([
-            $isCp ? trim((string) Cms::config()->cpTrigger, '/') : null,
-            trim(Cms::config()->actionTrigger, '/'),
+            $isCp ? trim((string) Cms::config()->routing->cpTrigger, '/') : null,
+            trim(Cms::config()->routing->actionTrigger, '/'),
             ...$segments,
         ], fn (?string $value) => $value !== null && $value !== ''));
     }

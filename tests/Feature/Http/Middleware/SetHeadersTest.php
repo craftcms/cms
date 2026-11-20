@@ -35,7 +35,7 @@ it('passes through non-Response values', function () {
 });
 
 it('sets no-cache headers for CP requests', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger);
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger);
     $request->setMethod('GET');
 
     $response = $this->middleware->handle($request, fn () => new Response);
@@ -44,7 +44,7 @@ it('sets no-cache headers for CP requests', function () {
 });
 
 it('sets X-Robots-Tag header for CP requests', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger);
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger);
     $request->setMethod('GET');
 
     $response = $this->middleware->handle($request, fn () => new Response);
@@ -53,7 +53,7 @@ it('sets X-Robots-Tag header for CP requests', function () {
 });
 
 it('sets Content-Security-Policy header for CP requests', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger);
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger);
     $request->setMethod('GET');
 
     $response = $this->middleware->handle($request, fn () => new Response);
@@ -62,7 +62,7 @@ it('sets Content-Security-Policy header for CP requests', function () {
 });
 
 it('sets X-Frame-Options header for CP requests', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger);
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger);
     $request->setMethod('GET');
 
     $response = $this->middleware->handle($request, fn () => new Response);
@@ -71,7 +71,7 @@ it('sets X-Frame-Options header for CP requests', function () {
 });
 
 it('sets X-Content-Type-Options header for CP requests', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger);
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger);
     $request->setMethod('GET');
 
     $response = $this->middleware->handle($request, fn () => new Response);
@@ -80,7 +80,7 @@ it('sets X-Content-Type-Options header for CP requests', function () {
 });
 
 it('sets no-cache headers for action requests', function () {
-    $request = Request::create('/'.Cms::config()->actionTrigger.'/test');
+    $request = Request::create('/'.Cms::config()->routing->actionTrigger.'/test');
 
     $response = $this->middleware->handle($request, fn () => new Response);
 

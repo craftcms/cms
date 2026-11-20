@@ -93,7 +93,7 @@ readonly class SessionInfoController
             ]);
         }
 
-        $request->session()->forget($generalConfig->getPasswordConfirmationKey());
+        $request->session()->forget($generalConfig->security->getPasswordConfirmationKey());
         $user = $impersonation->getImpersonator() ?? $request->craftUser()?->asElement();
 
         if (! $user) {

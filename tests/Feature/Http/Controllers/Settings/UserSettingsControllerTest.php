@@ -115,8 +115,8 @@ it('uses the control panel route for saving settings', function () {
 
     post(sprintf(
         '/%s/%s/user-settings/save-user-settings',
-        Cms::config()->cpTrigger,
-        Cms::config()->actionTrigger,
+        Cms::config()->routing->cpTrigger,
+        Cms::config()->routing->actionTrigger,
     ))->assertNotFound();
 });
 

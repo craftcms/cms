@@ -113,7 +113,7 @@ class Volumes
     {
         $volume = new Volume([
             'name' => t('Temporary Uploads'),
-            'fs' => Cms::config()->getTempAssetUploadDisk(),
+            'fs' => Cms::config()->assets->getTempUploadDisk(),
             'propagationMethod' => PropagationMethod::All,
         ]);
         $volume->markAsTemporary();

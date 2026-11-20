@@ -34,19 +34,19 @@ describe('prepareAssetName', function () {
     ]);
 
     test('converts filenames to ascii when config enabled', function () {
-        Cms::config()->convertFilenamesToAscii = true;
+        Cms::config()->assets->convertFilenamesToAscii = true;
 
         expect(AssetsHelper::prepareAssetName('tes§t.text'))->toBe('tesSSt.text');
     });
 
     test('uses multi-character filenameWordSeparator from config', function () {
-        Cms::config()->filenameWordSeparator = '||';
+        Cms::config()->assets->filenameWordSeparator = '||';
 
         expect(AssetsHelper::prepareAssetName('te st.notafile'))->toBe('te||st.notafile');
     });
 
     test('preserves spaces when filenameWordSeparator is false', function () {
-        Cms::config()->filenameWordSeparator = false;
+        Cms::config()->assets->filenameWordSeparator = false;
 
         expect(AssetsHelper::prepareAssetName('t est.notafile'))->toBe('t est.notafile');
     });
@@ -336,13 +336,13 @@ describe('fileTransferList', function () {
 
 describe('getMaxUploadSize', function () {
     test('returns exact config value when it is the smallest limit', function () {
-        Cms::config()->maxUploadFileSize = 1;
+        Cms::config()->assets->maxUploadFileSize = 1;
 
         expect(AssetsHelper::getMaxUploadSize())->toBe(1);
     });
 
     test('respects config maxUploadFileSize limit', function () {
-        Cms::config()->maxUploadFileSize = 1024;
+        Cms::config()->assets->maxUploadFileSize = 1024;
 
         $result = AssetsHelper::getMaxUploadSize();
         expect($result)->toBeLessThanOrEqual(1024);
@@ -395,7 +395,7 @@ describe('getFileKinds', function () {
     });
 
     test('it merges in extraFileKinds', function () {
-        Cms::config()->extraFileKinds = [
+        Cms::config()->assets->extraFileKinds = [
             'stylesheet' => [
                 'label' => 'Stylesheet',
                 'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
@@ -430,7 +430,7 @@ describe('getAllowedFileKinds', function () {
     });
 
     test('only includes kinds with at least one allowed extension', function () {
-        $allowedExtensions = Cms::config()->allowedFileExtensions;
+        $allowedExtensions = Cms::config()->assets->allowedFileExtensions;
         $allowedKinds = AssetsHelper::getAllowedFileKinds();
 
         foreach ($allowedKinds as $kind => $info) {

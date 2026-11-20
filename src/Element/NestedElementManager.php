@@ -390,7 +390,7 @@ class NestedElementManager extends Component
         bool $prevalidate = false,
     ): string {
         // Nested elements are edited in an `elements/edit` slideout, whether or not they also have an edit page.
-        return Url::cpUrl(Cms::config()->actionTrigger.'/elements/edit', array_filter([
+        return Url::cpUrl(Cms::config()->routing->actionTrigger.'/elements/edit', array_filter([
             'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
             'siteId' => $element->siteId,
             'fieldId' => $fieldId,

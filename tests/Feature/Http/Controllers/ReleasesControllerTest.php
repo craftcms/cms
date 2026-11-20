@@ -232,7 +232,7 @@ it('filters, paginates, and sorts release rows through Ui reloads', function () 
 
     get(route('craft.cp.releases.index', [
         ...$query,
-        Cms::config()->getPageTriggerParam() => 2,
+        Cms::config()->routing->getPageTriggerParam() => 2,
     ]), headers: [
         'X-Inertia' => 'true',
         'X-Inertia-Partial-Component' => 'Ui',

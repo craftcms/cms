@@ -266,7 +266,7 @@ class Users
      */
     public function sendPasswordResetEmail(User $user): bool
     {
-        return Password::broker(Cms::config()->getAuthPasswordBroker())->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
+        return Password::broker(Cms::config()->security->getAuthPasswordBroker())->sendResetLink(['email' => $user->email]) === Password::RESET_LINK_SENT;
     }
 
     /**
@@ -320,7 +320,7 @@ class Users
      */
     public function getEmailVerifyUrl(User $user, ?string $token = null): string
     {
-        $fePath = Cms::config()->getVerifyEmailPath();
+        $fePath = Cms::config()->routing->getVerifyEmailPath();
 
         return $this->getUserUrl($user, $fePath, CpAuthPath::VerifyEmail->value, $token);
     }
@@ -336,7 +336,7 @@ class Users
      */
     public function getPasswordResetUrl(User $user, ?string $token = null): string
     {
-        $fePath = Cms::config()->getSetPasswordPath();
+        $fePath = Cms::config()->routing->getSetPasswordPath();
 
         return $this->getUserUrl($user, $fePath, CpAuthPath::SetPassword->value, $token);
     }
@@ -538,7 +538,7 @@ class Users
             'invalidLoginCount' => null,
         ];
 
-        if (Cms::config()->storeUserIps) {
+        if (Cms::config()->security->storeUserIps) {
             $changes['lastLoginAttemptIp'] = request()->ip();
         }
 
@@ -566,11 +566,11 @@ class Users
             $now = now('UTC');
             $changes = ['lastInvalidLoginDate' => $now];
 
-            if (Cms::config()->storeUserIps) {
+            if (Cms::config()->security->storeUserIps) {
                 $changes['lastLoginAttemptIp'] = request()->ip();
             }
 
-            $maxInvalidLogins = Cms::config()->maxInvalidLogins;
+            $maxInvalidLogins = Cms::config()->security->maxInvalidLogins;
             $alreadyLocked = (bool) $userModel->locked;
 
             if ($maxInvalidLogins) {
@@ -981,7 +981,7 @@ class Users
         $this->validateUserChanges($user, $changes);
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
+        $broker = Password::broker(Cms::config()->security->getAuthPasswordBroker());
         $token = $broker->createToken($user);
 
         $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
@@ -1005,7 +1005,7 @@ class Users
      */
     public function purgeExpiredPendingUsers(): void
     {
-        if (Cms::config()->purgePendingUsersDuration === 0) {
+        if (Cms::config()->garbageCollection->purgePendingUsersDuration === 0) {
             return;
         }
 
@@ -1015,7 +1015,7 @@ class Users
                 $query->from(Table::PASSWORD_RESET_TOKENS, 'password_reset_tokens')
                     ->whereColumn('password_reset_tokens.email', 'users.email')
                     // Laravel's password broker writes this table, in the system time zone
-                    ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->purgePendingUsersDuration)->toDateTimeString());
+                    ->where('password_reset_tokens.created_at', '>=', now()->subSeconds(Cms::config()->garbageCollection->purgePendingUsersDuration)->toDateTimeString());
             })
             ->cursor()
             ->each(function (User $user) {
@@ -1254,7 +1254,7 @@ class Users
         }
 
         return $userModel->invalidLoginWindowStart
-            ->addSeconds(Cms::config()->invalidLoginWindowDuration)
+            ->addSeconds(Cms::config()->security->invalidLoginWindowDuration)
             ->isFuture();
     }
 
@@ -1296,7 +1296,7 @@ class Users
 
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if (Cms::config()->baseCpUrl || $isCpRequest) {
+        if (Cms::config()->routing->baseCpUrl || $isCpRequest) {
             $url = Url::cpUrl($cpPath, $params, $scheme);
         } else {
             $path = Url::prependCpTrigger($cpPath);

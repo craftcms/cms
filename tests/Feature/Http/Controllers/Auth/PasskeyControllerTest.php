@@ -35,7 +35,7 @@ test('login validates the auth response JSON shape', function (string $authRespo
 ]);
 
 test('login counts an invalid passkey once', function () {
-    Cms::config()->maxInvalidLogins = 10;
+    Cms::config()->security->maxInvalidLogins = 10;
     config()->set('auth.providers.users.model', UserModel::class);
     Auth::forgetGuards();
 

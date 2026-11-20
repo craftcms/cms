@@ -15,6 +15,6 @@ abstract readonly class GqlController
 {
     protected function ensureGqlEnabled(): void
     {
-        abort_unless(Cms::config()->enableGql, 404, t('Page not found.'));
+        abort_unless(Cms::config()->gql->enabled, 404, t('Page not found.'));
     }
 }

@@ -283,17 +283,18 @@ Use the formatter instead of calling an event type's `format()` method yourself.
 
 ## Retention
 
-Craft keeps activity indefinitely by default. Set `activityRetentionDuration` to let garbage collection delete older events:
+Craft keeps activity indefinitely by default. Set `activityRetentionDuration` on the `garbageCollection` config setting to let garbage collection delete older events:
 
 ```php
 // config/general.php
 
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GarbageCollectionConfig;
+use CraftCms\Cms\Config\GeneralConfig;
 
-return Cms::config()
-    ->activityRetentionDuration('P90D');
+return GeneralConfig::create()
+    ->garbageCollection(GarbageCollectionConfig::create()->activityRetentionDuration('P90D'));
 ```
 
-The `CRAFT_ACTIVITY_RETENTION_DURATION` environment variable accepts the same duration values. Set the value to `0` for unlimited retention. Garbage collection deletes events older than the configured cutoff in chunks.
+The `CRAFT_GARBAGE_COLLECTION_ACTIVITY_RETENTION_DURATION` environment variable accepts the same duration values. Set the value to `0` for unlimited retention. Garbage collection deletes events older than the configured cutoff in chunks.
 
 Choose a retention period based on the history users need and the data included in plugin payloads. Changing the period affects future garbage collection; it does not archive events before deleting them.

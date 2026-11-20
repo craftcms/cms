@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 $routes = app(CraftRoutes::class);
 
 if (Edition::get()->registersFrontendUserRoutes()) {
-    if (Cms::config()->getLoginPath() !== false) {
+    if (Cms::config()->routing->getLoginPath() !== false) {
         Route::allowDuringMaintenance()->get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
     }
 
@@ -80,9 +80,9 @@ if (OAuth::isAvailable()) {
     });
 }
 
-if (! is_null(Cms::config()->setPasswordRequestPath)) {
+if (! is_null(Cms::config()->routing->setPasswordRequestPath)) {
     Route::allowDuringMaintenance()->get('.well-known/change-password', function (Sites $sites) {
-        $uri = Cms::config()->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
+        $uri = Cms::config()->routing->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
 
         abort_if(is_null($uri), 404);
 

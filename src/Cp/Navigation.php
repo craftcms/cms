@@ -563,7 +563,7 @@ readonly class Navigation
                     ->subnav($this->sourceSubnav(User::class, 'users'));
         }
 
-        if ($isAdmin && $this->generalConfig->enableGql) {
+        if ($isAdmin && $this->generalConfig->gql->enabled) {
             $subNavItems = collect()
                 ->when(
                     $this->generalConfig->allowAdminChanges,

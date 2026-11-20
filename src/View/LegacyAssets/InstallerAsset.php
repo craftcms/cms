@@ -28,7 +28,7 @@ class InstallerAsset implements LegacyAssetInterface
         $htmlStack->jsFile(craftAsset('legacy/installer/dist/install.js'));
         $htmlStack->cssFile(craftAsset('legacy/installer/dist/css/install.css'));
 
-        $redirect = Json::encode(Cms::config()->postCpLoginRedirect);
+        $redirect = Json::encode(Cms::config()->routing->postCpLoginRedirect);
         $htmlStack->js("window.postCpLoginRedirect = $redirect;");
     }
 }

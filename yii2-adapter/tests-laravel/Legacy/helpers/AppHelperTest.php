@@ -6,6 +6,7 @@ use craft\helpers\App;
 use craft\services\Entries;
 use CraftCms\Cms\Config\ConstAdapter;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\RoutingConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use InvalidArgumentException;
@@ -109,7 +110,7 @@ class AppHelperTest extends TestCase
     }
 
     #[DataProvider('envConfigDataProvider')]
-    public function testEnvConfig(mixed $expected, string $paramName, string $overrideName, mixed $overrideValue): void
+    public function testEnvConfig(mixed $expected, string $paramName, string $overrideName, mixed $overrideValue, string $class = GeneralConfig::class, string $prefix = 'CRAFT_'): void
     {
         $envString = $overrideName;
 
@@ -119,7 +120,7 @@ class AppHelperTest extends TestCase
 
         putenv($envString);
 
-        $config = App::envConfig(GeneralConfig::class, 'CRAFT_');
+        $config = App::envConfig($class, $prefix);
         if ($expected === null) {
             self::assertArrayNotHasKey($paramName, $config);
         } else {
@@ -167,14 +168,18 @@ class AppHelperTest extends TestCase
             [
                 'login,with,comma',
                 'loginPath',
-                'CRAFT_LOGIN_PATH',
+                'CRAFT_ROUTING_LOGIN_PATH',
                 'login,with,comma',
+                RoutingConfig::class,
+                'CRAFT_ROUTING_',
             ],
             [
                 false,
                 'loginPath',
-                'CRAFT_LOGIN_PATH',
+                'CRAFT_ROUTING_LOGIN_PATH',
                 'false',
+                RoutingConfig::class,
+                'CRAFT_ROUTING_',
             ],
         ];
     }

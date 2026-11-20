@@ -170,7 +170,7 @@ readonly class SaveUserController
                     ) ||
                     (
                         ! $requireEmailVerification && $isNewUser && (
-                            ($isPublicRegistration && $this->generalConfig->deferPublicRegistrationPassword) ||
+                            ($isPublicRegistration && $this->generalConfig->security->deferPublicRegistrationPassword) ||
                             ($request->input('sendActivationEmail') ?? $request->input('sendVerificationEmail'))
                         )
                     )
@@ -200,7 +200,7 @@ readonly class SaveUserController
 
         // Are they allowed to set a new password?
         if ($isPublicRegistration) {
-            if (! $this->generalConfig->deferPublicRegistrationPassword) {
+            if (! $this->generalConfig->security->deferPublicRegistrationPassword) {
                 $user->newPassword = $request->input('password', '');
             }
         } elseif ($isCurrentUser) {
@@ -576,7 +576,7 @@ readonly class SaveUserController
             return null;
         }
 
-        $postCpLoginRedirect = $this->generalConfig->getPostCpLoginRedirect();
+        $postCpLoginRedirect = $this->generalConfig->routing->getPostCpLoginRedirect();
         $url = Url::cpUrl($postCpLoginRedirect);
 
         return redirect($url);
@@ -587,7 +587,7 @@ readonly class SaveUserController
      */
     private function redirectUserAfterAccountActivation(User $user): Response
     {
-        $activateAccountSuccessPath = $this->generalConfig->getActivateAccountSuccessPath();
+        $activateAccountSuccessPath = $this->generalConfig->routing->getActivateAccountSuccessPath();
         $url = Url::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);

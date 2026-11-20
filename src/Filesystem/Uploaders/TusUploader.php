@@ -25,7 +25,7 @@ class TusUploader implements Uploader
     {
         $requestLimit = PHP::sizeToBytes(ini_get('post_max_size'));
         $chunkSize = min(
-            Cms::config()->uploadChunkSize,
+            Cms::config()->assets->uploadChunkSize,
             $requestLimit > 0 ? $requestLimit : PHP_INT_MAX,
         );
 
@@ -66,7 +66,7 @@ class TusUploader implements Uploader
             return response()->noContent(headers: [
                 'Tus-Version' => '1.0.0',
                 'Tus-Extension' => 'termination,expiration',
-                'Tus-Max-Size' => (string) Cms::config()->maxUploadFileSize,
+                'Tus-Max-Size' => (string) Cms::config()->assets->maxUploadFileSize,
             ]);
         }
 

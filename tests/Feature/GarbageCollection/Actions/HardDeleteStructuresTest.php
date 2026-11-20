@@ -21,7 +21,7 @@ it('hard deletes soft deleted structures', function () {
     createStructureElement($element->id, $s2->id);
 
     // Old deleted
-    $s3 = Structure::factory()->create(['dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1)]);
+    $s3 = Structure::factory()->create(['dateDeleted' => now()->subSeconds(Cms::config()->garbageCollection->softDeleteDuration + 1)]);
     createStructureElement($element->id, $s3->id);
 
     $currentCount = DB::table(Table::STRUCTURES)->count();

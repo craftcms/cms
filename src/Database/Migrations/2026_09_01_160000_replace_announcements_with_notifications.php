@@ -28,7 +28,7 @@ return new class extends Migration
             return;
         }
 
-        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->getAuthGuard()));
+        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->security->getAuthGuard()));
         /** @var class-string<Model> $authModel */
         $authModel = config("auth.providers.$provider.model");
         $notifiableType = (new $authModel)->getMorphClass();

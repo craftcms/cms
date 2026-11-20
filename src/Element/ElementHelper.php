@@ -97,14 +97,14 @@ class ElementHelper
      * - Periods and underscores will be converted to dashes, whereas `normalizeSlug()` will leave those intact.
      * - The string may be converted to ASCII.
      *
-     * If `$ascii` is `null`, whether ASCII conversion happens depends on the `limitAutoSlugsToAscii`
+     * If `$ascii` is `null`, whether ASCII conversion happens depends on the `slugs.limitAutoToAscii`
      * config setting. `$language` is used to determine ASCII character mappings when needed.
      */
     public static function generateSlug(string $value, ?bool $ascii = null, ?string $language = null): string
     {
         $slug = str_replace(['.', '_', '-'], ' ', $value);
 
-        if ($ascii ?? Cms::config()->limitAutoSlugsToAscii) {
+        if ($ascii ?? Cms::config()->slugs->limitAutoToAscii) {
             $slug = Str::ascii($slug, $language);
         }
 
@@ -127,13 +127,13 @@ class ElementHelper
 
         $generalConfig = Cms::config();
 
-        if (! $generalConfig->allowUppercaseInSlug) {
+        if (! $generalConfig->slugs->allowUppercase) {
             $slug = Str::lower((string) $slug, $language);
         }
 
         $words = Arr::whereNotEmpty(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', (string) $slug));
 
-        return implode($generalConfig->slugWordSeparator, $words);
+        return implode($generalConfig->slugs->wordSeparator, $words);
     }
 
     /**
@@ -170,12 +170,12 @@ class ElementHelper
         }
 
         $generalConfig = Cms::config();
-        $maxSlugIncrement = $generalConfig->maxSlugIncrement;
+        $maxSlugIncrement = $generalConfig->slugs->maxIncrement;
         $originalSlug = $element->slug ?? '';
         $originalSlugLength = mb_strlen($originalSlug);
 
         for ($index = 1; $index <= $maxSlugIncrement; $index++) {
-            $suffix = $index !== 1 ? $generalConfig->slugWordSeparator.$index : '';
+            $suffix = $index !== 1 ? $generalConfig->slugs->wordSeparator.$index : '';
             $element->slug = $originalSlug.$suffix;
             $testUri = self::renderUriFormat($uriFormat, $element);
             $testUriLength = mb_strlen($testUri);
@@ -191,8 +191,8 @@ class ElementHelper
 
                 $trimmedSlug = mb_substr($originalSlug, 0, -$overage);
 
-                if ($generalConfig->slugWordSeparator) {
-                    $trimmedSlug = rtrim($trimmedSlug, $generalConfig->slugWordSeparator);
+                if ($generalConfig->slugs->wordSeparator) {
+                    $trimmedSlug = rtrim($trimmedSlug, $generalConfig->slugs->wordSeparator);
                 }
 
                 $element->slug = $trimmedSlug.$suffix;
@@ -789,7 +789,7 @@ class ElementHelper
             }
         }
 
-        return $element->getPostEditUrl() ?? Cms::config()->getPostCpLoginRedirect();
+        return $element->getPostEditUrl() ?? Cms::config()->routing->getPostCpLoginRedirect();
     }
 
     /**

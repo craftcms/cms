@@ -47,7 +47,7 @@ use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::find()->one());
-    $this->cpTrigger = Cms::config()->cpTrigger;
+    $this->cpTrigger = Cms::config()->routing->cpTrigger;
 });
 
 it('includes table-row capabilities for page bulk actions', function () {
@@ -1010,7 +1010,7 @@ it('clamps out-of-range page numbers to the last page', function () {
 
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
         'per_page' => 2,
-        Cms::config()->getPageTriggerParam() => 99,
+        Cms::config()->routing->getPageTriggerParam() => 99,
         'viewMode' => 'table',
     ]))
         ->assertOk()

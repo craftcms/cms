@@ -17,22 +17,23 @@ If `laravel/socialite` is not installed, Craft silently treats OAuth as unavaila
 
 ## Basic Configuration
 
-Configure providers with `GeneralConfig::oauthProviders()`:
+Configure providers with the `oauthProviders` setting on the `users` config setting:
 
 ```php
 <?php
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\UsersConfig;
 
 return GeneralConfig::create()
-    ->oauthProviders([
+    ->users(UsersConfig::create()->oauthProviders([
         'github',
         'google' => [
             'driver' => 'google',
             'clientId' => env('GOOGLE_CLIENT_ID'),
             'clientSecret' => env('GOOGLE_CLIENT_SECRET'),
         ],
-    ]);
+    ]));
 ```
 
 Provider configs are keyed by handle. The handle is used in Craft's OAuth routes and in the identity link stored in `sso_identities`.
@@ -76,9 +77,10 @@ Example with more options:
 use App\Auth\OAuth\GitHubButtonRenderer;
 use App\Auth\OAuth\GitHubUserPopulator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\UsersConfig;
 
 return GeneralConfig::create()
-    ->oauthProviders([
+    ->users(UsersConfig::create()->oauthProviders([
         'github' => [
             'driver' => 'github',
             'clientId' => env('GITHUB_CLIENT_ID'),
@@ -93,7 +95,7 @@ return GeneralConfig::create()
             'userPopulator' => GitHubUserPopulator::class,
             'buttonRenderer' => GitHubButtonRenderer::class,
         ],
-    ]);
+    ]));
 ```
 
 ## Routes and Callback URLs

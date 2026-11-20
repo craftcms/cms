@@ -28,7 +28,7 @@ beforeEach(function () {
     actingAs(User::findOne());
 
     $this->edition = Edition::get();
-    $this->tempAssetUploadDisk = Cms::config()->tempAssetUploadDisk;
+    $this->tempAssetUploadDisk = Cms::config()->assets->tempUploadDisk;
     $this->entryType = EntryType::factory()->create();
     $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
         'handle' => 'news',
@@ -37,7 +37,7 @@ beforeEach(function () {
 
 afterEach(function () {
     Edition::set($this->edition);
-    Cms::config()->tempAssetUploadDisk = $this->tempAssetUploadDisk;
+    Cms::config()->assets->tempUploadDisk = $this->tempAssetUploadDisk;
 });
 
 it('returns redirect responses returned by the element request for id routes', function () {
@@ -91,7 +91,7 @@ it('returns not found when the element has no control panel edit url', function 
         'driver' => 'local',
         'root' => storage_path('framework/testing/element-redirect-controller/temp-disk'),
     ]);
-    Cms::config()->tempAssetUploadDisk = 'element-redirect-temp-disk';
+    Cms::config()->assets->tempUploadDisk = 'element-redirect-temp-disk';
 
     $volume = Volume::factory()->create(['fs' => 'element-redirect-temp-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);

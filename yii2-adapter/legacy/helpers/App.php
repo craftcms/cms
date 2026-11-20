@@ -880,7 +880,7 @@ class App
         $generalConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GENERAL);
 
         if (app()->runningInConsole() || request()->isSiteRequest()) {
-            $loginUrl = Url::siteUrl($generalConfig->getLoginPath());
+            $loginUrl = Url::siteUrl($generalConfig->routing->getLoginPath());
         } else {
             $loginUrl = Url::cpUrl(Request::CP_PATH_LOGIN);
         }

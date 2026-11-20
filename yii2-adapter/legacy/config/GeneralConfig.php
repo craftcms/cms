@@ -42,16 +42,17 @@ use function CraftCms\Cms\t;
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
     protected static array $renamedSettings = [
-        'activateAccountFailurePath' => 'invalidUserTokenPath',
+        ...parent::RENAMED_SETTINGS,
+        'activateAccountFailurePath' => 'routing.invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
-        'backupDbOnUpdate' => 'backupOnUpdate',
+        'backupDbOnUpdate' => 'backups.onUpdate',
         'defaultFilePermissions' => 'defaultFileMode',
         'defaultFolderPermissions' => 'defaultDirMode',
-        'enableGraphQlCaching' => 'enableGraphqlCaching',
+        'enableGraphQlCaching' => 'gql.enableCaching',
         'environmentVariables' => 'aliases',
         'isSystemOn' => 'isSystemLive',
         'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
-        'tempAssetUploadFs' => 'tempAssetUploadDisk',
+        'tempAssetUploadFs' => 'assets.tempUploadDisk',
         'validationKey' => 'securityKey',
     ];
 
@@ -995,15 +996,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         // Even if they were already set via the fluent methods, \Craft may not have been autoloaded yet,
         // so some values would still be in need of normalization, e.g. defaultCpLanguage/extraAppLocales.
         $this
-            // file extensions
-            ->allowedFileExtensions($this->allowedFileExtensions)
-            ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
             // durations
-            ->cacheDuration($this->cacheDuration)
-            ->cooldownDuration($this->cooldownDuration)
-            ->defaultTokenDuration($this->defaultTokenDuration)
-            ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
-            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration);
+            ->cacheDuration($this->cacheDuration);
 
         // legacy-only durations
         $this->rememberedUserSessionDuration($this->rememberedUserSessionDuration);
@@ -1012,15 +1006,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this
             // durations
             ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
-            ->purgePendingUsersDuration($this->purgePendingUsersDuration)
-            ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
-            ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->softDeleteDuration($this->softDeleteDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
             // misc
-            ->maxUploadFileSize($this->maxUploadFileSize)
             ->disabledPlugins($this->disabledPlugins);
     }
 
@@ -2001,12 +1990,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @group Assets
      * @see $tempAssetUploadFs
      * @since 5.0.0
-     * @deprecated in 6.0.0. [[tempAssetUploadDisk()]] should be used instead.
+     * @deprecated in 6.0.0. Set `tempUploadDisk` on the `assets` config setting instead.
      */
-    #[Deprecated(message: 'in 6.0.0. [[tempAssetUploadDisk()]] should be used instead.')]
+    #[Deprecated(message: 'in 6.0.0. Set `tempUploadDisk` on the `assets` config setting instead.')]
     public function tempAssetUploadFs(?string $value): self
     {
-        $this->tempAssetUploadDisk($value);
+        $this->assets->tempUploadDisk($value);
 
         return $this;
     }

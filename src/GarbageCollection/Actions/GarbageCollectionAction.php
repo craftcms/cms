@@ -44,7 +44,7 @@ abstract class GarbageCollectionAction
 
     protected function shouldHardDelete(): bool
     {
-        return $this->generalConfig->softDeleteDuration || $this->garbageCollection->deleteAllTrashed;
+        return $this->generalConfig->garbageCollection->softDeleteDuration || $this->garbageCollection->deleteAllTrashed;
     }
 
     protected function hardDeleteQuery(Builder $query, ?string $tableAlias = null): Builder
@@ -58,7 +58,7 @@ abstract class GarbageCollectionAction
                 fn (Builder $query) => $query->where(
                     "{$tableAlias}dateDeleted",
                     '<',
-                    Query::prepareDateForDb(now()->subSeconds($this->generalConfig->softDeleteDuration)),
+                    Query::prepareDateForDb(now()->subSeconds($this->generalConfig->garbageCollection->softDeleteDuration)),
                 ),
             );
     }

@@ -61,7 +61,7 @@ class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
      */
     public static function createDefault(string $keyPrefix): ?self
     {
-        if (Cms::config()->defaultRateLimit === false) {
+        if (Cms::config()->security->defaultRateLimit === false) {
             return null;
         }
 
@@ -77,8 +77,8 @@ class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
 
         if (!isset($this->limit) || !isset($this->window)) {
             $generalConfig = Cms::config();
-            $this->limit ??= (int)$generalConfig->defaultRateLimit;
-            $this->window ??= (int)$generalConfig->defaultRateLimitDuration;
+            $this->limit ??= (int)$generalConfig->security->defaultRateLimit;
+            $this->window ??= (int)$generalConfig->security->defaultRateLimitDuration;
         }
 
         $this->ip ??= Craft::$app->getRequest()->getUserIP() ?? 'unknown';

@@ -242,7 +242,7 @@ readonly class JobProgress
             ->whereIn('status', $this->statusesThatCanTransitionTo(JobStatus::Cancelled))
             ->update(['status' => JobStatus::Cancelled->value]);
 
-        $queueNames = array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName]);
+        $queueNames = array_unique([Cms::config()->queue->name, Cms::config()->queue->lowPriorityName]);
         $failer = app('queue.failer');
 
         foreach ($queueNames as $queueName) {

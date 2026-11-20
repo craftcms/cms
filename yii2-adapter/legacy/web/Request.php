@@ -250,16 +250,16 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if (!isset($this->_isCpRequest)) {
             $this->_isCpRequest = false;
             // Is it a possibility?
-            if ($this->generalConfig->cpTrigger || $this->generalConfig->baseCpUrl) {
+            if ($this->generalConfig->routing->cpTrigger || $this->generalConfig->routing->baseCpUrl) {
                 // Figure out the base URL the request must have if this is a control panel request
                 $testBaseCpUrls = [];
-                if ($this->generalConfig->baseCpUrl) {
-                    $testBaseCpUrls[] = implode('/', array_filter([rtrim($this->generalConfig->baseCpUrl, '/'), $this->generalConfig->cpTrigger]));
+                if ($this->generalConfig->routing->baseCpUrl) {
+                    $testBaseCpUrls[] = implode('/', array_filter([rtrim($this->generalConfig->routing->baseCpUrl, '/'), $this->generalConfig->routing->cpTrigger]));
                 } else {
                     if (isset($baseUrl)) {
-                        $testBaseCpUrls[] = "$baseUrl/{$this->generalConfig->cpTrigger}";
+                        $testBaseCpUrls[] = "$baseUrl/{$this->generalConfig->routing->cpTrigger}";
                     }
-                    $testBaseCpUrls[] = $this->getBaseUrl() . "/{$this->generalConfig->cpTrigger}";
+                    $testBaseCpUrls[] = $this->getBaseUrl() . "/{$this->generalConfig->routing->cpTrigger}";
                 }
                 $siteScore ??= isset($site) ? $this->_scoreSite($site) : 0;
                 foreach ($testBaseCpUrls as $testUrl) {
@@ -278,8 +278,8 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         Sites::setCurrentSite($site ?? null);
 
         // If this is a control panel request and the path begins with the control panel trigger, remove it
-        if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
-            $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
+        if ($this->_isCpRequest && $this->generalConfig->routing->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->routing->cpTrigger . '/')) {
+            $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->routing->cpTrigger)), '/');
         }
         // Trim off any leading path segments that are part of the base URL
         elseif ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
@@ -447,7 +447,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getPageNum(): int
     {
-        return AbstractPaginator::resolveCurrentPage(Cms::config()->getPageTriggerParam());
+        return AbstractPaginator::resolveCurrentPage(Cms::config()->routing->getPageTriggerParam());
     }
 
     /**
@@ -530,7 +530,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         $this->_hadToken = false;
         $this->_hasInvalidToken = false;
 
-        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+        $token = ($this->getQueryParam($this->generalConfig->routing->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
 
         if (!$token) {
             return;
@@ -563,7 +563,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getSiteToken(): ?string
     {
-        return $this->getQueryParam($this->generalConfig->siteToken) ?? $this->getHeaders()->get('X-Craft-Site-Token');
+        return $this->getQueryParam($this->generalConfig->routing->siteToken) ?? $this->getHeaders()->get('X-Craft-Site-Token');
     }
 
     /**
@@ -1654,7 +1654,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
 
         // Trigger match?
         if (
-            $this->getSegment(1) === $this->generalConfig->actionTrigger &&
+            $this->getSegment(1) === $this->generalConfig->routing->actionTrigger &&
             count($this->getSegments()) > 1
         ) {
             $this->_actionSegments = array_slice($this->getSegments(), 1);
@@ -1681,22 +1681,22 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         if ($checkSpecialPaths) {
             $specialPaths = [
                 [
-                    $this->_isCpRequest ? self::CP_PATH_LOGIN : $this->generalConfig->getLoginPath(),
+                    $this->_isCpRequest ? self::CP_PATH_LOGIN : $this->generalConfig->routing->getLoginPath(),
                     function() {
                         $this->_isLoginRequest = true;
                         return ['users', 'login'];
                     },
                 ],
                 [
-                    $this->_isCpRequest ? self::CP_PATH_LOGOUT : $this->generalConfig->getLogoutPath(),
+                    $this->_isCpRequest ? self::CP_PATH_LOGOUT : $this->generalConfig->routing->getLogoutPath(),
                     fn() => ['users', 'logout'],
                 ],
                 [
-                    $this->_isCpRequest ? self::CP_PATH_SET_PASSWORD : $this->generalConfig->getSetPasswordPath(),
+                    $this->_isCpRequest ? self::CP_PATH_SET_PASSWORD : $this->generalConfig->routing->getSetPasswordPath(),
                     fn() => ['users', 'set-password'],
                 ],
                 [
-                    $this->_isCpRequest ? self::CP_PATH_VERIFY_EMAIL : $this->generalConfig->getVerifyEmailPath(),
+                    $this->_isCpRequest ? self::CP_PATH_VERIFY_EMAIL : $this->generalConfig->routing->getVerifyEmailPath(),
                     fn() => ['users', 'verify-email'],
                 ],
                 [

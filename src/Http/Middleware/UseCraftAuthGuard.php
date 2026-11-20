@@ -18,12 +18,12 @@ class UseCraftAuthGuard
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (Cms::config()->authGuard === null) {
+        if (Cms::config()->security->authGuard === null) {
             return $next($request);
         }
 
         $defaultGuard = $this->auth->getDefaultDriver();
-        $this->auth->shouldUse(Cms::config()->getAuthGuard());
+        $this->auth->shouldUse(Cms::config()->security->getAuthGuard());
 
         try {
             return $next($request);

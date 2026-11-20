@@ -31,7 +31,7 @@ class RequestMixin
              * @phpstan-ignore-next-line
              */
             $request = $this;
-            $user = $request->user(Cms::config()->authGuard);
+            $user = $request->user(Cms::config()->security->authGuard);
 
             if ($user === null || $user instanceof CraftUser) {
                 return $user;
@@ -128,7 +128,7 @@ class RequestMixin
                 return true;
             }
 
-            $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+            $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
             if ($cpTrigger === '') {
                 return true;
@@ -151,7 +151,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return $request->input(Cms::config()->tokenParam, $request->header(HandleTokenRequest::TOKEN_HEADER));
+            return $request->input(Cms::config()->routing->tokenParam, $request->header(HandleTokenRequest::TOKEN_HEADER));
         };
     }
 
@@ -170,7 +170,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return $request->query(Cms::config()->siteToken, $request->header('X-Craft-Site-Token'));
+            return $request->query(Cms::config()->routing->siteToken, $request->header('X-Craft-Site-Token'));
         };
     }
 
@@ -218,7 +218,7 @@ class RequestMixin
                 $path = Url::stripCpTrigger($path);
             }
 
-            $actionTrigger = trim($generalConfig->actionTrigger, '/');
+            $actionTrigger = trim($generalConfig->routing->actionTrigger, '/');
 
             if ($actionTrigger !== '' && $path === $actionTrigger) {
                 return '';

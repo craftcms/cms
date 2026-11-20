@@ -93,7 +93,7 @@ readonly class InstallController
         $defaultSiteUrl = $this->defaultSiteUrl();
         $defaultSiteLanguage = $this->defaultSiteLanguage();
         $dbConfig = DB::getConfig();
-        $postCpLoginRedirect = Cms::config()->postCpLoginRedirect;
+        $postCpLoginRedirect = Cms::config()->routing->postCpLoginRedirect;
 
         return Inertia::render('install/Install', [
             'showDbScreen' => $showDbScreen,
@@ -291,7 +291,7 @@ readonly class InstallController
             $this->writeDbEnv($dbData, $path);
         }
 
-        $redirect = Cms::config()->postCpLoginRedirect;
+        $redirect = Cms::config()->routing->postCpLoginRedirect;
 
         return new JsonResponse(['redirect' => Url::cpUrl($redirect)]);
     }

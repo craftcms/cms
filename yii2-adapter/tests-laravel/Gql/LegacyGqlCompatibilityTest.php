@@ -43,7 +43,7 @@ uses(DatabaseTestCase::class);
 beforeEach(function() {
     app(Gql::class)->flushCaches();
     app(Gql::class)->setActiveSchema(new GqlSchema());
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 });
 
 it('bridges legacy query registration listeners', function() {

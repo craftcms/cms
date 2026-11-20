@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
-    Cms::config()->cpTrigger = 'admin';
-    Cms::config()->actionTrigger = 'actions';
-    Cms::config()->pageTrigger = 'p';
-    Cms::config()->tokenParam = 'token';
+    Cms::config()->routing->cpTrigger = 'admin';
+    Cms::config()->routing->actionTrigger = 'actions';
+    Cms::config()->routing->pageTrigger = 'p';
+    Cms::config()->routing->tokenParam = 'token';
 });
 
 afterEach(function () {
@@ -92,7 +92,7 @@ describe('isCpRequest', function () {
     });
 
     it('returns true for root control panel requests', function (?string $cpTrigger) {
-        Cms::config()->cpTrigger = $cpTrigger;
+        Cms::config()->routing->cpTrigger = $cpTrigger;
 
         expect(Request::create('/dashboard')->isCpRequest())->toBeTrue();
     })->with([

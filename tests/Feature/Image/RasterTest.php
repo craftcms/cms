@@ -178,14 +178,14 @@ it('keeps PNGs compressed when cleaning them with GD', function () {
     $source->setOption('png:bit-depth', '16');
     $source->writeImage('png:'.$path);
 
-    $original = Cms::config()->imageDriver;
-    Cms::config()->imageDriver = ImageDriver::Gd->value;
+    $original = Cms::config()->images->driver;
+    Cms::config()->images->driver = ImageDriver::Gd->value;
     app()->forgetInstance(Images::class);
 
     try {
         app(Images::class)->cleanImage($path);
     } finally {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
     }
 

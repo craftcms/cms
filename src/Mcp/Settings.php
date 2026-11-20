@@ -141,7 +141,7 @@ class Settings extends Component
     /** Whether a route begins with the control panel trigger. */
     public function isCpRoute(string $route): bool
     {
-        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
         return $cpTrigger !== '' && str_starts_with(trim($route, '/').'/', $cpTrigger.'/');
     }
@@ -205,8 +205,8 @@ class Settings extends Component
      */
     public function baseUrl(string $route): string
     {
-        $cp = $this->isCpRoute($route) || trim((string) Cms::config()->cpTrigger, '/') === '';
-        $baseUrl = $cp ? Env::parse(Cms::config()->baseCpUrl) : null;
+        $cp = $this->isCpRoute($route) || trim((string) Cms::config()->routing->cpTrigger, '/') === '';
+        $baseUrl = $cp ? Env::parse(Cms::config()->routing->baseCpUrl) : null;
 
         return (string) ($baseUrl ?? config('app.url'));
     }

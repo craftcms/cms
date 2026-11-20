@@ -63,7 +63,7 @@ class VolumeRules extends Ruleset
             ],
         ];
 
-        $tempAssetUploadTarget = Cms::config()->getTempAssetUploadDisk();
+        $tempAssetUploadTarget = Cms::config()->assets->getTempUploadDisk();
         $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
 
         return $rules;

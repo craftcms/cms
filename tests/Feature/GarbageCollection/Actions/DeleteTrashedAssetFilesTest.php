@@ -16,11 +16,11 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    Cms::config()->trashedAssetDisk(null);
+    Cms::config()->assets->trashDisk(null);
 });
 
 it('deletes trashed asset files whose assets aren’t holding them anymore', function () {
-    Cms::config()->trashedAssetDisk('gc-trashed-assets');
+    Cms::config()->assets->trashDisk('gc-trashed-assets');
     $trashed = Asset::factory()->create(['trashedFileExists' => true]);
     $restored = Asset::factory()->create(['trashedFileExists' => false]);
 

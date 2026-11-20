@@ -16,7 +16,7 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     actingAs(User::find()->one());
-    $this->cpTrigger = Cms::config()->cpTrigger;
+    $this->cpTrigger = Cms::config()->routing->cpTrigger;
 
     $this->single = Section::factory()->create([
         'type' => SectionType::Single,

@@ -90,7 +90,7 @@ it('renders template routes from legacy url rules', function() {
     app(TemplateRoots::class)->register(TemplateMode::Cp, 'example-plugin', $templateRoot);
 
     TemplateMode::set(TemplateMode::Cp);
-    app()->instance('request', IlluminateRequest::create('/' . Cms::config()->cpTrigger . '/example-plugin'));
+    app()->instance('request', IlluminateRequest::create('/' . Cms::config()->routing->cpTrigger . '/example-plugin'));
 
     try {
         $response = Craft::$app->runAction('templates/render', [

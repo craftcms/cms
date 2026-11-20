@@ -33,7 +33,7 @@ abstract class AdminTable
      */
     public static function paginationLinks(int $page, int $total, int $limit): array
     {
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $paginator = new LengthAwarePaginator(
             items: [],
             total: $total,

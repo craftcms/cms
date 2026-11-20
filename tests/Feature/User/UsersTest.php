@@ -134,7 +134,7 @@ test('getPasswordResetUrl', function () {
 
 test('getPasswordResetUrl links console requests to the control panel for users with control panel access', function () {
     Edition::set(Edition::Pro);
-    $setPasswordPath = Cms::config()->getSetPasswordPath();
+    $setPasswordPath = Cms::config()->routing->getSetPasswordPath();
 
     expect($this->users->getPasswordResetUrl(UserModel::factory()->createElement()))
         ->toContain("/$setPasswordPath?code=")
@@ -426,7 +426,7 @@ test('handleInvalidLogin', function () {
 });
 
 test('handleInvalidLogin stores ip', function () {
-    Cms::config()->storeUserIps = true;
+    Cms::config()->security->storeUserIps = true;
 
     $user = UserModel::factory()->active()->createElement();
 
@@ -438,8 +438,8 @@ test('handleInvalidLogin stores ip', function () {
 });
 
 test('handleInvalidLogin without limit', function () {
-    Cms::config()->maxInvalidLogins = false;
-    Cms::config()->storeUserIps = true;
+    Cms::config()->security->maxInvalidLogins = false;
+    Cms::config()->security->storeUserIps = true;
 
     $user = UserModel::factory()->active()->createElement();
 
@@ -461,7 +461,7 @@ test('handleInvalidLogin with max outside window', function () {
         'invalidLoginWindowStart' => null,
     ]);
 
-    Cms::config()->maxInvalidLogins = 1;
+    Cms::config()->security->maxInvalidLogins = 1;
 
     $this->users->handleInvalidLogin($user);
 
@@ -485,8 +485,8 @@ test('handleInvalidLogin inside window', function () {
     ]);
 
     // 3 max - that's important for a little bit later. Also a 2 day invalidLoginWindowDuration
-    Cms::config()->maxInvalidLogins = 3;
-    Cms::config()->invalidLoginWindowDuration = 172800;
+    Cms::config()->security->maxInvalidLogins = 3;
+    Cms::config()->security->invalidLoginWindowDuration = 172800;
 
     // 1 st invalid login.
     $this->users->handleInvalidLogin($activeUser);
@@ -522,7 +522,7 @@ test('handleValidLogin', function () {
 });
 
 test('handleValidLogin with ip collection', function () {
-    Cms::config()->storeUserIps = true;
+    Cms::config()->security->storeUserIps = true;
 
     $activeUser = UserModel::factory()->active()->createElement();
 
@@ -553,8 +553,8 @@ test('handleValidLogin clears values', function () {
 
 test('an expired lockout counts as unlocked until the next login attempt clears it', function (string $attempt) {
     Event::fake([UserUnlocked::class, UserLocked::class]);
-    Cms::config()->cooldownDuration = 300;
-    Cms::config()->maxInvalidLogins = 2;
+    Cms::config()->security->cooldownDuration = 300;
+    Cms::config()->security->maxInvalidLogins = 2;
     $user = UserModel::factory()->active()->createElement();
     UserModel::whereKey($user->id)->update(['locked' => true, 'lockoutDate' => now('UTC')->subMinutes(10)]);
 

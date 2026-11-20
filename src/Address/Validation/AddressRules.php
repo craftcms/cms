@@ -194,7 +194,7 @@ class AddressRules extends ElementRules
 
         return match ($attributes) {
             ['latLong'] => ['latitude', 'longitude'],
-            ['fullName'] => Cms::config()->showFirstAndLastNameFields
+            ['fullName'] => Cms::config()->users->showFirstAndLastNameFields
                 ? ['firstName', 'lastName']
                 : $attributes,
             default => $attributes,

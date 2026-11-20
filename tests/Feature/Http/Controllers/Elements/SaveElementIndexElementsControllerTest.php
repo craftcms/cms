@@ -537,8 +537,8 @@ it('preserves the legacy action route contract for save-elements', function () {
     ]);
 
     postJson('/'.implode('/', array_filter([
-        Cms::config()->cpTrigger,
-        Cms::config()->actionTrigger,
+        Cms::config()->routing->cpTrigger,
+        Cms::config()->routing->actionTrigger,
         'element-indexes/save-elements',
     ])), [
         'elementType' => Entry::class,

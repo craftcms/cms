@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
-    Cms::config()->cpTrigger = 'admin';
-    Cms::config()->actionTrigger = 'actions';
+    Cms::config()->routing->cpTrigger = 'admin';
+    Cms::config()->routing->actionTrigger = 'actions';
 });
 
 it('resolves site action routes from the request path', function () {
@@ -37,7 +37,7 @@ it('resolves control panel action routes from the request path', function () {
 });
 
 it('resolves root control panel action routes from the request path', function () {
-    Cms::config()->cpTrigger = null;
+    Cms::config()->routing->cpTrigger = null;
     $request = Request::create('/actions/users/login');
 
     $actionRoute = app(ActionRouteResolver::class)->resolve($request);
@@ -84,7 +84,7 @@ it('builds action uris from explicit segments', function () {
 });
 
 it('builds root control panel action uris from explicit segments', function (?string $cpTrigger) {
-    Cms::config()->cpTrigger = $cpTrigger;
+    Cms::config()->routing->cpTrigger = $cpTrigger;
 
     expect(ActionRoute::uriForSegments(['users', 'login'], true))->toBe('/actions/users/login');
 })->with([

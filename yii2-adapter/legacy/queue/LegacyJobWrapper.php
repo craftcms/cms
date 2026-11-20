@@ -43,7 +43,7 @@ class LegacyJobWrapper implements DescribableJob, ShouldQueue
     public function __construct(
         private readonly JobInterface $legacyJob,
     ) {
-        $this->queue = Cms::config()->queueName;
+        $this->queue = Cms::config()->queue->name;
 
         if (method_exists($this->legacyJob, 'getTtr')) {
             $this->timeout = $this->legacyJob->getTtr();

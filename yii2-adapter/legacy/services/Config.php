@@ -250,10 +250,10 @@ class Config extends Component
      * ---
      *
      * ```php
-     * $logoutPath = Craft::$app->config->general->logoutPath;
+     * $logoutPath = Craft::$app->config->general->routing->logoutPath;
      * ```
      * ```twig
-     * <a href="{{ url(craft.app.config.general.logoutPath) }}">
+     * <a href="{{ url(craft.app.config.general.routing.logoutPath) }}">
      *   Logout
      * </a>
      * ```

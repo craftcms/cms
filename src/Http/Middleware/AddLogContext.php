@@ -27,7 +27,7 @@ readonly class AddLogContext
             'environment' => app()->environment(),
             'userId' => $request->craftUser()?->getCraftUserId(),
             'sessionId' => $request->hasSession() ? $request->session()->getId() : null,
-            'ips' => $this->generalConfig->storeUserIps ? $request->ips() : null,
+            'ips' => $this->generalConfig->security->storeUserIps ? $request->ips() : null,
         ]));
 
         if ($request->method() === 'POST') {

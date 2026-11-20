@@ -95,9 +95,9 @@ it('sanitizes dirty svgs', function () {
 
 it('respects sanitizeSvgUploads config setting', function () {
     $path = $this->sandboxPath.'/dirty-svg.svg';
-    $original = Cms::config()->sanitizeSvgUploads;
+    $original = Cms::config()->assets->sanitizeSvgUploads;
 
-    Cms::config()->sanitizeSvgUploads = false;
+    Cms::config()->assets->sanitizeSvgUploads = false;
 
     try {
         $this->service->cleanImage($path);
@@ -107,7 +107,7 @@ it('respects sanitizeSvgUploads config setting', function () {
         expect($contents)->toContain('<script>')
             ->and($contents)->toContain('<this>');
     } finally {
-        Cms::config()->sanitizeSvgUploads = $original;
+        Cms::config()->assets->sanitizeSvgUploads = $original;
     }
 });
 
@@ -170,27 +170,27 @@ it('returns null or false for exif methods on unsupported files', function () {
         ->and($this->service->stripOrientationFromExifData($path))->toBeFalse();
 });
 
-it('respects transformGifs config setting', function () {
+it('respects the images.transformGifs config setting', function () {
     if (! $this->service->getIsImagick()) {
         $this->markTestSkipped('Need Imagick to verify GIF transform behavior.');
     }
 
     $path = $this->sandboxPath.'/example-gif.gif';
-    $original = Cms::config()->transformGifs;
+    $original = Cms::config()->images->transformGifs;
     $oldContents = file_get_contents($path);
 
     try {
-        Cms::config()->transformGifs = false;
+        Cms::config()->images->transformGifs = false;
         $this->service->cleanImage($path);
 
         expect(file_get_contents($path))->toBe($oldContents);
 
-        Cms::config()->transformGifs = true;
+        Cms::config()->images->transformGifs = true;
         $this->service->cleanImage($path);
 
         expect(file_get_contents($path))->not->toBe($oldContents);
     } finally {
-        Cms::config()->transformGifs = $original;
+        Cms::config()->images->transformGifs = $original;
     }
 });
 

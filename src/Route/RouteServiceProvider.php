@@ -116,8 +116,8 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         URL::defaults([
-            'cpTrigger' => trim((string) Cms::config()->cpTrigger, '/') ?: null,
-            'actionTrigger' => trim(Cms::config()->actionTrigger, '/'),
+            'cpTrigger' => trim((string) Cms::config()->routing->cpTrigger, '/') ?: null,
+            'actionTrigger' => trim(Cms::config()->routing->actionTrigger, '/'),
         ]);
 
         $router->patterns($routes->tokens);
@@ -192,7 +192,7 @@ class RouteServiceProvider extends ServiceProvider
 
     private function bootMiddleware(Router $router): void
     {
-        if (Cms::config()->authGuard === null) {
+        if (Cms::config()->security->authGuard === null) {
             $router->aliasMiddleware('password.confirm', RequireConfirmedPassword::class);
         }
 

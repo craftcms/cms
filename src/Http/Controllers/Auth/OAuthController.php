@@ -282,8 +282,8 @@ readonly class OAuthController extends AuthenticationController
     private function defaultReturnUrl(bool $isCpRequest): string
     {
         return $isCpRequest
-            ? \CraftCms\Cms\Support\Url::cpUrl($this->generalConfig->getPostCpLoginRedirect())
-            : \CraftCms\Cms\Support\Url::siteUrl($this->generalConfig->getPostLoginRedirect());
+            ? \CraftCms\Cms\Support\Url::cpUrl($this->generalConfig->routing->getPostCpLoginRedirect())
+            : \CraftCms\Cms\Support\Url::siteUrl($this->generalConfig->routing->getPostLoginRedirect());
     }
 
     private function loginUrl(bool $isCpRequest): string
@@ -292,7 +292,7 @@ readonly class OAuthController extends AuthenticationController
             return cp_url(CpAuthPath::Login->value);
         }
 
-        if (! $loginPath = $this->generalConfig->getLoginPath()) {
+        if (! $loginPath = $this->generalConfig->routing->getLoginPath()) {
             return cp_url(CpAuthPath::Login->value);
         }
 

@@ -68,7 +68,7 @@ class AssetFileKinds
             ->mapWithKeys(fn (FileKind $kind) => [$kind->value => $kind->toArray()])
             ->all();
 
-        $fileKinds = Arr::merge($fileKinds, $this->generalConfig->extraFileKinds);
+        $fileKinds = Arr::merge($fileKinds, $this->generalConfig->assets->extraFileKinds);
 
         foreach ($this->fileKinds as $kind => $definition) {
             $fileKinds = Arr::merge($fileKinds, [
