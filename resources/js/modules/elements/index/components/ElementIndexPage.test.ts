@@ -13,7 +13,7 @@ import {
   useCraftTable,
 } from '@/common/table/craftTable';
 import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
-import {useNavItemActions} from '@/common/composables/useNavItemActions';
+import {openCustomizeSources} from '@/common/composables/useCustomizeSourcesHandlers';
 
 const page = vi.hoisted(() => ({
   elementIndex: null as unknown,
@@ -85,8 +85,15 @@ vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => ({
   },
 }));
 vi.mock('@/modules/elements/components/ElementThumbs.vue', () => stub);
-// Records whether it's open — which is all a gear in the nav can do to it.
+// Records whether it's open — which is all the nav footer's Customize menu can
+// do to it.
 const modal = vi.hoisted(() => ({isActive: false}));
+// The standalone modal the footer menu falls back on when no page handles the
+// element type.
+const standalone = vi.hoisted(() => ({open: vi.fn()}));
+vi.mock('@/modules/customize-sources/open-customize-sources-modal', () => ({
+  openCustomizeSourcesModal: standalone.open,
+}));
 
 vi.mock(
   '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue',
@@ -442,26 +449,41 @@ it('does nothing when View has no public URL', async () => {
   expect(open).not.toHaveBeenCalled();
 });
 
-it('lends the nav a gear that opens Customize Sources', async () => {
+it('opens its own Customize Sources when the nav footer asks for its element type', async () => {
+  standalone.open.mockClear();
   await mountPage({customizableSources: true});
 
-  const [gear, ...others] = useNavItemActions()('/admin/entries');
-
-  expect(others).toEqual([]);
-  expect(gear?.icon).toBe('gear');
-
-  gear!.onClick!(new Event('click'));
+  openCustomizeSources('entry');
   await nextTick();
 
   expect(modal.isActive).toBe(true);
+  expect(standalone.open).not.toHaveBeenCalled();
 });
 
-it('offers it only on pages that opt in', async () => {
+it('leaves other element types to the standalone modal', async () => {
+  standalone.open.mockClear();
+  await mountPage({customizableSources: true});
+
+  openCustomizeSources('asset');
+  await nextTick();
+
+  expect(modal.isActive).toBe(false);
+  expect(standalone.open).toHaveBeenCalledWith(
+    expect.objectContaining({elementType: 'asset'})
+  );
+});
+
+it('handles it only on pages that opt in', async () => {
   // Not every index built on this page offers Customize Sources — the users
   // index doesn't ask for it.
+  standalone.open.mockClear();
   await mountPage();
 
-  expect(useNavItemActions()('/admin/entries')).toEqual([]);
+  openCustomizeSources('entry');
+  await nextTick();
+
+  expect(modal.isActive).toBe(false);
+  expect(standalone.open).toHaveBeenCalledOnce();
 });
 
 it.each([
@@ -471,25 +493,32 @@ it.each([
     {admin: true, allowAdminChanges: false},
   ],
 ])(
-  'offers it to nobody but admins who can make changes — not %s',
+  'handles it for nobody but admins who can make changes — not %s',
   async (_, as) => {
     Object.assign(craft, as);
+    standalone.open.mockClear();
 
     try {
       await mountPage({customizableSources: true});
 
-      expect(useNavItemActions()('/admin/entries')).toEqual([]);
+      openCustomizeSources('entry');
+      await nextTick();
+
+      expect(modal.isActive).toBe(false);
     } finally {
       Object.assign(craft, {admin: true, allowAdminChanges: true});
     }
   }
 );
 
-it('takes the gear back when the page goes', async () => {
+it('stops handling it when the page goes', async () => {
+  standalone.open.mockClear();
   await mountPage({customizableSources: true});
 
   teardown!();
   teardown = undefined;
 
-  expect(useNavItemActions()('/admin/entries')).toEqual([]);
+  openCustomizeSources('entry');
+
+  expect(standalone.open).toHaveBeenCalledOnce();
 });

@@ -56,7 +56,8 @@ function appendElement<T extends HTMLElement>(el: T): T {
 
 async function mountSidebar(
   mode: 'docked' | 'floating',
-  visibility: 'visible' | 'hidden'
+  visibility: 'visible' | 'hidden',
+  customizeMenu: unknown = null
 ) {
   state.sidebar = reactive({mode, visibility});
   state.toggleButton = ref(null);
@@ -75,6 +76,7 @@ async function mountSidebar(
         general: {cpTrigger: 'admin'},
         nav: [],
         navBadges: {},
+        customizeMenu,
       },
       queue: {
         displayedJob: null,
@@ -183,4 +185,47 @@ it('stays open on a click elsewhere while docked', async () => {
   button.click();
 
   expect(state.sidebar.visibility).toBe('visible');
+});
+
+describe('the Customize menu', () => {
+  const menu = {
+    navigation: {
+      label: 'Customize navigation',
+      href: '/admin/settings/cp-nav',
+      icon: 'custom-icons/sidebar-nav',
+    },
+    sources: [{elementType: 'entry', label: 'Entries', icon: 'newspaper'}],
+  };
+
+  const find = (container: HTMLElement) =>
+    container.querySelector('.cp-sidebar__footer .customize-menu');
+
+  it('sits beside Collapse in the docked footer', async () => {
+    expect(find(await mountSidebar('docked', 'visible', menu))).not.toBeNull();
+  });
+
+  it('leaves the collapsed rail to Expand', async () => {
+    expect(find(await mountSidebar('docked', 'hidden', menu))).toBeNull();
+  });
+
+  it('is left out for anyone the server gives no menu', async () => {
+    expect(find(await mountSidebar('docked', 'visible'))).toBeNull();
+  });
+
+  it('stays in the floating sidebar, which has nothing to collapse', async () => {
+    // Below `lg` the sidebar floats, and this menu is the only way to
+    // customize sources there.
+    const container = await mountSidebar('floating', 'visible', menu);
+
+    expect(find(container)).not.toBeNull();
+    expect(
+      container.querySelector('.cp-sidebar__footer craft-nav-item')
+    ).toBeNull();
+  });
+
+  it('leaves the floating sidebar without a footer when there is no menu', async () => {
+    const container = await mountSidebar('floating', 'visible');
+
+    expect(container.querySelector('.cp-sidebar__footer')).toBeNull();
+  });
 });

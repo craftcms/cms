@@ -283,6 +283,9 @@ class HandleInertiaRequests extends Middleware
                 'navBadges' => fn (): object => $updatePending
                     ? (object) []
                     : (object) $nav->getBadgeCounts(),
+                // The nav footer's Customize menu. Kept out of `nav`, which a
+                // customized navigation reshapes, so it can't be hidden by it.
+                'customizeMenu' => fn (): ?array => $updatePending ? null : $nav->getCustomizeMenu(),
             ],
         ];
     }

@@ -29,6 +29,14 @@ export interface CpUser {
   showTokens: boolean;
 }
 
+/** What the nav footer's Customize menu offers. */
+export interface CustomizeMenu {
+  /** The CP Navigation settings. */
+  navigation: {label: string; href: string; icon: string | null};
+  /** Each element type whose sources the nav lists, by its own modal. */
+  sources: Array<{elementType: string; label: string; icon: string | null}>;
+}
+
 export interface CraftData {
   /** The control panel theme: the user's preference, or `system`. */
   theme: 'light' | 'dark' | 'system';
@@ -91,6 +99,12 @@ export interface CraftData {
    * come with every response.
    */
   navBadges: Record<string, number>;
+  /**
+   * The nav footer's Customize menu, or null for anyone who can't use it:
+   * non-admins, and everyone when admin changes aren't allowed. Kept out of
+   * `nav`, which a customized navigation reshapes, so it can't be hidden by it.
+   */
+  customizeMenu: CustomizeMenu | null;
   /** The CP language's writing direction. */
   orientation: 'ltr' | 'rtl';
   actionUrl: string;

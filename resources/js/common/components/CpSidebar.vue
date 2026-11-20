@@ -3,6 +3,8 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import MainNav from '@/common/components/MainNav.vue';
   import EditionInfo from '@/common/components/EditionInfo.vue';
+  import CustomizeMenu from '@/common/components/CustomizeMenu.vue';
+  import useCraftData from '@/common/composables/useCraftData';
   import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
   import {useResizeObserver} from '@vueuse/core';
   import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
@@ -50,6 +52,8 @@
   );
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
+
+  const {customizeMenu} = useCraftData();
 
   // Whether the nav overflows its body, so the footer can show it's floating
   // above more of it. Watching the nav as well as the body catches branches
@@ -121,8 +125,14 @@
         :mode="sidebar.mode === 'floating' ? 'inline' : 'trail'"
       />
     </div>
-    <div v-if="sidebar.mode === 'docked'" class="cp-sidebar__footer">
-      <craft-nav-list>
+    <!-- Floating, there's nothing to collapse, but the Customize menu still
+      needs a home: it's the only way to customize sources on a narrow
+      screen. -->
+    <div
+      v-if="sidebar.mode === 'docked' || customizeMenu"
+      class="cp-sidebar__footer"
+    >
+      <craft-nav-list v-if="sidebar.mode === 'docked'">
         <craft-nav-item
           ref="collapseItem"
           :button="true"
@@ -133,6 +143,13 @@
           {{ collapsed ? t('Expand') : t('Collapse') }}
         </craft-nav-item>
       </craft-nav-list>
+      <!-- Collapsed, the footer is one rail item wide, with room only for
+        Expand. -->
+      <CustomizeMenu
+        v-if="customizeMenu && !collapsed"
+        class="cp-sidebar__customize"
+        :menu="customizeMenu"
+      />
     </div>
   </nav>
 </template>
@@ -233,6 +250,8 @@
   .cp-sidebar__footer {
     flex: 0 0 auto;
     display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--c-spacing-xs);
     align-items: center;
     margin-block-start: auto;
     padding-block: var(--c-spacing-sm);
@@ -242,6 +261,13 @@
     z-index: 1;
     border-block-start: 1px solid transparent;
     inset-block-end: var(--cp-debug-bar-height, 0px);
+  }
+
+  /* Beside Collapse when docked, and in the same corner when floating.
+     `craft-action-menu` is `display: contents`, so the grid item is its
+     invoker, not the menu. */
+  .cp-sidebar__customize :deep(> [slot='invoker']) {
+    grid-column: 2;
   }
 
   .cp-sidebar--scrolling .cp-sidebar__footer {
