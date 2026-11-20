@@ -21,7 +21,7 @@
     @if ($statusIndicatorHtml) show-status @endif
 >
     @if ($statusIndicatorHtml)
-        <div slot="status">{!! $statusIndicatorHtml !!}</div>
+        <div slot="status" data-cvd-status>{!! $statusIndicatorHtml !!}</div>
     @endif
     @if ($avatarHtml)
         <div slot="thumbnail">{!! $avatarHtml !!}</div>
