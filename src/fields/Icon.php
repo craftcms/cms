@@ -248,6 +248,11 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             return new IconData($name, [], $set);
         }
 
+        // Only allow icon names, not file paths, URLs, or SVG markup
+        if (!preg_match('/^[\da-z\-]+$/', $value)) {
+            return null;
+        }
+
         return new IconData($value, self::iconStyles($value));
     }
 

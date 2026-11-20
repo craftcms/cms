@@ -5,6 +5,7 @@
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails. ([#20742](https://github.com/craftcms/cms/pull/20742))
 - MCP upload URLs now respond with JSON errors. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - Added `craft\helpers\UrlHelper::absoluteUrl()`.
+- Added `craft\services\Dashboard::isWidgetTypeAvailable()`.
 - `craft\elements\db\NestedElementQueryTrait::owner()` now accepts an array of owner elements.
 - Fixed a bug where garbage collection could block other requests’ database writes. ([#20885](https://github.com/craftcms/cms/issues/20885))
 - Fixed a bug where uploading an indexed PNG with Imagick merged similar colors in its palette. ([#20916](https://github.com/craftcms/cms/issues/20916))
@@ -29,6 +30,10 @@
 - Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case. ([#20773](https://github.com/craftcms/cms/issues/20773))
 - Fixed a bug where MCP tools returned root-relative asset URLs.
 - Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields. ([#20838](https://github.com/craftcms/cms/issues/20838))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-24vg-rp56-rf5c)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2xwp-6jjc-hfmm)
 
 ## 5.12.1 - 2026-11-10
 

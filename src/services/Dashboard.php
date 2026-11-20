@@ -84,6 +84,12 @@ class Dashboard extends Component
     public const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
 
     /**
+     * @var string|null The widget type that [[doesUserHaveWidget()]] should report the user doesn’t have,
+     * while [[isWidgetTypeAvailable()]] checks it.
+     */
+    private ?string $_availabilityCheckType = null;
+
+    /**
      * Returns all available widget type classes.
      *
      * @return string[]
@@ -158,6 +164,32 @@ class Dashboard extends Component
     }
 
     /**
+     * Returns whether the current user is allowed to use widgets of the given type.
+     *
+     * The type must be registered via [[EVENT_REGISTER_WIDGET_TYPES]], and selectable for the current user.
+     * Unlike calling `isSelectable()` directly, this ignores whether the user already has a widget of that type,
+     * so it can be used to check the user’s existing widgets.
+     *
+     * @param string $type The widget type
+     * @return bool
+     * @since 5.12.2
+     */
+    public function isWidgetTypeAvailable(string $type): bool
+    {
+        if (!in_array($type, $this->getAllWidgetTypes(), true)) {
+            return false;
+        }
+
+        /** @var class-string<WidgetInterface> $type */
+        $this->_availabilityCheckType = $type;
+        try {
+            return $type::isSelectable();
+        } finally {
+            $this->_availabilityCheckType = null;
+        }
+    }
+
+    /**
      * Returns whether the current user has a widget of the given type.
      *
      * @param class-string<WidgetInterface> $type The widget type
@@ -165,6 +197,10 @@ class Dashboard extends Component
      */
     public function doesUserHaveWidget(string $type): bool
     {
+        if ($type === $this->_availabilityCheckType) {
+            return false;
+        }
+
         return WidgetRecord::find()
             ->where([
                 'userId' => Craft::$app->getUser()->getIdentity()->id,

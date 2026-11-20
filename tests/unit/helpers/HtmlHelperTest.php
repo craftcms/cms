@@ -309,6 +309,9 @@ class HtmlHelperTest extends TestCase
         $svg = Html::svg($contents, namespace: false);
         self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
+
+        // Stream wrapper URLs aren't allowed
+        self::assertSame('', Html::svg("file://$path"));
     }
 
     /**
