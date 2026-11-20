@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {inject, nextTick, onMounted, ref, useId, watch} from 'vue';
+  import {computed, inject, nextTick, onMounted, ref, useId, watch} from 'vue';
   import EmphasizedText from '@/common/components/EmphasizedText.vue';
   import {firstFocusableWithin, revealElement} from '@/common/utils/dom';
   import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
@@ -47,9 +47,31 @@
   /** Each linked error's key, with the id of the field it links to. */
   const targets = ref(new Map<string, string>());
 
+  /**
+   * The keys before each `.` or `[` in an error key: `blocks[abc].title` has
+   * `blocks` and `blocks[abc]`.
+   */
+  function ancestorKeys(key: string): string[] {
+    return [...key.matchAll(/[.[]/g)].map((match) => key.slice(0, match.index));
+  }
+
+  /**
+   * Only the top-level errors, as in Craft 5: an error whose field already has
+   * one of its own, such as a table cell's under its table, is left to show
+   * beside its control instead.
+   */
+  const shownErrors = computed(() =>
+    Object.fromEntries(
+      Object.entries(props.errors).filter(
+        ([key]) =>
+          !ancestorKeys(key).some((ancestor) => ancestor in props.errors)
+      )
+    )
+  );
+
   function findLinkedKeys(): void {
     targets.value = new Map(
-      Object.keys(props.errors).flatMap((key) => {
+      Object.keys(shownErrors.value).flatMap((key) => {
         const id = targetId(key);
         return id ? [[key, id] as const] : [];
       })
@@ -127,7 +149,7 @@
            raw would put a field's own value into the DOM as HTML.
            `ElementResponse::errorSummary()` already does that work server-side;
            this component should be fed its output rather than re-deriving it. -->
-        <li v-for="(error, key) in errors" :key="key">
+        <li v-for="(error, key) in shownErrors" :key="key">
           <a
             v-if="targets.has(String(key))"
             :href="`#${targets.get(String(key))}`"
@@ -150,6 +172,14 @@
   a {
     color: inherit;
     text-decoration: underline;
+  }
+
+  li {
+    line-height: 1.5rem;
+  }
+
+  li > a {
+    display: inline-block;
   }
 
   li :deep(strong) {

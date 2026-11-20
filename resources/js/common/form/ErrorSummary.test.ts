@@ -85,6 +85,24 @@ it('shows an unlinked error with its field name in bold, without the asterisks',
   expect(item.querySelector('strong')?.textContent).toBe('Date');
 });
 
+it('lists only top-level errors, leaving a field’s nested errors beside their controls', async () => {
+  const summary = await mount({
+    myTable: '*Table* has invalid cells.',
+    'myTable.0.col2': 'Enter a date.',
+    myTableNotes: '*Table notes* is too long.',
+    blocks: 'Fix *Blocks*.',
+    'blocks[abc].title': 'Title is required.',
+  });
+
+  expect(
+    [...summary.querySelectorAll('li')].map((item) => item.textContent?.trim())
+  ).toEqual([
+    'Table has invalid cells.',
+    'Table notes is too long.',
+    'Fix Blocks.',
+  ]);
+});
+
 it('takes focus when it appears, so the failure is announced', async () => {
   const summary = await mount({title: 'Title is required.'});
   const group = summary.querySelector('[role="group"]')!;

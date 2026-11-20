@@ -51,3 +51,32 @@ it('switches a tab strip’s external panel to show a linked field, and focuses 
     );
   });
 });
+
+it('gives each linked error a target at least 24px tall that doesn’t overlap the next', async () => {
+  document.body.innerHTML = `
+    <craft-field id="ui-date"><div slot="input"><input></div></craft-field>
+    <craft-field id="ui-time"><div slot="input"><input></div></craft-field>`;
+  const container = document.createElement('div');
+  document.body.prepend(container);
+  app = createApp({
+    render: () =>
+      h(ErrorSummary, {
+        errors: {
+          date: 'The *Date* field is required.',
+          time: '*Time* must be no later than 6:00 PM.',
+        },
+      }),
+  });
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.mount(container);
+  await nextTick();
+  await nextTick();
+
+  const [first, second] = [...container.querySelectorAll('a')].map((link) =>
+    link.getBoundingClientRect()
+  );
+
+  expect(first!.height).toBeGreaterThanOrEqual(24);
+  expect(second!.height).toBeGreaterThanOrEqual(24);
+  expect(second!.top).toBeGreaterThanOrEqual(first!.bottom);
+});
