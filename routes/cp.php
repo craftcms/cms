@@ -35,6 +35,7 @@ use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
 use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
+use CraftCms\Cms\Http\Controllers\Import\ImportRunsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\NotificationsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
@@ -283,8 +284,13 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::middleware('can:viewImportPlans')->group(function () {
         Route::get('import', [ImportPlansController::class, 'index'])->name('import.index');
         Route::middleware('can:saveImportPlans')->get('import/new', [ImportPlansController::class, 'create'])->name('import.create');
+        Route::get('import/activity', [ImportRunsController::class, 'index'])->name('import.activity.index');
+        Route::get('import/activity/{runId}', [ImportRunsController::class, 'show'])->name('import.activity.show');
+        Route::get('import/activity/{runId}/items', [ImportRunsController::class, 'items'])->name('import.activity.items');
+        Route::get('import/activity/{runId}/item-data', [ImportRunsController::class, 'itemData'])->name('import.activity.item-data');
         Route::get('import/{handle}', [ImportPlansController::class, 'edit'])->name('import.edit');
         Route::get('import/{handle}/steps/{uid}', [ImportPlansController::class, 'editStep'])->name('import.steps.edit');
+        Route::get('import/{handle}/steps/{uid}/mapping', [ImportPlansController::class, 'editStepMapping'])->name('import.steps.mapping');
     });
     /**
      * Users

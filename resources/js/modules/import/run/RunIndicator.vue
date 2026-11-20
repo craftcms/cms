@@ -54,7 +54,7 @@
   const color = computed(() => {
     switch (status) {
       case 'running':
-        return 'warning';
+        return 'accent';
       case 'successful':
         return 'success';
       case 'failed':
@@ -97,7 +97,7 @@
 
 <style scoped>
   .run-indicator {
-    --_size: var(--c-size-control-sm);
+    --_size: var(--c-run-indicator-size, var(--c-size-control-sm));
     --_stroke-width: var(--c-run-indicator-stroke-width, 2px);
     --_track-color: var(--color-slate-200);
     display: inline-grid;

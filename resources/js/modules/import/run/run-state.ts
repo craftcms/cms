@@ -1,3 +1,7 @@
+import type {
+  ItemResultRow,
+  PreviewResult,
+} from '@/modules/import/preview/plan-preview';
 import {actionClient} from '@craftcms/ui';
 import {useEventListener} from '@vueuse/core';
 import {onScopeDispose, shallowRef, watch, type ShallowRef} from 'vue';
@@ -20,10 +24,42 @@ export interface RunFailure {
   message: string;
   /** The element it would have saved, if it already existed. */
   elementId: number | null;
+  /** What its element is called, if it got as far as having one. */
+  title: string | null;
+  /** The values it was matched on, labeled as the step shows them. */
+  match: Array<{label: string; value: string}>;
   /** Each validation error that kept it from saving, with where it is as labels. */
   problems: Array<{path: string[]; message: string}>;
   /** The item as the source had it. */
   data: unknown;
+}
+
+/** One of a run's items, as its table lists it. */
+export interface RunItem extends ItemResultRow {
+  id: string;
+  /** Its number in its step's data, from 1, when that was recorded. */
+  item: number | null;
+  /** Its element's edit page, if it has one the user can see. */
+  url?: string | null;
+  /** Why it couldn't be imported. */
+  failure?: RunFailure;
+}
+
+/** A page of a step run's items, of one result or all of them, with how many came to each result. */
+export interface RunItems {
+  items: RunItem[];
+  /** The result the items are shown by. */
+  result: PreviewResult | 'all';
+  /** The results whose items can be listed; a run from before its items were recorded only lists its failed ones. */
+  results: PreviewResult[];
+  /** How many items came to each result. */
+  counts: Record<PreviewResult, number>;
+  total: number;
+  /** How many items the chosen result pages through. */
+  matching: number;
+  page: number;
+  pageSize: number;
+  matchColumns: Array<{key: string; label: string}>;
 }
 
 /** One step's share of a run. */
@@ -44,6 +80,8 @@ export interface StepRunState {
 /** One execution of a whole import plan, step run by step run. */
 export interface RunState {
   id: string;
+  /** Its page. */
+  url: string;
   status: RunStatus;
   /** How far the whole run has got, from 0 to 100. */
   progress: number;
@@ -52,6 +90,8 @@ export interface RunState {
   /** The username of whoever started it. */
   user: string | null;
   dateCreated: string;
+  /** When it started, as an entry index shows a date, and in full. */
+  started: {label: string; title: string};
   dateStarted: string | null;
   dateFinished: string | null;
   /** By step uid; only the steps the run includes. */
