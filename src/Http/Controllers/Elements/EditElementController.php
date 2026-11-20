@@ -181,7 +181,7 @@ class EditElementController
             ];
         }
 
-        $previewToken = $previewTargets ? Str::random(32, extendedChars: true) : null;
+        $previewToken = $previewTargets ? Str::random(32) : null;
 
         $notice = match (true) {
             $element->isProvisionalDraft => $this->draftNotice(...),

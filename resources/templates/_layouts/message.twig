@@ -2,10 +2,15 @@
 {% set bodyClass = 'message' %}
 {% set includePane = includePane ?? true %}
 {% set wide = wide ?? false %}
+{# Pages that show their title themselves set `ownHeading`; the rest name the page in a hidden heading. #}
+{% set ownHeading = ownHeading ?? false %}
 {% set message = block('message') %}
 
 {% block body %}
   <main class="message-container grid min-h-dvh place-items-center p-(--cp-container-padding)">
+    {% if title is defined and not ownHeading %}
+      <h1 class="sr-only">{{ title }}</h1>
+    {% endif %}
     <div class="w-full {{ wide ? 'max-w-md' : 'max-w-sm' }}">
       {% if includePane %}
         <craft-pane>

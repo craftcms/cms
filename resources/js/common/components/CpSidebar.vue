@@ -170,17 +170,30 @@
     inset-block-end: 0;
     inset-inline-start: 0;
     inset-inline-end: auto;
-    border-radius: 0 var(--c-radius-md) var(--c-radius-md) 0;
+    border-start-end-radius: var(--c-radius-md);
+    border-end-end-radius: var(--c-radius-md);
     transform: translateX(0);
     width: clamp(calc(240rem / 16), 60dvw, calc(320rem / 16));
-    transition: transform 200ms cubic-bezier(0, 0.55, 0.45, 1);
+    transition:
+      transform 200ms cubic-bezier(0, 0.55, 0.45, 1),
+      visibility 0s;
     background-color: var(--c-surface-overlay);
     box-shadow: var(--c-shadow-overlay);
   }
 
-  /* Only a floating sidebar leaves; a docked one narrows to the icon rail. */
+  /* Only a floating sidebar leaves; a docked one narrows to the icon rail.
+     It slides out past its own edge, then hides once it's gone, so its
+     shadow doesn't reach back into the page. */
   .cp-sidebar[data-mode='floating'][data-visibility='hidden'] {
+    visibility: hidden;
     transform: translateX(-100%);
+    transition:
+      transform 200ms cubic-bezier(0, 0.55, 0.45, 1),
+      visibility 0s 200ms;
+
+    &:dir(rtl) {
+      transform: translateX(100%);
+    }
   }
 
   .cp-sidebar--collapsed {
@@ -203,11 +216,8 @@
 
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
-    /* Centers the first item on the content's header bar, which starts below
-       the body's border. */
-    padding-block-start: calc(
-      var(--cp-body-border-width) + var(--cp-header-touch-target-offset)
-    );
+    /* Centers the first item on the content's header bar. */
+    padding-block-start: var(--cp-header-touch-target-offset);
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
     min-height: 0;

@@ -11,6 +11,7 @@ use craft\events\RedirectEvent;
 use craft\web\ErrorHandler;
 use craft\web\RedirectRule;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetFileKinds;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
@@ -39,11 +40,13 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Route\Events\Redirecting;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Twig\Variables\CraftVariable;
 use CraftCms\Cms\Ui\UiControlTypes;
 use CraftCms\Cms\Ui\UiNodeTypes;
 use CraftCms\Cms\User\UserPermissions;
+use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\Cms\Utility\UtilityTypes;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
@@ -120,6 +123,8 @@ use yii\base\Behavior;
 use yii\base\ExitException;
 use yii\web\HttpException as YiiHttpException;
 use yii\web\NotFoundHttpException as YiiNotFoundHttpException;
+
+use function CraftCms\Cms\t;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
@@ -389,6 +394,7 @@ class Yii2ServiceProvider extends ServiceProvider
         new I18NCompatibility()->boot();
         new TestToEmailAddressCompatibility()->boot();
         $this->app->make(LegacyHtmlPurifierConfigRegistrar::class)->boot();
+        $this->registerHtmlPurifierCacheOption();
 
         /**
          * Load legacy Craft
@@ -454,6 +460,30 @@ class Yii2ServiceProvider extends ServiceProvider
         Craft::$app->state = YiiApplication::STATE_AFTER_REQUEST;
         Craft::$app->trigger(YiiApplication::EVENT_AFTER_REQUEST);
         Craft::$app->state = YiiApplication::STATE_END;
+    }
+
+    private function registerHtmlPurifierCacheOption(): void
+    {
+        ClearCaches::add('html-purifier', function() {
+            $path = Craft::$app->getPath()->getHtmlPurifierCachePath(false);
+
+            return [
+                'label' => t('HTML Purifier caches'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', File::relativePath($path, Aliases::get('@root'))),
+                ]),
+                'action' => function() use ($path) {
+                    // Keep the directory itself, which requests that are purifying may be using
+                    File::cleanDirectory($path);
+
+                    // Craft before 5.13, and yii\helpers\HtmlPurifier, cache them directly in storage/runtime/
+                    $runtimePath = Craft::$app->getPath()->getRuntimePath(false);
+                    foreach (['HTML', 'CSS', 'URI'] as $type) {
+                        File::deleteDirectory($runtimePath . DIRECTORY_SEPARATOR . $type);
+                    }
+                },
+            ];
+        });
     }
 
     private function registerCraftVariableCompatibility(): void

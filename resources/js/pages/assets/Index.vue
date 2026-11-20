@@ -158,7 +158,7 @@
         <div
           class="folder-breadcrumbs -mx-(--cp-container-padding) px-(--cp-container-padding) py-sm border-b border-b-(--c-color-neutral-border-quiet)"
         >
-          <Breadcrumbs :items="breadcrumbs" />
+          <Breadcrumbs :items="breadcrumbs" :label="t('Folder')" />
         </div>
       </template>
       <template #primary-action>

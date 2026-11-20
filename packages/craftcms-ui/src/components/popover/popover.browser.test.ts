@@ -11,6 +11,30 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+it('opens toward the start of the line in right-to-left layouts', async () => {
+  document.body.innerHTML = `
+    <div dir="rtl" style="position: fixed; top: 100px; left: 200px;">
+      <craft-popover placement="bottom-start" open>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content" style="width: 100px; height: 40px;">Menu</div>
+      </craft-popover>
+    </div>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  const invoker = document
+    .querySelector('craft-button')!
+    .getBoundingClientRect();
+  const popup = popover
+    .shadowRoot!.querySelector('[part~="popup"]')!
+    .getBoundingClientRect();
+
+  expect(popup.right).toBeCloseTo(invoker.right, 0);
+  expect(popup.left).toBeLessThan(invoker.left);
+});
+
 it('gives the panel itself no role', async () => {
   document.body.innerHTML = `
     <craft-popover>
@@ -188,6 +212,62 @@ it('leaves a click outside a select’s open list to close only the list', async
   expect(popover.open).toBe(true);
 
   await userEvent.click(page.getByText('Outside'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(popover.open).toBe(false);
+});
+
+it('leaves a click outside a nested popover to close only the nested one', async () => {
+  document.body.innerHTML = `
+    <main tabindex="-1"><p>Outside</p></main>
+    <craft-popover class="outer">
+      <craft-button slot="invoker" type="button">Outer</craft-button>
+      <div slot="content">
+        <craft-popover class="inner">
+          <craft-button slot="invoker" type="button">Inner</craft-button>
+          <div slot="content"><button type="button">Deep</button></div>
+        </craft-popover>
+      </div>
+    </craft-popover>
+  `;
+  const outer = document.querySelector<CraftPopover>('.outer')!;
+  const inner = document.querySelector<CraftPopover>('.inner')!;
+  await outer.updateComplete;
+  await userEvent.click(page.getByRole('button', {name: 'Outer'}));
+  await userEvent.click(page.getByRole('button', {name: 'Inner'}));
+  await inner.updateComplete;
+  expect(inner.open).toBe(true);
+
+  await userEvent.click(page.getByText('Outside'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(inner.open).toBe(false);
+  expect(outer.open).toBe(true);
+
+  await userEvent.click(page.getByText('Outside'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(outer.open).toBe(false);
+});
+
+it('closes on a click outside whose pointerdown is canceled, as a drag handle’s is', async () => {
+  document.body.innerHTML = `
+    <p class="handle">Drag me</p>
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>
+  `;
+  document
+    .querySelector('.handle')!
+    .addEventListener('pointerdown', (event) => event.preventDefault());
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  await popover.updateComplete;
+  expect(popover.open).toBe(true);
+
+  await userEvent.click(page.getByText('Drag me'));
   await new Promise((resolve) => setTimeout(resolve));
 
   expect(popover.open).toBe(false);

@@ -47,7 +47,9 @@ it('previews unsaved changes', function () {
 
     $page->refresh()
         ->click('#main >> role=button[name="Preview"]')
-        ->assertSeeIn('iframe[title="Preview"] >> internal:control=enter-frame >> h1', 'Before')
+        ->assertSeeIn('iframe[title="Preview"] >> internal:control=enter-frame >> h1', 'Before');
+
+    assertNoAccessibilityIssues($page)
         ->type('input[name="title"]', 'After')
         ->assertSeeIn('iframe[title="Preview"] >> internal:control=enter-frame >> h1', 'After');
 

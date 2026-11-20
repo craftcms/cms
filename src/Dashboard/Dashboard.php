@@ -10,11 +10,11 @@ use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
+use CraftCms\Cms\Dashboard\Widgets\AboutCraft as AboutCraftWidget;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
 use CraftCms\Cms\Dashboard\Widgets\Custom as CustomWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
-use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\User\Models\User;
@@ -340,11 +340,6 @@ class Dashboard
             $this->saveWidget($this->createWidget(CraftSupportWidget::class));
         }
 
-        // Updates widget
-        if ($user->can('performUpdates')) {
-            $this->saveWidget($this->createWidget(UpdatesWidget::class));
-        }
-
         // Craft News feed widget
         $this->saveWidget($this->createWidget([
             'type' => FeedWidget::class,
@@ -362,6 +357,11 @@ class Dashboard
                 ],
             ]));
         });
+
+        // About Craft CMS widget, last, which also says whether updates are available
+        if ($user->isAdmin() || $user->can('performUpdates')) {
+            $this->saveWidget($this->createWidget(AboutCraftWidget::class));
+        }
 
         User::where('id', $user->getCraftUserId())->update([
             'hasDashboard' => true,

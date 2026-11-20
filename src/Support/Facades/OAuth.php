@@ -25,6 +25,7 @@ use Override;
  * @method static string|null identityFor(\CraftCms\Cms\User\Elements\User $user, \CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider)
  * @method static \CraftCms\Cms\User\Elements\User|null findUserByEmail(string $email)
  * @method static bool hasIdentity(int $userId)
+ * @method static bool canUnlinkIdentity(\CraftCms\Cms\User\Elements\User $user, \CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider)
  * @method static void unlinkIdentity(\CraftCms\Cms\User\Elements\User $user, \CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider)
  * @method static bool canCreateUsers(\CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition $provider)
  * @method static bool publicRegistrationIsAllowed()

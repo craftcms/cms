@@ -19,5 +19,8 @@ export function registerWidgetComponents(
     () => import('./RecentEntries.vue')
   );
   components.register('craft:widget-my-drafts', () => import('./MyDrafts.vue'));
-  components.register('craft:widget-updates', () => import('./Updates.vue'));
+  components.register(
+    'craft:widget-about-craft',
+    () => import('./AboutCraft.vue')
+  );
 }

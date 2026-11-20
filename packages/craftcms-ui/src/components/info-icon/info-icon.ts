@@ -30,6 +30,7 @@ export default class CraftInfoIcon extends LitElement {
     craft-button {
       min-inline-size: var(--c-size-touch-target-sm);
       min-block-size: var(--c-size-touch-target-sm);
+      cursor: help;
     }
   `;
 

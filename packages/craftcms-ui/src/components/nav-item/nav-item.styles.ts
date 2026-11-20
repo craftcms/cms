@@ -1,5 +1,6 @@
 import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
+import {badgeIndicatorCutoutStyles} from '../badge-indicator/badge-indicator.styles.js';
 
 export default css`
   :host {
@@ -91,10 +92,24 @@ export default css`
   }
 
   craft-badge-indicator {
-    --badge-border-width: 2px;
     position: absolute;
-    inset-inline-end: 0;
-    inset-block-end: 0;
+    inset-inline-end: 2px;
+    inset-block-end: 2px;
+  }
+
+  .nav-item__prefix--indicated {
+    --c-badge-indicator-cutout-x: calc(50% + 6px);
+    --c-badge-indicator-cutout-y: calc(50% + 6px);
+  }
+
+  .nav-item__prefix--indicated:dir(rtl) {
+    --c-badge-indicator-cutout-x: calc(50% - 6px);
+  }
+
+  .nav-item__prefix--indicated .nav-icon,
+  .nav-item__prefix--indicated .nav-item__initial,
+  .nav-item__prefix--indicated ::slotted([slot='icon']) {
+    ${badgeIndicatorCutoutStyles}
   }
 
   .nav-item__prefix craft-button,
@@ -205,7 +220,18 @@ export default css`
   :host(:not([current], [appearance='tabs']))
     .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
   :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
-    background-color: color-mix(in srgb, currentColor, transparent 95%);
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-mix-hover),
+      transparent
+    );
+  }
+
+  /* Pressed, more so, as a tinted button is. A press on one of its controls
+     is that control's. */
+  :host(:not([current], [appearance='tabs']))
+    .nav-item:not(.nav-item--static):active:not(:has(craft-button:active)) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   /* No href: render as a plain label, not an interactive item. */
@@ -376,6 +402,10 @@ export default css`
   .flyout-indicator {
     font-size: var(--c-size-icon-sm, calc(12rem / 16));
     color: var(--c-color-neutral-on-quiet, currentcolor);
+  }
+
+  .flyout-indicator:dir(rtl) {
+    scale: -1 1;
   }
 
   .flyout__label {

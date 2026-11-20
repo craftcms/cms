@@ -395,7 +395,9 @@
   /* Semantics colors - warning */
   --c-color-warning-fill-quiet: var(--color-yellow-50);
   --c-color-warning-fill-normal: var(--color-yellow-100);
-  --c-color-warning-fill-loud: var(--color-yellow-600);
+  --c-color-warning-fill-loud: oklch(
+    from var(--color-yellow-600) l calc(c * 1.3) h
+  );
   --c-color-warning-border-quiet: color-mix(
     in srgb,
     var(--color-yellow-400),

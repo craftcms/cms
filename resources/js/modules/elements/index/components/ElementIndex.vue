@@ -157,7 +157,7 @@
   const canEditInline = computed(
     () =>
       Boolean(inlineEditing) &&
-      mode.value === 'table' &&
+      (mode.value === 'table' || mode.value === 'structure') &&
       !selection.readOnly.value &&
       editableRows.value.length > 0
   );

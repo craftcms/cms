@@ -8,7 +8,7 @@ import {
   setNotifications,
 } from '../store';
 
-import '@craftcms/ui/components/badge-indicator/badge-indicator';
+import {badgeIndicatorCutoutStyles} from '@craftcms/ui/components/badge-indicator/badge-indicator';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/popover/popover';
@@ -27,17 +27,27 @@ class CpNotificationCenter extends LitElement {
     .notification-trigger {
       --c-icon-size: var(--cp-chrome-icon-size, 1em);
       position: relative;
+      margin-inline: -7.25px;
+    }
+
+    .notification-trigger__icon {
+      translate: 0 1.5px;
+    }
+
+    .notification-trigger__icon--indicated {
+      --c-badge-indicator-cutout-x: calc(100% - 2px);
+      --c-badge-indicator-cutout-y: -2px;
+      ${badgeIndicatorCutoutStyles}
+    }
+
+    .notification-trigger__icon--indicated:dir(rtl) {
+      --c-badge-indicator-cutout-x: 2px;
     }
 
     .notification-trigger__badge {
-      --badge-border-width: 2px;
       position: absolute;
       inset-block-start: 0;
-      inset-inline-end: 0;
-    }
-
-    .notification-trigger__badge::part(badge) {
-      background-color: var(--c-color-danger-fill-loud);
+      inset-inline-end: 2px;
     }
 
     craft-popover::part(popup) {
@@ -141,7 +151,9 @@ class CpNotificationCenter extends LitElement {
         >
           <span slot="prefix">
             <craft-icon
-              class="notification-trigger__icon"
+              class="notification-trigger__icon ${this.#unread.length
+                ? 'notification-trigger__icon--indicated'
+                : ''}"
               name="bell"
             ></craft-icon>
             ${this.#unread.length
@@ -164,7 +176,7 @@ class CpNotificationCenter extends LitElement {
                   <craft-button
                     type="button"
                     size="small"
-                    variant="plain"
+                    variant="link"
                     @click=${() => this.#markAllRead()}
                   >
                     ${t('Mark all as read')}

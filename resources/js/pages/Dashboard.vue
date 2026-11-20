@@ -117,8 +117,11 @@
 </template>
 
 <style scoped>
+  /* Its height comes from the widgets placed in it, so it ends at the last
+     one's edge. The margin matches the space above the page's header. */
   .dashboard-grid {
     position: relative;
+    margin-block-end: var(--c-spacing-lg);
   }
   .item {
     margin-block-end: 14px;

@@ -301,7 +301,7 @@
         class="details-panels__rail"
         :class="{'details-panels__rail--detached': rail}"
         role="group"
-        :aria-label="t('Details')"
+        :aria-label="t('Panels')"
         :data-open="String(openPanelId !== null)"
       >
         <craft-disclosure
@@ -387,6 +387,19 @@
     background-color: transparent;
   }
 
+  /* Centers the tabs under the header's 24px avatar. */
+  @media (width < var(--breakpoint-lg)) {
+    .details-panels__rail--detached {
+      --_rail-padding-inline: calc(
+        var(--c-spacing-md) + (24rem / 16 - var(--cp-rail-item-size)) / 2
+      );
+      inline-size: calc(
+        var(--cp-rail-item-size) + var(--_rail-padding-inline) * 2
+      );
+      padding-inline: var(--_rail-padding-inline);
+    }
+  }
+
   .details-panels__trigger {
     --c-icon-size: var(--cp-chrome-icon-size);
     display: grid;
@@ -413,6 +426,10 @@
   .details-panels__trigger:not([aria-expanded='true']):hover {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
     color: inherit;
+  }
+
+  .details-panels__trigger:not([aria-expanded='true']):active {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 
   .details-panels__trigger[aria-expanded='true'] {

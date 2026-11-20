@@ -34,7 +34,8 @@ it('can be rendered', function () {
             ->where('crumbs.0.href', null)
             ->has('widgets', 4)
             ->where('widgets.0.name', 'Recent Entries')
-            ->where('widgets.3.name', 'Feed'));
+            ->where('widgets.2.name', 'Feed')
+            ->where('widgets.3.name', 'About Craft CMS'));
 });
 
 it('does not load axios', function () {

@@ -1429,6 +1429,18 @@ describe('useElementEditor', () => {
     reload.mockRestore();
   });
 
+  it('refreshes previews once the draft is discarded', async () => {
+    postSpy.mockResolvedValue({data: {}});
+    const {editor} = mount(payload({draftId: 9, isProvisionalDraft: true}));
+    const reload = vi.spyOn(router, 'reload').mockImplementation(() => {});
+    refreshPreviews.mockClear();
+
+    await editor.discardDraft();
+
+    expect(refreshPreviews).toHaveBeenCalledOnce();
+    reload.mockRestore();
+  });
+
   it('omits presentation-only null controls when refreshing an untouched UI', async () => {
     const ui = cardsLayout();
     const {editor} = mount(payload({canAutosave: false, ui}));

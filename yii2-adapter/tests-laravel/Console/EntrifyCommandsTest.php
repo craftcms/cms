@@ -281,3 +281,40 @@ it('fails without converting anything when the section cannot be created', funct
         ->and(Tag::find()->id($tag->id)->exists())->toBeTrue()
         ->and(Craft::$app->getTags()->getTagGroupByHandle('keywords'))->not->toBeNull();
 });
+
+// https://github.com/craftcms/cms/issues/20875
+it('keeps user-group-restricted entry sources when adding the new section to a page', function() {
+    app(ElementSources::class)->saveSources(Entry::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        [
+            'type' => ElementSources::TYPE_CUSTOM,
+            'key' => 'custom:restricted',
+            'label' => 'Restricted',
+            'condition' => Entry::createCondition()->getConfig(),
+            'userGroups' => ['some-group-uid'],
+        ],
+        [
+            'type' => ElementSources::TYPE_CUSTOM,
+            'key' => 'custom:hidden',
+            'label' => 'Hidden',
+            'condition' => Entry::createCondition()->getConfig(),
+            'userGroups' => false,
+        ],
+    ]);
+
+    $group = new TagGroup(['name' => 'Keywords', 'handle' => 'keywords']);
+    expect(Craft::$app->getTags()->saveTagGroup($group))->toBeTrue();
+
+    $exitCode = entrifyController()->runAction('tags', [
+        'keywords',
+        'author' => 'author',
+    ]);
+
+    expect($exitCode)->toBe(0);
+
+    $section = Sections::getSectionByHandle('keywords');
+    $sources = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES . '.' . Entry::class));
+    expect($sources->firstWhere('key', "section:$section->uid")['page'] ?? null)->toBe('Tags')
+        ->and($sources->firstWhere('key', 'custom:restricted')['userGroups'] ?? null)->toBe(['some-group-uid'])
+        ->and($sources->firstWhere('key', 'custom:hidden')['userGroups'] ?? null)->toBeFalse();
+});

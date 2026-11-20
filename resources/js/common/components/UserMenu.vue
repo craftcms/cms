@@ -94,4 +94,10 @@
   .user-menu__button {
     --c-button-radius: var(--c-radius-full);
   }
+
+  /* Pressed, the button takes the loud fill, so the initials take the text
+     color that goes with it. */
+  .user-menu__button[active] {
+    --c-text-default: var(--c-color-on-loud);
+  }
 </style>

@@ -133,7 +133,7 @@ test('index returns Inertia Updater page', function () {
     ])
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('updater/Index')
-            ->has('title')
+            ->where('title', 'Updater')
             ->has('initialState')
             ->where('initialState.nextUrl', action([UpdaterController::class, 'precheck']))
             ->where('initialState.finishUrl', action([UpdaterController::class, 'finish']))

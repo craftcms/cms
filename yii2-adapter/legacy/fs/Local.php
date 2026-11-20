@@ -14,7 +14,6 @@ use Craft;
 use craft\base\LocalFsInterface;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Cms;
 use CraftCms\Yii2Adapter\Filesystem\DiskFs;
 use Override;
 use yii\validators\InlineValidator;
@@ -70,7 +69,7 @@ class Local extends DiskFs implements LocalFsInterface
     {
         parent::init();
 
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
         if ($generalConfig->defaultFileMode) {
             $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_DEFAULT] = $generalConfig->defaultFileMode;
         }

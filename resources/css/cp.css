@@ -72,7 +72,6 @@ CP Styles
   );
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);
-  --cp-body-border-width: 1px;
   --cp-header-bg: color-mix(
     in oklab,
     color-mix(in oklab, var(--color-blue-50), white 50%),
@@ -267,6 +266,20 @@ Temporary holding for cp-pane styles until craft-pane is a thing
   .cp-h5,
   .cp-h6 {
     font-size: var(--c-text-sm);
+  }
+}
+
+/* An icon leading an item in a list, such as a widget's links or statuses: in the
+   color of the tinted card or other colorable it's in, or the link color
+   outside one. Layered so a component's own color for it still applies. */
+@layer components {
+  .cp-item-icon {
+    color: var(--c-color-fill-loud, var(--c-text-link));
+  }
+
+  /* White's loud fill is white, which would vanish on its card. */
+  [data-color='white'] .cp-item-icon {
+    color: var(--c-text-link);
   }
 }
 

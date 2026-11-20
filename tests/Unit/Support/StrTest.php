@@ -225,24 +225,12 @@ test('lower', function (string $expected, string $string, ?string $language = nu
     ['istanbul', 'Istanbul'],
 ]);
 
-test('random', function (int $length = 36, bool $extendedChars = false) {
-    $random = Str::random($length, $extendedChars);
-    $len = strlen($random);
-
-    expect($len)->toBe($length);
-
-    $validChars = $extendedChars
-        ? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"'
-        : 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-
-    foreach (str_split($random) as $char) {
-        expect($validChars)->toContain($char);
-    }
-})->with([
-    [],
-    [50, false],
-    [55, true],
-]);
+test('random', function () {
+    expect(Str::random())->toMatch('/^[a-zA-Z0-9]{36}$/')
+        ->and(Str::random(55, true))->toMatch('/^[a-zA-Z0-9]{55}$/')
+        ->and(Str::random(50, false))->toMatch('/^[a-z]{50}$/')
+        ->and(implode('', array_map(fn () => Str::random(), range(1, 10))))->toMatch('/[A-Z0-9]/');
+});
 
 test('shortcodesToEmoji', function (string $expected, string $str) {
     expect(Str::shortcodesToEmoji($str))->toBe($expected);

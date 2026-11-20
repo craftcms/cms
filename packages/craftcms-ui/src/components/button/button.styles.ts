@@ -451,8 +451,8 @@ export default css`
   ) {
     background-color: color-mix(
       in oklab,
-      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-hover)
+      var(--c-color-mix-hover),
+      transparent
     );
     color: var(--c-color-on-quiet);
   }
@@ -510,40 +510,61 @@ export default css`
     }
   }
 
-  /* Link — renders as a text hyperlink: no fill or border, underlined. */
   :host([variant~='link']) {
-    display: inline-flex;
-    appearance: none;
+    --_link-color: var(--c-text-link);
+    --_link-tint: var(--_link-color);
+    font: inherit;
+    min-width: auto;
+    color: var(--_link-color);
     background-color: transparent;
     border-color: transparent;
-    color: var(--c-color-fill-loud, var(--c-color-neutral-fill-loud));
-    font: inherit;
-    padding: 0;
-    min-height: auto;
-    min-width: auto;
-    text-decoration: underline;
+    text-decoration-line: var(--c-link-decoration, none);
+    margin-inline: calc(var(--_flush-inline) * -1);
+    margin-block: calc(var(--_flush-block) * -1);
 
     &::before {
       /* No minimum-target sizer around a text link. */
       display: none;
     }
+  }
 
-    .button-content {
-      padding: 0;
+  :host([variant~='link']:not([inherit])),
+  :host([variant~='link'][inherit]) {
+    --c-color-mix-hover: var(--_link-tint) 5%;
+    --c-color-mix-active: var(--_link-tint) 12%;
+    --c-color-fill-loud: color-mix(
+      in srgb,
+      var(--c-color-mix-active),
+      transparent
+    );
+    --c-color-on-loud: var(--_link-color);
+    --c-color-border-loud: transparent;
+  }
+
+  @media (hover: hover) {
+    :host([variant~='link']:not(:disabled):not(.loading):hover) {
+      color: var(--_link-color);
+      background-color: color-mix(
+        in srgb,
+        var(--c-color-mix-hover),
+        transparent
+      );
     }
   }
 
-  :host([variant~='link']:not(:disabled):not(.loading):hover) {
-    background-color: transparent;
-    color: hsl(
-      from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
-        calc(l - 10)
+  :host([variant~='link']:not(:disabled):not(.loading):active),
+  :host([variant~='link'][active]:not(:disabled):not(.loading)),
+  :host([variant~='link'].is-active:not(:disabled):not(.loading)),
+  :host(
+    [variant~='link'][slot='invoker'][aria-expanded='true']:not(:disabled)
+  ) {
+    color: var(--_link-color);
+    background-color: color-mix(
+      in srgb,
+      var(--c-color-mix-active),
+      transparent
     );
-    text-decoration: none;
-  }
-
-  :host([variant~='link']:not(:disabled):not(.loading):active) {
-    background-color: transparent;
+    box-shadow: none;
   }
 
   /* Skipping the palette block isn't enough on a surface that sets only its
@@ -562,6 +583,36 @@ export default css`
   :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)),
   :host([variant~='plain'][inherit][slot='invoker'][aria-expanded='true']) {
     color: inherit;
+  }
+
+  /* A plain button has no fill of its own, so it's tinted with its own color
+     instead: hovered, pressed (marked active) and, as a popover's invoker,
+     open. A selected one, such as in a button group, keeps the loud fill. */
+  :host([variant~='plain']:not([inherit])),
+  :host([variant~='plain'][inherit]) {
+    --c-color-fill-quiet: transparent;
+    --c-color-mix-hover: currentColor 5%;
+    --c-color-mix-active: currentColor 12%;
+  }
+
+  :host([variant~='plain']:not([aria-pressed='true'])) {
+    --c-color-fill-loud: color-mix(in srgb, currentColor 12%, transparent);
+    --c-color-on-loud: var(--c-color-on-quiet);
+    --c-color-border-loud: transparent;
+  }
+
+  :host([variant~='plain'][inherit]:not([aria-pressed='true'])) {
+    --c-color-on-loud: currentColor;
+  }
+
+  :host(
+    [variant~='plain'][slot='invoker'][aria-expanded='true']:not(:disabled)
+  ) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  :host([variant~='plain']:not(:disabled):not(.loading):active) {
+    box-shadow: none;
   }
 
   /* After the variants, which switch the sizer off: xsmall draws under
