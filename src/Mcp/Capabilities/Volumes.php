@@ -64,6 +64,7 @@ readonly class Volumes
      * @param  string  $name  Volume name.
      * @param  string  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
+     * @param  string|null  $assetTransformer  Asset transform driver name, or an environment variable. Uses the configured default when null.
      * @param  TranslationMethod  $titleTranslationMethod  Asset title translation method.
      * @param  string|null  $titleTranslationKeyFormat  Custom asset title translation key format.
      * @param  TranslationMethod  $altTranslationMethod  Asset alternative-text translation method.
@@ -78,6 +79,7 @@ readonly class Volumes
         string $handle,
         string $fsHandle,
         ?string $subpath = null,
+        ?string $assetTransformer = null,
         TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         ?string $titleTranslationKeyFormat = null,
         TranslationMethod $altTranslationMethod = TranslationMethod::None,
@@ -91,6 +93,7 @@ readonly class Volumes
             'handle' => $handle,
             'fsHandle' => $fsHandle,
             'subpath' => $subpath,
+            'assetTransformer' => $assetTransformer,
             'titleTranslationMethod' => $titleTranslationMethod,
             'titleTranslationKeyFormat' => $titleTranslationKeyFormat,
             'altTranslationMethod' => $altTranslationMethod,
@@ -115,6 +118,7 @@ readonly class Volumes
      * @param  string|null  $handle  New volume handle.
      * @param  string|null  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
+     * @param  string|null  $assetTransformer  Asset transform driver name, or an environment variable. Uses the configured default when null.
      * @param  TranslationMethod  $titleTranslationMethod  Asset title translation method.
      * @param  string|null  $titleTranslationKeyFormat  Custom asset title translation key format.
      * @param  TranslationMethod  $altTranslationMethod  Asset alternative-text translation method.
@@ -134,6 +138,7 @@ readonly class Volumes
         ?string $handle = null,
         ?string $fsHandle = null,
         ?string $subpath = null,
+        ?string $assetTransformer = null,
         TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
         ?string $titleTranslationKeyFormat = null,
         TranslationMethod $altTranslationMethod = TranslationMethod::None,
@@ -156,6 +161,7 @@ readonly class Volumes
             'handle' => $handle,
             'fsHandle' => $fsHandle,
             'subpath' => $subpath,
+            'assetTransformer' => $assetTransformer,
             'titleTranslationMethod' => $titleTranslationMethod,
             'titleTranslationKeyFormat' => $titleTranslationKeyFormat,
             'altTranslationMethod' => $altTranslationMethod,
@@ -231,6 +237,7 @@ readonly class Volumes
     {
         return [
             ...$this->serializeSummary($volume),
+            'assetTransformer' => $volume->getAssetTransformer(false),
             'titleTranslationMethod' => $volume->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $volume->titleTranslationKeyFormat,
             'altTranslationMethod' => $volume->altTranslationMethod->value,

@@ -160,7 +160,13 @@ describe('create / edit', function () {
                         )
                         && $paths->doesntContain(['transformFsHandle'])
                         && $paths->doesntContain(['transformSubpath'])
-                        && $paths->doesntContain(['assetTransformer']);
+                        && $nodes->contains(
+                            fn (array $node): bool => ($node['control']['path'] ?? null) === ['assetTransformer']
+                                && collect($node['control']['props']['options'] ?? [])->contains('value', 'craft')
+                                && collect($node['control']['props']['options'] ?? [])->contains(
+                                    fn (array $option): bool => $option['value'] === '' && $option['label'] === t('Default ({driver})', ['driver' => 'craft']),
+                                ),
+                        );
                 }));
     });
 
@@ -266,6 +272,30 @@ describe('store', function () {
         app()->forgetInstance(Volumes::class);
         $updated = app(Volumes::class)->getVolumeByHandle('testVolume');
         expect($updated->name)->toBe('Updated Volume');
+    });
+
+    test('store saves the asset transformer', function (string $assetTransformer) {
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'New Volume',
+            'handle' => 'newVolume',
+            'fsHandle' => 'test-disk',
+            'assetTransformer' => $assetTransformer,
+        ])->assertOk();
+
+        app()->forgetInstance(Volumes::class);
+        $volume = app(Volumes::class)->getVolumeByHandle('newVolume');
+        expect($volume->assetTransformer)->toBe($assetTransformer)
+            ->and(ProjectConfig::get("volumes.{$volume->uid}.assetTransformer"))->toBe($assetTransformer);
+    })->with(['craft', '$CRAFT_TEST_UNSET_ASSET_TRANSFORMER']);
+
+    test('store rejects unregistered asset transformers', function () {
+        postJson(action([VolumesController::class, 'store']), [
+            'name' => 'New Volume',
+            'handle' => 'newVolume',
+            'fsHandle' => 'test-disk',
+            'assetTransformer' => 'missing',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('assetTransformer');
     });
 
     test('store saves the propagation method', function () {
