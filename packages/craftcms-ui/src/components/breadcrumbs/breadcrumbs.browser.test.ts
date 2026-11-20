@@ -233,6 +233,30 @@ describe('craft-breadcrumbs', () => {
     expect(pressed).toBe(true);
   });
 
+  it('lists a collapsed crumb’s menu items as its provider gives them now', async () => {
+    let site = 'English';
+    const {element, actions} = await trail(
+      '120px',
+      `
+      <craft-breadcrumb-item>Site<craft-action-menu slot="suffix"></craft-action-menu></craft-breadcrumb-item>
+      <craft-breadcrumb-item>Current Entry With A Long Title</craft-breadcrumb-item>`
+    );
+    const switcher = element.querySelector('craft-action-menu')!;
+    switcher.actions = () => [
+      {label: site, current: true},
+      {label: 'Hidden', hidden: true},
+    ];
+    await switcher.updateComplete;
+
+    site = 'French';
+    const [group] = actions() as Array<{
+      items: Array<{label: string; current?: boolean}>;
+    }>;
+    expect(group!.items.map(({label, current}) => [label, current])).toEqual([
+      ['French', true],
+    ]);
+  });
+
   it('follows a collapsed crumb’s plain menu link when it’s chosen', async () => {
     history.replaceState(null, '', '#start');
     const {element} = await trail(

@@ -1,6 +1,7 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 import type CraftActionItem from '../action-item/action-item.js';
+import type CraftActionMenu from '../action-menu/action-menu.js';
 import type {
   ActionMenuItem,
   ActionMenuItemButton,
@@ -350,7 +351,12 @@ export default class CraftBreadcrumbs extends LitElement {
       // A switcher usually lists the crumb's own page among its choices, so the
       // crumb's link would only repeat it.
       const listed =
-        !link || suffixItems.some((choice) => choice.href === link.href);
+        !link ||
+        suffixItems.some(
+          (choice) =>
+            'href' in choice &&
+            new URL(String(choice.href), document.baseURI).href === link.href
+        );
 
       return [
         {
@@ -370,38 +376,63 @@ export default class CraftBreadcrumbs extends LitElement {
       .filter((el) => el.slot === 'suffix')
       .map((el) =>
         el.matches('craft-action-menu')
-          ? el
+          ? (el as CraftActionMenu)
           : el.querySelector('craft-action-menu')
       )
-      .flatMap((menu) =>
-        menu
-          ? [...menu.querySelectorAll<CraftActionItem>('craft-action-item')]
-              .filter(
-                (source) =>
-                  source.closest('craft-action-menu') === menu && !source.hidden
-              )
-              .map((source) => {
-                const common = {
-                  label: this.#textOf(source, '[slot]'),
-                  icon: source.icon ?? undefined,
-                  variant: source.variant,
-                  // The switcher's selected choice, such as the current
-                  // site, stays marked as the current one.
-                  current: source.current || source.checked || undefined,
-                  disabled: source.disabled || undefined,
-                  onClick: this.#follow(source),
-                };
+      .flatMap((menu) => {
+        if (!menu) {
+          return [];
+        }
 
-                return source.href
-                  ? {
-                      ...common,
-                      type: 'link' as const,
-                      href: new URL(source.href, document.baseURI).href,
-                    }
-                  : common;
-              })
-          : []
-      );
+        // A menu built from descriptors lends them as they are now: a
+        // provider is only read when its own menu opens, so the items it
+        // last rendered may be out of date.
+        if (menu.actions !== undefined) {
+          const actions =
+            typeof menu.actions === 'function' ? menu.actions() : menu.actions;
+
+          return actions
+            .flatMap((action) =>
+              action.type === 'group' ? action.items : [action]
+            )
+            .filter(
+              (action): action is ActionMenuItemButton | ActionMenuItemLink =>
+                action.type !== 'hr' &&
+                action.type !== 'display' &&
+                !action.hidden
+            )
+            .map((action) => ({
+              ...action,
+              current: action.current || action.checked || undefined,
+            }));
+        }
+
+        return [...menu.querySelectorAll<CraftActionItem>('craft-action-item')]
+          .filter(
+            (source) =>
+              source.closest('craft-action-menu') === menu && !source.hidden
+          )
+          .map((source) => {
+            const common = {
+              label: this.#textOf(source, '[slot]'),
+              icon: source.icon ?? undefined,
+              variant: source.variant,
+              // The switcher's selected choice, such as the current site,
+              // stays marked as the current one.
+              current: source.current || source.checked || undefined,
+              disabled: source.disabled || undefined,
+              onClick: this.#follow(source),
+            };
+
+            return source.href
+              ? {
+                  ...common,
+                  type: 'link' as const,
+                  href: new URL(source.href, document.baseURI).href,
+                }
+              : common;
+          });
+      });
   }
 
   /**
