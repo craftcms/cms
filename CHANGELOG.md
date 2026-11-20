@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.2 - 2026-11-20
 
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails. ([#20742](https://github.com/craftcms/cms/pull/20742))
 - MCP upload URLs now respond with JSON errors. ([#20578](https://github.com/craftcms/cms/pull/20578))
