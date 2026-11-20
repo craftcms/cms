@@ -1,12 +1,13 @@
 # Branches whose translation files are kept in sync, oldest first.
 # When branches translate a string differently, the newest branch's translation wins.
 branches:
-  5.x: src/translations
+  5.x:
+    path: src/translations
+    # cy, hr, id, and ky were added in 5.13.
+    exclude_languages: [cy, hr, id, ky]
   '5.13': src/translations
   6.x: resources/translations
 files:
   - app.php
 source_language: en
-# Languages that stay out of the catalog. The sync leaves their files on each branch alone.
-exclude_languages: [cy, hr, id, ky]
 commit_message: Update translations
