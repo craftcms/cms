@@ -12,6 +12,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Inertia\Support\Header;
 use Inertia\Testing\AssertableInertia;
@@ -102,3 +103,19 @@ it('loads deferred props on a bridged screen without a hard visit', function (Cl
         ->assertJsonPath('component', BridgedScreen::PAGE)
         ->assertJsonStructure(['props' => ['navSourceBadges']]);
 })->with('bridgedScreens');
+
+it('encrypts a bridged screen’s save shortcut redirect', function () {
+    Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
+        ->prefix(Cms::config()->cpTrigger)
+        ->get('bridged-save-shortcut-test', fn () => new CpScreenResponse()
+            ->title('Bridged screen')
+            ->action('test/save')
+            ->saveShortcutRedirectUrl('test/{id}')
+            ->contentHtml('<p>Fields</p>'));
+
+    get(cp_url('bridged-save-shortcut-test'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component(BridgedScreen::PAGE)
+            ->where('saveShortcutRedirect', fn (string $value): bool => Crypt::decrypt($value) === 'test/{id}'));
+});

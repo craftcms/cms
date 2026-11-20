@@ -1123,6 +1123,11 @@ class CpScreenResponse implements Responsable
              * unset, so the badge marks exactly what's still unported.
              */
             $templateProps['bridged'] = 'screen';
+
+            // Posted back as the `redirect` param, which must be encrypted.
+            $templateProps['saveShortcutRedirect'] = $this->saveShortcutRedirectUrl
+                ? Crypt::encrypt($this->saveShortcutRedirectUrl)
+                : null;
         }
 
         /**
