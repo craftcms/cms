@@ -723,7 +723,11 @@ class Raster extends Image
         // So 2 channel PNGs get converted to 4 channel.
         $format = $channels === 2 ? 'PNG32' : 'PNG'.(8 * $channels);
 
-        if ($format === 'PNG8') {
+        if (is_array($pngInfo) && in_array($pngInfo['color'], [0, 4], true)) {
+            // PNG8 would quantize greyscale images and PNG32 has 8 bits per sample, so let Imagick keep their
+            // color type and bit depth.
+            $output->setImageFormat('PNG');
+        } elseif ($format === 'PNG8') {
             // Quantizing merges similar colors even when the image already fits in a palette.
             if ($output->getImageColors() > 256) {
                 $output->quantizeImage(255, Imagick::COLORSPACE_YUV, 8, false, false);
