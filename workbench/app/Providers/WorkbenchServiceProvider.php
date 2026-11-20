@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Dashboard\WidgetTypes;
+use CraftCms\Cms\Http\Controllers\Import\ImportRunsController;
 use CraftCms\Cms\Import\Events\ItemImporting;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
@@ -25,8 +26,11 @@ use Laravel\Ai\AiManager;
 use RuntimeException;
 use Workbench\App\Ai\WorkbenchAiProvider;
 use Workbench\App\Http\Controllers\ErrorPagesController;
+use Workbench\App\Http\Controllers\ImportRunPagesController;
 use Workbench\App\Http\Controllers\PortedPagesController;
 use Workbench\App\Http\Controllers\SpecialPagesController;
+use Workbench\App\Http\Controllers\WorkbenchImportRunsController;
+use Workbench\App\Import\GuidePlans;
 use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
 use Workbench\App\Widgets\LayoutSlotsDemo;
@@ -50,6 +54,9 @@ class WorkbenchServiceProvider extends ServiceProvider
         // Site templates live in the repo rather than in the Testbench app.
         if (! $this->app->runningUnitTests()) {
             Aliases::set('@templates', workbench_path('resources/views'));
+
+            // the import run workbench's made-up runs are asked for their items at the real runs' URLs
+            $this->app->bind(ImportRunsController::class, WorkbenchImportRunsController::class);
         }
     }
 
@@ -64,6 +71,7 @@ class WorkbenchServiceProvider extends ServiceProvider
         if (! $this->app->runningUnitTests()) {
             app(WidgetTypes::class)->register(HtmlExample::class);
             app(WidgetTypes::class)->register(LayoutSlotsDemo::class);
+            GuidePlans::register();
         }
 
         Event::listen(function (CommandStarting $event): void {
@@ -75,8 +83,8 @@ class WorkbenchServiceProvider extends ServiceProvider
             app()->useAppPath(package_path('src'));
         });
 
-        // Acts on what the workbench's import data marks: `skip` skips an item, as a plugin can, so a preview can show
-        // skipped items; `delay` (ms) and `fail` give a run something to show its progress and failures with.
+        // Acts on what the workbench's import data marks: `skip` skips an item, as a plugin can, and `delay` (ms) and
+        // `fail` give a run something to show its progress and failures with.
         Event::listen(function (ItemImporting $event): void {
             if (! $event->importer->previewing) {
                 Sleep::usleep((int) ($event->data['delay'] ?? 0) * 1000);
@@ -169,6 +177,16 @@ class WorkbenchServiceProvider extends ServiceProvider
                             ->map(fn (string $label, string $page) => new NavItem()
                                 ->label($label)
                                 ->href("workbench/ported-pages/{$page}"))
+                            ->values()
+                            ->all()),
+                    new NavItem()
+                        ->label('Import')
+                        ->href('workbench/import-run')
+                        ->icon('arrow-down-to-bracket')
+                        ->subnav(collect(ImportRunPagesController::PAGES)
+                            ->map(fn (string $label, string $page) => new NavItem()
+                                ->label($label)
+                                ->href("workbench/import-run/{$page}"))
                             ->values()
                             ->all()),
                     new NavItem()
