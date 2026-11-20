@@ -1,0 +1,21 @@
+name: Translation sync
+on:
+  push:
+    branches: [translations]
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+concurrency:
+  group: translation-sync
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: craftcms/translation-sync@v1
+        with:
+          # Reports what the sync would do without pushing or opening pull requests.
+          # Remove once the output looks right.
+          dry-run: 'true'
