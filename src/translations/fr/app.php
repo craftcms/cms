@@ -173,7 +173,7 @@ return [
     'Are you sure you want to delete the selected {type} along with their descendants?' => 'Êtes-vous sûr de vouloir supprimer les {type} sélectionné(e)s et ses descendants ?',
     'Are you sure you want to delete the selected {type} for this site?' => 'Êtes-vous sûr(e) de vouloir supprimer les {type} sélectionné(e)s pour ce site ?',
     'Are you sure you want to delete the selected {type}?' => 'Êtes-vous sûr de vouloir supprimer les {type} sélectionné(e)s ?',
-    'Are you sure you want to delete the {type} for this site?' => 'Voulez-vous vraiment supprimer {type,select,entrée{l\'} ressource{la } catégorie{la } other{le }}{type} pour ce site ?',
+    'Are you sure you want to delete the {type} for this site?' => 'Voulez-vous vraiment supprimer {type,select,entrée{l\'\'} ressource{la } catégorie{la } other{le }}{type} pour ce site ?',
     'Are you sure you want to delete the “{name}” passkey?' => 'Voulez-vous vraiment supprimer la clé d\'accès « {name} » ?',
     'Are you sure you want to delete this group?' => 'Êtes-vous sûr de vouloir supprimer ce groupe ?',
     'Are you sure you want to delete this image?' => 'Êtes-vous sûr de vouloir supprimer cette image ?',

@@ -1785,7 +1785,7 @@ return [
     'Temp files' => 'Dočasné soubory',
     'Template caches' => 'Cache šablon',
     'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.' => 'Šablona, která definuje vlastní formát "propagačního klíče" pole. Záznamy budou uloženy na všech místech, která vytvářejí stejný klíč.',
-    'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.' => 'Šablona, která definuje vlastní formát "překladového klíče" pole. Hodnoty budou uloženy na všech místech, která vytvářejí stejný klíč.',
+    'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.' => 'Šablona, která definuje vlastní formát „překladového klíče“ pole {name}. Hodnoty budou zkopírovány do všech webů, které vytvářejí stejný klíč.',
     'Template' => 'Šablona',
     'Templates' => 'Šablony',
     'Temporary Uploads' => 'Dočasná odeslaná data',
