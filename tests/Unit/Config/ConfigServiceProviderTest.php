@@ -26,7 +26,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE', 'CRAFT_DEFAULT_TEMPLATE_EXTENSIONS', 'CRAFT_SLUG_WORD_SEPARATOR'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -326,6 +326,23 @@ it('forwards the renamed asset settings through their fluent methods', function 
         ->and($config->assets->allowedFileExtensions)->toContain('mbox', 'xml', 'jpg')
         ->and($config->assets->uploadChunkSize)->toBe(1024)
         ->and($config->assets->getTempUploadDisk())->toBe('temp-uploads');
+});
+
+it('forwards the renamed template and slug settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['privateTemplateTrigger' => '', 'maxSlugIncrement' => 5]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DEFAULT_TEMPLATE_EXTENSIONS'] = 'blade.php,twig';
+    $_SERVER['CRAFT_SLUG_WORD_SEPARATOR'] = '.';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)->enableTemplateCaching(false);
+
+    expect($config->templates->privateTrigger)->toBe('')
+        ->and($config->templates->defaultExtensions)->toBe(['blade.php', 'twig'])
+        ->and($config->templates->enableCaching)->toBeFalse()
+        ->and($config->slugs->maxIncrement)->toBe(5)
+        ->and($config->slugs->wordSeparator)->toBe('.');
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {

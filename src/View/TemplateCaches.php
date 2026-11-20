@@ -219,7 +219,7 @@ class TemplateCaches
     private function isTemplateCachingEnabled(bool $global): bool
     {
         if ($this->enabled === null || $this->enabledGlobally === null) {
-            if (! Cms::config()->enableTemplateCaching) {
+            if (! Cms::config()->templates->enableCaching) {
                 $this->enabled = false;
                 $this->enabledGlobally = false;
             } elseif (request()->isPreview() || request()->getHadToken()) {

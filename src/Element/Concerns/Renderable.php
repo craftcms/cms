@@ -80,13 +80,13 @@ trait Renderable
 
         if ($providerHandle = $this->getFieldLayout()?->provider?->getHandle()) {
             $templates[] = [
-                'template' => sprintf('%s/%s/%s', Cms::config()->partialTemplatesPath, $refHandle, $providerHandle),
+                'template' => sprintf('%s/%s/%s', Cms::config()->templates->partialsPath, $refHandle, $providerHandle),
                 'priority' => 2,
             ];
         }
 
         $templates[] = [
-            'template' => sprintf('%s/%s', Cms::config()->partialTemplatesPath, $refHandle),
+            'template' => sprintf('%s/%s', Cms::config()->templates->partialsPath, $refHandle),
             'priority' => 10,
         ];
 

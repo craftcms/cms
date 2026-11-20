@@ -85,7 +85,7 @@ describe('resolve', function () {
     });
 
     it('prefers .twig over .html for site mode', function () {
-        Cms::config()->defaultTemplateExtensions = ['twig', 'html'];
+        Cms::config()->templates->defaultExtensions = ['twig', 'html'];
 
         file_put_contents($this->tempDir.'/page.twig', 'twig content');
         file_put_contents($this->tempDir.'/page.html', 'html content');
@@ -94,7 +94,7 @@ describe('resolve', function () {
 
         expect($result)->toBe(Path::normalizePath($this->tempDir.'/page.twig'));
 
-        Cms::config()->defaultTemplateExtensions = ['html', 'twig'];
+        Cms::config()->templates->defaultExtensions = ['html', 'twig'];
         expect($this->resolver->resolve('page'))->toBe(Path::normalizePath($this->tempDir.'/page.html'));
     });
 
@@ -187,7 +187,7 @@ describe('resolve', function () {
         file_put_contents($this->tempDir.'/.hidden.twig', 'hidden');
         expect($this->resolver->exists('.hidden', publicOnly: true))->toBeTrue();
 
-        Cms::config()->privateTemplateTrigger = '.';
+        Cms::config()->templates->privateTrigger = '.';
 
         expect($this->resolver->resolve('.hidden', publicOnly: true))->toBeFalse();
         expect($this->resolver->resolve('.hidden', publicOnly: false))->toBe(Path::normalizePath($this->tempDir.'/.hidden.twig'));
@@ -196,7 +196,7 @@ describe('resolve', function () {
 
 describe('custom template extensions', function () {
     it('resolves templates with custom extensions', function () {
-        Cms::config()->defaultTemplateExtensions = ['htm'];
+        Cms::config()->templates->defaultExtensions = ['htm'];
 
         file_put_contents($this->tempDir.'/page.htm', 'content');
 
@@ -204,7 +204,7 @@ describe('custom template extensions', function () {
     });
 
     it('does not resolve templates with non-configured extensions', function () {
-        Cms::config()->defaultTemplateExtensions = ['htm'];
+        Cms::config()->templates->defaultExtensions = ['htm'];
 
         file_put_contents($this->tempDir.'/page.twig', 'content');
 
@@ -216,7 +216,7 @@ describe('custom template extensions', function () {
 
 describe('custom index filenames', function () {
     it('resolves custom index filenames', function () {
-        Cms::config()->indexTemplateFilenames = ['default'];
+        Cms::config()->templates->indexFilenames = ['default'];
 
         mkdir($this->tempDir.'/section', 0777, true);
         file_put_contents($this->tempDir.'/section/default.twig', 'default content');
@@ -228,10 +228,10 @@ describe('custom index filenames', function () {
         mkdir($this->tempDir.'/section', 0777, true);
         file_put_contents($this->tempDir.'/section/index.twig', 'index content');
 
-        Cms::config()->indexTemplateFilenames = ['index'];
+        Cms::config()->templates->indexFilenames = ['index'];
         expect($this->resolver->resolve('section'))->not->toBeFalse();
 
-        Cms::config()->indexTemplateFilenames = ['default'];
+        Cms::config()->templates->indexFilenames = ['default'];
         expect($this->resolver->resolve('section'))->toBeFalse();
     });
 });

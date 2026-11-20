@@ -424,7 +424,7 @@ readonly class Cp
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates && $currentUser->can('performUpdates') && app(Composer::class)->getIsAvailableForUi(),
-            'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
+            'allowUppercaseInSlug' => $generalConfig->slugs->allowUppercase,
             // Always on; the legacy editor still reads `Craft.autosaveDrafts`.
             'autosaveDrafts' => true,
             'apiParams' => app(Api::class)->apiParams,
@@ -445,7 +445,7 @@ readonly class Cp
             'isImagick' => Images::getIsImagick(),
             'isVips' => Images::getIsVips(),
             'isMultiSite' => Sites::isMultiSite(),
-            'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
+            'limitAutoSlugsToAscii' => $generalConfig->slugs->limitAutoToAscii,
             'maxUploadSize' => AssetsHelper::getMaxUploadSize(),
             'maxAssetUploadSize' => AssetsHelper::getMaxAssetUploadSize(),
             'notificationDuration' => (int) (
@@ -464,7 +464,7 @@ readonly class Cp
             'runQueueAutomatically' => $generalConfig->queue->runAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'siteToken' => $generalConfig->siteToken,
-            'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'slugWordSeparator' => $generalConfig->slugs->wordSeparator,
             'sessionExpiresAt' => app(SessionTimeout::class)->expiresAt(request())?->getTimestamp(),
             'userEmail' => $currentUser->email,
             'userHasPasskeys' => app(Passkeys::class)->hasPasskeys(app(Impersonation::class)->getImpersonator() ?? $currentUser),

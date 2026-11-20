@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Config\QueueConfig;
+use CraftCms\Cms\Config\TemplatesConfig;
 use Illuminate\Support\Facades\Config;
 
 it('can get from container', function () {
@@ -18,10 +19,10 @@ it('can set the tracked queue names via fluent setter', function () {
     expect($config->queue->trackedNames)->toBe(['craft', 'default']);
 });
 
-it('can set compiledTemplatesPath via fluent setter', function () {
-    $config = GeneralConfig::create()->compiledTemplatesPath('@storage/custom-compiled-templates');
+it('can set the compiled templates path via fluent setter', function () {
+    $config = GeneralConfig::create()->templates(TemplatesConfig::create()->compiledPath('@storage/custom-compiled-templates'));
 
-    expect($config->compiledTemplatesPath)->toBe('@storage/custom-compiled-templates');
+    expect($config->templates->compiledPath)->toBe('@storage/custom-compiled-templates');
 });
 
 it('normalizes storage disk configuration', function () {

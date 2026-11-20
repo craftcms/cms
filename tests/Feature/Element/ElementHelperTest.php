@@ -111,7 +111,7 @@ test('set unique uri increments slug when uri already exists', function () {
 });
 
 test('set unique uri respects max slug increment', function () {
-    Cms::config()->maxSlugIncrement = 0;
+    Cms::config()->slugs->maxIncrement = 0;
 
     $entry = createElementHelperElement([
         'uriFormat' => 'test/{slug}',

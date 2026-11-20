@@ -28,7 +28,7 @@ class UrlRule extends \yii\web\UrlRule
     public static function regexTokens(): array
     {
         $slugChars = ['.', '_', '-'];
-        $slugWordSeparator = Cms::config()->slugWordSeparator;
+        $slugWordSeparator = Cms::config()->slugs->wordSeparator;
         if ($slugWordSeparator !== '/' && !in_array($slugWordSeparator, $slugChars, true)) {
             $slugChars[] = $slugWordSeparator;
         }

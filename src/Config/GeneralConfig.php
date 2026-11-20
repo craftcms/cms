@@ -47,21 +47,27 @@ class GeneralConfig extends BaseConfig
      */
     protected const array RENAMED_SETTINGS = [
         'allowedFileExtensions' => 'assets.allowedFileExtensions',
+        'allowUppercaseInSlug' => 'slugs.allowUppercase',
         'backupCommand' => 'backups.command',
         'backupCommandFormat' => 'backups.commandFormat',
         'backupOnUpdate' => 'backups.onUpdate',
+        'compiledTemplatesPath' => 'templates.compiledPath',
         'convertFilenamesToAscii' => 'assets.convertFilenamesToAscii',
         'defaultImageQuality' => 'images.defaultQuality',
+        'defaultTemplateExtensions' => 'templates.defaultExtensions',
         'enableGql' => 'gql.enabled',
         'enableGraphqlCaching' => 'gql.enableCaching',
         'enableGraphqlIntrospection' => 'gql.enableIntrospection',
+        'enableTemplateCaching' => 'templates.enableCaching',
         'extraAllowedFileExtensions' => 'assets.extraAllowedFileExtensions',
         'extraFileKinds' => 'assets.extraFileKinds',
         'filenameWordSeparator' => 'assets.filenameWordSeparator',
         'gqlTypePrefix' => 'gql.typePrefix',
         'imageDriver' => 'images.driver',
         'imageEditorRatios' => 'images.editorRatios',
+        'indexTemplateFilenames' => 'templates.indexFilenames',
         'lazyGqlTypes' => 'gql.lazyTypes',
+        'limitAutoSlugsToAscii' => 'slugs.limitAutoToAscii',
         'lowPriorityQueueName' => 'queue.lowPriorityName',
         'maxBackups' => 'backups.max',
         'maxCachedCloudImageSize' => 'images.maxCachedCloudSize',
@@ -69,12 +75,15 @@ class GeneralConfig extends BaseConfig
         'maxGraphqlComplexity' => 'gql.maxComplexity',
         'maxGraphqlDepth' => 'gql.maxDepth',
         'maxGraphqlResults' => 'gql.maxResults',
+        'maxSlugIncrement' => 'slugs.maxIncrement',
         'maxUploadFileSize' => 'assets.maxUploadFileSize',
         'optimizeImageFilesize' => 'images.optimizeFilesize',
+        'partialTemplatesPath' => 'templates.partialsPath',
         'prefixGqlRootTypes' => 'gql.prefixRootTypes',
         'preserveCmykColorspace' => 'images.preserveCmykColorspace',
         'preserveExifData' => 'images.preserveExifData',
         'preserveImageColorProfiles' => 'images.preserveColorProfiles',
+        'privateTemplateTrigger' => 'templates.privateTrigger',
         'queueName' => 'queue.name',
         'restoreCommand' => 'backups.restoreCommand',
         'revAssetUrls' => 'assets.revUrls',
@@ -83,6 +92,7 @@ class GeneralConfig extends BaseConfig
         'sanitizeCpImageUploads' => 'assets.sanitizeCpImageUploads',
         'sanitizeSvgUploads' => 'assets.sanitizeSvgUploads',
         'setGraphqlDatesToSystemTimeZone' => 'gql.setDatesToSystemTimeZone',
+        'slugWordSeparator' => 'slugs.wordSeparator',
         'tempAssetUploadDisk' => 'assets.tempUploadDisk',
         'trackedQueueNames' => 'queue.trackedNames',
         'transformGifs' => 'images.transformGifs',
@@ -291,26 +301,6 @@ class GeneralConfig extends BaseConfig
     public BackupsConfig $backups;
 
     /**
-     * @var string|null The server path to the directory where Craft should store compiled Twig templates.
-     *
-     * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->compiledTemplatesPath('@storage/runtime/templates')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_COMPILED_TEMPLATES_PATH=@storage/runtime/templates
-     * ```
-     * :::
-     *
-     * @group Environment
-     *
-     * @since 6.0.0
-     */
-    public ?string $compiledTemplatesPath = null;
-
-    /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
      *
      * When this is disabled, the Settings section will be hidden, the Craft edition and Craft/plugin versions will be locked,
@@ -353,22 +343,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $allowUpdates = true;
-
-    /**
-     * @var bool Whether uppercase letters should be allowed in slugs.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->allowUppercaseInSlug(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_UPPERCASE_IN_SLUG=true
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public bool $allowUppercaseInSlug = false;
 
     /**
      * @var AnchorsConfig Settings for the anchor links that the `|anchors` Twig filter and `@anchors` GraphQL directive add to headings.
@@ -866,22 +840,6 @@ class GeneralConfig extends BaseConfig
     public array $defaultSearchTermOptions = [];
 
     /**
-     * @var string[] The template file extensions Craft will look for when matching a template path to a file on the front end.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultTemplateExtensions(['twig', 'html', 'blade.php', 'txt'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,blade.php,txt
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public array $defaultTemplateExtensions = ['twig', 'html', 'blade.php'];
-
-    /**
      * @var mixed The default amount of time tokens can be used before expiring.
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
@@ -1073,24 +1031,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 5 minutes
      */
     public mixed $elevatedSessionDuration = 300;
-
-    /**
-     * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableTemplateCaching(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_TEMPLATE_CACHING=false
-     * ```
-     * :::
-     *
-     * @see https://craftcms.com/docs/templating/cache
-     *
-     * @group System
-     */
-    public bool $enableTemplateCaching = true;
 
     /**
      * @var string[] List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
@@ -1342,23 +1282,6 @@ class GeneralConfig extends BaseConfig
     public ImagesConfig $images;
 
     /**
-     * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
-     *               matching a template path to a file on the front end.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->indexTemplateFilenames(['index', 'default'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_INDEX_TEMPLATE_FILENAMES=index,default
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public array $indexTemplateFilenames = ['index'];
-
-    /**
      * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
@@ -1404,26 +1327,6 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public mixed $invalidUserTokenPath = null;
-
-    /**
-     * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
-     *
-     * ::: tip
-     * This only affects the JavaScript auto-generated slugs. Non-ASCII characters can still be used in slugs if entered manually.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->limitAutoSlugsToAscii(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_LIMIT_AUTO_SLUGS_TO_ASCII=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $limitAutoSlugsToAscii = false;
 
     /**
      * @var array<string, array{aliasOf: string, displayName?: string}> Custom locale aliases, which will be included when fetching all known locales.
@@ -1571,22 +1474,6 @@ class GeneralConfig extends BaseConfig
     public ?int $maxRevisions = 50;
 
     /**
-     * @var int The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxSlugIncrement(10)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_SLUG_INCREMENT=10
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public int $maxSlugIncrement = 100;
-
-    /**
      * @var string The query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
@@ -1608,35 +1495,6 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public string $pageTrigger = 'page';
-
-    /**
-     * @var string The path within the `templates` folder where element partial templates will live.
-     *
-     * Partial templates are used to render elements when calling [[\CraftCms\Cms\Element\Queries\ElementQuery::render()]],
-     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\CraftCms\Cms\Element\Element::render()]].
-     *
-     * For example, you could render all the entries within a Matrix field like so:
-     *
-     * ```twig
-     * {{ entry.myMatrixField.render() }}
-     * ```
-     *
-     * The full path to a partial template will also include the element type handle (e.g. `asset` or `entry`) and the
-     * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
-     * that would be: `_partials/entry/article.twig`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->partialTemplatesPath('_cp/partials')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $partialTemplatesPath = '_partials';
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -1794,25 +1652,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public mixed $previewTokenDuration = null;
-
-    /**
-     * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
-     *             directly accessible via a matching URL.
-     *
-     * Set to an empty value to disable public template routing.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->privateTemplateTrigger('')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PRIVATE_TEMPLATE_TRIGGER=
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $privateTemplateTrigger = '_';
 
     /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
@@ -2038,22 +1877,6 @@ class GeneralConfig extends BaseConfig
     public string $siteToken = 'siteToken';
 
     /**
-     * @var string The character(s) that should be used to separate words in slugs.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->slugWordSeparator('.')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SLUG_WORD_SEPARATOR=.
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $slugWordSeparator = '-';
-
-    /**
      * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
      *
      * ::: code
@@ -2068,6 +1891,35 @@ class GeneralConfig extends BaseConfig
      * @group Users
      */
     public bool $showFirstAndLastNameFields = false;
+
+    /**
+     * @var SlugsConfig Settings for element slugs.
+     *
+     * Supported settings:
+     *
+     * - `allowUppercase` – Whether uppercase letters are allowed in slugs. (Default is `false`.)
+     * - `limitAutoToAscii` – Whether non-ASCII characters in slugs the control panel generates should be converted to ASCII (`ñ` → `n`). (Default is `false`.)
+     * - `wordSeparator` – The characters that separate words in slugs. (Default is `'-'`.)
+     * - `maxIncrement` – The highest number Craft adds to a slug to make it unique, before it gives up and throws an error. (Default is `100`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->slugs(\CraftCms\Cms\Config\SlugsConfig::create()
+     *     ->wordSeparator('.')
+     *     ->limitAutoToAscii()
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SLUGS='{"wordSeparator":".","limitAutoToAscii":true}'
+     * CRAFT_SLUGS_WORD_SEPARATOR=.
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public SlugsConfig $slugs;
 
     /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
@@ -2140,6 +1992,37 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public ?string $systemTemplateCss = null;
+
+    /**
+     * @var TemplatesConfig Settings for how Craft finds, routes, and compiles templates.
+     *
+     * Supported settings:
+     *
+     * - `defaultExtensions` – The template file extensions Craft looks for when matching a template path to a file on the front end. (Default is `['twig', 'html', 'blade.php']`.)
+     * - `indexFilenames` – The filenames Craft looks for within a directory for its “index” template. (Default is `['index']`.)
+     * - `partialsPath` – The path within the `templates` folder where element partial templates live, such as `_partials/entry/article.twig`. (Default is `'_partials'`.)
+     * - `privateTrigger` – The template path segment prefix that marks templates that can’t be reached through a matching URL. Set it to `''` to disable public template routing. (Default is `'_'`.)
+     * - `enableCaching` – Whether the `{% cache %}` template tag is enabled. (Default is `true`.)
+     * - `compiledPath` – The server path where compiled Twig templates are stored, or `null` for `storage/runtime/compiled_templates`. (Default is `null`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->templates(\CraftCms\Cms\Config\TemplatesConfig::create()
+     *     ->defaultExtensions(['twig', 'html'])
+     *     ->privateTrigger('')
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TEMPLATES='{"privateTrigger":"","enableCaching":false}'
+     * CRAFT_TEMPLATES_ENABLE_CACHING=false
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public TemplatesConfig $templates;
 
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
@@ -2320,6 +2203,8 @@ class GeneralConfig extends BaseConfig
         $this->gql = GqlConfig::create();
         $this->images = ImagesConfig::create();
         $this->queue = QueueConfig::create();
+        $this->slugs = SlugsConfig::create();
+        $this->templates = TemplatesConfig::create();
         $this->mcp = McpConfig::create();
 
         // (Re-)normalize everything.
@@ -2513,27 +2398,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The server path to the directory where Craft should store compiled Twig templates.
-     *
-     * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
-     *
-     * ```php
-     * ->compiledTemplatesPath('@storage/runtime/templates')
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $compiledTemplatesPath
-     * @since 6.0.0
-     */
-    public function compiledTemplatesPath(?string $value): self
-    {
-        $this->compiledTemplatesPath = $value;
-
-        return $this;
-    }
-
-    /**
      * Adds a custom Yii [alias](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
      *
      * ```php
@@ -2598,24 +2462,6 @@ class GeneralConfig extends BaseConfig
     public function allowUpdates(bool $value = true): self
     {
         $this->allowUpdates = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether uppercase letters should be allowed in slugs.
-     *
-     * ```php
-     * ->allowUppercaseInSlug(true)
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $allowUppercaseInSlug
-     */
-    public function allowUppercaseInSlug(bool $value = true): self
-    {
-        $this->allowUppercaseInSlug = $value;
 
         return $this;
     }
@@ -3173,26 +3019,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The template file extensions Craft will look for when matching a template path to a file on the front end.
-     *
-     * ```php
-     * ->defaultTemplateExtensions(['twig', 'html', 'blade.php', 'txt'])
-     * ```
-     *
-     * @group System
-     *
-     * @param  list<string>  $value
-     *
-     * @see $defaultTemplateExtensions
-     */
-    public function defaultTemplateExtensions(array $value): self
-    {
-        $this->defaultTemplateExtensions = $value;
-
-        return $this;
-    }
-
-    /**
      * The default amount of time tokens can be used before expiring.
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
@@ -3376,25 +3202,6 @@ class GeneralConfig extends BaseConfig
     public function disallowRobots(bool $value = true): self
     {
         $this->disallowRobots = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether to enable Craft’s template `{% cache %}` tag on a global basis.
-     *
-     * ```php
-     * ->enableTemplateCaching(false)
-     * ```
-     *
-     * @group System
-     *
-     * @see $enableTemplateCaching
-     * @see https://craftcms.com/docs/templating/cache
-     */
-    public function enableTemplateCaching(bool $value = true): self
-    {
-        $this->enableTemplateCaching = $value;
 
         return $this;
     }
@@ -3659,27 +3466,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The template filenames Craft will look for within a directory to represent the directory’s “index” template when
-     * matching a template path to a file on the front end.
-     *
-     * ```php
-     * ->indexTemplateFilenames(['index', 'default'])
-     * ```
-     *
-     * @group System
-     *
-     * @param  string[]  $value
-     *
-     * @see $indexTemplateFilenames
-     */
-    public function indexTemplateFilenames(array $value): self
-    {
-        $this->indexTemplateFilenames = $value;
-
-        return $this;
-    }
-
-    /**
      * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
@@ -3722,28 +3508,6 @@ class GeneralConfig extends BaseConfig
     public function invalidUserTokenPath(mixed $value): self
     {
         $this->invalidUserTokenPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
-     *
-     * ::: tip
-     * This only affects the JavaScript auto-generated slugs. Non-ASCII characters can still be used in slugs if entered manually.
-     * :::
-     *
-     * ```php
-     * ->limitAutoSlugsToAscii(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $limitAutoSlugsToAscii
-     */
-    public function limitAutoSlugsToAscii(bool $value = true): self
-    {
-        $this->limitAutoSlugsToAscii = $value;
 
         return $this;
     }
@@ -3867,24 +3631,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
-     *
-     * ```php
-     * ->maxSlugIncrement(10)
-     * ```
-     *
-     * @group System
-     *
-     * @see $maxSlugIncrement
-     */
-    public function maxSlugIncrement(int $value): self
-    {
-        $this->maxSlugIncrement = $value;
-
-        return $this;
-    }
-
-    /**
      * Sets the query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
@@ -3903,42 +3649,6 @@ class GeneralConfig extends BaseConfig
     public function pageTrigger(string $value): self
     {
         $this->pageTrigger = $this->normalizePageTrigger($value);
-
-        return $this;
-    }
-
-    /**
-     * The path within the `templates` folder where element partial templates will live.
-     *
-     * Partial templates are used to render elements when calling [[\CraftCms\Cms\Element\Queries\ElementQuery::render()]],
-     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\CraftCms\Cms\Element\Element::render()]].
-     *
-     * For example, you could render all the entries within a Matrix field like so:
-     *
-     * ```twig
-     * {{ entry.myMatrixField.render() }}
-     * ```
-     *
-     * The full path to a partial template will also include the element type handle (e.g. `asset` or `entry`) and the
-     * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
-     * that would be: `_partials/entry/article.twig`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->partialTemplatesPath('_cp/partials')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
-     * ```
-     * :::
-     *
-     * @group System
-     *
-     * @see $partialTemplatesPath
-     */
-    public function partialTemplatesPath(string $value): self
-    {
-        $this->partialTemplatesPath = $value;
 
         return $this;
     }
@@ -4109,27 +3819,6 @@ class GeneralConfig extends BaseConfig
     public function previewTokenDuration(mixed $value): self
     {
         $this->previewTokenDuration = $value !== null ? ConfigHelper::durationInSeconds($value) : null;
-
-        return $this;
-    }
-
-    /**
-     * The template path segment prefix that should be used to identify “private” templates, which are templates that are not
-     * directly accessible via a matching URL.
-     *
-     * Set to an empty value to disable public template routing.
-     *
-     * ```php
-     * ->privateTemplateTrigger('')
-     * ```
-     *
-     * @group System
-     *
-     * @see $privateTemplateTrigger
-     */
-    public function privateTemplateTrigger(string $value): self
-    {
-        $this->privateTemplateTrigger = $value;
 
         return $this;
     }
@@ -4364,24 +4053,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The character(s) that should be used to separate words in slugs.
-     *
-     * ```php
-     * ->slugWordSeparator('.')
-     * ```
-     *
-     * @group System
-     *
-     * @see $slugWordSeparator
-     */
-    public function slugWordSeparator(string $value): self
-    {
-        $this->slugWordSeparator = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
      *
      * ```php
@@ -4395,6 +4066,30 @@ class GeneralConfig extends BaseConfig
     public function showFirstAndLastNameFields(bool $value = true): self
     {
         $this->showFirstAndLastNameFields = $value;
+
+        return $this;
+    }
+
+    /**
+     * Settings for element slugs.
+     *
+     * ```php
+     * ->slugs(\CraftCms\Cms\Config\SlugsConfig::create()
+     *     ->wordSeparator('.')
+     *     ->limitAutoToAscii()
+     * )
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $slugs
+     *
+     * @param  SlugsConfig|array<string, mixed>|string  $value
+     */
+    public function slugs(SlugsConfig|array|string $value): self
+    {
+        $this->slugs = $value instanceof SlugsConfig ? $value : SlugsConfig::fromConfig($value);
 
         return $this;
     }
@@ -4485,6 +4180,30 @@ class GeneralConfig extends BaseConfig
     public function systemTemplateCss(?string $value): self
     {
         $this->systemTemplateCss = $value;
+
+        return $this;
+    }
+
+    /**
+     * Settings for how Craft finds, routes, and compiles templates.
+     *
+     * ```php
+     * ->templates(\CraftCms\Cms\Config\TemplatesConfig::create()
+     *     ->defaultExtensions(['twig', 'html'])
+     *     ->privateTrigger('')
+     * )
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $templates
+     *
+     * @param  TemplatesConfig|array<string, mixed>|string  $value
+     */
+    public function templates(TemplatesConfig|array|string $value): self
+    {
+        $this->templates = $value instanceof TemplatesConfig ? $value : TemplatesConfig::fromConfig($value);
 
         return $this;
     }

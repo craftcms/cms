@@ -196,7 +196,7 @@ class ElementRules extends Ruleset
             }
         }
 
-        $limitToAscii = $this->limitAutoSlugsToAscii ?? Cms::config()->limitAutoSlugsToAscii;
+        $limitToAscii = $this->limitAutoSlugsToAscii ?? Cms::config()->slugs->limitAutoToAscii;
 
         if (($slug === '' || $isTemp) && $element !== null) {
             $sourceValue = $element->title ?? '';

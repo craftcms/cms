@@ -14,13 +14,15 @@ Front-end site templates can use `.blade.php` files. The default front-end templ
 - `html`
 - `blade.php`
 
-That means `templates/news.twig` will be chosen before `templates/news.blade.php` when both exist. Change `defaultTemplateExtensions` if a project needs a different order:
+That means `templates/news.twig` will be chosen before `templates/news.blade.php` when both exist. Change `templates.defaultExtensions` if a project needs a different order:
 
 ```php
 <?php
 
 return [
-    'defaultTemplateExtensions' => ['blade.php', 'twig', 'html'],
+    'templates' => [
+        'defaultExtensions' => ['blade.php', 'twig', 'html'],
+    ],
 ];
 ```
 

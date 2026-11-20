@@ -123,18 +123,18 @@ class ViewTest extends TestCase
         ?array $defaultTemplateExtensions = null,
         ?array $indexTemplateFilenames = null,
     ) {
-        $originalExtensions = Cms::config()->defaultTemplateExtensions;
-        $originalFilenames = Cms::config()->indexTemplateFilenames;
+        $originalExtensions = Cms::config()->templates->defaultExtensions;
+        $originalFilenames = Cms::config()->templates->indexFilenames;
 
         try {
             // If the data wants to set something custom? Set it on the config.
             if ($defaultTemplateExtensions !== null) {
-                Cms::config()->defaultTemplateExtensions = $defaultTemplateExtensions;
+                Cms::config()->templates->defaultExtensions = $defaultTemplateExtensions;
             }
 
             // Same with index names
             if ($indexTemplateFilenames !== null) {
-                Cms::config()->indexTemplateFilenames = $indexTemplateFilenames;
+                Cms::config()->templates->indexFilenames = $indexTemplateFilenames;
             }
 
             // Lets test stuff.
@@ -144,8 +144,8 @@ class ViewTest extends TestCase
 
             self::assertSame($expected, $this->_resolveTemplate(Aliases::get($basePath), $name));
         } finally {
-            Cms::config()->defaultTemplateExtensions = $originalExtensions;
-            Cms::config()->indexTemplateFilenames = $originalFilenames;
+            Cms::config()->templates->defaultExtensions = $originalExtensions;
+            Cms::config()->templates->indexFilenames = $originalFilenames;
         }
     }
 

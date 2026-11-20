@@ -93,11 +93,11 @@ it('takes the control panel views out of the view finder in site mode', function
 it('returns correct default template extensions', function () {
     expect(TemplateMode::Cp->defaultTemplateExtensions())->toBe(['twig', 'html', 'blade.php']);
 
-    expect(TemplateMode::Site->defaultTemplateExtensions())->toBe(Cms::config()->defaultTemplateExtensions);
+    expect(TemplateMode::Site->defaultTemplateExtensions())->toBe(Cms::config()->templates->defaultExtensions);
 });
 
 it('returns correct default template extensions for site with custom config', function () {
-    Cms::config()->defaultTemplateExtensions = ['twig', 'html', 'txt'];
+    Cms::config()->templates->defaultExtensions = ['twig', 'html', 'txt'];
 
     expect(TemplateMode::Site->defaultTemplateExtensions())->toBe(['twig', 'html', 'txt']);
 });
@@ -105,11 +105,11 @@ it('returns correct default template extensions for site with custom config', fu
 it('returns correct index template filenames', function () {
     expect(TemplateMode::Cp->indexTemplateFilenames())->toBe(['index']);
 
-    expect(TemplateMode::Site->indexTemplateFilenames())->toBe(Cms::config()->indexTemplateFilenames);
+    expect(TemplateMode::Site->indexTemplateFilenames())->toBe(Cms::config()->templates->indexFilenames);
 });
 
 it('returns correct index template filenames for site with custom config', function () {
-    Cms::config()->indexTemplateFilenames = ['index', 'default'];
+    Cms::config()->templates->indexFilenames = ['index', 'default'];
 
     expect(TemplateMode::Site->indexTemplateFilenames())->toBe(['index', 'default']);
 });
@@ -117,11 +117,11 @@ it('returns correct index template filenames for site with custom config', funct
 it('returns correct private template trigger', function () {
     expect(TemplateMode::Cp->privateTemplateTrigger())->toBe('_');
 
-    expect(TemplateMode::Site->privateTemplateTrigger())->toBe(Cms::config()->privateTemplateTrigger);
+    expect(TemplateMode::Site->privateTemplateTrigger())->toBe(Cms::config()->templates->privateTrigger);
 });
 
 it('returns correct private template trigger for site with custom config', function () {
-    Cms::config()->privateTemplateTrigger = '.';
+    Cms::config()->templates->privateTrigger = '.';
 
     expect(TemplateMode::Site->privateTemplateTrigger())->toBe('.');
 });

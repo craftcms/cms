@@ -177,8 +177,8 @@ class Path
 
     public function compiledTemplates(string $path = '', bool $create = true): string
     {
-        if ($this->generalConfig->compiledTemplatesPath !== null) {
-            $compiledTemplatesPath = Env::parse($this->generalConfig->compiledTemplatesPath);
+        if ($this->generalConfig->templates->compiledPath !== null) {
+            $compiledTemplatesPath = Env::parse($this->generalConfig->templates->compiledPath);
 
             if ($compiledTemplatesPath !== null && $compiledTemplatesPath !== '') {
                 return $this->directory(

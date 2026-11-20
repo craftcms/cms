@@ -74,7 +74,7 @@ readonly class RedirectRule
     private function toRegexPattern(): string
     {
         $slugChars = ['.', '_', '-'];
-        $slugWordSeparator = Cms::config()->slugWordSeparator;
+        $slugWordSeparator = Cms::config()->slugs->wordSeparator;
 
         if ($slugWordSeparator !== '/' && ! in_array($slugWordSeparator, $slugChars, true)) {
             $slugChars[] = $slugWordSeparator;
