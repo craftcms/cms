@@ -98,7 +98,7 @@ describe('as a background', function () {
             'root' => storage_path('framework/testing/asset-placeholder-test/test-disk'),
         ]);
         new ControlPanelAssetTransformDriver()->register();
-        config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
+        useAssetTransformer('test');
         $this->asset = AssetModel::factory()->createElement([
             'volumeId' => Volume::factory()->create(['fs' => 'test-disk'])->id,
             'kind' => FileKind::Image->value,

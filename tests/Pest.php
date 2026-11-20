@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Composer\InstalledVersions;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
@@ -72,6 +73,42 @@ pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
 
 // Tests that exercise the external MCP server explicitly clear this cache.
 pest()->beforeEach(fn () => cache()->put('craftcms-mcp-tools', []))->in('Feature/Ai');
+
+/**
+ * Sets the `craft` transformer’s settings and rebuilds it.
+ *
+ * @param  array<string, mixed>  $settings
+ */
+function configureCraftTransformer(array $settings): void
+{
+    $config = Cms::config()->assetTransformers;
+    $config->outputDisk = $settings['outputDisk'] ?? null;
+    $config->generateTransformsBeforePageLoad = $settings['generateTransformsBeforePageLoad'] ?? false;
+    app(AssetTransformers::class)->forgetTransformers();
+}
+
+/**
+ * Defines a transformer in the `assetTransformers` general config setting. Its driver defaults to the driver of the
+ * same name.
+ *
+ * @param  array<string, mixed>  $config
+ */
+function defineAssetTransformer(string $name, array $config = []): void
+{
+    Cms::config()->assetTransformers->transformer($name, ['driver' => $name, ...$config]);
+    app(AssetTransformers::class)->forgetTransformers();
+}
+
+/**
+ * Defines a transformer and makes it the default.
+ *
+ * @param  array<string, mixed>  $config
+ */
+function useAssetTransformer(string $name, array $config = []): void
+{
+    defineAssetTransformer($name, $config);
+    Cms::config()->assetTransformers->default($name);
+}
 
 /**
  * Saves MCP settings, enabling the authenticated server by default, and registers the routes they call for.

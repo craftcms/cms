@@ -31,7 +31,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
 
     public function usage(): string
     {
-        return 'Disks choose a driver with the asset_transformer key in config/filesystems.php. Image transforms take parametersSchema values in parameters, keyed by driver name.';
+        return 'Each type is a transformer: a named entry in the assetTransformers general config setting with a driver and its settings. Volumes choose a transformer with their assetTransformer setting; otherwise that setting’s default applies. Image transforms take parametersSchema values in parameters, keyed by transformer name.';
     }
 
     public function scope(): ?string

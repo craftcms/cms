@@ -26,7 +26,15 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
      */
     public const string IMMEDIATE_TRANSFORMS_CONTEXT = AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT;
 
-    public function __construct(private readonly ImageTransformer $imageTransformer) {}
+    /**
+     * @param  string|null  $outputDisk  The disk to store transforms on, or `null` for the volume’s own disk.
+     * @param  bool  $generateBeforePageLoad  Whether to generate transforms before returning their URLs by default.
+     */
+    public function __construct(
+        private readonly ImageTransformer $imageTransformer,
+        public readonly ?string $outputDisk = null,
+        public readonly bool $generateBeforePageLoad = false,
+    ) {}
 
     public function definition(): AssetTransformDriverDefinition
     {
@@ -40,8 +48,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         }
 
         $transform = $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
-        $immediately = $request->immediately
-            ?? ($request->transformer->settings['generate_transforms_before_page_load'] ?? false) === true;
+        $immediately = $request->immediately ?? $this->generateBeforePageLoad;
         try {
             $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $immediately, $request->transformer);
         } catch (ImageTransformException $exception) {

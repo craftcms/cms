@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
+use LogicException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -761,35 +762,55 @@ class ImageTransformer
     }
 
     /**
-     * Returns the `craft` driver’s `has_urls`. It defaults to the volume’s setting when transforms are stored on the
-     * volume’s own disk, and to `false` on any other disk.
+     * Returns whether transforms get direct URLs on their output disk. The source volume must have public URLs, and
+     * the transforms must be stored on the volume’s own disk, or on an output disk whose config sets a `url`. Other
+     * transforms are served through Craft’s action URL.
      */
     private function transformHasUrls(Asset $asset, AssetTransformer $transformer): bool
     {
-        $hasUrls = $transformer->settings['has_urls'] ?? null;
-
-        if (is_bool($hasUrls)) {
-            return $hasUrls;
-        }
-
         $volume = $asset->getVolume();
 
-        return $this->outputDisk($asset, $transformer) === $volume->getResolvedFsTarget() && $volume->sourceHasUrls();
+        if (! $volume->sourceHasUrls()) {
+            return false;
+        }
+
+        $outputDisk = $this->outputDisk($asset, $transformer);
+
+        return $outputDisk === $volume->getResolvedFsTarget() || $this->diskSetsUrl($outputDisk);
     }
 
     /**
-     * Returns the name of the disk the `craft` driver stores transforms on: its `output_disk`, or the volume’s own disk.
+     * Returns whether a disk’s config sets a `url`. A scoped disk follows the disk it wraps and ignores its own `url`,
+     * as Laravel does. Laravel builds URLs for disks without one, so this reads the config instead of calling `url()`.
+     *
+     * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
+     */
+    private function diskSetsUrl(string|array $disk, int $depth = 0): bool
+    {
+        $config = is_string($disk) ? (config('filesystems.disks')[$disk] ?? null) : $disk;
+
+        if (! is_array($config) || $depth > 8) {
+            return false;
+        }
+
+        if (($config['driver'] ?? null) === 'scoped') {
+            $wrapped = $config['disk'] ?? null;
+
+            return (is_string($wrapped) || is_array($wrapped)) && $this->diskSetsUrl($wrapped, $depth + 1);
+        }
+
+        return is_string($config['url'] ?? null) && $config['url'] !== '';
+    }
+
+    /**
+     * Returns the name of the disk the `craft` driver stores transforms on: the driver instance’s output disk, or the
+     * volume’s own disk.
      */
     private function outputDisk(Asset $asset, AssetTransformer $transformer): string
     {
-        $disk = $transformer->settings['output_disk'] ?? null;
-
-        if ($disk !== null && ! is_string($disk)) {
-            throw new FilesystemException('The configured asset transform output disk is invalid.');
-        }
-
+        $disk = $this->craftDriver($transformer)->outputDisk;
         $volume = $asset->getVolume();
-        $diskName = $disk === null || $disk === ''
+        $diskName = $disk === null
             ? $volume->getResolvedFsTarget()
             : $volume->resolveStorageTargetKey($disk, parse: false);
 
@@ -798,6 +819,24 @@ class ImageTransformer
         }
 
         return $diskName;
+    }
+
+    /**
+     * Returns the `craft` driver instance a transformer resolves to. Another driver that hands a file to Craft gets
+     * the default `craft` driver.
+     */
+    private function craftDriver(AssetTransformer $transformer): CraftAssetTransformDriver
+    {
+        $transformers = app(AssetTransformers::class);
+        $driver = $transformers->has($transformer->name) ? $transformers->transformer($transformer->name) : null;
+
+        $driver = $driver instanceof CraftAssetTransformDriver ? $driver : $transformers->transformer('craft');
+
+        if (! $driver instanceof CraftAssetTransformDriver) {
+            throw new LogicException('The craft asset transform driver is invalid.');
+        }
+
+        return $driver;
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void
@@ -818,9 +857,12 @@ class ImageTransformer
      */
     private function currentTransformer(Asset $asset): AssetTransformer
     {
-        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedFsTarget());
+        $transformers = app(AssetTransformers::class);
+        $transformer = $transformers->forVolume($asset->getVolume());
 
-        return $transformer->driver === 'craft' ? $transformer : new AssetTransformer('craft');
+        return $transformers->transformer($transformer->name) instanceof CraftAssetTransformDriver
+            ? $transformer
+            : new AssetTransformer('craft');
     }
 
     /**

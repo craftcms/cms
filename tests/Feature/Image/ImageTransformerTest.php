@@ -276,12 +276,8 @@ it('uses Craft driver output disk settings', function () {
     config()->set('filesystems.disks.configured-transform-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/configured-source'),
-        'asset_transformer' => [
-            'driver' => 'craft',
-            'output_disk' => 'configured-transform-output',
-            'has_urls' => true,
-        ],
     ]);
+    configureCraftTransformer(['outputDisk' => 'configured-transform-output']);
     config()->set('filesystems.disks.configured-transform-target', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/configured-target'),
@@ -296,6 +292,7 @@ it('uses Craft driver output disk settings', function () {
     Storage::disk('configured-transform-target')->deleteDirectory('');
     $volume = Volume::factory()->create([
         'fs' => 'configured-transform-source',
+        'hasUrls' => true,
     ]);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -319,6 +316,66 @@ it('uses Craft driver output disk settings', function () {
         ->and(Storage::disk('configured-transform-target')->allFiles())->toHaveCount(1);
 });
 
+it('gives transforms direct URLs only for public volumes whose output disk sets a url', function (bool $volumeHasUrls, ?string $outputDisk, bool $direct) {
+    $root = storage_path('framework/testing/image-transformer-test/url-cases');
+    config()->set('filesystems.disks.url-source', ['driver' => 'local', 'root' => "{$root}/source"]);
+    config()->set('filesystems.disks.url-output', ['driver' => 'local', 'root' => "{$root}/output", 'url' => 'https://transforms.example.test']);
+    config()->set('filesystems.disks.url-output-scoped', ['driver' => 'scoped', 'disk' => 'url-output', 'prefix' => 'scoped']);
+    config()->set('filesystems.disks.no-url-output', ['driver' => 'local', 'root' => "{$root}/no-url-output"]);
+    config()->set('filesystems.disks.no-url-output-scoped', ['driver' => 'scoped', 'disk' => 'no-url-output', 'prefix' => 'scoped', 'url' => 'https://ignored.example.test']);
+    configureCraftTransformer(['outputDisk' => $outputDisk]);
+    $volume = Volume::factory()->create(['fs' => 'url-source', 'hasUrls' => $volumeHasUrls]);
+    $asset = ($this->createImageAsset)([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+    ]);
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+    $url = app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    );
+
+    expect(str_contains($url, 'generate-transform'))->toBe(! $direct);
+})->with([
+    'own disk without a url key, public' => [true, null, true],
+    'own disk, private' => [false, null, false],
+    'output disk with a url, public' => [true, 'url-output', true],
+    'scoped output disk whose parent has a url, public' => [true, 'url-output-scoped', true],
+    'output disk without a url, public' => [true, 'no-url-output', false],
+    'scoped output disk with its own url but a parent without one, public' => [true, 'no-url-output-scoped', false],
+    'output disk with a url, private' => [false, 'url-output', false],
+]);
+
+it('stores transforms on a second craft transformer’s own output disk', function () {
+    $root = storage_path('framework/testing/image-transformer-test/second-craft');
+    config()->set('filesystems.disks.private-transforms', ['driver' => 'local', 'root' => "{$root}/output"]);
+    Storage::disk('private-transforms')->deleteDirectory('');
+    defineAssetTransformer('craft-private', ['driver' => 'craft', 'outputDisk' => 'private-transforms']);
+    $volume = Volume::factory()->create(['fs' => 'test-disk', 'hasUrls' => true, 'assetTransformer' => 'craft-private']);
+    $asset = ($this->createImageAsset)([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+    ]);
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+    Queue::fake();
+
+    $deferredUrl = app(AssetTransformers::class)->transform($asset, ['width' => 100])->url;
+    $index = $this->transformer->getTransformIndexModelById((int) DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->value('id'));
+    $this->transformer->getTransformUrlForIndex($asset, $index, true);
+    $transforms = fn (string $disk): array => array_values(array_filter(
+        Storage::disk($disk)->allFiles(),
+        fn (string $path): bool => str_starts_with($path, '_'),
+    ));
+
+    expect($deferredUrl)->toContain('generate-transform')
+        ->and($transforms('private-transforms'))->toHaveCount(1)
+        ->and($transforms('test-disk'))->toBe([]);
+
+    $this->transformer->invalidateAssetTransforms($asset);
+
+    expect($transforms('private-transforms'))->toBe([]);
+});
+
 it('does not reuse similar transform results across output locations', function () {
     foreach (['first-transform-target', 'second-transform-target'] as $disk) {
         config()->set("filesystems.disks.{$disk}", [
@@ -333,13 +390,9 @@ it('does not reuse similar transform results across output locations', function 
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    $sourceDisk = $asset->getVolume()->getResolvedFsTarget();
-    app(AssetTransformers::class)->withImmediateTransforms(function () use ($asset, $sourceDisk): void {
+    app(AssetTransformers::class)->withImmediateTransforms(function () use ($asset): void {
         foreach (['first', 'second'] as $target) {
-            config()->set("filesystems.disks.{$sourceDisk}.asset_transformer", [
-                'driver' => 'craft',
-                'output_disk' => "{$target}-transform-target",
-            ]);
+            configureCraftTransformer(['outputDisk' => "{$target}-transform-target"]);
             app(AssetTransformers::class)->transform($asset, ['width' => 100]);
         }
     });
@@ -353,8 +406,8 @@ it('fails when the configured Craft driver output disk doesn’t name a disk', f
     config()->set('filesystems.disks.missing-transform-target-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/missing-target-source'),
-        'asset_transformer' => ['driver' => 'craft', 'output_disk' => $outputDisk],
     ]);
+    configureCraftTransformer(['outputDisk' => $outputDisk]);
     $volume = Volume::factory()->create([
         'fs' => 'missing-transform-target-source',
     ]);
@@ -441,7 +494,7 @@ it('excludes generated transform directories from asset indexing with the defaul
         ->toEqualCanonicalizing(['_visible.txt', 'photos', 'photos/original.txt', 'transform-test.jpg']);
 });
 
-it('reuses transforms when only has_urls or immediate generation changes', function () {
+it('reuses transforms when only immediate generation changes', function () {
     $asset = ($this->createImageAsset)();
     $output = useTransformOutputDisk($asset);
     $transform = fn () => app(AssetTransformers::class)->withImmediateTransforms(
@@ -449,8 +502,7 @@ it('reuses transforms when only has_urls or immediate generation changes', funct
     );
 
     $transform();
-    config()->set('filesystems.disks.test-disk.asset_transformer.has_urls', true);
-    config()->set('filesystems.disks.test-disk.asset_transformer.generate_transforms_before_page_load', true);
+    configureCraftTransformer(['outputDisk' => 'transform-output', 'generateTransformsBeforePageLoad' => true]);
     $transform();
 
     expect($output->allFiles())->toHaveCount(1)
@@ -508,7 +560,7 @@ it('rejects unsupported source kinds before generating transforms', function () 
         'filename' => 'transform-test.txt',
         'kind' => 'text',
     ]);
-    expect(fn () => app(AssetTransformers::class)->driver('craft')->transform(new AssetTransformRequest(
+    expect(fn () => app(AssetTransformers::class)->transformer('craft')->transform(new AssetTransformRequest(
         $asset,
         new AssetTransformer('craft'),
         [
@@ -517,17 +569,6 @@ it('rejects unsupported source kinds before generating transforms', function () 
             'mode' => 'crop',
         ],
     )))->toThrow(NotSupportedException::class);
-});
-
-it('rejects invalid Craft driver settings', function () {
-    $asset = ($this->createImageAsset)();
-    $assetTransformer = new AssetTransformer('craft', ['output_disk' => []]);
-
-    expect(fn () => app(AssetTransformers::class)->driver('craft')->transform(new AssetTransformRequest(
-        $asset,
-        $assetTransformer,
-        ['width' => 100],
-    )))->toThrow(FilesystemException::class);
 });
 
 it('keeps eager loaded index dates independent and follows the current timezone', function () {
@@ -651,7 +692,7 @@ function useTransformOutputDisk(Asset $asset): Filesystem
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/transform-output'),
     ]);
-    config()->set('filesystems.disks.test-disk.asset_transformer', ['driver' => 'craft', 'output_disk' => 'transform-output']);
+    configureCraftTransformer(['outputDisk' => 'transform-output']);
     $output = Storage::disk('transform-output');
     $output->deleteDirectory('');
     $asset->getVolume()->sourceDisk()->put(

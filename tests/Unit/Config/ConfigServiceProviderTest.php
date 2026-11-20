@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\AnchorsConfig;
+use CraftCms\Cms\Config\AssetTransformersConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Config\McpConfig;
@@ -273,6 +274,32 @@ it('extends the default Twig sandbox allowlist with project entries', function (
         ->and($config['allowedFilters'])->toContain('e', 'projectFilter')
         ->and($config['allowedMethods'][Collection::class])->toContain('render', 'toJson')
         ->and($config['allowedMethods'][ArrayObject::class])->toBe(['count']);
+});
+
+it('overrides asset transformer settings with environment variables and keeps named transformers', function () {
+    app(ConfigRepository::class)->set('craft.general', GeneralConfig::create()->assetTransformers(
+        AssetTransformersConfig::create()
+            ->generateTransformsBeforePageLoad()
+            ->transformer('imgix', ['driver' => 'imgix', 'domain' => 'example.imgix.net']),
+    ));
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT'] = 'imgix';
+    $_SERVER['CRAFT_ASSET_TRANSFORMERS_OUTPUT_DISK'] = 'transforms';
+
+    try {
+        new ConfigServiceProvider(app())->register();
+        $config = app(GeneralConfig::class)->assetTransformers;
+    } finally {
+        unset($_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT'], $_SERVER['CRAFT_ASSET_TRANSFORMERS_OUTPUT_DISK']);
+    }
+
+    expect($config->default)->toBe('imgix')
+        ->and($config->transformerConfig('craft'))->toBe([
+            'driver' => 'craft',
+            'outputDisk' => 'transforms',
+            'generateTransformsBeforePageLoad' => true,
+        ])
+        ->and($config->transformerConfig('imgix'))->toBe(['driver' => 'imgix', 'domain' => 'example.imgix.net']);
 });
 
 it('fails when an environment override cannot be normalized', function () {

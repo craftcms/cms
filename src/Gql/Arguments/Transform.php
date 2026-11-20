@@ -39,7 +39,7 @@ class Transform extends Arguments
             'immediately' => [
                 'name' => 'immediately',
                 'type' => Type::boolean(),
-                'description' => 'Whether to generate the transform before returning its URL, rather than when the URL is first requested. Asset transformers that generate transforms on request, such as `craft`, honor it; `craft` otherwise follows the disk’s `generate_transforms_before_page_load` setting.',
+                'description' => 'Whether to generate the transform before returning its URL, rather than when the URL is first requested. Asset transformers that generate transforms on request, such as `craft`, honor it; `craft` otherwise follows the `assetTransformers` general config setting’s `generateTransformsBeforePageLoad`.',
             ],
         ];
 

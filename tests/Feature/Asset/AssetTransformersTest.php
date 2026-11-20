@@ -15,6 +15,8 @@ use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
@@ -29,114 +31,131 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-it('uses the craft driver with its defaults for a disk without an asset_transformer key', function () {
-    $transformer = app(AssetTransformers::class)->forDisk('local');
-
-    expect($transformer->driver)->toBe('craft')
-        ->and($transformer->settings)->toBe([])
-        ->and(app(AssetTransformers::class)->forDisk(null)->driver)->toBe('craft')
-        ->and(app(AssetTransformers::class)->forDisk('not-a-disk')->driver)->toBe('craft');
-});
-
-it('reads a driver name or an array with inline settings from the disk', function () {
-    registerDriver('imgix');
-    config()->set('filesystems.disks.named', ['driver' => 'local', 'asset_transformer' => 'imgix']);
-    config()->set('filesystems.disks.inline', ['driver' => 'local', 'asset_transformer' => [
-        'driver' => 'craft',
-        'output_disk' => 'transforms',
-        'has_urls' => true,
-    ]]);
-    config()->set('filesystems.disks', [
-        ...config('filesystems.disks'),
-        'dotted.disk' => ['driver' => 'local', 'asset_transformer' => 'imgix'],
-    ]);
+it('uses the volume’s transformer, then the configured default, then craft', function () {
+    $volumeDriver = registerDriver('volume-driver');
+    $defaultDriver = registerDriver('default-driver');
+    putenv('CRAFT_TEST_ASSET_TRANSFORMER=volume-driver');
+    $_SERVER['CRAFT_TEST_ASSET_TRANSFORMER'] = 'volume-driver';
     $transformers = app(AssetTransformers::class);
 
-    expect($transformers->forDisk('named'))->toEqual(new AssetTransformer('imgix'))
-        ->and($transformers->forDisk('inline'))->toEqual(new AssetTransformer('craft', [
-            'output_disk' => 'transforms',
-            'has_urls' => true,
-        ]))
-        ->and($transformers->forDisk('dotted.disk')->driver)->toBe('imgix');
+    try {
+        $named = assetOnVolume('named-source', ['assetTransformer' => 'volume-driver']);
+        $envSet = assetOnVolume('env-set-source', ['assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER']);
+        $envUnset = assetOnVolume('env-unset-source', ['assetTransformer' => '$CRAFT_TEST_UNSET_ASSET_TRANSFORMER']);
+        $unset = assetOnVolume('unset-source');
+
+        expect($transformers->forVolume($unset->getVolume())->name)->toBe('craft');
+
+        useAssetTransformer('default-driver');
+        $transformers->transform($named, ['width' => 100]);
+
+        expect($volumeDriver->request->asset)->toBe($named)
+            ->and($volumeDriver->request->parameters['width'])->toBe(100)
+            ->and($transformers->forVolume($envSet->getVolume())->name)->toBe('volume-driver')
+            ->and($transformers->forVolume($envUnset->getVolume())->name)->toBe('default-driver')
+            ->and($transformers->forVolume($unset->getVolume())->name)->toBe('default-driver')
+            ->and($defaultDriver->request)->toBeNull();
+    } finally {
+        putenv('CRAFT_TEST_ASSET_TRANSFORMER');
+        unset($_SERVER['CRAFT_TEST_ASSET_TRANSFORMER']);
+    }
 });
 
-it('lets a scoped disk without a key follow the disk it wraps', function () {
-    registerDriver('imgix');
-    registerDriver('other');
-    config()->set('filesystems.disks.parent', ['driver' => 'local', 'asset_transformer' => ['driver' => 'imgix', 'zone' => 'a']]);
-    config()->set('filesystems.disks.child', ['driver' => 'scoped', 'disk' => 'parent', 'prefix' => 'blog']);
-    config()->set('filesystems.disks.grandchild', ['driver' => 'scoped', 'disk' => 'child', 'prefix' => 'posts']);
-    config()->set('filesystems.disks.inline-parent', ['driver' => 'scoped', 'prefix' => 'x', 'disk' => [
-        'driver' => 'local',
-        'asset_transformer' => 'other',
-    ]]);
-    config()->set('filesystems.disks.own-key', [
-        'driver' => 'scoped',
-        'disk' => 'parent',
-        'prefix' => 'own',
-        'asset_transformer' => 'craft',
-    ]);
-    config()->set('filesystems.disks.loop-a', ['driver' => 'scoped', 'disk' => 'loop-b', 'prefix' => 'a']);
-    config()->set('filesystems.disks.loop-b', ['driver' => 'scoped', 'disk' => 'loop-a', 'prefix' => 'b']);
+it('builds each transformer from its own entry, so two can share a driver', function () {
+    $received = [];
+    app(AssetTransformers::class)->extend('remote', function ($app, array $config) use (&$received): TestAssetTransformDriver {
+        $received[] = $config;
+
+        return new TestAssetTransformDriver;
+    });
+    defineAssetTransformer('remote', ['domain' => 'first.example.test']);
+    defineAssetTransformer('remote-v2', ['driver' => 'remote', 'domain' => 'second.example.test']);
+    $first = assetOnVolume('first-source', ['assetTransformer' => 'remote']);
+    $second = assetOnVolume('second-source', ['assetTransformer' => 'remote-v2']);
     $transformers = app(AssetTransformers::class);
 
-    expect($transformers->forDisk('child'))->toEqual(new AssetTransformer('imgix', ['zone' => 'a']))
-        ->and($transformers->forDisk('grandchild')->driver)->toBe('imgix')
-        ->and($transformers->forDisk('inline-parent')->driver)->toBe('other')
-        ->and($transformers->forDisk('own-key'))->toEqual(new AssetTransformer('craft'))
-        ->and($transformers->forDisk('loop-a')->driver)->toBe('craft');
+    expect($transformers->transformer('remote'))->not->toBe($transformers->transformer('remote-v2'))
+        ->and($received)->toBe([
+            ['driver' => 'remote', 'domain' => 'first.example.test'],
+            ['driver' => 'remote', 'domain' => 'second.example.test'],
+        ])
+        ->and($transformers->forVolume($first->getVolume())->name)->toBe('remote')
+        ->and($transformers->forVolume($second->getVolume())->name)->toBe('remote-v2');
 });
 
-it('transforms with the asset’s disk’s transformer and its settings', function () {
-    $diskDriver = registerDriver('disk-driver');
-    $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'disk-driver', 'zone' => 'disk']]);
+it('builds the craft driver from its settings', function () {
+    configureCraftTransformer(['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true]);
+    $driver = app(AssetTransformers::class)->transformer('craft');
 
-    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
-
-    expect($diskDriver->request->parameters['width'])->toBe(100)
-        ->and($diskDriver->request->asset)->toBe($asset)
-        ->and($diskDriver->request->transformer->settings)->toBe(['zone' => 'disk']);
+    expect($driver)->toBeInstanceOf(CraftAssetTransformDriver::class)
+        ->and($driver->outputDisk)->toBe('transforms')
+        ->and($driver->generateBeforePageLoad)->toBeTrue();
 });
 
-it('throws for invalid transformer config with debug mode on', function (mixed $value, string $exception) {
+it('reserves the craft driver name', function () {
+    expect(fn () => app(AssetTransformers::class)->extend('craft', fn () => new TestAssetTransformDriver))
+        ->toThrow(InvalidArgumentException::class);
+});
+
+it('throws for invalid transformer config with debug mode on', function (string $value) {
     config()->set('app.debug', true);
-    config()->set('filesystems.disks.broken', ['driver' => 'local', 'asset_transformer' => $value]);
+    defineAssetTransformer('unregistered', ['driver' => 'missing']);
+    defineAssetTransformer('case-variant', ['driver' => 'CRAFT']);
+    $volume = assetOnVolume('broken-source', ['handle' => 'broken', 'assetTransformer' => $value])->getVolume();
+    Cms::config()->assetTransformers->default = $value;
+    $default = assetOnVolume('default-source')->getVolume();
 
-    expect(fn () => app(AssetTransformers::class)->forDisk('broken'))
-        ->toThrow($exception, '[broken] disk');
+    expect(fn () => app(AssetTransformers::class)->forVolume($volume))
+        ->toThrow(AssetTransformDriverNotFoundException::class, '[broken] volume')
+        ->and(fn () => app(AssetTransformers::class)->forVolume($default))
+        ->toThrow(AssetTransformDriverNotFoundException::class, 'assetTransformers default');
 })->with([
-    'unregistered driver' => ['missing', AssetTransformDriverNotFoundException::class],
-    'a case variant of craft' => ['CRAFT', AssetTransformDriverNotFoundException::class],
-    'a name with no letters' => ['-', AssetTransformDriverNotFoundException::class],
-    'array without a driver' => [['has_urls' => true], InvalidAssetTransformException::class],
-    'empty string' => ['', InvalidAssetTransformException::class],
+    'an undefined transformer' => 'missing',
+    'a transformer with an unregistered driver' => 'unregistered',
+    'a transformer whose driver is a case variant of craft' => 'case-variant',
+    'a name with no letters' => '-',
 ]);
 
 it('logs invalid transformer config once and falls back to craft with debug mode off', function () {
     config()->set('app.debug', false);
-    config()->set('filesystems.disks.broken', ['driver' => 'local', 'asset_transformer' => 'missing']);
+    $volume = assetOnVolume('broken-source', ['handle' => 'broken', 'assetTransformer' => 'missing'])->getVolume();
     Log::shouldReceive('warning')
         ->once()
-        ->withArgs(fn (string $message): bool => str_contains($message, '[missing]') && str_contains($message, '[broken] disk'));
+        ->withArgs(fn (string $message): bool => str_contains($message, '[missing]') && str_contains($message, '[broken] volume'));
     $transformers = app(AssetTransformers::class);
 
-    $first = $transformers->forDisk('broken');
-    $second = $transformers->forDisk('broken');
+    expect($transformers->forVolume($volume))->toEqual(new AssetTransformer('craft'))
+        ->and($transformers->forVolume($volume))->toEqual(new AssetTransformer('craft'));
+});
 
-    expect($first)->toEqual(new AssetTransformer('craft'))
-        ->and($second)->toEqual(new AssetTransformer('craft'));
+it('reports a disk that still sets asset_transformer', function () {
+    registerDriver('imgix');
+    config()->set('filesystems.disks.legacy', ['driver' => 'local', 'root' => storage_path('framework/testing/legacy'), 'asset_transformer' => 'imgix']);
+    config()->set('filesystems.disks.legacy-child', ['driver' => 'scoped', 'disk' => 'legacy', 'prefix' => 'child']);
+    $volume = Volume::factory()->create(['fs' => 'legacy-child']);
+    $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
+    $transformers = app(AssetTransformers::class);
+
+    config()->set('app.debug', true);
+    expect(fn () => $transformers->forVolume($asset->getVolume()))
+        ->toThrow(InvalidAssetTransformException::class, 'The [legacy] disk sets asset_transformer');
+
+    config()->set('app.debug', false);
+    Log::shouldReceive('error')->once()->withArgs(fn (string $message): bool => str_contains($message, '[legacy] disk'));
+    expect($transformers->forVolume($asset->getVolume())->name)->toBe('craft')
+        ->and($transformers->forVolume($asset->getVolume())->name)->toBe('craft');
 });
 
 it('keeps getUrl transform arguments with a deprecation warning', function () {
     $driver = registerDriver('remote');
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $asset = Asset::factory()->createElement();
 
     $url = $asset->getUrl(['width' => 320]);
     $deprecation = collect(Deprecator::getRequestLogs())->firstWhere('key', 'Asset::getUrl($transform)');
 
     expect($url)->toBe('/transforms/hero.webp')
-        ->and($driver->request->transformer->driver)->toBe('remote')
+        ->and($driver->request->transformer->name)->toBe('remote')
         ->and($driver->request->parameters)->toBe(['width' => 320])
         ->and($deprecation?->message)->toBe('Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.');
 });
@@ -179,33 +198,32 @@ it('lets the Craft driver control immediate generation', function () {
 
             return '/transforms/hero.webp';
         });
-    $driver = new CraftAssetTransformDriver($imageTransformer);
     $asset = Asset::factory()->createElement([
         'filename' => 'source.jpg',
         'width' => 800,
         'height' => 400,
     ]);
-    $deferred = new AssetTransformer('craft', ['generate_transforms_before_page_load' => false]);
-    $immediate = new AssetTransformer('craft', ['generate_transforms_before_page_load' => true]);
-    $request = fn (AssetTransformer $transformer, ?bool $immediately = null) => new AssetTransformRequest(
+    $deferred = new CraftAssetTransformDriver($imageTransformer);
+    $immediate = new CraftAssetTransformDriver($imageTransformer, generateBeforePageLoad: true);
+    $request = fn (?bool $immediately = null) => new AssetTransformRequest(
         $asset,
-        $transformer,
+        new AssetTransformer('craft'),
         ['width' => 320],
         immediately: $immediately,
     );
 
-    $driver->transform($request($deferred));
-    $driver->transform($request($immediate));
-    $driver->transform($request($immediate, false));
-    $driver->transform($request($deferred, true));
-    $driver->transform($request($deferred));
+    $deferred->transform($request());
+    $immediate->transform($request());
+    $immediate->transform($request(false));
+    $deferred->transform($request(true));
+    $deferred->transform($request());
 
     expect($immediateValues)->toBe([false, true, false, true, false]);
 });
 
 it('passes immediate generation requests to drivers', function () {
     $driver = registerDriver('remote');
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $asset = Asset::factory()->createElement();
     $immediately = function (callable $transform) use ($driver): ?bool {
         $transform();
@@ -236,8 +254,8 @@ it('uses driver-specific named parameters', function () {
         ],
     ]);
     app(ImageTransforms::class)->saveTransform($transform);
-    $firstAsset = assetOnDisk('first-source', ['asset_transformer' => 'first']);
-    $secondAsset = assetOnDisk('second-source', ['asset_transformer' => 'second']);
+    $firstAsset = assetOnVolume('first-source', ['assetTransformer' => 'first']);
+    $secondAsset = assetOnVolume('second-source', ['assetTransformer' => 'second']);
 
     app(AssetTransformers::class)->transform($firstAsset, ['transform' => 'hero']);
     app(AssetTransformers::class)->transform($secondAsset, ['transform' => 'hero']);
@@ -250,7 +268,7 @@ it('uses driver-specific named parameters', function () {
 
 it('passes undeclared parameters without validating them', function () {
     $driver = registerDriver('remote', parameterRules: ['blur' => ['integer']]);
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
 
     app(AssetTransformers::class)->transform(Asset::factory()->createElement(), [
         'unknown' => 'passed-through',
@@ -267,7 +285,7 @@ it('uses driver rules in place of conflicting core rules', function () {
     $driver = registerDriver('remote', parameterRules: [
         'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],
     ]);
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $asset = Asset::factory()->createElement();
 
     app(AssetTransformers::class)->transform($asset, ['quality' => 'high']);
@@ -281,7 +299,7 @@ it('uses driver rules in place of conflicting core rules', function () {
 
 it('passes complex custom parameters through without serializing or reusing them', function () {
     $driver = registerDriver('remote');
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $asset = Asset::factory()->createElement();
     $transformers = app(AssetTransformers::class);
     $first = fn () => 'first';
@@ -300,7 +318,8 @@ it('reuses validated Craft transform definitions across assets', function () {
     $driver = Mockery::mock(CraftAssetTransformDriver::class);
     $driver->shouldReceive('definition')->once()->andReturn(new AssetTransformDriverDefinition);
     $driver->shouldReceive('transform')->twice()->andReturn(new AssetTransformResult('/thumbnail.jpg', 'image/jpeg'));
-    $transformers->extend('craft', fn () => $driver);
+    $transformers->extend('mock-craft', fn () => $driver);
+    useAssetTransformer('mock-craft');
 
     $transformers->transform($assets[0], ['width' => 24, 'height' => 24, 'mode' => 'crop']);
     $transformers->transform($assets[1], ['mode' => 'crop', 'height' => 24, 'width' => 24]);
@@ -309,7 +328,7 @@ it('reuses validated Craft transform definitions across assets', function () {
 it('validates each normalized definition once across preloading and rendering', function () {
     $driver = new TestPreloadingAssetTransformDriver;
     registerDriver('remote', driver: $driver);
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $assets = [Asset::factory()->createElement(), Asset::factory()->createElement()];
     $transformers = app(AssetTransformers::class);
     $validator = Validator::getFacadeRoot();
@@ -328,7 +347,7 @@ it('validates each normalized definition once across preloading and rendering', 
 
 it('revalidates definitions after replacing a driver', function () {
     registerDriver('remote');
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $asset = Asset::factory()->createElement();
     $transformers = app(AssetTransformers::class);
     $validator = Validator::getFacadeRoot();
@@ -337,7 +356,7 @@ it('revalidates definitions after replacing a driver', function () {
     $transformers->transform($asset, ['width' => 100]);
     $transformers->transform($asset, ['width' => 100]);
 
-    $transformers->forgetDrivers()->extend('remote', fn () => new TestAssetTransformDriver(
+    $transformers->forgetTransformers()->extend('remote', fn () => new TestAssetTransformDriver(
         new AssetTransformDriverDefinition(parameterRules: ['width' => ['integer', 'max:50']]),
     ));
 
@@ -357,6 +376,7 @@ it('preserves parameter rules declared by a custom Craft driver definition', fun
     };
     $transformers = app(AssetTransformers::class);
     $transformers->extend('custom-craft', fn () => $driver);
+    defineAssetTransformer('custom-craft');
 
     expect($transformers->validateParameters('custom-craft', ['width' => 'auto']))
         ->toBe(['width' => 'auto'])
@@ -366,7 +386,7 @@ it('preserves parameter rules declared by a custom Craft driver definition', fun
 
 it('rejects invalid parameters', function () {
     registerDriver('remote');
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
 
     expect(fn () => app(AssetTransformers::class)->transform(
         Asset::factory()->createElement(),
@@ -379,8 +399,8 @@ it('preloads requests grouped by driver', function (bool $perAsset) {
     $secondDriver = new TestPreloadingAssetTransformDriver;
     registerDriver('first', driver: $firstDriver);
     registerDriver('second', driver: $secondDriver);
-    $assets = collect(['first', 'second'])->map(fn (string $driver) => assetOnDisk("{$driver}-transformer-source", [
-        'asset_transformer' => $driver,
+    $assets = collect(['first', 'second'])->map(fn (string $driver) => assetOnVolume("{$driver}-transformer-source", [
+        'assetTransformer' => $driver,
     ], [
         'filename' => 'source.jpg',
         'kind' => 'image',
@@ -394,18 +414,18 @@ it('preloads requests grouped by driver', function (bool $perAsset) {
 
     expect($firstDriver->requests)->toHaveCount(1)
         ->and($firstDriver->requests[0]->asset)->toBe($assets[0])
-        ->and($firstDriver->requests[0]->transformer->driver)->toBe('first')
+        ->and($firstDriver->requests[0]->transformer->name)->toBe('first')
         ->and($firstDriver->requests[0]->parameters)->toBe(['width' => 320])
         ->and($secondDriver->requests)->toHaveCount(1)
         ->and($secondDriver->requests[0]->asset)->toBe($assets[1])
-        ->and($secondDriver->requests[0]->transformer->driver)->toBe('second')
+        ->and($secondDriver->requests[0]->transformer->name)->toBe('second')
         ->and($secondDriver->requests[0]->parameters)->toBe(['width' => $perAsset ? 640 : 320]);
 })->with(['shared definitions' => false, 'asset-specific definitions' => true]);
 
 it('preloads withTransforms criteria for eager-loaded assets', function () {
     $driver = new TestPreloadingAssetTransformDriver;
     registerDriver('remote', driver: $driver);
-    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    useAssetTransformer('remote');
     $photos = collect(range(1, 2))->map(fn () => Asset::factory()->createElement([
         'kind' => 'image',
         'width' => 320,
@@ -423,32 +443,18 @@ it('preloads withTransforms criteria for eager-loaded assets', function () {
         ->and($driver->requests[0]->parameters)->toBe(['width' => 100]);
 });
 
-it('redacts transformer settings from debug output', function () {
-    $request = new AssetTransformRequest(
-        Asset::factory()->createElement(),
-        new AssetTransformer('remote', ['token' => 'secret-value']),
-        [],
-    );
-    ob_start();
-    var_dump($request);
-    $output = ob_get_clean();
-
-    expect($output)->toContain('[redacted]')
-        ->not->toContain('secret-value');
-});
-
 /**
- * @param  array<string, mixed>  $diskConfig
+ * @param  array<string, mixed>  $volumeAttributes
  * @param  array<string, mixed>  $assetAttributes
  */
-function assetOnDisk(string $disk, array $diskConfig = [], array $assetAttributes = []): AssetElement
+function assetOnVolume(string $disk, array $volumeAttributes = [], array $assetAttributes = []): AssetElement
 {
     config()->set("filesystems.disks.{$disk}", [
         'driver' => 'local',
         'root' => storage_path("framework/testing/{$disk}"),
-        ...$diskConfig,
     ]);
-    $volume = Volume::factory()->create(['fs' => $disk]);
+    $volume = Volume::factory()->create(['fs' => $disk, ...$volumeAttributes]);
+    app(Volumes::class)->reset();
 
     return Asset::factory()->createElement(['volumeId' => $volume->id, ...$assetAttributes]);
 }
@@ -461,6 +467,7 @@ function registerDriver(
 ): TestAssetTransformDriver {
     $driver ??= new TestAssetTransformDriver(new AssetTransformDriverDefinition($parameterRules));
     app(AssetTransformers::class)->extend($name, fn () => $driver);
+    defineAssetTransformer($name);
 
     return $driver;
 }
