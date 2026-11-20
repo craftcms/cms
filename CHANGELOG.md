@@ -331,6 +331,7 @@
 - Fixed a bug where the updater’s page title was “updater/Index”. ([#20925](https://github.com/craftcms/cms/pull/20925))
 - Fixed a bug where asset indexes didn’t preload thumbnails when a thumbnail URL listener was registered. ([#20831](https://github.com/craftcms/cms/discussions/20831), [#20927](https://github.com/craftcms/cms/pull/20927))
 - Fixed a bug where the “globe” icon was blank in some places. ([#20931](https://github.com/craftcms/cms/issues/20931), [#20939](https://github.com/craftcms/cms/pull/20939))
+- Fixed a bug where element cards’ titles, chip attributes, and status badges had no space between them, and chip attributes were cut off on cover cards. ([#20947](https://github.com/craftcms/cms/pull/20947))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2xwp-6jjc-hfmm)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)
