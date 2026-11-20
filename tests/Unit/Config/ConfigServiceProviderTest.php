@@ -26,7 +26,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE', 'CRAFT_DEFAULT_TEMPLATE_EXTENSIONS', 'CRAFT_SLUG_WORD_SEPARATOR'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE', 'CRAFT_DEFAULT_TEMPLATE_EXTENSIONS', 'CRAFT_SLUG_WORD_SEPARATOR', 'CRAFT_DISABLE_2FA', 'CRAFT_MAX_INVALID_LOGINS'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -194,7 +194,7 @@ it('applies environment overrides when resolved', function () {
 
     new ConfigServiceProvider(app())->register();
 
-    expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
+    expect(app(GeneralConfig::class)->routing->cpTrigger)->toBe('adminus');
 });
 
 it('materializes typed MCP configuration from JSON environment overrides', function () {
@@ -349,6 +349,24 @@ it('forwards the renamed template and slug settings', function () {
         ->and($config->templates->enableCaching)->toBeFalse()
         ->and($config->slugs->maxIncrement)->toBe(5)
         ->and($config->slugs->wordSeparator)->toBe('.');
+});
+
+it('forwards the renamed routing, security, user, and garbage collection settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['softDeleteDuration' => 'P1D', 'loginPath' => '/login/']);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DISABLE_2FA'] = 'true';
+    $_SERVER['CRAFT_MAX_INVALID_LOGINS'] = 'false';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)->pageTrigger('?p=');
+
+    expect($config->garbageCollection->softDeleteDuration)->toBe(86400)
+        ->and($config->routing->getLoginPath())->toBe('login')
+        ->and($config->getLoginPath())->toBe('login')
+        ->and($config->routing->getPageTriggerParam())->toBe('p')
+        ->and($config->users->disable2fa)->toBeTrue()
+        ->and($config->security->maxInvalidLogins)->toBeFalse();
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {

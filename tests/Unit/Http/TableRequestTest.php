@@ -6,7 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Requests\TableRequest;
 
 it('resolves URL and body pagination independently of the configured page trigger', function (string $method, string $url, array $body, int $page) {
-    Cms::config()->pageTrigger = 'p';
+    Cms::config()->routing->pageTrigger = 'p';
     $request = TableRequest::create($url, $method, $body);
 
     expect($request->page())->toBe($page);

@@ -136,7 +136,7 @@ it('searches, sorts, and paginates entry type rows', function (string $field, st
     EntryType::factory()->create(['name' => 'First Article', 'handle' => 'zzzArticle']);
     EntryType::factory()->create(['name' => 'Last Article', 'handle' => 'aaaArticle']);
     EntryType::factory()->create(['name' => 'Ignored', 'handle' => 'ignored']);
-    Cms::config()->pageTrigger = 'custom-page';
+    Cms::config()->routing->pageTrigger = 'custom-page';
 
     $response = get(action([EntryTypesController::class, 'index'], [
         'search' => 'Article',

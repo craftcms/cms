@@ -9,7 +9,7 @@ use CraftCms\Cms\GarbageCollection\Actions\PurgeUnsavedDrafts;
 use Illuminate\Support\Facades\DB;
 
 it('purges unsaved drafts that have gone stale', function () {
-    Cms::config()->purgeUnsavedDraftsDuration = 60;
+    Cms::config()->garbageCollection->purgeUnsavedDraftsDuration = 60;
 
     $savedDraftId = DB::table(Table::DRAFTS)->insertGetId([
         'name' => 'Saved draft',

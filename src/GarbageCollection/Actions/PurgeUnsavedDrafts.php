@@ -23,7 +23,7 @@ class PurgeUnsavedDrafts extends GarbageCollectionAction
 
     public function __invoke(): void
     {
-        if ($this->generalConfig->purgeUnsavedDraftsDuration === 0) {
+        if ($this->generalConfig->garbageCollection->purgeUnsavedDraftsDuration === 0) {
             return;
         }
 

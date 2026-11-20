@@ -21,7 +21,7 @@ test('allows guest through', function () {
 
 test('allows user through when 2fa is disabled', function () {
     $user = UserModel::factory()->createElement();
-    app(GeneralConfig::class)->disable2fa = true;
+    app(GeneralConfig::class)->users->disable2fa = true;
 
     $this->actingAs($user)
         ->get('/test-2fa')

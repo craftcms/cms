@@ -52,7 +52,7 @@ class GqlServiceProvider extends ServiceProvider
                 return null;
             }
 
-            $actionTrigger = trim(Cms::config()->actionTrigger, '/');
+            $actionTrigger = trim(Cms::config()->routing->actionTrigger, '/');
             // Action URLs carry over the request’s site and preview tokens, which must stay out of public discovery
             // metadata and the resource’s identifier
             $resourceUrl = Url::stripQueryString(action_url('graphql/api'));

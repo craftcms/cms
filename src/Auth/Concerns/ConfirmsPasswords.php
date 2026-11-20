@@ -14,7 +14,7 @@ trait ConfirmsPasswords
 {
     protected function confirmPassword(): void
     {
-        Session::put(Cms::config()->getPasswordConfirmationKey(), now()->unix());
+        Session::put(Cms::config()->security->getPasswordConfirmationKey(), now()->unix());
     }
 
     protected function requireConfirmedPassword(?string $message = null): void
@@ -41,7 +41,7 @@ trait ConfirmsPasswords
     {
         if (craftAuth()->check()) {
             $maximumSecondsSinceConfirmation = $this->passwordConfirmationDuration();
-            $confirmedAt = Session::get(Cms::config()->getPasswordConfirmationKey());
+            $confirmedAt = Session::get(Cms::config()->security->getPasswordConfirmationKey());
 
             if ($confirmedAt !== null) {
                 $diff = now()->unix() - $confirmedAt;

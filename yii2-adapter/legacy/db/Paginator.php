@@ -237,7 +237,7 @@ class Paginator extends BaseObject
         $this->totalResults = $totalResults;
         $this->totalPages = $totalPages;
         $this->_pageResults = $pageResults;
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $this->paginator = new LengthAwarePaginator(
             items: $pageResults,
             total: $totalResults,

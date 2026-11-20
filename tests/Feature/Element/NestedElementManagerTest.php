@@ -447,8 +447,8 @@ it('provides an editor action url for editable nested element cards', function (
 
     expect(parse_url($editUrl, PHP_URL_PATH))->toBe(sprintf(
         '/%s/%s/elements/edit',
-        Cms::config()->cpTrigger,
-        Cms::config()->actionTrigger,
+        Cms::config()->routing->cpTrigger,
+        Cms::config()->routing->actionTrigger,
     ))
         ->and($editQuery)->toMatchArray([
             'elementId' => (string) $entry->id,

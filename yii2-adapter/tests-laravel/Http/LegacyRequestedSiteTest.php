@@ -46,7 +46,7 @@ it('initializes control panel requests with a missing requested site during inst
     Cms::setIsInstalled($installed);
     $this->mock(Updates::class)->shouldReceive('isCraftUpdatePending')->andReturn(true);
 
-    $httpRequest = IlluminateRequest::create('/' . Cms::config()->cpTrigger . '/install');
+    $httpRequest = IlluminateRequest::create('/' . Cms::config()->routing->cpTrigger . '/install');
     if ($header) {
         $httpRequest->headers->set('X-Craft-Site', 'missing');
     } else {

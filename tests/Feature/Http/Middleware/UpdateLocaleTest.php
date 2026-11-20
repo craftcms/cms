@@ -30,7 +30,7 @@ it('sets locale for CP request based on user preference', function () {
 
     app(Users::class)->saveUserPreferences($user, ['language' => 'de']);
 
-    $request = Request::create('/'.Cms::config()->cpTrigger.'/dashboard');
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard');
     $request->setUserResolver(fn () => $user);
 
     $this->middleware->handle($request, fn () => 'passed');
@@ -44,7 +44,7 @@ it('uses defaultCpLanguage when user has no language preference', function () {
 
     Cms::config()->defaultCpLanguage = 'fr';
 
-    $request = Request::create('/'.Cms::config()->cpTrigger.'/dashboard');
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard');
     $request->setUserResolver(fn () => $user);
 
     $this->middleware->handle($request, fn () => 'passed');
@@ -60,7 +60,7 @@ it('uses fallback locale when user preference is invalid', function () {
 
     Cms::config()->defaultCpLanguage = 'es';
 
-    $request = Request::create('/'.Cms::config()->cpTrigger.'/dashboard');
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard');
     $request->setUserResolver(fn () => $user);
 
     $this->middleware->handle($request, fn () => 'passed');

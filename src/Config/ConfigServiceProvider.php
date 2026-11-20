@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Config;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
@@ -15,6 +16,7 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Override;
+use ReflectionProperty;
 
 /**
  * @since 6.0.0
@@ -195,7 +197,7 @@ class ConfigServiceProvider extends ServiceProvider
         $cloned = [];
 
         foreach ($config::renamedSettings() as $setting => $newSetting) {
-            $envName = 'CRAFT_'.str($setting)->snake()->upper()->value();
+            $envName = 'CRAFT_'.$this->renamedSettingEnvName($config, $setting, $newSetting);
 
             if ($envName === 'CRAFT_'.str($newSetting)->replace('.', '_')->snake()->upper()->value()) {
                 continue;
@@ -217,6 +219,25 @@ class ConfigServiceProvider extends ServiceProvider
 
             $config->{$setting} = $value;
         }
+    }
+
+    /**
+     * Returns the environment variable name a renamed setting had, without the `CRAFT_` prefix. A setting that kept its
+     * name and has an `#[EnvName]` attribute, such as `disable2fa`, keeps the variable name it had, `DISABLE_2FA`.
+     */
+    private function renamedSettingEnvName(GeneralConfig $config, string $setting, string $newSetting): string
+    {
+        [$nested, $property] = array_pad(explode('.', $newSetting, 2), 2, null);
+
+        if ($property === $setting) {
+            $attribute = Arr::first(new ReflectionProperty($config->{$nested}, $property)->getAttributes(EnvName::class));
+
+            if ($attribute) {
+                return $attribute->newInstance()->name;
+            }
+        }
+
+        return str($setting)->snake()->upper()->value();
     }
 
     /**

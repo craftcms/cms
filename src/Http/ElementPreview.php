@@ -74,7 +74,7 @@ class ElementPreview
             $params = array_filter([
                 // Randomized so CDNs don't serve a cached page.
                 'x-craft-preview' => $isLive ? null : Crypt::encrypt(Str::random(10)),
-                Cms::config()->siteToken => $siteToken,
+                Cms::config()->routing->siteToken => $siteToken,
             ], fn (mixed $value): bool => $value !== null);
 
             if ($isLive) {
@@ -84,7 +84,7 @@ class ElementPreview
                 ];
             }
 
-            $params[Cms::config()->tokenParam] = $this->token();
+            $params[Cms::config()->routing->tokenParam] = $this->token();
 
             return [
                 'label' => (string) $target['label'],
@@ -126,9 +126,9 @@ class ElementPreview
             'tokenParams' => $this->tokenParams(),
             'token' => $this->token(),
             'tokenDuration' => app(RouteTokens::class)->previewTokenDuration(),
-            'tokenParam' => $config->tokenParam,
+            'tokenParam' => $config->routing->tokenParam,
             'paramValue' => Crypt::encrypt(Str::random(10)),
-            'siteTokenParam' => $config->siteToken,
+            'siteTokenParam' => $config->routing->siteToken,
             'siteToken' => $this->siteToken(),
         ];
     }

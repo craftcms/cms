@@ -168,7 +168,7 @@ it('lets OAuth clients discover, register for, and use the API with the access l
         'redirect_uris' => ['https://client.example/callback'],
     ])->assertCreated()->assertJsonPath('scope', 'graphql:read graphql:write')->json('client_id');
 
-    actingAs(UserModel::findOrFail($this->editor->id), Cms::config()->getAuthGuard());
+    actingAs(UserModel::findOrFail($this->editor->id), Cms::config()->security->getAuthGuard());
     $this->get($metadata['authorization_endpoint'].'?'.http_build_query([
         'response_type' => 'code',
         'client_id' => $clientId,
@@ -258,7 +258,7 @@ it('pairs X-Craft-Gql-Token headers with the user’s access token or session', 
 
     // The same goes for users authenticated by their session
     app(Factory::class)->forgetGuards();
-    actingAs(UserModel::findOrFail($user->id), Cms::config()->getAuthGuard());
+    actingAs(UserModel::findOrFail($user->id), Cms::config()->security->getAuthGuard());
     graphQL("{ entry(id: {$this->peer->id}, withProvisionalDrafts: true) { title } }", ['X-Craft-Gql-Token' => 'front-end'])
         ->assertOk()
         ->assertJsonPath('data.entry.title', 'Unsaved changes');

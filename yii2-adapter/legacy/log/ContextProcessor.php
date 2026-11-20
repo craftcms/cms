@@ -48,7 +48,7 @@ class ContextProcessor implements ProcessorInterface
     {
         $data['environment'] = Craft::$app->env;
 
-        if (Cms::config()->storeUserIps) {
+        if (Cms::config()->security->storeUserIps) {
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {

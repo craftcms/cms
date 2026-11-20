@@ -213,7 +213,7 @@ class HandleInertiaRequests extends Middleware
             // settings screens are read-only for it. Other screens that can be
             // read-only, such as releases, pass their own `readOnly` prop.
             'readOnly' => function () use ($request, $generalConfig): bool {
-                $settingsPath = ltrim(trim((string) $generalConfig->cpTrigger, '/').'/settings', '/');
+                $settingsPath = ltrim(trim((string) $generalConfig->routing->cpTrigger, '/').'/settings', '/');
 
                 return ! $generalConfig->allowAdminChanges && $request->is($settingsPath, "$settingsPath/*");
             },

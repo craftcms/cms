@@ -288,7 +288,7 @@ it('allows matched element template routes with a site token during maintenance 
     $entry = createRoutableEntry('offline-site-token-entry', 'entries/show');
 
     $this->get('/offline-site-token-entry?'.http_build_query([
-        Cms::config()->siteToken => Crypt::encrypt((string) $entry->siteId),
+        Cms::config()->routing->siteToken => Crypt::encrypt((string) $entry->siteId),
     ]))
         ->assertOk()
         ->assertSeeText("entry-template:{$entry->id}:offline-site-token-entry", escape: false);
@@ -299,7 +299,7 @@ it('denies matched element template routes with an empty site token during maint
 
     createRoutableEntry('offline-empty-site-token-entry', 'entries/show');
 
-    $this->get('/offline-empty-site-token-entry?'.Cms::config()->siteToken.'=')
+    $this->get('/offline-empty-site-token-entry?'.Cms::config()->routing->siteToken.'=')
         ->assertServiceUnavailable();
 });
 

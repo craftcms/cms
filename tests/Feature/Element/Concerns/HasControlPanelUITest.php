@@ -56,7 +56,7 @@ describe('getCpEditUrl', function () {
     test('returns url when element has id and cpEditUrl is available', function () {
         $url = $this->entry->getCpEditUrl();
 
-        expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
+        expect($url)->toBeString()->toContain(Cms::config()->routing->cpTrigger);
     });
 });
 
@@ -64,7 +64,7 @@ describe('getPostEditUrl', function () {
     test('returns url for entry elements', function () {
         $url = $this->entry->getPostEditUrl();
 
-        expect($url)->toBeString()->toContain(Cms::config()->cpTrigger);
+        expect($url)->toBeString()->toContain(Cms::config()->routing->cpTrigger);
     });
 });
 

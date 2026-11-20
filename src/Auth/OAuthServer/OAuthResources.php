@@ -112,7 +112,7 @@ class OAuthResources
                         $router->name('authorize')->get('authorize', AuthorizationController::class)
                             ->defaults('oauthResource', $handle);
 
-                        $router->middleware(['auth:'.Cms::config()->getAuthGuard()])->group(function (Router $router) use ($handle): void {
+                        $router->middleware(['auth:'.Cms::config()->security->getAuthGuard()])->group(function (Router $router) use ($handle): void {
                             $router->name('approve')->post('authorize', [ApproveAuthorizationController::class, 'approve'])
                                 ->defaults('oauthResource', $handle);
                             $router->name('deny')->delete('authorize', [DenyAuthorizationController::class, 'deny'])
@@ -124,7 +124,7 @@ class OAuthResources
 
     public function isCpPath(string $path): bool
     {
-        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
         return $cpTrigger !== '' && str_starts_with(trim($path, '/').'/', $cpTrigger.'/');
     }

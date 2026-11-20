@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GarbageCollectionConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Config\QueueConfig;
+use CraftCms\Cms\Config\RoutingConfig;
 use CraftCms\Cms\Config\TemplatesConfig;
 use Illuminate\Support\Facades\Config;
 
@@ -44,15 +46,15 @@ it('automatically eager loads elements by default', function () {
 });
 
 it('normalizes activity retention durations and rejects negative values', function () {
-    $config = GeneralConfig::create();
+    $config = GarbageCollectionConfig::create();
 
     expect($config->activityRetentionDuration)->toBe(0)
         ->and($config->activityRetentionDuration('P1D')->activityRetentionDuration)->toBe(86400)
         ->and(fn () => $config->activityRetentionDuration(-1))->toThrow(InvalidArgumentException::class);
 });
 
-it('normalizes pageTrigger on the main config class', function () {
-    $config = GeneralConfig::create();
+it('normalizes pageTrigger', function () {
+    $config = RoutingConfig::create();
 
     expect($config->pageTrigger('page')->getPageTrigger())->toBe('?page=')
         ->and($config->getPageTriggerParam())->toBe('page')

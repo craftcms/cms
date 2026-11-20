@@ -126,7 +126,7 @@ class UserRules extends ElementRules
             'lastLoginAttemptIp' => ['nullable', 'string', 'max:45'],
         ]);
 
-        $requiredNameField = (fn (bool $requiredWhenFirstAndLastNameFields) => Cms::config()->showFirstAndLastNameFields === $requiredWhenFirstAndLastNameFields
+        $requiredNameField = (fn (bool $requiredWhenFirstAndLastNameFields) => Cms::config()->users->showFirstAndLastNameFields === $requiredWhenFirstAndLastNameFields
             && ($this->subject
                 ->getFieldLayout()
                 ->getFirstVisibleElementByType(FullNameField::class, $this->subject)
@@ -164,7 +164,7 @@ class UserRules extends ElementRules
 
         $rules['newPassword'] = [
             Rule::requiredIf(
-                ! Cms::config()->deferPublicRegistrationPassword
+                ! Cms::config()->security->deferPublicRegistrationPassword
                 && $this->inScenarios(self::SCENARIO_PASSWORD, self::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(

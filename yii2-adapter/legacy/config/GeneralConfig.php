@@ -43,7 +43,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
     protected static array $renamedSettings = [
         ...parent::RENAMED_SETTINGS,
-        'activateAccountFailurePath' => 'invalidUserTokenPath',
+        'activateAccountFailurePath' => 'routing.invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
         'backupDbOnUpdate' => 'backups.onUpdate',
         'defaultFilePermissions' => 'defaultFileMode',
@@ -997,11 +997,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         // so some values would still be in need of normalization, e.g. defaultCpLanguage/extraAppLocales.
         $this
             // durations
-            ->cacheDuration($this->cacheDuration)
-            ->cooldownDuration($this->cooldownDuration)
-            ->defaultTokenDuration($this->defaultTokenDuration)
-            ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
-            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration);
+            ->cacheDuration($this->cacheDuration);
 
         // legacy-only durations
         $this->rememberedUserSessionDuration($this->rememberedUserSessionDuration);
@@ -1010,10 +1006,6 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this
             // durations
             ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
-            ->purgePendingUsersDuration($this->purgePendingUsersDuration)
-            ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
-            ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->softDeleteDuration($this->softDeleteDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)

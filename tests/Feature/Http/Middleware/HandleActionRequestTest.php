@@ -7,7 +7,7 @@ use CraftCms\Cms\Cms;
 use function Pest\Laravel\post;
 
 beforeEach(function () {
-    $this->cpTrigger = Cms::config()->cpTrigger;
+    $this->cpTrigger = Cms::config()->routing->cpTrigger;
 });
 
 it('dispatches action-param form posts to the matching action route', function () {

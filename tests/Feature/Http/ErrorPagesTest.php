@@ -131,7 +131,7 @@ it('falls back to the control panel’s error page on the site, without linking 
         ->assertNotFound()
         ->assertSee('Page Not Found')
         ->assertSee('Gone fishing')
-        ->assertDontSee(Cms::config()->cpTrigger);
+        ->assertDontSee(Cms::config()->routing->cpTrigger);
 });
 
 it('hides an unexpected exception’s message on the control panel’s error page', function () {
@@ -173,7 +173,7 @@ it('renders control panel error templates instead of site ones', function () {
     File::ensureDirectoryExists("{$this->tempDir}/errors");
     File::put("{$this->tempDir}/errors/404.twig", 'site-404');
 
-    $this->get('/'.Cms::config()->cpTrigger.'/does-not-exist')
+    $this->get('/'.Cms::config()->routing->cpTrigger.'/does-not-exist')
         ->assertNotFound()
         ->assertSee('Page Not Found')
         ->assertDontSee('site-404');

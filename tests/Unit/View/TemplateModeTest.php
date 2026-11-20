@@ -19,7 +19,7 @@ it('defaults to cp mode for cp requests', function () {
     Context::forgetHidden(TemplateMode::class);
 
     // All requests are cp requests
-    Cms::config()->cpTrigger = '';
+    Cms::config()->routing->cpTrigger = '';
 
     expect(TemplateMode::get())->toBe(TemplateMode::Cp);
 });

@@ -137,7 +137,7 @@ it('does not advertise endpoints that conflict with other routes', function (): 
 });
 
 it('does not advertise control panel endpoints', function (): void {
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
     registerMcpDiscovery(['enabled' => true, 'route' => "/$cpTrigger/mcp", 'authorizationRoute' => "/$cpTrigger/mcp/auth"], registration: true);
 
     $this->get('/.well-known/ai-catalog.json')->assertNotFound();
@@ -146,20 +146,20 @@ it('does not advertise control panel endpoints', function (): void {
 
 it('does not advertise anything when the control panel has its own domain', function (): void {
     // Without a trigger, every request is a control panel request
-    $cpTrigger = Cms::config()->cpTrigger;
-    Cms::config()->cpTrigger = null;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
+    Cms::config()->routing->cpTrigger = null;
 
     try {
         expect(new Settings(MCP_BOTH_SERVERS)->discoverableServers())->toBe([]);
     } finally {
-        Cms::config()->cpTrigger = $cpTrigger;
+        Cms::config()->routing->cpTrigger = $cpTrigger;
     }
 
     expect(new Settings(MCP_BOTH_SERVERS)->discoverableServers())->toBe(['mcp' => true]);
 });
 
 it('rate-limits discovery requests', function (): void {
-    Cms::config()->defaultRateLimit = 1;
+    Cms::config()->security->defaultRateLimit = 1;
     registerMcpDiscovery(['publicEnabled' => true, 'publicRoute' => '/mcp']);
 
     $this->get('/mcp/server-card')->assertOk();
@@ -170,6 +170,6 @@ it('rate-limits discovery requests', function (): void {
     $this->get('/.well-known/ai-catalog.json')->assertTooManyRequests();
 
     // Disabling the default rate limit lifts it
-    Cms::config()->defaultRateLimit = false;
+    Cms::config()->security->defaultRateLimit = false;
     $this->get('/mcp/server-card')->assertOk();
 });

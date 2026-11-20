@@ -82,7 +82,7 @@ class RouteTokens
         $tokenModel = new RouteToken;
         $tokenModel->token = $token ?? Str::random(32);
         $tokenModel->route = $route;
-        $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->defaultTokenDuration));
+        $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->security->defaultTokenDuration));
 
         if ($usageLimit !== null) {
             $tokenModel->usageCount = 0;
@@ -117,7 +117,7 @@ class RouteTokens
     {
         $config = Cms::config();
 
-        return ConfigHelper::durationInSeconds($config->previewTokenDuration ?? $config->defaultTokenDuration);
+        return ConfigHelper::durationInSeconds($config->security->previewTokenDuration ?? $config->security->defaultTokenDuration);
     }
 
     /**

@@ -110,7 +110,7 @@ it('does not run the queue during maintenance mode', function () {
     app()->maintenanceMode()->activate([]);
     Artisan::shouldReceive('call')->never();
 
-    post(cp_url(Cms::config()->actionTrigger.'/queue/run'))
+    post(cp_url(Cms::config()->routing->actionTrigger.'/queue/run'))
         ->assertOk()
         ->assertContent('');
 

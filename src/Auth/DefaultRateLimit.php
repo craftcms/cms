@@ -23,7 +23,7 @@ final class DefaultRateLimit
      */
     public static function for(Request $request): ?Limit
     {
-        $config = Cms::config();
+        $config = Cms::config()->security;
 
         if ($config->defaultRateLimit === false) {
             return null;

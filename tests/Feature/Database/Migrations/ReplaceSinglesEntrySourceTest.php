@@ -214,7 +214,7 @@ it('saves sources that were never customized, so the custom Singles source is ke
         ->and(app(ElementSources::class)->getSources(Entry::class)->pluck('key')->all())
         ->not->toContain("section:{$this->home->uid}", "section:{$this->about->uid}");
 
-    get('/'.Cms::config()->cpTrigger.'/content/entries?'.http_build_query(['source' => $custom['key'], 'viewMode' => 'cards']))
+    get('/'.Cms::config()->routing->cpTrigger.'/content/entries?'.http_build_query(['source' => $custom['key'], 'viewMode' => 'cards']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->where('pagination.total', 2));
 });

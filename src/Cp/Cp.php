@@ -109,10 +109,10 @@ readonly class Cp
 
             return [
                 ...self::craftData(),
-                'cpTrigger' => $generalConfig->cpTrigger,
+                'cpTrigger' => $generalConfig->routing->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
-                'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 20160) * 60,
+                'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->security->getAuthGuard()), 20160) * 60,
                 'runQueueAutomatically' => $generalConfig->queue->runAutomatically,
             ];
         });
@@ -375,7 +375,7 @@ readonly class Cp
             'Team' => Edition::Team->value,
             'Pro' => Edition::Pro->value,
             'Enterprise' => Edition::Enterprise->value,
-            'actionTrigger' => $generalConfig->actionTrigger,
+            'actionTrigger' => $generalConfig->routing->actionTrigger,
             'actionUrl' => Url::actionUrl(),
             'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => Url::siteUrl(),
@@ -390,8 +390,8 @@ readonly class Cp
             'maxPasswordLength' => AppServiceProvider::$maxPasswordLength,
             'minPasswordLength' => AppServiceProvider::$minPasswordLength,
             'orientation' => $orientation,
-            'pageNum' => Paginator::resolveCurrentPage(Cms::config()->getPageTriggerParam()),
-            'pageTrigger' => Cms::config()->getPageTriggerParam(),
+            'pageNum' => Paginator::resolveCurrentPage(Cms::config()->routing->getPageTriggerParam()),
+            'pageTrigger' => Cms::config()->routing->getPageTriggerParam(),
             'path' => request()->craftPath(),
             'registeredAssetBundles' => [], // force encode as JS object
             'registeredJsFiles' => [], // force encode as JS object
@@ -399,7 +399,7 @@ readonly class Cp
             'systemName' => Cms::systemName(),
             'systemUid' => Cms::systemUid(),
             'timezone' => Cms::timezone(),
-            'tokenParam' => $generalConfig->tokenParam,
+            'tokenParam' => $generalConfig->routing->tokenParam,
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
         ];
 
@@ -407,7 +407,7 @@ readonly class Cp
             $data += [
                 'notifications' => $upToDate ? app(NotificationCenter::class)->get() : [],
                 'baseCpUrl' => Url::cpUrl(),
-                'cpTrigger' => $generalConfig->cpTrigger,
+                'cpTrigger' => $generalConfig->routing->cpTrigger,
             ];
         }
 
@@ -463,7 +463,7 @@ readonly class Cp
             'primarySiteLanguage' => $primarySite?->getLanguage(),
             'runQueueAutomatically' => $generalConfig->queue->runAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
-            'siteToken' => $generalConfig->siteToken,
+            'siteToken' => $generalConfig->routing->siteToken,
             'slugWordSeparator' => $generalConfig->slugs->wordSeparator,
             'sessionExpiresAt' => app(SessionTimeout::class)->expiresAt(request())?->getTimestamp(),
             'userEmail' => $currentUser->email,

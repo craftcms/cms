@@ -11,7 +11,7 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     actingAs(User::findOne());
-    $this->cpTrigger = Cms::config()->cpTrigger;
+    $this->cpTrigger = Cms::config()->routing->cpTrigger;
 });
 
 it('requires authentication', function () {

@@ -112,7 +112,7 @@ it('discovers and completes dynamic client registration and authorization', func
 
     $parameters = mcpAuthorizationParameters($registration['client_id']);
 
-    $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
+    $this->actingAs(User::query()->firstOrFail(), Cms::config()->security->getAuthGuard());
     $this->get($metadata['authorization_endpoint'].'?'.http_build_query($parameters))
         ->assertOk()
         ->assertHeader('X-Frame-Options', 'DENY')
@@ -166,8 +166,8 @@ it('keeps the Passport consent page out of frames', function (): void {
 });
 
 it('uses configured base URLs rather than the request host in OAuth metadata', function (bool $cp): void {
-    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
-    Cms::config()->baseCpUrl('https://cp.example.test');
+    $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
+    Cms::config()->routing->baseCpUrl('https://cp.example.test');
     config()->set('app.url', 'https://site.example.test');
     $path = $cp ? "$cpTrigger/mcp" : 'mcp';
     enableMcp(['route' => "/$path", 'authorizationRoute' => "/$path"]);
@@ -188,9 +188,9 @@ it('uses configured base URLs rather than the request host in OAuth metadata', f
 })->with(['control panel endpoint' => true, 'site endpoint' => false]);
 
 it('keeps OAuth on the control panel’s own domain without a control panel trigger', function (): void {
-    $cpTrigger = Cms::config()->cpTrigger;
-    Cms::config()->cpTrigger = null;
-    Cms::config()->baseCpUrl('https://cp.example.test');
+    $cpTrigger = Cms::config()->routing->cpTrigger;
+    Cms::config()->routing->cpTrigger = null;
+    Cms::config()->routing->baseCpUrl('https://cp.example.test');
     config()->set('app.url', 'https://site.example.test');
 
     try {
@@ -208,7 +208,7 @@ it('keeps OAuth on the control panel’s own domain without a control panel trig
             ->assertJsonPath('token_endpoint', 'https://cp.example.test/oauth/token')
             ->assertJsonPath('registration_endpoint', 'https://cp.example.test/mcp/auth/oauth/register');
     } finally {
-        Cms::config()->cpTrigger = $cpTrigger;
+        Cms::config()->routing->cpTrigger = $cpTrigger;
     }
 });
 
@@ -328,7 +328,7 @@ it('marks registered clients as authorized once they get a token', function (): 
     $clientId = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->json('client_id');
     expect(Passport::client()->newQuery()->find($clientId)->updated_at)->toBeNull();
 
-    $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
+    $this->actingAs(User::query()->firstOrFail(), Cms::config()->security->getAuthGuard());
     $this->get(route('craft.mcp.oauth.authorize', mcpAuthorizationParameters($clientId)))->assertOk();
     $location = $this->post(route('craft.mcp.oauth.approve'), ['auth_token' => session('authToken')])->headers->get('Location');
     mcpExchangeAuthorizationCode($this, $clientId, $location);
@@ -370,7 +370,7 @@ it('requires the MCP scope', function (string $method): void {
 
 it('requires control panel access only for endpoints in the control panel', function (bool $cp, string $method): void {
     Edition::set(Edition::Pro);
-    $path = $cp ? trim((string) Cms::config()->cpTrigger, '/').'/mcp' : 'mcp';
+    $path = $cp ? trim((string) Cms::config()->routing->cpTrigger, '/').'/mcp' : 'mcp';
     enableMcp(['route' => "/$path", 'authorizationRoute' => "/$path"]);
     $user = User::query()->firstOrFail();
     $user->admin = false;
@@ -398,7 +398,7 @@ it('grants the access level chosen on the consent screen', function (bool $admin
     $clientId = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->json('client_id');
     $parameters = mcpAuthorizationParameters($clientId);
 
-    $this->actingAs($user, Cms::config()->getAuthGuard());
+    $this->actingAs($user, Cms::config()->security->getAuthGuard());
     $this->get(route('craft.mcp.oauth.authorize').'?'.http_build_query($parameters))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -422,7 +422,7 @@ it('reuses the earlier access level when a client authorizes again', function ()
     $clientId = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->json('client_id');
     $authorizeUrl = fn (string $scope): string => route('craft.mcp.oauth.authorize').'?'.http_build_query(mcpAuthorizationParameters($clientId, ['scope' => $scope]));
 
-    $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
+    $this->actingAs(User::query()->firstOrFail(), Cms::config()->security->getAuthGuard());
     $this->get($authorizeUrl('mcp:read mcp:write mcp:admin'))->assertOk();
     $location = $this->post(route('craft.mcp.oauth.approve'), [
         'auth_token' => session('authToken'),

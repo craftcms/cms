@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Config;
 
-use CraftCms\Cms\Auth\Enums\CpAuthPath;
-use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -43,29 +41,50 @@ class GeneralConfig extends BaseConfig
      * Settings that have been renamed in Craft 6, mapped to their new names.
      */
     protected const array RENAMED_SETTINGS = [
+        'actionTrigger' => 'routing.actionTrigger',
+        'activateAccountSuccessPath' => 'routing.activateAccountSuccessPath',
+        'activityRetentionDuration' => 'garbageCollection.activityRetentionDuration',
+        'addTrailingSlashesToUrls' => 'routing.addTrailingSlashesToUrls',
         'allowedFileExtensions' => 'assets.allowedFileExtensions',
         'allowUppercaseInSlug' => 'slugs.allowUppercase',
+        'authGuard' => 'security.authGuard',
+        'authPasswordBroker' => 'security.authPasswordBroker',
         'backupCommand' => 'backups.command',
         'backupCommandFormat' => 'backups.commandFormat',
         'backupOnUpdate' => 'backups.onUpdate',
+        'baseCpUrl' => 'routing.baseCpUrl',
         'brokenImagePath' => 'images.brokenPath',
         'compiledTemplatesPath' => 'templates.compiledPath',
         'convertFilenamesToAscii' => 'assets.convertFilenamesToAscii',
+        'cooldownDuration' => 'security.cooldownDuration',
+        'cpTrigger' => 'routing.cpTrigger',
         'defaultImageQuality' => 'images.defaultQuality',
+        'defaultRateLimit' => 'security.defaultRateLimit',
+        'defaultRateLimitDuration' => 'security.defaultRateLimitDuration',
         'defaultTemplateExtensions' => 'templates.defaultExtensions',
+        'defaultTokenDuration' => 'security.defaultTokenDuration',
+        'deferPublicRegistrationPassword' => 'security.deferPublicRegistrationPassword',
+        'disable2fa' => 'users.disable2fa',
         'enableGql' => 'gql.enabled',
         'enableGraphqlCaching' => 'gql.enableCaching',
         'enableGraphqlIntrospection' => 'gql.enableIntrospection',
         'enableTemplateCaching' => 'templates.enableCaching',
         'extraAllowedFileExtensions' => 'assets.extraAllowedFileExtensions',
         'extraFileKinds' => 'assets.extraFileKinds',
+        'extraLastNamePrefixes' => 'users.extraLastNamePrefixes',
+        'extraNameSalutations' => 'users.extraNameSalutations',
+        'extraNameSuffixes' => 'users.extraNameSuffixes',
         'filenameWordSeparator' => 'assets.filenameWordSeparator',
         'gqlTypePrefix' => 'gql.typePrefix',
         'imageDriver' => 'images.driver',
         'imageEditorRatios' => 'images.editorRatios',
         'indexTemplateFilenames' => 'templates.indexFilenames',
+        'invalidLoginWindowDuration' => 'security.invalidLoginWindowDuration',
+        'invalidUserTokenPath' => 'routing.invalidUserTokenPath',
         'lazyGqlTypes' => 'gql.lazyTypes',
         'limitAutoSlugsToAscii' => 'slugs.limitAutoToAscii',
+        'loginPath' => 'routing.loginPath',
+        'logoutPath' => 'routing.logoutPath',
         'lowPriorityQueueName' => 'queue.lowPriorityName',
         'maxBackups' => 'backups.max',
         'maxCachedCloudImageSize' => 'images.maxCachedCloudSize',
@@ -73,16 +92,27 @@ class GeneralConfig extends BaseConfig
         'maxGraphqlComplexity' => 'gql.maxComplexity',
         'maxGraphqlDepth' => 'gql.maxDepth',
         'maxGraphqlResults' => 'gql.maxResults',
+        'maxInvalidLogins' => 'security.maxInvalidLogins',
         'maxSlugIncrement' => 'slugs.maxIncrement',
         'maxUploadFileSize' => 'assets.maxUploadFileSize',
+        'oauthProviders' => 'users.oauthProviders',
         'optimizeImageFilesize' => 'images.optimizeFilesize',
+        'pageTrigger' => 'routing.pageTrigger',
         'partialTemplatesPath' => 'templates.partialsPath',
+        'postCpLoginRedirect' => 'routing.postCpLoginRedirect',
+        'postLoginRedirect' => 'routing.postLoginRedirect',
+        'postLogoutRedirect' => 'routing.postLogoutRedirect',
         'prefixGqlRootTypes' => 'gql.prefixRootTypes',
         'preserveCmykColorspace' => 'images.preserveCmykColorspace',
         'preserveExifData' => 'images.preserveExifData',
         'preserveImageColorProfiles' => 'images.preserveColorProfiles',
+        'preventUserEnumeration' => 'security.preventUserEnumeration',
+        'previewTokenDuration' => 'security.previewTokenDuration',
         'privateTemplateTrigger' => 'templates.privateTrigger',
+        'purgePendingUsersDuration' => 'garbageCollection.purgePendingUsersDuration',
+        'purgeUnsavedDraftsDuration' => 'garbageCollection.purgeUnsavedDraftsDuration',
         'queueName' => 'queue.name',
+        'rememberUsernameDuration' => 'security.rememberUsernameDuration',
         'restoreCommand' => 'backups.restoreCommand',
         'revAssetUrls' => 'assets.revUrls',
         'rotateImagesOnUploadByExifData' => 'images.rotateOnUploadByExifData',
@@ -90,8 +120,16 @@ class GeneralConfig extends BaseConfig
         'sanitizeCpImageUploads' => 'assets.sanitizeCpImageUploads',
         'sanitizeSvgUploads' => 'assets.sanitizeSvgUploads',
         'setGraphqlDatesToSystemTimeZone' => 'gql.setDatesToSystemTimeZone',
+        'setPasswordPath' => 'routing.setPasswordPath',
+        'setPasswordRequestPath' => 'routing.setPasswordRequestPath',
+        'setPasswordSuccessPath' => 'routing.setPasswordSuccessPath',
+        'showFirstAndLastNameFields' => 'users.showFirstAndLastNameFields',
+        'siteToken' => 'routing.siteToken',
         'slugWordSeparator' => 'slugs.wordSeparator',
+        'softDeleteDuration' => 'garbageCollection.softDeleteDuration',
+        'storeUserIps' => 'security.storeUserIps',
         'tempAssetUploadDisk' => 'assets.tempUploadDisk',
+        'tokenParam' => 'routing.tokenParam',
         'trackedQueueNames' => 'queue.trackedNames',
         'transformGifs' => 'images.transformGifs',
         'transformSvgs' => 'images.transformSvgs',
@@ -101,6 +139,9 @@ class GeneralConfig extends BaseConfig
         'uploadSessionDisk' => 'assets.uploadSessionDisk',
         'uploadSessionDuration' => 'assets.uploadSessionDuration',
         'upscaleImages' => 'images.upscale',
+        'useSslOnTokenizedUrls' => 'routing.useSslOnTokenizedUrls',
+        'verifyEmailPath' => 'routing.verifyEmailPath',
+        'verifyEmailSuccessPath' => 'routing.verifyEmailSuccessPath',
     ];
 
     #[Override]
@@ -138,122 +179,6 @@ class GeneralConfig extends BaseConfig
         'notificationPosition' => 'end-start',
         'slideoutPosition' => 'end',
     ];
-
-    /**
-     * @var string The URI segment Craft should look for when determining if the current request should be routed to a controller action.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->actionTrigger('do-it')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ACTION_TRIGGER=do-it
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public string $actionTrigger = 'actions';
-
-    /**
-     * @var string|null The Laravel authentication guard Craft should use.
-     *
-     * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
-     * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->authGuard('craft')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_AUTH_GUARD=craft
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @see getAuthGuard()
-     */
-    public ?string $authGuard = null;
-
-    /**
-     * @var string|null The Laravel password broker Craft should use.
-     *
-     * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
-     * and token table in `config/auth.php`, and set this to the broker name.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->authPasswordBroker('craft')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_AUTH_PASSWORD_BROKER=craft
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @see getAuthPasswordBroker()
-     */
-    public ?string $authPasswordBroker = null;
-
-    /**
-     * @var mixed The maximum age of activity events before garbage collection deletes them.
-     *
-     * Set to `0` to retain activity indefinitely.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->activityRetentionDuration('P90D')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ACTIVITY_RETENTION_DURATION=P90D
-     * ```
-     * :::
-     *
-     * @group Garbage Collection
-     *
-     * @defaultAlt Unlimited
-     */
-    public mixed $activityRetentionDuration = 0;
-
-    /**
-     * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->activateAccountSuccessPath('welcome')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ACTIVATE_ACCOUNT_SUCCESS_PATH=welcome
-     * ```
-     * :::
-     *
-     * @see getActivateAccountSuccessPath()
-     *
-     * @group Routing
-     */
-    public mixed $activateAccountSuccessPath = '';
-
-    /**
-     * @var bool Whether auto-generated URLs should have trailing slashes.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->addTrailingSlashesToUrls(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ADD_TRAILING_SLASHES_TO_URLS=true
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public bool $addTrailingSlashesToUrls = false;
 
     /**
      * @var array<string,string|null> Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
@@ -445,28 +370,6 @@ class GeneralConfig extends BaseConfig
     public bool $autoLoginAfterAccountActivation = false;
 
     /**
-     * @var string|null The base URL Craft should use when generating control panel URLs.
-     *
-     * It will be determined automatically if left blank.
-     *
-     * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->baseCpUrl('https://cms.my-project.tld/')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_BASE_CP_URL=https://cms.my-project.tld/
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public ?string $baseCpUrl = null;
-
-    /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely.
@@ -487,29 +390,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 1 day
      */
     public mixed $cacheDuration = 86400;
-
-    /**
-     * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
-     *            failed login attempts.
-     *
-     * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->cooldownDuration(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_COOLDOWN_DURATION=0
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @defaultAlt 5 minutes
-     */
-    public mixed $cooldownDuration = 300;
 
     /**
      * @var list<array{0: string, 1?: array<string, mixed>}> List of additional HTML tags that should be included in the `<head>` of control panel pages.
@@ -618,36 +498,6 @@ class GeneralConfig extends BaseConfig
     public ?string $cpLogoUrl = null;
 
     /**
-     * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
-     *                  the front-end website.
-     *
-     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.my-project.tld`), or you are running Craft in
-     * [Headless Mode](config5:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
-     * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
-     *
-     * ```php
-     * define('CRAFT_CP', true);
-     * ```
-     *
-     * Alternatively, you can set the <config5:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
-     * control panel due to URI conflicts with actual folders/files in your main web root.
-     *
-     * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
-     *
-     * ::: code
-     * ```php Static Config
-     * ->cpTrigger(null)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_CP_TRIGGER=
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public ?string $cpTrigger = 'admin';
-
-    /**
      * @var string|null The path to a directory of SVG files that should be made available to icon pickers as a “Custom” icon set.
      *
      * This can be set to an aliased path such as `@config/icons`.
@@ -742,62 +592,6 @@ class GeneralConfig extends BaseConfig
     public mixed $defaultDirMode = 0775;
 
     /**
-     * @var int|false The number of requests Craft will allow from a single IP address within {@see},
-     *                for actions that are rate-limited by default, before responding with a 429 error.
-     *
-     * This applies to the following, each of which is tracked separately:
-     *
-     * - login attempts
-     * - two-factor authentication verifications
-     * - password reset requests
-     * - MCP discovery requests (`/.well-known/ai-catalog.json` and MCP Server Cards)
-     *
-     * Login attempts and two-factor authentication verifications are also limited per account, to five a minute.
-     *
-     * This can be set to `false` to disable the default rate limits.
-     *
-     * ::: tip
-     * If Craft is running behind a load balancer or reverse proxy, make sure Laravel’s
-     * [trusted proxies](https://laravel.com/docs/requests#configuring-trusted-proxies) are configured, so rate limits are
-     * applied to each visitor’s IP rather than the proxy’s.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultRateLimit(20)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_RATE_LIMIT=20
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public int|false $defaultRateLimit = 10;
-
-    /**
-     * @var mixed The amount of time that {@see} applies to.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * // 5 minutes
-     * ->defaultRateLimitDuration(300)
-     * ```
-     * ```shell Environment Override
-     * # 5 minutes
-     * CRAFT_DEFAULT_RATE_LIMIT_DURATION=300
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @defaultAlt 1 minute
-     */
-    public mixed $defaultRateLimitDuration = 60;
-
-    /**
      * @var array<string, bool|string> The default options that should be applied to each search term.
      *
      * Options include:
@@ -817,28 +611,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public array $defaultSearchTermOptions = [];
-
-    /**
-     * @var mixed The default amount of time tokens can be used before expiring.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * // One week
-     * ->defaultTokenDuration(604800)
-     * ```
-     * ```shell Environment Override
-     * # One week
-     * CRAFT_DEFAULT_TOKEN_DURATION=604800
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @defaultAlt 1 day
-     */
-    public mixed $defaultTokenDuration = 86400;
 
     /**
      * @var int The default day new users should have set as their Week Start Day.
@@ -869,24 +641,6 @@ class GeneralConfig extends BaseConfig
     public int $defaultWeekStartDay = 1;
 
     /**
-     * @var bool By default, Craft requires a front-end “password” field for public user registrations. Setting this to
-     *           `true` removes that requirement for the initial registration form. Instead, new users will set their password
-     *           once they’ve followed the link in their activation email.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->deferPublicRegistrationPassword(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFER_PUBLIC_REGISTRATION_PASSWORD=true
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public bool $deferPublicRegistrationPassword = false;
-
-    /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      *
      * ::: warning
@@ -900,23 +654,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $devMode = false;
-
-    /**
-     * @var bool Whether two-step verification features should be disabled.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->disable2fa()
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLE_2FA=true
-     * ```
-     * :::
-     *
-     * @group Users
-     */
-    #[EnvName('DISABLE_2FA')]
-    public bool $disable2fa = false;
 
     /**
      * @var string[]|string|null Array of plugin handles that should be disabled, regardless of what the project config says.
@@ -1028,52 +765,33 @@ class GeneralConfig extends BaseConfig
     public array $extraAppLocales = [];
 
     /**
-     * @var string[] Any additional last name prefixes that should be supported by the name parser.
+     * @var GarbageCollectionConfig Settings for how long garbage collection keeps old data.
+     *
+     * Supported settings:
+     *
+     * - `activityRetentionDuration` – The maximum age of activity events before garbage collection deletes them. (Default is `0`.)
+     * - `purgePendingUsersDuration` – The amount of time to wait before Craft purges pending users from the system that have not activated. (Default is `0`.)
+     * - `purgeUnsavedDraftsDuration` – The amount of time to wait before Craft purges unpublished drafts that were never updated with content. (Default is `2592000`.)
+     * - `softDeleteDuration` – The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection. (Default is `2592000`.)
      *
      * ::: code
      * ```php Static Config
-     * ->extraLastNamePrefixes(['Dal', 'Van Der'])
+     * ->garbageCollection(\CraftCms\Cms\Config\GarbageCollectionConfig::create()
+     *     ->softDeleteDuration(0)
+     *     ->purgePendingUsersDuration('P2W')
+     * )
      * ```
      * ```shell Environment Override
-     * CRAFT_EXTRA_LAST_NAME_PREFIXES="Dal,Van Der"
+     * CRAFT_GARBAGE_COLLECTION='{"softDeleteDuration":0}'
+     * CRAFT_GARBAGE_COLLECTION_SOFT_DELETE_DURATION=0
      * ```
      * :::
      *
-     * @group Users
+     * @group System
+     *
+     * @since 6.0.0
      */
-    public array $extraLastNamePrefixes = [];
-
-    /**
-     * @var string[] Any additional name salutations that should be supported by the name parser.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->extraNameSalutations(['Lady', 'Sire'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_NAME_SALUTATIONS=Lady,Sire
-     * ```
-     * :::
-     *
-     * @group Users
-     */
-    public array $extraNameSalutations = [];
-
-    /**
-     * @var string[] Any additional name suffixes that should be supported by the name parser.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->extraNameSuffixes(['CCNA', 'OBE'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_NAME_SUFFIXES=CCNA,OBE
-     * ```
-     * :::
-     *
-     * @group Users
-     */
-    public array $extraNameSuffixes = [];
+    public GarbageCollectionConfig $garbageCollection;
 
     /**
      * @var GqlConfig Settings for the GraphQL API.
@@ -1261,53 +979,6 @@ class GeneralConfig extends BaseConfig
     public ImagesConfig $images;
 
     /**
-     * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * // 1 day
-     * ->invalidLoginWindowDuration(86400)
-     * ```
-     * ```shell Environment Override
-     * # 1 day
-     * CRAFT_INVALID_LOGIN_WINDOW_DURATION=86400
-     * ```
-     * :::
-     *
-     * @group Security
-     *
-     * @defaultAlt 1 hour
-     */
-    public mixed $invalidLoginWindowDuration = 3600;
-
-    /**
-     * @var mixed The URI Craft should redirect to when user token validation fails. User tokens are used for
-     *            email verification and password resets. If `null`, <config5:loginPath> will be used by default.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * Note that this only affects front-end site requests.
-     *
-     * ::: code
-     * ```php Static Config
-     * // 1 day
-     * ->invalidUserTokenPath('nope')
-     * ```
-     * ```shell Environment Override
-     * # 1 day
-     * CRAFT_INVALID_USER_TOKEN_PATH=nope
-     * ```
-     * :::
-     *
-     * @see getInvalidUserTokenPath()
-     *
-     * @group Routing
-     */
-    public mixed $invalidUserTokenPath = null;
-
-    /**
      * @var array<string, array{aliasOf: string, displayName?: string}> Custom locale aliases, which will be included when fetching all known locales.
      *
      * Each locale alias should be defined as an array with the following keys:
@@ -1332,109 +1003,6 @@ class GeneralConfig extends BaseConfig
     public array $localeAliases = [];
 
     /**
-     * @var mixed The URI Craft should use for user login on the front end.
-     *
-     * This is set to `false` by default which disables front-end login.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->loginPath('login')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_LOGIN_PATH=login
-     * ```
-     * :::
-     *
-     * @see getLoginPath()
-     *
-     * @group Routing
-     */
-    public mixed $loginPath = false;
-
-    /**
-     * @var array<int|string, array<string, mixed>|string> The OAuth providers that should be available for login.
-     *
-     * Each provider should be keyed by its handle, and may be configured as either a driver string shorthand
-     * or an array with the following supported keys. Numeric entries are also allowed for simple driver-only providers.
-     *
-     * - `driver` *(required)*: A registered Socialite driver name, or a Socialite-compatible provider class name.
-     * - `clientId`: The provider client ID. Required for provider classes, optional for named drivers if already defined in `config/services.php`.
-     * - `clientSecret`: The provider client secret. Required for provider classes, optional for named drivers if already defined in `config/services.php`.
-     * - `enabled`: Whether the provider should be available. Defaults to `true`.
-     * - `name`: A human-friendly provider name.
-     * - `label`: The rendered button label.
-     * - `icon`: The control panel brand icon name.
-     * - `scopes`: Additional Socialite scopes.
-     * - `with`: Additional Socialite request parameters.
-     * - `stateless`: Whether the provider should bypass Socialite state checks.
-     * - `groups`: User group IDs, UIDs, or handles to assign to new users.
-     * - `createsUsers`: Whether the provider may create new users when no existing account can be matched. Defaults to the public registration setting when `null` or omitted.
-     * - `controlsAccess`: Whether the provider becomes the source of truth for whether users can access Craft. When `true`, anyone the provider lets sign in gets access: Craft saves new users as active and activates any matched user who isn't active, which also lifts suspensions and locks. Disabled and archived users still can't sign in. Defaults to `false`.
-     * - `trustsEmail`: Whether the provider is trusted to verify email ownership, allowing first-time matches to existing users by email. Defaults to `false`.
-     * - `identityResolver`: A custom identity resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
-     * - `userResolver`: A custom linked-user resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
-     * - `userPopulator`: A custom user populator class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\PopulatesOAuthUser`.
-     * - `groupResolver`: A custom initial user-group resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUserGroups`, returning group IDs, UIDs, or handles.
-     * - `buttonRenderer`: A custom login-button renderer class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\RendersOAuthButton`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->oauthProviders([
-     *     'github',
-     *     'google' => [
-     *         'driver' => 'google',
-     *         'clientId' => '$GOOGLE_CLIENT_ID',
-     *         'clientSecret' => '$GOOGLE_CLIENT_SECRET',
-     *     ],
-     * ])
-     * ```
-     * :::
-     *
-     * @group Users
-     */
-    public array $oauthProviders = [];
-
-    /**
-     * @var mixed The URI Craft should use for user logout on the front end.
-     *
-     * This can be set to `false` to disable front-end logout.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->logoutPath(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_LOGOUT_PATH=false
-     * ```
-     * :::
-     *
-     * @see getLogoutPath()
-     *
-     * @group Routing
-     */
-    public mixed $logoutPath = 'logout';
-
-    /**
-     * @var int|false The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxInvalidLogins(3)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_INVALID_LOGINS=3
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public int|false $maxInvalidLogins = 5;
-
-    /**
      * @var int|null The maximum number of revisions that should be stored for each element.
      *
      * Set to `0` if you want to store an unlimited number of revisions.
@@ -1451,29 +1019,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public ?int $maxRevisions = 50;
-
-    /**
-     * @var string The query string param name Craft should use for paginated requests.
-     *
-     * | Example Value | Example URI |
-     * | --- | --- |
-     * | `page` | `/news?page=5` |
-     * | `p` | `/news?p=5` |
-     *
-     * ::: code
-     * ```php Static Config
-     * ->pageTrigger('page')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PAGE_TRIGGER=page
-     * ```
-     * :::
-     *
-     * @see getPageTrigger()
-     *
-     * @group Routing
-     */
-    public string $pageTrigger = 'page';
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -1493,72 +1038,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public ?string $phpMaxMemoryLimit = null;
-
-    /**
-     * @var mixed The path users should be redirected to after logging into the control panel.
-     *
-     * This setting will also come into effect if a user visits the control panel’s login page (`/admin/login`) or the control panel’s
-     * root URL (`/admin`) when they are already logged in.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->postCpLoginRedirect('entries')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_POST_CP_LOGIN_REDIRECT=entries
-     * ```
-     * :::
-     *
-     * @see getPostCpLoginRedirect()
-     *
-     * @group Routing
-     */
-    public mixed $postCpLoginRedirect = 'dashboard';
-
-    /**
-     * @var mixed The path users should be redirected to after logging in from the front-end site.
-     *
-     * This setting will also come into effect if the user visits the login page (as specified by the <config5:loginPath> config setting) when
-     * they are already logged in.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->postLoginRedirect('welcome')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_POST_LOGIN_REDIRECT=welcome
-     * ```
-     * :::
-     *
-     * @see getPostLoginRedirect()
-     *
-     * @group Routing
-     */
-    public mixed $postLoginRedirect = '';
-
-    /**
-     * @var mixed The path that users should be redirected to after logging out from the front-end site.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->postLogoutRedirect('goodbye')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_POST_LOGOUT_REDIRECT=goodbye
-     * ```
-     * :::
-     *
-     * @see getPostLogoutRedirect()
-     *
-     * @group Routing
-     */
-    public mixed $postLogoutRedirect = '';
 
     /**
      * @var bool Whether Single section entries should be preloaded for Twig templates.
@@ -1591,98 +1070,6 @@ class GeneralConfig extends BaseConfig
     public McpConfig $mcp;
 
     /**
-     * @var bool When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
-     *
-     * When set to `false` and you go through the “forgot password” flow from the control panel login page, you’ll get distinct messages indicating
-     * whether the username/email exists and whether an email was sent with further instructions. This can be helpful for the user attempting to
-     * log in but allow for username/email enumeration based on the response.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->preventUserEnumeration(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PREVENT_USER_ENUMERATION=true
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public bool $preventUserEnumeration = true;
-
-    /**
-     * @var mixed The amount of time content preview tokens can be used before expiring.
-     *
-     * Defaults to <config5:defaultTokenDuration> value.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * // 1 hour
-     * ->previewTokenDuration(3600)
-     * ```
-     * ```shell Environment Override
-     * # 1 hour
-     * CRAFT_PREVIEW_TOKEN_DURATION=3600
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public mixed $previewTokenDuration = null;
-
-    /**
-     * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
-     *
-     * Any content assigned to a pending user will be deleted as well when the given time interval passes.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: tip
-     * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * // 2 weeks
-     * ->purgePendingUsersDuration(1209600)
-     * ```
-     * ```shell Environment Override
-     * # 2 weeks
-     * CRAFT_PURGE_PENDING_USERS_DURATION=1209600
-     * ```
-     * :::
-     *
-     * @group Garbage Collection
-     */
-    public mixed $purgePendingUsersDuration = 0;
-
-    /**
-     * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->purgeUnsavedDraftsDuration(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=0
-     * ```
-     * :::
-     *
-     * @group Garbage Collection
-     *
-     * @defaultAlt 30 days
-     */
-    public mixed $purgeUnsavedDraftsDuration = 2592000;
-
-    /**
      * @var QueueConfig Settings for Craft’s queue jobs.
      *
      * Supported settings:
@@ -1712,26 +1099,49 @@ class GeneralConfig extends BaseConfig
     public QueueConfig $queue;
 
     /**
-     * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
+     * @var RoutingConfig Settings for how Craft routes requests and builds URLs.
      *
-     * Set to `0` to disable this feature altogether.
+     * Supported settings:
      *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     * - `actionTrigger` – The URI segment Craft should look for when determining if the current request should be routed to a controller action. (Default is `'actions'`.)
+     * - `activateAccountSuccessPath` – The URI that users without access to the control panel should be redirected to after activating their account. (Default is `''`.)
+     * - `addTrailingSlashesToUrls` – Whether auto-generated URLs should have trailing slashes. (Default is `false`.)
+     * - `baseCpUrl` – The base URL Craft should use when generating control panel URLs. (Default is `null`.)
+     * - `cpTrigger` – The URI segment Craft should look for when determining if the current request should route to the control panel rather than the front-end website. (Default is `'admin'`.)
+     * - `invalidUserTokenPath` – The URI Craft should redirect to when user token validation fails. User tokens are used for email verification and password resets. If `null`, <config5:loginPath> will be used by default. (Default is `null`.)
+     * - `loginPath` – The URI Craft should use for user login on the front end. (Default is `false`.)
+     * - `logoutPath` – The URI Craft should use for user logout on the front end. (Default is `'logout'`.)
+     * - `pageTrigger` – The query string param name Craft should use for paginated requests. (Default is `'page'`.)
+     * - `postCpLoginRedirect` – The path users should be redirected to after logging into the control panel. (Default is `'dashboard'`.)
+     * - `postLoginRedirect` – The path users should be redirected to after logging in from the front-end site. (Default is `''`.)
+     * - `postLogoutRedirect` – The path that users should be redirected to after logging out from the front-end site. (Default is `''`.)
+     * - `setPasswordPath` – The URI or URL that Craft should use for Set Password forms on the front end. (Default is `'set-password'`.)
+     * - `setPasswordRequestPath` – The URI to the page where users can request to change their password. (Default is `null`.)
+     * - `setPasswordSuccessPath` – The URI Craft should redirect users to after setting their password from the front end. (Default is `''`.)
+     * - `siteToken` – The query string parameter name that site tokens should be set to. (Default is `'siteToken'`.)
+     * - `tokenParam` – The query string parameter name that Craft tokens should be set to. (Default is `'token'`.)
+     * - `useSslOnTokenizedUrls` – Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not, will use `http`. (Default is `'auto'`.)
+     * - `verifyEmailPath` – The URI or URL that Craft should use for email verification links on the front end. (Default is `'verifyemail'`.)
+     * - `verifyEmailSuccessPath` – The URI that users without access to the control panel should be redirected to after verifying a new email address. (Default is `''`.)
      *
      * ::: code
      * ```php Static Config
-     * ->rememberUsernameDuration(0)
+     * ->routing(\CraftCms\Cms\Config\RoutingConfig::create()
+     *     ->cpTrigger('cms')
+     *     ->loginPath('login')
+     * )
      * ```
      * ```shell Environment Override
-     * CRAFT_REMEMBER_USERNAME_DURATION=0
+     * CRAFT_ROUTING='{"cpTrigger":"cms","loginPath":"login"}'
+     * CRAFT_ROUTING_CP_TRIGGER=cms
      * ```
      * :::
      *
-     * @group Session
+     * @group System
      *
-     * @defaultAlt 1 year
+     * @since 6.0.0
      */
-    public mixed $rememberUsernameDuration = 31536000;
+    public RoutingConfig $routing;
 
     /**
      * @var bool Whether the system should run in Safe Mode.
@@ -1752,6 +1162,44 @@ class GeneralConfig extends BaseConfig
     public bool $safeMode = false;
 
     /**
+     * @var SecurityConfig Settings for authentication, rate limits, and tokens.
+     *
+     * Supported settings:
+     *
+     * - `authGuard` – The Laravel authentication guard Craft should use. (Default is `null`.)
+     * - `authPasswordBroker` – The Laravel password broker Craft should use. (Default is `null`.)
+     * - `cooldownDuration` – The amount of time a user must wait before re-attempting to log in after their account is locked due to too many failed login attempts. (Default is `300`.)
+     * - `defaultRateLimit` – The number of requests Craft will allow from a single IP address within {@see}, for actions that are rate-limited by default, before responding with a 429 error. (Default is `10`.)
+     * - `defaultRateLimitDuration` – The amount of time that {@see} applies to. (Default is `60`.)
+     * - `defaultTokenDuration` – The default amount of time tokens can be used before expiring. (Default is `86400`.)
+     * - `deferPublicRegistrationPassword` – By default, Craft requires a front-end “password” field for public user registrations. Setting this to `true` removes that requirement for the initial registration form. Instead, new users will set their password once they’ve followed the link in their activation email. (Default is `false`.)
+     * - `invalidLoginWindowDuration` – The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account. (Default is `3600`.)
+     * - `maxInvalidLogins` – The number of invalid login attempts Craft will allow within the specified duration before the account gets locked. (Default is `5`.)
+     * - `preventUserEnumeration` – When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users. (Default is `true`.)
+     * - `previewTokenDuration` – The amount of time content preview tokens can be used before expiring. (Default is `null`.)
+     * - `rememberUsernameDuration` – The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page. (Default is `31536000`.)
+     * - `storeUserIps` – Whether user IP addresses should be stored/logged by the system. (Default is `false`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->security(\CraftCms\Cms\Config\SecurityConfig::create()
+     *     ->maxInvalidLogins(3)
+     *     ->storeUserIps()
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SECURITY='{"maxInvalidLogins":3,"storeUserIps":true}'
+     * CRAFT_SECURITY_MAX_INVALID_LOGINS=3
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public SecurityConfig $security;
+
+    /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      *           [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
@@ -1767,109 +1215,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $sendPoweredByHeader = true;
-
-    /**
-     * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: tip
-     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setPasswordPath('set-password')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_PATH=set-password
-     * ```
-     * :::
-     *
-     * @see getSetPasswordPath()
-     *
-     * @group Routing
-     */
-    public mixed $setPasswordPath = CpAuthPath::SetPassword->value;
-
-    /**
-     * @var mixed The URI to the page where users can request to change their password.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
-     *
-     * ::: tip
-     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
-     * where the user resets their password after following the link in the Password Reset email.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setPasswordRequestPath('request-password')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_REQUEST_PATH=request-password
-     * ```
-     * :::
-     *
-     * @see getSetPasswordRequestPath()
-     *
-     * @group Routing
-     */
-    public mixed $setPasswordRequestPath = null;
-
-    /**
-     * @var mixed The URI Craft should redirect users to after setting their password from the front end.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setPasswordSuccessPath('password-set')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_SUCCESS_PATH=password-set
-     * ```
-     * :::
-     *
-     * @see getSetPasswordSuccessPath()
-     *
-     * @group Routing
-     */
-    public mixed $setPasswordSuccessPath = '';
-
-    /**
-     * @var string The query string parameter name that site tokens should be set to.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->siteToken('t')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SITE_TOKEN=t
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public string $siteToken = 'siteToken';
-
-    /**
-     * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->showFirstAndLastNameFields()
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SHOW_FIRST_AND_LAST_NAME_FIELDS=true
-     * ```
-     * :::
-     *
-     * @group Users
-     */
-    public bool $showFirstAndLastNameFields = false;
 
     /**
      * @var SlugsConfig Settings for element slugs.
@@ -1901,28 +1246,6 @@ class GeneralConfig extends BaseConfig
     public SlugsConfig $slugs;
 
     /**
-     * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
-     *
-     * Set to `0` if you don’t ever want to delete soft-deleted items.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->softDeleteDuration(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SOFT_DELETE_DURATION=0
-     * ```
-     * :::
-     *
-     * @group Garbage Collection
-     *
-     * @defaultAlt 30 days
-     */
-    public mixed $softDeleteDuration = 2592000;
-
-    /**
      * @var bool Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
      *           `update-statuses` command is executed.
      *
@@ -1938,22 +1261,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $staticStatuses = false;
-
-    /**
-     * @var bool Whether user IP addresses should be stored/logged by the system.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->storeUserIps(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_STORE_USER_IPS=true
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public bool $storeUserIps = false;
 
     /**
      * @var string|null The URL to a CSS file that should be included when rendering system templates on the front end,
@@ -2049,22 +1356,6 @@ class GeneralConfig extends BaseConfig
     public bool $translationDebugOutput = false;
 
     /**
-     * @var string The query string parameter name that Craft tokens should be set to.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->tokenParam('t')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TOKEN_PARAM=t
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public string $tokenParam = 'token';
-
-    /**
      * @var bool Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
      *
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
@@ -2115,93 +1406,58 @@ class GeneralConfig extends BaseConfig
     public bool $useIdnaNontransitionalToUnicode = false;
 
     /**
-     * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     *                  current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
-     *                  will use `http`.
+     * @var UsersConfig Settings for user accounts.
      *
-     * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
+     * Supported settings:
      *
-     * ::: code
-     * ```php Static Config
-     * ->useSslOnTokenizedUrls(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_SSL_ON_TOKENIZED_URLS=true
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public string|bool $useSslOnTokenizedUrls = 'auto';
-
-    /**
-     * @var mixed The URI or URL that Craft should use for email verification links on the front end.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
+     * - `disable2fa` – Whether two-step verification features should be disabled. (Default is `false`.)
+     * - `extraLastNamePrefixes` – Any additional last name prefixes that should be supported by the name parser. (Default is `[]`.)
+     * - `extraNameSalutations` – Any additional name salutations that should be supported by the name parser. (Default is `[]`.)
+     * - `extraNameSuffixes` – Any additional name suffixes that should be supported by the name parser. (Default is `[]`.)
+     * - `oauthProviders` – The OAuth providers that should be available for login. (Default is `[]`.)
+     * - `showFirstAndLastNameFields` – Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields. (Default is `false`.)
      *
      * ::: code
      * ```php Static Config
-     * ->verifyEmailPath('verify-email')
+     * ->users(\CraftCms\Cms\Config\UsersConfig::create()
+     *     ->showFirstAndLastNameFields()
+     *     ->disable2fa()
+     * )
      * ```
      * ```shell Environment Override
-     * CRAFT_VERIFY_EMAIL_PATH=verify-email
+     * CRAFT_USERS='{"showFirstAndLastNameFields":true}'
+     * CRAFT_USERS_SHOW_FIRST_AND_LAST_NAME_FIELDS=true
      * ```
      * :::
      *
-     * @see getVerifyEmailPath()
+     * @group System
      *
-     * @group Routing
+     * @since 6.0.0
      */
-    public mixed $verifyEmailPath = 'verifyemail';
-
-    /**
-     * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->verifyEmailSuccessPath('verified-email')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_VERIFY_EMAIL_SUCCESS_PATH=verified-email
-     * ```
-     * :::
-     *
-     * @see getVerifyEmailSuccessPath()
-     *
-     * @group Routing
-     */
-    public mixed $verifyEmailSuccessPath = '';
+    public UsersConfig $users;
 
     public function __construct()
     {
         $this->anchors = AnchorsConfig::create();
         $this->assets = AssetsConfig::create();
         $this->backups = BackupsConfig::create();
+        $this->garbageCollection = GarbageCollectionConfig::create();
         $this->gql = GqlConfig::create();
         $this->images = ImagesConfig::create();
         $this->queue = QueueConfig::create();
+        $this->routing = RoutingConfig::create();
+        $this->security = SecurityConfig::create();
         $this->slugs = SlugsConfig::create();
         $this->templates = TemplatesConfig::create();
         $this->mcp = McpConfig::create();
+        $this->users = UsersConfig::create();
 
         // (Re-)normalize everything.
         $this
             // IDE Helper defaults to the same value as devMode
             ->ideHelperEnabled(Env::parseBoolean('$APP_DEBUG') ?? false)
             // durations
-            ->activityRetentionDuration($this->activityRetentionDuration)
             ->cacheDuration($this->cacheDuration)
-            ->cooldownDuration($this->cooldownDuration)
-            ->defaultRateLimitDuration($this->defaultRateLimitDuration)
-            ->defaultTokenDuration($this->defaultTokenDuration)
-            ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
-            ->previewTokenDuration($this->previewTokenDuration)
-            ->purgePendingUsersDuration($this->purgePendingUsersDuration)
-            ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
-            ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->softDeleteDuration($this->softDeleteDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
@@ -2235,94 +1491,6 @@ class GeneralConfig extends BaseConfig
     public function accessibilityDefaults(array $value): self
     {
         $this->accessibilityDefaults = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI segment Craft should look for when determining if the current request should be routed to a controller action.
-     *
-     * ```php
-     * ->actionTrigger('do-it')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $actionTrigger
-     * @since 4.2.0
-     */
-    public function actionTrigger(string $value): self
-    {
-        $this->actionTrigger = $value;
-
-        return $this;
-    }
-
-    /**
-     * The maximum age of activity events before garbage collection deletes them.
-     *
-     * Set to `0` to retain activity indefinitely.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * ->activityRetentionDuration('P90D')
-     * ```
-     *
-     * @group Garbage Collection
-     *
-     * @defaultAlt Unlimited
-     *
-     * @see $activityRetentionDuration
-     */
-    public function activityRetentionDuration(mixed $value): self
-    {
-        $duration = ConfigHelper::durationInSeconds($value);
-
-        if ($duration < 0) {
-            throw new InvalidArgumentException('Activity retention duration must be zero or greater.');
-        }
-
-        $this->activityRetentionDuration = $duration;
-
-        return $this;
-    }
-
-    /**
-     * The URI that users without access to the control panel should be redirected to after activating their account.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->activateAccountSuccessPath('welcome')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $activateAccountSuccessPath
-     * @see getActivateAccountSuccessPath()
-     */
-    public function activateAccountSuccessPath(mixed $value): self
-    {
-        $this->activateAccountSuccessPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether auto-generated URLs should have trailing slashes.
-     *
-     * ```php
-     * ->addTrailingSlashesToUrls(true)
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $addTrailingSlashesToUrls
-     */
-    public function addTrailingSlashesToUrls(bool $value = true): self
-    {
-        $this->addTrailingSlashesToUrls = $value;
 
         return $this;
     }
@@ -2493,44 +1661,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Laravel authentication guard Craft should use.
-     *
-     * ```php
-     * ->authGuard('craft')
-     * ```
-     *
-     * @group Security
-     *
-     * @since 6.0.0
-     * @see $authGuard
-     */
-    public function authGuard(?string $value): self
-    {
-        $this->authGuard = $value;
-
-        return $this;
-    }
-
-    /**
-     * The Laravel password broker Craft should use.
-     *
-     * ```php
-     * ->authPasswordBroker('craft')
-     * ```
-     *
-     * @group Security
-     *
-     * @since 6.0.0
-     * @see $authPasswordBroker
-     */
-    public function authPasswordBroker(?string $value): self
-    {
-        $this->authPasswordBroker = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
      * ```php
@@ -2567,31 +1697,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The base URL Craft should use when generating control panel URLs.
-     *
-     * It will be determined automatically if left blank.
-     *
-     * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
-     * :::
-     *
-     * ```php
-     * ->baseCpUrl('https://cms.my-project.tld/')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $baseCpUrl
-     * @since 4.2.0
-     */
-    public function baseCpUrl(?string $value): self
-    {
-        $this->baseCpUrl = $value;
-
-        return $this;
-    }
-
-    /**
      * The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely.
@@ -2611,31 +1716,6 @@ class GeneralConfig extends BaseConfig
     public function cacheDuration(mixed $value): self
     {
         $this->cacheDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
-     * failed login attempts.
-     *
-     * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * ->cooldownDuration(0)
-     * ```
-     *
-     * @group Security
-     *
-     * @defaultAlt 5 minutes
-     *
-     * @see $cooldownDuration
-     */
-    public function cooldownDuration(mixed $value): self
-    {
-        $this->cooldownDuration = ConfigHelper::durationInSeconds($value);
 
         return $this;
     }
@@ -2757,38 +1837,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The URI segment Craft should look for when determining if the current request should route to the control panel rather than
-     * the front-end website.
-     *
-     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.my-project.tld`), or you are running Craft in
-     * [Headless Mode](config5:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
-     * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
-     *
-     * ```php
-     * define('CRAFT_CP', true);
-     * ```
-     *
-     * Alternatively, you can set the <config5:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
-     * control panel due to URI conflicts with actual folders/files in your main web root.
-     *
-     * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
-     *
-     * ```php
-     * ->cpTrigger(null)
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $cpTrigger
-     */
-    public function cpTrigger(?string $value): self
-    {
-        $this->cpTrigger = $value;
-
-        return $this;
-    }
-
-    /**
      * The path to a directory of SVG files that should be made available to icon pickers as a “Custom” icon set.
      *
      * ```php
@@ -2903,50 +1951,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The number of requests Craft will allow from a single IP address within {@see $defaultRateLimitDuration},
-     * for actions that are rate-limited by default, before responding with a 429 error.
-     *
-     * This can be set to `false` to disable the default rate limits.
-     *
-     * ```php
-     * ->defaultRateLimit(20)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $defaultRateLimit
-     */
-    public function defaultRateLimit(int|false $value): self
-    {
-        $this->defaultRateLimit = $value;
-
-        return $this;
-    }
-
-    /**
-     * The amount of time that {@see $defaultRateLimit} applies to.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * // 5 minutes
-     * ->defaultRateLimitDuration(300)
-     * ```
-     *
-     * @group Security
-     *
-     * @defaultAlt 1 minute
-     *
-     * @see $defaultRateLimitDuration
-     */
-    public function defaultRateLimitDuration(mixed $value): self
-    {
-        $this->defaultRateLimitDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
      * The default options that should be applied to each search term.
      *
      * Options include:
@@ -2977,29 +1981,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The default amount of time tokens can be used before expiring.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * // One week
-     * ->defaultTokenDuration(604800)
-     * ```
-     *
-     * @group Security
-     *
-     * @defaultAlt 1 day
-     *
-     * @see $defaultTokenDuration
-     */
-    public function defaultTokenDuration(mixed $value): self
-    {
-        $this->defaultTokenDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
      * The default day new users should have set as their Week Start Day.
      *
      * This should be set to one of the following integers:
@@ -3025,49 +2006,6 @@ class GeneralConfig extends BaseConfig
     public function defaultWeekStartDay(int $value): self
     {
         $this->defaultWeekStartDay = $value;
-
-        return $this;
-    }
-
-    /**
-     * By default, Craft requires a front-end “password” field for public user registrations. Setting this to
-     * `true` removes that requirement for the initial registration form. Instead, new users will set their password
-     * once they’ve followed the link in their activation email.
-     *
-     * ```php
-     * ->deferPublicRegistrationPassword(true)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $deferPublicRegistrationPassword
-     */
-    public function deferPublicRegistrationPassword(bool $value = true): self
-    {
-        $this->deferPublicRegistrationPassword = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether two-step verification features should be disabled.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->disable2fa()
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLE_2FA=true
-     * ```
-     * :::
-     *
-     * @group Users
-     *
-     * @see $disable2fa
-     */
-    public function disable2fa(bool $value = true): self
-    {
-        $this->disable2fa = $value;
 
         return $this;
     }
@@ -3196,61 +2134,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Any additional last name prefixes that should be supported by the name parser.
+     * Settings for how long garbage collection keeps old data.
      *
      * ```php
-     * ->extraLastNamePrefixes(['Dal', 'Van Der'])
+     * ->garbageCollection(\CraftCms\Cms\Config\GarbageCollectionConfig::create()
+     *     ->softDeleteDuration(0)
+     *     ->purgePendingUsersDuration('P2W')
+     * )
      * ```
      *
-     * @group Users
+     * @group System
      *
-     * @param  string[]  $value
+     * @since 6.0.0
+     * @see $garbageCollection
      *
-     * @see $extraLastNamePrefixes
+     * @param  GarbageCollectionConfig|array<string, mixed>|string  $value
      */
-    public function extraLastNamePrefixes(array $value): self
+    public function garbageCollection(GarbageCollectionConfig|array|string $value): self
     {
-        $this->extraLastNamePrefixes = $value;
-
-        return $this;
-    }
-
-    /**
-     * Any additional name salutations that should be supported by the name parser.
-     *
-     * ```php
-     * ->extraNameSalutations(['Lady', 'Sire'])
-     * ```
-     *
-     * @group Users
-     *
-     * @param  string[]  $value
-     *
-     * @see $extraNameSalutations
-     */
-    public function extraNameSalutations(array $value): self
-    {
-        $this->extraNameSalutations = $value;
-
-        return $this;
-    }
-
-    /**
-     * Any additional name suffixes that should be supported by the name parser.
-     *
-     * ```php
-     * ->extraNameSuffixes(['CCNA', 'OBE'])
-     * ```
-     *
-     * @group Users
-     *
-     * @param  string[]  $value
-     *
-     * @see $extraNameSuffixes
-     */
-    public function extraNameSuffixes(array $value): self
-    {
-        $this->extraNameSuffixes = $value;
+        $this->garbageCollection = $value instanceof GarbageCollectionConfig ? $value : GarbageCollectionConfig::fromConfig($value);
 
         return $this;
     }
@@ -3424,53 +2326,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * // 1 day
-     * ->invalidLoginWindowDuration(86400)
-     * ```
-     *
-     * @group Security
-     *
-     * @defaultAlt 1 hour
-     *
-     * @see $invalidLoginWindowDuration
-     */
-    public function invalidLoginWindowDuration(mixed $value): self
-    {
-        $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The URI Craft should redirect to when user token validation fails. User tokens are used for
-     * email verification and password resets. If `null`, <config5:loginPath> will be used by default.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * Note that this only affects front-end site requests.
-     *
-     * ```php
-     * // 1 day
-     * ->invalidUserTokenPath('nope')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $invalidUserTokenPath
-     */
-    public function invalidUserTokenPath(mixed $value): self
-    {
-        $this->invalidUserTokenPath = $value;
-
-        return $this;
-    }
-
-    /**
      * Custom locale aliases, which will be included when fetching all known locales.
      *
      * Each item in the array should have a key that defines the custom locale ID, and its value should be set
@@ -3486,84 +2341,6 @@ class GeneralConfig extends BaseConfig
     public function localeAliases(array $value): self
     {
         $this->localeAliases = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI Craft should use for user login on the front end.
-     *
-     * This can be set to `false` to disable front-end login.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->loginPath(false)
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $loginPath
-     */
-    public function loginPath(mixed $value): self
-    {
-        $this->loginPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The OAuth providers that should be available for login.
-     *
-     * @group Users
-     *
-     * @param  array<int|string, array<string, mixed>|string>  $value
-     *
-     * @see $oauthProviders
-     */
-    public function oauthProviders(array $value): self
-    {
-        $this->oauthProviders = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI Craft should use for user logout on the front end.
-     *
-     * This can be set to `false` to disable front-end logout.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->logoutPath(false)
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $logoutPath
-     */
-    public function logoutPath(mixed $value): self
-    {
-        $this->logoutPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
-     *
-     * ```php
-     * ->maxInvalidLogins(3)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $maxInvalidLogins
-     */
-    public function maxInvalidLogins(int|false $value): self
-    {
-        $this->maxInvalidLogins = $value;
 
         return $this;
     }
@@ -3589,29 +2366,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Sets the query string param name Craft should use for paginated requests.
-     *
-     * | Example Value | Example URI |
-     * | --- | --- |
-     * | `page` | `/news?page=5` |
-     * | `p` | `/news?p=5` |
-     *
-     * ```php
-     * ->pageTrigger('page')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $pageTrigger
-     */
-    public function pageTrigger(string $value): self
-    {
-        $this->pageTrigger = $this->normalizePageTrigger($value);
-
-        return $this;
-    }
-
-    /**
      * The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
      * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it can.
      *
@@ -3628,72 +2382,6 @@ class GeneralConfig extends BaseConfig
     public function phpMaxMemoryLimit(?string $value): self
     {
         $this->phpMaxMemoryLimit = $value;
-
-        return $this;
-    }
-
-    /**
-     * The path users should be redirected to after logging into the control panel.
-     *
-     * This setting will also come into effect if a user visits the control panel’s login page (`/admin/login`) or the control panel’s
-     * root URL (`/admin`) when they are already logged in.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->postCpLoginRedirect('entries')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $postCpLoginRedirect
-     */
-    public function postCpLoginRedirect(mixed $value): self
-    {
-        $this->postCpLoginRedirect = $value;
-
-        return $this;
-    }
-
-    /**
-     * The path users should be redirected to after logging in from the front-end site.
-     *
-     * This setting will also come into effect if the user visits the login page (as specified by the <config5:loginPath> config setting) when
-     * they are already logged in.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->postLoginRedirect('welcome')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $postLoginRedirect
-     */
-    public function postLoginRedirect(mixed $value): self
-    {
-        $this->postLoginRedirect = $value;
-
-        return $this;
-    }
-
-    /**
-     * The path that users should be redirected to after logging out from the front-end site.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->postLogoutRedirect('goodbye')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $postLogoutRedirect
-     */
-    public function postLogoutRedirect(mixed $value): self
-    {
-        $this->postLogoutRedirect = $value;
 
         return $this;
     }
@@ -3737,104 +2425,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
-     *
-     * When set to `false` and you go through the “forgot password” flow from the control panel login page, you’ll get distinct messages indicating
-     * whether the username/email exists and whether an email was sent with further instructions. This can be helpful for the user attempting to
-     * log in but allow for username/email enumeration based on the response.
-     *
-     * ```php
-     * ->preventUserEnumeration(true)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $preventUserEnumeration
-     */
-    public function preventUserEnumeration(bool $value = true): self
-    {
-        $this->preventUserEnumeration = $value;
-
-        return $this;
-    }
-
-    /**
-     * The amount of time content preview tokens can be used before expiring.
-     *
-     * Defaults to <config5:defaultTokenDuration> value.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * // 1 hour
-     * ->previewTokenDuration(3600)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $previewTokenDuration
-     */
-    public function previewTokenDuration(mixed $value): self
-    {
-        $this->previewTokenDuration = $value !== null ? ConfigHelper::durationInSeconds($value) : null;
-
-        return $this;
-    }
-
-    /**
-     * The amount of time to wait before Craft purges pending users from the system that have not activated.
-     *
-     * Any content assigned to a pending user will be deleted as well when the given time interval passes.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: tip
-     * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
-     * :::
-     *
-     * ```php
-     * // 2 weeks
-     * ->purgePendingUsersDuration(1209600)
-     * ```
-     *
-     * @group Garbage Collection
-     *
-     * @see $purgePendingUsersDuration
-     */
-    public function purgePendingUsersDuration(mixed $value): self
-    {
-        $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * ->purgeUnsavedDraftsDuration(0)
-     * ```
-     *
-     * @group Garbage Collection
-     *
-     * @defaultAlt 30 days
-     *
-     * @see $purgeUnsavedDraftsDuration
-     */
-    public function purgeUnsavedDraftsDuration(mixed $value): self
-    {
-        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
      * Settings for Craft’s queue jobs.
      *
      * ```php
@@ -3859,25 +2449,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
-     *
-     * Set to `0` to disable this feature altogether.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
+     * Settings for how Craft routes requests and builds URLs.
      *
      * ```php
-     * ->rememberUsernameDuration(0)
+     * ->routing(\CraftCms\Cms\Config\RoutingConfig::create()
+     *     ->cpTrigger('cms')
+     *     ->loginPath('login')
+     * )
      * ```
      *
-     * @group Session
+     * @group System
      *
-     * @defaultAlt 1 year
+     * @since 6.0.0
+     * @see $routing
      *
-     * @see $rememberUsernameDuration
+     * @param  RoutingConfig|array<string, mixed>|string  $value
      */
-    public function rememberUsernameDuration(mixed $value): self
+    public function routing(RoutingConfig|array|string $value): self
     {
-        $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
+        $this->routing = $value instanceof RoutingConfig ? $value : RoutingConfig::fromConfig($value);
 
         return $this;
     }
@@ -3903,6 +2493,30 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Settings for authentication, rate limits, and tokens.
+     *
+     * ```php
+     * ->security(\CraftCms\Cms\Config\SecurityConfig::create()
+     *     ->maxInvalidLogins(3)
+     *     ->storeUserIps()
+     * )
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $security
+     *
+     * @param  SecurityConfig|array<string, mixed>|string  $value
+     */
+    public function security(SecurityConfig|array|string $value): self
+    {
+        $this->security = $value instanceof SecurityConfig ? $value : SecurityConfig::fromConfig($value);
+
+        return $this;
+    }
+
+    /**
      * Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
@@ -3917,113 +2531,6 @@ class GeneralConfig extends BaseConfig
     public function sendPoweredByHeader(bool $value = true): self
     {
         $this->sendPoweredByHeader = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI or URL that Craft should use for Set Password forms on the front end.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ::: tip
-     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
-     * :::
-     *
-     * ```php
-     * ->setPasswordPath('set-password')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $setPasswordPath
-     */
-    public function setPasswordPath(mixed $value): self
-    {
-        $this->setPasswordPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI to the page where users can request to change their password.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
-     *
-     * ::: tip
-     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
-     * where the user resets their password after following the link in the Password Reset email.
-     * :::
-     *
-     * ```php
-     * ->setPasswordRequestPath('request-password')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $setPasswordRequestPath
-     */
-    public function setPasswordRequestPath(mixed $value): self
-    {
-        $this->setPasswordRequestPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI Craft should redirect users to after setting their password from the front end.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->setPasswordSuccessPath('password-set')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $setPasswordSuccessPath
-     */
-    public function setPasswordSuccessPath(mixed $value): self
-    {
-        $this->setPasswordSuccessPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The query string parameter name that site tokens should be set to.
-     *
-     * ```php
-     * ->siteToken('t')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $siteToken
-     */
-    public function siteToken(string $value): self
-    {
-        $this->siteToken = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
-     *
-     * ```php
-     * ->showFirstAndLastNameFields()
-     * ```
-     *
-     * @group Users
-     *
-     * @see $showFirstAndLastNameFields
-     */
-    public function showFirstAndLastNameFields(bool $value = true): self
-    {
-        $this->showFirstAndLastNameFields = $value;
 
         return $this;
     }
@@ -4053,30 +2560,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
-     *
-     * Set to `0` if you don’t ever want to delete soft-deleted items.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ```php
-     * ->softDeleteDuration(0)
-     * ```
-     *
-     * @group Garbage Collection
-     *
-     * @defaultAlt 30 days
-     *
-     * @see $softDeleteDuration
-     */
-    public function softDeleteDuration(mixed $value): self
-    {
-        $this->softDeleteDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
      * Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
      * `update-statuses` command is executed.
      *
@@ -4096,24 +2579,6 @@ class GeneralConfig extends BaseConfig
     public function staticStatuses(bool $value = true): self
     {
         $this->staticStatuses = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether user IP addresses should be stored/logged by the system.
-     *
-     * ```php
-     * ->storeUserIps(true)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $storeUserIps
-     */
-    public function storeUserIps(bool $value = true): self
-    {
-        $this->storeUserIps = $value;
 
         return $this;
     }
@@ -4217,24 +2682,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The query string parameter name that Craft tokens should be set to.
-     *
-     * ```php
-     * ->tokenParam('t')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $tokenParam
-     */
-    public function tokenParam(string $value): self
-    {
-        $this->tokenParam = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
      *
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
@@ -4288,65 +2735,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
-     * will use `http`.
-     *
-     * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
+     * Settings for user accounts.
      *
      * ```php
-     * ->useSslOnTokenizedUrls(true)
+     * ->users(\CraftCms\Cms\Config\UsersConfig::create()
+     *     ->showFirstAndLastNameFields()
+     *     ->disable2fa()
+     * )
      * ```
      *
-     * @group Routing
+     * @group System
      *
-     * @see $useSslOnTokenizedUrls
+     * @since 6.0.0
+     * @see $users
+     *
+     * @param  UsersConfig|array<string, mixed>|string  $value
      */
-    public function useSslOnTokenizedUrls(string|bool $value): self
+    public function users(UsersConfig|array|string $value): self
     {
-        $this->useSslOnTokenizedUrls = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI or URL that Craft should use for email verification links on the front end.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->verifyEmailPath('verify-email')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $verifyEmailPath
-     * @see getVerifyEmailPath()
-     */
-    public function verifyEmailPath(mixed $value): self
-    {
-        $this->verifyEmailPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The URI that users without access to the control panel should be redirected to after verifying a new email address.
-     *
-     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
-     *
-     * ```php
-     * ->verifyEmailSuccessPath('verified-email')
-     * ```
-     *
-     * @group Routing
-     *
-     * @see $verifyEmailSuccessPath
-     * @see getVerifyEmailSuccessPath()
-     */
-    public function verifyEmailSuccessPath(mixed $value): self
-    {
-        $this->verifyEmailSuccessPath = $value;
+        $this->users = $value instanceof UsersConfig ? $value : UsersConfig::fromConfig($value);
 
         return $this;
     }
@@ -4381,194 +2788,94 @@ class GeneralConfig extends BaseConfig
         return $this->assets->getTrashDisk();
     }
 
-    /**
-     * Returns the Laravel authentication guard Craft should use.
-     *
-     * @see authGuard
-     */
+    /** @deprecated in 6.0.0. [[SecurityConfig::getAuthGuard()]] should be used instead. */
     public function getAuthGuard(): string
     {
-        return $this->authGuard ?? Auth::getDefaultDriver();
+        return $this->security->getAuthGuard();
     }
 
-    /**
-     * Returns the Laravel password broker Craft should use.
-     *
-     * @see authPasswordBroker
-     */
+    /** @deprecated in 6.0.0. [[SecurityConfig::getAuthPasswordBroker()]] should be used instead. */
     public function getAuthPasswordBroker(): string
     {
-        return $this->authPasswordBroker ?? Password::getDefaultDriver();
+        return $this->security->getAuthPasswordBroker();
     }
 
-    /**
-     * Returns the session key used to store the password confirmation timestamp.
-     */
+    /** @deprecated in 6.0.0. [[SecurityConfig::getPasswordConfirmationKey()]] should be used instead. */
     public function getPasswordConfirmationKey(): string
     {
-        return $this->authGuard === null
-            ? 'auth.password_confirmed_at'
-            : sprintf('auth.%s.password_confirmed_at', $this->authGuard);
+        return $this->security->getPasswordConfirmationKey();
     }
 
-    /**
-     * Returns the localized Activate Account Success Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see activateAccountSuccessPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getActivateAccountSuccessPath()]] should be used instead. */
     public function getActivateAccountSuccessPath(?string $siteHandle = null): string
     {
-        $path = ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getActivateAccountSuccessPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Verify Email Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see verifyEmailPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getVerifyEmailPath()]] should be used instead. */
     public function getVerifyEmailPath(?string $siteHandle = null): string
     {
-        $path = ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getVerifyEmailPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Verify Email Success Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see verifyEmailSuccessPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getVerifyEmailSuccessPath()]] should be used instead. */
     public function getVerifyEmailSuccessPath(?string $siteHandle = null): string
     {
-        $path = ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getVerifyEmailSuccessPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Invalid User Token Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see invalidUserTokenPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getInvalidUserTokenPath()]] should be used instead. */
     public function getInvalidUserTokenPath(?string $siteHandle = null): ?string
     {
-        $path = ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getInvalidUserTokenPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Login Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see loginPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getLoginPath()]] should be used instead. */
     public function getLoginPath(?string $siteHandle = null): mixed
     {
-        $path = ConfigHelper::localizedValue($this->loginPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getLoginPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Logout Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see logoutPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getLogoutPath()]] should be used instead. */
     public function getLogoutPath(?string $siteHandle = null): mixed
     {
-        $path = ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getLogoutPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Post-Login Redirect path for the control panel.
-     *
-     * @see postCpLoginRedirect
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getPostCpLoginRedirect()]] should be used instead. */
     public function getPostCpLoginRedirect(): string
     {
-        return ConfigHelper::localizedValue($this->postCpLoginRedirect);
+        return $this->routing->getPostCpLoginRedirect();
     }
 
-    /**
-     * Returns the localized Post-Login Redirect path.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see postLoginRedirect
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getPostLoginRedirect()]] should be used instead. */
     public function getPostLoginRedirect(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->postLoginRedirect, $siteHandle);
+        return $this->routing->getPostLoginRedirect($siteHandle);
     }
 
-    /**
-     * Returns the localized Post-Logout Redirect path.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see postLogoutRedirect
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getPostLogoutRedirect()]] should be used instead. */
     public function getPostLogoutRedirect(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->postLogoutRedirect, $siteHandle);
+        return $this->routing->getPostLogoutRedirect($siteHandle);
     }
 
-    /**
-     * Returns the localized Set Password Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see setPasswordPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getSetPasswordPath()]] should be used instead. */
     public function getSetPasswordPath(?string $siteHandle = null): string
     {
-        $path = ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getSetPasswordPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Set Password Request Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see setPasswordRequestPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getSetPasswordRequestPath()]] should be used instead. */
     public function getSetPasswordRequestPath(?string $siteHandle = null): ?string
     {
-        $path = ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getSetPasswordRequestPath($siteHandle);
     }
 
-    /**
-     * Returns the localized Set Password Success Path value.
-     *
-     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
-     *
-     * @see setPasswordSuccessPath
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getSetPasswordSuccessPath()]] should be used instead. */
     public function getSetPasswordSuccessPath(?string $siteHandle = null): string
     {
-        $path = ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
-
-        return is_string($path) ? trim($path, '/') : $path;
+        return $this->routing->getSetPasswordSuccessPath($siteHandle);
     }
 
     /**
@@ -4581,32 +2888,15 @@ class GeneralConfig extends BaseConfig
         return $this->backups->shouldBackUpOnUpdate();
     }
 
-    /**
-     * Returns the normalized page trigger in query-string form.
-     *
-     * @see pageTrigger
-     */
+    /** @deprecated in 6.0.0. [[RoutingConfig::getPageTrigger()]] should be used instead. */
     public function getPageTrigger(): string
     {
-        return '?'.$this->getPageTriggerParam().'=';
+        return $this->routing->getPageTrigger();
     }
 
+    /** @deprecated in 6.0.0. [[RoutingConfig::getPageTriggerParam()]] should be used instead. */
     public function getPageTriggerParam(): string
     {
-        return $this->normalizePageTrigger($this->pageTrigger);
-    }
-
-    private function normalizePageTrigger(string $pageTrigger): string
-    {
-        $pageTrigger = trim($pageTrigger);
-
-        if ($pageTrigger === '') {
-            return 'page';
-        }
-
-        $pageTrigger = trim($pageTrigger, '?=');
-        $pageTrigger = rtrim($pageTrigger, '/');
-
-        return $pageTrigger !== '' ? $pageTrigger : 'page';
+        return $this->routing->getPageTriggerParam();
     }
 }

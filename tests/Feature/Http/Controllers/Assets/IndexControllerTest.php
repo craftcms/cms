@@ -39,21 +39,21 @@ beforeEach(function () {
 it('requires authentication', function () {
     auth()->logout();
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets")
         ->assertRedirect();
 });
 
 it('renders the assets index page', function () {
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets")
         ->assertOk();
 });
 
 it('sets the CP-relative path for legacy URL generation', function () {
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets")
         ->assertOk()
@@ -67,7 +67,7 @@ it('renders with a default source', function () {
         'handle' => 'testvolume',
     ]);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets?defaultSource={$volume->handle}")->assertOk();
 });
@@ -78,7 +78,7 @@ it('sends the bare index to the first source it lists', function () {
         'handle' => 'firstvolume',
     ]);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets?search=cat")
         ->assertRedirectContains("/{$cpTrigger}/assets/{$volume->handle}")
@@ -91,7 +91,7 @@ it('leaves an index that names its source where it is', function () {
         'handle' => 'firstvolume',
     ]);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets?source=temp")->assertOk();
 });
@@ -326,7 +326,7 @@ it('includes a volume’s subfolders in the index results', function () {
     $volume = Volumes::getVolumeById($volumeModel->id);
     Folders::ensureFolderByFullPathAndVolume('a-subfolder', $volume);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets/{$volumeModel->handle}?viewMode=table")
         ->assertOk()
@@ -351,7 +351,7 @@ it('links folder labels in the card and thumb views', function () {
     ]);
     Folders::ensureFolderByFullPathAndVolume('a-subfolder', Volumes::getVolumeById($volumeModel->id));
     $folderLink = "/<a class=\"label-link\" href=\"[^\"]*assets\\/{$volumeModel->handle}\\/a-subfolder\" data-folder-link>/";
-    $url = '/'.Cms::config()->cpTrigger."/assets/{$volumeModel->handle}";
+    $url = '/'.Cms::config()->routing->cpTrigger."/assets/{$volumeModel->handle}";
 
     get("{$url}?viewMode=cards")
         ->assertOk()
@@ -380,7 +380,7 @@ it('scopes the results to the subfolder named in the path', function () {
     $parent = Folders::ensureFolderByFullPathAndVolume('parent', $volume);
     Folders::ensureFolderByFullPathAndVolume('parent/child', $volume);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets/{$volumeModel->handle}/parent?viewMode=table")
         ->assertOk()
@@ -399,7 +399,7 @@ it('passes the route path segment through as defaultSource', function () {
         'handle' => 'testvolume',
     ]);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets/{$volume->handle}")
         ->assertOk()
@@ -664,7 +664,7 @@ it('gives the index a header trail like every other index has', function () {
         'name' => 'Test Volume',
     ]);
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     // The folder chain in the pane is the trail *within* a volume. These are
     // the trail *to* it, which the header had none of.
@@ -682,7 +682,7 @@ it('gives the index a header trail like every other index has', function () {
 });
 
 it('leaves the bare index a single crumb', function () {
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     get("/{$cpTrigger}/assets")
         ->assertOk()

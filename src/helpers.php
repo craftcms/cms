@@ -104,7 +104,7 @@ function currentUser(): ?CraftUser
 
 function craftAuth(): Guard
 {
-    return Auth::guard(Cms::config()->getAuthGuard());
+    return Auth::guard(Cms::config()->security->getAuthGuard());
 }
 
 function currentUserElement(): ?UserElement

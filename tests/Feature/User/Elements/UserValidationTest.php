@@ -496,7 +496,7 @@ describe('Scenario validation', function () {
 
 describe('Name field validation with field layout', function () {
     test('firstName and lastName are required when showFirstAndLastNameFields is true and FullNameField is required in SCENARIO_LIVE', function () {
-        Cms::config()->showFirstAndLastNameFields = true;
+        Cms::config()->users->showFirstAndLastNameFields = true;
 
         $fullNameField = Mockery::mock(FullNameField::class);
         $fullNameField->required = true;
@@ -524,7 +524,7 @@ describe('Name field validation with field layout', function () {
     });
 
     test('firstName and lastName are not required when showFirstAndLastNameFields is true but FullNameField is not required in SCENARIO_LIVE', function () {
-        Cms::config()->showFirstAndLastNameFields = true;
+        Cms::config()->users->showFirstAndLastNameFields = true;
 
         $fullNameField = Mockery::mock(FullNameField::class);
         $fullNameField->required = false;
@@ -549,7 +549,7 @@ describe('Name field validation with field layout', function () {
     });
 
     test('fullName is required when showFirstAndLastNameFields is false and FullNameField is required in SCENARIO_LIVE', function () {
-        Cms::config()->showFirstAndLastNameFields = false;
+        Cms::config()->users->showFirstAndLastNameFields = false;
 
         $fullNameField = Mockery::mock(FullNameField::class);
         $fullNameField->required = true;
@@ -573,7 +573,7 @@ describe('Name field validation with field layout', function () {
     });
 
     test('fullName is not required when showFirstAndLastNameFields is false but FullNameField is not required in SCENARIO_LIVE', function () {
-        Cms::config()->showFirstAndLastNameFields = false;
+        Cms::config()->users->showFirstAndLastNameFields = false;
 
         $fullNameField = Mockery::mock(FullNameField::class);
         $fullNameField->required = false;
@@ -596,7 +596,7 @@ describe('Name field validation with field layout', function () {
     });
 
     test('name field required validation does not apply outside SCENARIO_LIVE', function () {
-        Cms::config()->showFirstAndLastNameFields = true;
+        Cms::config()->users->showFirstAndLastNameFields = true;
 
         $fullNameField = Mockery::mock(FullNameField::class);
         $fullNameField->required = true;
@@ -621,7 +621,7 @@ describe('Name field validation with field layout', function () {
     });
 
     test('handles missing FullNameField gracefully using null coalescing', function () {
-        Cms::config()->showFirstAndLastNameFields = true;
+        Cms::config()->users->showFirstAndLastNameFields = true;
 
         $fieldLayout = Mockery::mock(FieldLayout::class);
         $fieldLayout->shouldReceive('getFirstVisibleElementByType')

@@ -71,7 +71,7 @@ class Template extends BaseTemplate
             throw new LogicException(sprintf('%s must implement a paginate() method.', $query::class));
         }
 
-        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
+        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->routing->getPageTriggerParam());
         $paginator->appends(Arr::except(request()->query(), $pageParam));
 
         return [

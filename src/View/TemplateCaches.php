@@ -267,7 +267,7 @@ class TemplateCaches
         $isCpRequest = request()->isCpRequest();
         $path = request()->craftPath();
 
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
         $pageNum = AbstractPaginator::resolveCurrentPage($pageParam);
 
         $this->path = ($isCpRequest ? 'cp:' : 'site:').$path;

@@ -439,7 +439,7 @@ it('prepares uploads over stdio that clients transfer with the upload’s own cr
     $created = $serve('assets_create', ['uploadId' => $upload['id']]);
     $asset = Asset::findOne($created['structuredContent']['asset']['id'] ?? null);
 
-    expect(parse_url($upload['urls']['transfer'], PHP_URL_PATH))->toBe('/'.Cms::config()->actionTrigger."/mcp/upload-sessions/{$upload['id']}/transfer")
+    expect(parse_url($upload['urls']['transfer'], PHP_URL_PATH))->toBe('/'.Cms::config()->routing->actionTrigger."/mcp/upload-sessions/{$upload['id']}/transfer")
         ->and($upload['transport']['options']['url'])->toBe($upload['urls']['transfer'])
         ->and($asset->getFilename())->toBe('example.txt')
         ->and(Storage::disk('upload-destination')->get($asset->getPath()))->toBe('abc');

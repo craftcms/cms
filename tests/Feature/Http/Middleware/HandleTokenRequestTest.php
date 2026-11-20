@@ -28,7 +28,7 @@ it('throws if an invalid token is passed', function () {
     $this->expectExceptionMessage('Invalid token');
 
     $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => 'invalid token',
+        Cms::config()->routing->tokenParam => 'invalid token',
     ]), fn () => 'bar');
 });
 
@@ -36,7 +36,7 @@ it('adds the token to the context', function () {
     $token = app(RouteTokens::class)->createToken('token/route');
 
     $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => $token,
+        Cms::config()->routing->tokenParam => $token,
     ]), fn () => 'bar');
 
     expect(Context::getHidden(HandleTokenRequest::TOKEN_KEY))
@@ -48,7 +48,7 @@ it('adds the token to the context', function () {
 
 it('does nothing more when the token does not return a route', function () {
     $result = $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => Str::random(32),
+        Cms::config()->routing->tokenParam => Str::random(32),
     ]), fn () => 'bar');
 
     expect($result)->toBe('bar');
@@ -58,7 +58,7 @@ it('does nothing more when the token does not return a route', function () {
 
 it('does not let an unknown token satisfy token-required routes', function () {
     $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => Str::random(32),
+        Cms::config()->routing->tokenParam => Str::random(32),
     ]), fn () => 'bar');
 
     $this->expectExceptionMessage('Valid token required');
@@ -70,7 +70,7 @@ it('returns the response of the token route', function () {
     $token = app(RouteTokens::class)->createToken('token/route');
 
     $result = $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => $token,
+        Cms::config()->routing->tokenParam => $token,
     ]), function (?Request $request = null) {
         if (! is_null($request)) {
             return $request->path();
@@ -86,7 +86,7 @@ it('rebinds the request after resolving a token route', function () {
     $token = app(RouteTokens::class)->createToken('token/route');
 
     $rebound = $this->middleware->handle(Request::create('foo', parameters: [
-        Cms::config()->tokenParam => $token,
+        Cms::config()->routing->tokenParam => $token,
     ]), fn (Request $request) => request() === $request);
 
     expect($rebound)->toBeTrue();
@@ -96,7 +96,7 @@ it('does not let a hidden action parameter override a resolved token route', fun
     $token = app(RouteTokens::class)->createToken('token/route');
 
     $path = $this->middleware->handle(Request::create('foo', 'POST', [
-        Cms::config()->tokenParam => $token,
+        Cms::config()->routing->tokenParam => $token,
         'action' => 'users/save-user',
     ]), fn (Request $request) => app(HandleActionRequest::class)->handle(
         $request,
@@ -112,7 +112,7 @@ it('resolves the site from the tokenized URL rather than the token route', funct
     Sites::refreshSites();
     $token = app(RouteTokens::class)->createToken('current-site');
 
-    get('https://localhost/fr?'.Cms::config()->tokenParam.'='.$token)
+    get('https://localhost/fr?'.Cms::config()->routing->tokenParam.'='.$token)
         ->assertOk()
         ->assertContent($site->handle);
 });

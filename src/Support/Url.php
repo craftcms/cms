@@ -190,7 +190,7 @@ class Url extends \Illuminate\Support\Facades\URL
         $url = static::urlWithScheme($url, $scheme);
 
         return static::urlWithParams($url, [
-            Cms::config()->tokenParam => $token,
+            Cms::config()->routing->tokenParam => $token,
         ]);
     }
 
@@ -351,7 +351,7 @@ class Url extends \Illuminate\Support\Facades\URL
     public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         $generalConfig = Cms::config();
-        $path = $generalConfig->actionTrigger.'/'.trim($path, '/');
+        $path = $generalConfig->routing->actionTrigger.'/'.trim($path, '/');
 
         if ($generalConfig->headlessMode || request()->isCpRequest()) {
             $path = static::prependCpTrigger($path);
@@ -391,7 +391,7 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function getSchemeForTokenizedUrl(bool $cp = false): string
     {
-        $useSslOnTokenizedUrls = Cms::config()->useSslOnTokenizedUrls;
+        $useSslOnTokenizedUrls = Cms::config()->routing->useSslOnTokenizedUrls;
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
         if ($useSslOnTokenizedUrls === true) {
@@ -453,8 +453,8 @@ class Url extends \Illuminate\Support\Facades\URL
     {
         // Is a custom base control panel URL being defined in the config?
         $generalConfig = Cms::config();
-        if ($generalConfig->baseCpUrl) {
-            return rtrim($generalConfig->baseCpUrl, '/').'/';
+        if ($generalConfig->routing->baseCpUrl) {
+            return rtrim($generalConfig->routing->baseCpUrl, '/').'/';
         }
 
         return self::fallbackBaseUrl();
@@ -509,7 +509,7 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function prependCpTrigger(string $path): string
     {
-        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
         $path = trim($path, '/');
 
         if ($cpTrigger !== '' && ($path === $cpTrigger || str_starts_with($path, "$cpTrigger/"))) {
@@ -524,7 +524,7 @@ class Url extends \Illuminate\Support\Facades\URL
      */
     public static function stripCpTrigger(string $path): string
     {
-        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
         $path = trim($path, '/');
 
         if ($cpTrigger === '') {
@@ -575,17 +575,17 @@ class Url extends \Illuminate\Support\Facades\URL
             }
         } else {
             // token/siteToken/preview params
-            if (! isset($params[$generalConfig->siteToken]) && ($siteToken = $request->siteToken()) !== null) {
-                $params[$generalConfig->siteToken] = $siteToken;
+            if (! isset($params[$generalConfig->routing->siteToken]) && ($siteToken = $request->siteToken()) !== null) {
+                $params[$generalConfig->routing->siteToken] = $siteToken;
             }
             if ($request->isSiteRequest()) {
                 if (
                     $addToken &&
-                    ! isset($params[$generalConfig->tokenParam]) &&
+                    ! isset($params[$generalConfig->routing->tokenParam]) &&
                     ($token = $request->getToken()) !== null &&
                     app(RouteTokens::class)->getRemainingTokenUsages($token) !== 0
                 ) {
-                    $params[$generalConfig->tokenParam] = $token;
+                    $params[$generalConfig->routing->tokenParam] = $token;
                 }
 
                 if (
@@ -623,7 +623,7 @@ class Url extends \Illuminate\Support\Facades\URL
         if ($path) {
             $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-            if (! $cpUrl && $generalConfig->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
+            if (! $cpUrl && $generalConfig->routing->addTrailingSlashesToUrls && ! preg_match('/\.[^\/]+$/', $url)) {
                 $url .= '/';
             }
         } elseif ($cpUrl) {
@@ -631,7 +631,7 @@ class Url extends \Illuminate\Support\Facades\URL
         } else {
             $url = rtrim($baseUrl, '/');
 
-            if ($url === '' || $generalConfig->addTrailingSlashesToUrls) {
+            if ($url === '' || $generalConfig->routing->addTrailingSlashesToUrls) {
                 $url .= '/';
             }
         }

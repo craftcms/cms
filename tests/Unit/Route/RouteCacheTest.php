@@ -48,8 +48,8 @@ it('loads maintenance exceptions from route cache files with current triggers', 
 
     $this->artisan('route:cache', ['--no-interaction' => true])->assertSuccessful();
 
-    Cms::config()->cpTrigger('back-office');
-    Cms::config()->actionTrigger('execute');
+    Cms::config()->routing->cpTrigger('back-office');
+    Cms::config()->routing->actionTrigger('execute');
     PreventRequestsDuringMaintenance::flushState();
     PreventRequestsDuringMaintenance::except('host-health');
 

@@ -789,7 +789,7 @@ class ElementHelper
             }
         }
 
-        return $element->getPostEditUrl() ?? Cms::config()->getPostCpLoginRedirect();
+        return $element->getPostEditUrl() ?? Cms::config()->routing->getPostCpLoginRedirect();
     }
 
     /**

@@ -71,11 +71,11 @@ abstract readonly class AuthenticationController
     ): Response {
         $loginUser ??= $user;
 
-        if (! $skipTwoFactor && ! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
+        if (! $skipTwoFactor && ! $this->generalConfig->users->disable2fa && $this->auth->hasActiveMethod($user)) {
             $this->auth->setUser($user, $remember, $loginUser);
 
             if (! $request->isCpRequest() && ! $request->wantsJson()) {
-                if (! $loginPath = $this->generalConfig->getLoginPath()) {
+                if (! $loginPath = $this->generalConfig->routing->getLoginPath()) {
                     $this->auth->setUser(null);
                     throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
                 }
@@ -97,7 +97,7 @@ abstract readonly class AuthenticationController
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
         event(new Failed(
-            guard: Cms::config()->getAuthGuard(),
+            guard: Cms::config()->security->getAuthGuard(),
             user: $user,
             credentials: $request->only('loginName', 'password'),
         ));
@@ -146,7 +146,7 @@ abstract readonly class AuthenticationController
         event(new UserEmailVerifying($user));
 
         /** @var PasswordBroker $broker */
-        $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
+        $broker = Password::broker(Cms::config()->security->getAuthPasswordBroker());
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
         }
@@ -171,7 +171,7 @@ abstract readonly class AuthenticationController
 
         // If the invalidUserTokenPath config setting is set, send them there
         if (! $request->isCpRequest()) {
-            $url = Cms::config()->getInvalidUserTokenPath() ?? Cms::config()->getLoginPath();
+            $url = Cms::config()->routing->getInvalidUserTokenPath() ?? Cms::config()->routing->getLoginPath();
 
             return redirect(\CraftCms\Cms\Support\Url::siteUrl($url));
         }
@@ -205,7 +205,7 @@ abstract readonly class AuthenticationController
             return null;
         }
 
-        $postCpLoginRedirect = Cms::config()->getPostCpLoginRedirect();
+        $postCpLoginRedirect = Cms::config()->routing->getPostCpLoginRedirect();
         $url = \CraftCms\Cms\Support\Url::cpUrl($postCpLoginRedirect);
 
         return redirect($url);
@@ -213,7 +213,7 @@ abstract readonly class AuthenticationController
 
     protected function redirectUserAfterAccountActivation(User $user): Response
     {
-        $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
+        $activateAccountSuccessPath = Cms::config()->routing->getActivateAccountSuccessPath();
         $url = \CraftCms\Cms\Support\Url::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
@@ -221,7 +221,7 @@ abstract readonly class AuthenticationController
 
     protected function redirectUserAfterEmailVerification(User $user): Response
     {
-        $verifyEmailSuccessPath = Cms::config()->getVerifyEmailSuccessPath();
+        $verifyEmailSuccessPath = Cms::config()->routing->getVerifyEmailSuccessPath();
         $url = \CraftCms\Cms\Support\Url::siteUrl($verifyEmailSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);

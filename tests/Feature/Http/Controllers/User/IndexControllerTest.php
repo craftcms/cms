@@ -19,14 +19,14 @@ beforeEach(function () {
 
     actingAs(User::findOne());
 
-    $this->cpTrigger = Cms::config()->cpTrigger;
+    $this->cpTrigger = Cms::config()->routing->cpTrigger;
 });
 
 it('requires login', function () {
     auth()->logout();
 
     get("/{$this->cpTrigger}/users")
-        ->assertRedirect(Cms::config()->cpTrigger.'/login');
+        ->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
 });
 
 it('requires the viewUsers permission', function () {

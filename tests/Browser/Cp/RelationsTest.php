@@ -48,7 +48,7 @@ beforeEach(function () {
  */
 function openCpTab(AwaitableWebpage $page, string $path): AwaitableWebpage
 {
-    $url = ComputeUrl::from('/'.trim((string) Cms::config()->cpTrigger, '/').'/'.ltrim($path, '/'));
+    $url = ComputeUrl::from('/'.trim((string) Cms::config()->routing->cpTrigger, '/').'/'.ltrim($path, '/'));
 
     return new AwaitableWebpage($page->page()->context()->newPage()->goto($url), $url)->assertPresent('main[id]');
 }

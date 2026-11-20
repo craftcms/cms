@@ -548,7 +548,7 @@ describe('models that are kept while their element is trashed', function () {
 
         Elements::deleteElement($element);
         DB::table(Table::ELEMENTS)->where('id', $element->id)->update([
-            'dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1),
+            'dateDeleted' => now()->subSeconds(Cms::config()->garbageCollection->softDeleteDuration + 1),
         ]);
         TestKeptCustomer::deleting(fn () => false);
 
@@ -564,7 +564,7 @@ describe('models that are kept while their element is trashed', function () {
 
         Elements::deleteElement($element);
         DB::table(Table::ELEMENTS)->where('id', $element->id)->update([
-            'dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1),
+            'dateDeleted' => now()->subSeconds(Cms::config()->garbageCollection->softDeleteDuration + 1),
         ]);
 
         app(HardDeleteElements::class)();

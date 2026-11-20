@@ -31,7 +31,7 @@ it('preserves the header fragments of a Twig page in the Inertia shell', functio
     app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 3).'/Support/templates');
 
     Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-        ->prefix(Cms::config()->cpTrigger)
+        ->prefix(Cms::config()->routing->cpTrigger)
         ->get('bridged-header-test', fn () => pageTemplate('test-plugin/bridged-header'));
 
     get(cp_url('bridged-header-test'))
@@ -53,7 +53,7 @@ dataset('bridgedScreens', [
     'cp screen response' => [
         function (): string {
             Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-                ->prefix(Cms::config()->cpTrigger)
+                ->prefix(Cms::config()->routing->cpTrigger)
                 ->get('bridged-cp-screen-test', fn () => new CpScreenResponse()
                     ->title('Bridged screen')
                     ->contentHtml('<p>Server-rendered content</p>'));
@@ -64,7 +64,7 @@ dataset('bridgedScreens', [
     'template extending _layouts/cp' => [
         function (): string {
             Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-                ->prefix(Cms::config()->cpTrigger)
+                ->prefix(Cms::config()->routing->cpTrigger)
                 ->get('bridged-screen-test', fn () => template('_special/sitepicker', ['baseUrl' => cp_url()]));
 
             return cp_url('bridged-screen-test');
