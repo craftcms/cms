@@ -2,12 +2,21 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use Illuminate\Console\OutputStyle;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Yaml\Yaml;
 
 it('removes stale Craft public assets before publishing', function () {
     $publicPath = storage_path('framework/testing/setup-publish-public');
@@ -103,4 +112,71 @@ it('leaves a symlinked public asset directory and its target alone', function ()
         File::deleteDirectory($publicPath);
         File::deleteDirectory($targetPath);
     }
+});
+
+describe('without a database', function () {
+    beforeEach(function () {
+        $this->directory = storage_path('framework/testing/setup-publish-'.uniqid());
+        $this->originalPublicPath = public_path();
+
+        File::writeToFile("{$this->directory}/source/test.js", 'window.testPlugin = true;');
+        $folderName = app(ProjectConfig::class)->folderName;
+        Path::shouldReceive('config')->with($folderName)->andReturn("{$this->directory}/project");
+        TestPlugin::$customScripts = ["{$this->directory}/source/test.js" => 'js/test.js'];
+        unset(ServiceProvider::$publishes[TestPlugin::class], ServiceProvider::$publishGroups['test-plugin']);
+
+        config(['database.connections.sqlite.database' => "{$this->directory}/missing.sqlite"]);
+        DB::purge('sqlite');
+        Context::forgetHidden('craft.isInstalled');
+        app()->usePublicPath("{$this->directory}/public");
+
+        app()->instance(Plugins::class, app()->make(Plugins::class, ['composerPlugins' => [
+            'craftcms/test-plugin' => [
+                'class' => TestPlugin::class,
+                'handle' => 'test-plugin',
+                'name' => 'Test Plugin',
+                'version' => '1.0.1',
+                'basePath' => dirname(__DIR__, 2).'/TestClasses/TestPlugin/src',
+            ],
+        ]]));
+
+        expect(Cms::isInstalled())->toBeFalse();
+    });
+
+    afterEach(function () {
+        TestPlugin::$customScripts = [];
+        unset(ServiceProvider::$publishes[TestPlugin::class], ServiceProvider::$publishGroups['test-plugin']);
+        app()->usePublicPath($this->originalPublicPath);
+        File::deleteDirectory($this->directory);
+    });
+
+    it('publishes assets of plugins enabled in project config files', function (bool $enabled) {
+        File::writeToFile("{$this->directory}/project/project.yaml", Yaml::dump([
+            'plugins' => ['test-plugin' => ['enabled' => $enabled, 'schemaVersion' => '1.0.0']],
+        ]));
+
+        $command = new class extends PublishCommand
+        {
+            public function call($command, array $arguments = []): int
+            {
+                return 0;
+            }
+        };
+
+        $command->handle(app(Plugins::class));
+
+        expect(File::exists("{$this->directory}/public/vendor/craftcms/test-plugin/js/test.js"))->toBe($enabled);
+    })->with(['enabled' => true, 'disabled' => false]);
+
+    it('publishes plugins enabled in project config files by their handle tag', function (bool $enabled) {
+        File::writeToFile("{$this->directory}/project/project.yaml", Yaml::dump([
+            'plugins' => ['test-plugin' => ['enabled' => $enabled, 'schemaVersion' => '1.0.0']],
+        ]));
+
+        app(Kernel::class)->rerouteSymfonyCommandEvents();
+
+        $this->artisan('vendor:publish', ['--tag' => 'test-plugin'])->assertSuccessful();
+
+        expect(File::exists("{$this->directory}/public/vendor/craftcms/test-plugin/js/test.js"))->toBe($enabled);
+    })->with(['enabled' => true, 'disabled' => false]);
 });

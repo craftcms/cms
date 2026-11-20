@@ -28,6 +28,7 @@ use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\ProjectConfig\ConfigStorage;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -358,13 +359,52 @@ class Plugins
 
     /**
      * Republishes all enabled plugins' public assets.
+     *
+     * Without an installed Craft database, such as while a Docker image is built, the enabled plugins come from the
+     * project config YAML files instead.
      */
     public function publishPluginAssets(): void
     {
-        foreach ($this->getAllPlugins() as $plugin) {
+        $plugins = Cms::isInstalled() ? $this->getAllPlugins() : $this->pluginsEnabledInProjectConfigFiles();
+
+        foreach ($plugins as $plugin) {
             $plugin->removeAssets();
             $plugin->publishAssets();
         }
+    }
+
+    /**
+     * Registers the publishable files of the plugins that the project config YAML files enable, so `vendor:publish`
+     * can publish them without a database.
+     */
+    public function registerPublishablesFromProjectConfigFiles(): void
+    {
+        foreach ($this->pluginsEnabledInProjectConfigFiles() as $plugin) {
+            $plugin->registerPublishables();
+        }
+    }
+
+    /**
+     * Creates the Composer-installed plugins that the project config YAML files enable, without reading the database.
+     *
+     * @return PluginInterface[]
+     */
+    private function pluginsEnabledInProjectConfigFiles(): array
+    {
+        $yaml = new ConfigStorage()->readYaml(app(ProjectConfig::class)->folderName);
+        $configs = $yaml[ProjectConfig::PATH_PLUGINS] ?? null;
+
+        if (! is_array($configs)) {
+            return [];
+        }
+
+        return Collection::make($configs)
+            ->filter(fn (mixed $config, string $handle) => ! empty($config['enabled'])
+                && isset($this->composerPluginInfo[$handle])
+                && ! $this->isPluginForceDisabled($handle))
+            ->map(fn (mixed $config, string $handle) => $this->createPlugin($handle))
+            ->filter()
+            ->all();
     }
 
     /**
