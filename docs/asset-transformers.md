@@ -31,6 +31,9 @@ return GeneralConfig::create()
 Craft always defines the `craft` transformer. `transformer('craft', [...])` sets its settings, and can leave out
 `driver`. Giving it another driver throws.
 
+Names can't be empty, integers, or start with `disk:`, which is reserved for disks' deprecated `asset_transformer`
+keys.
+
 ## Choosing a transformer
 
 Each volume uses one transformer. Craft picks it in this order:
@@ -68,9 +71,9 @@ setting is ignored. Move the value to the volume's setting or to the `assetTrans
 ### Invalid configuration
 
 Craft checks a transformer when it's first used, not at boot. If a volume or the `default` names a transformer that
-isn't defined, or whose driver isn't registered:
+isn't defined, whose driver isn't registered, or whose driver rejects its settings:
 
-- With debug mode on, Craft throws an `AssetTransformDriverNotFoundException`.
+- With debug mode on, Craft throws the exception, such as an `AssetTransformDriverNotFoundException`.
 - Otherwise, Craft logs a warning once per process, and the volume uses the `craft` transformer.
 
 ## Transform definitions
