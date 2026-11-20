@@ -2426,7 +2426,7 @@ return [
     '{name} folder' => 'Dossier {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} a été ajouté, mais une erreur est survenue lors de son installation.',
     '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.' => '{name} est sous licence pour l\'édition {licenseEdition}, mais l\'édition {currentEdition} est installée.',
-    '{name} isn’t licensed to run version {version}.' => '{nom} ne dispose pas de la licence nécessaire pour exécuter la version {version}.',
+    '{name} isn’t licensed to run version {version}.' => '{name} ne dispose pas de la licence nécessaire pour exécuter la version {version}.',
     '{name} requires purchase.' => '{name} nécessite un achat.',
     '{name} should be at least {value}.' => '{name} doit être au moins {value}.',
     '{name} sorted by {attribute}, {direction}' => '{name} trié par {attribute}, {direction}',

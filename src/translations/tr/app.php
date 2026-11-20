@@ -2451,7 +2451,7 @@ return [
     '{numRelations, plural, =1{Relation} other{Relations}} queued to be replaced.' => '{numRelations, plural, =1{İlişki} other{İlişkiler}} değiştirilmek üzere kuyruğa eklendi.',
     '{num} percent complete' => 'Yüzde {num} tamamlandı',
     '{pct} width' => '{pct} genişlik',
-    '{plugin} requires Craft CMS {edition} edition.' => '{plugin}, Craft CMS {plugin} sürümünü gerektirir.',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin}, Craft CMS {edition} sürümünü gerektirir.',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
     '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, number} {total, plural, one {}=1{hata} other{hata}} bulundu {num, number} {num, plural, one {}=1{sekme} other{sekme}}.',
