@@ -63,6 +63,8 @@ class Field extends ViewComponent
 
     protected ?string $orientation = null;
 
+    protected ?string $layout = null;
+
     protected bool $readOnly = false;
 
     protected ?string $width = null;
@@ -187,6 +189,14 @@ class Field extends ViewComponent
     public function orientation(?string $orientation): static
     {
         $this->orientation = $orientation;
+
+        return $this;
+    }
+
+    /** @param 'block'|'inline'|null $layout `inline` puts the label beside the control. */
+    public function layout(?string $layout): static
+    {
+        $this->layout = $layout;
 
         return $this;
     }
@@ -356,6 +366,7 @@ class Field extends ViewComponent
             'status' => $this->status,
             'status-label' => $this->statusLabel,
             'orientation' => $this->orientation,
+            'layout' => $this->layout,
             'width' => $this->width,
             'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),

@@ -26,6 +26,19 @@
     gap: var(--c-spacing-md);
   }
 
+  .admin-table-toolbar__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+  }
+
+  /* selects fill their container, so each takes a width of its own to sit side by side */
+  .admin-table-toolbar__status > :deep(*) {
+    inline-size: 12rem;
+    max-inline-size: 100%;
+  }
+
   .admin-table-toolbar__search {
     flex: 1 1 16rem;
     min-width: 0;

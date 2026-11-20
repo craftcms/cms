@@ -12,8 +12,10 @@ import {useAppLayout} from '@/common/composables/useAppLayout';
 import {useSlideout} from '@/common/slideouts';
 import {validateStep} from '@/modules/import/steps/step-slideout';
 import {openNestedMapping} from './nested-mapping';
-import {dirtyState} from './paths';
+import {emptyValueModeOf} from './empty-values';
+import {dirtyState, getAt} from './paths';
 import {
+  type CompoundMappingColumn,
   type MappingColumn,
   MappingContextKey,
   TEMPLATE_RULE,
@@ -32,7 +34,16 @@ export interface UseMappingPanelOptions {
   editable: boolean;
   /** The draft step being mapped, so a nested panel opened from here can post it. */
   step: ImportStep;
-  apply(values: MappingValues): void;
+  /**
+   * The step's own columns, when this panel maps them rather than a container's, so
+   * Apply can check that a required attribute isn't left unmapped.
+   */
+  cols?: Array<MappingColumn | CompoundMappingColumn>;
+  /** The mapping's own page, linked from the slideout's header. */
+  editUrl?: string | null;
+  submitLabel?: string;
+  /** Hands the trees back; a rejection keeps the panel open. */
+  apply(values: MappingValues): void | Promise<void>;
 }
 
 /**
@@ -40,11 +51,15 @@ export interface UseMappingPanelOptions {
  * reactive copies of the given trees, with nested mappings opening in their own panels.
  */
 export function provideMappingContext(
-  options: Omit<UseMappingPanelOptions, 'title' | 'apply'>
+  options: Omit<
+    UseMappingPanelOptions,
+    'title' | 'apply' | 'editUrl' | 'submitLabel'
+  >
 ) {
   const values = reactive<MappingValues>(options.values);
   const suggestedMap = reactive<SuggestedMap>(options.suggestedMap);
   const templateErrors = ref<Record<string, string[]>>({});
+  const mapErrors = ref<Record<string, string[]>>({});
   const panelId = useId();
 
   provide(MappingContextKey, {
@@ -53,6 +68,7 @@ export function provideMappingContext(
     sourceDataCols: options.sourceDataCols,
     templateTextExpanderTriggers: options.templateTextExpanderTriggers,
     templateErrors,
+    mapErrors,
     panelId,
     editable: options.editable,
     openNested(col: MappingColumn, opener: HTMLElement | null): void {
@@ -67,7 +83,7 @@ export function provideMappingContext(
     },
   });
 
-  return {values, suggestedMap, templateErrors, panelId};
+  return {values, suggestedMap, templateErrors, mapErrors, panelId};
 }
 
 export function useMappingPanel(options: UseMappingPanelOptions): {
@@ -75,7 +91,7 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
   suggestedMap: SuggestedMap;
 } {
   const slideout = useSlideout();
-  const {values, suggestedMap, templateErrors, panelId} =
+  const {values, suggestedMap, templateErrors, mapErrors, panelId} =
     provideMappingContext(options);
 
   /**
@@ -96,29 +112,45 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
 
   useAppLayout(() => ({
     title: options.title,
-    submitButtonLabel: t('Apply'),
+    submitButtonLabel: options.submitLabel ?? t('Apply'),
+    // a mapping that can only be looked at has nothing to apply
+    saveDisabled: !options.editable,
+    editUrl: options.editUrl ?? null,
     form,
     defaultFormActions: [],
     onSave: apply,
   }));
 
   async function apply(): Promise<void> {
-    if (options.editable && usesTemplates(values.map)) {
-      templateErrors.value = await validateTemplates();
+    if (
+      options.editable &&
+      (usesTemplates(values.map) || leavesRequiredUnmapped())
+    ) {
+      const errors = await validateMapping();
+      templateErrors.value = errors.templates;
+      // a container's panel has none of the step's own columns to show them on
+      mapErrors.value = options.cols ? errors.map : {};
 
-      if (Object.keys(templateErrors.value).length) {
+      if (
+        Object.keys(templateErrors.value).length ||
+        Object.keys(mapErrors.value).length
+      ) {
         await nextTick();
         document
-          .querySelector<HTMLElement>(
-            `[data-mapping-template-invalid="${panelId}"]`
-          )
+          .querySelector<HTMLElement>(`[data-mapping-invalid="${panelId}"]`)
           ?.focus();
 
         return;
       }
     }
 
-    options.apply(JSON.parse(JSON.stringify(values)) as MappingValues);
+    try {
+      await options.apply(JSON.parse(JSON.stringify(values)) as MappingValues);
+    } catch {
+      return;
+    }
+
+    form.defaults();
 
     // Before close(): closing drops the panel from the store, and its handler with it.
     slideout?.saved();
@@ -126,11 +158,29 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
   }
 
   /**
-   * Validates the step with this panel's trees, returning the errors that are about
-   * templates, keyed by the column's path. The rest of the step is validated when the
-   * step itself is applied.
+   * Whether a required attribute, such as an entry's authors, is left unmapped, which the
+   * server can object to. A required field is left to the element's own validation.
    */
-  async function validateTemplates(): Promise<Record<string, string[]>> {
+  function leavesRequiredUnmapped(): boolean {
+    return (options.cols ?? []).some(
+      (col) =>
+        !('subfields' in col) &&
+        col.required &&
+        col.isProperty &&
+        !getAt(values.map, col.prefixedHandleAsArray) &&
+        emptyValueModeOf(values, col) !== 'default'
+    );
+  }
+
+  /**
+   * Validates the step with this panel's trees, returning the errors about its templates
+   * and about what fills its columns, each keyed by the column's path. The rest of the
+   * step is validated when the step itself is applied.
+   */
+  async function validateMapping(): Promise<{
+    templates: Record<string, string[]>;
+    map: Record<string, string[]>;
+  }> {
     // PHP sends empty settings as `[]`
     const settings = Array.isArray(options.step.settings)
       ? {}
@@ -142,20 +192,28 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
       const errors: Record<string, string[]> =
         error?.response?.data?.errors ?? {};
 
-      return Object.fromEntries(
-        Object.entries(errors)
-          .filter(([path]) => path.startsWith('settings.templates.'))
-          .map(([path, messages]) => [
-            path.slice('settings.templates.'.length),
-            messages,
-          ])
-      );
+      return {
+        templates: errorsUnder(errors, 'settings.templates.'),
+        map: errorsUnder(errors, 'settings.map.'),
+      };
     }
 
-    return {};
+    return {templates: {}, map: {}};
   }
 
   return {values, suggestedMap};
+}
+
+/** The errors under a path, keyed by what follows it. */
+function errorsUnder(
+  errors: Record<string, string[]>,
+  prefix: string
+): Record<string, string[]> {
+  return Object.fromEntries(
+    Object.entries(errors)
+      .filter(([path]) => path.startsWith(prefix))
+      .map(([path, messages]) => [path.slice(prefix.length), messages])
+  );
 }
 
 /** Whether any column in a `map` tree is filled from a template. */

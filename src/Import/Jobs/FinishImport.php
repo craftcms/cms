@@ -8,9 +8,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Override;
 
@@ -44,8 +44,8 @@ class FinishImport extends Job
     {
         Storage::disk(Cms::config()->getImportDisk())->deleteDirectory(self::spoolPath($this->runId));
 
-        $hasFailures = (bool) Cache::pull(self::hasFailuresCacheKey($this->runId));
-
+        // before the lock goes, so the run is never seen unlocked and unfinished
+        $hasFailures = app(ImportRuns::class)->runFinished($this->runId);
         Import::releaseRunLock($this->importPlan, $this->runId);
 
         event(new ImportFinished($this->importPlan, $this->importPlan->steps ?? [], $this->runId, $hasFailures));
@@ -59,27 +59,6 @@ class FinishImport extends Job
     public static function spoolPath(string $runId): string
     {
         return self::SPOOL_ROOT."/{$runId}";
-    }
-
-    /**
-     * Returns the cache key used to flag that an item or job of the given import run failed.
-     *
-     * @param  string  $runId  The unique ID of the import run.
-     */
-    public static function hasFailuresCacheKey(string $runId): string
-    {
-        return "import-run:{$runId}:hasFailures";
-    }
-
-    /**
-     * Returns the cache key used to flag that an item of the given step of an import run failed.
-     *
-     * @param  string  $runId  The unique ID of the import run.
-     * @param  string  $stepUid  The UID of the step.
-     */
-    public static function stepHasFailuresCacheKey(string $runId, string $stepUid): string
-    {
-        return "import-run:{$runId}:step:{$stepUid}:hasFailures";
     }
 
     #[Override]

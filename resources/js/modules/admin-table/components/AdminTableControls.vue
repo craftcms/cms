@@ -17,6 +17,8 @@
     searchPlaceholder?: string | null;
     statusFilterOptions: AdminTableStatusOption[];
     columnsToggleable: boolean;
+    /** Offers a Sort menu with the view's sort alone, for a table whose columns don't change. */
+    sortable?: boolean;
     viewColumnOptions: CheckboxOption[];
     viewSortOptions: SortOption[];
     viewCustomized: boolean;
@@ -46,8 +48,10 @@
 </script>
 <template>
   <AdminTableToolbar>
-    <template v-if="statusFilterOptions.length" #status>
+    <template v-if="statusFilterOptions.length || $slots.filters" #status>
+      <slot name="filters"></slot>
       <CraftSelectRich
+        v-if="statusFilterOptions.length"
         v-model="status"
         :options="statusFilterOptions"
         :label="t('Status')"
@@ -72,11 +76,12 @@
         v-model="search"
       />
     </template>
-    <template v-if="columnsToggleable" #view>
+    <template v-if="columnsToggleable || sortable" #view>
       <IndexViewSettings
         :options="viewColumnOptions"
         :sort-options="viewSortOptions"
-        show-table-columns
+        :show-table-columns="columnsToggleable"
+        :label="columnsToggleable ? undefined : t('Sort')"
         :customized="viewCustomized"
         v-model:sort-field="viewSortField"
         v-model:sort-direction="viewSortDirection"

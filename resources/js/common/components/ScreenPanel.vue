@@ -32,8 +32,12 @@
     /** Where the panel goes in the rail. Lower comes first. */
     order?: number;
     status?: DetailsPanelStatus | null;
+    /** See {@link DetailsPanel.alert}. */
+    alert?: string | null;
     /** Stays from page to page. See {@link DetailsPanel.persistent}. */
     persistent?: boolean;
+    /** See {@link DetailsPanel.closedByDefault}. */
+    closedByDefault?: boolean;
     /** The content scrolls itself, so the panel's body doesn't. */
     scrollsItself?: boolean;
     /** What gets focus when the panel is opened from its trigger. Defaults to its heading. */
@@ -70,7 +74,9 @@
     initialIcon: props.initialIcon,
     order: props.order,
     statusData: props.status ?? null,
+    alert: props.alert ?? null,
     persistent: props.persistent,
+    closedByDefault: props.closedByDefault,
     scrollsItself: props.scrollsItself,
     initialFocus: props.initialFocus,
     unlistedInPalette: props.unlistedInPalette,

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Workbench\App\Http\Controllers\ChipsController;
 use Workbench\App\Http\Controllers\ErrorPagesController;
 use Workbench\App\Http\Controllers\HeadingsController;
+use Workbench\App\Http\Controllers\ImportRunPagesController;
 use Workbench\App\Http\Controllers\LayoutSlotsDemoController;
 use Workbench\App\Http\Controllers\PortedPagesController;
 use Workbench\App\Http\Controllers\SpecialPagesController;
@@ -48,6 +49,11 @@ Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->name('workbench.ported-pages');
         Route::post('workbench/ported-pages/updater-step/{step}', [PortedPagesController::class, 'updaterStep'])
             ->whereNumber('step');
+        Route::get('workbench/import-run', fn () => redirect(cp_url('workbench/import-run/queued')));
+        Route::get('workbench/import-run/{page}', ImportRunPagesController::class)
+            ->whereIn('page', array_keys(ImportRunPagesController::PAGES))
+            ->name('workbench.import-run');
+        // the made-up runs' failed items, which the run page asks for by the run's id
         Route::get('workbench/headings', HeadingsController::class)
             ->name('workbench.headings');
     });

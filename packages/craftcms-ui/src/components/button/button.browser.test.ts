@@ -754,6 +754,21 @@ describe('craft-button link padding', () => {
     ).toBe(plain);
   });
 
+  it('pads a sized link by the property too, rather than its size’s default', async () => {
+    expect(
+      await linkPadding('<craft-button href="/" size="small">Go</craft-button>')
+    ).toBe('12px');
+  });
+
+  it('pads a sized button by the property too', async () => {
+    document.body.innerHTML =
+      '<div style="--c-button-spacing-inline: 12px"><craft-button size="small">Go</craft-button></div>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    expect(getComputedStyle(button).paddingInlineStart).toBe('12px');
+  });
+
   it('leaves an icon-only link unpadded', async () => {
     expect(
       await linkPadding(

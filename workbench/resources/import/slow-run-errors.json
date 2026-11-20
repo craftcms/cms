@@ -1,0 +1,246 @@
+[
+  {
+    "title": "Backups",
+    "summary": "How to approach backups.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Search indexes",
+    "summary": "How to approach search indexes.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Image transforms",
+    "summary": "How to approach image transforms.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Webhooks",
+    "summary": "How to approach webhooks.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Rate limits",
+    "summary": "How to approach rate limits.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Sitemaps",
+    "summary": "How to approach sitemaps.",
+    "delay": 250,
+    "skip": true,
+    "fail": "Couldn’t download the remote image “https://example.com/images/hero-5.jpg” (404 Not Found)."
+  },
+  {
+    "title": "Redirects",
+    "summary": "How to approach redirects.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Feeds",
+    "summary": "How to approach feeds.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Form spam",
+    "summary": "How to approach form spam.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Session storage",
+    "summary": "How to approach session storage.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Log rotation",
+    "summary": "How to approach log rotation.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Queue workers",
+    "summary": "How to approach queue workers.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "CDN purging",
+    "summary": "How to approach cdn purging.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Field layouts",
+    "summary": "How to approach field layouts.",
+    "delay": 250,
+    "skip": true,
+    "fail": "The related entry “legacy-guide-13” doesn’t exist."
+  },
+  {
+    "title": "Entry drafts",
+    "summary": "How to approach entry drafts.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Revisions",
+    "summary": "How to approach revisions.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Static caching",
+    "summary": "How to approach static caching.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Image focal points",
+    "summary": "How to approach image focal points.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Asset volumes",
+    "summary": "How to approach asset volumes.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Custom routes",
+    "summary": "How to approach custom routes.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Backups revisited",
+    "summary": "How to approach backups revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Search indexes revisited",
+    "summary": "How to approach search indexes revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Image transforms revisited",
+    "summary": "How to approach image transforms revisited.",
+    "delay": 250,
+    "skip": true,
+    "fail": "Lock wait timeout exceeded; try restarting transaction."
+  },
+  {
+    "title": "Webhooks revisited",
+    "summary": "How to approach webhooks revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Rate limits revisited",
+    "summary": "How to approach rate limits revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Sitemaps revisited",
+    "summary": "How to approach sitemaps revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Redirects revisited",
+    "summary": "How to approach redirects revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Feeds revisited",
+    "summary": "How to approach feeds revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Form spam revisited",
+    "summary": "How to approach form spam revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Session storage revisited",
+    "summary": "How to approach session storage revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Log rotation revisited",
+    "summary": "How to approach log rotation revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Queue workers revisited",
+    "summary": "How to approach queue workers revisited.",
+    "delay": 250,
+    "skip": true,
+    "fail": "Couldn’t download the remote image “https://example.com/images/hero-31.jpg” (connection timed out)."
+  },
+  {
+    "title": "CDN purging revisited",
+    "summary": "How to approach cdn purging revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Field layouts revisited",
+    "summary": "How to approach field layouts revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Entry drafts revisited",
+    "summary": "How to approach entry drafts revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Revisions revisited",
+    "summary": "How to approach revisions revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Static caching revisited",
+    "summary": "How to approach static caching revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Image focal points revisited",
+    "summary": "How to approach image focal points revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Asset volumes revisited",
+    "summary": "How to approach asset volumes revisited.",
+    "delay": 250,
+    "skip": true
+  },
+  {
+    "title": "Custom routes revisited",
+    "summary": "How to approach custom routes revisited.",
+    "delay": 250,
+    "skip": true
+  }
+]

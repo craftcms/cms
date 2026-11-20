@@ -735,3 +735,39 @@ describe('craft-field control width mirroring', () => {
     expect(element.hasAttribute('width')).toBe(false);
   });
 });
+
+describe('craft-field inline layout', () => {
+  it('puts the label beside the control, and the instructions, then notices and errors, under the control wherever the instructions are positioned', async () => {
+    for (const position of ['before', 'after']) {
+      const element = await createField(
+        {
+          label: 'Match by',
+          'help-text': 'What the data holds.',
+          layout: 'inline',
+          'instructions-position': position,
+        },
+        `<input slot="input" type="text">
+         <span slot="tip">A tip.</span>
+         <ul slot="feedback"><li>An error.</li></ul>`
+      );
+      const root = element.shadowRoot!;
+      const column = [
+        ...root.querySelectorAll('.form-field__group-two slot'),
+      ].map((slot) => slot.getAttribute('name'));
+
+      expect(
+        root.querySelector('.form-field__group-one slot[name="label"]')
+      ).not.toBeNull();
+      expect(
+        root.querySelector('.form-field__group-one slot[name="help-text"]')
+      ).toBeNull();
+      // in the control's column, in this order
+      const order = ['input', 'help-text', 'tip', 'feedback'];
+      expect(column.filter((name) => order.includes(name!))).toEqual(order);
+      // the field still describes its control the same way
+      expect(describedBy(element)).toHaveLength(3);
+
+      element.remove();
+    }
+  });
+});

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Import\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Import\Commands\Concerns\ResolvesImportPlan;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Enums\ImportRunTrigger;
 use CraftCms\Cms\Import\Events\ImportFinished;
 use CraftCms\Cms\Support\Facades\Import;
 use Illuminate\Console\Command;
@@ -76,7 +77,7 @@ class RunImportPlanCommand extends Command implements PromptsForMissingInput
             });
         }
 
-        if (! Import::dispatchImport($importPlan, $sync ? 'sync' : null)) {
+        if (! Import::dispatchImport($importPlan, $sync ? 'sync' : null, ImportRunTrigger::Console)) {
             $this->components->error('Import could not be started. See the import log for details.');
 
             return self::FAILURE;

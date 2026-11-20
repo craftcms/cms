@@ -23,11 +23,20 @@ import type CraftTooltip from '../tooltip/tooltip';
  */
 export default class CraftInfoIcon extends LitElement {
   static override styles = css`
+    /* a line tall, so it never makes the text it sits in taller; the button's
+       target overflows it to stay large enough to tap */
     :host {
+      position: relative;
       display: inline-flex;
+      inline-size: 1lh;
+      block-size: 1lh;
     }
 
     craft-button {
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-start: 50%;
+      translate: -50% -50%;
       min-inline-size: var(--c-size-touch-target-sm);
       min-block-size: var(--c-size-touch-target-sm);
       cursor: help;

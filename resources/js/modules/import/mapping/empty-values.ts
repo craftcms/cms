@@ -30,6 +30,14 @@ export function canHaveDefault(col: MappingColumn): boolean {
   );
 }
 
+/**
+ * Whether a column has an empty value to handle without being mapped: a required attribute,
+ * such as an entry's authors, which a new element needs whatever the data holds.
+ */
+export function handlesEmptyUnmapped(col: MappingColumn): boolean {
+  return Boolean(col.required && col.isProperty) && canHaveDefault(col);
+}
+
 export function emptyValueModeOf(
   values: MappingValues,
   col: MappingColumn
@@ -107,6 +115,28 @@ export function defaultListOf(value: unknown): string[] {
   return value !== null && typeof value === 'object'
     ? Object.values(value).map(String)
     : [];
+}
+
+/** The IDs of the elements a default holds, kept as a JSON list. */
+export function defaultIdsOf(
+  values: MappingValues,
+  col: MappingColumn
+): number[] {
+  return defaultValuesOf(values, col)
+    .map(Number)
+    .filter((id) => Number.isInteger(id) && id > 0);
+}
+
+/** The element type a column's default is chosen from, if it's elements. */
+export function defaultElementTypeOf(col: MappingColumn): string | null {
+  const input = col.defaultValueInput;
+  const props = input?.type === 'elements' ? input.control?.props : null;
+  const elementType =
+    props && typeof props === 'object'
+      ? (props as {elementType?: unknown}).elementType
+      : null;
+
+  return typeof elementType === 'string' ? elementType : null;
 }
 
 export function setDefaultValue(

@@ -18,7 +18,6 @@ return new class extends Migration
                 $table->string('handle');
                 $table->text('description')->nullable();
                 $table->mediumText('steps');
-                $table->unsignedSmallInteger('sortOrder')->nullable();
                 $table->dateTime('dateCreated');
                 $table->dateTime('dateUpdated');
                 $table->dateTime('dateDeleted')->nullable()->default(null);

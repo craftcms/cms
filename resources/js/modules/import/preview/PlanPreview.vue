@@ -4,24 +4,18 @@
    * time, from the step as the form has it, with a button to see how each
    * item's element would change.
    */
-  import '@craftcms/ui/components/badge/badge';
-  import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/field/field';
-  import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/tab/tab';
   import '@craftcms/ui/components/tabs/tabs';
-  import '@craftcms/ui/components/tooltip/tooltip';
-  import {Color, isHttpError, t} from '@craftcms/ui';
-  import {computed, h, shallowReactive, shallowRef, watch} from 'vue';
-  import {useCraftTable} from '@/common/table/craftTable';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
-  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
+  import {isHttpError, t} from '@craftcms/ui';
+  import {computed, shallowReactive, shallowRef, watch} from 'vue';
   import type {ImportStep} from '@/modules/import/mapping/types';
   import ItemPreviewModal from './ItemPreviewModal.vue';
+  import ItemResultsTable from './ItemResultsTable.vue';
+  import StepNumber from '@/modules/import/steps/StepNumber.vue';
+  import {stepDestination} from '@/modules/import/steps/step-settings';
   import {
     fetchStepPreview,
-    resultFills,
-    resultLabels,
     type PreviewItem,
     type PreviewResult,
     type StepPreview,
@@ -39,7 +33,7 @@
     stepSummaries?: Record<string, StepSummary>;
   }>();
 
-  /** The steps that run, with their number in the plan and what their tab calls them, e.g. “Entries — Guides”. */
+  /** The steps that run, with their number in the plan and what their tab calls them, e.g. “Entries → Guides › Guide”, as the list of plans does. */
   const stepOptions = computed(() =>
     steps.flatMap((step, i) => {
       if (!step.enabled || !step.type) {
@@ -49,15 +43,16 @@
       const type =
         importerTypes.find((option) => option.value === step.type)?.label ??
         step.type;
-      const settings = (stepSummaries[step.uid]?.settings ?? []).map(
-        (setting) => setting.value
+      const destination = stepDestination(
+        stepSummaries[step.uid]?.settings ?? []
       );
 
       return [
         {
           value: step.uid,
           number: i + 1,
-          name: [type, ...settings].join(' — '),
+          type,
+          destination,
           step,
         },
       ];
@@ -202,32 +197,6 @@
   );
 
   const matchColumns = computed(() => preview.value?.matchColumns ?? []);
-  /** Each match column's share of the table, which together leave the title at least as much as they take. */
-  const matchColumnWidth = computed(
-    () => `${Math.min(35, 50 / Math.max(1, matchColumns.value.length))}%`
-  );
-
-  const filters = computed(() =>
-    (['all', ...Object.keys(resultLabels)] as Array<PreviewResult | 'all'>).map(
-      (value) => {
-        const count =
-          value === 'all'
-            ? (preview.value?.total ?? 0)
-            : (preview.value?.counts?.[value] ?? 0);
-
-        return {
-          value,
-          count,
-          label: value === 'all' ? t('All') : resultLabels[value],
-        };
-      }
-    )
-  );
-
-  const countFormat = new Intl.NumberFormat(
-    document.documentElement.lang || undefined
-  );
-
   function showFilter(value: PreviewResult | 'all'): void {
     if (value !== filter.value) {
       filter.value = value;
@@ -267,112 +236,9 @@
     )
   );
 
-  function previewButtonId(item: PreviewItem): string {
-    return `plan-preview-${selected.value?.value}-${item.index}`;
+  function previewItem(item: PreviewItem): void {
+    previewing.value = previewable.value.indexOf(item);
   }
-
-  const columnHelper = createCraftColumnHelper<PreviewItem>();
-
-  const columns = computed(() =>
-    columnHelper.columns([
-      columnHelper.display({
-        id: 'result',
-        header: t('Result'),
-        meta: {columnClass: 'plan-preview__result-col'},
-        cell: ({row}) =>
-          h(
-            'craft-badge',
-            {fill: resultFills[row.original.result], 'no-prefix': ''},
-            resultLabels[row.original.result]
-          ),
-      }),
-      columnHelper.display({
-        id: 'title',
-        header: t('Title'),
-        meta: {columnClass: 'plan-preview__title-col'},
-        cell: ({row}) =>
-          row.original.title || h('span', {class: 'text-quiet'}, t('Untitled')),
-      }),
-      ...matchColumns.value.map((column) =>
-        columnHelper.display({
-          id: `match:${column.key}`,
-          header: () =>
-            h('span', {class: 'plan-preview__heading'}, [
-              column.label,
-              h(
-                'craft-badge',
-                {size: 'small', fill: Color.Accent, 'no-prefix': ''},
-                t('Match key')
-              ),
-            ]),
-          meta: {columnClass: 'plan-preview__match-col'},
-          cell: ({row}) =>
-            row.original.match[column.key]
-              ? h('code', {class: 'text-sm'}, row.original.match[column.key])
-              : null,
-        })
-      ),
-      columnHelper.display({
-        id: 'actions',
-        header: () => h('span', {class: 'sr-only'}, t('Actions')),
-        meta: {
-          columnClass: 'plan-preview__actions-col',
-          cellClass: 'plan-preview__actions',
-        },
-        cell: ({row}) =>
-          previewable.value.includes(row.original)
-            ? h('span', [
-                h('craft-button', {
-                  id: previewButtonId(row.original),
-                  type: 'button',
-                  icon: 'eye',
-                  variant: 'plain',
-                  size: 'small',
-                  'aria-label': t('Preview {item}', {
-                    item: row.original.title || t('Untitled'),
-                  }),
-                  onClick: () =>
-                    (previewing.value = previewable.value.indexOf(
-                      row.original
-                    )),
-                }),
-                h(
-                  'craft-tooltip',
-                  {for: previewButtonId(row.original)},
-                  t('Preview')
-                ),
-              ])
-            : null,
-      }),
-    ])
-  );
-
-  // paged on the server, which the table's own pagination state follows
-  const table = useCraftTable({
-    get data() {
-      return items.value;
-    },
-    getRowId: (row) => String(row.index),
-    get columns() {
-      return columns.value;
-    },
-    manualPagination: true,
-    get rowCount() {
-      return matching.value;
-    },
-    state: {
-      get pagination() {
-        return {pageIndex: page.value, pageSize: pageSize.value};
-      },
-    },
-    onPaginationChange: (updater) => {
-      const next =
-        typeof updater === 'function'
-          ? updater({pageIndex: page.value, pageSize: pageSize.value})
-          : updater;
-      showPage(next.pageIndex);
-    },
-  });
 </script>
 
 <template>
@@ -405,10 +271,11 @@
           :controls="panelId(option.value)"
           :has-errors="problemSteps.has(option.value) || undefined"
         >
-          <span slot="prefix" class="plan-preview__step-number">{{
-            option.number
-          }}</span>
-          {{ option.name }}
+          <StepNumber slot="prefix" size="small" :number="option.number" />
+          <span class="plan-preview__step-type">{{ option.type }}</span>
+          <span v-if="option.destination" class="text-quiet">
+            → {{ option.destination }}</span
+          >
         </craft-tab>
       </craft-tabs>
       <section
@@ -425,63 +292,54 @@
             {{ t('This step’s data has no items.') }}
           </p>
           <template v-else-if="items.length || loading">
-            <div
-              role="group"
-              :aria-label="t('Show items')"
-              class="plan-preview__chips"
-            >
-              <button
-                v-for="chip in filters"
-                :key="chip.value"
-                type="button"
-                class="plan-preview__chip"
-                :aria-pressed="filter === chip.value ? 'true' : 'false'"
-                :disabled="chip.value !== 'all' && !chip.count"
-                @click="showFilter(chip.value)"
-              >
-                <craft-badge
-                  :fill="
-                    chip.value === 'all' ? Color.Gray : resultFills[chip.value]
-                  "
-                  no-prefix
-                  >{{ chip.label }}
-                  <span
-                    v-if="preview?.counts"
-                    slot="suffix"
-                    class="plan-preview__chip-count"
-                    >{{ countFormat.format(chip.count) }}</span
-                  ></craft-badge
-                >
-              </button>
-            </div>
-            <p
-              v-if="
-                preview?.itemCount !== undefined &&
-                preview.total !== undefined &&
-                preview.itemCount > preview.total
-              "
-              class="m-0 text-sm text-quiet"
-            >
-              {{
-                t(
-                  'Previewing the first {total, number} of {count, number} items.',
-                  {total: preview.total, count: preview.itemCount}
-                )
-              }}
-            </p>
-            <AdminTable
-              class="plan-preview__table"
-              :style="{'--plan-preview-match-width': matchColumnWidth}"
-              :table="table"
-              :title="t('Items')"
-              layout="fixed"
-              spacing="compact"
+            <ItemResultsTable
+              :items="items"
+              :row-id="(item) => String(item.index)"
+              :match-columns="matchColumns"
+              :counts="preview?.counts ?? null"
+              :total="preview?.total ?? 0"
+              :matching="matching"
+              :page="page"
+              :page-size="pageSize"
               :loading="loading"
-              :placeholder-rows="loading ? placeholderRows : 0"
-              :from="page * pageSize + 1"
-              :to="page * pageSize + items.length"
-              :total="matching"
-            />
+              :placeholder-rows="placeholderRows"
+              :actions="
+                (item) =>
+                  previewable.includes(item)
+                    ? [
+                        {
+                          icon: 'eye',
+                          tooltip: t('Preview'),
+                          label: t('Preview {item}', {
+                            item: item.title || t('Untitled'),
+                          }),
+                          onClick: () => previewItem(item),
+                        },
+                      ]
+                    : []
+              "
+              :filter="filter"
+              @update:filter="showFilter"
+              @page="showPage"
+            >
+              <template #notice>
+                <p
+                  v-if="
+                    preview?.itemCount !== undefined &&
+                    preview.total !== undefined &&
+                    preview.itemCount > preview.total
+                  "
+                  class="m-0 text-sm text-quiet"
+                >
+                  {{
+                    t(
+                      'Previewing the first {total, number} of {count, number} items.',
+                      {total: preview.total, count: preview.itemCount}
+                    )
+                  }}
+                </p>
+              </template>
+            </ItemResultsTable>
           </template>
         </div>
       </section>
@@ -507,101 +365,17 @@
     margin-block-start: var(--c-spacing-md);
   }
 
-  /* fixed at every width, so the columns don't move as the filters and pages change what's in them */
-  .plan-preview__table :deep(table) {
-    table-layout: fixed;
-    min-inline-size: 36rem;
-  }
-
-  .plan-preview__table :deep(.plan-preview__title-col) {
-    width: auto;
-  }
-
-  .plan-preview__table :deep(.plan-preview__match-col) {
-    width: var(--plan-preview-match-width);
-  }
-
-  /* as wide as the widest result's badge, and the preview button */
-  .plan-preview__table :deep(.plan-preview__result-col) {
-    width: 8rem;
-  }
-
-  .plan-preview__table :deep(.plan-preview__actions-col) {
-    width: 3rem;
-  }
-
   .plan-preview__step {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-md);
   }
 
-  .plan-preview__step-number {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    min-inline-size: 1.25rem;
-    block-size: 1.25rem;
-    border-radius: var(--c-radius-full);
-    font-size: var(--c-text-xs);
+  .plan-preview__step-type {
     font-weight: var(--font-weight-semibold);
-    font-variant-numeric: tabular-nums;
-    color: var(--c-color-neutral-on-normal);
-    background-color: var(--c-color-neutral-fill-normal);
   }
 
-  craft-tab[selected] .plan-preview__step-number {
-    color: var(--c-color-accent-on-loud);
-    background-color: var(--c-color-accent-fill-loud);
-  }
-
-  .plan-preview__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-md);
-  }
-
-  /* the same badge the table shows each result in, as a button */
-  .plan-preview__chip {
-    display: inline-flex;
-    padding: 0;
-    font: inherit;
-    background: none;
-    border: 0;
-    border-radius: var(--c-radius-full);
-    cursor: pointer;
-  }
-
-  .plan-preview__chip:hover:not(:disabled, [aria-pressed='true'])
-    craft-badge::part(badge) {
-    border-color: var(--c-color-border-loud);
-  }
-
-  .plan-preview__chip[aria-pressed='true'] craft-badge::part(badge) {
-    color: var(--c-color-on-loud);
-    background-color: var(--c-color-fill-loud);
-    border-color: transparent;
-  }
-
-  .plan-preview__chip:disabled {
-    cursor: default;
-    opacity: 0.5;
-  }
-
-  .plan-preview__chip-count {
-    font-variant-numeric: tabular-nums;
-    opacity: 0.75;
-  }
-
-  .plan-preview__table :deep(.plan-preview__heading) {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-  }
-
-  /* cells clip their text, which would clip the button's focus ring along the table's edge */
-  .plan-preview__table :deep(.plan-preview__actions) {
-    text-align: end;
-    overflow: visible;
+  craft-tab[selected] {
+    --step-number-color: var(--c-color-accent-on-quiet);
   }
 </style>

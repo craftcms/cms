@@ -66,8 +66,11 @@
     submitButtonLabel: context.submitLabel ?? t('Apply'),
     editUrl: context.editUrl ?? null,
     form,
-    defaultFormActions: [],
-    onSave: done,
+    defaultFormActions: context.canContinueEditing
+      ? ['saveAndContinueEditing']
+      : [],
+    formActions: context.formActions,
+    onSave: (options) => done({continueEditing: options?.redirect === false}),
   }));
 
   /**
@@ -271,21 +274,19 @@
   const mapping = ref<InstanceType<typeof InlineStepMapping> | null>(null);
 
   /**
-   * Shows the server's errors on the form, and those about the templates, which the form
-   * doesn't render, on their columns in the mapping, focusing the first.
+   * Shows the server's errors on the form, and those about the mapping or its templates,
+   * which the form doesn't render, with the mapping.
    */
   async function showErrors(
     next: Record<string, string | string[]>
   ): Promise<void> {
-    const prefix = 'settings.templates.';
     const formEntries: Array<[string, string[]]> = [];
-    const templateErrors: Record<string, string[]> = {};
+    const mappingErrors: Record<string, string[]> = {};
 
     for (const [path, messages] of Object.entries(next)) {
       const list = Array.isArray(messages) ? messages : [messages];
-
-      if (path.startsWith(prefix)) {
-        templateErrors[path.slice(prefix.length)] = list;
+      if (/^settings\.(templates|map)\./.test(path)) {
+        mappingErrors[path] = list;
       } else {
         formEntries.push([path, list]);
       }
@@ -296,8 +297,8 @@
       messages,
     }));
 
-    if (Object.keys(templateErrors).length) {
-      await mapping.value?.showTemplateErrors(templateErrors);
+    if (Object.keys(mappingErrors).length) {
+      await mapping.value?.showMappingErrors(mappingErrors);
     }
   }
 
@@ -330,7 +331,9 @@
     await showErrors(own);
   }
 
-  async function done(): Promise<void> {
+  async function done(
+    options: {continueEditing: boolean} = {continueEditing: false}
+  ): Promise<void> {
     syncFromForm();
     errors.value = [];
     saveErrors.value = {};
@@ -353,7 +356,8 @@
     try {
       await context.apply(
         JSON.parse(JSON.stringify(step.value)) as ImportStep,
-        summary.value
+        summary.value,
+        options
       );
     } catch (error) {
       if (!(error instanceof StepSaveError)) {
@@ -394,6 +398,7 @@
             :step="step"
             :editable="context.editable"
             :can-map="canMap"
+            :edit-url="context.mappingUrl"
             @change="onMappingChange"
           />
         </template>

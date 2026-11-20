@@ -17,6 +17,28 @@ import type {ImportStep} from '@/modules/import/mapping/types';
 
 export type PreviewResult = 'new' | 'update' | 'unchanged' | 'skip' | 'problem';
 
+/** A button at the end of an item's row. */
+export interface ItemAction {
+  icon: string;
+  /** What it says to its tooltip. */
+  tooltip: string;
+  /** What it says to screen readers, naming the item. */
+  label: string;
+  onClick: () => void;
+  /** Whether it's busy getting what it shows. */
+  loading?: boolean;
+}
+
+/** An item as a table of results lists it. */
+export interface ItemResultRow {
+  result: PreviewResult;
+  title: string | null;
+  /** The values it was matched on, by match key. */
+  match: Record<string, string>;
+  /** What kept it from importing, listed under its title. */
+  problems?: string[];
+}
+
 export interface PreviewItem {
   /** The item's position in the step's data. */
   index: number;

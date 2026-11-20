@@ -44,3 +44,41 @@ it('finishes the complete animation when moved partway through it', async () => 
 
   await vi.waitFor(() => expect(completed).toBe(true), {timeout: 3000});
 });
+
+it('draws its arc in the color it inherits', async () => {
+  document.body.innerHTML = `<craft-progress progress="100" style="color: rgb(0, 128, 0)"></craft-progress>`;
+  const element = document.querySelector('craft-progress')!;
+  await element.updateComplete;
+  await nextFrame();
+
+  const canvas = element.shadowRoot!.querySelector('canvas')!;
+  const [red, green, blue] = canvas
+    .getContext('2d')!
+    .getImageData(canvas.width / 2, 1, 1, 1).data;
+
+  expect([red, green, blue]).toEqual([0, 128, 0]);
+});
+
+it('draws its track in a color given as a design token', async () => {
+  document.body.innerHTML = `<craft-progress progress="0" style="--track: rgb(0, 0, 255); --c-progress-track-color: var(--track)"></craft-progress>`;
+  const element = document.querySelector('craft-progress')!;
+  await element.updateComplete;
+  await nextFrame();
+
+  const canvas = element.shadowRoot!.querySelector('canvas')!;
+  const [red, green, blue] = canvas
+    .getContext('2d')!
+    .getImageData(canvas.width / 2, 1, 1, 1).data;
+
+  expect([red, green, blue]).toEqual([0, 0, 255]);
+});
+
+it('draws at a size given with calc()', async () => {
+  document.body.innerHTML = `<craft-progress progress="50" style="--c-progress-size: calc(24rem / 16)"></craft-progress>`;
+  const element = document.querySelector('craft-progress')!;
+  await element.updateComplete;
+
+  const canvas = element.shadowRoot!.querySelector('canvas')!;
+
+  expect(canvas.width).toBe(24 * (window.devicePixelRatio > 1 ? 2 : 1));
+});

@@ -43,7 +43,12 @@
     unregisterPanel,
     type StackedPanel,
   } from './panel-stack';
-  import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
+  import {
+    closeSlideout,
+    finishLeaving,
+    notifySlideoutSaved,
+    reloadSlideout,
+  } from './store';
   import type {SlideoutInstance} from './types';
   import {slideoutTitleId} from './useSlideout';
 
@@ -199,7 +204,18 @@
     },
   };
 
+  /** Whether it's let go of the stack, its layer and its focus trap. */
+  let tornDown = false;
+
   onMounted(() => {
+    // a closed panel rendered afresh has nothing to slide off from
+    if (props.instance.leaving) {
+      tornDown = true;
+      finishLeaving(props.instance.id);
+
+      return;
+    }
+
     if (previewEditor) {
       activePreview!.editorCovers.value++;
     }
@@ -264,7 +280,14 @@
         }
   );
 
-  onBeforeUnmount(() => {
+  /** Takes the panel out of the stack, its layer and its focus trap, as though it were gone. */
+  function tearDown(): void {
+    if (tornDown) {
+      return;
+    }
+
+    tornDown = true;
+
     if (previewEditor) {
       activePreview!.editorCovers.value--;
     }
@@ -277,7 +300,36 @@
     uiLayerManager().removeLayer(el);
     unregisterPanel(stackPanel);
     releaseFocusWithin(el);
-  });
+  }
+
+  // Once closed, it's gone as far as the stack and focus are concerned, then it slides back off the
+  // way it came in. Synchronously, as focus moves back to the page as soon as it's closed.
+  watch(
+    () => props.instance.leaving,
+    async (leaving) => {
+      if (!leaving) {
+        return;
+      }
+
+      tearDown();
+
+      const el = panelEl.value!;
+      el.inert = true;
+      offset.value = '100vw';
+
+      // with the offset applied, the transition it starts can be waited on;
+      // there's none with reduced motion, or where the panel is a full-width sheet
+      await nextTick();
+      await Promise.allSettled(
+        (el.getAnimations?.() ?? []).map((animation) => animation.finished)
+      );
+
+      finishLeaving(props.instance.id);
+    },
+    {flush: 'sync'}
+  );
+
+  onBeforeUnmount(tearDown);
 
   // The screen arrives a request after the panel does, so focus can't be
   // placed until there's something in it to focus. After the render, which

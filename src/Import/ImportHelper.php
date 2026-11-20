@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Data\MappingTemplate;
 use CraftCms\Cms\Import\Data\SourceColumn;
@@ -27,12 +28,13 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
 use Illuminate\Validation\Validator;
+use Throwable;
 
 use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
- * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, isList: bool, defaultValue: mixed, trait: class-string|null, icon?: string, defaultValueInput?: array{type: string}|null}
+ * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, isList: bool, defaultValue: mixed, trait: class-string|null, icon?: string, defaultValueInput?: array<string, mixed>|null, required?: bool, importSettings?: list<FieldMappingSetting>}
  * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
  * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
@@ -1321,5 +1323,31 @@ class ImportHelper
 
             Arr::set($suggestions, $leaves[$candidate['leaf']]['path'], $candidate['value']);
         }
+    }
+
+    /**
+     * Returns the values an element was matched on, as the step labels them.
+     *
+     * @param  list<string>  $keys
+     * @param  array<string, array{label: string}>  $labels
+     * @return list<array{label: string, value: string}>
+     */
+    public static function matchedValues(ElementInterface $element, array $keys, array $labels): array
+    {
+        $values = [];
+
+        foreach ($keys as $key) {
+            try {
+                $value = $element->$key;
+            } catch (Throwable) {
+                continue;
+            }
+
+            if (is_scalar($value) && $value !== '') {
+                $values[] = ['label' => $labels[$key]['label'] ?? $key, 'value' => (string) $value];
+            }
+        }
+
+        return $values;
     }
 }

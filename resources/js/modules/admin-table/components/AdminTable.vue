@@ -50,6 +50,8 @@
       searchPlaceholder?: string | null;
       statusFilterOptions?: AdminTableStatusOption[];
       columnsToggleable?: boolean;
+      /** Offers a Sort menu, for a table with sortable columns that can't be shown or hidden. */
+      sortable?: boolean;
       hiddenColumnsByDefault?: string[];
       getSearchText?: AdminTableDataOptions<TData>['getSearchText'];
       getRowStatus?: AdminTableDataOptions<TData>['getRowStatus'];
@@ -182,6 +184,8 @@
       (props.searchable ||
         props.statusFilterOptions.length ||
         props.columnsToggleable ||
+        props.sortable ||
+        slots.filters ||
         props.createUrl ||
         props.createMenuItems?.length)
   );
@@ -323,6 +327,7 @@
           :search-placeholder="searchPlaceholder"
           :status-filter-options="statusFilterOptions"
           :columns-toggleable="columnsToggleable"
+          :sortable="sortable"
           :view-column-options="managed.viewColumnOptions.value"
           :view-sort-options="managed.viewSortOptions.value"
           :view-customized="managed.viewCustomized.value"
@@ -331,7 +336,11 @@
           :create-menu-items="createMenuItems"
           @reorder-columns="managed.onColumnsReorder"
           @use-default-view="managed.resetView"
-        />
+        >
+          <template v-if="$slots.filters" #filters>
+            <slot name="filters"></slot>
+          </template>
+        </AdminTableControls>
       </slot>
     </div>
     <div

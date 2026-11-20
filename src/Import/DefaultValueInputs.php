@@ -6,12 +6,14 @@ namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Field\BaseOptionsField;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Country;
 use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Field\Email;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Field\MultiSelect;
@@ -19,16 +21,25 @@ use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Range;
 use CraftCms\Cms\Field\Time;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
 
 /**
  * The input a destination column's default import value is entered with, matching what the column holds: a
  * field's own type and settings, or a property's or database column's type. Null means the column takes no
  * default, because no single value entered by hand suits it.
  *
- * Every default is stored as a string; a choice of several is a JSON list, which options fields decode.
+ * Every default is stored as a string; a choice of several is a JSON list, which options fields decode, and so are
+ * elements, by their IDs.
  *
  * @phpstan-type DefaultValueInput array{
- *     type: 'text'|'textarea'|'email'|'color'|'number'|'date'|'datetime'|'time'|'lightswitch'|'select'|'multiselect',
+ *     type: 'text'|'textarea'|'email'|'color'|'number'|'date'|'datetime'|'time'|'lightswitch'|'select'|'multiselect'|'elements',
+ *     control?: array<string, mixed>,
  *     options?: list<array{value: string, label: string}>,
  *     placeholder?: string,
  *     maxLength?: int,
@@ -51,6 +62,32 @@ final class DefaultValueInputs
     public static function text(): array
     {
         return ['type' => 'text'];
+    }
+
+    /**
+     * Elements, chosen with the given select control, which sets which ones can be chosen and how many.
+     *
+     * @return DefaultValueInput
+     */
+    public static function elements(ElementSelect $control): array
+    {
+        $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make('', $control)]), new UiContext);
+
+        return ['type' => 'elements', 'control' => self::firstControl($payload->nodes)?->jsonSerialize() ?? []];
+    }
+
+    /**
+     * @param  list<NodePayload>  $nodes
+     */
+    private static function firstControl(array $nodes): ?ControlPayload
+    {
+        foreach ($nodes as $node) {
+            if ($control = $node->control ?? self::firstControl($node->children ?? [])) {
+                return $control;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -108,6 +145,8 @@ final class DefaultValueInputs
                 'type' => 'select',
                 'options' => self::options(app(Addresses::class)->getCountryList(app()->getLocale())),
             ],
+            // the field's own select, so a default can be chosen from what the field can relate
+            $field instanceof BaseRelationField && ($control = $field->uiControl(new FieldContext(['defaultValue']))) instanceof ElementSelect => self::elements($control),
             $field instanceof BaseOptionsField => [
                 'type' => $field instanceof Checkboxes || $field instanceof MultiSelect ? 'multiselect' : 'select',
                 'options' => array_values(array_map(

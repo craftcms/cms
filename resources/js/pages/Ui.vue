@@ -246,7 +246,7 @@
     emit('change', change, values);
   }
 
-  defineExpose({save, setValue});
+  defineExpose({save, setValue, form: inertiaForm});
 
   async function refresh(
     values: UiPayload['values'],

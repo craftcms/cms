@@ -1,8 +1,10 @@
 import {expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import type {ImportStep} from '@/modules/import/mapping/types';
+import {takeNestedMappingContext} from '@/modules/import/mapping/nested-mapping';
 import {
   openStepMapping,
+  openStepNestedMapping,
   StepMappingUnavailableError,
   takeStepMappingContext,
 } from './step-mapping';
@@ -121,4 +123,57 @@ it('throws with the server’s reason and attribute when the step can’t be map
     message: 'The data in “people.csv” couldn’t be read.',
     attribute: 'source',
   });
+});
+
+it('opens a container’s own mapping straight away, found by its layout uid or by its field’s handle', async () => {
+  const content = {
+    handle: 'guideContent',
+    prefixedHandle: 'layout-uid',
+    prefixedHandleAsArray: ['layout-uid'],
+    isContainer: true,
+  };
+  const opened = async (key: string) => {
+    let contextId: string | undefined;
+    state.openSlideoutWith.mockReset();
+    state.openSlideoutWith.mockImplementation((_component, props) => {
+      contextId = props.contextId;
+
+      return {};
+    });
+    vi.spyOn(actionClient, 'post').mockImplementation(async (url: string) =>
+      url.includes('nested')
+        ? ({
+            data: {title: 'Content', fieldName: 'Content', groups: []},
+          } as never)
+        : ({
+            data: {
+              available: true,
+              destinationCols: [
+                {
+                  ...content,
+                  handle: 'title',
+                  prefixedHandleAsArray: ['title'],
+                  isContainer: false,
+                },
+                {heading: 'Content', subfields: [content]},
+              ],
+              sourceDataCols: [],
+              values: {map: {}, matchCriteria: {}, clearableItems: {}},
+            },
+          } as never)
+    );
+
+    await openStepNestedMapping({
+      step,
+      key,
+      editable: true,
+      opener: null,
+      apply: () => {},
+    });
+
+    return takeNestedMappingContext(contextId!).col;
+  };
+
+  expect(await opened('layout-uid')).toMatchObject({handle: 'guideContent'});
+  expect(await opened('guideContent')).toMatchObject({handle: 'guideContent'});
 });

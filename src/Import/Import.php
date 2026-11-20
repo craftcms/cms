@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Activity\ActivityEventRecorder;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanRan;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
@@ -11,6 +15,8 @@ use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\DataTypes\DataTypes;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
+use CraftCms\Cms\Import\Enums\ImportRunTrigger;
 use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Events\ImportDispatched;
 use CraftCms\Cms\Import\Events\ImportDispatching;
@@ -22,16 +28,20 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
+use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -54,6 +64,7 @@ class Import
         private readonly DataTypes $dataTypes,
         private readonly ImporterTypes $importerTypes,
         private readonly FieldImportHandlers $fieldImportHandlers,
+        private readonly ImportRuns $importRuns,
     ) {}
 
     /**
@@ -258,8 +269,9 @@ class Import
      *
      * @param  ImportPlanData  $importPlan  The import plan to dispatch.
      * @param  string|null  $connection  The queue connection to run the import on, e.g. `sync` to run it in the current process.
+     * @param  ImportRunTrigger|null  $trigger  How the run was started, if it was by a person.
      */
-    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null): bool
+    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null, ?ImportRunTrigger $trigger = null): bool
     {
         $runId = (string) Str::uuid();
 
@@ -269,15 +281,24 @@ class Import
             return false;
         }
 
+        // before the run is dispatched, as a synchronous queue runs it all within the dispatch
+        $this->importRuns->start($importPlan, $runId, currentUser()?->getAuthIdentifier(), $trigger);
+
         try {
-            $dispatched = $this->dispatchPipeline($importPlan, $runId, $connection);
+            // queued jobs carry the context with them, so everything the run records is part of it
+            $dispatched = Context::scope(
+                fn (): bool => $this->dispatchPipeline($importPlan, $runId, $connection),
+                hidden: [ActivityEventRecorder::ContextOperation => ImportRunOperation::make($importPlan, $runId)],
+            );
         } catch (Throwable $e) {
+            $this->importRuns->discard($runId);
             self::releaseRunLock($importPlan, $runId);
 
             throw $e;
         }
 
         if (! $dispatched) {
+            $this->importRuns->discard($runId);
             self::releaseRunLock($importPlan, $runId);
         }
 
@@ -310,6 +331,25 @@ class Import
     public function unlock(ImportPlanData $importPlan): void
     {
         Cache::lock(self::runLockKey($importPlan))->forceRelease();
+    }
+
+    /**
+     * Returns the import plan's latest run as the control panel shows it, or `null` if it hasn't been run.
+     *
+     * A run that let go of its lock without finishing was canceled or failed outright, so it's shown as failed.
+     *
+     * @param  bool  $withFailures  Whether to include each step run's failures.
+     * @return array<string, mixed>|null
+     */
+    public function runState(ImportPlanData $importPlan, bool $withFailures = true): ?array
+    {
+        $run = $this->importRuns->latest($importPlan);
+
+        if ($run === null) {
+            return null;
+        }
+
+        return $this->importRuns->toArray($run, ! $run->status->isFinished() && ! $this->isRunning($importPlan), $withFailures);
     }
 
     /**
@@ -352,6 +392,11 @@ class Import
             return false;
         }
 
+        Activities::record(new ImportPlanRan($event->importPlan));
+
+        // whoever started the run, the changes it makes are the import's
+        Context::addHidden(ActivityEventRecorder::ContextOrigin, 'Import');
+
         // batch pruning should be done by scheduling the queue:prune-batches command
         // see https://laravel.com/framework/docs/12.x/queues#pruning-batches
 
@@ -382,19 +427,19 @@ class Import
 
     /**
      * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items,
-     * then hands the item to the importer and fires the imported event.
+     * then hands the item to the importer and fires the imported event. Returns what happened to the item.
      *
      * @param  BaseImporter  $importer  The importer config to import into.
      * @param  array<string, mixed>  $data  The raw item data being imported.
      * @param  array<string, mixed>  $matchCriteria  any criteria that should be used to match incoming data against existing elements
      * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      */
-    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): void
+    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): ImportItemOutcome
     {
         $data = $this->prepareItem($importer, $data, $matchCriteria, $runId);
 
         if ($data === null) {
-            return;
+            return ImportItemOutcome::Skipped;
         }
 
         try {
@@ -409,12 +454,35 @@ class Import
         if ($importedItem === null && $importer instanceof ElementImporter) {
             $importer->discardAfterItemImportedCallbacks();
 
-            return;
+            return ImportItemOutcome::Skipped;
         }
 
         $importer->runAfterItemImportedCallbacks($importedItem);
 
         event(new ItemImported($importer, $data, $runId, $importedItem));
+
+        return self::itemOutcome($importer, $importedItem);
+    }
+
+    /**
+     * Works out what importing an item did, for importers that don't say.
+     */
+    private static function itemOutcome(BaseImporter $importer, ElementInterface|Model|null $importedItem): ImportItemOutcome
+    {
+        if ($importer instanceof ElementImporter && ($outcome = $importer->lastItemOutcome()) !== null) {
+            return $outcome;
+        }
+
+        return match (true) {
+            $importedItem instanceof Model => match (true) {
+                $importedItem->wasRecentlyCreated => ImportItemOutcome::Created,
+                $importedItem->wasChanged() => ImportItemOutcome::Updated,
+                default => ImportItemOutcome::Unchanged,
+            },
+            $importedItem instanceof Element => $importedItem->firstSave ? ImportItemOutcome::Created : ImportItemOutcome::Updated,
+            $importedItem instanceof ElementInterface => ImportItemOutcome::Updated,
+            default => ImportItemOutcome::Skipped,
+        };
     }
 
     /**

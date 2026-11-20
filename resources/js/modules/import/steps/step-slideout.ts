@@ -13,6 +13,7 @@ import {
   validateStep as validateStepAction,
 } from '@actions/Import/ImportPlansController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import type {ActionItems} from '@/common/types';
 import {
   createContextRegistry,
   openContextSlideout,
@@ -40,13 +41,23 @@ export interface StepSlideoutContext {
   editable: boolean;
   /** The step's own page, linked from the slideout's header. Unset for a step yet to be saved. */
   editUrl?: string | null;
+  /** The step's mapping page, linked from its mapping slideout. Unset for a step yet to be saved. */
+  mappingUrl?: string | null;
   /** The submit button's label: Apply in a slideout, Save on the step's own page. */
   submitLabel?: string;
+  /** Offers Save and continue editing beside the submit button, as the step's own page does. */
+  canContinueEditing?: boolean;
+  /** More items for the submit button's menu, after the built-in ones. */
+  formActions?: ActionItems;
   /**
    * Hands the step back. On the step's own page this saves its plan, and rejects with a
    * {@link StepSaveError} when the plan can't be saved, which keeps the form open.
    */
-  apply(step: ImportStep, summary: StepSummary): void | Promise<void>;
+  apply(
+    step: ImportStep,
+    summary: StepSummary,
+    options?: {continueEditing: boolean}
+  ): void | Promise<void>;
 }
 
 /**
@@ -63,6 +74,7 @@ export interface OpenStepSlideoutOptions {
   step: ImportStep;
   editable: boolean;
   editUrl?: string | null;
+  mappingUrl?: string | null;
   opener: HTMLElement | null;
   apply(step: ImportStep, summary: StepSummary): void;
 }
@@ -124,6 +136,7 @@ export async function openStepSlideout(
       summary,
       editable: options.editable,
       editUrl: options.editUrl ?? null,
+      mappingUrl: options.mappingUrl ?? null,
       apply: options.apply,
     },
     title,

@@ -4,6 +4,8 @@ import type {ScreenPageProps} from '@/common/composables/screen';
 
 export interface SlideoutInstance {
   id: string;
+  /** Set once it's closed, while it slides back off the screen. */
+  leaving?: boolean;
   /** Overrides `--slideout-width` for this panel. Any CSS length. */
   width: string | null;
   /**

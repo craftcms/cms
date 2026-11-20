@@ -9,7 +9,8 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\StepSummary;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
-use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\ImportRuns;
+use CraftCms\Cms\Import\Models\ImportRun;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -22,7 +23,6 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
-use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -31,12 +31,48 @@ use function CraftCms\Cms\t;
  */
 class ImportPlanEditViewModel extends ViewModel
 {
+    /**
+     * How many runs before the latest the details sidebar lists.
+     */
+    private const int EARLIER_RUNS = 3;
+
     public function __construct(
         private readonly ImportPlanData $importPlan,
         private readonly Import $importService,
         private readonly UiResolver $uiResolver,
         private readonly bool $canSave = true,
+        private readonly bool $canRun = false,
+        /** @var array<string, mixed>|null */
+        private readonly ?array $deleteAction = null,
     ) {}
+
+    /**
+     * The request that deletes the plan, once it's confirmed, or null when it can't be deleted.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function deleteAction(): ?array
+    {
+        return $this->deleteAction;
+    }
+
+    /** Whether the page only shows the plan, which it does for one registered in code. */
+    public function readOnly(): bool
+    {
+        return ! $this->importPlan->isEditable();
+    }
+
+    /** Why the page only shows the plan, for the banner across its top. */
+    public function readOnlyNotice(): ?string
+    {
+        return $this->readOnly() ? t('This import plan is registered in code, so it can’t be edited here.') : null;
+    }
+
+    /** Whether the plan can be saved and run in one go. */
+    public function canRun(): bool
+    {
+        return $this->canSave && $this->canRun;
+    }
 
     public function ui(): UiPayload
     {
@@ -87,6 +123,76 @@ class ImportPlanEditViewModel extends ViewModel
     }
 
     /**
+     * Where the plan's latest run has got, overall and step by step; the page follows it from here.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function runState(): ?array
+    {
+        return $this->exists() ? $this->importService->runState($this->importPlan) : null;
+    }
+
+    /**
+     * The few runs before the latest, newest first, for the details sidebar.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function earlierRuns(): array
+    {
+        if (! $this->exists()) {
+            return [];
+        }
+
+        $importRuns = app(ImportRuns::class);
+
+        return $importRuns->forPlan($this->importPlan)
+            ->with('user')
+            ->latest('dateCreated')
+            ->latest('id')
+            ->skip(1)
+            ->take(self::EARLIER_RUNS)
+            ->get()
+            ->map(fn (ImportRun $run): array => $importRuns->toArray($run, withFailures: false))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * How many runs the plan has kept, and where they're all listed.
+     *
+     * @return array{count: int, url: string}|null
+     */
+    public function runs(): ?array
+    {
+        if (! $this->exists() || ! $this->importPlan->handle) {
+            return null;
+        }
+
+        return [
+            'count' => app(ImportRuns::class)->forPlan($this->importPlan)->count(),
+            'url' => route('craft.cp.import.activity.index', ['plan' => $this->importPlan->handle]),
+        ];
+    }
+
+    /**
+     * Each saved step's mapping page, by its uid. A step yet to be saved has none.
+     *
+     * @return array<string, string>
+     */
+    public function stepMappingUrls(): array
+    {
+        if (! $this->importPlan->uid || ! $this->importPlan->handle) {
+            return [];
+        }
+
+        return collect($this->importPlan->serializeSteps() ?? [])
+            ->mapWithKeys(fn (array $step) => [
+                $step['uid'] => route('craft.cp.import.steps.mapping', ['handle' => $this->importPlan->handle, 'uid' => $step['uid']]),
+            ])
+            ->all();
+    }
+
+    /**
      * Each saved step's own page, by its uid. A step yet to be saved has none.
      *
      * @return array<string, string>
@@ -111,17 +217,7 @@ class ImportPlanEditViewModel extends ViewModel
      */
     public function stepSummaries(): array
     {
-        $summaries = [];
-
-        foreach ($this->importPlan->serializeSteps() ?? [] as $step) {
-            try {
-                $summaries[$step['uid']] = StepSummary::fromImporter(ImportPlans::createImporter($step));
-            } catch (Throwable) {
-                // a step that can't be built is summed up from what it holds itself
-            }
-        }
-
-        return $summaries;
+        return StepSummary::forPlan($this->importPlan);
     }
 
     /** @return array{method: 'post', url: string} */
@@ -131,5 +227,11 @@ class ImportPlanEditViewModel extends ViewModel
             'method' => 'post',
             'url' => action([ImportPlansController::class, 'store']),
         ];
+    }
+
+    /** Whether the plan has runs to show: it's been saved, or it's registered in code. */
+    private function exists(): bool
+    {
+        return $this->importPlan->uid !== null || ! $this->importPlan->isEditable();
     }
 }

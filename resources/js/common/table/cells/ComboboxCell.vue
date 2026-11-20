@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  defineOptions({inheritAttrs: false});
+
   /**
    * A table cell's combobox, labeled for screen readers only: a select whose options
    * are filtered by typing, for a list too long to scan, each with a hint beside its
@@ -15,6 +17,8 @@
     options: SelectCellOption[];
     label: string;
     disabled?: boolean;
+    /** Marks the value as invalid, for the errors shown with it. */
+    invalid?: boolean;
   }>();
 
   const emit = defineEmits<{change: [value: string]}>();
@@ -48,6 +52,8 @@
       .value="value"
       .options="comboboxOptions"
       .disabled="disabled"
+      .invalid="invalid"
+      v-bind="$attrs"
       :label="label"
       label-sr-only
       show-all-on-empty

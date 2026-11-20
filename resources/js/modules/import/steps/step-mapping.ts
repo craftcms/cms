@@ -19,7 +19,9 @@ import {
   cloneValues,
   toObjectTree,
 } from '@/modules/import/mapping/paths';
+import {openNestedMapping} from '@/modules/import/mapping/nested-mapping';
 import type {
+  MappingColumn,
   MappingColumnEntry,
   MappingValues,
   SourceColumn,
@@ -36,12 +38,18 @@ export interface StepMappingContext {
   suggestedMap: SuggestedMap;
   editable: boolean;
   step: ImportStep;
-  apply(values: MappingValues): void;
+  /** The mapping's own page, linked from the slideout's header. Unset for a step yet to be saved. */
+  editUrl?: string | null;
+  /** The submit button's label: Apply in a slideout, Save on the mapping's own page. */
+  submitLabel?: string;
+  /** Hands the mapping back. On the mapping's own page this saves the step's plan. */
+  apply(values: MappingValues): void | Promise<void>;
 }
 
 export interface OpenStepMappingOptions {
   step: ImportStep;
   editable: boolean;
+  editUrl?: string | null;
   opener: HTMLElement | null;
   apply(values: MappingValues): void;
 }
@@ -138,9 +146,68 @@ export async function openStepMapping(
       suggestedMap,
       editable: options.editable,
       step: options.step,
+      editUrl: options.editUrl ?? null,
       apply: options.apply,
     },
     title,
     options.opener
   );
+}
+
+/**
+ * Finds a container column among a step's destinations by its key in the map, which is
+ * its layout element's uid, or its field's handle in a plan saved with handles.
+ */
+function findContainer(
+  entries: MappingColumnEntry[],
+  key: string
+): MappingColumn | null {
+  for (const entry of entries) {
+    if ('subfields' in entry) {
+      const found = findContainer(entry.subfields as MappingColumnEntry[], key);
+
+      if (found) {
+        return found;
+      }
+    } else if (
+      entry.isContainer &&
+      (entry.prefixedHandleAsArray.join('.') === key || entry.handle === key)
+    ) {
+      return entry;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Opens one of a step's container columns' mapping straight away, rather than from
+ * inside the step's own mapping. Returns false, and throws, as `openStepMapping()` does.
+ */
+export async function openStepNestedMapping(
+  options: OpenStepMappingOptions & {key: string}
+): Promise<boolean> {
+  const data = await fetchStepMapping(options.step);
+
+  if (!data.available) {
+    throw new StepMappingUnavailableError(
+      data.message ?? '',
+      data.attribute ?? null
+    );
+  }
+
+  const col = findContainer(data.destinationCols ?? [], options.key);
+
+  if (!col) {
+    throw new StepMappingUnavailableError('');
+  }
+
+  return openNestedMapping({
+    col,
+    step: options.step,
+    values: initialMappingState(data).values,
+    editable: options.editable,
+    opener: options.opener,
+    apply: options.apply,
+  });
 }

@@ -367,13 +367,15 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('import/nested-mapping-cols', [ImportPlansController::class, 'nestedMappingCols']);
             Route::post('import/preview-step', [ImportPlansController::class, 'previewStep']);
             Route::post('import/preview-item', [ImportPlansController::class, 'previewItem']);
+            Route::get('import/run-state', [ImportPlansController::class, 'runState']);
+            Route::get('import/step', [ImportPlansController::class, 'showStep']);
         });
         Route::middleware('can:saveImportPlans')->group(function () {
             Route::post('import/save', [ImportPlansController::class, 'store']);
             Route::post('import/duplicate', [ImportPlansController::class, 'duplicate']);
-            Route::post('import/reorder', [ImportPlansController::class, 'reorder']);
             Route::post('import/validate-step', [ImportPlansController::class, 'validateStep']);
             Route::post('import/save-step', [ImportPlansController::class, 'storeStep']);
+            Route::post('import/delete-step', [ImportPlansController::class, 'destroyStep']);
             Route::get('import/source-suggestions', [ImportPlansController::class, 'sourceSuggestions']);
         });
         Route::middleware('can:deleteImportPlans')->delete('import/delete', [ImportPlansController::class, 'destroy']);

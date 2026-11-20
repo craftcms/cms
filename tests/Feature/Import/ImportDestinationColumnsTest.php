@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
@@ -272,8 +273,9 @@ it('enters a field’s default value with the input its type and settings call f
             'type' => 'multiselect',
             'options' => [['value' => 'news', 'label' => 'News']],
         ])
-        // no single value entered by hand suits a relation
-        ->and($cols['related']->defaultValueInput)->toBeNull();
+        // chosen with the field's own select
+        ->and($cols['related']->defaultValueInput['type'])->toBe('elements')
+        ->and($cols['related']->defaultValueInput['control']['props']['elementType'])->toBe(EntryElement::class);
 });
 
 it('gives each destination column its field type’s icon', function () {

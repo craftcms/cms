@@ -1,5 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+
+  const {icon = 'custom-icons/gear-slash'} = defineProps<{icon?: string}>();
 </script>
 
 <template>
@@ -8,7 +10,7 @@
     rounded="none"
     class="border border-b-neutral-border-quiet"
   >
-    <craft-icon slot="icon" name="custom-icons/gear-slash"></craft-icon>
+    <craft-icon slot="icon" :name="icon"></craft-icon>
     <slot>{{
       t('Changes to these settings arenʼt permitted in this environment.')
     }}</slot>

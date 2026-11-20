@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\ItemPreview;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
+use CraftCms\Cms\Import\Enums\ImportRunTrigger;
 use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Support\Facades\Facade;
@@ -23,10 +25,11 @@ use Override;
  * @method static ?string getDataTypeError(string $filePath, ?string $dataType = null)
  * @method static array getAllImporterTypes()
  * @method static ?FieldImportHandlerInterface getFieldImportHandlerFor(FieldInterface $field)
- * @method static bool dispatchImport(ImportPlanData $importPlan, ?string $connection = null)
+ * @method static bool dispatchImport(ImportPlanData $importPlan, ?string $connection = null, ?ImportRunTrigger $trigger = null)
  * @method static bool isRunning(ImportPlanData $importPlan)
  * @method static void unlock(ImportPlanData $importPlan)
- * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null)
+ * @method static array<string, mixed>|null runState(ImportPlanData $importPlan, bool $withFailures = true)
+ * @method static ImportItemOutcome importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null)
  * @method static ItemPreview previewItem(ElementImporter $importer, array $data, array $matchCriteria = [])
  * @method static string getRawData(string $filePath)
  * @method static array getFormattedData(string $filePath, ?BaseImporter $importer = null)

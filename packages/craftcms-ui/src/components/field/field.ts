@@ -41,6 +41,8 @@ type FormControlTarget = HTMLElement & {
  * @slot label - The field label. Alternative to the `label` attribute.
  * @slot help-text - The field instructions. Alternative to the `help-text`
  *   attribute.
+ * @slot after - A control below the main one that the field's instructions
+ *   and errors describe too, such as the input for a custom value.
  * @slot feedback - Validation errors (e.g. an error list).
  * @slot tip - Tip notice content, rendered inside an info callout.
  * @slot warning - Warning notice content, rendered inside a warning callout.
@@ -52,6 +54,10 @@ type FormControlTarget = HTMLElement & {
  *   field settings menus), rendered as a group right after a visible label,
  *   or at the end of the heading when the label is visually hidden.
  *
+ * @cssproperty [--c-field-label-line-height=1.2] - The label's line height.
+ * @cssproperty --c-field-inline-label-size - The heading's width in the
+ *   `inline` layout. Defaults to fitting its content, up to 40% of the field;
+ *   set a fixed width to line up the controls of stacked fields.
  * @cssproperty --c-field-indicator-inset - How far the changed/outdated
  *   indicator sits before the field's leading edge. Set it to the padding of
  *   whatever holds the field, so the indicator runs along that edge. Defaults
@@ -96,6 +102,14 @@ export default class CraftField extends FormControl(LitElement) {
    */
   @property({type: Boolean, reflect: true, attribute: 'has-errors'})
   hasErrors = false;
+
+  /**
+   * How the field is laid out. `block` stacks the heading above the control.
+   * `inline` puts the heading beside the control, level with its first line,
+   * with the instructions under the control wherever they're positioned, and
+   * notices and errors under them.
+   */
+  @property({reflect: true}) layout: 'block' | 'inline' = 'block';
 
   /** Where the instructions render relative to the input. */
   @property({attribute: 'instructions-position'})
@@ -330,13 +344,27 @@ export default class CraftField extends FormControl(LitElement) {
   // heading.
 
   override render() {
+    const classes = classMap({
+      'form-field': true,
+      [`form-field--${this.status}`]: !!this.status,
+    });
+
+    // the heading moves beside the control; everything else follows the control in its column
+    if (this.layout === 'inline') {
+      return html`
+        <div class=${classes}>
+          ${this._statusBadgeTemplate()}
+          <div class="form-field__group-one">${this._labelTemplate()}</div>
+          <div class="form-field__group-two">
+            ${this._inputGroupTemplate()} ${this._helpTextTemplate()}
+            ${this._feedbackTemplate()}
+          </div>
+        </div>
+      `;
+    }
+
     return html`
-      <div
-        class="${classMap({
-          'form-field': true,
-          [`form-field--${this.status}`]: !!this.status,
-        })}"
-      >
+      <div class=${classes}>
         ${this._statusBadgeTemplate()}
         <div class="form-field__group-one">${this._groupOneTemplate()}</div>
         <div class="form-field__group-two">${this._groupTwoTemplate()}</div>
@@ -466,7 +494,8 @@ export default class CraftField extends FormControl(LitElement) {
   /**
    * The input container, mirroring the server-side
    * `.input.{orientation}.errors.disabled` classes around the `input-group`
-   * structure.
+   * structure. A slotted control brings its own prefix and suffix, so the
+   * field only adds what follows the control.
    */
   protected override _inputGroupTemplate() {
     const classes = {
@@ -478,10 +507,8 @@ export default class CraftField extends FormControl(LitElement) {
     };
     return html`
       <div class=${classMap(classes)}>
-        ${this._inputGroupBeforeTemplate()}
         <div class="input-group__container">
-          ${this._inputGroupPrefixTemplate()} ${this._inputGroupInputTemplate()}
-          ${this._inputGroupSuffixTemplate()}
+          ${this._inputGroupInputTemplate()}
         </div>
         ${this._inputGroupAfterTemplate()}
       </div>
