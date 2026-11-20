@@ -73,20 +73,22 @@
   <LayoutSlot name="content-details">
     <div class="grid gap-md p-md">
       <HeadingSample :level="3">Details</HeadingSample>
-      <dl class="cp-metadata-list">
-        <div class="cp-metadata-list__item">
-          <dt>ID</dt>
-          <dd>4</dd>
-        </div>
-        <div class="cp-metadata-list__item">
-          <dt>Created at</dt>
-          <dd>Mar 2, 2026</dd>
-        </div>
-        <div class="cp-metadata-list__item">
-          <dt>Updated at</dt>
-          <dd>Nov 9, 2026</dd>
-        </div>
-      </dl>
+      <craft-metadata-list
+        ><dl>
+          <div>
+            <dt>ID</dt>
+            <dd>4</dd>
+          </div>
+          <div>
+            <dt>Created at</dt>
+            <dd>Mar 2, 2026</dd>
+          </div>
+          <div>
+            <dt>Updated at</dt>
+            <dd>Nov 9, 2026</dd>
+          </div>
+        </dl></craft-metadata-list
+      >
       <HeadingSample :level="4">Used by</HeadingSample>
       <ul class="grid gap-sm">
         <li class="flex justify-between gap-sm">

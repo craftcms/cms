@@ -227,7 +227,7 @@ describe('image analysis', function () {
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('metadataHtml', function (string $html): bool {
                     $values = [];
-                    new Crawler($html)->filter('.cp-metadata-list__item')->each(function (Crawler $item) use (&$values) {
+                    new Crawler($html)->filter('craft-metadata-list dl > div')->each(function (Crawler $item) use (&$values) {
                         $values[$item->filter('dt')->text()] = $item->filter('dd');
                     });
                     $colors = $values[t('Colors')]->filter('.cp-color-bar');
@@ -235,7 +235,7 @@ describe('image analysis', function () {
 
                     // Apart from the rest of the metadata
                     expect($lists->count())->toBe(2)
-                        ->and(new Crawler($html)->filter('dl + hr + dl')->count())->toBe(1)
+                        ->and(new Crawler($html)->filter('craft-metadata-list + hr + craft-metadata-list')->count())->toBe(1)
                         ->and($lists->eq(0)->filter('dt')->each(fn (Crawler $dt) => $dt->text()))->toContain(t('Folder'))->not->toContain(t('Image type'))
                         ->and($lists->eq(1)->filter('dt')->first()->text())->toBe(t('Image type'));
 
@@ -267,7 +267,7 @@ describe('image analysis', function () {
                         ->and($values[t('Location')]->filter('.cp-photo-location__caption a')->attr('href'))->toBe('https://www.openstreetmap.org/copyright');
 
                     // The link is the item’s value, and the map is below it, in its own <dd>
-                    $location = new Crawler($html)->filter('.cp-metadata-list__item')->reduce(fn (Crawler $item) => $item->filter('dt')->text() === t('Location'));
+                    $location = new Crawler($html)->filter('craft-metadata-list dl > div')->reduce(fn (Crawler $item) => $item->filter('dt')->text() === t('Location'));
                     $link = $location->filter('dd')->eq(0)->filter('a');
 
                     expect($location->filter('dd')->count())->toBe(2)
@@ -317,7 +317,7 @@ it('names where an image was taken without repeating its city, state, or country
     get($this->asset->getCpEditUrl())
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('metadataHtml', function (string $html) use ($expected): bool {
-                $value = new Crawler($html)->filter('.cp-metadata-list__item')
+                $value = new Crawler($html)->filter('craft-metadata-list dl > div')
                     ->reduce(fn (Crawler $item) => $item->filter('dt')->text() === t('Location'))
                     ->filter('dd')->eq(0);
 

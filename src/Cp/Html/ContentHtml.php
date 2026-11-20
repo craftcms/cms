@@ -41,10 +41,8 @@ readonly class ContentHtml
 
             if ($value !== false) {
                 $defs[] =
-                    Html::beginTag('div', [
-                        'class' => 'cp-metadata-list__item',
-                    ]).
-                    Html::tag('dt', Html::encode($label), ['class' => 'font-bold text-xs'])."\n".
+                    Html::beginTag('div').
+                    Html::tag('dt', Html::encode($label))."\n".
                     implode('', array_map(fn (mixed $value): string => Html::tag('dd', $value)."\n", is_array($value) ? $value : [$value])).
                     Html::endTag('div');
             }
@@ -54,9 +52,7 @@ readonly class ContentHtml
             return '';
         }
 
-        return Html::tag('dl', implode("\n", $defs), [
-            'class' => ['cp-metadata-list'],
-        ]);
+        return Html::tag('craft-metadata-list', Html::tag('dl', implode("\n", $defs)));
     }
 
     public function readOnlyNoticeHtml(): string

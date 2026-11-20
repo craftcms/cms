@@ -322,44 +322,6 @@ Temporary holding for cp-pane styles until craft-pane is a thing
 }
 
 /**
-Sidebar metadata
- */
-.cp-metadata-list {
-  display: grid;
-  gap: var(--c-spacing-md);
-  margin: 0;
-  padding: 0;
-}
-
-.cp-metadata-list dt {
-  font-weight: bold;
-}
-
-.cp-metadata-list__item {
-  display: grid;
-  gap: var(--c-spacing-xs);
-  align-items: baseline;
-}
-
-.cp-metadata-list__item:has(> dd > :is(craft-chip, .cp-color-bar):only-child) {
-  align-items: center;
-}
-
-/* Roughly 250px */
-@container (width > 16.25rem) {
-  .cp-metadata-list {
-    grid-template-columns: minmax(max-content, 25%) 1fr;
-  }
-
-  .cp-metadata-list__item {
-    grid-column: span 2;
-    display: grid;
-    gap: unset;
-    grid-template-columns: subgrid;
-  }
-}
-
-/**
 A bar of colors tiled together, such as an image's main colors, each as wide as its share. It's named for assistive
 technology, so the colors aren't the only cue.
  */
@@ -389,7 +351,7 @@ technology, so the colors aren't the only cue.
 /**
 Where an image was taken: a map across the full width of the metadata list, below the item's label and link
  */
-.cp-metadata-list__item > dd:has(> .cp-photo-location) {
+craft-metadata-list > dl > div > dd:has(> .cp-photo-location) {
   grid-column: 1 / -1;
   min-inline-size: 0;
   margin-block-start: var(--c-spacing-md);

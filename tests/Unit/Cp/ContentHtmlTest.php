@@ -14,7 +14,7 @@ describe('metadataHtml', function () {
             'Hidden' => fn () => false,
         ]);
 
-        expect($html)->toContain('<dl class="cp-metadata-list">')
+        expect($html)->toContain('<craft-metadata-list><dl>')
             ->and($html)->toContain('>One</dt>')
             ->and($html)->toContain('<dd>Value</dd>')
             ->and($html)->toContain('<dd>Computed</dd>')
