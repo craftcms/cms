@@ -323,6 +323,7 @@
 - Fixed a bug where uploading an indexed PNG with Imagick merged similar colors in its palette, and each later upload of the file merged more. ([#20916](https://github.com/craftcms/cms/issues/20916))
 - Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
 - Fixed a bug where element indexes didn’t show the “Edit inline” button in Structure view. ([#20867](https://github.com/craftcms/cms/issues/20867), [#20909](https://github.com/craftcms/cms/pull/20909))
+- Fixed a bug where deleting a global set deleted every field layout. ([#20915](https://github.com/craftcms/cms/issues/20915))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

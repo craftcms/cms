@@ -373,6 +373,15 @@ it('can hard delete a field layout by id', function () {
         ->and($this->fields->getLayoutById($layout->id))->toBeNull();
 });
 
+it('leaves saved field layouts alone when deleting an unsaved layout', function (bool $hardDelete) {
+    $savedLayout = FieldLayout::make(EntryElement::class);
+    $this->fields->saveLayout($savedLayout);
+
+    $this->fields->deleteLayout(FieldLayout::make(EntryElement::class), $hardDelete);
+
+    expect(FieldLayoutModel::find($savedLayout->id))->not()->toBeNull();
+})->with(['soft delete' => false, 'hard delete' => true]);
+
 it('rejects saving a content block field whose nested layout references itself', function () {
     $fieldUid = (string) Str::uuid();
 
