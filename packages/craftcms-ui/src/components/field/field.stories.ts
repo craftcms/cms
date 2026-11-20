@@ -8,6 +8,9 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import './field.js';
 import type CraftField from './field.js';
 import '../input/input.js';
+import '../badge/badge.js';
+import '../button/button.js';
+import '../icon/icon.js';
 
 /**
  * `args` and `argTypes` are derived from the custom elements manifest, so the
@@ -34,10 +37,20 @@ const meta = {
     status,
     statusLabel,
     orientation,
+    instructionsPosition,
+    instructionsSrOnly,
+    labelSrOnly,
+    width,
+    layout,
   }) => {
     return html`<craft-field
+      layout=${ifDefined(layout || undefined)}
       label=${label}
       help-text=${helpText}
+      instructions-position=${ifDefined(instructionsPosition || undefined)}
+      ?instructions-sr-only=${instructionsSrOnly}
+      ?label-sr-only=${labelSrOnly}
+      width=${ifDefined(width || undefined)}
       ?required=${required}
       ?translatable=${translatable}
       ?fieldset=${fieldset}
@@ -57,6 +70,116 @@ type Story = StoryObj<CraftFieldArgs>;
 
 export const Default: Story = {
   args: {},
+};
+
+/**
+ * Every part a field can show at once, to see where each one goes. The
+ * controls switch the layout, the instructions' position and the label's and
+ * instructions' visibility.
+ */
+export const EveryFeature: Story = {
+  args: {
+    label: 'Match authors by',
+    helpText: 'Which of the authors’ values the incoming data holds.',
+    required: true,
+    translatable: true,
+    readOnly: true,
+    status: 'modified',
+    statusLabel: 'This field has been modified.',
+    instructionsPosition: 'before',
+  },
+  render: ({
+    label,
+    helpText,
+    required,
+    translatable,
+    readOnly,
+    status,
+    statusLabel,
+    instructionsPosition,
+    instructionsSrOnly,
+    labelSrOnly,
+    layout,
+  }) => html`
+    <craft-field
+      layout=${ifDefined(layout || undefined)}
+      label=${label}
+      help-text=${helpText}
+      ?required=${required}
+      ?translatable=${translatable}
+      ?readonly=${readOnly}
+      status=${ifDefined(status || undefined)}
+      status-label=${ifDefined(statusLabel || undefined)}
+      instructions-position=${ifDefined(instructionsPosition || undefined)}
+      ?instructions-sr-only=${instructionsSrOnly}
+      ?label-sr-only=${labelSrOnly}
+    >
+      <craft-icon slot="heading-prefix" name="user"></craft-icon>
+      <craft-badge slot="label-badge" size="small" fill="blue" no-prefix
+        >Changed</craft-badge
+      >
+      <craft-button
+        slot="actions"
+        icon="ellipsis"
+        variant="plain"
+        size="small"
+        aria-label="Field actions"
+      ></craft-button>
+      <code slot="heading-suffix">authorIds</code>
+      <craft-input
+        slot="input"
+        label=${label}
+        label-sr-only
+        value="ada@example"
+      >
+        <craft-icon slot="prefix" name="envelope"></craft-icon>
+        <span slot="suffix">.com</span>
+      </craft-input>
+      <span slot="tip">Matched case-insensitively.</span>
+      <span slot="warning"
+        >Users who can’t author this section are skipped.</span
+      >
+      <ul slot="feedback" class="errors">
+        <li>No user has the email “nobody@example.com”.</li>
+      </ul>
+    </craft-field>
+  `,
+};
+
+/**
+ * `layout="inline"` puts the heading and instructions in a column beside the
+ * control. Everything about the value stays in the control's column.
+ */
+export const InlineLayout: Story = {
+  ...EveryFeature,
+  args: {...EveryFeature.args, layout: 'inline'},
+};
+
+/**
+ * Stacked inline fields line their controls up once the heading column has a
+ * fixed width.
+ */
+export const InlineLayoutStacked: Story = {
+  render: () => html`
+    <div style="display: grid; gap: 16px; --c-field-inline-label-size: 10rem;">
+      <craft-field layout="inline" label="Site name" required>
+        <craft-input slot="input" label="Site name" label-sr-only></craft-input>
+      </craft-field>
+      <craft-field
+        layout="inline"
+        label="Base URL"
+        help-text="Where the site lives."
+      >
+        <craft-input slot="input" label="Base URL" label-sr-only></craft-input>
+      </craft-field>
+      <craft-field layout="inline" label="Language">
+        <craft-input slot="input" label="Language" label-sr-only></craft-input>
+        <ul slot="feedback" class="errors">
+          <li>Choose a language.</li>
+        </ul>
+      </craft-field>
+    </div>
+  `,
 };
 
 export const RequiredWithInstructions: Story = {
