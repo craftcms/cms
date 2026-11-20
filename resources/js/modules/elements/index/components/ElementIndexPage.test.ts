@@ -335,6 +335,12 @@ it('offers inline editing and export on page tables', async () => {
   expect(container.textContent).toContain('Export');
 });
 
+it('offers inline editing in structure view', async () => {
+  const container = await mountPage({}, undefined, 'structure');
+
+  expect(container.textContent).toContain('Edit inline');
+});
+
 it('puts the primary action last, with a menu beside it only for extra actions', async () => {
   // `craft-button-group` calls attachInternals(), which happy-dom doesn't implement.
   const attachInternals = Object.getOwnPropertyDescriptor(
@@ -395,7 +401,7 @@ it('puts the primary action last, with a menu beside it only for extra actions',
   expect(uploadButton.parentElement?.lastElementChild).toBe(uploadButton);
 });
 
-it('hides inline editing outside table mode', async () => {
+it('hides inline editing in cards view', async () => {
   const container = await mountPage({}, undefined, 'cards');
 
   expect(container.textContent).not.toContain('Edit inline');
