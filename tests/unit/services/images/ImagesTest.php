@@ -138,6 +138,10 @@ class ImagesTest extends TestCase
     {
         $this->_skipIfNoImagick();
 
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('Need GD to create the indexed PNG.');
+        }
+
         $path = $this->sandboxPath . 'indexed.png';
         $image = imagecreate(200, 50);
         for ($x = 0; $x < 200; $x++) {
