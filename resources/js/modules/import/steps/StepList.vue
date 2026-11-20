@@ -314,10 +314,10 @@
 </script>
 
 <template>
-  <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
-
-  <div class="step-list" v-else>
-    <ol class="grid gap-md" role="list">
+  <!-- the add button stays when there are no steps, so the first one can be added -->
+  <div class="step-list">
+    <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
+    <ol v-else class="grid gap-md" role="list">
       <StepCard
         v-for="(step, index) in steps"
         :key="step.uid"
