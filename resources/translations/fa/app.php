@@ -3004,7 +3004,7 @@ return [
     'The volumes that should be available when selecting assets.' => 'مخزن‌هایی که هنگام انتخاب فایل‌های پروژه باید در دسترس باشند.',
     'The {attribute} field must be a string or array.' => 'فیلد {attribute} باید یک رشته یا آرایه باشد.',
     'The {attribute} field must contain a `class` value.' => 'فیلد {attribute} باید شامل مقدار `class` باشد.',
-    'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'تنظیم {setting} فیلد یک زیر مسیر غیر معتبر دارد ("{subpath}").',
+    'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'تنظیم {setting} فیلد {field} یک زیر مسیر غیر معتبر دارد ("{subpath}").',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'تنظیم {setting} فیلد {field} به یک مخزن نامعتبر تنظیم شده است.',
     'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.' => 'مجوز {name} به یک مجوز مدیریت محتوای کرفت متفاوت پیوست شده است. شما می توانید آن را در <a class="go" href="{detachUrl}">کسنول کرافت جدا کنید</a> یا <a class="go" href="{buyUrl}">یک مجوز جدید بخرید</a>.',
     'The {name} license is invalid.' => 'مجوز {name} نامعتبر است.',

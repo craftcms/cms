@@ -1428,7 +1428,7 @@ return [
     'Create a new GraphQL token' => 'สร้างโทเคน GraphQL ใหม่',
     'Create a new asset volume' => 'สร้างไดรฟ์ข้อมูลแอสเซทใหม่',
     'Create a new category group' => 'สร้างกลุ่มหมวดหมู่ใหม่',
-    'Create a new child {type}' => 'สร้างรายการรองใหม่',
+    'Create a new child {type}' => 'สร้าง {type} รองใหม่',
     'Create a new entry type' => 'สร้างประเภทรายการใหม่',
     'Create a new field' => 'สร้างฟิลด์ใหม่',
     'Create a new filesystem' => 'สร้างระบบไฟล์ใหม่',
