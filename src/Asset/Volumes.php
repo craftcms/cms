@@ -217,7 +217,17 @@ class Volumes
                 $volumeModel->dateDeleted = null;
             }
 
+            // Transform index rows don't record the transformer or output disk, so they'd point at transforms that
+            // were never generated where the new transformer stores them
+            $transformerChanged = ! $isNewVolume && $volumeModel->isDirty('assetTransformer');
+
             $volumeModel->save();
+
+            if ($transformerChanged) {
+                DB::table(Table::IMAGETRANSFORMINDEX)
+                    ->whereIn('assetId', DB::table(Table::ASSETS)->select('id')->where('volumeId', $volumeModel->id))
+                    ->delete();
+            }
 
             $rootFolder = $this->folders->findFolder([
                 'volumeId' => $volumeModel->id,

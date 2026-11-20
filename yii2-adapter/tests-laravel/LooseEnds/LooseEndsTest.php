@@ -329,9 +329,19 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
     Cms::config()->assetTransformers->outputDisk('transforms');
     $afterChoosing = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
+    // The default is another craft transformer that still stores transforms on the source disk
+    Cms::config()->assetTransformers->transformer('craft-private', ['driver' => 'craft'])->default('craft-private');
+    $craftDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    // The default doesn't store transforms, and the craft transformer has no output disk
+    Cms::config()->assetTransformers->outputDisk(null)->transformer('imgix', ['driver' => 'imgix'])->default('imgix');
+    $otherDriverDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
     expect($finding?->detail)->toBe('photos → transforms, unsetEnv → transforms')
         ->and($emptyDisk?->detail)->toBe('photos → transforms, unsetEnv → transforms')
-        ->and($afterChoosing)->toBeNull();
+        ->and($afterChoosing)->toBeNull()
+        ->and($craftDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($otherDriverDefault)->toBeNull();
 });
 
 it('doesn’t claim nothing depends on the adapter when recorded usage can’t be read', function(): void {

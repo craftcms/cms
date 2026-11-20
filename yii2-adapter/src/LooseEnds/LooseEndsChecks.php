@@ -502,6 +502,13 @@ class LooseEndsChecks
             );
         }
 
+        // Volumes that don't choose a transformer use the default, which only stores transforms on the source disk when
+        // it uses the craft driver without an output disk.
+        $transformerConfig = Cms::config()->assetTransformers;
+        $defaultTransformer = $transformerConfig->transformerConfig($transformerConfig->default ?? 'craft')
+            ?? $transformerConfig->transformerConfig('craft');
+        $defaultStoresOnSourceDisk = ($defaultTransformer['driver'] ?? null) === 'craft' && empty($defaultTransformer['outputDisk']);
+
         $transformFilesystems = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES) ?? [])
             ->filter(fn(mixed $volume) => is_array($volume)
                 && !empty($volume['transformFs'])
@@ -509,7 +516,7 @@ class LooseEndsChecks
                 && empty(Env::parse($volume['assetTransformer'] ?? null)))
             ->mapWithKeys(fn(array $volume) => [(string) ($volume['handle'] ?? '') => (string) $volume['transformFs']]);
 
-        if ($transformFilesystems->isNotEmpty() && Cms::config()->assetTransformers->outputDisk === null) {
+        if ($transformFilesystems->isNotEmpty() && $defaultStoresOnSourceDisk) {
             $findings[] = $this->finding(
                 'database.volume-transform-filesystems',
                 Section::Content,

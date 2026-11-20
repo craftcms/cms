@@ -8,12 +8,15 @@ use CraftCms\Cms\Asset\Events\VolumeDeleting;
 use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
+use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes as VolumesFacade;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -110,6 +113,42 @@ it('can save a new volume', function () {
 
     Event::assertDispatchedOnce(VolumeSaving::class);
     Event::assertDispatchedOnce(VolumeSaved::class);
+});
+
+it('clears an existing volume’s transform index when its asset transformer changes', function () {
+    foreach (['images', 'other'] as $handle) {
+        expect($this->volumes->saveVolume(new VolumeData([
+            'name' => $handle,
+            'handle' => $handle,
+            'fsHandle' => 'test-disk',
+            'subpath' => $handle,
+        ])))->toBeTrue();
+    }
+    app()->forgetInstance(Volumes::class);
+    $this->volumes = app(Volumes::class);
+    $volume = $this->volumes->getVolumeByHandle('images');
+    $other = $this->volumes->getVolumeByHandle('other');
+    $indexRow = fn (int $volumeId): int => DB::table(Table::IMAGETRANSFORMINDEX)->insertGetId([
+        'assetId' => Asset::factory()->createElement(['volumeId' => $volumeId])->id,
+        'transformString' => '_100x_auto',
+        'fileExists' => true,
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+        'uid' => (string) Str::uuid(),
+    ]);
+    $changed = $indexRow($volume->id);
+    $untouched = $indexRow($other->id);
+    $data = $volume;
+
+    $data->name = 'Renamed';
+    expect($this->volumes->saveVolume($data))->toBeTrue();
+    $afterRename = DB::table(Table::IMAGETRANSFORMINDEX)->whereIn('id', [$changed, $untouched])->pluck('id')->all();
+
+    $data->assetTransformer = 'craft';
+    expect($this->volumes->saveVolume($data))->toBeTrue();
+
+    expect($afterRename)->toEqualCanonicalizing([$changed, $untouched])
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->whereIn('id', [$changed, $untouched])->pluck('id')->all())->toBe([$untouched]);
 });
 
 it('can save an existing volume', function () {

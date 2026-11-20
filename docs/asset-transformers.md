@@ -149,6 +149,9 @@ where a disk stores files, such as a `scoped` disk's `prefix` or a bucket, clear
 location. Craft doesn't delete the old files, so clear them yourself. Changing
 `generateTransformsBeforePageLoad` keeps existing transforms.
 
+Changing a volume's Asset Transformer setting clears that volume's transform index for you. Changing which transformer
+an environment variable or the `default` names doesn't, so clear the index after those changes too.
+
 To generate transforms immediately inside a callback, whatever the setting, use
 `AssetTransformers::withImmediateTransforms()`. GraphQL queries can do the same with the `immediately`
 transform argument, such as `url @transform(handle: "hero", immediately: true)`.
