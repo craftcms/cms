@@ -59,6 +59,23 @@ describe('configureIcons', () => {
     }
   );
 
+  it.each([
+    ['globe', 'classic', '/bare-icons/regular/globe.svg'],
+    ['globe', 'regular', '/resolved-icons/regular/globe.svg'],
+    ['light/globe', 'classic', '/light-icons/light/globe.svg'],
+  ])(
+    'resolves %s (%s) to the style it is drawn in',
+    async (name, family, url) => {
+      vi.stubGlobal('fetch', fetch);
+      // Each case gets its own base URL, so it isn't served from an earlier case's cached fetch.
+      configureIcons(url.split('/').slice(0, 2).join('/'));
+
+      await resolveIcon(name, family, 'solid');
+
+      expect(fetch).toHaveBeenCalledWith(url, expect.anything());
+    }
+  );
+
   it('keeps the icon’s own styles when mirroring it', async () => {
     vi.stubGlobal(
       'fetch',

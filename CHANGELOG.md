@@ -329,6 +329,7 @@
 - Fixed a bug where deleting a global set deleted every field layout. ([#20915](https://github.com/craftcms/cms/issues/20915))
 - Fixed a bug where the updater’s page title was “updater/Index”. ([#20925](https://github.com/craftcms/cms/pull/20925))
 - Fixed a bug where asset indexes didn’t preload thumbnails when a thumbnail URL listener was registered. ([#20831](https://github.com/craftcms/cms/discussions/20831), [#20927](https://github.com/craftcms/cms/pull/20927))
+- Fixed a bug where the “globe” icon was blank in some places. ([#20931](https://github.com/craftcms/cms/issues/20931))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
