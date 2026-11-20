@@ -3516,7 +3516,6 @@ return [
     'today' => 'bugün',
     'two' => 'iki',
     'unknown' => 'bilinmiyor',
-    'updater/Index' => 'updater/Index',
     'user' => 'kullanıcı',
     'users' => 'kullanıcılar',
     'validation.required' => 'validation.required',
