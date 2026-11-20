@@ -1980,7 +1980,7 @@ return [
     'Groups' => 'Gruppen',
     'Guest Required' => 'Gast erforderlich',
     'HTML Email Template' => 'Template für HTML-E-Mails',
-    'HTML Purifier caches' => 'HTML Purifier caches',
+    'HTML Purifier caches' => 'HTML Purifier-Cache',
     'HTML Sanitizer' => 'HTML-Bereinigung',
     'Handle' => 'Kurzname',
     'Has Descendants' => 'Hat Nachfolger',
