@@ -141,22 +141,37 @@ it('logs invalid transformer config once and falls back to craft with debug mode
         ->and($transformers->forVolume($volume))->toEqual(new AssetTransformer('craft'));
 });
 
-it('reports a disk that still sets asset_transformer', function () {
-    registerDriver('imgix');
+it('still reads a disk’s deprecated asset_transformer key, with a deprecation warning', function () {
+    // Only the driver is registered, as in beta.1, so there's no transformer with its name
+    app(AssetTransformers::class)->extend('imgix', fn () => new TestAssetTransformDriver);
     config()->set('filesystems.disks.legacy', ['driver' => 'local', 'root' => storage_path('framework/testing/legacy'), 'asset_transformer' => 'imgix']);
     config()->set('filesystems.disks.legacy-child', ['driver' => 'scoped', 'disk' => 'legacy', 'prefix' => 'child']);
-    $volume = Volume::factory()->create(['fs' => 'legacy-child']);
-    $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
+    config()->set('filesystems.disks.legacy-craft', ['driver' => 'local', 'root' => storage_path('framework/testing/legacy-craft'), 'asset_transformer' => [
+        'driver' => 'craft',
+        'output_disk' => 'transforms',
+        'generate_transforms_before_page_load' => true,
+        'has_urls' => true,
+    ]]);
     $transformers = app(AssetTransformers::class);
+    $scoped = Volume::factory()->create(['fs' => 'legacy-child']);
+    $craft = Volume::factory()->create(['fs' => 'legacy-craft']);
+    $chosen = Volume::factory()->create(['fs' => 'legacy', 'assetTransformer' => 'craft']);
 
-    config()->set('app.debug', true);
-    expect(fn () => $transformers->forVolume($asset->getVolume()))
-        ->toThrow(InvalidAssetTransformException::class, 'The [legacy] disk sets asset_transformer');
+    $scopedAsset = Asset::factory()->createElement(['volumeId' => $scoped->id]);
+    $scopedTransformer = $transformers->forVolume($scopedAsset->getVolume());
+    $transformers->transform($scopedAsset, ['width' => 100]);
+    $craftTransformer = $transformers->forVolume(Asset::factory()->createElement(['volumeId' => $craft->id])->getVolume());
+    $craftDriver = $transformers->transformer($craftTransformer->name);
 
-    config()->set('app.debug', false);
-    Log::shouldReceive('error')->once()->withArgs(fn (string $message): bool => str_contains($message, '[legacy] disk'));
-    expect($transformers->forVolume($asset->getVolume())->name)->toBe('craft')
-        ->and($transformers->forVolume($asset->getVolume())->name)->toBe('craft');
+    expect($transformers->transformer($scopedTransformer->name))->toBeInstanceOf(TestAssetTransformDriver::class)
+        ->and($craftDriver)->toBeInstanceOf(CraftAssetTransformDriver::class)
+        ->and($craftDriver->outputDisk)->toBe('transforms')
+        ->and($craftDriver->generateBeforePageLoad)->toBeTrue()
+        ->and($transformers->forVolume(Asset::factory()->createElement(['volumeId' => $chosen->id])->getVolume())->name)->toBe('craft')
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain(
+            'filesystems.disks.legacy-child.asset_transformer',
+            'filesystems.disks.legacy-craft.asset_transformer',
+        );
 });
 
 it('keeps getUrl transform arguments with a deprecation warning', function () {

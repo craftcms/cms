@@ -62,9 +62,9 @@ choose it in the volumes that need it:
 
 Craft builds one driver instance per transformer.
 
-Craft doesn't read keys in `config/filesystems.php`. 6.0.0-beta.1 read an `asset_transformer` key on disks. Craft
-now reports a disk that still has it: with debug mode on, it throws an `InvalidAssetTransformException`, and otherwise
-it logs an error. Move the value to the volume's setting or to the `assetTransformers` setting, then remove the key.
+6.0.0-beta.1 and beta.2 set transformers with an `asset_transformer` key on disks in `config/filesystems.php`. Craft still reads
+it, after a volume's Asset Transformer setting and before the `default`, and logs a deprecation warning. Its `has_urls`
+setting is ignored. Move the value to the volume's setting or to the `assetTransformers` setting, then remove the key.
 
 ### Invalid configuration
 

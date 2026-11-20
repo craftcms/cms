@@ -27,6 +27,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Foundation\Application;
@@ -58,6 +59,9 @@ class AssetTransformers extends MultipleInstanceManager
     public const string IMMEDIATE_TRANSFORMS_CONTEXT = self::class.'.immediateTransforms';
 
     private const int MAX_SCOPED_DEPTH = 8;
+
+    /** Prefix of the names given to transformers set by a disk’s deprecated `asset_transformer` key. */
+    private const string LEGACY_DISK_PREFIX = 'disk:';
 
     /** @var array<string, non-empty-list<string|Stringable>> */
     private readonly array $parameterRules;
@@ -111,6 +115,12 @@ class AssetTransformers extends MultipleInstanceManager
     #[Override]
     public function getInstanceConfig($name): ?array
     {
+        if (str_starts_with($name, self::LEGACY_DISK_PREFIX)) {
+            $config = $this->legacyDiskConfig(substr($name, strlen(self::LEGACY_DISK_PREFIX)));
+
+            return is_array($config) ? $config : null;
+        }
+
         return Cms::config()->assetTransformers->transformerConfig($name);
     }
 
@@ -221,7 +231,8 @@ class AssetTransformers extends MultipleInstanceManager
     }
 
     /**
-     * Returns the transformer for a volume’s assets: the volume’s `assetTransformer`, or the configured default.
+     * Returns the transformer for a volume’s assets: the volume’s `assetTransformer`, then its disk’s deprecated
+     * `asset_transformer` key, then the configured default.
      *
      * Invalid config (an undefined transformer or an unregistered driver) throws when debug mode is enabled.
      * Otherwise it’s logged and the volume uses the `craft` transformer.
@@ -230,10 +241,22 @@ class AssetTransformers extends MultipleInstanceManager
      */
     public function forVolume(Volume $volume): AssetTransformer
     {
-        $this->reportLegacyDiskKey($volume->getResolvedFsTarget());
-
         if (($name = $volume->getAssetTransformer()) !== null) {
             return $this->validTransformer($name, "the [{$volume->handle}] volume’s assetTransformer", new AssetTransformer('craft'));
+        }
+
+        $disk = $volume->getResolvedFsTarget();
+        $legacyConfig = $disk !== null ? $this->legacyDiskConfig($disk) : null;
+
+        if ($legacyConfig !== null) {
+            Deprecator::log(
+                "filesystems.disks.$disk.asset_transformer",
+                "The `asset_transformer` key on the `$disk` disk is deprecated. Set the volume’s Asset Transformer setting or the `assetTransformers` config setting instead. Its `has_urls` setting is ignored.",
+            );
+
+            $name = is_string($legacyConfig) ? $legacyConfig : self::LEGACY_DISK_PREFIX.$disk;
+
+            return $this->validTransformer($name, "the [{$disk}] disk’s asset_transformer", new AssetTransformer('craft'));
         }
 
         $default = Cms::config()->assetTransformers->default;
@@ -392,40 +415,51 @@ class AssetTransformers extends MultipleInstanceManager
     }
 
     /**
-     * Reports a disk that still has 6.0.0-beta.1’s `asset_transformer` key, which Craft no longer reads. Throws in
-     * debug mode, and logs an error otherwise. Follows scoped disks to the disk they wrap.
+     * Returns 6.0.0-beta.1 and beta.2’s deprecated `asset_transformer` key on a disk, following scoped disks to the disk they
+     * wrap, or `null` if it isn’t set. A transformer name it names is returned as is. A driver name, or an array with
+     * a `driver` key and inline settings, becomes a transformer config, with the `craft` driver’s beta setting
+     * names mapped to the current ones.
      *
-     * @param  string|array<string, mixed>|null  $disk  A disk name, or a scoped disk’s inline `disk` config.
+     * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
+     * @return string|array<string, mixed>|null
      */
-    private function reportLegacyDiskKey(string|array|null $disk, int $depth = 0): void
+    private function legacyDiskConfig(string|array $disk, int $depth = 0): string|array|null
     {
         $config = is_string($disk) ? ($this->config->get('filesystems.disks')[$disk] ?? null) : $disk;
 
         if (! is_array($config) || $depth > self::MAX_SCOPED_DEPTH) {
-            return;
+            return null;
         }
 
-        if (array_key_exists('asset_transformer', $config)) {
-            $name = is_string($disk) ? $disk : 'scoped';
-            $message = "The [{$name}] disk sets asset_transformer, which Craft no longer reads. Set the volume’s Asset Transformer setting, or the assetTransformers general config setting, and remove the key from config/filesystems.php.";
+        if (! array_key_exists('asset_transformer', $config)) {
+            $wrapped = $config['disk'] ?? null;
 
-            if (app()->hasDebugModeEnabled()) {
-                throw new InvalidAssetTransformException($message);
-            }
-
-            if (! isset($this->reportedInvalidConfig[$message])) {
-                $this->reportedInvalidConfig[$message] = true;
-                Log::error($message);
-            }
-
-            return;
+            return ($config['driver'] ?? null) === 'scoped' && (is_string($wrapped) || is_array($wrapped))
+                ? $this->legacyDiskConfig($wrapped, $depth + 1)
+                : null;
         }
 
-        $wrapped = $config['disk'] ?? null;
+        $value = $config['asset_transformer'];
 
-        if (($config['driver'] ?? null) === 'scoped' && (is_string($wrapped) || is_array($wrapped))) {
-            $this->reportLegacyDiskKey($wrapped, $depth + 1);
+        if (is_string($value) && $value !== '' && Cms::config()->assetTransformers->transformerConfig($value) !== null) {
+            return $value;
         }
+
+        $value = is_string($value) ? ['driver' => $value] : $value;
+
+        if (! is_array($value)) {
+            return null;
+        }
+
+        if (($value['driver'] ?? null) === 'craft') {
+            $value = [
+                'driver' => 'craft',
+                'outputDisk' => $value['output_disk'] ?? null,
+                'generateTransformsBeforePageLoad' => filter_var($value['generate_transforms_before_page_load'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            ];
+        }
+
+        return $value;
     }
 
     private function forAsset(Asset $asset): AssetTransformer
