@@ -16,7 +16,7 @@ beforeEach(function () {
     File::ensureDirectoryExists(dirname($this->imagePath));
     File::put($this->imagePath, '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
 
-    Cms::config()->brokenImagePath = '@tests/broken-image-test.svg';
+    Cms::config()->images->brokenPath = '@tests/broken-image-test.svg';
     Aliases::set('@tests', dirname($this->imagePath));
 });
 
@@ -42,7 +42,7 @@ it('passes through non-404 responses', function () {
 });
 
 it('passes through 404 responses when no broken image path is configured', function () {
-    Cms::config()->brokenImagePath = null;
+    Cms::config()->images->brokenPath = null;
     $request = Request::create('/missing');
     $request->headers->set('Accept', 'image/svg+xml');
 
@@ -74,7 +74,7 @@ it('returns the configured broken image for image 404 requests', function () {
 });
 
 it('throws when the configured broken image path is invalid', function () {
-    Cms::config()->brokenImagePath = '@tests/does-not-exist.svg';
+    Cms::config()->images->brokenPath = '@tests/does-not-exist.svg';
 
     $request = Request::create('/missing');
     $request->headers->set('Accept', 'image/svg+xml');

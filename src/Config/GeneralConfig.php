@@ -51,6 +51,7 @@ class GeneralConfig extends BaseConfig
         'backupCommand' => 'backups.command',
         'backupCommandFormat' => 'backups.commandFormat',
         'backupOnUpdate' => 'backups.onUpdate',
+        'brokenImagePath' => 'images.brokenPath',
         'compiledTemplatesPath' => 'templates.compiledPath',
         'convertFilenamesToAscii' => 'assets.convertFilenamesToAscii',
         'defaultImageQuality' => 'images.defaultQuality',
@@ -467,25 +468,6 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public ?string $baseCpUrl = null;
-
-    /**
-     * @var string|null The server path to an image file that should be sent when responding to an image request with a
-     *                  404 status code.
-     *
-     * This can be set to an aliased path such as `@webroot/assets/404.svg`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->brokenImagePath('@webroot/assets/404.svg')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_BROKEN_IMAGE_PATH=@webroot/assets/404.svg
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public ?string $brokenImagePath = null;
 
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
@@ -2608,27 +2590,6 @@ class GeneralConfig extends BaseConfig
     public function baseCpUrl(?string $value): self
     {
         $this->baseCpUrl = $value;
-
-        return $this;
-    }
-
-    /**
-     * The server path to an image file that should be sent when responding to an image request with a
-     * 404 status code.
-     *
-     * This can be set to an aliased path such as `@webroot/assets/404.svg`.
-     *
-     * ```php
-     * ->brokenImagePath('@webroot/assets/404.svg')
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $brokenImagePath
-     */
-    public function brokenImagePath(?string $value): self
-    {
-        $this->brokenImagePath = $value;
 
         return $this;
     }

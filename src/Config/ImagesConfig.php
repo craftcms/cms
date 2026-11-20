@@ -78,6 +78,13 @@ class ImagesConfig extends BaseConfig
     /** The maximum dimension to use when caching images from external sources for transforms, or `0` to never cache them. */
     public int $maxCachedCloudSize = 0;
 
+    /**
+     * The server path to an image file that should be sent when responding to an image request with a 404 status code.
+     *
+     * This can be set to an aliased path such as `@webroot/assets/404.svg`.
+     */
+    public ?string $brokenPath = null;
+
     public function driver(string $value): self
     {
         $this->driver = $value;
@@ -159,6 +166,13 @@ class ImagesConfig extends BaseConfig
     public function maxCachedCloudSize(int $value): self
     {
         $this->maxCachedCloudSize = $value;
+
+        return $this;
+    }
+
+    public function brokenPath(?string $value): self
+    {
+        $this->brokenPath = $value;
 
         return $this;
     }
