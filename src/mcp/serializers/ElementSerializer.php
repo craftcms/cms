@@ -11,6 +11,7 @@ use craft\base\ElementInterface;
 use craft\base\McpOutputFieldInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
+use craft\helpers\UrlHelper;
 use craft\mcp\Authorization;
 use craft\mcp\elements\ElementAdapterRegistry;
 use craft\mcp\events\ElementSerializing;
@@ -146,6 +147,13 @@ class ElementSerializer extends \yii\base\Component
         }
 
         $data ??= ['type' => $element::class, ...$element->toArray($element->attributes())];
+
+        // MCP clients have no page to resolve a root-relative URL against, such as the URL of an asset in a volume whose
+        // URL is `/uploads`
+        if (is_string($data['url'] ?? null)) {
+            $data['url'] = UrlHelper::absoluteUrl($data['url'], $element->getSite()->getBaseUrl());
+        }
+
         $serializeNested ??= $this->defaultNestedSerializer($public);
         $requested = $fields !== null ? $this->parsePaths($fields) : null;
         $nested = $this->parsePaths($nestedPaths);
