@@ -45,7 +45,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         ...parent::RENAMED_SETTINGS,
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
-        'backupDbOnUpdate' => 'backupOnUpdate',
+        'backupDbOnUpdate' => 'backups.onUpdate',
         'defaultFilePermissions' => 'defaultFileMode',
         'defaultFolderPermissions' => 'defaultDirMode',
         'enableGraphQlCaching' => 'gql.enableCaching',

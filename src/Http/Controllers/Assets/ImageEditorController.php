@@ -168,14 +168,14 @@ readonly class ImageEditorController
             $transformer->flipImage(! empty($flipData['x']), ! empty($flipData['y']));
         }
 
-        $upscale = Cms::config()->upscaleImages;
-        Cms::config()->upscaleImages = true;
+        $upscale = Cms::config()->images->upscale;
+        Cms::config()->images->upscale = true;
 
         if ($zoom !== 1.0) {
             $transformer->scaleImage((int) ($originalImageWidth * $zoom), (int) ($originalImageHeight * $zoom));
         }
 
-        Cms::config()->upscaleImages = $upscale;
+        Cms::config()->images->upscale = $upscale;
 
         if ($imageRotated) {
             $transformer->rotateImage($imageRotation + $viewportRotation);

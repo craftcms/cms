@@ -117,7 +117,7 @@ readonly class Utilities
             maxPowerCaptain();
 
             Artisan::call('queue:work', [
-                '--queue' => collect([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])
+                '--queue' => collect([Cms::config()->queue->name, Cms::config()->queue->lowPriorityName])
                     ->unique()
                     ->join(','),
                 '--memory' => Cms::config()->phpMaxMemoryLimit ?: '1536M',

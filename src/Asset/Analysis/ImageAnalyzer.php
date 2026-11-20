@@ -156,7 +156,7 @@ class ImageAnalyzer
         }
 
         dispatch(new AnalyzeImage($asset->id, $handles, $overwrite))
-            ->onQueue(Cms::config()->lowPriorityQueueName)
+            ->onQueue(Cms::config()->queue->lowPriorityName)
             ->afterCommit();
 
         return true;

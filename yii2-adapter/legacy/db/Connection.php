@@ -322,12 +322,12 @@ class Connection extends DatabaseConnection
     }
 
     /**
-     * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
+     * Performs a backup operation. If the `backups.command` config setting has been set, will execute it. If not,
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
      * @return string The file path to the database backup
-     * @throws Exception if the backupCommand config setting is false
+     * @throws Exception if the `backups.command` config setting is false
      * @throws ShellCommandException in case of failure
      */
     public function backup(): string
@@ -344,12 +344,12 @@ class Connection extends DatabaseConnection
     }
 
     /**
-     * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
+     * Performs a backup operation. If the `backups.command` config setting has been set, will execute it. If not,
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
      * @param string $filePath The file path the database backup should be saved at
-     * @throws Exception if the backupCommand config setting is false
+     * @throws Exception if the `backups.command` config setting is false
      * @throws ShellCommandException in case of failure
      */
     public function backupTo(string $filePath): void
@@ -384,7 +384,7 @@ class Connection extends DatabaseConnection
      * Restores a database at the given file path.
      *
      * @param string $filePath The path of the database backup to restore.
-     * @throws Exception if the restoreCommand config setting is false
+     * @throws Exception if the `backups.restoreCommand` config setting is false
      * @throws ShellCommandException in case of failure
      */
     public function restore(string $filePath): void

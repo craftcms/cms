@@ -143,7 +143,7 @@ it('preserves lazy generation and queued recovery', function (?string $format, s
 })->with([null, 'webp'])->with(['job', 'http', 'eager']);
 
 it('honors disabled source-format transformations', function (string $filename, string $setting) {
-    Cms::config()->{$setting} = false;
+    Cms::config()->images->{$setting} = false;
     $asset = ($this->createImageAsset)(['filename' => $filename]);
 
     expect(fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]))

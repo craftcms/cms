@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\QueueConfig;
 use Illuminate\Support\Facades\Config;
 
 it('can get from container', function () {
@@ -11,10 +12,10 @@ it('can get from container', function () {
     expect(app(GeneralConfig::class))->toBe(Cms::config());
 });
 
-it('can set trackedQueueNames via fluent setter', function () {
-    $config = GeneralConfig::create()->trackedQueueNames(['craft', 'default']);
+it('can set the tracked queue names via fluent setter', function () {
+    $config = GeneralConfig::create()->queue(QueueConfig::create()->trackedNames(['craft', 'default']));
 
-    expect($config->trackedQueueNames)->toBe(['craft', 'default']);
+    expect($config->queue->trackedNames)->toBe(['craft', 'default']);
 });
 
 it('can set compiledTemplatesPath via fluent setter', function () {

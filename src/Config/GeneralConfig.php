@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Config;
 
-use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
@@ -25,13 +24,17 @@ class GeneralConfig extends BaseConfig
 {
     use Conditionable;
 
-    public const string IMAGE_DRIVER_AUTO = 'auto';
+    /** @deprecated in 6.0.0. [[ImagesConfig::DRIVER_AUTO]] should be used instead. */
+    public const string IMAGE_DRIVER_AUTO = ImagesConfig::DRIVER_AUTO;
 
-    public const string IMAGE_DRIVER_GD = 'gd';
+    /** @deprecated in 6.0.0. [[ImagesConfig::DRIVER_GD]] should be used instead. */
+    public const string IMAGE_DRIVER_GD = ImagesConfig::DRIVER_GD;
 
-    public const string IMAGE_DRIVER_IMAGICK = 'imagick';
+    /** @deprecated in 6.0.0. [[ImagesConfig::DRIVER_IMAGICK]] should be used instead. */
+    public const string IMAGE_DRIVER_IMAGICK = ImagesConfig::DRIVER_IMAGICK;
 
-    public const string IMAGE_DRIVER_VIPS = 'vips';
+    /** @deprecated in 6.0.0. [[ImagesConfig::DRIVER_VIPS]] should be used instead. */
+    public const string IMAGE_DRIVER_VIPS = ImagesConfig::DRIVER_VIPS;
 
     public const string CAMEL_CASE = 'camel';
 
@@ -43,17 +46,38 @@ class GeneralConfig extends BaseConfig
      * Settings that have been renamed in Craft 6, mapped to their new names.
      */
     protected const array RENAMED_SETTINGS = [
+        'backupCommand' => 'backups.command',
+        'backupCommandFormat' => 'backups.commandFormat',
+        'backupOnUpdate' => 'backups.onUpdate',
+        'defaultImageQuality' => 'images.defaultQuality',
         'enableGql' => 'gql.enabled',
         'enableGraphqlCaching' => 'gql.enableCaching',
         'enableGraphqlIntrospection' => 'gql.enableIntrospection',
         'gqlTypePrefix' => 'gql.typePrefix',
+        'imageDriver' => 'images.driver',
+        'imageEditorRatios' => 'images.editorRatios',
         'lazyGqlTypes' => 'gql.lazyTypes',
+        'lowPriorityQueueName' => 'queue.lowPriorityName',
+        'maxBackups' => 'backups.max',
+        'maxCachedCloudImageSize' => 'images.maxCachedCloudSize',
         'maxGraphqlBatchSize' => 'gql.maxBatchSize',
         'maxGraphqlComplexity' => 'gql.maxComplexity',
         'maxGraphqlDepth' => 'gql.maxDepth',
         'maxGraphqlResults' => 'gql.maxResults',
+        'optimizeImageFilesize' => 'images.optimizeFilesize',
         'prefixGqlRootTypes' => 'gql.prefixRootTypes',
+        'preserveCmykColorspace' => 'images.preserveCmykColorspace',
+        'preserveExifData' => 'images.preserveExifData',
+        'preserveImageColorProfiles' => 'images.preserveColorProfiles',
+        'queueName' => 'queue.name',
+        'restoreCommand' => 'backups.restoreCommand',
+        'rotateImagesOnUploadByExifData' => 'images.rotateOnUploadByExifData',
+        'runQueueAutomatically' => 'queue.runAutomatically',
         'setGraphqlDatesToSystemTimeZone' => 'gql.setDatesToSystemTimeZone',
+        'trackedQueueNames' => 'queue.trackedNames',
+        'transformGifs' => 'images.transformGifs',
+        'transformSvgs' => 'images.transformSvgs',
+        'upscaleImages' => 'images.upscale',
     ];
 
     #[Override]
@@ -220,6 +244,36 @@ class GeneralConfig extends BaseConfig
      * @group Environment
      */
     public array $aliases = [];
+
+    /**
+     * @var BackupsConfig Settings for database backups and restores.
+     *
+     * Supported settings:
+     *
+     * - `onUpdate` – Whether to back up the database before applying a system update. (Default is `true`.)
+     * - `command` – The shell command to run to back up the database, `null` to run `mysqldump`, `pg_dump`, or `sqlite3`, or `false` to disable backups. It can include the `{file}`, `{port}`, `{server}`, `{user}`, `{password}`, `{database}`, and `{schema}` tokens. (Default is `null`.)
+     * - `commandFormat` – The output format PostgreSQL backups should use: `'custom'`, `'directory'`, `'tar'`, or `'plain'`. (Default is `null`.)
+     * - `restoreCommand` – The shell command to run to restore a backup, `null` to run `mysql`, `psql`, or `sqlite3`, or `false` to disable restores. It can include the `{path}`, `{port}`, `{server}`, `{user}`, `{database}`, and `{schema}` tokens. (Default is `null`.)
+     * - `max` – The number of backups to keep before deleting the oldest ones, or `false` to keep them all. (Default is `20`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->backups(\CraftCms\Cms\Config\BackupsConfig::create()
+     *     ->onUpdate(false)
+     *     ->max(5)
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_BACKUPS='{"onUpdate":false,"max":5}'
+     * CRAFT_BACKUPS_MAX=5
+     * ```
+     * :::
+     *
+     * @group Environment
+     *
+     * @since 6.0.0
+     */
+    public BackupsConfig $backups;
 
     /**
      * @var string|null The server path to the directory where Craft should store compiled Twig templates.
@@ -501,78 +555,6 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public ?string $baseCpUrl = null;
-
-    /**
-     * @var bool Whether Craft should create a database backup before applying a new system update.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->backupOnUpdate(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_BACKUP_ON_UPDATE=false
-     * ```
-     * :::
-     *
-     * @see backupCommand
-     *
-     * @group System
-     */
-    public bool $backupOnUpdate = true;
-
-    /**
-     * @var string|null|false|Closure The shell command that Craft should execute to create a database backup.
-     *
-     * When set to `null` (default), Craft will run `mysqldump`, `pg_dump`, or `sqlite3`, provided that those libraries are in the `$PATH`
-     * variable for the system user running the web server.
-     *
-     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
-     *
-     * - `{file}` - the target backup file path
-     * - `{port}` - the current database port
-     * - `{server}` - the current database hostname
-     * - `{user}` - user that was used to connect to the database
-     * - `{password}` - password for the specified `{user}`
-     * - `{database}` - the current database name
-     * - `{schema}` - the current database schema (if any)
-     *
-     * This can also be set to `false` to disable database backups completely.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->backupCommand(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_BACKUP_COMMAND=false
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string|null|false|Closure $backupCommand = null;
-
-    /**
-     * @var string|null The output format that database backups should use (PostgreSQL only).
-     *
-     * This setting has no effect with MySQL databases.
-     *
-     * Valid options are `custom`, `directory`, `tar`, or `plain`.
-     * When set to `null` (default), `pg_restore` will default to `plain`
-     *
-     * @see https://www.postgresql.org/docs/current/app-pgdump.html
-     *
-     *  ::: code
-     *  ```php Static Config
-     *  ->backupCommandFormat('custom')
-     *  ```
-     *  ```shell Environment Override
-     *  CRAFT_BACKUP_COMMAND_FORMAT=custom
-     *  ```
-     *  :::
-     *
-     * @group Environment
-     */
-    public ?string $backupCommandFormat = null;
 
     /**
      * @var string|null The server path to an image file that should be sent when responding to an image request with a
@@ -887,23 +869,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public mixed $defaultDirMode = 0775;
-
-    /**
-     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
-     *          100 (best quality, biggest file).
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultImageQuality(90)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_IMAGE_QUALITY=90
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public int $defaultImageQuality = 82;
 
     /**
      * @var int|false The number of requests Craft will allow from a single IP address within {@see},
@@ -1483,49 +1448,41 @@ class GeneralConfig extends BaseConfig
     public string $ideHelperPath = 'vendor/_craft';
 
     /**
-     * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed,
-     *            followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
+     * @var ImagesConfig Settings for how Craft cleanses and transforms images.
+     *
+     * Supported settings:
+     *
+     * - `driver` – The image driver to use: `'auto'`, `'imagick'`, `'vips'`, or `'gd'`. `'auto'` uses ImageMagick if it’s installed, followed by libvips and GD. (Default is `'auto'`.)
+     * - `defaultQuality` – The quality level used when saving JPG and PNG files, from 1 to 100. (Default is `82`.)
+     * - `editorRatios` – The aspect ratios the image editor offers, as `label` => `ratio`, where a ratio is a number, `'none'`, or `'original'`.
+     * - `optimizeFilesize` – Whether to favor reduced file sizes over lossless encoding where supported. (Default is `true`.)
+     * - `preserveCmykColorspace` – Whether CMYK should be preserved as the colorspace. (Default is `false`.)
+     * - `preserveExifData` – Whether EXIF data should be preserved. (Default is `false`.)
+     * - `preserveColorProfiles` – Whether embedded color profiles (ICC) should be preserved. (Default is `true`.)
+     * - `rotateOnUploadByExifData` – Whether uploaded images should be rotated according to their EXIF data. (Default is `true`.)
+     * - `transformGifs` – Whether GIF files should be cleansed and transformed. (Default is `true`.)
+     * - `transformSvgs` – Whether SVG files should be transformed. (Default is `true`.)
+     * - `upscale` – Whether transforms should upscale images smaller than their dimensions by default. (Default is `true`.)
+     * - `maxCachedCloudSize` – The maximum dimension to use when caching images from external sources for transforms, or `0` to never cache them. (Default is `0`.)
      *
      * ::: code
      * ```php Static Config
-     * ->imageDriver('imagick')
+     * ->images(\CraftCms\Cms\Config\ImagesConfig::create()
+     *     ->driver('imagick')
+     *     ->defaultQuality(90)
+     * )
      * ```
      * ```shell Environment Override
-     * CRAFT_IMAGE_DRIVER=imagick
+     * CRAFT_IMAGES='{"driver":"imagick","defaultQuality":90}'
+     * CRAFT_IMAGES_DEFAULT_QUALITY=90
      * ```
      * :::
      *
      * @group Image Handling
-     */
-    public mixed $imageDriver = self::IMAGE_DRIVER_AUTO;
-
-    /**
-     * @var array<string, float|int|string> An array containing the selectable image aspect ratios for the image editor. The array must be in the format
-     *                                      of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
      *
-     * ```php Static Config
-     * ->imageEditorRatios([
-     *     'Unconstrained' => 'none',
-     *     'Original' => 'original',
-     *     'Square' => 1,
-     *     'IMAX' => 1.9,
-     *     'Widescreen' => 1.78,
-     * ])
-     * ```
-     *
-     * @group Image Handling
+     * @since 6.0.0
      */
-    public array $imageEditorRatios = [
-        'Unconstrained' => 'none',
-        'Original' => 'original',
-        'Square' => 1,
-        '16:9' => 1.78,
-        '10:8' => 1.25,
-        '7:5' => 1.4,
-        '4:3' => 1.33,
-        '5:3' => 1.67,
-        '3:2' => 1.5,
-    ];
+    public ImagesConfig $images;
 
     /**
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
@@ -1723,22 +1680,6 @@ class GeneralConfig extends BaseConfig
     public mixed $logoutPath = 'logout';
 
     /**
-     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxCachedCloudImageSize(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=0
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public int $maxCachedCloudImageSize = 0;
-
-    /**
      * @var int|false The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
      *
      * ::: code
@@ -1753,23 +1694,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public int|false $maxInvalidLogins = 5;
-
-    /**
-     * @var int|false The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will
-     *                not delete any backups.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxBackups(5)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_BACKUPS=5
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public int|false $maxBackups = 20;
 
     /**
      * @var int|null The maximum number of revisions that should be stored for each element.
@@ -1848,24 +1772,6 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public int $uploadSessionDuration = 24 * 60 * 60;
-
-    /**
-     * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->optimizeImageFilesize(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_OPTIMIZE_IMAGE_FILESIZE=false
-     * ```
-     * :::
-     *
-     * @see imageDriver
-     *
-     * @group Image Handling
-     */
-    public bool $optimizeImageFilesize = true;
 
     /**
      * @var string The query string param name Craft should use for paginated requests.
@@ -2028,63 +1934,6 @@ class GeneralConfig extends BaseConfig
     public bool $preloadSingles = false;
 
     /**
-     * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
-     *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->preserveCmykColorspace(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PRESERVE_CMYK_COLORSPACE=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $preserveCmykColorspace = false;
-
-    /**
-     * @var bool Whether the EXIF data should be preserved when manipulating and uploading images.
-     *
-     * Setting this to `true` will result in larger image file sizes.
-     *
-     * This will only have an effect if the active image driver supports preserving EXIF data.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->preserveExifData(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PRESERVE_EXIF_DATA=true
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $preserveExifData = false;
-
-    /**
-     * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
-     *
-     * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
-     * This will only have an effect if the active image driver supports embedded color profiles.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->preserveImageColorProfiles(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PRESERVE_IMAGE_COLOR_PROFILES=false
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $preserveImageColorProfiles = true;
-
-    /**
      * @var McpConfig Administrative MCP transport and authentication configuration.
      *
      * @group System
@@ -2203,6 +2052,35 @@ class GeneralConfig extends BaseConfig
     public mixed $purgeUnsavedDraftsDuration = 2592000;
 
     /**
+     * @var QueueConfig Settings for Craft’s queue jobs.
+     *
+     * Supported settings:
+     *
+     * - `runAutomatically` – Whether to run pending queue jobs automatically when someone visits the control panel. If disabled, run a Laravel queue worker, such as `php artisan queue:work`, and include any custom queue names in its `--queue` option. (Default is `true`.)
+     * - `name` – The name of the queue Craft jobs are sent to. (Default is `'default'`.)
+     * - `lowPriorityName` – The name of the queue lower-priority Craft jobs are sent to. (Default is `'default'`.)
+     * - `trackedNames` – The names of the queues whose jobs have their progress tracked. (Default is `['default']`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->queue(\CraftCms\Cms\Config\QueueConfig::create()
+     *     ->runAutomatically(false)
+     *     ->name('craft')
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_QUEUE='{"runAutomatically":false,"name":"craft"}'
+     * CRAFT_QUEUE_RUN_AUTOMATICALLY=false
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public QueueConfig $queue;
+
+    /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
@@ -2225,36 +2103,6 @@ class GeneralConfig extends BaseConfig
     public mixed $rememberUsernameDuration = 31536000;
 
     /**
-     * @var string|null|false|Closure The shell command Craft should execute to restore a database backup.
-     *
-     * By default Craft will run `mysql`, `psql`, or `sqlite3`, provided those libraries are in the `$PATH` variable for the user the web
-     * server is running as.
-     *
-     * There are several tokens you can use that Craft will swap out at runtime:
-     *
-     * - `{path}` - the backup file path
-     * - `{port}` - the current database port
-     * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
-     * - `{database}` - the current database name
-     * - `{schema}` - the current database schema (if any)
-     *
-     * This can also be set to `false` to disable database restores completely.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->restoreCommand(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RESTORE_COMMAND=false
-     * ```
-     * :::
-     *
-     * @group Environment
-     */
-    public string|null|false|Closure $restoreCommand = null;
-
-    /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      *
      * ::: code
@@ -2269,112 +2117,6 @@ class GeneralConfig extends BaseConfig
      * @group Assets
      */
     public bool $revAssetUrls = false;
-
-    /**
-     * @var bool Whether Craft should rotate images according to their EXIF data on upload.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->rotateImagesOnUploadByExifData(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ROTATE_IMAGES_ON_UPLOAD_BY_EXIF_DATA=false
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $rotateImagesOnUploadByExifData = true;
-
-    /**
-     * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
-     *
-     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
-     * managed by Supervisor or systemd:
-     *
-     * ```shell
-     * php /path/to/project/craft queue:work
-     * ```
-     *
-     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
-     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
-     * queue work there:
-     *
-     * ```cron
-     * * * * * php /path/to/project/craft queue:work --once
-     * ```
-     *
-     * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
-     * option.
-     *
-     * ::: tip
-     * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
-     * where PHP’s [flush()](https://php.net/manual/en/function.flush.php) method won’t work.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->runQueueAutomatically(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_RUN_QUEUE_AUTOMATICALLY=false
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $runQueueAutomatically = true;
-
-    /**
-     * @var string The name of the queue that Craft jobs should be sent to.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->queueName('craft')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_QUEUE_NAME=craft
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $queueName = 'default';
-
-    /**
-     * @var string The name of the queue that Craft lower priority jobs should be sent to.
-     *             By default, all jobs go to the same queue. Make sure to update `trackedQueueNames`
-     *             as well if you change this setting.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->lowPriorityQueueName('craft-low-prio')
-     * ->trackedQueueNames(['craft', 'craft-low-prio'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_LOW_PRIORITY_QUEUE_NAME=craft-low-prio
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $lowPriorityQueueName = 'default';
-
-    /**
-     * @var array<string> The queue names that should have their job progress tracked.
-     *
-     * By default, only jobs on the `craft` queue are tracked. Add additional queue names
-     * if you want to track progress for jobs on other queues.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->trackedQueueNames(['craft', 'default'])
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public array $trackedQueueNames = ['default'];
 
     /**
      * @var bool Whether the system should run in Safe Mode.
@@ -2706,39 +2448,6 @@ class GeneralConfig extends BaseConfig
     public ?string $timezone = null;
 
     /**
-    /**
-     * @var bool Whether GIF files should be cleansed/transformed.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->transformGifs(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TRANSFORM_GIFS=false
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $transformGifs = true;
-
-    /**
-     * @var bool Whether SVG files should be transformed.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->transformSvgs(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TRANSFORM_SVGS=false
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $transformSvgs = true;
-
-    /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
      *           `t()` or the `|translate` filter.
      *
@@ -2780,22 +2489,6 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public string $tokenParam = 'token';
-
-    /**
-     * @var bool Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->upscaleImages(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_UPSCALE_IMAGES=false
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public bool $upscaleImages = true;
 
     /**
      * @var bool Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
@@ -2910,7 +2603,10 @@ class GeneralConfig extends BaseConfig
     public function __construct()
     {
         $this->anchors = AnchorsConfig::create();
+        $this->backups = BackupsConfig::create();
         $this->gql = GqlConfig::create();
+        $this->images = ImagesConfig::create();
+        $this->queue = QueueConfig::create();
         $this->mcp = McpConfig::create();
 
         // (Re-)normalize everything.
@@ -3079,6 +2775,30 @@ class GeneralConfig extends BaseConfig
         foreach ($value as $name => $path) {
             $this->addAlias($name, $path);
         }
+
+        return $this;
+    }
+
+    /**
+     * Settings for database backups and restores.
+     *
+     * ```php
+     * ->backups(\CraftCms\Cms\Config\BackupsConfig::create()
+     *     ->onUpdate(false)
+     *     ->max(5)
+     * )
+     * ```
+     *
+     * @group Environment
+     *
+     * @since 6.0.0
+     * @see $backups
+     *
+     * @param  BackupsConfig|array<string, mixed>|string  $value
+     */
+    public function backups(BackupsConfig|array|string $value): self
+    {
+        $this->backups = $value instanceof BackupsConfig ? $value : BackupsConfig::fromConfig($value);
 
         return $this;
     }
@@ -3332,78 +3052,6 @@ class GeneralConfig extends BaseConfig
     public function baseCpUrl(?string $value): self
     {
         $this->baseCpUrl = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether Craft should create a database backup before applying a new system update.
-     *
-     * ```php
-     * ->backupOnUpdate(false)
-     * ```
-     *
-     * @group System
-     *
-     * @see $backupOnUpdate
-     */
-    public function backupOnUpdate(bool $value = true): self
-    {
-        $this->backupOnUpdate = $value;
-
-        return $this;
-    }
-
-    /**
-     * The shell command that Craft should execute to create a database backup.
-     *
-     * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
-     * for the system user running the web server.
-     *
-     * You may provide your own command, which can include several tokens Craft will substitute at runtime:
-     *
-     * - `{file}` - the target backup file path
-     * - `{port}` - the current database port
-     * - `{server}` - the current database hostname
-     * - `{user}` - user that was used to connect to the database
-     * - `{password}` - password for the specified `{user}`
-     * - `{database}` - the current database name
-     * - `{schema}` - the current database schema (if any)
-     *
-     * This can also be set to `false` to disable database backups completely.
-     *
-     * ```php
-     * ->backupCommand(false)
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $backupCommand
-     */
-    public function backupCommand(string|null|false|Closure $value): self
-    {
-        $this->backupCommand = $value;
-
-        return $this;
-    }
-
-    /**
-     * The output format that database backups should use (PostgreSQL only).
-     *
-     * This setting has no effect with MySQL databases.
-     *
-     * Valid options are `custom`, `directory`, `tar`, or `plain`.
-     * When set to `null` (default), `pg_restore` will default to `plain`
-     *
-     * @see https://www.postgresql.org/docs/current/app-pgdump.html
-     *
-     * @group Environment
-     *
-     * @see $backupCommandFormat
-     */
-    public function backupCommandFormat(string $value): self
-    {
-        $this->backupCommandFormat = $value;
 
         return $this;
     }
@@ -3758,25 +3406,6 @@ class GeneralConfig extends BaseConfig
     public function defaultDirMode(mixed $value): self
     {
         $this->defaultDirMode = $value;
-
-        return $this;
-    }
-
-    /**
-     * The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
-     * 100 (best quality, biggest file).
-     *
-     * ```php
-     * ->defaultImageQuality(90)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $defaultImageQuality
-     */
-    public function defaultImageQuality(int $value): self
-    {
-        $this->defaultImageQuality = $value;
 
         return $this;
     }
@@ -4396,47 +4025,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed,
-     * followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
+     * Settings for how Craft cleanses and transforms images.
      *
      * ```php
-     * ->imageDriver('imagick')
+     * ->images(\CraftCms\Cms\Config\ImagesConfig::create()
+     *     ->driver('imagick')
+     *     ->defaultQuality(90)
+     * )
      * ```
      *
      * @group Image Handling
      *
-     * @see $imageDriver
+     * @since 6.0.0
+     * @see $images
+     *
+     * @param  ImagesConfig|array<string, mixed>|string  $value
      */
-    public function imageDriver(mixed $value): self
+    public function images(ImagesConfig|array|string $value): self
     {
-        $this->imageDriver = $value;
-
-        return $this;
-    }
-
-    /**
-     * An array containing the selectable image aspect ratios for the image editor. The array must be in the format
-     * of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
-     *
-     * ```php
-     * ->imageEditorRatios([
-     *     'Unconstrained' => 'none',
-     *     'Original' => 'original',
-     *     'Square' => 1,
-     *     'IMAX' => 1.9,
-     *     'Widescreen' => 1.78,
-     * ])
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @param  array<string, float|int|string>  $value
-     *
-     * @see $imageEditorRatios
-     */
-    public function imageEditorRatios(array $value): self
-    {
-        $this->imageEditorRatios = $value;
+        $this->images = $value instanceof ImagesConfig ? $value : ImagesConfig::fromConfig($value);
 
         return $this;
     }
@@ -4612,24 +4219,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
-     *
-     * ```php
-     * ->maxCachedCloudImageSize(0)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $maxCachedCloudImageSize
-     */
-    public function maxCachedCloudImageSize(int $value): self
-    {
-        $this->maxCachedCloudImageSize = $value;
-
-        return $this;
-    }
-
-    /**
      * The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
      *
      * ```php
@@ -4643,25 +4232,6 @@ class GeneralConfig extends BaseConfig
     public function maxInvalidLogins(int|false $value): self
     {
         $this->maxInvalidLogins = $value;
-
-        return $this;
-    }
-
-    /**
-     * The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will
-     * not delete any backups.
-     *
-     * ```php
-     * ->maxBackups(5)
-     * ```
-     *
-     * @group System
-     *
-     * @see $maxBackups
-     */
-    public function maxBackups(int|false $value): self
-    {
-        $this->maxBackups = $value;
 
         return $this;
     }
@@ -4744,24 +4314,6 @@ class GeneralConfig extends BaseConfig
     public function uploadSessionDuration(int $value): self
     {
         $this->uploadSessionDuration = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether Craft should favor reduced file sizes over lossless encoding where supported.
-     *
-     * ```php
-     * ->optimizeImageFilesize(false)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $optimizeImageFilesize
-     */
-    public function optimizeImageFilesize(bool $value = true): self
-    {
-        $this->optimizeImageFilesize = $value;
 
         return $this;
     }
@@ -4942,69 +4494,6 @@ class GeneralConfig extends BaseConfig
         return $this;
     }
 
-    /**
-     * Whether CMYK should be preserved as the colorspace when manipulating images.
-     *
-     * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
-     *
-     * ```php
-     * ->preserveCmykColorspace(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $preserveCmykColorspace
-     */
-    public function preserveCmykColorspace(bool $value = true): self
-    {
-        $this->preserveCmykColorspace = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether the EXIF data should be preserved when manipulating and uploading images.
-     *
-     * Setting this to `true` will result in larger image file sizes.
-     *
-     * This will only have an effect if the active image driver supports preserving EXIF data.
-     *
-     * ```php
-     * ->preserveExifData(true)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $preserveExifData
-     */
-    public function preserveExifData(bool $value = true): self
-    {
-        $this->preserveExifData = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
-     *
-     * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
-     * This will only have an effect if the active image driver supports embedded color profiles.
-     *
-     * ```php
-     * ->preserveImageColorProfiles(false)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $preserveImageColorProfiles
-     */
-    public function preserveImageColorProfiles(bool $value = true): self
-    {
-        $this->preserveImageColorProfiles = $value;
-
-        return $this;
-    }
-
     /** @param array<string, mixed>|string $value */
     public function mcp(McpConfig|array|string $value): self
     {
@@ -5133,6 +4622,30 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Settings for Craft’s queue jobs.
+     *
+     * ```php
+     * ->queue(\CraftCms\Cms\Config\QueueConfig::create()
+     *     ->runAutomatically(false)
+     *     ->name('craft')
+     * )
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $queue
+     *
+     * @param  QueueConfig|array<string, mixed>|string  $value
+     */
+    public function queue(QueueConfig|array|string $value): self
+    {
+        $this->queue = $value instanceof QueueConfig ? $value : QueueConfig::fromConfig($value);
+
+        return $this;
+    }
+
+    /**
      * The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
@@ -5157,37 +4670,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The shell command Craft should execute to restore a database backup.
-     *
-     * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
-     *
-     * There are several tokens you can use that Craft will swap out at runtime:
-     *
-     * - `{path}` - the backup file path
-     * - `{port}` - the current database port
-     * - `{server}` - the current database hostname
-     * - `{user}` - the user to connect to the database
-     * - `{database}` - the current database name
-     * - `{schema}` - the current database schema (if any)
-     *
-     * This can also be set to `false` to disable database restores completely.
-     *
-     * ```php
-     * ->restoreCommand(false)
-     * ```
-     *
-     * @group Environment
-     *
-     * @see $restoreCommand
-     */
-    public function restoreCommand(string|null|false|Closure $value): self
-    {
-        $this->restoreCommand = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      *
      * ```php
@@ -5201,121 +4683,6 @@ class GeneralConfig extends BaseConfig
     public function revAssetUrls(bool $value = true): self
     {
         $this->revAssetUrls = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether Craft should rotate images according to their EXIF data on upload.
-     *
-     * ```php
-     * ->rotateImagesOnUploadByExifData(false)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $rotateImagesOnUploadByExifData
-     */
-    public function rotateImagesOnUploadByExifData(bool $value = true): self
-    {
-        $this->rotateImagesOnUploadByExifData = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether Craft should run pending queue jobs automatically when someone visits the control panel.
-     *
-     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
-     * managed by Supervisor or systemd:
-     *
-     * ```shell
-     * php /path/to/project/craft queue:work
-     * ```
-     *
-     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
-     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
-     * queue work there:
-     *
-     * ```cron
-     * * * * * php /path/to/project/craft queue:work --once
-     * ```
-     *
-     * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
-     * option.
-     *
-     * ::: tip
-     * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
-     * where PHP’s [flush()](https://php.net/manual/en/function.flush.php) method won’t work.
-     * :::
-     *
-     * ```php
-     * ->runQueueAutomatically(false)
-     * ```
-     *
-     * @group System
-     *
-     * @see $runQueueAutomatically
-     */
-    public function runQueueAutomatically(bool $value = true): self
-    {
-        $this->runQueueAutomatically = $value;
-
-        return $this;
-    }
-
-    /**
-     * The name of the queue that Craft jobs should be sent to.
-     *
-     * ```php
-     * ->queueName('craft')
-     * ```
-     *
-     * @group System
-     *
-     * @see $queueName
-     */
-    public function queueName(string $value): self
-    {
-        $this->queueName = $value;
-
-        return $this;
-    }
-
-    /**
-     * The name of the queue that Craft jobs should be sent to.
-     *
-     * ```php
-     * ->lowPriorityQueueName('craft-low-prio')
-     * ```
-     *
-     * @group System
-     *
-     * @see $lowPriorityQueueName
-     */
-    public function lowPriorityQueueName(string $value): self
-    {
-        $this->lowPriorityQueueName = $value;
-
-        return $this;
-    }
-
-    /**
-     * The queue names that should have their job progress tracked.
-     *
-     * ```php
-     * ->trackedQueueNames(['craft', 'default'])
-     * ```
-     *
-     * @group System
-     *
-     * @param  list<string>  $value
-     *
-     * @see $trackedQueueNames
-     */
-    public function trackedQueueNames(array $value): self
-    {
-        $this->trackedQueueNames = $value;
 
         return $this;
     }
@@ -5687,42 +5054,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether GIF files should be cleansed/transformed.
-     *
-     * ```php
-     * ->transformGifs(false)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $transformGifs
-     */
-    public function transformGifs(bool $value = true): self
-    {
-        $this->transformGifs = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether SVG files should be transformed.
-     *
-     * ```php
-     * ->transformSvgs(false)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $transformSvgs
-     */
-    public function transformSvgs(bool $value = true): self
-    {
-        $this->transformSvgs = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
      * `t()` or the `|translate` filter.
      *
@@ -5765,24 +5096,6 @@ class GeneralConfig extends BaseConfig
     public function tokenParam(string $value): self
     {
         $this->tokenParam = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
-     *
-     * ```php
-     * ->upscaleImages(false)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $upscaleImages
-     */
-    public function upscaleImages(bool $value = true): self
-    {
-        $this->upscaleImages = $value;
 
         return $this;
     }
@@ -6134,10 +5447,12 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @deprecated in 6.0.0. [[BackupsConfig::shouldBackUpOnUpdate()]] should be used instead.
      */
     public function getBackupOnUpdate(): bool
     {
-        return $this->backupOnUpdate && $this->backupCommand !== false;
+        return $this->backups->shouldBackUpOnUpdate();
     }
 
     /**

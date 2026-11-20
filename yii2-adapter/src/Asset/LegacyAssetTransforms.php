@@ -44,8 +44,8 @@ class LegacyAssetTransforms
         }
 
         $allowed = match ($asset->getMimeType()) {
-            'image/gif' => Cms::config()->transformGifs,
-            'image/svg+xml' => Cms::config()->transformSvgs,
+            'image/gif' => Cms::config()->images->transformGifs,
+            'image/svg+xml' => Cms::config()->images->transformSvgs,
             default => true,
         };
 

@@ -754,7 +754,7 @@ class AssetIndexer
                     $this->imageAnalyzer->queue($asset);
                 }
 
-                $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
+                $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->images->maxCachedCloudSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();

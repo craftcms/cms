@@ -113,7 +113,7 @@ readonly class Cp
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
                 'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->getAuthGuard()), 20160) * 60,
-                'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
+                'runQueueAutomatically' => $generalConfig->queue->runAutomatically,
             ];
         });
     }
@@ -461,7 +461,7 @@ readonly class Cp
                     ?? 'end',
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
-            'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
+            'runQueueAutomatically' => $generalConfig->queue->runAutomatically,
             'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,

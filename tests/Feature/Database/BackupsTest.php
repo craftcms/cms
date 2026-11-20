@@ -17,10 +17,10 @@ use Illuminate\Support\Facades\File;
 use Pdo\Mysql;
 
 beforeEach(function () {
-    Cms::config()->backupCommand = null;
-    Cms::config()->restoreCommand = null;
-    Cms::config()->backupCommandFormat = null;
-    Cms::config()->maxBackups = false;
+    Cms::config()->backups->command = null;
+    Cms::config()->backups->restoreCommand = null;
+    Cms::config()->backups->commandFormat = null;
+    Cms::config()->backups->max = false;
 
     $this->tempDir = storage_path('runtime/backups-test-'.uniqid('', true));
     File::ensureDirectoryExists($this->tempDir);
@@ -118,7 +118,7 @@ it('runs configured backup command and dispatches backup events', function () {
         $afterEvent = $event;
     });
 
-    Cms::config()->backupCommand = backupsTestPhpCommand(
+    Cms::config()->backups->command = backupsTestPhpCommand(
         script: 'file_put_contents($argv[1], "backup-ok");',
         args: ['{file}'],
     );
@@ -134,7 +134,7 @@ it('runs configured backup command and dispatches backup events', function () {
 });
 
 it('returns a generated backup path and writes the backup file', function () {
-    Cms::config()->backupCommand = backupsTestPhpCommand(
+    Cms::config()->backups->command = backupsTestPhpCommand(
         script: 'file_put_contents($argv[1], "generated-backup");',
         args: ['{file}'],
     );
@@ -163,7 +163,7 @@ it('increments generated backup path names when a collision exists', function ()
 });
 
 it('throws when backups are disabled in config', function () {
-    Cms::config()->backupCommand = false;
+    Cms::config()->backups->command = false;
 
     expect(fn () => app(Backups::class)->backupTo($this->tempDir.'/disabled.sql'))
         ->toThrow(RuntimeException::class, 'backup command is false');
@@ -185,7 +185,7 @@ it('runs configured restore command and dispatches restore events', function () 
     $targetPath = $this->tempDir.'/restore-result.txt';
     file_put_contents($sourcePath, 'restore-me');
 
-    Cms::config()->restoreCommand = backupsTestPhpCommand(
+    Cms::config()->backups->restoreCommand = backupsTestPhpCommand(
         script: 'file_put_contents($argv[2], file_get_contents($argv[1]));',
         args: ['{file}', escapeshellarg($targetPath)],
     );
@@ -199,14 +199,14 @@ it('runs configured restore command and dispatches restore events', function () 
 });
 
 it('throws when restore is disabled in config', function () {
-    Cms::config()->restoreCommand = false;
+    Cms::config()->backups->restoreCommand = false;
 
     expect(fn () => app(Backups::class)->restore($this->tempDir.'/disabled.sql'))
         ->toThrow(RuntimeException::class, 'restore command is false');
 });
 
 it('throws a command failed exception when backup shell command fails', function () {
-    Cms::config()->backupCommand = backupsTestPhpCommand(
+    Cms::config()->backups->command = backupsTestPhpCommand(
         script: 'fwrite(STDERR, "backup-failed"); exit(17);',
     );
 
@@ -222,7 +222,7 @@ it('throws a command failed exception when backup shell command fails', function
 });
 
 it('redacts the PostgreSQL password when a backup command fails', function (string $backupCommand, string $password, array $secrets) {
-    Cms::config()->backupCommand = $backupCommand.' '.backupsTestPhpCommand('exit(1);');
+    Cms::config()->backups->command = $backupCommand.' '.backupsTestPhpCommand('exit(1);');
 
     try {
         app(Backups::class)->backupTo(
@@ -253,7 +253,7 @@ it('uses mysql default command generation for closure commands and respects even
         $event->ignoreTables = ['cache'];
     });
 
-    Cms::config()->backupCommand = function (string $command) use (&$capturedDefaultCommand): string {
+    Cms::config()->backups->command = function (string $command) use (&$capturedDefaultCommand): string {
         $capturedDefaultCommand = $command;
 
         return backupsTestPhpCommand(
@@ -277,7 +277,7 @@ it('uses mysql default command generation for closure commands and respects even
 
 it('uses postgres backup file extensions based on backup format', function () {
     $connection = backupsTestPgsqlConnection();
-    Cms::config()->backupCommandFormat = 'custom';
+    Cms::config()->backups->commandFormat = 'custom';
 
     $defaultFormatPath = app(Backups::class)->getBackupFilePath(connection: $connection);
     $overrideFormatPath = app(Backups::class)->getBackupFilePath(connection: $connection, backupFormat: 'tar');
@@ -293,7 +293,7 @@ it('uses postgres default restore command variants for closure commands', functi
     $backupPath = $this->tempDir.'/postgres-restore.dump';
     file_put_contents($backupPath, 'placeholder');
 
-    Cms::config()->restoreCommand = function (string $command) use (&$capturedPlainCommand): string {
+    Cms::config()->backups->restoreCommand = function (string $command) use (&$capturedPlainCommand): string {
         $capturedPlainCommand = $command;
 
         return backupsTestPhpCommand('exit(0);');
@@ -305,7 +305,7 @@ it('uses postgres default restore command variants for closure commands', functi
         restoreFormat: 'plain',
     );
 
-    Cms::config()->restoreCommand = function (string $command) use (&$capturedCustomFormatCommand): string {
+    Cms::config()->backups->restoreCommand = function (string $command) use (&$capturedCustomFormatCommand): string {
         $capturedCustomFormatCommand = $command;
 
         return backupsTestPhpCommand('exit(0);');
@@ -328,7 +328,7 @@ it('uses sqlite default backup command generation for closure commands', functio
     $connection->statement('create table craft_cache (id integer primary key, value text)');
     $connection->statement('create table craft_entries (id integer primary key, title text)');
 
-    Cms::config()->backupCommand = function (string $command) use (&$capturedDefaultCommand): string {
+    Cms::config()->backups->command = function (string $command) use (&$capturedDefaultCommand): string {
         $capturedDefaultCommand = $command;
 
         return backupsTestPhpCommand(

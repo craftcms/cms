@@ -198,7 +198,7 @@ class Assets extends AssetsHelper
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = Cms::config()->maxCachedCloudImageSize;
+        $maxCachedSize = Cms::config()->images->maxCachedCloudSize;
         $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
         if (!$isLocalFs && $maxCachedSize > $size) {

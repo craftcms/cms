@@ -306,20 +306,20 @@ it('cleans exif data from imagick images under both config modes', function () {
     }
 
     $path = $this->sandboxPath.'/google.png';
-    $originalPreserveExif = Cms::config()->preserveExifData;
+    $originalPreserveExif = Cms::config()->images->preserveExifData;
 
     try {
         $imagick = new Imagick($path);
 
-        Cms::config()->preserveExifData = false;
+        Cms::config()->images->preserveExifData = false;
         ImageHelper::cleanExifDataFromImagickImage($imagick);
         expect($imagick->getImageWidth())->toBeGreaterThan(0);
 
-        Cms::config()->preserveExifData = true;
+        Cms::config()->images->preserveExifData = true;
         ImageHelper::cleanExifDataFromImagickImage($imagick);
         expect($imagick->getImageHeight())->toBeGreaterThan(0);
     } finally {
-        Cms::config()->preserveExifData = $originalPreserveExif;
+        Cms::config()->images->preserveExifData = $originalPreserveExif;
     }
 });
 

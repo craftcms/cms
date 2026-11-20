@@ -7,8 +7,10 @@ namespace CraftCms\Cms\Config;
 use ArrayAccess;
 use BadMethodCallException;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Support\Arrayable;
+use InvalidArgumentException;
 use Override;
 use ReflectionProperty;
 
@@ -30,6 +32,32 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
     {
         /** @phpstan-ignore new.static */
         return new static;
+    }
+
+    /**
+     * Creates a config object from an array or a JSON object of settings, applying each one through its fluent method.
+     *
+     * @param  array<string, mixed>|string  $value
+     */
+    public static function fromConfig(array|string $value): static
+    {
+        $value = is_array($value) ? $value : Json::decode($value);
+
+        if (! is_array($value)) {
+            throw new InvalidArgumentException(sprintf('%s must be configured with an array or a JSON object.', class_basename(static::class)));
+        }
+
+        Typecast::properties(static::class, $value);
+
+        $config = static::create();
+
+        foreach ($value as $property => $propertyValue) {
+            if (property_exists($config, $property) && method_exists($config, $property)) {
+                $config->{$property}($propertyValue);
+            }
+        }
+
+        return $config;
     }
 
     /**

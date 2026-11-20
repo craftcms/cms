@@ -11,6 +11,7 @@ use CraftCms\Cms\Config\McpConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateManager;
@@ -25,7 +26,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -284,6 +285,28 @@ it('forwards the renamed GraphQL settings to the gql setting', function () {
         ->and($config['maxGraphqlDepth'])->toBe(7)
         ->and($config->gql->enableCaching)->toBeTrue()
         ->and($config->toArray())->not->toHaveKey('enableGql');
+});
+
+it('forwards the renamed image, backup, and queue settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['upscaleImages' => false, 'maxBackups' => false]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DEFAULT_IMAGE_QUALITY'] = '90';
+    $_SERVER['CRAFT_QUEUE_NAME'] = 'craft';
+    $_SERVER['CRAFT_BACKUP_COMMAND'] = 'false';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)->runQueueAutomatically(false);
+
+    expect($config->images->upscale)->toBeFalse()
+        ->and($config->images->defaultQuality)->toBe(90)
+        ->and($config->backups->max)->toBeFalse()
+        ->and($config->backups->command)->toBeFalse()
+        ->and($config->getBackupOnUpdate())->toBeFalse()
+        ->and($config->queue->name)->toBe('craft')
+        ->and($config->queueName)->toBe('craft')
+        ->and($config->queue->runAutomatically)->toBeFalse()
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->not->toContain(GeneralConfig::class.'::queueName');
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {

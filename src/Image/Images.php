@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\ImagesConfig;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageMetadata;
 use CraftCms\Cms\Image\Data\ImageSample;
@@ -86,9 +86,9 @@ class Images
 
     public function __construct()
     {
-        $configuredDriver = strtolower((string) Cms::config()->imageDriver);
+        $configuredDriver = strtolower(Cms::config()->images->driver);
 
-        if ($configuredDriver !== GeneralConfig::IMAGE_DRIVER_AUTO) {
+        if ($configuredDriver !== ImagesConfig::DRIVER_AUTO) {
             $this->driver = ImageDriver::from($configuredDriver);
             $this->manager = $this->createManager($this->driver);
             $this->manager->driver->checkHealth();
@@ -406,7 +406,7 @@ class Images
     /**
      * Returns the metadata embedded in an image file, such as who made it and when, from its XMP, IPTC, and EXIF data.
      *
-     * Uploads are read before they’re cleaned, which strips metadata unless the `preserveExifData` config setting is
+     * Uploads are read before they’re cleaned, which strips metadata unless the `images.preserveExifData` config setting is
      * enabled.
      */
     public function metadata(string $filePath): ImageMetadata
@@ -496,12 +496,12 @@ class Images
             return;
         }
 
-        if (File::isGif($filePath) && ! Cms::config()->transformGifs) {
+        if (File::isGif($filePath) && ! Cms::config()->images->transformGifs) {
             return;
         }
 
         try {
-            if (Cms::config()->rotateImagesOnUploadByExifData) {
+            if (Cms::config()->images->rotateOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
             }
 

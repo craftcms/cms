@@ -107,7 +107,7 @@ test('cleans its staging file when downloading or storing the source fails', fun
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($asset->getPath(), $failure === 'empty' ? '' : 'image bytes');
 
-    Cms::config()->maxCachedCloudImageSize = $failure === 'resize' ? 100 : 0;
+    Cms::config()->images->maxCachedCloudSize = $failure === 'resize' ? 100 : 0;
     $exception = new RuntimeException('Download failed');
 
     if ($failure === 'download') {
@@ -140,7 +140,7 @@ test('cleans its staging file when downloading or storing the source fails', fun
 })->with(['empty', 'download', 'copy', 'resize']);
 
 test('interleaved downloads keep each others staging files', function () {
-    Cms::config()->maxCachedCloudImageSize = 0;
+    Cms::config()->images->maxCachedCloudSize = 0;
     $assets = collect(['first', 'second'])->map(fn (string $folder) => AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id, 'path' => $folder.'/'])->id,
@@ -186,7 +186,7 @@ test('storeLocalSource resizes the source in place when no destination is given'
     $path = Path::temp('store-local-source-in-place.png');
     $this->beforeApplicationDestroyed(fn () => File::delete($path));
     imagepng(imagecreatetruecolor(200, 100), $path);
-    Cms::config()->maxCachedCloudImageSize = 50;
+    Cms::config()->images->maxCachedCloudSize = 50;
 
     ImageTransformHelper::storeLocalSource($path);
 

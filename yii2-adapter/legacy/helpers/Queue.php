@@ -61,8 +61,8 @@ class Queue
 
         // Dispatch with delay and lower priority if specified
         $queueName = $priority > 1024
-            ? Cms::config()->lowPriorityQueueName
-            : Cms::config()->queueName;
+            ? Cms::config()->queue->lowPriorityName
+            : Cms::config()->queue->name;
 
         if ($delay !== null && $delay > 0) {
             dispatch($job)->onQueue($queueName)->delay($delay);

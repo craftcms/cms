@@ -169,7 +169,7 @@ class UpdaterController extends BaseUpdaterController
         $pendingHandles = $this->updates->pendingMigrationHandles();
 
         if (! empty(array_intersect($pendingHandles, $installedHandles))) {
-            $backup = $this->generalConfig->getBackupOnUpdate();
+            $backup = $this->generalConfig->backups->shouldBackUpOnUpdate();
 
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
         }
@@ -284,7 +284,7 @@ class UpdaterController extends BaseUpdaterController
         if (! empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
         } else {
-            $backup = $this->generalConfig->getBackupOnUpdate();
+            $backup = $this->generalConfig->backups->shouldBackUpOnUpdate();
             $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
         }
 

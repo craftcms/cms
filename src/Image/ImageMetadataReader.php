@@ -15,7 +15,7 @@ use Throwable;
  * Reads the metadata embedded in image files, from their XMP, IPTC, and EXIF data.
  *
  * It only reads the file’s metadata, not its pixels, so it’s cheap enough to run on every upload, but it has to run
- * before uploads are cleaned, which strips metadata unless the `preserveExifData` config setting is enabled.
+ * before uploads are cleaned, which strips metadata unless the `images.preserveExifData` config setting is enabled.
  *
  * @see Images::metadata()
  * @since 6.0.0

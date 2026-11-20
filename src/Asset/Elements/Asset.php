@@ -2852,7 +2852,7 @@ class Asset extends Element
     public static function sharedImageEditorSettings(): array
     {
         return [
-            'imageEditorRatios' => Cms::config()->imageEditorRatios,
+            'imageEditorRatios' => Cms::config()->images->editorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),
             // Picks which cropper handles get the left and right labels.
@@ -3669,7 +3669,7 @@ CSS,
     }
 
     /**
-     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `preserveExifData`
+     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `images.preserveExifData`
      * config setting is enabled.
      */
     private function shouldSanitizeUpload(): bool

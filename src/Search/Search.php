@@ -193,7 +193,7 @@ class Search
             elementId: $element->id,
             siteId: $element->siteId,
             queued: true,
-        ))->onQueue(Cms::config()->lowPriorityQueueName)->afterCommit();
+        ))->onQueue(Cms::config()->queue->lowPriorityName)->afterCommit();
     }
 
     /**

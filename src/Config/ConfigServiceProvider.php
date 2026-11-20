@@ -185,12 +185,19 @@ class ConfigServiceProvider extends ServiceProvider
 
     /**
      * Applies environment variables named after renamed settings, such as `CRAFT_ENABLE_GQL` for `gql.enabled`.
-     * Variables named after the new settings, such as `CRAFT_GQL_ENABLED`, are applied after them, so they win.
+     * Variables named after the new settings, such as `CRAFT_GQL_ENABLED`, are applied after them, so they win. A variable
+     * that's named after both, such as `CRAFT_QUEUE_NAME` for `queueName` and `queue.name`, is left to the new setting.
      */
     private function applyRenamedEnvironmentOverrides(GeneralConfig $config): void
     {
         foreach ($config::renamedSettings() as $setting => $newSetting) {
-            $value = Env::get('CRAFT_'.str($setting)->snake()->upper()->value());
+            $envName = 'CRAFT_'.str($setting)->snake()->upper()->value();
+
+            if ($envName === 'CRAFT_'.str($newSetting)->replace('.', '_')->snake()->upper()->value()) {
+                continue;
+            }
+
+            $value = Env::get($envName);
 
             if ($value !== null) {
                 $config->{$setting} = $value;

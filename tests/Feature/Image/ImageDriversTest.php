@@ -9,14 +9,14 @@ use CraftCms\Cms\Image\Raster;
 use Illuminate\Support\Facades\File;
 
 it('loads and transforms images with each driver', function (ImageDriver $driver) {
-    $original = Cms::config()->imageDriver;
-    Cms::config()->imageDriver = $driver->value;
+    $original = Cms::config()->images->driver;
+    Cms::config()->images->driver = $driver->value;
     app()->forgetInstance(Images::class);
 
     try {
         $images = app(Images::class);
     } catch (Throwable $e) {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
         if ($driver === ImageDriver::Vips && getenv('CRAFT_REQUIRE_VIPS')) {
             throw $e;
@@ -51,20 +51,20 @@ it('loads and transforms images with each driver', function (ImageDriver $driver
             ->and(File::size($autoQualityPath))->toBeGreaterThan(0)
             ->and($images->getExifData($orientationPath))->not->toHaveKey('ifd0.Orientation');
     } finally {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
     }
 })->with(ImageDriver::cases());
 
 it('encodes every format reported by each driver', function (ImageDriver $driver, string $format) {
-    $original = Cms::config()->imageDriver;
-    Cms::config()->imageDriver = $driver->value;
+    $original = Cms::config()->images->driver;
+    Cms::config()->images->driver = $driver->value;
     app()->forgetInstance(Images::class);
 
     try {
         $images = app(Images::class);
     } catch (Throwable $e) {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
         if ($driver === ImageDriver::Vips && getenv('CRAFT_REQUIRE_VIPS')) {
             throw $e;
@@ -73,7 +73,7 @@ it('encodes every format reported by each driver', function (ImageDriver $driver
     }
 
     if (! $images->supportsFormat($format)) {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
         $this->markTestSkipped("{$driver->value} does not support $format in this environment.");
     }
@@ -87,7 +87,7 @@ it('encodes every format reported by each driver', function (ImageDriver $driver
             ->saveAs($targetPath))->toBeTrue()
             ->and(File::size($targetPath))->toBeGreaterThan(0);
     } finally {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
     }
 })->with(ImageDriver::cases())->with([
@@ -119,14 +119,14 @@ it('converts CMYK without modifying the source', function (ImageDriver $driver) 
     $fixture->clear();
     $sourceHash = hash_file('sha256', $sourcePath);
 
-    $original = Cms::config()->imageDriver;
-    Cms::config()->imageDriver = $driver->value;
+    $original = Cms::config()->images->driver;
+    Cms::config()->images->driver = $driver->value;
     app()->forgetInstance(Images::class);
 
     try {
         $images = app(Images::class);
     } catch (Throwable $e) {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
         if ($driver === ImageDriver::Vips && getenv('CRAFT_REQUIRE_VIPS')) {
             throw $e;
@@ -143,7 +143,7 @@ it('converts CMYK without modifying the source', function (ImageDriver $driver) 
             ->and($pixel['g'])->toBeLessThan(80)
             ->and($pixel['b'])->toBeLessThan(80);
     } finally {
-        Cms::config()->imageDriver = $original;
+        Cms::config()->images->driver = $original;
         app()->forgetInstance(Images::class);
     }
 })->with(ImageDriver::cases());

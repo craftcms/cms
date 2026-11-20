@@ -179,7 +179,7 @@ class ImageTransformHelper
                         self::storeLocalSource($tempFilePath, $imageSourcePath);
 
                         // And delete it after the request, if nobody wants it.
-                        if (Cms::config()->maxCachedCloudImageSize === 0) {
+                        if (Cms::config()->images->maxCachedCloudSize === 0) {
                             app()->terminating(function () use ($imageSourcePath) {
                                 File::delete($imageSourcePath);
                             });
@@ -342,7 +342,7 @@ class ImageTransformHelper
             $destination = $source;
         }
 
-        $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;
+        $maxCachedImageSize = Cms::config()->images->maxCachedCloudSize;
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0 && ImageHelper::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
@@ -403,7 +403,7 @@ class ImageTransformHelper
         }
 
         if ($image instanceof Raster) {
-            $image->setQuality($transform->quality ?: Cms::config()->defaultImageQuality);
+            $image->setQuality($transform->quality ?: Cms::config()->images->defaultQuality);
             $image->setHeartbeatCallback($heartbeat);
         }
 

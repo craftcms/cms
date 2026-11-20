@@ -37,7 +37,7 @@ class ActivityMentionNotification extends CpNotification implements ShouldQueueA
                 ->notificationText($event, $notifiable->asElement()),
         );
 
-        $this->queue = Cms::config()->queueName;
+        $this->queue = Cms::config()->queue->name;
         $this
             ->title('comment_mention_subject')
             ->byline($event->data['author']['label'])
