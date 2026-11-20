@@ -1,34 +1,39 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.2 - 2026-11-20
 
+- Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails. ([#20742](https://github.com/craftcms/cms/pull/20742))
+- MCP upload URLs now respond with JSON errors. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - Added `craft\helpers\UrlHelper::absoluteUrl()`.
+- Added `craft\services\Dashboard::isWidgetTypeAvailable()`.
 - `craft\elements\db\NestedElementQueryTrait::owner()` now accepts an array of owner elements.
-- Fixed a bug where garbage collection could block other requests’ database writes for minutes while deleting orphaned foreign key rows. Orphaned rows are now found without locking anything and deleted in small batches, with foreign key checks enabled, so the deletions also cascade to rows that reference them. ([#20885](https://github.com/craftcms/cms/issues/20885))
-- Fixed a bug where uploading an indexed PNG with Imagick merged similar colors in its palette, and each later upload of the file merged more. ([#20916](https://github.com/craftcms/cms/issues/20916))
-- Fixed a bug where uploading a 16-bit greyscale PNG with Imagick merged its grey levels or reduced it to 8 bits per channel. ([#20923](https://github.com/craftcms/cms/pull/20923))
-- Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
-- Fixed a bug where tests extending `craft\test\console\ConsoleTest` were run with a web application rather than a console application.
-- Fixed a bug where control panel templates could fail to render with an “Unknown function” error after an email was sent to a user affiliated with a different site. ([#20855](https://github.com/craftcms/cms/issues/20855))
+- Fixed a bug where garbage collection could block other requests’ database writes. ([#20885](https://github.com/craftcms/cms/issues/20885))
+- Fixed a bug where uploading an indexed PNG with Imagick merged similar colors in its palette. ([#20916](https://github.com/craftcms/cms/issues/20916))
+- Fixed a bug where uploading a 16-bit greyscale PNG with Imagick reduced its quality. ([#20923](https://github.com/craftcms/cms/pull/20923))
+- Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used.
+- Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources restricted to user groups. ([#20875](https://github.com/craftcms/cms/issues/20875))
+- Fixed a bug where tests extending `craft\test\console\ConsoleTest` were run with a web application.
+- Fixed an “Unknown function” error that could occur after an email was sent to a user affiliated with a different site. ([#20855](https://github.com/craftcms/cms/issues/20855))
 - Fixed an n+1 query bug when working with Content Block fields. ([#20776](https://github.com/craftcms/cms/issues/20776))
-- Fixed a bug where the stdio MCP server (`mcp/serve`) didn’t see project config changes made by other processes, such as in the control panel or via the CLI, and rejected all project config changes after them until it was restarted. ([#20597](https://github.com/craftcms/cms/pull/20597))
-- Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
-- Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes in the control panel. ([#20613](https://github.com/craftcms/cms/issues/20613))
-- Fixed an error that could occur when saving an image cropped against the left or top edge in the Image Editor. ([#20601](https://github.com/craftcms/cms/issues/20601))
+- Fixed a bug where `mcp/serve` didn’t see project config changes made by other processes. ([#20597](https://github.com/craftcms/cms/pull/20597))
+- Fixed a bug where Assets fields restricted to a single location without subfolders could select files in the location’s subfolders.
+- Fixed a bug where stroke-based icons were shown as filled shapes. ([#20613](https://github.com/craftcms/cms/issues/20613))
+- Fixed an error that could occur when saving an image cropped against its left or top edge in the Image Editor. ([#20601](https://github.com/craftcms/cms/issues/20601))
 - Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
-- Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals.
-- Fixed a bug where saving the Team user group’s permissions programmatically could save its project config without a name or handle, causing `project-config/apply` to fail. ([#20595](https://github.com/craftcms/cms/issues/20595))
-- Fixed a bug where files sent to `assets_upload_url` MCP upload URLs couldn’t be used by `assets_create` or `assets_replace` on load-balanced sites, when requests reached different servers. Uploads are now stored in the temporary asset upload filesystem (`tempAssetUploadFs`). ([#20578](https://github.com/craftcms/cms/pull/20578))
-- MCP upload URLs now respond with JSON errors, rather than HTML pages, when an upload is expired, already used, or too large. ([#20578](https://github.com/craftcms/cms/pull/20578))
-- Fixed a bug where the default temporary asset upload filesystem couldn’t be replaced via `craft\fs\Temp`’s dependency injection container definition, such as with shared storage for load-balanced servers.
+- Fixed a bug where saving the Team user group’s permissions programmatically could break `project-config/apply`. ([#20595](https://github.com/craftcms/cms/issues/20595))
+- Fixed a bug where MCP uploads didn’t work on load-balanced sites. ([#20578](https://github.com/craftcms/cms/pull/20578))
+- Fixed a bug where the default temporary asset upload filesystem couldn’t be replaced via `craft\fs\Temp`’s container definition.
 - Fixed a bug where Preview never loaded for users who could view an entry but not save it. ([#20572](https://github.com/craftcms/cms/issues/20572))
-- Fixed a bug where the “Save and send activation email” button on users’ Permissions screens didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
-- Fixed a bug where project config handlers for a path weren’t called when a value nested within it was set before the path existed. ([#20717](https://github.com/craftcms/cms/pull/20717))
-- Fixed a bug where `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place. ([#20775](https://github.com/craftcms/cms/pull/20775))
-- Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails, so updates and plugin installs that relied on that, such as for private VCS repositories without a GitHub token, now fail instead. ([#20742](https://github.com/craftcms/cms/pull/20742))
-- Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath, when the filesystem moved them along with it. ([#20773](https://github.com/craftcms/cms/issues/20773))
-- Fixed a bug where the `assets_transform_url` MCP tool and MCP element data returned root-relative URLs for assets in volumes with root-relative base URLs, which MCP clients can’t resolve.
-- Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields that don’t propagate to all sites. ([#20838](https://github.com/craftcms/cms/issues/20838))
+- Fixed a bug where the “Save and send activation email” button didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
+- Fixed a bug where project config handlers weren’t called for a path when a nested value was set before the path existed. ([#20717](https://github.com/craftcms/cms/pull/20717))
+- Fixed a bug where `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed. ([#20775](https://github.com/craftcms/cms/pull/20775))
+- Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case. ([#20773](https://github.com/craftcms/cms/issues/20773))
+- Fixed a bug where MCP tools returned root-relative asset URLs.
+- Fixed a bug where applying an outdated draft could delete other sites’ nested entries in required Matrix fields. ([#20838](https://github.com/craftcms/cms/issues/20838))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-24vg-rp56-rf5c)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2xwp-6jjc-hfmm)
 
 ## 5.12.1 - 2026-11-10
 

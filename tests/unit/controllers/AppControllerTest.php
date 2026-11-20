@@ -8,14 +8,19 @@
 namespace crafttests\unit\controllers;
 
 use Craft;
+use craft\base\FieldInterface;
 use craft\controllers\AppController;
 use craft\elements\User;
+use craft\helpers\Session;
+use craft\models\EntryType;
 use craft\models\Update;
 use craft\models\UpdateRelease;
 use craft\models\Updates as UpdatesModel;
 use craft\services\Composer;
 use craft\services\Updates;
 use craft\test\TestCase;
+use crafttests\fixtures\EntryTypeFixture;
+use yii\web\BadRequestHttpException;
 
 /**
  * Unit tests for AppController
@@ -26,6 +31,15 @@ use craft\test\TestCase;
 class AppControllerTest extends TestCase
 {
     private ?string $originalRequestMethod = null;
+
+    public function _fixtures(): array
+    {
+        return [
+            'entry-types' => [
+                'class' => EntryTypeFixture::class,
+            ],
+        ];
+    }
 
     /** @dataProvider composerAvailabilityDataProvider */
     public function testUpdateInformationRemainsAvailableWithoutComposer(bool $available): void
@@ -100,6 +114,52 @@ class AppControllerTest extends TestCase
             'admin' => [true, true],
             'non-admin' => [false, false],
         ];
+    }
+
+    public function testRenderComponentsOverrides(): void
+    {
+        $iconPath = dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg';
+        $html = $this->renderComponents(EntryType::class, 1000, [
+            'name' => 'Overridden Name',
+            'icon' => $iconPath,
+        ])['components'][EntryType::class][1000][0];
+
+        self::assertStringContainsString('Overridden Name', $html);
+        self::assertStringNotContainsString('<svg', $html);
+    }
+
+    /**
+     * @dataProvider renderComponentsInvalidTypeDataProvider
+     */
+    public function testRenderComponentsInvalidType(string $type): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+        $this->renderComponents($type, 'foo');
+    }
+
+    public static function renderComponentsInvalidTypeDataProvider(): array
+    {
+        return [
+            'class with a static get() method' => [Session::class],
+            'interface extending Chippable' => [FieldInterface::class],
+        ];
+    }
+
+    private function renderComponents(string $type, mixed $id, array $overrides = []): array
+    {
+        Craft::$app->getUser()->setIdentity(new User(['id' => 1, 'admin' => false]));
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = Craft::$app->getRequest();
+        $request->setIsCpRequest(true);
+        $request->getHeaders()->set('Accept', 'application/json');
+        $request->setBodyParams([
+            'components' => [
+                ['type' => $type, 'id' => $id, 'instances' => [['showThumb' => true, 'overrides' => $overrides]]],
+            ],
+        ]);
+
+        $controller = new AppController('app', Craft::$app);
+        return $controller->actionRenderComponents()->data;
     }
 
     private function processApiResponseHeaders(array $headers): void

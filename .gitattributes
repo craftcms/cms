@@ -18,7 +18,6 @@
 /README.md export-ignore
 /codeception.yml export-ignore
 /composer.lock export-ignore
-/crowdin.yml export-ignore
 /ecs.php export-ignore
 /gulpfile.js export-ignore
 /lerna.json export-ignore

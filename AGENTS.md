@@ -150,3 +150,9 @@ For this path:
    never a force-push. If the target advances before the push succeeds, discard the
    unpublished merge, fetch the latest heads, and repeat from a clean worktree
    based on the latest target, including inspection and required validation.
+5. If the PR changed any file in `src/translations/`, run the translation sync
+   after the merge is pushed, so the changes reach the translation catalog and
+   the other branches:
+   `gh workflow run translation-sync.yml -R craftcms/cms --ref translations`.
+   Watch the run with `gh run watch`, and report any `t9n/<branch>` pull
+   requests it opens or updates.
