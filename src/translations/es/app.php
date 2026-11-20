@@ -1927,7 +1927,7 @@ return [
     'This field was updated in the Current revision.' => 'Este campo se ha actualizado en la revisión actual.',
     'This field’s target subfolder path is invalid: {path}' => 'La subcarpeta del objetivo de campo no es válida: {path}',
     'This field’s values are used as search keywords.' => 'Los valores de este campo se utilizan como palabras clave de búsqueda.',
-    'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.' => 'Los {atributos} de este campo {totalAttributes, plural, one {}=1{fueron} other{fueron}} anulados.',
+    'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.' => '{totalAttributes, plural, =1{{attributes} de este campo se ha reemplazado} other{{attributes} de este campo se han reemplazado}}.',
     'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.' => 'Este sistema de archivos se ha reservado para cargas temporales de recursos. Elige otro distinto para tu volumen.',
     'This global set doesn’t have any fields assigned to it in its field layout.' => 'Esta configuración global no tiene ningún campo asignado en su diseño de campo.',
     'This is a new {type}.' => 'Es una nueva {type}.',
