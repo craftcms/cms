@@ -8,13 +8,17 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\ResponseHeaders;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Context;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
- * action, preview, and site token requests, and for responses that contain the session’s CSRF token.
+ * action, and preview requests, and for responses that contain the session’s CSRF token. Site token requests get
+ * theirs from {@see ResolveSite}, which also runs on site routes outside the `craft` group.
  *
  * @since 6.0.0
  */
@@ -58,13 +62,23 @@ class SetHeaders
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
+        // Headers queued for a response that failed don’t apply to the response rendered for its exception.
+        // Error templates apply their own (see ErrorPages), and Laravel keeps those queued before an
+        // HttpResponseException, such as for `{% redirect %}`.
+        $exception = $response instanceof Response || $response instanceof JsonResponse || $response instanceof RedirectResponse
+            ? $response->exception
+            : null;
+
+        if ($exception !== null && ! $exception instanceof HttpResponseException) {
+            $this->responseHeaders->reset();
+        }
+
         $this->responseHeaders->applyTo($response);
 
         if (
             $request->isCpRequest() ||
             $request->isActionRequest() ||
             $hasPreviewParam ||
-            Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
             $this->containsCsrfToken($request, $response)
         ) {
             ResponseHeaders::setNoCacheHeaders($response);

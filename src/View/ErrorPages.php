@@ -110,7 +110,7 @@ readonly class ErrorPages
                 );
             }
 
-            return response(Template::renderPageTemplate($siteTemplate, [
+            $response = response(Template::renderPageTemplate($siteTemplate, [
                 'message' => $httpException->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
@@ -120,13 +120,17 @@ readonly class ErrorPages
                 'errors' => new ViewErrorBag,
                 ...get_object_vars($e),
             ], TemplateMode::Site), $statusCode, $httpException->getHeaders());
+
+            // SetHeaders discards the queue for responses rendered from exceptions, so apply the error template’s own here.
+            ResponseHeaders::applyTo($response);
+
+            return $response;
         } catch (Throwable $renderException) {
             if (app()->hasDebugModeEnabled()) {
                 throw $renderException;
             }
 
             report($renderException);
-            ResponseHeaders::reset();
 
             return null;
         }

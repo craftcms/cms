@@ -12,6 +12,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
@@ -127,6 +128,39 @@ it('drops cache headers queued before Laravel renders an exception', function (T
     'authentication' => fn () => new AuthenticationException(redirectTo: '/login'),
     'validation' => fn () => ValidationException::withMessages(['email' => 'Invalid']),
 ]);
+
+it('drops cache headers queued before an exception that renders its own response', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () {
+        ResponseHeaders::setCache(3600);
+
+        throw new class('Nope') extends RuntimeException
+        {
+            public function render(): Response
+            {
+                return response('Nope', 400);
+            }
+        };
+    });
+
+    $response = $this->get('/throws')->assertBadRequest();
+
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
+});
+
+it('applies cache headers queued by the error template', function () {
+    config(['app.debug' => false]);
+    File::ensureDirectoryExists("{$this->tempDir}/errors");
+    File::put("{$this->tempDir}/errors/404.twig", '{% expires in 1 hour %}Not found');
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () {
+        ResponseHeaders::setCache(60);
+        abort(404);
+    });
+
+    $response = $this->get('/throws')->assertNotFound();
+
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=3600, public');
+});
 
 it('drops cache headers queued by an error template that fails', function () {
     config(['app.debug' => false]);
