@@ -404,6 +404,18 @@ export default class CraftBreadcrumbs extends LitElement {
             .map((action) => ({
               ...action,
               current: action.current || action.checked || undefined,
+              // Chosen here, it's still the switcher's selection, so the
+              // switcher announces it as it would its own.
+              onClick: (event: Event) => {
+                action.onClick?.(event);
+                menu.dispatchEvent(
+                  new CustomEvent('craft-select', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {item: action},
+                  })
+                );
+              },
             }));
         }
 

@@ -257,6 +257,36 @@ describe('craft-breadcrumbs', () => {
     ]);
   });
 
+  it('announces a choice from a collapsed crumb’s menu on that menu', async () => {
+    const {element} = await trail(
+      '120px',
+      `
+      <craft-breadcrumb-item>Site<craft-action-menu slot="suffix"></craft-action-menu></craft-breadcrumb-item>
+      <craft-breadcrumb-item>Current Entry With A Long Title</craft-breadcrumb-item>`
+    );
+    const switcher = element.querySelector('craft-action-menu')!;
+    let clicked = false;
+    const french = {label: 'French', onClick: () => (clicked = true)};
+    switcher.actions = [french];
+    await switcher.updateComplete;
+    let selected: unknown = null;
+    switcher.addEventListener('craft-select', (event) => {
+      selected = (event as CustomEvent).detail.item;
+    });
+
+    const overflowMenu =
+      element.shadowRoot!.querySelector('.breadcrumbs__menu')!;
+    await userEvent.click(overflowMenu.querySelector('[slot="invoker"]')!);
+    await frame();
+    const choice = [
+      ...overflowMenu.querySelectorAll<HTMLElement>('craft-action-item'),
+    ].find((item) => item.textContent!.trim() === 'French')!;
+    await userEvent.click(choice);
+
+    expect(clicked).toBe(true);
+    expect(selected).toBe(french);
+  });
+
   it('follows a collapsed crumb’s plain menu link when it’s chosen', async () => {
     history.replaceState(null, '', '#start');
     const {element} = await trail(
