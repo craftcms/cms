@@ -3679,7 +3679,7 @@ return [
     '{num}% width' => '%{num} genişlik',
     '{plugin} can’t be installed due to the {setting} config setting.' => '{plugin}, {setting} yapılandırma ayarı nedeniyle kurulamıyor.',
     '{plugin} is disabled by the {setting} config setting.' => '{plugin}, {setting} yapılandırma ayarı nedeniyle devre dışı.',
-    '{plugin} requires Craft CMS {edition} edition.' => '{plugin}, Craft CMS {plugin} sürümünü gerektirir.',
+    '{plugin} requires Craft CMS {edition} edition.' => '{plugin}, Craft CMS {edition} sürümünü gerektirir.',
     '{price} per year for updates' => 'Güncellemeler için yıllık {price}',
     '{provider} connected.' => '{provider} bağlandı.',
     '{provider} disconnected.' => '{provider} bağlantısı kesildi.',
