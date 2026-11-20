@@ -60,7 +60,7 @@ export const CHIP_DOUBLE_CLICK_DELAY = 300;
  *
  * Admin tables use it too: a link that opens in a slideout carries the same
  * `data-cp-url` / `data-editable` metadata, plus `data-slideout-width` for a
- * custom width, so double-clicking its row opens it. A plain link doesn't, so
+ * custom width and `data-refresh-on-close` to also refresh when it closes, so double-clicking its row opens it. A plain link doesn't, so
  * its row does nothing.
  */
 export interface ElementQuickEditDependencies {
@@ -98,8 +98,23 @@ export function useElementQuickEdit(
   function openEditor(
     url: string,
     opener: HTMLElement | null = null,
-    options: Pick<OpenSlideoutOptions, 'width'> = {}
+    {
+      refreshOnClose = false,
+      ...options
+    }: Pick<OpenSlideoutOptions, 'width'> & {refreshOnClose?: boolean} = {}
   ): void {
+    if (refreshOnClose) {
+      // Saving closes the slideout too, so refreshing on close covers both.
+      void open(url, {
+        ...options,
+        opener,
+        onSaved: () => {},
+        onClosed: refreshResults,
+      });
+
+      return;
+    }
+
     void open(url, {...options, opener, onSaved});
   }
 
@@ -348,6 +363,7 @@ export function useElementQuickEdit(
 
     openEditor(element.dataset.cpUrl!, opener, {
       width: element.dataset.slideoutWidth,
+      refreshOnClose: element.hasAttribute('data-refresh-on-close'),
     });
   }
 
