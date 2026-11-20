@@ -27,8 +27,8 @@ beforeEach(function () {
     actingAs(User::findOne());
     config()->set('filesystems.disks.photo-parts', ['driver' => 'local', 'root' => storage_path('framework/testing/photo-parts')]);
     Storage::fake('photo-parts');
-    Cms::config()->uploadSessionDisk = 'photo-parts';
-    Cms::config()->uploadChunkSize = 512;
+    Cms::config()->assets->uploadSessionDisk = 'photo-parts';
+    Cms::config()->assets->uploadChunkSize = 512;
 
     $this->uploadPhoto = function (UploadedFile $photo): TestResponse {
         $session = postJson(action([PhotoController::class, 'upload']), [
@@ -156,7 +156,7 @@ test('uploads and replaces a user photo through sessions', function () {
 });
 
 test('upload rejects photos larger than the configured upload limit', function () {
-    Cms::config()->maxUploadFileSize = 10;
+    Cms::config()->assets->maxUploadFileSize = 10;
 
     postJson(action([PhotoController::class, 'upload']), [
         'userId' => auth()->id(),

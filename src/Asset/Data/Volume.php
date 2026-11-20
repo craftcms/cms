@@ -328,7 +328,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             return true;
         }
 
-        return $this->resolveStorageTargetKey($this->_fsHandle) === Cms::config()->getTempAssetUploadDisk();
+        return $this->resolveStorageTargetKey($this->_fsHandle) === Cms::config()->assets->getTempUploadDisk();
     }
 
     public function markAsTemporary(): void

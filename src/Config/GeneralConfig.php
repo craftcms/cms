@@ -46,13 +46,18 @@ class GeneralConfig extends BaseConfig
      * Settings that have been renamed in Craft 6, mapped to their new names.
      */
     protected const array RENAMED_SETTINGS = [
+        'allowedFileExtensions' => 'assets.allowedFileExtensions',
         'backupCommand' => 'backups.command',
         'backupCommandFormat' => 'backups.commandFormat',
         'backupOnUpdate' => 'backups.onUpdate',
+        'convertFilenamesToAscii' => 'assets.convertFilenamesToAscii',
         'defaultImageQuality' => 'images.defaultQuality',
         'enableGql' => 'gql.enabled',
         'enableGraphqlCaching' => 'gql.enableCaching',
         'enableGraphqlIntrospection' => 'gql.enableIntrospection',
+        'extraAllowedFileExtensions' => 'assets.extraAllowedFileExtensions',
+        'extraFileKinds' => 'assets.extraFileKinds',
+        'filenameWordSeparator' => 'assets.filenameWordSeparator',
         'gqlTypePrefix' => 'gql.typePrefix',
         'imageDriver' => 'images.driver',
         'imageEditorRatios' => 'images.editorRatios',
@@ -64,6 +69,7 @@ class GeneralConfig extends BaseConfig
         'maxGraphqlComplexity' => 'gql.maxComplexity',
         'maxGraphqlDepth' => 'gql.maxDepth',
         'maxGraphqlResults' => 'gql.maxResults',
+        'maxUploadFileSize' => 'assets.maxUploadFileSize',
         'optimizeImageFilesize' => 'images.optimizeFilesize',
         'prefixGqlRootTypes' => 'gql.prefixRootTypes',
         'preserveCmykColorspace' => 'images.preserveCmykColorspace',
@@ -71,12 +77,21 @@ class GeneralConfig extends BaseConfig
         'preserveImageColorProfiles' => 'images.preserveColorProfiles',
         'queueName' => 'queue.name',
         'restoreCommand' => 'backups.restoreCommand',
+        'revAssetUrls' => 'assets.revUrls',
         'rotateImagesOnUploadByExifData' => 'images.rotateOnUploadByExifData',
         'runQueueAutomatically' => 'queue.runAutomatically',
+        'sanitizeCpImageUploads' => 'assets.sanitizeCpImageUploads',
+        'sanitizeSvgUploads' => 'assets.sanitizeSvgUploads',
         'setGraphqlDatesToSystemTimeZone' => 'gql.setDatesToSystemTimeZone',
+        'tempAssetUploadDisk' => 'assets.tempUploadDisk',
         'trackedQueueNames' => 'queue.trackedNames',
         'transformGifs' => 'images.transformGifs',
         'transformSvgs' => 'images.transformSvgs',
+        'trashedAssetDisk' => 'assets.trashDisk',
+        'uploadChunkSize' => 'assets.uploadChunkSize',
+        'uploader' => 'assets.uploader',
+        'uploadSessionDisk' => 'assets.uploadSessionDisk',
+        'uploadSessionDuration' => 'assets.uploadSessionDuration',
         'upscaleImages' => 'images.upscale',
     ];
 
@@ -340,123 +355,6 @@ class GeneralConfig extends BaseConfig
     public bool $allowUpdates = true;
 
     /**
-     * @var string[] The file extensions Craft should allow when a user is uploading files.
-     *
-     * ```php Static Config
-     * // Nothing bug GIFs!
-     * ->allowedFileExtensions([
-     *     'gif',
-     * ])
-     * ```
-     *
-     * @see extraAllowedFileExtensions
-     *
-     * @group Assets
-     */
-    public array $allowedFileExtensions = [
-        '7z',
-        'aiff',
-        'asc',
-        'asf',
-        'avi',
-        'avif',
-        'bmp',
-        'cap',
-        'cin',
-        'csv',
-        'dfxp',
-        'doc',
-        'docx',
-        'dotm',
-        'dotx',
-        'fla',
-        'flv',
-        'gif',
-        'gz',
-        'gzip',
-        'heic',
-        'heif',
-        'hevc',
-        'itt',
-        'jp2',
-        'jpeg',
-        'jpg',
-        'jpx',
-        'js',
-        'json',
-        'jxl',
-        'lrc',
-        'm2t',
-        'm4a',
-        'm4v',
-        'markdown',
-        'mcc',
-        'md',
-        'mid',
-        'mov',
-        'mp3',
-        'mp4',
-        'mpc',
-        'mpeg',
-        'mpg',
-        'mpsub',
-        'ods',
-        'odt',
-        'ogg',
-        'ogv',
-        'pdf',
-        'png',
-        'potx',
-        'pps',
-        'ppsm',
-        'ppsx',
-        'ppt',
-        'pptm',
-        'pptx',
-        'ppz',
-        'pxd',
-        'qt',
-        'ram',
-        'rar',
-        'rm',
-        'rmi',
-        'rmvb',
-        'rt',
-        'rtf',
-        'sami',
-        'sbv',
-        'scc',
-        'sdc',
-        'sitd',
-        'smi',
-        'srt',
-        'stl',
-        'sub',
-        'svg',
-        'swf',
-        'sxc',
-        'sxw',
-        'tar',
-        'tds',
-        'tgz',
-        'tif',
-        'tiff',
-        'ttml',
-        'txt',
-        'vob',
-        'vsd',
-        'vtt',
-        'wav',
-        'webm',
-        'webp',
-        'wma',
-        'wmv',
-        'xls',
-        'xlsx',
-        'zip',
-    ];
-
-    /**
      * @var bool Whether uppercase letters should be allowed in slugs.
      *
      * ::: code
@@ -501,6 +399,46 @@ class GeneralConfig extends BaseConfig
      * @since 6.0.0
      */
     public AnchorsConfig $anchors;
+
+    /**
+     * @var AssetsConfig Settings for assets: which files can be uploaded, how they’re uploaded and named, and where Craft keeps their files.
+     *
+     * Supported settings:
+     *
+     * - `allowedFileExtensions` – The file extensions that can be uploaded.
+     * - `extraAllowedFileExtensions` – File extensions to add to `allowedFileExtensions`.
+     * - `extraFileKinds` – Additional file kinds, merged with the ones `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()` defines. Their extensions still need to be allowed. (Default is `[]`.)
+     * - `convertFilenamesToAscii` – Whether uploaded filenames with non-ASCII characters should be converted to ASCII (`ñ` → `n`). (Default is `false`.)
+     * - `filenameWordSeparator` – The string that separates words in uploaded filenames, or `false` to leave spaces alone. (Default is `'-'`.)
+     * - `revUrls` – Whether asset URLs should be revved, so browsers don’t load cached versions when they’re modified. (Default is `false`.)
+     * - `sanitizeSvgUploads` – Whether uploaded SVG files should be sanitized. (Default is `true`.)
+     * - `sanitizeCpImageUploads` – Whether images uploaded through the control panel should be sanitized. (Default is `true`.)
+     * - `trashDisk` – The Laravel filesystem disk that soft-deleted assets’ files are moved to, so the assets can be restored. If it isn’t set, soft-deleting an asset deletes its file. (Default is `null`.)
+     * - `tempUploadDisk` – The Laravel filesystem disk for temporary assets and user photos. (Default is `null`, a local temp folder.)
+     * - `uploadSessionDisk` – The Laravel filesystem disk that stages upload sessions. Sites on more than one server must set it to a shared disk. (Default is `null`, the local `craft-tmp` disk.)
+     * - `uploader` – The registered uploader to use, or `null` to select one from the upload session disk. (Default is `null`.)
+     * - `uploadChunkSize` – The maximum bytes per PHP upload request. (Default is 8 MiB.)
+     * - `uploadSessionDuration` – The seconds of inactivity before an upload session can be removed. (Default is 24 hours.)
+     * - `maxUploadFileSize` – The maximum upload file size, in bytes or as a size such as `'25M'`. (Default is 16 MiB.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->assets(\CraftCms\Cms\Config\AssetsConfig::create()
+     *     ->extraAllowedFileExtensions(['mbox', 'xml'])
+     *     ->maxUploadFileSize('25M')
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ASSETS='{"maxUploadFileSize":"25M"}'
+     * CRAFT_ASSETS_MAX_UPLOAD_FILE_SIZE=25M
+     * ```
+     * :::
+     *
+     * @group Assets
+     *
+     * @since 6.0.0
+     */
+    public AssetsConfig $assets;
 
     /**
      * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
@@ -596,26 +534,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 1 day
      */
     public mixed $cacheDuration = 86400;
-
-    /**
-     * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
-     *
-     * ::: tip
-     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->convertFilenamesToAscii(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_CONVERT_FILENAMES_TO_ASCII=false
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public bool $convertFilenamesToAscii = false;
 
     /**
      * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
@@ -1175,24 +1093,6 @@ class GeneralConfig extends BaseConfig
     public bool $enableTemplateCaching = true;
 
     /**
-     * @var string[]|null List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->extraAllowedFileExtensions(['mbox', 'xml'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS=mbox,xml
-     * ```
-     * :::
-     *
-     * @see allowedFileExtensions
-     *
-     * @group System
-     */
-    public ?array $extraAllowedFileExtensions = null;
-
-    /**
      * @var string[] List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
      *
      * ::: code
@@ -1207,33 +1107,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public array $extraAppLocales = [];
-
-    /**
-     * @var array<string, array<string, mixed>> List of additional file kinds Craft should support. This array will get merged with the one defined in
-     *                                          `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()`.
-     *
-     * ```php Static Config
-     * ->extraFileKinds([
-     *     // merge .psb into list of Photoshop file kinds
-     *     'photoshop' => [
-     *         'extensions' => ['psb'],
-     *     ],
-     *     // register new "Stylesheet" file kind
-     *     'stylesheet' => [
-     *         'label' => 'Stylesheet',
-     *         'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
-     *     ],
-     * ])
-     * ```
-     *
-     * ::: tip
-     * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-     * the <config5:extraAllowedFileExtensions> config setting.
-     * :::
-     *
-     * @group Assets
-     */
-    public array $extraFileKinds = [];
 
     /**
      * @var string[] Any additional last name prefixes that should be supported by the name parser.
@@ -1282,22 +1155,6 @@ class GeneralConfig extends BaseConfig
      * @group Users
      */
     public array $extraNameSuffixes = [];
-
-    /**
-     * @var string|false The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->filenameWordSeparator(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_FILENAME_WORD_SEPARATOR=false
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public string|false $filenameWordSeparator = '-';
 
     /**
      * @var GqlConfig Settings for the GraphQL API.
@@ -1730,50 +1587,6 @@ class GeneralConfig extends BaseConfig
     public int $maxSlugIncrement = 100;
 
     /**
-     * @var int|string The maximum upload file size allowed.
-     *
-     * See [[PHP::sizeToBytes()]] for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * // 25MB
-     * ->maxUploadFileSize(26214400)
-     * ```
-     * ```shell Environment Override
-     * # 25MB
-     * CRAFT_MAX_UPLOAD_FILE_SIZE=26214400
-     * ```
-     * :::
-     *
-     * @group Assets
-     *
-     * @defaultAlt 16MB
-     */
-    public string|int $maxUploadFileSize = 16777216;
-
-    /**
-     * The registered upload transport to use, or null to select one from the upload session disk.
-     *
-     * @group Assets
-     */
-    public ?string $uploader = null;
-
-    /**
-     * Maximum bytes per PHP upload request. Proxy request limits may require a smaller value.
-     * S3 multipart uploads use parts of at least 5 MiB.
-     *
-     * @group Assets
-     */
-    public int $uploadChunkSize = 8 * 1024 * 1024;
-
-    /**
-     * Seconds of inactivity before an upload session and its temporary files can be removed.
-     *
-     * @group Assets
-     */
-    public int $uploadSessionDuration = 24 * 60 * 60;
-
-    /**
      * @var string The query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
@@ -2103,22 +1916,6 @@ class GeneralConfig extends BaseConfig
     public mixed $rememberUsernameDuration = 31536000;
 
     /**
-     * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->revAssetUrls(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_REV_ASSET_URLS=true
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public bool $revAssetUrls = false;
-
-    /**
      * @var bool Whether the system should run in Safe Mode.
      *
      * Safe Mode disables all plugins and application config that can alter Craft's expected default behavior.
@@ -2135,40 +1932,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $safeMode = false;
-
-    /**
-     * @var bool Whether images uploaded via the control panel should be sanitized.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sanitizeCpImageUploads(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SANITIZE_CP_IMAGE_UPLOADS=false
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public bool $sanitizeCpImageUploads = true;
-
-    /**
-     * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
-     *
-     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sanitizeSvgUploads(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SANITIZE_SVG_UPLOADS=false
-     * ```
-     * :::
-     *
-     * @group Security
-     */
-    public bool $sanitizeSvgUploads = true;
 
     /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
@@ -2379,57 +2142,6 @@ class GeneralConfig extends BaseConfig
     public ?string $systemTemplateCss = null;
 
     /**
-     * @var string|null The Laravel filesystem disk that should be used for storing temporary asset uploads.
-     *
-     *                  A local temp folder will be used by default.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TEMP_ASSET_UPLOAD_DISK=tempAssetUploads
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public ?string $tempAssetUploadDisk = null;
-
-    /**
-     * @var string|null The Laravel filesystem disk that soft-deleted assets’ files should be moved to, so the assets
-     *                  can be restored.
-     *
-     *                  Files are stored at the root of the disk, named after their asset’s ID and extension, such as
-     *                  `123.jpg`. Each environment should have its own disk, or its own folder on a shared one,
-     *                  which a `scoped` disk can provide.
-     *
-     *                  If this isn’t set, soft-deleting an asset deletes its file, and the asset can’t be restored.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TRASHED_ASSET_DISK=trashedAssets
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public ?string $trashedAssetDisk = null;
-
-    /**
-     * @var string|null The Laravel filesystem disk that should stage upload sessions.
-     *
-     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
-     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
-     *
-     * @group Assets
-     */
-    public ?string $uploadSessionDisk = null;
-
-    /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *
      * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
@@ -2603,6 +2315,7 @@ class GeneralConfig extends BaseConfig
     public function __construct()
     {
         $this->anchors = AnchorsConfig::create();
+        $this->assets = AssetsConfig::create();
         $this->backups = BackupsConfig::create();
         $this->gql = GqlConfig::create();
         $this->images = ImagesConfig::create();
@@ -2613,9 +2326,6 @@ class GeneralConfig extends BaseConfig
         $this
             // IDE Helper defaults to the same value as devMode
             ->ideHelperEnabled(Env::parseBoolean('$APP_DEBUG') ?? false)
-            // file extensions
-            ->allowedFileExtensions($this->allowedFileExtensions)
-            ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
             // durations
             ->activityRetentionDuration($this->activityRetentionDuration)
             ->cacheDuration($this->cacheDuration)
@@ -2632,7 +2342,6 @@ class GeneralConfig extends BaseConfig
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
             // misc
-            ->maxUploadFileSize($this->maxUploadFileSize)
             ->disabledPlugins($this->disabledPlugins);
     }
 
@@ -2894,29 +2603,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The file extensions Craft should allow when a user is uploading files.
-     *
-     * ```php
-     * // Nothing bug GIFs!
-     * ->allowedFileExtensions([
-     *     'gif',
-     * ])
-     * ```
-     *
-     * @group Assets
-     *
-     * @param  string[]  $value
-     *
-     * @see $allowedFileExtensions
-     */
-    public function allowedFileExtensions(array $value): self
-    {
-        $this->allowedFileExtensions = array_map(strtolower(...), $value);
-
-        return $this;
-    }
-
-    /**
      * Whether uppercase letters should be allowed in slugs.
      *
      * ```php
@@ -2953,6 +2639,30 @@ class GeneralConfig extends BaseConfig
     public function anchors(AnchorsConfig|array|string $value): self
     {
         $this->anchors = $value instanceof AnchorsConfig ? $value : AnchorsConfig::fromConfig($value);
+
+        return $this;
+    }
+
+    /**
+     * Settings for assets: which files can be uploaded, how they’re uploaded and named, and where Craft keeps their files.
+     *
+     * ```php
+     * ->assets(\CraftCms\Cms\Config\AssetsConfig::create()
+     *     ->extraAllowedFileExtensions(['mbox', 'xml'])
+     *     ->maxUploadFileSize('25M')
+     * )
+     * ```
+     *
+     * @group Assets
+     *
+     * @since 6.0.0
+     * @see $assets
+     *
+     * @param  AssetsConfig|array<string, mixed>|string  $value
+     */
+    public function assets(AssetsConfig|array|string $value): self
+    {
+        $this->assets = $value instanceof AssetsConfig ? $value : AssetsConfig::fromConfig($value);
 
         return $this;
     }
@@ -3097,28 +2807,6 @@ class GeneralConfig extends BaseConfig
     public function cacheDuration(mixed $value): self
     {
         $this->cacheDuration = ConfigHelper::durationInSeconds($value);
-
-        return $this;
-    }
-
-    /**
-     * Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
-     *
-     * ::: tip
-     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
-     * :::
-     *
-     * ```php
-     * ->convertFilenamesToAscii(false)
-     * ```
-     *
-     * @group Assets
-     *
-     * @see $convertFilenamesToAscii
-     */
-    public function convertFilenamesToAscii(bool $value = true): self
-    {
-        $this->convertFilenamesToAscii = $value;
 
         return $this;
     }
@@ -3712,30 +3400,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
-     *
-     * ```php
-     * ->extraAllowedFileExtensions(['mbox', 'xml'])
-     * ```
-     *
-     * @group System
-     *
-     * @param  string[]|null  $value
-     *
-     * @see $extraAllowedFileExtensions
-     */
-    public function extraAllowedFileExtensions(?array $value): self
-    {
-        if (is_array($value)) {
-            $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, array_map(strtolower(...), $value));
-        }
-
-        $this->extraAllowedFileExtensions = null;
-
-        return $this;
-    }
-
-    /**
      * List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
      *
      * ```php
@@ -3762,42 +3426,6 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->extraAppLocales = $value;
-
-        return $this;
-    }
-
-    /**
-     * List of additional file kinds Craft should support. This array will get merged with the one defined in
-     * `\CraftCms\Cms\Asset\AssetFileKinds::fileKinds()`.
-     *
-     * ```php
-     * ->extraFileKinds([
-     *     // merge .psb into list of Photoshop file kinds
-     *     'photoshop' => [
-     *         'extensions' => ['psb'],
-     *     ],
-     *     // register new "Stylesheet" file kind
-     *     'stylesheet' => [
-     *         'label' => 'Stylesheet',
-     *         'extensions' => ['css', 'less', 'pcss', 'sass', 'scss', 'styl'],
-     *     ],
-     * ])
-     * ```
-     *
-     * ::: tip
-     * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-     * the <config5:extraAllowedFileExtensions> config setting.
-     * :::
-     *
-     * @group Assets
-     *
-     * @param  array<string, array<string, mixed>>  $value
-     *
-     * @see $extraFileKinds
-     */
-    public function extraFileKinds(array $value): self
-    {
-        $this->extraFileKinds = $value;
 
         return $this;
     }
@@ -3858,24 +3486,6 @@ class GeneralConfig extends BaseConfig
     public function extraNameSuffixes(array $value): self
     {
         $this->extraNameSuffixes = $value;
-
-        return $this;
-    }
-
-    /**
-     * The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
-     *
-     * ```php
-     * ->filenameWordSeparator(false)
-     * ```
-     *
-     * @group Assets
-     *
-     * @see $filenameWordSeparator
-     */
-    public function filenameWordSeparator(string|false $value): self
-    {
-        $this->filenameWordSeparator = $value;
 
         return $this;
     }
@@ -4275,50 +3885,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The maximum upload file size allowed.
-     *
-     * See [[PHP::sizeToBytes()]] for a list of supported value types.
-     *
-     * ```php
-     * // 25MB
-     * ->maxUploadFileSize(26214400)
-     * ```
-     *
-     * @group Assets
-     *
-     * @defaultAlt 16MB
-     *
-     * @see $maxUploadFileSize
-     */
-    public function maxUploadFileSize(string|int $value): self
-    {
-        $this->maxUploadFileSize = PHP::sizeToBytes($value);
-
-        return $this;
-    }
-
-    public function uploader(?string $value): self
-    {
-        $this->uploader = $value;
-
-        return $this;
-    }
-
-    public function uploadChunkSize(int $value): self
-    {
-        $this->uploadChunkSize = $value;
-
-        return $this;
-    }
-
-    public function uploadSessionDuration(int $value): self
-    {
-        $this->uploadSessionDuration = $value;
-
-        return $this;
-    }
-
-    /**
      * Sets the query string param name Craft should use for paginated requests.
      *
      * | Example Value | Example URI |
@@ -4670,24 +4236,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
-     *
-     * ```php
-     * ->revAssetUrls(true)
-     * ```
-     *
-     * @group Assets
-     *
-     * @see $revAssetUrls
-     */
-    public function revAssetUrls(bool $value = true): self
-    {
-        $this->revAssetUrls = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether the system should run in Safe Mode.
      *
      * Safe Mode disables all plugins and application config that can alter Craft's expected default behavior.
@@ -4703,44 +4251,6 @@ class GeneralConfig extends BaseConfig
     public function safeMode(bool $value = true): self
     {
         $this->safeMode = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether images uploaded via the control panel should be sanitized.
-     *
-     * ```php
-     * ->sanitizeCpImageUploads(false)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $sanitizeCpImageUploads
-     */
-    public function sanitizeCpImageUploads(bool $value = true): self
-    {
-        $this->sanitizeCpImageUploads = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
-     *
-     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
-     *
-     * ```php
-     * ->sanitizeSvgUploads(false)
-     * ```
-     *
-     * @group Security
-     *
-     * @see $sanitizeSvgUploads
-     */
-    public function sanitizeSvgUploads(bool $value = true): self
-    {
-        $this->sanitizeSvgUploads = $value;
 
         return $this;
     }
@@ -4980,59 +4490,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The Laravel filesystem disk that should be used for storing temporary asset uploads.
-     *
-     * A local temp folder will be used by default.
-     *
-     *  ```php
-     *  ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
-     *  ```
-     *
-     * @group Assets
-     *
-     * @see $tempAssetUploadDisk
-     */
-    public function tempAssetUploadDisk(?string $value): self
-    {
-        $this->tempAssetUploadDisk = $value;
-
-        return $this;
-    }
-
-    /**
-     * The Laravel filesystem disk that soft-deleted assets’ files should be moved to, so the assets can be restored.
-     *
-     * ```php
-     * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
-     * ```
-     *
-     * @group Assets
-     *
-     * @see $trashedAssetDisk
-     */
-    public function trashedAssetDisk(?string $value): self
-    {
-        $this->trashedAssetDisk = $value;
-
-        return $this;
-    }
-
-    /**
-     * The Laravel filesystem disk that should stage upload sessions.
-     *
-     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
-     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
-     *
-     * @group Assets
-     */
-    public function uploadSessionDisk(?string $value): self
-    {
-        $this->uploadSessionDisk = $value;
-
-        return $this;
-    }
-
-    /**
      * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General
      * (stored in project config).
      *
@@ -5219,40 +4676,32 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns the temporary asset upload disk name.
+     *
+     * @deprecated in 6.0.0. [[AssetsConfig::getTempUploadDisk()]] should be used instead.
      */
     public function getTempAssetUploadDisk(): string
     {
-        return $this->storageDiskName($this->tempAssetUploadDisk, 'craft-asset-temp');
+        return $this->assets->getTempUploadDisk();
     }
 
     /**
      * Returns the upload session disk name.
+     *
+     * @deprecated in 6.0.0. [[AssetsConfig::getUploadSessionDisk()]] should be used instead.
      */
     public function getUploadSessionDisk(): string
     {
-        return $this->storageDiskName($this->uploadSessionDisk, 'craft-tmp');
+        return $this->assets->getUploadSessionDisk();
     }
 
     /**
      * Returns the disk name that soft-deleted assets’ files should be moved to, if one is set.
      *
-     * @see $trashedAssetDisk
+     * @deprecated in 6.0.0. [[AssetsConfig::getTrashDisk()]] should be used instead.
      */
     public function getTrashedAssetDisk(): ?string
     {
-        $disk = Env::parse($this->trashedAssetDisk);
-
-        return is_string($disk) && $disk !== '' ? $disk : null;
-    }
-
-    private function storageDiskName(?string $value, string $default): string
-    {
-        $disk = Env::parse($value);
-        if (! is_string($disk) || $disk === '') {
-            return $default;
-        }
-
-        return $disk;
+        return $this->assets->getTrashDisk();
     }
 
     /**

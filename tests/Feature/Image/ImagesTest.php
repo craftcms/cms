@@ -95,9 +95,9 @@ it('sanitizes dirty svgs', function () {
 
 it('respects sanitizeSvgUploads config setting', function () {
     $path = $this->sandboxPath.'/dirty-svg.svg';
-    $original = Cms::config()->sanitizeSvgUploads;
+    $original = Cms::config()->assets->sanitizeSvgUploads;
 
-    Cms::config()->sanitizeSvgUploads = false;
+    Cms::config()->assets->sanitizeSvgUploads = false;
 
     try {
         $this->service->cleanImage($path);
@@ -107,7 +107,7 @@ it('respects sanitizeSvgUploads config setting', function () {
         expect($contents)->toContain('<script>')
             ->and($contents)->toContain('<this>');
     } finally {
-        Cms::config()->sanitizeSvgUploads = $original;
+        Cms::config()->assets->sanitizeSvgUploads = $original;
     }
 });
 

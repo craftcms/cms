@@ -47,7 +47,7 @@ class AssetUploads implements UploadHandler
         $parameters['operation'] ??= 'upload';
 
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        abort_unless(in_array($extension, Cms::config()->allowedFileExtensions, true), 422, 'This file extension is not allowed.');
+        abort_unless(in_array($extension, Cms::config()->assets->allowedFileExtensions, true), 422, 'This file extension is not allowed.');
         abort_if($size > AssetsHelper::getMaxAssetUploadSize(), 422, 'The file exceeds the maximum upload size.');
 
         if (! $request->user()) {

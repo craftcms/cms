@@ -22,11 +22,11 @@ class Uploaders extends Manager
 {
     public function getDefaultDriver(?string $diskName = null): string
     {
-        if (Cms::config()->uploader !== null) {
-            return Cms::config()->uploader;
+        if (Cms::config()->assets->uploader !== null) {
+            return Cms::config()->assets->uploader;
         }
 
-        $disk = Storage::disk($diskName ?? Cms::config()->getUploadSessionDisk());
+        $disk = Storage::disk($diskName ?? Cms::config()->assets->getUploadSessionDisk());
 
         return $disk instanceof AwsS3V3Adapter ? 's3' : 'tus';
     }

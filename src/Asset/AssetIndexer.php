@@ -626,7 +626,7 @@ class AssetIndexer
             throw new AssetNotIndexableException("File \"{$indexEntry->uri}\" will not be indexed.");
         }
 
-        if (! in_array(strtolower($extension), Cms::config()->allowedFileExtensions, true)) {
+        if (! in_array(strtolower($extension), Cms::config()->assets->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException("File \"{$indexEntry->uri}\" was not indexed because extension \"{$extension}\" is not allowed.");
         }
 

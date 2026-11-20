@@ -81,7 +81,7 @@ it('runs the configured Craft driver without changing transform identity', funct
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    Cms::config()->revAssetUrls(true);
+    Cms::config()->assets->revUrls(true);
 
     $result = app(AssetTransformers::class)->withImmediateTransforms(
         fn () => app(AssetTransformers::class)->transform($asset, [
@@ -489,7 +489,7 @@ it('includes the source revision in transform URL identity', function () {
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    Cms::config()->revAssetUrls(false);
+    Cms::config()->assets->revUrls(false);
 
     $transformers = app(AssetTransformers::class);
     $firstUrl = $transformers->withImmediateTransforms(

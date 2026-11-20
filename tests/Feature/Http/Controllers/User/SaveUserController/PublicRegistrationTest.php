@@ -518,7 +518,7 @@ it('can upload a photo with base64 encoded data', function () {
 });
 
 it('rejects oversized base64 encoded photos', function () {
-    Cms::config()->maxUploadFileSize = 10;
+    Cms::config()->assets->maxUploadFileSize = 10;
 
     post(action(SaveUserController::class), [
         'email' => 'oversized-photo@example.com',
@@ -531,7 +531,7 @@ it('rejects oversized base64 encoded photos', function () {
 });
 
 it('rejects oversized uploaded photos', function () {
-    Cms::config()->maxUploadFileSize = 10;
+    Cms::config()->assets->maxUploadFileSize = 10;
 
     post(action(SaveUserController::class), [
         'email' => 'oversized-upload@example.com',

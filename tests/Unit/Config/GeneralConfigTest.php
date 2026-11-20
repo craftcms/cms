@@ -25,12 +25,14 @@ it('can set compiledTemplatesPath via fluent setter', function () {
 });
 
 it('normalizes storage disk configuration', function () {
-    $config = GeneralConfig::create()
-        ->tempAssetUploadDisk('asset-uploads')
-        ->uploadSessionDisk('upload-sessions');
+    $assets = GeneralConfig::create()->assets([
+        'tempUploadDisk' => 'asset-uploads',
+        'uploadSessionDisk' => 'upload-sessions',
+    ])->assets;
 
-    expect($config->getTempAssetUploadDisk())->toBe('asset-uploads')
-        ->and($config->getUploadSessionDisk())->toBe('upload-sessions');
+    expect($assets->getTempUploadDisk())->toBe('asset-uploads')
+        ->and($assets->getUploadSessionDisk())->toBe('upload-sessions')
+        ->and($assets->getTrashDisk())->toBeNull();
 });
 
 it('automatically eager loads elements by default', function () {

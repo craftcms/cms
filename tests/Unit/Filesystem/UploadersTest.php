@@ -16,11 +16,11 @@ beforeEach(function () {
         Storage::fake($name);
     }
 
-    Cms::config()->uploadSessionDisk = 'upload-first';
+    Cms::config()->assets->uploadSessionDisk = 'upload-first';
 });
 
 it('automatically selects the uploader for the supplied disk instead of the configured disk', function () {
-    Cms::config()->uploader = null;
+    Cms::config()->assets->uploader = null;
     Storage::shouldReceive('disk')->once()->with('upload-s3')
         ->andReturn(Mockery::mock(AwsS3V3Adapter::class));
 
@@ -30,7 +30,7 @@ it('automatically selects the uploader for the supplied disk instead of the conf
 it('routes custom uploader operations to each sessions disk', function () {
     $manager = app(Uploaders::class);
     $manager->extend('custom', fn (Container $app) => $app->make(TusUploader::class));
-    Cms::config()->uploader = 'custom';
+    Cms::config()->assets->uploader = 'custom';
 
     expect($manager->getDefaultDriver())->toBe('custom');
 

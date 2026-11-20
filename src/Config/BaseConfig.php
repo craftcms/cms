@@ -93,7 +93,12 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         $values = [$setting => $value];
         Typecast::properties($config::class, $values);
 
-        $config->$setting = $values[$setting];
+        // Fluent methods can normalize values, such as `AssetsConfig::maxUploadFileSize()`
+        if (method_exists($config, $setting)) {
+            $config->$setting($values[$setting]);
+        } else {
+            $config->$setting = $values[$setting];
+        }
     }
 
     public function __isset(string $name): bool

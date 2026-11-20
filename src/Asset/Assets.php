@@ -423,7 +423,7 @@ class Assets
      */
     public function getTempAssetUploadDisk(): FilesystemAdapter
     {
-        $disk = Storage::disk(Cms::config()->getTempAssetUploadDisk());
+        $disk = Storage::disk(Cms::config()->assets->getTempUploadDisk());
 
         if (! $disk instanceof FilesystemAdapter) {
             throw new RuntimeException('The temporary asset upload disk did not resolve to a Laravel filesystem adapter.');

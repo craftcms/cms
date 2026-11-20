@@ -31,7 +31,7 @@ it('adds uploaded files to the assets already selected in the field', function (
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('temp-assets');
     Storage::fake('upload-destination');
-    Cms::config()->tempAssetUploadDisk = 'temp-assets';
+    Cms::config()->assets->tempUploadDisk = 'temp-assets';
 
     $volume = Volume::factory()->create(['fs' => 'upload-destination']);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
@@ -60,7 +60,7 @@ it('saves an element with a file uploaded in the request', function () {
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('temp-assets');
     Storage::fake('upload-destination');
-    Cms::config()->tempAssetUploadDisk = 'temp-assets';
+    Cms::config()->assets->tempUploadDisk = 'temp-assets';
 
     $volume = Volume::factory()->create(['fs' => 'upload-destination']);
     VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
@@ -121,8 +121,8 @@ it('rejects files uploaded with the element without saving them as assets', func
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('temp-assets');
     Storage::fake('upload-destination');
-    Cms::config()->tempAssetUploadDisk = 'temp-assets';
-    Cms::config()->maxUploadFileSize = 10;
+    Cms::config()->assets->tempUploadDisk = 'temp-assets';
+    Cms::config()->assets->maxUploadFileSize = 10;
 
     $volume = Volume::factory()->create(['fs' => 'upload-destination']);
     VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);

@@ -118,7 +118,7 @@ readonly class AssetUploadHandler
             filename: $file->filename,
             mimeType: $file->mimeType(),
             folder: $folder,
-            sanitizeOnUpload: $authorizedGuest || ! request()->isCpRequest() || Cms::config()->sanitizeCpImageUploads,
+            sanitizeOnUpload: $authorizedGuest || ! request()->isCpRequest() || Cms::config()->assets->sanitizeCpImageUploads,
             selectionCondition: $selectionCondition,
             temporaryFolder: $selectionCondition ? $this->assets->getUserTemporaryUploadFolder() : null,
             analysis: $analysis,

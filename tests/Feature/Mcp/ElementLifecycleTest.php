@@ -132,7 +132,7 @@ it('restores discoverable deleted elements and leaves active elements unchanged 
             'driver' => 'local', 'root' => storage_path('framework/testing/lifecycle-trashed-assets'),
         ]);
         Storage::fake('lifecycle-trashed-assets');
-        Cms::config()->trashedAssetDisk('lifecycle-trashed-assets');
+        Cms::config()->assets->trashDisk('lifecycle-trashed-assets');
     }
 
     app(Elements::class)->deleteElement($element);

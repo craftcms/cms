@@ -478,7 +478,7 @@ class Images
         $cleanedByStripping = false;
 
         if (File::isSvg($filePath)) {
-            if (! Cms::config()->sanitizeSvgUploads) {
+            if (! Cms::config()->assets->sanitizeSvgUploads) {
                 return;
             }
 

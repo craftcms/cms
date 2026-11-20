@@ -26,7 +26,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -156,7 +156,8 @@ it('materializes array configuration through fluent setters', function () {
 
     $config = app(GeneralConfig::class);
 
-    expect($config->allowedFileExtensions)->toContain('custom')
+    expect($config->assets->allowedFileExtensions)->toContain('custom')
+        ->and($config->assets->extraAllowedFileExtensions)->toBeNull()
         ->and(app(ConfigRepository::class)->get('craft.general'))->toBe($config);
 });
 
@@ -307,6 +308,24 @@ it('forwards the renamed image, backup, and queue settings', function () {
         ->and($config->queueName)->toBe('craft')
         ->and($config->queue->runAutomatically)->toBeFalse()
         ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->not->toContain(GeneralConfig::class.'::queueName');
+});
+
+it('forwards the renamed asset settings through their fluent methods', function () {
+    app(ConfigRepository::class)->set('craft.general', ['maxUploadFileSize' => '2M', 'revAssetUrls' => true]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS'] = 'MBOX,xml';
+    $_SERVER['CRAFT_ASSETS_UPLOAD_CHUNK_SIZE'] = '1024';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class);
+    $config->tempAssetUploadDisk = 'temp-uploads';
+
+    expect($config->assets->maxUploadFileSize)->toBe(2097152)
+        ->and($config->assets->revUrls)->toBeTrue()
+        ->and($config->assets->allowedFileExtensions)->toContain('mbox', 'xml', 'jpg')
+        ->and($config->assets->uploadChunkSize)->toBe(1024)
+        ->and($config->assets->getTempUploadDisk())->toBe('temp-uploads');
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {
