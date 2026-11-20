@@ -25,13 +25,14 @@ describe('attributes', function () {
             ->and($html)->not->toContain('has-errors');
     });
 
-    it('renders fieldset, read-only, status, orientation, and id', function () {
+    it('renders fieldset, read-only, status, orientation, layout, and id', function () {
         $html = Field::make()
             ->id('my-field')
             ->fieldset()
             ->readOnly()
             ->status('modified', 'This field was modified')
             ->orientation('rtl')
+            ->layout('inline')
             ->toHtml();
 
         expect($html)->toContain('id="my-field"')
@@ -39,7 +40,8 @@ describe('attributes', function () {
             ->and($html)->toContain(' readonly')
             ->and($html)->toContain('status="modified"')
             ->and($html)->toContain('status-label="This field was modified"')
-            ->and($html)->toContain('orientation="rtl"');
+            ->and($html)->toContain('orientation="rtl"')
+            ->and($html)->toContain('layout="inline"');
     });
 
     it('only renders label-sr-only when set', function () {
