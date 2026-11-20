@@ -9,7 +9,10 @@ export default css`
     gap: var(--c-spacing-md);
   }
 
-  [hidden] {
+  /* Crumbs too, collapsed here or hidden by their author: important, so a
+     page's own \`display\` for them can't show them again. */
+  [hidden],
+  ::slotted([hidden]) {
     display: none !important;
   }
 

@@ -295,6 +295,34 @@ describe('craft-breadcrumbs', () => {
     expect(narrow.menuLabels()).toContain('Site Name');
   });
 
+  it('keeps hidden crumbs out of sight and focus when the page sets their display', async () => {
+    const pageStyle = document.createElement('style');
+    pageStyle.textContent = 'craft-breadcrumb-item { display: inline-flex; }';
+    document.head.append(pageStyle);
+
+    try {
+      const {element, items} = await trail(
+        '400px',
+        '<craft-breadcrumb-item href="#secret" hidden>Secret</craft-breadcrumb-item>' +
+          TRAIL
+      );
+      const hidden = items.filter((item) => item.hidden);
+      // The author's crumb, and at least one collapsed into the menu.
+      expect(hidden.length).toBeGreaterThan(1);
+      expect(hidden.filter((item) => item.checkVisibility())).toEqual([]);
+
+      const reached = new Set<Element>();
+      for (const _ of items) {
+        await userEvent.tab();
+        reached.add(document.activeElement!);
+      }
+      expect(hidden.filter((item) => reached.has(item))).toEqual([]);
+      expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth + 1);
+    } finally {
+      pageStyle.remove();
+    }
+  });
+
   it('recalculates the trail when its author hides or shows a crumb', async () => {
     const {container, element, items, overflow, shown, menuLabels} =
       await trail('400px');

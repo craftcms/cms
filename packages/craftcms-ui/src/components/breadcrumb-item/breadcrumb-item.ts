@@ -54,8 +54,10 @@ export default class CraftBreadcrumbItem extends LitElement {
         text-decoration: none;
       }
 
+      /* Important, so a page's own \`display\` for the crumb, such as a utility
+         class, can't show it again. */
       :host([hidden]) {
-        display: none;
+        display: none !important;
       }
 
       /* The current page, which <craft-breadcrumbs> marks on the last crumb.
