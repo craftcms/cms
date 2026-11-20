@@ -248,6 +248,7 @@ it('materializes GraphQL configuration from general.php and environment override
     app()->forgetInstance(GeneralConfig::class);
     $_SERVER['CRAFT_GQL'] = '{"enableIntrospection":false,"maxComplexity":500}';
     $_SERVER['CRAFT_GQL_MAX_DEPTH'] = '12';
+    $_SERVER['CRAFT_MAX_GRAPHQL_COMPLEXITY'] = '300';
 
     new ConfigServiceProvider(app())->register();
 
@@ -320,10 +321,11 @@ it('forwards the renamed asset settings through their fluent methods', function 
 
     $config = app(GeneralConfig::class);
     $config->tempAssetUploadDisk = 'temp-uploads';
+    $config->allowedFileExtensions[] = 'zzz';
 
     expect($config->assets->maxUploadFileSize)->toBe(2097152)
         ->and($config->assets->revUrls)->toBeTrue()
-        ->and($config->assets->allowedFileExtensions)->toContain('mbox', 'xml', 'jpg')
+        ->and($config->assets->allowedFileExtensions)->toContain('mbox', 'xml', 'jpg', 'zzz')
         ->and($config->assets->uploadChunkSize)->toBe(1024)
         ->and($config->assets->getTempUploadDisk())->toBe('temp-uploads');
 });
@@ -350,11 +352,14 @@ it('does not change a cached config’s nested objects when applying environment
     app(ConfigRepository::class)->set('craft.general', $cached);
     app()->forgetInstance(GeneralConfig::class);
     $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
+    $_SERVER['CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS'] = 'zzz';
 
     new ConfigServiceProvider(app())->register();
 
     expect(app(GeneralConfig::class)->mcp->instructions)->toBe('Be brief.')
-        ->and($cached->mcp->instructions)->toBe('');
+        ->and($cached->mcp->instructions)->toBe('')
+        ->and(app(GeneralConfig::class)->assets->allowedFileExtensions)->toContain('zzz')
+        ->and($cached->assets->allowedFileExtensions)->not->toContain('zzz');
 });
 
 it('extends the default Twig sandbox allowlist with project entries', function () {

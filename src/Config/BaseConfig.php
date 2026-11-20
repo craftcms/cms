@@ -70,10 +70,15 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         return static::$renamedSettings;
     }
 
-    public function __get(string $name): mixed
+    /**
+     * Returns a renamed setting by reference, so writes such as `$config->allowedFileExtensions[] = 'mbox'` reach it.
+     */
+    public function &__get(string $name): mixed
     {
         if (! isset(static::$renamedSettings[$name])) {
-            return null;
+            $value = null;
+
+            return $value;
         }
 
         [$config, $setting] = $this->renamedSettingTarget($name);

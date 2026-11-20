@@ -160,6 +160,8 @@ class ConfigServiceProvider extends ServiceProvider
             }
         }
 
+        $this->applyRenamedEnvironmentOverrides($config);
+
         $envConfig = Env::config($config::class, 'CRAFT_');
         Typecast::properties($config::class, $envConfig);
 
@@ -167,7 +169,6 @@ class ConfigServiceProvider extends ServiceProvider
             $this->applyGeneralConfigSetting($config, $setting, $value);
         }
 
-        $this->applyRenamedEnvironmentOverrides($config);
         $this->applyNestedEnvironmentOverrides($config);
 
         foreach ($config->aliases as $name => $value) {
@@ -185,11 +186,14 @@ class ConfigServiceProvider extends ServiceProvider
 
     /**
      * Applies environment variables named after renamed settings, such as `CRAFT_ENABLE_GQL` for `gql.enabled`.
-     * Variables named after the new settings, such as `CRAFT_GQL_ENABLED`, are applied after them, so they win. A variable
-     * that's named after both, such as `CRAFT_QUEUE_NAME` for `queueName` and `queue.name`, is left to the new setting.
+     * Variables named after the new settings, such as `CRAFT_GQL` and `CRAFT_GQL_ENABLED`, are applied after them, so
+     * they win. A variable that's named after both, such as `CRAFT_QUEUE_NAME` for `queueName` and `queue.name`, is
+     * left to the new setting.
      */
     private function applyRenamedEnvironmentOverrides(GeneralConfig $config): void
     {
+        $cloned = [];
+
         foreach ($config::renamedSettings() as $setting => $newSetting) {
             $envName = 'CRAFT_'.str($setting)->snake()->upper()->value();
 
@@ -199,9 +203,19 @@ class ConfigServiceProvider extends ServiceProvider
 
             $value = Env::get($envName);
 
-            if ($value !== null) {
-                $config->{$setting} = $value;
+            if ($value === null) {
+                continue;
             }
+
+            // A cached config may share its nested objects with another copy, so change a clone
+            $nested = str($newSetting)->before('.')->value();
+
+            if ($nested !== $newSetting && ! isset($cloned[$nested])) {
+                $config->{$nested} = clone $config->{$nested};
+                $cloned[$nested] = true;
+            }
+
+            $config->{$setting} = $value;
         }
     }
 
