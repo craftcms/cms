@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GqlConfig;
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
@@ -60,7 +61,7 @@ beforeEach(function () {
 
     Cms::config()
         ->cpTrigger('admin')
-        ->enableGql(true)
+        ->gql(GqlConfig::create()->enabled())
         ->allowAdminChanges(true);
 
     // Answered through the test's own state: a facade mock can't be swapped

@@ -19,7 +19,7 @@ uses(DatabaseTestCase::class);
 beforeEach(function() {
     new ReflectionProperty(DeprecatedConcepts::class, 'supportsCategories')->setValue(null, true);
     new ReflectionProperty(DeprecatedConcepts::class, 'supportsTags')->setValue(null, true);
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
     app(Gql::class)->flushCaches();
 
     $this->categories = Craft::$app->getCategories();

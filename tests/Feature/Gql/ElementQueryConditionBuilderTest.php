@@ -18,7 +18,7 @@ use GraphQL\Type\Schema;
 
 beforeEach(function () {
     app(Gql::class)->flushCaches();
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 });
 
 afterEach(function () {

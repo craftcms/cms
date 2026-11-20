@@ -40,6 +40,26 @@ class GeneralConfig extends BaseConfig
     public const string SNAKE_CASE = 'snake';
 
     /**
+     * Settings that have been renamed in Craft 6, mapped to their new names.
+     */
+    protected const array RENAMED_SETTINGS = [
+        'enableGql' => 'gql.enabled',
+        'enableGraphqlCaching' => 'gql.enableCaching',
+        'enableGraphqlIntrospection' => 'gql.enableIntrospection',
+        'gqlTypePrefix' => 'gql.typePrefix',
+        'lazyGqlTypes' => 'gql.lazyTypes',
+        'maxGraphqlBatchSize' => 'gql.maxBatchSize',
+        'maxGraphqlComplexity' => 'gql.maxComplexity',
+        'maxGraphqlDepth' => 'gql.maxDepth',
+        'maxGraphqlResults' => 'gql.maxResults',
+        'prefixGqlRootTypes' => 'gql.prefixRootTypes',
+        'setGraphqlDatesToSystemTimeZone' => 'gql.setDatesToSystemTimeZone',
+    ];
+
+    #[Override]
+    protected static array $renamedSettings = self::RENAMED_SETTINGS;
+
+    /**
      * @var array<string, bool|int|string> The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:
@@ -1155,40 +1175,6 @@ class GeneralConfig extends BaseConfig
     public bool $disallowRobots = false;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableGraphqlIntrospection(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_INTROSPECTION=false
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $enableGraphqlIntrospection = true;
-
-    /**
-     * @var bool Whether the GraphQL API should be enabled.
-     *
-     * The GraphQL API is only available for Craft Pro.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableGql(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GQL=false
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $enableGql = true;
-
-    /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
      * ::: warning
@@ -1204,44 +1190,6 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 5 minutes
      */
     public mixed $elevatedSessionDuration = 300;
-
-    /**
-     * @var bool Whether Craft should cache GraphQL queries.
-     *
-     * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is automatically invalidated any time
-     * an element is saved, the site structure is updated, or a GraphQL schema is saved.
-     *
-     * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
-     * caching logic and setting the `result` property.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableGraphqlCaching(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_CACHING=false
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $enableGraphqlCaching = true;
-
-    /**
-     * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setGraphqlDatesToSystemTimeZone(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_GRAPHQL_DATES_TO_SYSTEM_TIMEZONE=true
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $setGraphqlDatesToSystemTimeZone = false;
 
     /**
      * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
@@ -1387,20 +1335,40 @@ class GeneralConfig extends BaseConfig
     public string|false $filenameWordSeparator = '-';
 
     /**
-     * @var string Prefix to use for all type names returned by GraphQL.
+     * @var GqlConfig Settings for the GraphQL API.
+     *
+     * Supported settings:
+     *
+     * - `enabled` – Whether the GraphQL API should be enabled. It’s only available for Craft Pro. (Default is `true`.)
+     * - `enableIntrospection` – Whether introspection queries are allowed. They’re always allowed in the control panel. (Default is `true`.)
+     * - `enableCaching` – Whether Craft should cache the results of unique queries per access token. The cache is invalidated any time an element is saved, the site structure is updated, or a GraphQL schema is saved. (Default is `true`.)
+     * - `setDatesToSystemTimeZone` – Whether dates should be set to the system time zone by default, rather than UTC. (Default is `false`.)
+     * - `typePrefix` – Prefix to use for all type names. (Default is `''`.)
+     * - `prefixRootTypes` – Whether `typePrefix` should apply to the `query`, `mutation`, and `subscription` types. (Default is `true`.)
+     * - `lazyTypes` – Whether types should be generated lazily. (Default is `false`.)
+     * - `maxBatchSize` – The maximum number of queries in a single batched request, or `0` for no limit. (Default is `0`.)
+     * - `maxComplexity` – The maximum complexity a query can have, or `0` for no limit. (Default is `0`.)
+     * - `maxDepth` – The maximum depth a query can reach, or `0` for no limit. (Default is `0`.)
+     * - `maxResults` – The maximum number of results a single query can return, or `0` for no limit. (Default is `0`.)
      *
      * ::: code
      * ```php Static Config
-     * ->gqlTypePrefix('craft_')
+     * ->gql(\CraftCms\Cms\Config\GqlConfig::create()
+     *     ->enableIntrospection(false)
+     *     ->maxDepth(10)
+     * )
      * ```
      * ```shell Environment Override
-     * CRAFT_GQL_TYPE_PREFIX=craft_
+     * CRAFT_GQL='{"enableIntrospection":false,"maxDepth":10}'
+     * CRAFT_GQL_MAX_DEPTH=10
      * ```
      * :::
      *
      * @group GraphQL
+     *
+     * @since 6.0.0
      */
-    public string $gqlTypePrefix = '';
+    public GqlConfig $gql;
 
     /**
      * @var string The casing to use for autogenerated component handles.
@@ -1624,22 +1592,6 @@ class GeneralConfig extends BaseConfig
     public mixed $invalidUserTokenPath = null;
 
     /**
-     * @var bool Whether GraphQL types should be generated lazily.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->lazyGqlTypes(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_LAZY_GQL_TYPES=true
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $lazyGqlTypes = false;
-
-    /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
      * ::: tip
@@ -1785,70 +1737,6 @@ class GeneralConfig extends BaseConfig
      * @group Image Handling
      */
     public int $maxCachedCloudImageSize = 0;
-
-    /**
-     * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
-     *
-     *  ::: code
-     *  ```php Static Config
-     *  ->maxGraphqlBatchSize(5)
-     *  ```
-     *  ```shell Environment Override
-     *  CRAFT_MAX_GRAPHQL_BATCH_SIZE=5
-     *  ```
-     *  :::
-     *
-     * @group GraphQL
-     */
-    public int $maxGraphqlBatchSize = 0;
-
-    /**
-     * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxGraphqlComplexity(500)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_GRAPHQL_COMPLEXITY=500
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public int $maxGraphqlComplexity = 0;
-
-    /**
-     * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxGraphqlDepth(5)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_GRAPHQL_DEPTH=5
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public int $maxGraphqlDepth = 0;
-
-    /**
-     * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxGraphqlResults(100)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_GRAPHQL_RESULTS=100
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public int $maxGraphqlResults = 0;
 
     /**
      * @var int|false The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
@@ -2115,22 +2003,6 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public mixed $postLogoutRedirect = '';
-
-    /**
-     * @var bool Whether the <config5:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->prefixGqlRootTypes(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PREFIX_GQL_ROOT_TYPES=false
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $prefixGqlRootTypes = true;
 
     /**
      * @var bool Whether Single section entries should be preloaded for Twig templates.
@@ -3038,6 +2910,7 @@ class GeneralConfig extends BaseConfig
     public function __construct()
     {
         $this->anchors = AnchorsConfig::create();
+        $this->gql = GqlConfig::create();
         $this->mcp = McpConfig::create();
 
         // (Re-)normalize everything.
@@ -4191,86 +4064,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
-     *
-     * ```php
-     * ->enableGraphqlIntrospection(false)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $enableGraphqlIntrospection
-     */
-    public function enableGraphqlIntrospection(bool $value = true): self
-    {
-        $this->enableGraphqlIntrospection = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether the GraphQL API should be enabled.
-     *
-     * The GraphQL API is only available for Craft Pro.
-     *
-     * ```php
-     * ->enableGql(false)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $enableGql
-     */
-    public function enableGql(bool $value = true): self
-    {
-        $this->enableGql = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether Craft should cache GraphQL queries.
-     *
-     * If set to `true`, Craft will cache the results for unique GraphQL queries per access token. The cache is automatically invalidated any time
-     * an element is saved, the site structure is updated, or a GraphQL schema is saved.
-     *
-     * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
-     * caching logic and setting the `result` property.
-     *
-     * ```php
-     * ->enableGraphqlCaching(false)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $enableGraphqlCaching
-     */
-    public function enableGraphqlCaching(bool $value = true): self
-    {
-        $this->enableGraphqlCaching = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
-     *
-     * ```php
-     * ->setGraphqlDatesToSystemTimeZone(true)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $setGraphqlDatesToSystemTimeZone
-     */
-    public function setGraphqlDatesToSystemTimeZone(bool $value = true): self
-    {
-        $this->setGraphqlDatesToSystemTimeZone = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether to enable Craft’s template `{% cache %}` tag on a global basis.
      *
      * ```php
@@ -4459,19 +4252,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Prefix to use for all type names returned by GraphQL.
+     * Settings for the GraphQL API.
      *
      * ```php
-     * ->gqlTypePrefix('craft_')
+     * ->gql(\CraftCms\Cms\Config\GqlConfig::create()
+     *     ->enableIntrospection(false)
+     *     ->maxDepth(10)
+     * )
      * ```
      *
      * @group GraphQL
      *
-     * @see $gqlTypePrefix
+     * @since 6.0.0
+     * @see $gql
+     *
+     * @param  GqlConfig|array<string, mixed>|string  $value
      */
-    public function gqlTypePrefix(string $value): self
+    public function gql(GqlConfig|array|string $value): self
     {
-        $this->gqlTypePrefix = $value;
+        $this->gql = $value instanceof GqlConfig ? $value : GqlConfig::fromConfig($value);
 
         return $this;
     }
@@ -4711,24 +4510,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether GraphQL types should be generated lazily.
-     *
-     * ```php
-     * ->lazyGqlTypes(true)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $lazyGqlTypes
-     */
-    public function lazyGqlTypes(bool $value = true): self
-    {
-        $this->lazyGqlTypes = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
      *
      * ::: tip
@@ -4844,78 +4625,6 @@ class GeneralConfig extends BaseConfig
     public function maxCachedCloudImageSize(int $value): self
     {
         $this->maxCachedCloudImageSize = $value;
-
-        return $this;
-    }
-
-    /**
-     * The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
-     *
-     * ```php
-     * ->maxGraphqlBatchSize(500)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $maxGraphqlBatchSize
-     */
-    public function maxGraphqlBatchSize(int $value): self
-    {
-        $this->maxGraphqlBatchSize = $value;
-
-        return $this;
-    }
-
-    /**
-     * The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
-     *
-     * ```php
-     * ->maxGraphqlComplexity(500)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $maxGraphqlComplexity
-     */
-    public function maxGraphqlComplexity(int $value): self
-    {
-        $this->maxGraphqlComplexity = $value;
-
-        return $this;
-    }
-
-    /**
-     * The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
-     *
-     * ```php
-     * ->maxGraphqlDepth(5)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $maxGraphqlDepth
-     */
-    public function maxGraphqlDepth(int $value): self
-    {
-        $this->maxGraphqlDepth = $value;
-
-        return $this;
-    }
-
-    /**
-     * The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
-     *
-     * ```php
-     * ->maxGraphqlResults(100)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $maxGraphqlResults
-     */
-    public function maxGraphqlResults(int $value): self
-    {
-        $this->maxGraphqlResults = $value;
 
         return $this;
     }
@@ -5199,24 +4908,6 @@ class GeneralConfig extends BaseConfig
     public function postLogoutRedirect(mixed $value): self
     {
         $this->postLogoutRedirect = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether the <config5:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
-     *
-     * ```php
-     * ->prefixGqlRootTypes(false)
-     * ```
-     *
-     * @group GraphQL
-     *
-     * @see $prefixGqlRootTypes
-     */
-    public function prefixGqlRootTypes(bool $value = true): self
-    {
-        $this->prefixGqlRootTypes = $value;
 
         return $this;
     }

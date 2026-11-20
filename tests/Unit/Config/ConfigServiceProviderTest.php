@@ -6,6 +6,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\GqlConfig;
 use CraftCms\Cms\Config\McpConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
@@ -24,7 +25,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -238,6 +239,51 @@ it('merges per-setting environment overrides into nested config objects', functi
         ->and($config->mcp->instructions)->toBe('From a single variable.')
         ->and($config->mcp->middleware)->toBe(['throttle:mcp'])
         ->and($config->anchors->useAdditionalTagToAnchorTo)->toBeFalse();
+});
+
+it('materializes GraphQL configuration from general.php and environment overrides', function () {
+    app(ConfigRepository::class)->set('craft.general', ['gql' => ['typePrefix' => 'site_', 'maxDepth' => 5]]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_GQL'] = '{"enableIntrospection":false,"maxComplexity":500}';
+    $_SERVER['CRAFT_GQL_MAX_DEPTH'] = '12';
+
+    new ConfigServiceProvider(app())->register();
+
+    $gql = app(GeneralConfig::class)->gql;
+
+    expect($gql)->toBeInstanceOf(GqlConfig::class)
+        ->and($gql->typePrefix)->toBe('')
+        ->and($gql->enableIntrospection)->toBeFalse()
+        ->and($gql->maxComplexity)->toBe(500)
+        ->and($gql->maxDepth)->toBe(12)
+        ->and($gql->enabled)->toBeTrue();
+});
+
+it('forwards the renamed GraphQL settings to the gql setting', function () {
+    app(ConfigRepository::class)->set('craft.general', ['enableGql' => false, 'gqlTypePrefix' => 'site_']);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MAX_GRAPHQL_DEPTH'] = '7';
+    $_SERVER['CRAFT_MAX_GRAPHQL_COMPLEXITY'] = '300';
+    $_SERVER['CRAFT_GQL_MAX_COMPLEXITY'] = '500';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)
+        ->enableGraphqlIntrospection(false)
+        ->setGraphqlDatesToSystemTimeZone();
+    $config->maxGraphqlResults = 20;
+
+    expect($config->gql->enabled)->toBeFalse()
+        ->and($config->gql->typePrefix)->toBe('site_')
+        ->and($config->gql->maxDepth)->toBe(7)
+        ->and($config->gql->maxComplexity)->toBe(500)
+        ->and($config->gql->enableIntrospection)->toBeFalse()
+        ->and($config->gql->setDatesToSystemTimeZone)->toBeTrue()
+        ->and($config->gql->maxResults)->toBe(20)
+        ->and($config->enableGql)->toBeFalse()
+        ->and($config['maxGraphqlDepth'])->toBe(7)
+        ->and($config->gql->enableCaching)->toBeTrue()
+        ->and($config->toArray())->not->toHaveKey('enableGql');
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {

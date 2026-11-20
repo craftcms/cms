@@ -42,12 +42,13 @@ use function CraftCms\Cms\t;
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
     protected static array $renamedSettings = [
+        ...parent::RENAMED_SETTINGS,
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
         'backupDbOnUpdate' => 'backupOnUpdate',
         'defaultFilePermissions' => 'defaultFileMode',
         'defaultFolderPermissions' => 'defaultDirMode',
-        'enableGraphQlCaching' => 'enableGraphqlCaching',
+        'enableGraphQlCaching' => 'gql.enableCaching',
         'environmentVariables' => 'aliases',
         'isSystemOn' => 'isSystemLive',
         'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',

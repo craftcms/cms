@@ -176,7 +176,7 @@ class Icon extends Field implements InlineEditableFieldInterface, MergeableField
                 ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons))
                 ->visible(in_array(IconSets::FONT_AWESOME, $this->iconSets, true)),
         ])->when(
-            Cms::config()->enableGql,
+            Cms::config()->gql->enabled,
             fn (Ui $ui): Ui => $ui->add(
                 UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([

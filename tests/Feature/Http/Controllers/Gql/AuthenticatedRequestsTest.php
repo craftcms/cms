@@ -77,7 +77,7 @@ it('only returns the entries the token’s user can view', function (): void {
 });
 
 it('varies cached results by the user’s permissions', function (): void {
-    Cms::config()->enableGraphqlCaching = true;
+    Cms::config()->gql->enableCaching = true;
     actingAs(UserModel::findOrFail($this->editor->id));
     $gql = app(Gql::class);
     $query = '{ entries(section: "news") { id } }';
@@ -212,7 +212,7 @@ it('lets OAuth clients discover, register for, and use the API with the access l
 ]);
 
 it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
-    Cms::config()->enableGraphqlCaching = true;
+    Cms::config()->gql->enableCaching = true;
     $schema = new GqlSchema(['name' => 'Front end', 'scope' => GqlHelper::createFullAccessSchema()->scope]);
     GqlFacade::saveSchema($schema);
     GqlFacade::saveToken(new GqlToken(['name' => 'Front end', 'schemaId' => $schema->id, 'accessToken' => 'front-end', 'enabled' => true]));

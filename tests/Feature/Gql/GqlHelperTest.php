@@ -16,7 +16,7 @@ use GraphQL\Type\Definition\Type;
 
 beforeEach(function () {
     app(Gql::class)->flushCaches();
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 });
 
 it('checks schema scope awareness and permissions', function () {

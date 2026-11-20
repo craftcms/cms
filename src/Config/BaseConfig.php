@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Config;
 
 use ArrayAccess;
 use BadMethodCallException;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Facades\Log;
 use Override;
 use ReflectionProperty;
 
@@ -19,7 +20,10 @@ use ReflectionProperty;
  */
 abstract class BaseConfig implements Arrayable, ArrayAccess
 {
-    /** @var array<string, string> */
+    /**
+     * @var array<string, string> Old setting names, mapped to their new names. A new name with dots, such as
+     *                            `gql.enabled`, names a setting of a config object that a setting holds.
+     */
     protected static array $renamedSettings = [];
 
     public static function create(): static
@@ -28,13 +32,25 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         return new static;
     }
 
+    /**
+     * Returns the old setting names, mapped to their new names.
+     *
+     * @return array<string, string>
+     */
+    public static function renamedSettings(): array
+    {
+        return static::$renamedSettings;
+    }
+
     public function __get(string $name): mixed
     {
-        if (isset(static::$renamedSettings[$name])) {
-            return $this->{static::$renamedSettings[$name]};
+        if (! isset(static::$renamedSettings[$name])) {
+            return null;
         }
 
-        return null;
+        [$config, $setting] = $this->renamedSettingTarget($name);
+
+        return $config->$setting;
     }
 
     public function __set(string $name, mixed $value): void
@@ -42,30 +58,49 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         if (! isset(static::$renamedSettings[$name])) {
             return;
         }
-        $newName = static::$renamedSettings[$name];
 
-        Log::debug("`$name` has been renamed to `$newName`.", [sprintf('%s::%s', static::class, $name)]);
+        $this->deprecateRenamedSetting($name);
+        [$config, $setting] = $this->renamedSettingTarget($name);
 
-        $this->$newName = $value;
+        $values = [$setting => $value];
+        Typecast::properties($config::class, $values);
+
+        $config->$setting = $values[$setting];
     }
 
     public function __isset(string $name): bool
     {
-        if (isset(static::$renamedSettings[$name])) {
-            return isset($this->{static::$renamedSettings[$name]});
+        if (! isset(static::$renamedSettings[$name])) {
+            return false;
         }
 
-        return false;
+        [$config, $setting] = $this->renamedSettingTarget($name);
+
+        return isset($config->$setting);
     }
 
     /**
+     * Forwards the fluent methods of renamed settings to the new ones.
+     *
      * If GeneralConfig throws an exception, Laravel won't be able to
      * show the exception as the Framework isn't booted when it
      * happens. This delays the exception until that time.
+     *
+     * @param  list<mixed>  $arguments
      */
-    /** @param list<mixed> $arguments */
     public function __call(string $name, array $arguments): static
     {
+        if (isset(static::$renamedSettings[$name])) {
+            [$config, $setting] = $this->renamedSettingTarget($name);
+
+            if (method_exists($config, $setting)) {
+                $this->deprecateRenamedSetting($name);
+                $config->$setting(...$arguments);
+
+                return $this;
+            }
+        }
+
         app()->booted(function () use ($name) {
             throw new BadMethodCallException("Method `$name` does not exist on ".static::class);
         });
@@ -101,6 +136,34 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
     public function toArray(): array
     {
         return get_object_vars($this);
+    }
+
+    /**
+     * Returns the config object and setting name that a renamed setting now maps to.
+     *
+     * @return array{BaseConfig, string}
+     */
+    private function renamedSettingTarget(string $name): array
+    {
+        $path = explode('.', static::$renamedSettings[$name]);
+        $setting = array_pop($path);
+        $config = $this;
+
+        foreach ($path as $segment) {
+            $config = $config->$segment;
+        }
+
+        return [$config, $setting];
+    }
+
+    private function deprecateRenamedSetting(string $name): void
+    {
+        $newName = static::$renamedSettings[$name];
+
+        app()->booted(fn () => Deprecator::log(
+            sprintf('%s::%s', static::class, $name),
+            "The `$name` config setting has been renamed to `$newName`.",
+        ));
     }
 
     /**

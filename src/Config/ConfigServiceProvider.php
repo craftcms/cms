@@ -167,6 +167,7 @@ class ConfigServiceProvider extends ServiceProvider
             $this->applyGeneralConfigSetting($config, $setting, $value);
         }
 
+        $this->applyRenamedEnvironmentOverrides($config);
         $this->applyNestedEnvironmentOverrides($config);
 
         foreach ($config->aliases as $name => $value) {
@@ -180,6 +181,21 @@ class ConfigServiceProvider extends ServiceProvider
         $repository->set('craft.general', $config);
 
         return $config;
+    }
+
+    /**
+     * Applies environment variables named after renamed settings, such as `CRAFT_ENABLE_GQL` for `gql.enabled`.
+     * Variables named after the new settings, such as `CRAFT_GQL_ENABLED`, are applied after them, so they win.
+     */
+    private function applyRenamedEnvironmentOverrides(GeneralConfig $config): void
+    {
+        foreach ($config::renamedSettings() as $setting => $newSetting) {
+            $value = Env::get('CRAFT_'.str($setting)->snake()->upper()->value());
+
+            if ($value !== null) {
+                $config->{$setting} = $value;
+            }
+        }
     }
 
     /**
