@@ -14,6 +14,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
+use CraftCms\Cms\Http\RequestBodyLogProcessor;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -29,6 +30,7 @@ use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Log\ContextLogProcessor;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
@@ -77,6 +79,9 @@ class AppServiceProvider extends ServiceProvider
         $this->registerMacros();
         $this->registerSerializableClasses();
         $this->registerThrottleExceptionHandler();
+
+        // Every log channel runs this processor, so decorating it reaches all of them.
+        $this->app->extend(ContextLogProcessor::class, fn (ContextLogProcessor $processor) => new RequestBodyLogProcessor($processor));
 
         // Inertia DevTools records every request in local environments unless told otherwise, which adds hundreds of
         // milliseconds to control panel requests, so it's opt-in. Set before providers boot, when DevTools checks it.
