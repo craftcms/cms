@@ -57,7 +57,11 @@ export default class CraftBreadcrumbs extends LitElement {
   #contentObserver?: MutationObserver;
   #measureQueued = false;
 
-  /** The crumbs, in trail order, across the `first` slot and the default. */
+  /**
+   * The crumbs, in trail order, across the `first` slot and the default. A
+   * crumb hidden by its author, rather than collapsed here, isn't part of the
+   * trail.
+   */
   get #items(): CraftBreadcrumbItem[] {
     const slots = this.shadowRoot?.querySelectorAll<HTMLSlotElement>(
       'slot[name="first"], slot:not([name])'
@@ -67,7 +71,8 @@ export default class CraftBreadcrumbs extends LitElement {
       .flatMap((slot) => slot.assignedElements({flatten: true}))
       .filter(
         (el): el is CraftBreadcrumbItem =>
-          el.tagName.toLowerCase() === 'craft-breadcrumb-item'
+          el.tagName.toLowerCase() === 'craft-breadcrumb-item' &&
+          (!(el as HTMLElement).hidden || el.hasAttribute('data-collapsed'))
       )
       .sort((a, b) =>
         a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
@@ -278,6 +283,9 @@ export default class CraftBreadcrumbs extends LitElement {
     const hidden = new Set(collapsed);
 
     items.forEach((item, index) => {
+      // Marked as collapsed here, so it's told apart from a crumb its author
+      // hid, which stays hidden.
+      item.toggleAttribute('data-collapsed', hidden.has(index));
       item.toggleAttribute('hidden', hidden.has(index));
     });
 

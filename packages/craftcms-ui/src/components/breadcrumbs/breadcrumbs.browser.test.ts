@@ -258,6 +258,19 @@ describe('craft-breadcrumbs', () => {
     history.replaceState(null, '', location.pathname + location.search);
   });
 
+  it('leaves a crumb its author hid out of the trail and the menu', async () => {
+    const hiddenCrumb =
+      '<craft-breadcrumb-item href="#secret" hidden>Secret</craft-breadcrumb-item>';
+    const roomy = await trail('2000px', hiddenCrumb + TRAIL);
+    expect(roomy.items[0]!.hidden).toBe(true);
+    expect(roomy.overflow.hidden).toBe(true);
+
+    const narrow = await trail('120px', hiddenCrumb + TRAIL);
+    expect(narrow.items[0]!.hidden).toBe(true);
+    expect(narrow.menuLabels()).not.toContain('Secret');
+    expect(narrow.menuLabels()).toContain('Site Name');
+  });
+
   it('puts the menu between the first crumb and the rest in focus order', async () => {
     const {element, items, shown} = await trail('520px');
     // Partly collapsed: the menu and at least one middle crumb are visible.
