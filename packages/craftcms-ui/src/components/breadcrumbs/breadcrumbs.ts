@@ -50,8 +50,8 @@ export default class CraftBreadcrumbs extends LitElement {
    */
   @property() label = t('Breadcrumbs');
 
-  /** Indexes of the crumbs currently collapsed into the menu. */
-  #collapsed: number[] = [];
+  /** The crumbs currently collapsed into the menu. */
+  #collapsed: CraftBreadcrumbItem[] = [];
 
   #resizeObserver?: ResizeObserver;
   #contentObserver?: MutationObserver;
@@ -106,19 +106,24 @@ export default class CraftBreadcrumbs extends LitElement {
   private async handleSlotChange() {
     const items = this.#items;
 
+    // Whatever held the first slot before, such as a crumb its author has
+    // since hidden, gives it up.
+    for (const child of this.children) {
+      if (child.slot === 'first' && child !== items[0]) {
+        child.removeAttribute('slot');
+      }
+    }
+
     items.forEach((item, index) => {
       const isLast = index === items.length - 1;
 
       // The first crumb goes in a slot of its own, ahead of the menu, so the
       // menu follows it in focus and reading order, not only on screen.
       // Crumbs forwarded through another slot stay where they are.
-      if (item.parentElement === this) {
-        if (index === 0) {
-          item.slot = 'first';
-        } else if (item.slot === 'first') {
-          item.removeAttribute('slot');
-        }
+      if (index === 0 && item.parentElement === this) {
+        item.slot = 'first';
       }
+
       const separator = item.querySelector('[slot="separator"]');
 
       if (isLast) {
@@ -167,9 +172,24 @@ export default class CraftBreadcrumbs extends LitElement {
 
     // A crumb's label or link can change in place, as when a framework patches
     // the trail for the next page, without resizing the trail or changing
-    // which crumbs are slotted.
+    // which crumbs are slotted. Its author can also hide or show it, which
+    // changes which crumbs make up the trail. This component's own writes are
+    // taken off the observer as it makes them (see #apply).
     this.#contentObserver = new MutationObserver((records) => {
-      if (!records.every(this.#isOwnSeparatorChange)) {
+      const shownOrHidden = records.filter(
+        (record) => record.attributeName === 'hidden'
+      );
+
+      if (shownOrHidden.length) {
+        // A collapsed crumb its author hides is theirs to show again.
+        for (const {target} of shownOrHidden) {
+          if ((target as HTMLElement).hidden) {
+            (target as Element).removeAttribute('data-collapsed');
+          }
+        }
+
+        void this.handleSlotChange();
+      } else if (!records.every(this.#isOwnSeparatorChange)) {
         this.#queueMeasure();
       }
     });
@@ -177,7 +197,7 @@ export default class CraftBreadcrumbs extends LitElement {
       subtree: true,
       childList: true,
       characterData: true,
-      attributeFilter: ['href'],
+      attributeFilter: ['href', 'hidden'],
     });
   }
 
@@ -289,13 +309,17 @@ export default class CraftBreadcrumbs extends LitElement {
       item.toggleAttribute('hidden', hidden.has(index));
     });
 
-    this.#collapsed = collapsed;
+    this.#collapsed = collapsed.map((index) => items[index]!);
 
     const overflow = this.#overflowItem;
 
     if (overflow) {
       overflow.hidden = collapsed.length === 0;
     }
+
+    // The \`hidden\` writes above, and those made while measuring, are this
+    // component's own, not its author's.
+    this.#contentObserver?.takeRecords();
   }
 
   /**
@@ -307,10 +331,8 @@ export default class CraftBreadcrumbs extends LitElement {
   #menuActions = (): ActionMenuItem[] => {
     const items = this.#items;
 
-    return this.#collapsed.flatMap((index): ActionMenuItem[] => {
-      const item = items[index];
-
-      if (!item) {
+    return this.#collapsed.flatMap((item): ActionMenuItem[] => {
+      if (!items.includes(item)) {
         return [];
       }
 

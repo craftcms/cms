@@ -271,6 +271,58 @@ describe('craft-breadcrumbs', () => {
     expect(narrow.menuLabels()).toContain('Site Name');
   });
 
+  it('recalculates the trail when its author hides or shows a crumb', async () => {
+    const {container, element, items, overflow, shown, menuLabels} =
+      await trail('400px');
+    await frame();
+    await frame();
+    expect(shown()[0]).toBe('Site Name');
+    expect(overflow.hidden).toBe(false);
+
+    items[0]!.hidden = true;
+    await frame();
+    await frame();
+
+    const trailLabels = items
+      .slice(1)
+      .map((item) => item.firstChild!.textContent!.trim());
+    // Everything the author left in the trail is either shown or in the menu,
+    // in order, and the current page is never in the menu.
+    expect([...menuLabels(), ...shown()].sort()).toEqual(
+      [...trailLabels].sort()
+    );
+    expect(menuLabels()).not.toContain('Current Entry With A Long Title');
+    expect(menuLabels()).not.toContain('Site Name');
+    // The new first crumb, when there's room for it, comes before the menu.
+    const firstShown = items.slice(1).find((item) => !item.hidden)!;
+    if (firstShown !== items.at(-1)) {
+      expect(firstShown.getBoundingClientRect().right).toBeLessThanOrEqual(
+        overflow.getBoundingClientRect().left
+      );
+    }
+
+    // A collapsed crumb its author hides stays hidden, and out of the menu.
+    const collapsed = items.slice(1, -1).find((item) => item.hidden)!;
+    const collapsedLabel = collapsed.firstChild!.textContent!.trim();
+    collapsed.hidden = true;
+    await frame();
+    await frame();
+    container.style.inlineSize = '2000px';
+    await frame();
+    await frame();
+    expect(collapsed.hidden).toBe(true);
+    expect(menuLabels()).not.toContain(collapsedLabel);
+    collapsed.hidden = false;
+    container.style.inlineSize = '400px';
+
+    items[0]!.hidden = false;
+    await frame();
+    await frame();
+    expect(shown()[0]).toBe('Site Name');
+    expect(menuLabels()).not.toContain('Site Name');
+    expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth + 1);
+  });
+
   it('puts the menu between the first crumb and the rest in focus order', async () => {
     const {element, items, shown} = await trail('520px');
     // Partly collapsed: the menu and at least one middle crumb are visible.
