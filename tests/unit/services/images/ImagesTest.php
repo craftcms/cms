@@ -132,6 +132,32 @@ class ImagesTest extends TestCase
     }
 
     /**
+     * @throws Exception
+     */
+    public function testCleanImageKeepsIndexedPngPixels(): void
+    {
+        $this->_skipIfNoImagick();
+
+        $path = $this->sandboxPath . 'indexed.png';
+        $image = imagecreate(200, 50);
+        for ($x = 0; $x < 200; $x++) {
+            imageline($image, $x, 0, $x, 49, imagecolorallocate($image, $x, 255 - $x, intdiv($x, 2)));
+        }
+        imagepng($image, $path);
+        $source = new Imagick($path);
+
+        $this->images->cleanImage($path);
+        $this->images->cleanImage($path);
+
+        $cleaned = new Imagick($path);
+
+        self::assertSame(3, ord(file_get_contents($path, false, null, 25, 1)));
+        self::assertSame(200, $source->getImageColors());
+        self::assertSame(200, $cleaned->getImageColors());
+        self::assertSame($source->getImageSignature(), $cleaned->getImageSignature());
+    }
+
+    /**
      * Tests respect for the transformGifs config setting.
      *
      * @throws Exception

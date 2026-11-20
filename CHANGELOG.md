@@ -5,6 +5,7 @@
 - Added `craft\helpers\UrlHelper::absoluteUrl()`.
 - `craft\elements\db\NestedElementQueryTrait::owner()` now accepts an array of owner elements.
 - Fixed a bug where garbage collection could block other requests’ database writes for minutes while deleting orphaned foreign key rows. Orphaned rows are now found without locking anything and deleted in small batches, with foreign key checks enabled, so the deletions also cascade to rows that reference them. ([#20885](https://github.com/craftcms/cms/issues/20885))
+- Fixed a bug where uploading an indexed PNG with Imagick merged similar colors in its palette, and each later upload of the file merged more. ([#20916](https://github.com/craftcms/cms/issues/20916))
 - Fixed a bug where the `entrify/categories` and `entrify/tags` commands deleted custom entry sources that were restricted to user groups when creating a new section. ([#20875](https://github.com/craftcms/cms/issues/20875))
 - Fixed a bug where tests extending `craft\test\console\ConsoleTest` were run with a web application rather than a console application.
 - Fixed a bug where control panel templates could fail to render with an “Unknown function” error after an email was sent to a user affiliated with a different site. ([#20855](https://github.com/craftcms/cms/issues/20855))
