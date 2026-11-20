@@ -10,6 +10,7 @@ namespace crafttests\unit\services\images;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use craft\image\Svg;
 use craft\services\Images;
@@ -159,6 +160,40 @@ class ImagesTest extends TestCase
         self::assertSame(200, $source->getImageColors());
         self::assertSame(200, $cleaned->getImageColors());
         self::assertSame($source->getImageSignature(), $cleaned->getImageSignature());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCleanImageKeepsGreyscalePngPixels(): void
+    {
+        $this->_skipIfNoImagick();
+
+        $path = $this->sandboxPath . 'greyscale.png';
+        $height = 1000;
+        $pixels = '';
+        for ($y = 0; $y < $height; $y++) {
+            $pixels .= "\0" . pack('n', $y * 65);
+        }
+        $chunk = fn(string $type, string $data) => pack('N', strlen($data)) . $type . $data . pack('N', crc32($type . $data));
+        file_put_contents($path, "\x89PNG\r\n\x1a\n" .
+            $chunk('IHDR', pack('NNCCCCC', 1, $height, 16, 0, 0, 0, 0)) .
+            $chunk('IDAT', gzcompress($pixels)) .
+            $chunk('IEND', ''));
+        $source = new Imagick($path);
+
+        $this->images->cleanImage($path);
+        $this->images->cleanImage($path);
+
+        $cleaned = new Imagick($path);
+
+        $pngInfo = ImageHelper::pngImageInfo($path);
+        $levels = fn(Imagick $image) => $image->exportImagePixels(0, 0, 1, $height, 'I', Imagick::PIXEL_SHORT);
+
+        self::assertSame(16, $pngInfo['bit-depth']);
+        self::assertContains($pngInfo['color'], [0, 4]);
+        self::assertSame($height, $source->getImageColors());
+        self::assertSame($levels($source), $levels($cleaned));
     }
 
     /**
