@@ -19,6 +19,13 @@ describe('emphasisParts', () => {
       ],
     ],
     [
+      '**Blocks** is invalid.',
+      [
+        {text: 'Blocks', strong: true},
+        {text: ' is invalid.', strong: false},
+      ],
+    ],
+    [
       'Fix *Blocks* and *Authors*.',
       [
         {text: 'Fix ', strong: false},
@@ -43,6 +50,7 @@ describe('stripEmphasis', () => {
   it.each([
     ['The *Date* field is required.', 'The Date field is required.'],
     ['Fix *Blocks* and *Authors*.', 'Fix Blocks and Authors.'],
+    ['**Blocks** is invalid.', 'Blocks is invalid.'],
     ['Use * as a wildcard.', 'Use * as a wildcard.'],
   ])('strips %j', (message, expected) => {
     expect(stripEmphasis(message)).toBe(expected);

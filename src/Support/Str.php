@@ -120,7 +120,7 @@ class Str extends \Illuminate\Support\Str
      */
     public static function stripEmphasis(string $str): string
     {
-        return preg_replace('/\*([^*\n]+)\*/', '$1', $str) ?? $str;
+        return preg_replace('/(\*+)([^*\n]+)\1/', '$2', $str) ?? $str;
     }
 
     /**
