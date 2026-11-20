@@ -2213,20 +2213,18 @@ class GeneralConfig extends BaseConfig
     public bool $preserveImageColorProfiles = true;
 
     /**
-     * @var AssetTransformersConfig Asset transformer settings: the default transformer, the `craft` transformer’s
-     *                              settings, and other named transformers.
+     * @var AssetTransformersConfig Asset transformer settings: the default transformer and the named transformers.
      *
      * ::: code
      * ```php Static Config
      * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
      *     ->default('imgix')
-     *     ->outputDisk('transforms')
+     *     ->transformer('craft', ['outputDisk' => 'transforms'])
      *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
      * )
      * ```
      * ```shell Environment Override
      * CRAFT_ASSET_TRANSFORMERS_DEFAULT=imgix
-     * CRAFT_ASSET_TRANSFORMERS_OUTPUT_DISK=transforms
      * ```
      * :::
      *
@@ -5338,8 +5336,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Asset transformer settings: the default transformer, the `craft` transformer’s settings, and other named
-     * transformers.
+     * Asset transformer settings: the default transformer and the named transformers.
      *
      * ```php
      * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()

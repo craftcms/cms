@@ -276,21 +276,20 @@ it('extends the default Twig sandbox allowlist with project entries', function (
         ->and($config['allowedMethods'][ArrayObject::class])->toBe(['count']);
 });
 
-it('overrides asset transformer settings with environment variables and keeps named transformers', function () {
+it('overrides the default asset transformer with an environment variable and keeps named transformers', function () {
     app(ConfigRepository::class)->set('craft.general', GeneralConfig::create()->assetTransformers(
         AssetTransformersConfig::create()
-            ->generateTransformsBeforePageLoad()
+            ->transformer('craft', ['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true])
             ->transformer('imgix', ['driver' => 'imgix', 'domain' => 'example.imgix.net']),
     ));
     app()->forgetInstance(GeneralConfig::class);
     $_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT'] = 'imgix';
-    $_SERVER['CRAFT_ASSET_TRANSFORMERS_OUTPUT_DISK'] = 'transforms';
 
     try {
         new ConfigServiceProvider(app())->register();
         $config = app(GeneralConfig::class)->assetTransformers;
     } finally {
-        unset($_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT'], $_SERVER['CRAFT_ASSET_TRANSFORMERS_OUTPUT_DISK']);
+        unset($_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT']);
     }
 
     expect($config->default)->toBe('imgix')
@@ -305,6 +304,10 @@ it('overrides asset transformer settings with environment variables and keeps na
 it('rejects asset transformer names that would resolve to the default', function (string $name) {
     AssetTransformersConfig::create()->transformer($name, ['driver' => 'imgix']);
 })->throws(InvalidArgumentException::class)->with(['empty' => '', 'zero' => '0', 'integer' => '123', 'negative integer' => '-1']);
+
+it('rejects another driver for the craft asset transformer', function () {
+    AssetTransformersConfig::create()->transformer('craft', ['driver' => 'imgix']);
+})->throws(InvalidArgumentException::class);
 
 it('fails when an environment override cannot be normalized', function () {
     app(ConfigRepository::class)->set('craft.general', [

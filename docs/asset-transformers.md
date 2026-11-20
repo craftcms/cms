@@ -12,7 +12,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 return GeneralConfig::create()
     ->assetTransformers(AssetTransformersConfig::create()
         ->default('imgix')
-        ->outputDisk('transforms')
+        ->transformer('craft', ['outputDisk' => 'transforms'])
         ->transformer('imgix', [
             'driver' => 'imgix',
             'domain' => env('IMGIX_DOMAIN'),
@@ -26,11 +26,10 @@ return GeneralConfig::create()
 | Setting | Environment override | Meaning |
 | --- | --- | --- |
 | `default()` | `CRAFT_ASSET_TRANSFORMERS_DEFAULT` | The transformer for volumes that don't choose one. Without one, they use `craft`. |
-| `outputDisk()` | `CRAFT_ASSET_TRANSFORMERS_OUTPUT_DISK` | The `craft` transformer's output disk. See [The `craft` driver](#the-craft-driver). |
-| `generateTransformsBeforePageLoad()` | `CRAFT_ASSET_TRANSFORMERS_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD` | Whether the `craft` transformer generates transforms before returning their URLs. |
-| `transformer($name, $config)` | | Defines another transformer. `$config` needs a `driver`. |
+| `transformer($name, $config)` | | Defines a transformer. `$config` needs a `driver`. |
 
-The `craft` transformer's settings have their own methods, so `transformer('craft', ...)` throws.
+Craft always defines the `craft` transformer. `transformer('craft', [...])` sets its settings, and can leave out
+`driver`. Giving it another driver throws.
 
 ## Choosing a transformer
 
@@ -110,9 +109,8 @@ transformer shares them. Two transformers with the same driver keep separate val
 
 ## The `craft` driver
 
-The `craft` driver generates transforms with Craft's own image processing. The `craft` transformer takes these
-settings from `AssetTransformersConfig`. A second transformer with the `craft` driver takes the same names as keys,
-with `generateTransformsBeforePageLoad` as a boolean. It ignores other keys.
+The `craft` driver generates transforms with Craft's own image processing. Transformers that use it, including the
+`craft` transformer, take these keys, with `generateTransformsBeforePageLoad` as a boolean. They ignore other keys.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |

@@ -320,14 +320,14 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
         'uid-chosen' => ['handle' => 'chosen', 'fs' => 'chosen', 'transformFs' => 'transforms', 'assetTransformer' => 'craft'],
         'uid-unset-env' => ['handle' => 'unsetEnv', 'fs' => 'unsetEnv', 'transformFs' => 'transforms', 'assetTransformer' => '$LOOSE_ENDS_UNSET_TRANSFORMER'],
     ]);
-    Cms::config()->assetTransformers->outputDisk(null);
+    Cms::config()->assetTransformers->transformer('craft', []);
 
     $finding = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
-    Cms::config()->assetTransformers->outputDisk('');
+    Cms::config()->assetTransformers->transformer('craft', ['outputDisk' => '']);
     $emptyDisk = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
-    Cms::config()->assetTransformers->outputDisk('transforms');
+    Cms::config()->assetTransformers->transformer('craft', ['outputDisk' => 'transforms']);
     $afterChoosing = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     // The default is another craft transformer that still stores transforms on the source disk
@@ -335,7 +335,7 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
     $craftDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     // The default's driver isn't registered, so volumes fall back to craft, which has no output disk
-    Cms::config()->assetTransformers->outputDisk(null)->transformer('imgix', ['driver' => 'imgix'])->default('imgix');
+    Cms::config()->assetTransformers->transformer('craft', [])->transformer('imgix', ['driver' => 'imgix'])->default('imgix');
     $unregisteredDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     // The default doesn't store transforms

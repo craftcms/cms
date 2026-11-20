@@ -82,8 +82,7 @@ pest()->beforeEach(fn () => cache()->put('craftcms-mcp-tools', []))->in('Feature
 function configureCraftTransformer(array $settings): void
 {
     $config = Cms::config()->assetTransformers;
-    $config->outputDisk = $settings['outputDisk'] ?? null;
-    $config->generateTransformsBeforePageLoad = $settings['generateTransformsBeforePageLoad'] ?? false;
+    $config->transformer('craft', $settings);
     app(AssetTransformers::class)->forgetTransformers();
 }
 

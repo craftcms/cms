@@ -526,7 +526,7 @@ class LooseEndsChecks
                 Section::Content,
                 Severity::ChangesBehavior,
                 t('Volumes store transforms on a separate Craft 5 transform filesystem, which Craft 6 ignores.', category: 'yii2-adapter'),
-                t('Set the `assetTransformers` general config setting’s `outputDisk` to the disk that should hold transforms. If volumes need different transform disks, add another transformer with the `craft` driver for each one and choose it in the volume’s Asset Transformer setting. Use a `scoped` disk to keep a transform subpath.', category: 'yii2-adapter'),
+                t('Set the `craft` transformer’s `outputDisk` in the `assetTransformers` general config setting to the disk that should hold transforms. If volumes need different transform disks, add another transformer with the `craft` driver for each one and choose it in the volume’s Asset Transformer setting. Use a `scoped` disk to keep a transform subpath.', category: 'yii2-adapter'),
                 detail: $transformFilesystems->map(fn(string $fs, string $volume) => "$volume → $fs")->join(', '),
             );
         }

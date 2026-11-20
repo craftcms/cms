@@ -9,13 +9,12 @@ use CraftCms\Cms\Support\Typecast;
 use InvalidArgumentException;
 
 /**
- * Asset transformer settings: the default transformer, the `craft` transformer’s settings, and other named
- * transformers.
+ * Asset transformer settings: the default transformer and the named transformers.
  *
  * ```php
  * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
  *     ->default('imgix')
- *     ->outputDisk('transforms')
+ *     ->transformer('craft', ['outputDisk' => 'transforms'])
  *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
  * )
  * ```
@@ -31,17 +30,8 @@ class AssetTransformersConfig extends BaseConfig
     public ?string $default = null;
 
     /**
-     * The disk the `craft` transformer stores transforms on, at its root. `null` stores them on each volume’s own disk.
-     * Use a `scoped` disk to store them below a path.
-     */
-    public ?string $outputDisk = null;
-
-    /** Whether the `craft` transformer generates each transform before returning its URL, instead of on its first request. */
-    public bool $generateTransformsBeforePageLoad = false;
-
-    /**
-     * Transformers other than `craft`, keyed by name. Each has a `driver`, registered with `AssetTransformers::extend()`,
-     * and that driver’s settings.
+     * Transformers keyed by name. Each has a `driver`, registered with `AssetTransformers::extend()`, and that driver’s
+     * settings. The `craft` transformer is always defined, and its entry here only holds its settings.
      *
      * @var array<string, array<string, mixed>>
      */
@@ -76,28 +66,15 @@ class AssetTransformersConfig extends BaseConfig
         return $this;
     }
 
-    public function outputDisk(?string $value): self
-    {
-        $this->outputDisk = $value !== '' ? $value : null;
-
-        return $this;
-    }
-
-    public function generateTransformsBeforePageLoad(bool $value = true): self
-    {
-        $this->generateTransformsBeforePageLoad = $value;
-
-        return $this;
-    }
-
     /**
-     * Defines a transformer. Its config needs a `driver`, and can hold that driver’s settings. A second transformer with
-     * the `craft` driver takes `outputDisk` and `generateTransformsBeforePageLoad`.
+     * Defines a transformer. Its config needs a `driver`, and can hold that driver’s settings. Transformers with the
+     * `craft` driver take `outputDisk` and `generateTransformsBeforePageLoad`. The `craft` transformer’s config can
+     * leave out `driver`.
      *
      * @param  array<string, mixed>  $config
      *
      * @throws InvalidArgumentException if the name is empty or an integer, which PHP turns into an integer array key, or
-     *                                  `craft`, whose settings have their own methods.
+     *                                  the `craft` transformer is given another driver.
      */
     public function transformer(string $name, array $config): self
     {
@@ -106,8 +83,8 @@ class AssetTransformersConfig extends BaseConfig
             throw new InvalidArgumentException('Asset transformer names can’t be empty or integers.');
         }
 
-        if ($name === 'craft') {
-            throw new InvalidArgumentException('Set the craft transformer with outputDisk() and generateTransformsBeforePageLoad().');
+        if ($name === 'craft' && ($config['driver'] ?? 'craft') !== 'craft') {
+            throw new InvalidArgumentException('The craft transformer’s driver can’t be changed. Give the transformer another name.');
         }
 
         $this->transformers[$name] = $config;
@@ -128,19 +105,14 @@ class AssetTransformersConfig extends BaseConfig
     }
 
     /**
-     * Returns a transformer’s config, with the `craft` transformer built from its settings, or `null` if it isn’t
-     * defined. Settings use the same camelCase names as this class’s methods, such as `outputDisk`.
+     * Returns a transformer’s config, or `null` if it isn’t defined. The `craft` transformer is always defined.
      *
      * @return array<string, mixed>|null
      */
     public function transformerConfig(string $name): ?array
     {
         if ($name === 'craft') {
-            return [
-                'driver' => 'craft',
-                'outputDisk' => $this->outputDisk,
-                'generateTransformsBeforePageLoad' => $this->generateTransformsBeforePageLoad,
-            ];
+            return ['driver' => 'craft', ...($this->transformers['craft'] ?? [])];
         }
 
         return $this->transformers[$name] ?? null;
@@ -149,6 +121,6 @@ class AssetTransformersConfig extends BaseConfig
     /** @return list<string> */
     public function names(): array
     {
-        return ['craft', ...array_map(strval(...), array_keys($this->transformers))];
+        return array_values(array_unique(['craft', ...array_map(strval(...), array_keys($this->transformers))]));
     }
 }
