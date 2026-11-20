@@ -346,6 +346,27 @@ it('gives transforms direct URLs only for public volumes whose output disk sets 
     'output disk with a url, private' => [false, 'url-output', false],
 ]);
 
+it('stores temporary uploads’ transforms on their own disk, not the output disk', function () {
+    $root = storage_path('framework/testing/image-transformer-test/temp-uploads');
+    config()->set('filesystems.disks.temp-uploads', ['driver' => 'local', 'root' => "{$root}/temp"]);
+    config()->set('filesystems.disks.public-output', ['driver' => 'local', 'root' => "{$root}/output", 'url' => 'https://cdn.example.test']);
+    Storage::disk('temp-uploads')->deleteDirectory('');
+    Storage::disk('public-output')->deleteDirectory('');
+    Cms::config()->tempAssetUploadDisk = 'temp-uploads';
+    configureCraftTransformer(['outputDisk' => 'public-output']);
+    $asset = ($this->createImageAsset)(['filename' => 'passport-scan.jpg']);
+    $asset->setVolumeId(null);
+    expect($asset->getVolume()->isTemporary())->toBeTrue();
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+    app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
+
+    expect(Storage::disk('public-output')->allFiles())->toBe([])
+        ->and(Storage::disk('temp-uploads')->allFiles())->toHaveCount(2);
+});
+
 it('stores transforms on a second craft transformer’s own output disk', function () {
     $root = storage_path('framework/testing/image-transformer-test/second-craft');
     config()->set('filesystems.disks.private-transforms', ['driver' => 'local', 'root' => "{$root}/output"]);

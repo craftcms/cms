@@ -804,12 +804,13 @@ class ImageTransformer
 
     /**
      * Returns the name of the disk the `craft` driver stores transforms on: the driver instance’s output disk, or the
-     * volume’s own disk.
+     * volume’s own disk. Temporary uploads always use their own disk, since they have no setting to opt out of a public
+     * output disk.
      */
     private function outputDisk(Asset $asset, AssetTransformer $transformer): string
     {
-        $disk = $this->craftDriver($transformer)->outputDisk;
         $volume = $asset->getVolume();
+        $disk = $volume->isTemporary() ? null : $this->craftDriver($transformer)->outputDisk;
         $diskName = $disk === null
             ? $volume->getResolvedFsTarget()
             : $volume->resolveStorageTargetKey($disk, parse: false);

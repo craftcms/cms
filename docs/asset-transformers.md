@@ -121,7 +121,8 @@ settings from `AssetTransformersConfig`. A second transformer with the `craft` d
 `outputDisk` applies to every volume that uses the transformer, including volumes without public URLs. Their
 transforms are served through Craft's action URL, but the files are only as private as the output disk. If the output
 disk is publicly readable, point it at a private disk, or give private volumes a second `craft` transformer without an
-output disk, as in [Different output disks per volume](#different-output-disks-per-volume).
+output disk, as in [Different output disks per volume](#different-output-disks-per-volume). Temporary uploads always
+keep their transforms on the temporary upload disk.
 
 Transforms have URLs when the volume does, and either they're stored on the volume's own disk or the output disk's
 config in `config/filesystems.php` sets a `url`. A `scoped` disk uses the `url` of the disk it wraps, and Laravel ignores its own. Without a `url`,
