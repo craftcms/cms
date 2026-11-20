@@ -3516,7 +3516,6 @@ return [
     'today' => '今日',
     'two' => '2',
     'unknown' => '不明',
-    'updater/Index' => 'updater/Index',
     'user' => 'ユーザー',
     'users' => 'ユーザー',
     'validation.required' => 'validation.required',

@@ -3516,7 +3516,6 @@ return [
     'today' => 'اليوم',
     'two' => 'اثنان',
     'unknown' => 'غير معروف',
-    'updater/Index' => 'updater/Index',
     'user' => 'المستخدم',
     'users' => 'المستخدمين',
     'validation.required' => 'validation.required',

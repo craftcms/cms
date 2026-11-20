@@ -3516,7 +3516,6 @@ return [
     'today' => 'сегодня',
     'two' => 'два',
     'unknown' => 'неизвестно',
-    'updater/Index' => 'updater/Index',
     'user' => 'пользователь',
     'users' => 'пользователи',
     'validation.required' => 'validation.required',

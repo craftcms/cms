@@ -3516,7 +3516,6 @@ return [
     'today' => 'ma',
     'two' => 'kettő',
     'unknown' => 'ismeretlen',
-    'updater/Index' => 'updater/Index',
     'user' => 'felhasználó',
     'users' => 'felhasználók',
     'validation.required' => 'validation.required',

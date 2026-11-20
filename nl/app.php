@@ -3516,7 +3516,6 @@ return [
     'today' => 'vandaag',
     'two' => 'twee',
     'unknown' => 'onbekend',
-    'updater/Index' => 'updater/Index',
     'user' => 'gebruiker',
     'users' => 'gebruikers',
     'validation.required' => 'validation.required',
