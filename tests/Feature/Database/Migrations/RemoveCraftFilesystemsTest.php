@@ -3,8 +3,31 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Mockery\MockInterface;
+
+/**
+ * Returns the migration with the volumes table as it was when it ran, before `fs` was renamed to `disk`.
+ */
+function removeCraftFilesystemsMigration(): object
+{
+    Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->renameColumn('disk', 'fs'));
+
+    return require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+}
+
+afterEach(function () {
+    // MySQL commits implicitly on DDL, so the volumes created before the column was renamed outlive the test's transaction
+    DB::table(Table::VOLUMES)->delete();
+
+    if (Schema::hasColumn(Table::VOLUMES, 'fs')) {
+        Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->renameColumn('fs', 'disk'));
+    }
+});
 
 test('converts Craft filesystem references and preserves URL semantics', function () {
     foreach (['legacy-public', 'legacy-private', 'manual-public', 'manual-private'] as $disk) {
@@ -25,8 +48,8 @@ test('converts Craft filesystem references and preserves URL semantics', functio
         'manual-private' => ['fs' => 'manual-private'],
     ];
 
-    $legacyVolume = Volume::factory()->create(['fs' => 'legacy-public']);
-    $manualVolume = Volume::factory()->create(['fs' => 'manual-public']);
+    $legacyVolume = Volume::factory()->create(['disk' => 'legacy-public']);
+    $manualVolume = Volume::factory()->create(['disk' => 'manual-public']);
     $stored = [];
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
@@ -42,7 +65,7 @@ test('converts Craft filesystem references and preserves URL semantics', functio
     $projectConfig->shouldReceive('saveModifiedConfigData')->once();
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
     $migration->up();
 
     expect($stored[ProjectConfig::PATH_VOLUMES])
@@ -59,7 +82,7 @@ test('converts Craft filesystem references and preserves URL semantics', functio
 });
 
 test('fails before mutation when a legacy filesystem has no matching Laravel disk', function () {
-    $volume = Volume::factory()->create(['fs' => 'missing-storage']);
+    $volume = Volume::factory()->create(['disk' => 'missing-storage']);
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
@@ -73,7 +96,7 @@ test('fails before mutation when a legacy filesystem has no matching Laravel dis
     $projectConfig->shouldNotReceive('saveModifiedConfigData');
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
 
     expect(fn () => $migration->up())
         ->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
@@ -90,7 +113,7 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
         '_craft' => true,
     ]);
 
-    Volume::factory()->create(['fs' => 'siteAssets']);
+    Volume::factory()->create(['disk' => 'siteAssets']);
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
@@ -111,7 +134,7 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
     $projectConfig->shouldNotReceive('saveModifiedConfigData');
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
 
     $expectedMessage = str_replace(["\r\n", "\r"], "\n", <<<'MESSAGE'
             The Craft Filesystem concept has been removed.
@@ -138,7 +161,7 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
 });
 
 test('suggests an equivalent disk config for a missing Local filesystem', function () {
-    Volume::factory()->create(['fs' => 'missing-local']);
+    Volume::factory()->create(['disk' => 'missing-local']);
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
@@ -156,7 +179,7 @@ test('suggests an equivalent disk config for a missing Local filesystem', functi
     ]);
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
 
     expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
         ->toContain("'missing-local' => [")
@@ -166,9 +189,9 @@ test('suggests an equivalent disk config for a missing Local filesystem', functi
 });
 
 test('suggests equivalent disk configs for plugin filesystems without exposing credentials', function () {
-    Volume::factory()->create(['fs' => 'azureAssets']);
-    Volume::factory()->create(['fs' => 's3Assets']);
-    Volume::factory()->create(['fs' => 'gcsAssets']);
+    Volume::factory()->create(['disk' => 'azureAssets']);
+    Volume::factory()->create(['disk' => 's3Assets']);
+    Volume::factory()->create(['disk' => 'gcsAssets']);
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
@@ -211,7 +234,7 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
     ]);
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
 
     expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
         ->toContain(str_replace("\r\n", "\n", <<<'PHP'
@@ -255,7 +278,7 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
 });
 
 test('falls back to a manual TODO for a missing filesystem of an unrecognized type', function () {
-    Volume::factory()->create(['fs' => 'missing-custom']);
+    Volume::factory()->create(['disk' => 'missing-custom']);
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
@@ -269,7 +292,7 @@ test('falls back to a manual TODO for a missing filesystem of an unrecognized ty
     ]);
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
 
     expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect($exception->getMessage())
         ->toContain('"Vendor\S3\Fs"')
@@ -282,7 +305,7 @@ test('doesn’t require a disk or asset_transformer for a Craft 5 volume’s tra
         'root' => storage_path('framework/testing/migrations/volume-source'),
     ]);
     config()->offsetUnset('filesystems.disks.volume-transforms');
-    Volume::factory()->create(['fs' => 'volume-source']);
+    Volume::factory()->create(['disk' => 'volume-source']);
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->muteEvents = false;
@@ -309,6 +332,6 @@ test('doesn’t require a disk or asset_transformer for a Craft 5 volume’s tra
     $projectConfig->shouldReceive('saveModifiedConfigData')->once();
     app()->instance(ProjectConfig::class, $projectConfig);
 
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration = removeCraftFilesystemsMigration();
     $migration->up();
 });

@@ -26,7 +26,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/transform-controller-test/test-disk'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $this->volume = Volume::factory()->create(['disk' => 'test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
@@ -67,7 +67,7 @@ describe('generate', function () {
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
         ]);
         $volume = Volume::factory()->create([
-            'fs' => 'configured-private-source',
+            'disk' => 'configured-private-source',
         ]);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $asset = AssetModel::factory()->createElement([

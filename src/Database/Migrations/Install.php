@@ -1041,7 +1041,7 @@ class Install extends Migration
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
             $table->string('handle');
-            $table->string('fs');
+            $table->string('disk');
             $table->boolean('hasUrls')->default(false);
             $table->string('subpath')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);

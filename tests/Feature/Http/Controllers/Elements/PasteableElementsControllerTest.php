@@ -80,7 +80,7 @@ it('finds assets in a volume’s subfolders, which the selector can open', funct
         'root' => storage_path('framework/testing/pasteable-elements-test/test-disk'),
     ]);
 
-    $volume = Volumes::getVolumeById(Volume::factory()->create(['fs' => 'test-disk'])->id);
+    $volume = Volumes::getVolumeById(Volume::factory()->create(['disk' => 'test-disk'])->id);
     $folder = Folders::ensureFolderByFullPathAndVolume('nested/deeper', $volume);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,

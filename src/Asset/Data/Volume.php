@@ -15,8 +15,8 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\CustomFieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Url;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -28,7 +28,7 @@ use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
- * @property string $fsHandle
+ * @property string|null $fsHandle Deprecated in 6.0.0. [[disk]] should be used instead.
  * @property string $subpath
  *
  * @since 6.0.0
@@ -70,10 +70,14 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     public ?string $uid = null;
 
-    public ?string $fsHandle {
-        get => $this->getFsHandle();
+    /**
+     * The name of the Laravel filesystem disk that the volume’s assets are stored on, or an environment variable that
+     * names one. Reading it returns the disk name with environment variables resolved.
+     */
+    public ?string $disk {
+        get => $this->getDisk();
         set {
-            $this->setFsHandle($value);
+            $this->setDisk($value);
         }
     }
 
@@ -88,7 +92,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     private string $_subpath = '';
 
-    private ?string $_fsHandle = null;
+    private ?string $_disk = null;
 
     private bool $_temporary = false;
 
@@ -98,8 +102,13 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             $config = (array) $config;
         }
 
-        if (isset($config['fs']) && is_string($config['fs'])) {
-            $config['fsHandle'] = Arr::pull($config, 'fs');
+        foreach (['fs', 'fsHandle'] as $oldKey) {
+            // Other values, such as a Craft 5 filesystem object, are left for the Yii adapter’s `setFs()`
+            if (array_key_exists($oldKey, $config) && (is_string($config[$oldKey]) || $config[$oldKey] === null)) {
+                Deprecator::log("Volume::$oldKey", "The `$oldKey` volume setting has been renamed to `disk`.");
+                $config['disk'] ??= $config[$oldKey];
+                unset($config[$oldKey]);
+            }
         }
 
         parent::__construct($config);
@@ -124,7 +133,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
         return array_merge(parent::validationData(), [
             'fieldLayout' => $fieldLayout,
-            'fsHandle' => $this->getFsHandle(false),
+            'disk' => $this->getDisk(false),
             'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
         ]);
     }
@@ -135,7 +144,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return [
             'handle' => t('Handle'),
             'name' => t('Name'),
-            'fsHandle' => t('Disk'),
+            'disk' => t('Disk'),
             'subpath' => t('Subpath'),
             'propagationMethod' => t('Propagation Method'),
         ];
@@ -234,19 +243,54 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         return Asset::class;
     }
 
+    /**
+     * Returns the volume’s disk name, with environment variables resolved if `$parse` is `true`.
+     */
+    public function getDisk(bool $parse = true): ?string
+    {
+        return $this->parseStorageHandle($this->_disk, $parse);
+    }
+
+    public function setDisk(?string $disk): void
+    {
+        $this->_disk = $disk;
+    }
+
+    /**
+     * Returns the volume’s disk name if it’s a configured disk that volumes can use, or `null` otherwise.
+     */
+    public function getResolvedDisk(bool $parse = true): ?string
+    {
+        return $this->resolveStorageTargetKey($this->_disk, $parse);
+    }
+
+    /**
+     * @deprecated in 6.0.0. [[getDisk()]] should be used instead.
+     */
     public function getFsHandle(bool $parse = true): ?string
     {
-        return $this->parseStorageHandle($this->_fsHandle, $parse);
+        Deprecator::log('Volume::getFsHandle()', '`Volume::getFsHandle()` has been renamed to `getDisk()`.');
+
+        return $this->getDisk($parse);
     }
 
+    /**
+     * @deprecated in 6.0.0. [[setDisk()]] should be used instead.
+     */
     public function setFsHandle(?string $handle): void
     {
-        $this->_fsHandle = $handle;
+        Deprecator::log('Volume::setFsHandle()', '`Volume::setFsHandle()` has been renamed to `setDisk()`.');
+        $this->setDisk($handle);
     }
 
+    /**
+     * @deprecated in 6.0.0. [[getResolvedDisk()]] should be used instead.
+     */
     public function getResolvedFsTarget(bool $parse = true): ?string
     {
-        return $this->resolveStorageTargetKey($this->_fsHandle, $parse);
+        Deprecator::log('Volume::getResolvedFsTarget()', '`Volume::getResolvedFsTarget()` has been renamed to `getResolvedDisk()`.');
+
+        return $this->getResolvedDisk($parse);
     }
 
     /** @return array<string, array<string, array<string, list<array<string, mixed>|string>|string|null>>|int|string|null> */
@@ -255,7 +299,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
-            'fs' => $this->_fsHandle,
+            'disk' => $this->_disk,
             'hasUrls' => $this->hasUrls,
             'subpath' => $this->_subpath,
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
@@ -328,7 +372,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
             return true;
         }
 
-        return $this->resolveStorageTargetKey($this->_fsHandle) === Cms::config()->getTempAssetUploadDisk();
+        return $this->resolveStorageTargetKey($this->_disk) === Cms::config()->getTempAssetUploadDisk();
     }
 
     public function markAsTemporary(): void
@@ -347,7 +391,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     private function diskNameForOperations(?string $handle = null): string
     {
-        $target = $this->resolveStorageTargetKey($handle ?? $this->_fsHandle);
+        $target = $this->resolveStorageTargetKey($handle ?? $this->_disk);
         if ($target === null) {
             throw new FilesystemException('Volume is missing or has an invalid disk.');
         }

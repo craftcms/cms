@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Volumes’ `fs` setting has been renamed to `disk`, in project config, the `volumes` table, and the volume MCP tools. Existing project config is updated automatically, and project config that still uses `fs` can still be applied.
+- Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead.
+- Deprecated the `fsHandle` parameter of the volume MCP tools. `disk` should be used instead.
+
 ## 6.0.0-beta.2 - 2026-11-20
 
 - Added Croatian translations, and completed the Indonesian, Kyrgyz, and Welsh translations.

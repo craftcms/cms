@@ -37,7 +37,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/assistant-images'),
     ]);
     Storage::disk('assistant-images')->deleteDirectory('');
-    $volume = Volume::factory()->create(['fs' => 'assistant-images']);
+    $volume = Volume::factory()->create(['disk' => 'assistant-images']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 
     $image = imagecreatetruecolor(2000, 1000);

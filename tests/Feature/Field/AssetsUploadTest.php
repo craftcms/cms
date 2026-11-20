@@ -33,7 +33,7 @@ it('adds uploaded files to the assets already selected in the field', function (
     Storage::fake('upload-destination');
     Cms::config()->tempAssetUploadDisk = 'temp-assets';
 
-    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    $volume = Volume::factory()->create(['disk' => 'upload-destination']);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $existing = Asset::factory()->createElement(['volumeId' => $volume->id, 'folderId' => $folder->id]);
     $entry = Entry::factory()
@@ -62,7 +62,7 @@ it('saves an element with a file uploaded in the request', function () {
     Storage::fake('upload-destination');
     Cms::config()->tempAssetUploadDisk = 'temp-assets';
 
-    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    $volume = Volume::factory()->create(['disk' => 'upload-destination']);
     VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $entry = Entry::factory()
         ->withField('images', Assets::class, settings: ['defaultUploadLocationSource' => "volume:$volume->uid"])
@@ -92,7 +92,7 @@ it('holds uploads from the field control to the field’s selection condition', 
     config()->set('filesystems.disks.upload-destination', ['driver' => 'local', 'root' => storage_path('framework/testing/upload-destination')]);
     Storage::fake('upload-destination');
 
-    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    $volume = Volume::factory()->create(['disk' => 'upload-destination']);
     VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $entry = Entry::factory()
         ->withField('images', Assets::class, settings: [
@@ -124,7 +124,7 @@ it('rejects files uploaded with the element without saving them as assets', func
     Cms::config()->tempAssetUploadDisk = 'temp-assets';
     Cms::config()->maxUploadFileSize = 10;
 
-    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    $volume = Volume::factory()->create(['disk' => 'upload-destination']);
     VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $entry = Entry::factory()
         ->withField('images', Assets::class, settings: ['defaultUploadLocationSource' => "volume:$volume->uid", ...$settings])

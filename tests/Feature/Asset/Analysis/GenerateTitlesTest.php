@@ -37,7 +37,7 @@ beforeEach(function (): void {
 function titlesImage(string $titleTranslationMethod, array $titles = []): Asset
 {
     $volume = VolumeModel::factory()->create([
-        'fs' => 'titles-test',
+        'disk' => 'titles-test',
         'propagationMethod' => PropagationMethod::All->value,
         'titleTranslationMethod' => $titleTranslationMethod,
     ]);

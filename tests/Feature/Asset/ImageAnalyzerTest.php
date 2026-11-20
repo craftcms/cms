@@ -42,7 +42,7 @@ function analyzableImage(?string $alt = null, string $kind = 'image', string $fi
     if (! app()->bound('analysis.volume')) {
         $disk = Storage::fake('analysis-disk');
         config()->set('filesystems.disks.analysis-disk.root', $disk->path(''));
-        app()->instance('analysis.volume', Volume::factory()->create(['fs' => 'analysis-disk']));
+        app()->instance('analysis.volume', Volume::factory()->create(['disk' => 'analysis-disk']));
     }
 
     $volume = app('analysis.volume');
@@ -213,7 +213,7 @@ it('doesn’t replace the alt text and title an image’s embedded metadata fill
 it('queues new images for files already in place, which couldn’t be sampled when they were saved', function (): void {
     Queue::fake();
     aiImageSettings(['test:caption' => ['enabled' => false], 'test:focus' => ['enabled' => false]]);
-    $volume = Volume::factory()->create(['fs' => 'analysis-disk-new']);
+    $volume = Volume::factory()->create(['disk' => 'analysis-disk-new']);
     Storage::fake('analysis-disk-new')->put('placed.png', file_get_contents(dirname(__DIR__, 3).'/resources/ai/probes/image/red.png'));
     app(Volumes::class)->reset();
 

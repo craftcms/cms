@@ -41,7 +41,7 @@ it('registers legacy filesystem handles as disks for native volume operations', 
     ]);
     app(LegacyFilesystems::class)->reset();
 
-    $volume = new Volume(['fs' => 'legacy-volume']);
+    $volume = new Volume(['disk' => 'legacy-volume']);
 
     expect(config('filesystems.disks.craft-fs-legacy-volume'))->toBeArray()
         ->and(config('filesystems.disks.legacy-volume'))->toBeArray()
@@ -66,7 +66,7 @@ it('preserves configured Laravel disks that match legacy filesystem handles', fu
 
     $filesystems = app(LegacyFilesystems::class);
     $filesystems->syncDisks();
-    $volume = new Volume(['fs' => 'legacy-volume']);
+    $volume = new Volume(['disk' => 'legacy-volume']);
 
     expect(config('filesystems.disks.legacy-volume'))->toBe($diskConfig)
         ->and(config('filesystems.disks.craft-fs-legacy-volume._craft'))->toBeTrue()

@@ -41,7 +41,7 @@ class VolumeMixin
              * @var Volume $this
              * @phpstan-ignore-next-line Macro closure is rebound to Volume.
              */
-            $handle = $this->getFsHandle(false);
+            $handle = $this->getDisk(false);
             if ($handle === null) {
                 throw new RuntimeException('Volume is missing its filesystem handle.');
             }
@@ -58,7 +58,7 @@ class VolumeMixin
              * @var Volume $this
              * @phpstan-ignore-next-line Macro closure is rebound to Volume.
              */
-            $this->setFsHandle($filesystem instanceof FsInterface ? $filesystem->handle : $filesystem);
+            $this->setDisk($filesystem instanceof FsInterface ? $filesystem->handle : $filesystem);
         };
     }
 
@@ -181,7 +181,7 @@ class VolumeMixin
              * @phpstan-ignore-next-line Macro closure is rebound to Volume.
              */
             $values = $data->get($this);
-            $target = $this->resolveStorageTargetKey($values->filesystem ?: $this->getFsHandle(false));
+            $target = $this->resolveStorageTargetKey($values->filesystem ?: $this->getDisk(false));
             if ($target === null) {
                 throw new RuntimeException('Volume is missing or has an invalid transform filesystem handle.');
             }
