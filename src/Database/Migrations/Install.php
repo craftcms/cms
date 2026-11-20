@@ -1044,6 +1044,7 @@ class Install extends Migration
             $table->string('fs');
             $table->boolean('hasUrls')->default(false);
             $table->string('subpath')->nullable();
+            $table->string('assetTransformer')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
