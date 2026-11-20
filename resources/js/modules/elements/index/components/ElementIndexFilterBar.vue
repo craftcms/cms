@@ -195,7 +195,19 @@
             :disabled="disabled"
             @edit="(anchor) => toggleEditingGroup([index], anchor)"
             @remove="removeGroupAt([index])"
-          />
+          >
+            <template #editor>
+              <RuleEditPopover
+                v-if="editing && condition && editingGroup === String(index)"
+                :anchor="editing.anchor"
+                :condition="condition"
+                :group-path="editing.groupPath"
+                :label="t('Filter group')"
+                @close="editing = null"
+                @apply="emit('update-condition', $event)"
+              />
+            </template>
+          </FilterGroupChip>
           <FilterChip
             v-else
             :label="summaryOf(item.uid).label"
@@ -204,7 +216,21 @@
             :disabled="disabled"
             @edit="(anchor) => item.uid && toggleEditing(item.uid, anchor)"
             @remove="item.uid && remove(item.uid)"
-          />
+          >
+            <template #editor>
+              <RuleEditPopover
+                v-if="
+                  editing && condition && item.uid && editing.uid === item.uid
+                "
+                :anchor="editing.anchor"
+                :condition="condition"
+                :uid="item.uid"
+                :label="summaryOf(item.uid).label"
+                @close="editing = null"
+                @apply="emit('update-condition', $event)"
+              />
+            </template>
+          </FilterChip>
         </template>
       </span>
     </div>
@@ -242,19 +268,6 @@
         @save-new="emit('save-new')"
       />
     </span>
-    <RuleEditPopover
-      v-if="editing && condition"
-      :key="editing.uid ?? editingGroup"
-      :anchor="editing.anchor"
-      :condition="condition"
-      :uid="editing.uid"
-      :group-path="editing.groupPath"
-      :label="
-        editing.uid ? chipSummaries.get(editing.uid)?.label : t('Filter group')
-      "
-      @close="editing = null"
-      @apply="emit('update-condition', $event)"
-    />
   </div>
 </template>
 

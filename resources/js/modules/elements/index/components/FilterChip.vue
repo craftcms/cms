@@ -55,6 +55,9 @@
         ></span>
       </slot>
     </button>
+    <!-- The popover that edits it, right after the button that opens it, so
+      Tab moves on into it. -->
+    <slot name="editor" />
   </FilterPill>
 </template>
 

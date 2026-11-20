@@ -40,5 +40,6 @@
       :max="Infinity"
       aria-hidden="true"
     ></craft-badge-indicator>
+    <template #editor><slot name="editor" /></template>
   </FilterChip>
 </template>
