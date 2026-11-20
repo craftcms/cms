@@ -33,6 +33,8 @@ class Typecast
 
     private const string TYPE_INT_FLOAT = 'int|float';
 
+    private const string TYPE_INT_FALSE = 'int|false';
+
     private const string TYPE_INT_STRING = 'int|string';
 
     private const string TYPE_STRING = 'string';
@@ -208,6 +210,14 @@ class Typecast
                     if ($value === null && ! $allowsNull) {
                         $value = false;
                     }
+                }
+
+                return;
+            case self::TYPE_INT_FALSE:
+                if (is_string($value) && is_numeric($value)) {
+                    $value = (int) $value;
+                } elseif ($value === '' || (! is_int($value) && Env::normalizeBooleanValue($value) === false)) {
+                    $value = false;
                 }
 
                 return;
@@ -426,6 +436,11 @@ class Typecast
         // Special case for int|float
         if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
             return [self::TYPE_INT_FLOAT, $allowsNull];
+        }
+
+        // Special case for int|false
+        if ($names === ['false', self::TYPE_INT] || $names === ['false', self::TYPE_INT, self::TYPE_NULL]) {
+            return [self::TYPE_INT_FALSE, $allowsNull];
         }
 
         // Special case for int|string

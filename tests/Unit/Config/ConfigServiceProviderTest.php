@@ -286,7 +286,9 @@ it('forwards the renamed GraphQL settings to the gql setting', function () {
         ->and($config->enableGql)->toBeFalse()
         ->and($config['maxGraphqlDepth'])->toBe(7)
         ->and($config->gql->enableCaching)->toBeTrue()
-        ->and($config->toArray())->not->toHaveKey('enableGql');
+        ->and($config->toArray())->not->toHaveKey('enableGql')
+        ->and(GeneralConfig::fromConfig(['enableGql' => false])->gql->enabled)->toBeFalse()
+        ->and(collect(Deprecator::getRequestLogs())->firstWhere('key', GeneralConfig::class.'::enableGraphqlIntrospection')?->file)->toBe(__FILE__);
 });
 
 it('forwards the renamed image, backup, and queue settings', function () {

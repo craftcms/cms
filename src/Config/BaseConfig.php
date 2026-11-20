@@ -52,7 +52,9 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         $config = static::create();
 
         foreach ($value as $property => $propertyValue) {
-            if (property_exists($config, $property) && method_exists($config, $property)) {
+            if (isset(static::$renamedSettings[$property])) {
+                $config->{$property} = $propertyValue;
+            } elseif (property_exists($config, $property) && method_exists($config, $property)) {
                 $config->{$property}($propertyValue);
             }
         }
@@ -198,10 +200,19 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
     {
         $newName = static::$renamedSettings[$name];
 
-        app()->booted(fn () => Deprecator::log(
-            sprintf('%s::%s', static::class, $name),
-            "The `$name` config setting has been renamed to `$newName`.",
-        ));
+        // Capture the caller now, as the log is deferred until the app has booted, when it’s no longer on the stack
+        $traces = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
+        app()->booted(function () use ($name, $newName, $traces) {
+            [$file, $line] = Deprecator::findOrigin($traces);
+
+            Deprecator::log(
+                sprintf('%s::%s', static::class, $name),
+                "The `$name` config setting has been renamed to `$newName`.",
+                $file,
+                $line,
+            );
+        });
     }
 
     /**

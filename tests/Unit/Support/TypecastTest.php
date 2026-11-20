@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Config\AssetsConfig;
+use CraftCms\Cms\Config\BackupsConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Typecast;
@@ -36,6 +37,10 @@ test('scalar properties', function (string $class, string $property, mixed $expe
     [GeneralConfig::class, 'blowfishHashCost', 123, 123],
     [AssetsConfig::class, 'maxUploadFileSize', 123, '123'],
     [AssetsConfig::class, 'maxUploadFileSize', '123abc', '123abc'],
+    [BackupsConfig::class, 'max', 5, '5'],
+    [BackupsConfig::class, 'max', false, 'false'],
+    [BackupsConfig::class, 'max', false, ''],
+    [BackupsConfig::class, 'max', 5, 5],
 ]);
 
 test('datetime properties', function () {
