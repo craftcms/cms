@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'Feladat újraindítása',
     'Restrict allowed file types' => 'Szűkíti az engedélyezett fájltípusok körét',
     'Route Saved.' => 'Az útvonal mentve.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'Futtassa a `{command}` parancsot, vagy állítsa be a `CRAFT_OAUTH_PRIVATE_KEY` és `CRAFT_OAUTH_PUBLIC_KEY` környezeti változókat PEM-kódolású kulcsokra vagy kulcsfájlok elérési útjaira.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG fájl javasolt.  A logó {size} szélesen fog megjelenni.',
     'Save as a new entry type' => 'Mentés új bejegyzéstípusként',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Mentse a betöltött projektkonfigurációs adatokat egy YAML-fájlba a <code>{folder}</code> mappában.',

@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'Επανεκκίνηση εργασίας',
     'Restrict allowed file types' => 'Περιορισμός επιτρεπόμενων τύπων αρχείων',
     'Route Saved.' => 'Η διαδρομή αποθηκεύτηκε.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'Εκτελέστε `{command}` ή ορίστε τις μεταβλητές περιβάλλοντος `CRAFT_OAUTH_PRIVATE_KEY` και `CRAFT_OAUTH_PUBLIC_KEY` σε κλειδιά με κωδικοποίηση PEM ή σε διαδρομές αρχείων κλειδιών.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'Συνιστάται αρχείο SVG. Το λογότυπο θα εμφανίζεται με πλάτος {size}.',
     'Save as a new entry type' => 'Αποθήκευση ως νέος τύπος εγγραφής',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Αποθήκευση των φορτωμένων δεδομένων project config σε αρχεία YAML στον φάκελο <code>{folder}</code>.',

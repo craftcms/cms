@@ -3870,6 +3870,7 @@ return [
     'Restart job' => '작업 다시 시작',
     'Restrict allowed file types' => '허용 파일 형식을 제한합니까',
     'Route Saved.' => '경로가 저장되었습니다.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => '`{command}` 명령을 실행하거나 `CRAFT_OAUTH_PRIVATE_KEY` 및 `CRAFT_OAUTH_PUBLIC_KEY` 환경 변수를 PEM 인코딩된 키 또는 키 파일 경로로 설정하십시오.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG 파일을 권장합니다. 로고는 {size}에 넓게 표시됩니다.',
     'Save as a new entry type' => '새 항목 타입으로 저장',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => '로드된 프로젝트 구성 데이터를 <code>{folder}</code> 폴더의 YAML 파일에 저장하십시오.',

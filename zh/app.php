@@ -3870,6 +3870,7 @@ return [
     'Restart job' => '重启作业',
     'Restrict allowed file types' => '限制允许的文件类型',
     'Route Saved.' => '路由已保存。',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => '运行`{command}`，或将环境变量`CRAFT_OAUTH_PRIVATE_KEY`和`CRAFT_OAUTH_PUBLIC_KEY`设置为PEM编码的密钥或密钥文件路径。',
     'SVG file recommended. The logo will be displayed at {size} wide.' => '建议使用 SVG 文件。标志的显示宽度为 {size}。',
     'Save as a new entry type' => '保存为新条目类型',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => '将加载的项目配置数据保存到 <code>{folder}</code> 文件夹的 YAML 文件中。',

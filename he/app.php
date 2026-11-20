@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'הפעל מחדש את העבודה',
     'Restrict allowed file types' => 'הגבל קבצים מותרים',
     'Route Saved.' => 'המסלול נשמר.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'הפעל את `{command}`, או הגדר את משתני הסביבה `CRAFT_OAUTH_PRIVATE_KEY` ו־`CRAFT_OAUTH_PUBLIC_KEY` למפתחות בקידוד PEM או לנתיבים של קובצי מפתחות.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'מומלץ קובץ SVG. הלוגו יוצג ברוחב {size}.',
     'Save as a new entry type' => 'שמור כסוג רשומה חדש',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'שמור את נתוני תצורת הפרויקט שנטענו בקובצי YAML בקובץ <code>{folder}</code> שלך.',

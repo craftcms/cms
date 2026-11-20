@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'Endurræsa keyrslu',
     'Restrict allowed file types' => 'Takmarka leyfilegar skráargerðir',
     'Route Saved.' => 'Leið vistuð.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'Keyrðu `{command}`, eða stilltu umhverfisbreyturnar `CRAFT_OAUTH_PRIVATE_KEY` og `CRAFT_OAUTH_PUBLIC_KEY` á PEM-kóðaða lykla eða slóðir að lyklaskrám.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'Mælt er með SVG skrá. Merkið mun birtast í {size} á breidd.',
     'Save as a new entry type' => 'Vista sem nýja tegund færslu',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Vistaðu hlaðna verkstillingargögnin í YAML skrár í <code>{folder}</code> möppunni þinni.',

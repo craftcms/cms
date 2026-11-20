@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'Restartovat úlohu',
     'Restrict allowed file types' => 'Omezit povolené typy souborů',
     'Route Saved.' => 'Cesta uložena.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'Spusťte `{command}` nebo nastavte proměnné prostředí `CRAFT_OAUTH_PRIVATE_KEY` a `CRAFT_OAUTH_PUBLIC_KEY` na klíče kódované ve formátu PEM nebo na cesty k souborům s klíči.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'Je doporučen soubor SVG. Logo se bude zobrazovat v šířce {size}.',
     'Save as a new entry type' => 'Uložit jako nový typ záznamu',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Uložte načtená konfigurační data projektu do souborů YAML ve vaší složce <code>{folder}</code>.',

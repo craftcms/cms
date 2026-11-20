@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'Start jobb på nytt',
     'Restrict allowed file types' => 'Begrense tillatte filtyper',
     'Route Saved.' => 'Sti lagret.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'Kjør `{command}`, eller sett miljøvariablene `CRAFT_OAUTH_PRIVATE_KEY` og `CRAFT_OAUTH_PUBLIC_KEY` til PEM-kodede nøkler eller stier til nøkkelfiler.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG-fil anbefales. Logoen vises med bredde {size}.',
     'Save as a new entry type' => 'Lagre som ny oppføringstype',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Lagre opplastet prosjektkonfigurasjonsdata til YAML-filer i mappen <code>{folder}</code>.',

@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'เริ่มงานใหม่',
     'Restrict allowed file types' => 'จำกัดประเภทไฟล์ที่อนุญาต',
     'Route Saved.' => 'บันทึกเส้นทางแล้ว',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'เรียกใช้ `{command}` หรือตั้งค่าตัวแปรสภาพแวดล้อม `CRAFT_OAUTH_PRIVATE_KEY` และ `CRAFT_OAUTH_PUBLIC_KEY` เป็นคีย์ที่เข้ารหัสแบบ PEM หรือพาธของไฟล์คีย์',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'แนะนำให้ใช้ไฟล์ SVG โลโก้จะแสดงที่ความกว้าง {size}',
     'Save as a new entry type' => 'บันทึกเป็นประเภทรายการใหม่',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'บันทึกข้อมูลการกำหนดค่าโครงการที่โหลดไปยังไฟล์ YAML ในโฟลเดอร์ <code>{folder}</code> ของคุณ',

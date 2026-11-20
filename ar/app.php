@@ -3870,6 +3870,7 @@ return [
     'Restart job' => 'إعادة تشغيل المهمة',
     'Restrict allowed file types' => 'تقييد أنواع الملفات المسموح بها',
     'Route Saved.' => 'تم حفظ المسار.',
+    'Run `{command}`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.' => 'شغّل `{command}`، أو عيّن متغيري البيئة `CRAFT_OAUTH_PRIVATE_KEY` و`CRAFT_OAUTH_PUBLIC_KEY` إلى مفاتيح بترميز PEM أو إلى مسارات ملفات المفاتيح.',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'يوصى باستخدام ملف SVG. سيتم عرض الشعار بعرض {size}.',
     'Save as a new entry type' => 'الحفظ كنوع إدخال جديد',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'احفظ بيانات تهيئة المشروع الذي تم تحميلها في ملفات YAML في المجلد <code>{folder}</code>.',
