@@ -8,11 +8,11 @@ use Closure;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Validation\Concerns\LabelsAttributes;
 use DateTimeInterface;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
-use Illuminate\Validation\Validator;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
@@ -29,7 +29,7 @@ class TimeRule implements DataAwareRule, ValidationRule, ValidatorAwareRule
      */
     private array $data = [];
 
-    private ?Validator $validator = null;
+    use LabelsAttributes;
 
     public function __construct(
         /**
@@ -74,7 +74,7 @@ class TimeRule implements DataAwareRule, ValidationRule, ValidatorAwareRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $label = $this->validator?->getDisplayableAttribute($attribute) ?? $attribute;
+        $label = $this->attributeLabel($attribute);
 
         if (! $value instanceof DateTimeInterface) {
             $value = DateTimeHelper::toDateTime(['time' => $value], true);
@@ -141,13 +141,6 @@ class TimeRule implements DataAwareRule, ValidationRule, ValidatorAwareRule
     public function setData(array $data): static
     {
         $this->data = $data;
-
-        return $this;
-    }
-
-    public function setValidator(Validator $validator): static
-    {
-        $this->validator = $validator;
 
         return $this;
     }

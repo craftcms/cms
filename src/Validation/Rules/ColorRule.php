@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
+use CraftCms\Cms\Validation\Concerns\LabelsAttributes;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
-use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\t;
 
@@ -16,7 +16,7 @@ use function CraftCms\Cms\t;
  */
 class ColorRule implements ValidationRule, ValidatorAwareRule
 {
-    private ?Validator $validator = null;
+    use LabelsAttributes;
 
     /**
      * @param  bool  $allowAlpha  Whether 8-digit hex values with an alpha channel should be allowed.
@@ -39,16 +39,9 @@ class ColorRule implements ValidationRule, ValidatorAwareRule
 
         if (! $valid) {
             $fail(t('{attribute} is invalid.', [
-                'attribute' => $this->validator?->getDisplayableAttribute($attribute) ?? $attribute,
+                'attribute' => $this->attributeLabel($attribute),
             ]));
         }
-    }
-
-    public function setValidator(Validator $validator): static
-    {
-        $this->validator = $validator;
-
-        return $this;
     }
 
     /**

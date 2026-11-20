@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Validation\Rules;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Validation\Concerns\LabelsAttributes;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
-use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\t;
 
@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  */
 class UriFormatRule implements ValidationRule, ValidatorAwareRule
 {
-    private ?Validator $validator = null;
+    use LabelsAttributes;
 
     public function __construct(
         /**
@@ -34,7 +34,7 @@ class UriFormatRule implements ValidationRule, ValidatorAwareRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $label = $this->validator?->getDisplayableAttribute($attribute) ?? $attribute;
+        $label = $this->attributeLabel($attribute);
 
         if (is_string($value)) {
             $value = trim($value, '/');
@@ -70,12 +70,5 @@ class UriFormatRule implements ValidationRule, ValidatorAwareRule
                 'setting' => 'cpTrigger',
             ]));
         }
-    }
-
-    public function setValidator(Validator $validator): static
-    {
-        $this->validator = $validator;
-
-        return $this;
     }
 }
