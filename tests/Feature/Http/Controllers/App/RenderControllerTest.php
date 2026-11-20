@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\Enums\Appearance;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -12,6 +14,7 @@ use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\DomCrawler\Crawler;
@@ -63,6 +66,29 @@ test('render elements returns chip html for entries', function () {
 
     $response->assertOk()
         ->assertJsonPath("elements.{$entry->id}.default", fn (string $html) => str_contains($html, 'chip') && str_contains($html, (string) $entry->id));
+});
+
+test('re-rendered chips keep their appearance', function () {
+    $entry = EntryModel::factory()->create();
+    $element = Entry::find()->id($entry->id)->status(null)->one();
+
+    $chip = new Crawler(app(ElementHtml::class)->elementChipHtml($element, [
+        'appearance' => Appearance::Plain->value,
+    ]))->filter('craft-chip');
+
+    $response = postJson(action([RenderController::class, 'elements']), [
+        'elements' => [
+            [
+                'type' => Entry::class,
+                'id' => $entry->id,
+                'siteId' => $chip->attr('data-site-id'),
+                'instances' => [Json::decode($chip->attr('data-settings'))],
+            ],
+        ],
+    ])->assertOk();
+
+    expect(new Crawler($response->json("elements.{$entry->id}.0"))->filter('craft-chip')->attr('appearance'))
+        ->toBe('plain');
 });
 
 test('rendered nested element cards include the nested actions for their owner', function () {
