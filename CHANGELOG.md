@@ -6,6 +6,7 @@
 - Individual settings within object config settings, such as `mcp` and `anchors`, can now be set with `CRAFT_{SETTING}_{NESTED_SETTING}` environment variables. ([#20783](https://github.com/craftcms/cms/pull/20783))
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
 - `relatedTo` and `notRelatedTo` element query params can now match references from Link, Markdown, Table, and other reference-tracking fields. ([#20764](https://github.com/craftcms/cms/issues/20764))
+- Table fields now have “Entries”, “Assets”, and “Users” column types. ([#20728](https://github.com/craftcms/cms/pull/20728))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing` and `ElementQueryPrepared`. ([#20705](https://github.com/craftcms/cms/issues/20705), [#20722](https://github.com/craftcms/cms/pull/20722))
 - `CraftCms\Cms\Support\Str::random()` now returns mixed-case letters and digits by default. ([#20865](https://github.com/craftcms/cms/pull/20865))
