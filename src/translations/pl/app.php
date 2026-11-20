@@ -2443,7 +2443,7 @@ return [
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{tydzień} other{tyg.}}',
     '{num, number} {num, plural, =1{year} other{years}} of updates' => '{num, number} {num, plural, =1{rok} other{lata}} aktualizacji',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{rok} other{lat(a)}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} {sekcji}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} w sekcji {section}',
     '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.' => '{num, plural, =1{Dozwolonychy jest tylko jeden autor} other{Dozwolonych jest {num, number} autorów}}.',
     '{numEntries, number} {numEntries, plural, =1{entry has} other{entries have}} the {numUsers, plural, =1{user} other{users}} assigned as an author.' => '{numEntries, number} {numEntries, plural, one {} few {wpisy mają} many {wpisów ma}=1{wpis ma} other{wpisu ma}} {numUsers, plural, one {} few {użytkowników przypisanych} many {użytkowników przypisanych}=1{użytkownika przypisanego} other{użytkowników przypisanych}} jako autor.',
     '{numRelations, plural, =1{Relation} other{Relations}} queued to be replaced.' => '{numRelations, plural, =1{Relacja jest} other{Relacje są}} w kolejce do zastąpienia.',

@@ -1422,7 +1422,7 @@ return [
     'Query for the “{name}” entry' => '「{name}」エントリをクエリ',
     'Query for the “{name}” global set' => '「{name}」グローバルセットをクエリ',
     'Query for user groups' => 'ユーザグループをクエリ',
-    'Query for users in the “{name}” user group' => '「name}」ユーザーグループのユーザーをクエリ',
+    'Query for users in the “{name}” user group' => '「{name}」ユーザーグループのユーザーをクエリ',
     'Query for users' => 'ユーザーをクエリ',
     'Query for volumes' => 'ボリュームをクエリ',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'URL に追加する必要があるクエリパラメータ (例: {ex1}) または URI フラグメント (例: {ex2})。',
