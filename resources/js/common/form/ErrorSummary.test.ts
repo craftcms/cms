@@ -1,4 +1,5 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {createApp, h, nextTick, type App} from 'vue';
 import ErrorSummary from './ErrorSummary.vue';
 
@@ -6,10 +7,13 @@ vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
 
 let app: App | undefined;
 
-async function mount(errors: Record<string, string>): Promise<HTMLElement> {
+async function mount(
+  errors: Record<string, string>,
+  props: {errorPaths?: (key: string) => (string[] | null)[]} = {}
+): Promise<HTMLElement> {
   const container = document.createElement('div');
   document.body.append(container);
-  app = createApp({render: () => h(ErrorSummary, {errors})});
+  app = createApp({render: () => h(ErrorSummary, {errors, ...props})});
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
   await nextTick();
@@ -39,6 +43,64 @@ it('links each error to its field, and leaves the rest as text', async () => {
   expect(items[0]!.textContent?.trim()).toBe('Artist is required.');
   expect(items[1]!.querySelector('a')).toBeNull();
   expect(items[1]!.textContent?.trim()).toBe('Something else went wrong.');
+});
+
+it('links a field error by the path its screen resolves the key to, with the field name in bold', async () => {
+  document.body.innerHTML = `
+    <craft-field id="ui-fields-a11yDate"><input></craft-field>
+    <craft-field id="ui-postDate"><input></craft-field>`;
+  const errorPaths = (key: string) => [
+    key === 'a11yDate' ? ['fields', key] : null,
+    [key],
+  ];
+
+  const summary = await mount(
+    {
+      a11yDate: 'The *Date* field is required.',
+      postDate: '*Post Date* must be a date.',
+    },
+    {errorPaths}
+  );
+  const links = [...summary.querySelectorAll('a')];
+
+  expect(links.map((link) => link.getAttribute('href'))).toEqual([
+    '#ui-fields-a11yDate',
+    '#ui-postDate',
+  ]);
+  expect(links.map((link) => computeAccessibleName(link))).toEqual([
+    'The Date field is required.',
+    'Post Date must be a date.',
+  ]);
+  expect(
+    links.map((link) => link.querySelector('strong')?.textContent)
+  ).toEqual(['Date', 'Post Date']);
+});
+
+it('shows an unlinked error with its field name in bold, without the asterisks', async () => {
+  const summary = await mount({elsewhere: 'The *Date* field is required.'});
+  const item = summary.querySelector('li')!;
+
+  expect(item.querySelector('a')).toBeNull();
+  expect(item.textContent?.trim()).toBe('The Date field is required.');
+  expect(item.querySelector('strong')?.textContent).toBe('Date');
+});
+
+it('lists only top-level errors, leaving a field’s nested errors beside their controls', async () => {
+  const summary = await mount({
+    myTable: '*Table* has invalid cells.',
+    'myTable.0.col2': 'Enter a date.',
+    myTableNotes: '*Table notes* is too long.',
+    blocks: 'Fix *Blocks*.',
+    'blocks[abc].title': 'Title is required.',
+  });
+
+  expect(
+    [...summary.querySelectorAll('li')].map((item) => item.textContent?.trim())
+  ).toEqual([
+    'Table has invalid cells.',
+    'Table notes is too long.',
+    'Fix Blocks.',
+  ]);
 });
 
 it('takes focus when it appears, so the failure is announced', async () => {

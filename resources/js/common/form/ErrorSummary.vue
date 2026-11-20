@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {inject, nextTick, onMounted, ref, useId, watch} from 'vue';
+  import {computed, inject, nextTick, onMounted, ref, useId, watch} from 'vue';
+  import EmphasizedText from '@/common/components/EmphasizedText.vue';
   import {firstFocusableWithin, revealElement} from '@/common/utils/dom';
   import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
 
@@ -12,28 +13,68 @@
        * because they were the first caller; an element editor says its own.
        */
       title?: string;
+      /**
+       * The control paths an error key could belong to, in order. The first
+       * one whose field is on the page gets the link. Screens that render a UI
+       * payload pass the renderer's own resolution, since a validator key (a
+       * field handle, say) can sit deeper in the form than it says.
+       */
+      errorPaths?: (key: string) => (string[] | null)[];
     }>(),
-    {title: () => t('Could not save settings')}
+    {
+      title: () => t('Could not save settings'),
+      errorPaths: (key: string) => [key.split('.')],
+    }
   );
 
   const root = ref<HTMLElement | null>(null);
   const titleId = `error-summary-${useId()}`;
 
-  /** The error keys whose field is on the page, which get a link to it. */
-  const linkedKeys = ref(new Set<string>());
-
   const fieldIdScope = inject(UiFieldIdScope, undefined);
 
-  /** An error's key is its control's path, which names the field wrapping it. */
-  function targetId(key: string): string {
-    return scopedId(fieldIdScope, fieldId(key.split('.')));
+  /** The id of the first field on the page that an error's key resolves to. */
+  function targetId(key: string): string | null {
+    for (const path of props.errorPaths(key)) {
+      const id = path && scopedId(fieldIdScope, fieldId(path));
+      if (id && document.getElementById(id)) {
+        return id;
+      }
+    }
+
+    return null;
   }
 
-  function findLinkedKeys(): void {
-    linkedKeys.value = new Set(
-      Object.keys(props.errors).filter((key) =>
-        document.getElementById(targetId(key))
+  /** Each linked error's key, with the id of the field it links to. */
+  const targets = ref(new Map<string, string>());
+
+  /**
+   * The keys before each `.` or `[` in an error key: `blocks[abc].title` has
+   * `blocks` and `blocks[abc]`.
+   */
+  function ancestorKeys(key: string): string[] {
+    return [...key.matchAll(/[.[]/g)].map((match) => key.slice(0, match.index));
+  }
+
+  /**
+   * Only the top-level errors, as in Craft 5: an error whose field already has
+   * one of its own, such as a table cell's under its table, is left to show
+   * beside its control instead.
+   */
+  const shownErrors = computed(() =>
+    Object.fromEntries(
+      Object.entries(props.errors).filter(
+        ([key]) =>
+          !ancestorKeys(key).some((ancestor) => ancestor in props.errors)
       )
+    )
+  );
+
+  function findLinkedKeys(): void {
+    targets.value = new Map(
+      Object.keys(shownErrors.value).flatMap((key) => {
+        const id = targetId(key);
+        return id ? [[key, id] as const] : [];
+      })
     );
   }
 
@@ -42,7 +83,8 @@
    * a hidden one, and puts focus in it.
    */
   async function goToField(event: MouseEvent, key: string): Promise<void> {
-    const field = document.getElementById(targetId(key));
+    const id = targets.value.get(key);
+    const field = id ? document.getElementById(id) : null;
 
     if (!field) {
       return;
@@ -99,21 +141,22 @@
         {{ title }}
       </div>
       <ul>
-        <!-- Deliberately text, not markup. A message can carry HTML the server
+        <!-- Deliberately text, not markup: only the `*Name*` emphasis markers
+           become elements, as text nodes. A message can carry HTML the server
            composed — the link to another site's validation errors is one — but
            it can also carry content, and Craft encodes before it lets markup
            through (`Html::encodeInvalidTags()`, then Markdown). Rendering these
            raw would put a field's own value into the DOM as HTML.
            `ElementResponse::errorSummary()` already does that work server-side;
            this component should be fed its output rather than re-deriving it. -->
-        <li v-for="(error, key) in errors" :key="key">
+        <li v-for="(error, key) in shownErrors" :key="key">
           <a
-            v-if="linkedKeys.has(String(key))"
-            :href="`#${targetId(String(key))}`"
+            v-if="targets.has(String(key))"
+            :href="`#${targets.get(String(key))}`"
             @click="goToField($event, String(key))"
-            >{{ error }}</a
-          >
-          <template v-else>{{ error }}</template>
+            ><EmphasizedText :text="error"
+          /></a>
+          <EmphasizedText v-else :text="error" />
         </li>
       </ul>
     </craft-callout>
@@ -129,5 +172,17 @@
   a {
     color: inherit;
     text-decoration: underline;
+  }
+
+  li {
+    line-height: 1.5rem;
+  }
+
+  li > a {
+    display: inline-block;
+  }
+
+  li :deep(strong) {
+    font-weight: 600;
   }
 </style>

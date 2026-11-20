@@ -107,6 +107,7 @@
     autosave,
     addToRelease,
     discardDraft,
+    errorPaths,
     errors,
     form,
     uiPayload,
@@ -614,7 +615,11 @@
 <template>
   <!-- The shell's own summary is worded for settings screens. -->
   <LayoutSlot v-if="form.hasErrors" name="error-summary">
-    <ErrorSummary :errors="form.errors" :title="t('Couldn’t save changes')" />
+    <ErrorSummary
+      :errors="form.errors"
+      :error-paths="errorPaths"
+      :title="t('Couldn’t save changes')"
+    />
   </LayoutSlot>
 
   <LayoutSlot

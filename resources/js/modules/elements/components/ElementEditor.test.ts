@@ -317,6 +317,28 @@ it('titles its error summary for the element rather than for settings', async ()
   expect(summary?.textContent).not.toContain('settings');
 });
 
+it('links a custom field’s error to the field its key resolves to', async () => {
+  const field = document.createElement('craft-field');
+  field.id = 'ui-fields-a11yDate';
+  document.body.append(field);
+  state.editor.errorPaths = (key: string) => [['fields', key]];
+  Object.assign(state.editor.form, {
+    hasErrors: true,
+    errors: {a11yDate: 'The *Date* field is required.'},
+  });
+
+  mount('page');
+  await nextTick();
+  await nextTick();
+
+  const link = container.querySelector<HTMLAnchorElement>(
+    'craft-callout[variant="danger"] a'
+  );
+  expect(link?.getAttribute('href')).toBe('#ui-fields-a11yDate');
+  expect(link?.textContent?.trim()).toBe('The Date field is required.');
+  field.remove();
+});
+
 const release = {
   id: 6,
   name: 'Launch',

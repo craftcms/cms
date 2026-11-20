@@ -153,6 +153,12 @@ describe('errors', function () {
             ->and($html)->toContain('<li>Bad &lt;two&gt;</li>');
     });
 
+    it('drops the emphasis markers around a field name', function () {
+        $html = Field::make()->errors(['The *Date* field is required.'])->toHtml();
+
+        expect($html)->toContain('<li>The Date field is required.</li>');
+    });
+
     it('ignores empty error arrays', function () {
         $html = Field::make()->errors([])->toHtml();
 
