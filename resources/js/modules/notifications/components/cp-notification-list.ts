@@ -11,7 +11,7 @@ import {
 
 import '@craftcms/ui/components/badge-indicator/badge-indicator';
 import '@craftcms/ui/components/button/button';
-import '@craftcms/ui/components/icon/icon';
+import '@craftcms/ui/components/media-item/media-item';
 import '@craftcms/ui/components/thumbnail/thumbnail';
 
 type NotificationData = CraftCms.Cms.Cp.Data.NotificationData;
@@ -30,16 +30,34 @@ class CpNotificationList extends LitElement {
       display: block;
     }
 
+    /* Padding rather than a gap, so the command palette can trim it through the item parts. */
     .notification-item {
       position: relative;
-      display: flex;
-      gap: 0.75rem;
-      padding: 1rem;
-      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+      display: block;
+      padding-block: calc(var(--c-spacing) * 1.5);
+      padding-inline: var(--c-spacing-lg);
+    }
+
+    .notification-item:first-child {
+      padding-block-start: calc(var(--c-spacing) * 3);
+    }
+
+    .notification-item:last-child {
+      padding-block-end: calc(var(--c-spacing) * 3);
     }
 
     .notification-item--read {
       opacity: 0.7;
+    }
+
+    .notification-item:has(.notification-card-link):hover:not(
+      :has(craft-button:hover)
+    ) {
+      background-color: color-mix(in oklab, currentColor 5%, transparent);
+
+      .notification-title {
+        text-decoration-line: underline;
+      }
     }
 
     .notification-card-link {
@@ -48,47 +66,10 @@ class CpNotificationList extends LitElement {
       inset: 0;
     }
 
-    .notification-visual {
-      display: flex;
-      flex: none;
-      align-items: center;
-      justify-content: center;
-      width: 2.5rem;
-      height: 2.5rem;
-      overflow: hidden;
-      border-radius: var(--c-radius-md);
-    }
-
-    .notification-visual--icon {
-      color: var(--c-text-default);
-      background-color: var(--c-color-neutral-fill-quiet);
-    }
-
-    .notification-visual--icon craft-icon {
-      width: 1.5rem;
-      height: 1.5rem;
-      font-size: 1.5rem;
-    }
-
-    .notification-visual--icon svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .notification-visual craft-thumbnail {
-      --c-thumbnail-size: 100%;
-    }
-
-    .notification-visual img {
+    .notification-thumbnail img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-
-    .notification-content {
-      min-width: 0;
-      flex-grow: 1;
     }
 
     .notification-title-row {
@@ -100,15 +81,14 @@ class CpNotificationList extends LitElement {
     .notification-title {
       min-width: 0;
       margin: 0;
-      font-size: var(--c-text-lg);
+      font-size: var(--c-text-base);
       font-weight: var(--font-weight-semibold);
       line-height: 1.25;
     }
 
     .notification-message {
       position: relative;
-      margin-block-start: 0.25rem;
-      font-size: var(--c-text-base);
+      color: var(--c-text-default);
     }
 
     .notification-message a {
@@ -124,10 +104,8 @@ class CpNotificationList extends LitElement {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.25rem;
-      margin-block-start: 0.5rem;
-      color: var(--c-text-quiet);
-      font-size: var(--c-text-sm);
+      gap: var(--c-spacing-sm);
+      margin-block-start: var(--c-spacing-xs);
     }
 
     .notification-mark-read {
@@ -141,8 +119,8 @@ class CpNotificationList extends LitElement {
       z-index: 2;
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-block-start: 0.75rem;
+      gap: var(--c-spacing-md);
+      margin-block-start: var(--c-spacing-md);
     }
   `;
 
@@ -229,35 +207,6 @@ class CpNotificationList extends LitElement {
     }
   }
 
-  #renderVisual(notification: NotificationData) {
-    return html`
-      <div
-        class="notification-visual ${!notification.image
-          ? 'notification-visual--icon'
-          : ''}"
-      >
-        ${notification.image
-          ? html`
-              <craft-thumbnail>
-                <img
-                  src=${notification.image}
-                  alt=${notification.imageAlt ?? ''}
-                />
-              </craft-thumbnail>
-            `
-          : notification.icon
-            ? html`
-                <craft-icon
-                  name=${notification.icon}
-                  appearance="plain"
-                  aria-hidden="true"
-                ></craft-icon>
-              `
-            : nothing}
-      </div>
-    `;
-  }
-
   #renderNotification(notification: NotificationData, first: boolean) {
     return html`
       <article
@@ -278,10 +227,23 @@ class CpNotificationList extends LitElement {
               ></a>
             `
           : nothing}
-        ${this.#renderVisual(notification)}
-
-        <div class="notification-content">
-          <div class="notification-title-row">
+        <craft-media-item
+          icon=${notification.image ? nothing : (notification.icon ?? 'bell')}
+        >
+          ${notification.image
+            ? html`
+                <craft-thumbnail
+                  slot="thumbnail"
+                  class="notification-thumbnail"
+                >
+                  <img
+                    src=${notification.image}
+                    alt=${notification.imageAlt ?? ''}
+                  />
+                </craft-thumbnail>
+              `
+            : nothing}
+          <div slot="heading" class="notification-title-row">
             ${notification.title
               ? html`<h3 class="notification-title">${notification.title}</h3>`
               : nothing}
@@ -315,8 +277,7 @@ class CpNotificationList extends LitElement {
                     class="notification-mark-read"
                     type="button"
                     size="small"
-                    variant="plain"
-                    flush
+                    variant="link"
                     @click=${(event: MouseEvent) => {
                       event.stopPropagation();
                       const item = (event.currentTarget as HTMLElement).closest(
@@ -354,7 +315,7 @@ class CpNotificationList extends LitElement {
                 </div>
               `
             : nothing}
-        </div>
+        </craft-media-item>
       </article>
     `;
   }

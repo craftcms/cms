@@ -13,7 +13,8 @@
 
 <template>
   <LayoutSlot name="page-header">
-    <div class="store-header">
+    <!-- A region, as the page header sits outside the main landmark. -->
+    <section class="store-header" :aria-label="t('Plugin Store')">
       <CpLink :href="index()" class="store-header__title text-xl font-bold">
         {{ t('Plugin Store') }}
       </CpLink>
@@ -21,7 +22,7 @@
         <PluginSearch />
         <CartButton />
       </div>
-    </div>
+    </section>
   </LayoutSlot>
   <CpContainer class="py-lg">
     <craft-callout v-if="failed" variant="danger" icon="triangle-exclamation">

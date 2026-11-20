@@ -165,6 +165,9 @@ interface PluginInterface
     public function publishAssets(): void;
 
     /** @internal */
+    public function registerPublishables(): void;
+
+    /** @internal */
     public function removeAssets(): void;
 
     /**

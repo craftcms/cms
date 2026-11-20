@@ -1,5 +1,6 @@
 import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
+import {badgeIndicatorCutoutStyles} from '../badge-indicator/badge-indicator.styles.js';
 
 export default css`
   :host {
@@ -91,10 +92,24 @@ export default css`
   }
 
   craft-badge-indicator {
-    --badge-border-width: 2px;
     position: absolute;
-    inset-inline-end: 0;
-    inset-block-end: 0;
+    inset-inline-end: 2px;
+    inset-block-end: 2px;
+  }
+
+  .nav-item__prefix--indicated {
+    --c-badge-indicator-cutout-x: calc(50% + 6px);
+    --c-badge-indicator-cutout-y: calc(50% + 6px);
+  }
+
+  .nav-item__prefix--indicated:dir(rtl) {
+    --c-badge-indicator-cutout-x: calc(50% - 6px);
+  }
+
+  .nav-item__prefix--indicated .nav-icon,
+  .nav-item__prefix--indicated .nav-item__initial,
+  .nav-item__prefix--indicated ::slotted([slot='icon']) {
+    ${badgeIndicatorCutoutStyles}
   }
 
   .nav-item__prefix craft-button,

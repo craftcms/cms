@@ -27,3 +27,20 @@ it('saves the user’s profile', function () {
 
     expect(User::first()->fullName)->toBe('Ada Lovelace');
 });
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the account pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'my account' => ['myaccount', 'My Account'],
+        'preferences' => ['myaccount/preferences', 'Preferences'],
+        'addresses' => ['myaccount/addresses', 'Addresses'],
+        'ai assistant' => ['myaccount/ai-assistant', 'AI Assistant'],
+        'passkeys' => ['myaccount/passkeys', 'Passkeys'],
+        'password' => ['myaccount/password', 'Password & Verification'],
+        'permissions' => ['myaccount/permissions', 'Permissions'],
+        'tokens' => ['myaccount/tokens', 'Tokens'],
+    ]);
+});

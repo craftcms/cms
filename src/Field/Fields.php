@@ -1436,6 +1436,10 @@ class Fields
      */
     public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
+        if (! $layout->id) {
+            return false;
+        }
+
         event(new FieldLayoutDeleting($layout));
 
         if ($hardDelete) {

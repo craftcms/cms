@@ -119,7 +119,8 @@
           :name="editable ? inputName(control.path) : ''"
           :model-value="String(value ?? '')"
           :disabled="!editable"
-          :aria-label="t('Quality')"
+          :label="t('Quality')"
+          label-sr-only
           type="number"
           min="1"
           max="100"

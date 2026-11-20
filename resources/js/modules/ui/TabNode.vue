@@ -36,7 +36,6 @@
     :id="id()"
     :class="{hidden: initiallyHidden}"
     :role="tabButtonId ? 'tabpanel' : undefined"
-    :aria-label="node.props.label"
     :aria-labelledby="tabButtonId"
     :data-id="id()"
     :data-ui-tab="node.uid"

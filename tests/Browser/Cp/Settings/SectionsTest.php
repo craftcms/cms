@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;
@@ -25,7 +26,7 @@ it('creates a channel with a new entry type', function () {
         ->click('role=radio[name="Channel"]')
         ->click('#main >> role=button[name="Create"]');
 
-    $page->assertVisible('role=dialog')
+    assertNoAccessibilityIssues($page->assertVisible('role=dialog >> input[name="name"]'))
         ->type('role=dialog >> input[name="name"]', 'Channel Entry Type')
         ->assertValue('role=dialog >> input[name="handle"]', 'channelEntryType')
         ->click('role=dialog >> role=button[name="Save"]')
@@ -69,4 +70,16 @@ it('restores the full-width index after saving a section', function () {
         ->click('#main >> role=button[name="Save"]')
         ->assertPathEndsWith('/settings/sections')
         ->assertScript($tableEdge, $fullWidthEdge);
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the section pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'sections' => ['settings/sections', 'Sections'],
+        'new section' => ['settings/sections/new', 'Create a new section'],
+        'section' => [fn () => 'settings/sections/'.Sections::getSectionByHandle('posts')->id, 'Posts'],
+    ]);
 });

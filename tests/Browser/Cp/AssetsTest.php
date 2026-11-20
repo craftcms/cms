@@ -69,3 +69,14 @@ it('renames an asset', function () {
         ->and(File::exists("$this->root/trip-notes.txt"))->toBeTrue()
         ->and(File::exists("$this->root/field-notes.txt"))->toBeFalse();
 });
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the asset pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'images volume' => ['assets/images', 'Images'],
+        'asset' => [fn () => cpEditPath(AssetElement::find()->volume('images')->one()), 'Showcase image'],
+    ]);
+});

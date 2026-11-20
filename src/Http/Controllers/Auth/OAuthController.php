@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -41,7 +42,11 @@ readonly class OAuthController extends AuthenticationController
             $this->defaultReturnUrl($isCpRequest),
         ));
 
-        return $oauthManager->buildProvider($definition, $isCpRequest)->redirect();
+        /**
+         * Sign-in buttons link here from control panel pages, so a click can
+         * arrive as an Inertia visit, which can't follow a cross-origin redirect.
+         */
+        return Inertia::location($oauthManager->buildProvider($definition, $isCpRequest)->redirect());
     }
 
     public function callback(Request $request, string $provider, OAuth $oauthManager, Users $users, Elements $elements): Response

@@ -93,7 +93,9 @@
 <template>
   <Head :title="title" />
 
-  <div class="updater">
+  <main class="updater">
+    <h1 class="sr-only">{{ title }}</h1>
+
     <!-- Graphic indicator: spinner, success, or error -->
     <div class="updater-graphic">
       <craft-spinner
@@ -151,7 +153,7 @@
         </craft-button>
       </template>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped lang="scss">

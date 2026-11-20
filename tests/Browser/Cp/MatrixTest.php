@@ -75,8 +75,11 @@ it('adds nested entries inline in blocks view', function () {
 it('creates nested entries in a slideout in cards view', function () {
     $page = createPageWithMatrix(Matrix::VIEW_MODE_CARDS);
 
-    visitCp("content/entries/pages/$page->id")
+    $editor = visitCp("content/entries/pages/$page->id")
         ->click('#main >> role=button[name="New entry"]')
+        ->assertVisible('role=dialog >> input[name="title"]');
+
+    assertNoAccessibilityIssues($editor)
         ->type('role=dialog >> input[name="title"]', 'Intro')
         ->click('role=dialog >> role=button[name="Create entry"]')
         ->assertMissing('role=dialog')
@@ -85,4 +88,14 @@ it('creates nested entries in a slideout in cards view', function () {
         ->assertSee('Entry saved.');
 
     expect(nestedEntryTitles($page))->toBe(['Intro']);
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders an entry with populated Matrix fields', function () {
+        $entry = EntryElement::find()->section('matrixPlayground')->slug('populated-views')->one();
+
+        assertCpPageRenders(cpEditPath($entry), 'Populated views');
+    });
 });

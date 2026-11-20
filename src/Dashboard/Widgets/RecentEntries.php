@@ -310,13 +310,18 @@ class RecentEntries extends Widget
     /**
      * Returns an author's thumbnail without its SVG title, which browsers show as a tooltip of their own.
      *
-     * The widget names each author with a tooltip instead.
+     * The widget names each author with a tooltip on the avatar around it instead, so the SVG is hidden rather than
+     * left as an image without a name.
      */
     private static function authorThumbHtml(User $author): ?string
     {
         $html = $author->getThumbHtml(24);
 
-        return $html === null ? null : preg_replace('#<title>.*?</title>#s', '', $html);
+        return $html === null ? null : preg_replace(
+            ['#<title>.*?</title>#s', '#(<svg\b[^>]*?) role="img"#'],
+            ['', '$1 aria-hidden="true"'],
+            $html,
+        );
     }
 
     /**
