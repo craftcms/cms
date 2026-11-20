@@ -126,7 +126,11 @@ Within each of those tiers, order entries by popularity/impact, highest first, j
 
 2. **Backtick all code references** — class names, methods, properties, constants, config keys, Twig variables, CLI commands. Use fully qualified class names (no leading backslash).
 
-3. **One entry per line** — don't wrap. Each `- ` entry is a single line regardless of length.
+3. **Keep each entry to one short sentence.** Say what changed, in the fewest words that let a reader recognize the change. The linked PR or issue carries the details, so leave out how it works, why it happened, "such as" examples, lists of every affected screen or method, and follow-on notes. For API additions and removals, name the class, method, or setting without describing what it does. When one fix covers several related symptoms, summarize them in one entry, such as "Fixed layout bugs in the web installer." Write each entry on a single line, without wrapping. For example:
+   - Too long: `` - Added `CraftCms\Cms\Database\Claim`, which lets one worker at a time claim a database row. Another worker can take over a claim once it’s older than the claim’s TTL. ([#20792](https://github.com/craftcms/cms/pull/20792)) ``
+   - Right: `` - Added `CraftCms\Cms\Database\Claim`. ([#20792](https://github.com/craftcms/cms/pull/20792)) ``
+   - Too long: `- Fixed a bug where signing in with an OAuth provider returned a 404 error on sites whose base URL has a path, such as https://example.com/fr/. ([#20889](https://github.com/craftcms/cms/pull/20889))`
+   - Right: `- Fixed a bug where signing in with an OAuth provider returned a 404 error on sites whose base URL has a path. ([#20889](https://github.com/craftcms/cms/pull/20889))`
 
 4. **End entries with a period.**
 

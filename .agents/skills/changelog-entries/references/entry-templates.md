@@ -22,11 +22,6 @@
 - Added `CraftCms\Cms\Namespace\Events\EventName`.
 ```
 
-**New event with description:**
-```
-- Added `CraftCms\Cms\Namespace\Events\EventName` event for customizing X behavior.
-```
-
 **New method or property:**
 ```
 - Added `craft\helpers\ElementHelper::cleanseQueryCriteria()`.
@@ -35,7 +30,7 @@
 
 **New method macro:**
 ```
-- Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
+- Added the `Request::isPreview()` macro.
 ```
 
 **New console command:**
@@ -122,11 +117,6 @@
 **Twig variable replaced:**
 ```
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
-```
-
-**Class replaced with extra context:**
-```
-- Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
 ```
 
 **Config setting deprecated:**
