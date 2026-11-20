@@ -320,10 +320,6 @@ class ImportPlans
             $importRecord->description = $importPlan->description;
             $importRecord->steps = $importPlan->serializeSteps();
 
-            if (! $importRecord->exists) {
-                $importRecord->sortOrder = $this->nextSortOrder();
-            }
-
             $importRecord->save();
 
             DB::commit();
@@ -411,33 +407,6 @@ class ImportPlans
     }
 
     /**
-     * Saves the order of the editable import plans and invalidates the import plans cache.
-     *
-     * @param  string[]  $uids  The import plan UIDs, in their new order.
-     */
-    public function reorderImportPlans(array $uids): void
-    {
-        DB::transaction(function () use ($uids) {
-            foreach (array_values($uids) as $index => $uid) {
-                DB::table(Table::IMPORT_PLANS)
-                    ->where('uid', $uid)
-                    ->update(['sortOrder' => $index + 1]);
-            }
-        });
-
-        // invalidate caches
-        $this->importPlans = null;
-    }
-
-    /**
-     * Returns the sort order that places an import plan after all the others.
-     */
-    private function nextSortOrder(): int
-    {
-        return (int) DB::table(Table::IMPORT_PLANS)->max('sortOrder') + 1;
-    }
-
-    /**
      * Returns an import plan model for a given UID
      */
     private function _getImportPlanModel(string $uid): ImportPlanModel
@@ -459,7 +428,6 @@ class ImportPlans
                 'steps',
                 'import_plans.uid',
             ])
-            ->orderBy('sortOrder')
             ->orderBy('name')
             ->orderBy('handle')
             ->whereNull('dateDeleted');

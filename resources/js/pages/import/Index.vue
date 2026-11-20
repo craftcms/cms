@@ -1,13 +1,19 @@
 <script setup lang="ts">
-  import {actionClient, t} from '@craftcms/ui';
+  import '@craftcms/ui/components/button/button';
+  import {actionClient, ButtonVariant, t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import {router, usePoll} from '@inertiajs/vue3';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import {useLocalStorage} from '@/common/composables/useStorage';
   import type {ActionItems} from '@/common/types';
   import {showError, showSuccess} from '@/modules/messages/messages';
   import PlanList from '@/modules/import/plans/PlanList.vue';
+  import PlanSortMenu, {
+    type PlanSortDirection,
+    type PlanSortField,
+  } from '@/modules/import/plans/PlanSortMenu.vue';
   import type {PlanBulkAction} from '@/modules/import/plans/types';
   import {
     create,
@@ -15,7 +21,7 @@
     duplicate,
     edit,
     editStep,
-    reorder,
+    editStepMapping,
     run,
     showStep,
     storeStep,
@@ -34,8 +40,8 @@
     nonEditableImportPlans: Array<ImportPlan>;
   }>();
 
-  function planUrl(plan: ImportPlan): string | null {
-    return plan.editable ? edit({handle: plan.handle}).url : null;
+  function planUrl(plan: ImportPlan): string {
+    return edit({handle: plan.handle}).url;
   }
 
   function stepUrl(plan: ImportPlan, step: ImportStep): string | null {
@@ -64,7 +70,8 @@
     starting.value = next;
   }
 
-  function startRun(plan: ImportPlan): void {
+  /** Starts a run, then follows it to its page, unless it's to run in the background. */
+  function startRun(plan: ImportPlan, background = false): void {
     if (
       isRunning(plan) ||
       !window.confirm(
@@ -74,11 +81,15 @@
       return;
     }
 
-    router.post(run().url, runBody(plan), {
-      preserveScroll: true,
-      onStart: () => markStarting([plan], true),
-      onFinish: () => markStarting([plan], false),
-    });
+    router.post(
+      run().url,
+      {...runBody(plan), background},
+      {
+        preserveScroll: true,
+        onStart: () => markStarting([plan], true),
+        onFinish: () => markStarting([plan], false),
+      }
+    );
   }
 
   /**
@@ -136,7 +147,7 @@
   }
 
   /** What can be done to the selected plans: run any, and duplicate or delete the editable ones. */
-  function bulkActions(editable: boolean): PlanBulkAction[] {
+  const bulkActions = computed<PlanBulkAction[]>(() => {
     const actions: PlanBulkAction[] = [];
 
     if (props.canTrigger) {
@@ -147,10 +158,11 @@
       });
     }
 
-    if (editable && props.canSave) {
+    if (props.canSave) {
       actions.push({
         key: 'duplicate',
         label: t('Duplicate'),
+        appliesTo: (plan) => plan.editable,
         perform: (plans) =>
           router.post(
             duplicate().url,
@@ -160,10 +172,11 @@
       });
     }
 
-    if (editable && props.canDelete) {
+    if (props.canDelete) {
       actions.push({
         key: 'delete',
         label: t('Delete'),
+        appliesTo: (plan) => plan.editable,
         destructive: true,
         perform: (plans) => {
           if (
@@ -190,7 +203,7 @@
     }
 
     return actions;
-  }
+  });
 
   /** The uid of the step whose mapping is opening. */
   const openingMapping = ref<string | null>(null);
@@ -224,6 +237,9 @@
         {
           step,
           editable: true,
+          editUrl: summary.uid
+            ? editStepMapping({handle: plan.handle, uid: summary.uid}).url
+            : null,
           opener,
           apply: (values) => void saveMapping(plan, step, values),
         },
@@ -279,9 +295,25 @@
     {immediate: true}
   );
 
+  /** Runs a plan without leaving the plans, for those who can run them. */
+  function backgroundRun(plan: ImportPlan): ActionItems {
+    return props.canTrigger
+      ? [
+          {
+            type: 'button',
+            label: t('Run in the background'),
+            disabled: isRunning(plan),
+            onClick: () => startRun(plan, true),
+          },
+        ]
+      : [];
+  }
+
   function editableActions(plan: ImportPlan): ActionItems {
     const actions: ActionItems = [
-      {type: 'link', label: t('Edit'), href: planUrl(plan)!},
+      {type: 'link', label: t('Edit'), href: planUrl(plan)},
+      {type: 'link', label: t('View activity'), href: plan.runsUrl},
+      ...backgroundRun(plan),
     ];
 
     if (props.canSave) {
@@ -313,52 +345,106 @@
     return actions;
   }
 
-  const planUids = ref<string[]>([]);
-
-  watch(
-    () => props.editableImportPlans,
-    (plans) => {
-      planUids.value = plans.map((plan) => plan.uid!);
-    },
-    {immediate: true}
-  );
-
-  /** The editable import plans, in the order the user has put them in. */
-  const editablePlans = computed(() =>
-    planUids.value
-      .map((uid) => props.editableImportPlans.find((plan) => plan.uid === uid))
-      .filter((plan): plan is ImportPlan => plan !== undefined)
-  );
-
-  function handleReorder(startIndex: number, finishIndex: number): void {
-    const previousUids = planUids.value;
-
-    if (finishIndex < 0 || finishIndex >= previousUids.length) {
-      return;
-    }
-
-    const nextUids = [...previousUids];
-    const [uid] = nextUids.splice(startIndex, 1);
-
-    if (uid === undefined) {
-      return;
-    }
-
-    nextUids.splice(finishIndex, 0, uid);
-    planUids.value = nextUids;
-
-    router.post(
-      reorder(),
-      {uids: nextUids},
-      {
-        preserveScroll: true,
-        preserveState: true,
-        onError: () => {
-          planUids.value = previousUids;
-        },
-      }
-    );
+  function planActions(plan: ImportPlan): ActionItems {
+    return plan.editable
+      ? editableActions(plan)
+      : [
+          {type: 'link', label: t('View'), href: planUrl(plan)},
+          {type: 'link', label: t('View activity'), href: plan.runsUrl},
+          ...backgroundRun(plan),
+        ];
   }
+
+  const sortField = useLocalStorage<PlanSortField>(
+    'importPlans.sortField',
+    'name'
+  );
+  const sortDirection = useLocalStorage<PlanSortDirection>(
+    'importPlans.sortDirection',
+    'asc'
+  );
+
+  const collator = new Intl.Collator(undefined, {numeric: true});
+
+  function byName(a: ImportPlan, b: ImportPlan): number {
+    return collator.compare(a.name, b.name);
+  }
+
+  function lastRunTime(plan: ImportPlan): number | null {
+    const date = plan.run?.dateCreated;
+    return date ? Date.parse(date) : null;
+  }
+
+  function sortPlans(plans: ImportPlan[]): ImportPlan[] {
+    const direction = sortDirection.value === 'asc' ? 1 : -1;
+
+    return [...plans].sort((a, b) => {
+      if (sortField.value !== 'lastRun') {
+        return byName(a, b) * direction;
+      }
+
+      const aTime = lastRunTime(a);
+      const bTime = lastRunTime(b);
+
+      // plans that have never run go last, whichever way the rest are sorted
+      if (aTime === null || bTime === null) {
+        return (
+          (aTime === null ? 1 : 0) - (bTime === null ? 1 : 0) || byName(a, b)
+        );
+      }
+
+      return (aTime - bTime) * direction || byName(a, b);
+    });
+  }
+
+  type PlanFilter = 'all' | 'editable' | 'code';
+
+  const filter = ref<PlanFilter>('all');
+
+  const allPlans = computed(() => [
+    ...props.editableImportPlans,
+    ...props.nonEditableImportPlans,
+  ]);
+
+  const filters = computed(
+    (): Array<{
+      value: PlanFilter;
+      label: string;
+      disabled?: boolean;
+    }> => [
+      {value: 'all', label: t('All')},
+      {
+        value: 'editable',
+        label: t('Editable'),
+        disabled: !props.editableImportPlans.length,
+      },
+      {
+        value: 'code',
+        label: t('Code'),
+        disabled: !props.nonEditableImportPlans.length,
+      },
+    ]
+  );
+
+  // a filter left with nothing in it, e.g. once its last plan is deleted, shows them all again
+  watch(
+    () => filters.value.find((chip) => chip.value === filter.value)?.disabled,
+    (disabled) => {
+      if (disabled) {
+        filter.value = 'all';
+      }
+    }
+  );
+
+  const plans = computed(() =>
+    sortPlans(
+      filter.value === 'editable'
+        ? props.editableImportPlans
+        : filter.value === 'code'
+          ? props.nonEditableImportPlans
+          : allPlans.value
+    )
+  );
 </script>
 
 <template>
@@ -368,67 +454,70 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <div class="grid gap-lg">
-    <CpContainer>
-      <div class="mb-md">
-        <h2>{{ t('Editable Import Plans') }}</h2>
-        <p>
-          {{ t('Those import plans can be edited in the control panel.') }}
-        </p>
-      </div>
-
-      <template #full>
-        <PlanList
-          v-if="editablePlans.length"
-          :plans="editablePlans"
-          :label="t('Editable Import Plans')"
-          :reorderable="canSave"
-          :can-trigger="canTrigger"
-          :bulk-actions="bulkActions(true)"
-          :actions="editableActions"
-          :plan-url="planUrl"
-          :step-url="stepUrl"
-          :is-running="isRunning"
-          :can-edit-mapping="canEditMapping"
-          :opening-mapping="openingMapping"
-          @run="startRun"
-          @reorder="handleReorder"
-          @edit-mapping="editMapping"
-        />
-        <craft-empty
-          v-else
-          appearance="fill"
-          :label="t('No import plans yet.')"
-          icon="light/upload"
-        />
-      </template>
-    </CpContainer>
-
-    <CpContainer v-if="nonEditableImportPlans.length">
-      <div class="mb-md">
-        <h2>{{ t('Non-Editable Import Plans') }}</h2>
-        <p>
-          {{
-            t(
-              'Those import plans are registered in code and can’t be edited in the control panel.'
-            )
-          }}
-        </p>
-      </div>
-
-      <template #full>
-        <PlanList
-          :plans="nonEditableImportPlans"
-          :label="t('Non-Editable Import Plans')"
-          :can-trigger="canTrigger"
-          :bulk-actions="bulkActions(false)"
-          :actions="() => []"
-          :plan-url="planUrl"
-          :step-url="stepUrl"
-          :is-running="isRunning"
-          @run="startRun"
-        />
-      </template>
-    </CpContainer>
-  </div>
+  <CpContainer>
+    <template #full>
+      <PlanList
+        v-if="plans.length"
+        class="mt-md"
+        :plans="plans"
+        :label="t('Import plans')"
+        :can-trigger="canTrigger"
+        :bulk-actions="bulkActions"
+        :actions="planActions"
+        :plan-url="planUrl"
+        :step-url="stepUrl"
+        :is-running="isRunning"
+        :can-edit-mapping="canEditMapping"
+        :opening-mapping="openingMapping"
+        @run="startRun"
+        @edit-mapping="editMapping"
+      >
+        <template
+          v-if="editableImportPlans.length && nonEditableImportPlans.length"
+          #toolbar-filters
+        >
+          <div
+            role="group"
+            :aria-label="t('Show import plans')"
+            class="plan-filters"
+          >
+            <craft-button
+              v-for="option in filters"
+              :key="option.value"
+              type="button"
+              size="small"
+              :variant="ButtonVariant.Plain"
+              :aria-pressed="filter === option.value ? 'true' : 'false'"
+              .active="filter === option.value"
+              .disabled="option.disabled"
+              @click="filter = option.value"
+            >
+              {{ option.label }}
+            </craft-button>
+          </div>
+        </template>
+        <template #toolbar-actions>
+          <PlanSortMenu
+            v-model:field="sortField"
+            v-model:direction="sortDirection"
+          />
+        </template>
+      </PlanList>
+      <craft-empty
+        v-else
+        appearance="fill"
+        :label="t('No import plans yet.')"
+        icon="light/upload"
+      />
+    </template>
+  </CpContainer>
 </template>
+
+<style scoped>
+  .plan-filters {
+    --c-button-spacing-inline: var(--c-spacing-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--c-spacing-sm);
+  }
+</style>

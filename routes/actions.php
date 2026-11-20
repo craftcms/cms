@@ -373,7 +373,6 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::middleware('can:saveImportPlans')->group(function () {
             Route::post('import/save', [ImportPlansController::class, 'store']);
             Route::post('import/duplicate', [ImportPlansController::class, 'duplicate']);
-            Route::post('import/reorder', [ImportPlansController::class, 'reorder']);
             Route::post('import/validate-step', [ImportPlansController::class, 'validateStep']);
             Route::post('import/save-step', [ImportPlansController::class, 'storeStep']);
             Route::post('import/delete-step', [ImportPlansController::class, 'destroyStep']);

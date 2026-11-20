@@ -8,14 +8,11 @@
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/icon/icon';
-  import '@craftcms/ui/components/reorder-button/reorder-button';
   import '@craftcms/ui/components/tooltip/tooltip';
-  import {t} from '@craftcms/ui';
-  import {computed, ref} from 'vue';
+  import {formatDate, t} from '@craftcms/ui';
+  import {computed, ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
-  import DropIndicator from '@/common/components/DropIndicator.vue';
-  import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import {openSlideout} from '@/common/slideouts';
   import type {ActionItems} from '@/common/types';
   import AdminTableBulkActionsBar from '@/modules/admin-table/components/AdminTableBulkActionsBar.vue';
@@ -23,7 +20,10 @@
   import {matchModeLabel} from '@/modules/import/mapping/matching';
   import RunButton from '@/modules/import/run/RunButton.vue';
   import RunIndicator from '@/modules/import/run/RunIndicator.vue';
-  import type {RunStatus} from '@/modules/import/run/run-state';
+  import {runCounts} from '@/modules/import/run/run-format';
+  import StepNumber from '@/modules/import/steps/StepNumber.vue';
+  import {stepDestination} from '@/modules/import/steps/step-settings';
+  import type {RunState, RunStatus} from '@/modules/import/run/run-state';
   import type {PlanBulkAction} from './types';
 
   type ImportPlan = CraftCms.Cms.Import.Data.ImportPlanIndexData;
@@ -32,7 +32,6 @@
   const {
     plans,
     label,
-    reorderable = false,
     canTrigger = false,
     bulkActions = [],
     actions,
@@ -45,7 +44,6 @@
     plans: ImportPlan[];
     /** Names the list for screen readers. */
     label: string;
-    reorderable?: boolean;
     canTrigger?: boolean;
     /** What can be done to the selected plans; with none, plans can't be selected. */
     bulkActions?: PlanBulkAction[];
@@ -66,7 +64,6 @@
   const emit = defineEmits<{
     run: [plan: ImportPlan];
     editMapping: [plan: ImportPlan, step: ImportStep, opener: HTMLElement];
-    reorder: [startIndex: number, finishIndex: number];
   }>();
 
   /** The plans showing their steps, by handle. */
@@ -121,35 +118,38 @@
   const selectable = computed(() => bulkActions.length > 0);
 
   const bulkBarActions = computed<BulkAction[]>(() =>
-    bulkActions.map((action) => ({
-      key: action.key,
-      label: action.label,
-      destructive: action.destructive,
-      variant: action.destructive ? 'danger' : undefined,
-      onClick: () => {
-        const plans = selectedPlans.value;
-        selected.value = new Set();
-        action.perform(plans);
-      },
-    }))
+    bulkActions
+      .map((action) => ({
+        action,
+        plans: selectedPlans.value.filter(
+          (plan) => action.appliesTo?.(plan) ?? true
+        ),
+      }))
+      .filter(({plans}) => plans.length > 0)
+      .map(({action, plans}) => ({
+        key: action.key,
+        label: action.label,
+        destructive: action.destructive,
+        variant: action.destructive ? 'danger' : undefined,
+        onClick: () => {
+          selected.value = new Set();
+          action.perform(plans);
+        },
+      }))
   );
 
-  const {setRowRef, setHandleRef, getDropState} = useReorderableRows({
-    getRowIds: () => plans.map((plan) => plan.handle),
-    onReorder: (from, to) => emit('reorder', from, to),
-    enabled: () => reorderable,
-  });
+  // a plan filtered out of the list can't stay selected, unseen
+  watch(
+    () => plans,
+    (plans) => {
+      const handles = new Set(plans.map((plan) => plan.handle));
+      const kept = [...selected.value].filter((handle) => handles.has(handle));
 
-  function dropEdge(plan: ImportPlan) {
-    const state = getDropState(plan.handle);
-    return state.type === 'is-over' ? state.closestEdge : null;
-  }
-
-  function position(index: number): string {
-    if (plans.length === 1) return 'only';
-    if (index === 0) return 'first';
-    return index === plans.length - 1 ? 'last' : 'middle';
-  }
+      if (kept.length !== selected.value.size) {
+        selected.value = new Set(kept);
+      }
+    }
+  );
 
   function headingId(plan: ImportPlan): string {
     return `import-plan-${plan.handle}`;
@@ -173,12 +173,42 @@
       : 'pending';
   }
 
+  /** Whether the plan's run is under way, rather than just finished. */
+  function inProgress(plan: ImportPlan): boolean {
+    return isRunning(plan) && ['pending', 'running'].includes(runStatus(plan));
+  }
+
+  /** What the run under way has got to, as its line says. */
+  function progressLabel(plan: ImportPlan): string {
+    if (runStatus(plan) === 'pending') {
+      return t('Waiting to run');
+    }
+
+    const progress = runProgress(plan);
+
+    return progress < 0
+      ? t('Running')
+      : t('Running: {percent, number}% done', {percent: progress});
+  }
+
+  /** The run under way, once the server has started it, rather than the one before it. */
+  function currentRun(plan: ImportPlan): RunState | null {
+    return plan.running ? lastRun(plan) : null;
+  }
+
+  /** The plan's last run, once it has one. */
+  function lastRun(plan: ImportPlan): RunState | null {
+    return (plan.run as RunState | null) ?? null;
+  }
+
+  /** How many of the last run's items failed. */
+  function lastRunFailures(run: RunState): number {
+    return runCounts(run).failed;
+  }
+
   /** What the step imports into, e.g. “Guides › Guide”: its settings other than the site. */
   function destination(step: ImportStep): string {
-    return step.settings
-      .filter((setting) => setting.key !== 'site')
-      .map((setting) => setting.value)
-      .join(' › ');
+    return stepDestination(step.settings);
   }
 
   function site(step: ImportStep): string {
@@ -195,11 +225,16 @@
     });
   }
 
+  /** How a step is getting on in the run under way; once the run's over, its steps show nothing. */
   function stepRun(
     plan: ImportPlan,
     step: ImportStep
   ): {status: RunStatus; progress: number} | null {
-    const run = step.uid ? plan.run?.steps[step.uid] : undefined;
+    // not until the server has the new run, either, or they'd show how the last one went
+    const run =
+      step.uid && plan.running && inProgress(plan)
+        ? plan.run?.steps[step.uid]
+        : undefined;
 
     return run
       ? {status: run.status as RunStatus, progress: run.progress}
@@ -220,13 +255,7 @@
 </script>
 
 <template>
-  <div
-    class="plan-list"
-    :class="{
-      'plan-list--selectable': selectable,
-      'plan-list--reorderable': reorderable,
-    }"
-  >
+  <div class="plan-list" :class="{'plan-list--selectable': selectable}">
     <div class="plan-list__toolbar">
       <span class="plan-list__toggle">
         <craft-button
@@ -248,20 +277,24 @@
       <craft-checkbox
         v-if="selectable"
         class="plan-list__select-all"
+        label-sr-only
         .checked="plans.length > 0 && selected.size === plans.length"
         .indeterminate="selected.size > 0 && selected.size < plans.length"
-        @model-value-changed="
-          selectAll(($event.target as HTMLInputElement).checked)
-        "
+        @change="selectAll(($event.target as HTMLInputElement).checked)"
         ><label slot="label">{{ t('Select all') }}</label></craft-checkbox
       >
+      <div v-if="$slots['toolbar-filters']" class="plan-list__toolbar-filters">
+        <slot name="toolbar-filters"></slot>
+      </div>
+      <div v-if="$slots['toolbar-actions']" class="plan-list__toolbar-actions">
+        <slot name="toolbar-actions"></slot>
+      </div>
     </div>
 
     <ul class="plan-list__plans" :aria-label="label">
       <li
-        v-for="(plan, index) in plans"
+        v-for="plan in plans"
         :key="plan.handle"
-        :ref="(el) => setRowRef(el as HTMLTableRowElement | null, plan.handle)"
         class="plan-list__plan"
         :class="{'plan-list__plan--selected': selected.has(plan.handle)}"
         @dblclick="openFromRow($event, planUrl(plan))"
@@ -295,39 +328,83 @@
               class="plan-list__select"
               label-sr-only
               .checked="selected.has(plan.handle)"
-              @model-value-changed="
+              @change="
                 select(plan, ($event.target as HTMLInputElement).checked)
               "
               ><label slot="label">{{
                 t('Select {label}', {label: plan.name})
               }}</label></craft-checkbox
             >
-            <span v-if="reorderable" class="plan-list__reorder">
-              <craft-reorder-button
-                :ref="(el: any) => setHandleRef(el, plan.handle)"
-                :position="position(index)"
-                @craft-reorder="
-                  (e: CustomEvent<{direction: 'up' | 'down'}>) =>
-                    emit(
-                      'reorder',
-                      index,
-                      e.detail.direction === 'up' ? index - 1 : index + 1
-                    )
-                "
-              ></craft-reorder-button>
-            </span>
             <div class="plan-list__title">
               <h3 :id="headingId(plan)" class="plan-list__name">
                 <CpLink v-if="planUrl(plan)" :href="planUrl(plan)!">{{
                   plan.name
                 }}</CpLink>
                 <template v-else>{{ plan.name }}</template>
+                <craft-badge
+                  v-if="!plan.editable"
+                  class="plan-list__code"
+                  size="small"
+                  no-prefix
+                  >{{ t('Code') }}</craft-badge
+                >
               </h3>
               <p
                 v-if="plan.description"
                 class="plan-list__description text-quiet"
               >
                 {{ plan.description }}
+              </p>
+              <p
+                v-if="inProgress(plan)"
+                class="plan-list__last-run text-quiet"
+                aria-live="polite"
+              >
+                <span class="plan-list__last-run-status">
+                  <RunIndicator
+                    :status="runStatus(plan)"
+                    :progress="runProgress(plan)"
+                  />
+                </span>
+                <span>{{ progressLabel(plan) }}</span>
+                <template v-if="currentRun(plan)">
+                  <span class="plan-list__last-run-bullet" aria-hidden="true"
+                    >•</span
+                  >
+                  <CpLink :href="currentRun(plan)!.url">{{
+                    t('View run')
+                  }}</CpLink>
+                </template>
+              </p>
+              <p
+                v-else-if="lastRun(plan)"
+                class="plan-list__last-run text-quiet"
+              >
+                <span class="plan-list__last-run-status">
+                  <RunIndicator
+                    :status="lastRun(plan)!.status"
+                    :progress="lastRun(plan)!.progress"
+                  />
+                </span>
+                <span>{{
+                  t('Last run {date}', {
+                    date: formatDate(lastRun(plan)!.dateCreated),
+                  })
+                }}</span>
+                <template v-if="lastRunFailures(lastRun(plan)!)">
+                  <span class="plan-list__last-run-bullet" aria-hidden="true"
+                    >•</span
+                  >
+                  <span class="plan-list__last-run-failed">{{
+                    t('{count, number} Failed', {
+                      count: lastRunFailures(lastRun(plan)!),
+                    })
+                  }}</span>
+                </template>
+                <span class="plan-list__last-run-bullet" aria-hidden="true"
+                  >•</span
+                >
+                <CpLink :href="lastRun(plan)!.url">{{ t('View run') }}</CpLink>
               </p>
             </div>
             <span class="plan-list__meta">
@@ -380,9 +457,11 @@
                 :class="{'plan-list__step--disabled': !step.enabled}"
                 @dblclick="openFromRow($event, stepUrl(plan, step))"
               >
-                <span class="plan-list__step-number" aria-hidden="true">{{
-                  stepIndex + 1
-                }}</span>
+                <StepNumber
+                  class="plan-list__step-number"
+                  size="small"
+                  :number="stepIndex + 1"
+                />
                 <div class="plan-list__step-name">
                   <CpLink
                     v-if="stepUrl(plan, step)"
@@ -453,7 +532,6 @@
             </ol>
           </template>
         </article>
-        <DropIndicator v-if="reorderable" :edge="dropEdge(plan)" />
       </li>
     </ul>
 
@@ -469,13 +547,22 @@
 
 <style scoped>
   /*
-   * The toggle, checkbox, reorder and run columns are one width apiece in the toolbar,
-   * each plan and its steps, so they line up: the step numbers under the reorder
-   * buttons, and each step's status under its plan's run button.
+   * The toggle, checkbox and run columns are one width apiece in the toolbar, each plan
+   * and its steps, so they line up: each step's status under its plan's run button.
    */
   .plan-list {
-    --_edge: var(--c-spacing-md);
+    /* the container's padding, so the checkboxes start where its content does */
+    --_edge: var(--cp-container-padding, var(--c-spacing-md));
+    /* the expand toggles hang off to the left of them, in that padding */
+    --_hang: max(var(--_edge), var(--_control) + var(--_toggle-gap));
+    --_toggle-gap: calc(var(--_select-gap) / 2);
+    /* a step's number column spans the checkbox and its gap, so the step's name lines up with its plan's */
+    --_number-col: calc(var(--_checkbox) + var(--_select-gap) - var(--_gap));
+    /* a small step number's */
+    --_number-size: 1.25rem;
     --_gap: var(--c-spacing-md);
+    /* past the checkboxes, so the plan names and the toolbar's filters stand clear of them */
+    --_select-gap: var(--c-spacing-lg);
     --_control: var(--c-size-control-sm);
     --_checkbox: var(--c-checkbox-size);
     /* room either side of the run column */
@@ -486,7 +573,6 @@
   }
 
   .plan-list__toggle,
-  .plan-list__reorder,
   .plan-list__run,
   .plan-list__actions {
     display: inline-grid;
@@ -495,15 +581,18 @@
     inline-size: var(--_control);
   }
 
+  .plan-list__toggle {
+    box-sizing: border-box;
+    justify-items: end;
+    inline-size: var(--_hang);
+    padding-inline-end: var(--_toggle-gap);
+  }
+
   .plan-list__plans {
     margin: 0;
     padding: 0;
     list-style: none;
     border-block: 1px solid var(--c-color-neutral-border-quiet);
-  }
-
-  .plan-list__plan {
-    position: relative;
   }
 
   .plan-list__plan + .plan-list__plan {
@@ -516,27 +605,38 @@
 
   /*
    * Every control shares the plan name's row, centred on it, with the description below
-   * the name. Columns are sized by what's in them, so a list without checkboxes or
-   * reorder buttons has no room left for them; each item brings its own gap for the same
+   * the name. Columns are sized by what's in them, so a list without checkboxes has no
+   * room left for them; each item brings its own gap for the same
    * reason.
    */
   .plan-list__toolbar,
   .plan-list__header {
     display: grid;
     grid-template-columns:
-      [toggle] auto [select] auto [reorder] auto [title] minmax(0, 1fr)
+      [toggle] auto [select] auto [title] minmax(0, 1fr)
       [handle] auto [count] auto [run] auto [actions] auto [end];
     align-items: center;
-    padding-inline: var(--_edge);
+    padding-inline: 0 var(--_edge);
   }
 
   .plan-list__header {
     padding-block: var(--c-spacing-lg);
   }
 
-  /* the toolbar's checkbox lines up with the plans', its label running on past them */
+  /* the toolbar's checkbox lines up with the plans' */
   .plan-list__select-all {
-    grid-column: select / end;
+    grid-column: select;
+  }
+
+  .plan-list__toolbar-filters {
+    grid-column: title;
+  }
+
+  .plan-list__toolbar-actions {
+    grid-column: handle / end;
+    justify-self: end;
+    display: flex;
+    gap: var(--c-spacing-sm);
   }
 
   .plan-list__toolbar > *,
@@ -554,16 +654,14 @@
     grid-column: select;
   }
 
-  .plan-list__reorder {
-    grid-column: reorder;
-  }
-
-  .plan-list__toggle,
-  .plan-list__select,
-  .plan-list__reorder,
   .plan-list__name,
   .plan-list__handle {
     margin-inline-end: var(--_gap);
+  }
+
+  .plan-list__select,
+  .plan-list__select-all {
+    margin-inline-end: var(--_select-gap);
   }
 
   .plan-list__title,
@@ -573,8 +671,15 @@
 
   .plan-list__name {
     grid-column: title;
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-md);
     margin-block: 0;
     font-size: var(--c-text-lg);
+  }
+
+  .plan-list__code {
+    flex: none;
   }
 
   .plan-list__description {
@@ -582,6 +687,36 @@
     grid-column: title;
     margin-block: var(--c-spacing-2xs) 0;
     margin-inline: 0 var(--_gap);
+  }
+
+  /* the last run, under the description */
+  .plan-list__last-run {
+    grid-row: 3;
+    grid-column: title;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-xs) var(--c-spacing-sm);
+    margin-block: var(--c-spacing-sm) 0;
+    margin-inline: 0 var(--_gap);
+    font-size: var(--c-text-sm);
+  }
+
+  /* as small as the line's text */
+  .plan-list__last-run-status {
+    display: inline-flex;
+    --c-size-control-sm: 1rem;
+    --c-run-indicator-stroke-width: 1.5px;
+  }
+
+  /* a part of its own, so the gap either side of it is the same */
+  .plan-list__last-run-bullet {
+    color: var(--c-text-quiet);
+  }
+
+  .plan-list__last-run-failed {
+    color: var(--c-color-danger-on-quiet);
+    font-weight: var(--font-weight-semibold);
   }
 
   .plan-list__handle {
@@ -610,20 +745,18 @@
   }
 
   /*
-   * Each step starts under its plan's reorder button, and its status ends under the run
+   * Each step's number starts under its plan's name, and its status ends under the run
    * button: past it are the action menu's column and the edge.
    */
   .plan-list__columns,
   .plan-list__step {
     display: grid;
     grid-template-columns:
-      var(--_control) minmax(0, 1fr) minmax(0, 10rem) minmax(0, 13rem)
+      var(--_number-col) minmax(0, 1fr) minmax(0, 10rem) minmax(0, 13rem)
       minmax(0, 9rem) minmax(0, 10rem) var(--_control);
     align-items: center;
     column-gap: var(--_gap);
-    padding-inline: calc(
-        var(--_edge) + 2 * var(--_gap) + var(--_control) + var(--_checkbox)
-      )
+    padding-inline: var(--_hang)
       calc(var(--_edge) + var(--_gap) + var(--_control) + var(--_run-inset) / 2);
     background-color: color-mix(
       in srgb,
@@ -662,17 +795,11 @@
     opacity: 0.6;
   }
 
+  /* centred under the plan's checkbox, which is narrower */
+  /* centred under the plan's checkbox */
   .plan-list__step-number {
-    display: grid;
-    place-items: center;
-    justify-self: center;
-    inline-size: calc(22rem / 16);
-    block-size: calc(22rem / 16);
-    border-radius: var(--c-radius-full);
-    background-color: var(--c-color-neutral-fill-normal);
-    color: var(--c-color-neutral-on-normal);
-    font-size: var(--c-text-xs);
-    font-weight: var(--font-weight-semibold);
+    justify-self: start;
+    margin-inline-start: calc((var(--_checkbox) - var(--_number-size)) / 2);
   }
 
   .plan-list__step-name {
@@ -727,16 +854,21 @@
    * stack under its name, labelled, as the column headings are left out.
    */
   @container (inline-size < 48rem) {
+    /* what's worked out from these is redeclared, or it keeps the wider values */
     .plan-list > * {
       --_gap: var(--c-spacing-sm);
+      --_select-gap: var(--c-spacing-md);
       --_run-inset: var(--c-spacing-sm);
+      --_toggle-gap: calc(var(--_select-gap) / 2);
+      --_hang: max(var(--_edge), var(--_control) + var(--_toggle-gap));
+      --_number-col: calc(var(--_checkbox) + var(--_select-gap) - var(--_gap));
     }
 
     /* the handle and step count drop below the description, from the title's column */
     .plan-list__meta {
       display: flex;
       flex-wrap: wrap;
-      grid-row: 3;
+      grid-row: 4;
       grid-column: title / end;
       align-items: center;
       gap: var(--c-spacing-md);
@@ -757,7 +889,7 @@
     }
 
     .plan-list__step {
-      grid-template-columns: var(--_control) minmax(0, 1fr) var(--_control);
+      grid-template-columns: var(--_number-col) minmax(0, 1fr) var(--_control);
       row-gap: var(--c-spacing-xs);
       padding-inline-end: calc(
         var(--_edge) + var(--_gap) + var(--_control) + var(--_run-inset) / 2

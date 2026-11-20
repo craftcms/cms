@@ -28,6 +28,7 @@ readonly class ImportPlanIndexData implements JsonSerializable
         public bool $running,
         public ?int $progress,
         public ?array $run,
+        public string $runsUrl,
     ) {}
 
     /** @return array<string, mixed> */
@@ -44,6 +45,7 @@ readonly class ImportPlanIndexData implements JsonSerializable
             'running' => $this->running,
             'progress' => $this->progress,
             'run' => $this->run,
+            'runsUrl' => $this->runsUrl,
         ];
     }
 }
