@@ -53,6 +53,14 @@ dot, set it with `statusShape()`, which gives `pending` a triangle, `expired`,
 `suspended` and `off` a square, an empty status (“all”) a diamond, and
 everything else a circle.
 
+<Canvas of={IndicatorStories.Shapes} sourceState="shown" />
+
+```ts
+import {statusShape} from '@craftcms/ui';
+
+indicator.shape = statusShape(entry.status); // 'pending' → 'triangle'
+```
+
 ## Sizing
 
 `size` switches between two preset sizes. Because the dimensions are defined in

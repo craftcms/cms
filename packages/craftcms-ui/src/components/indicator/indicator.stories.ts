@@ -118,3 +118,32 @@ export const ArbitrarySize: Story = {
       )
     ),
 };
+
+/**
+ * `shape` draws the dot as a circle, square, triangle or diamond, but only
+ * while the user's "Use shapes to represent statuses" preference is on, which
+ * adds `use-shapes` to `<body>`. Any `use-shapes` ancestor works, as here.
+ * `statusShape()` gives the shape for a status.
+ */
+export const Shapes: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div class="use-shapes" style="display: flex; gap: 1.5rem">
+      ${(
+        [
+          ['teal', 'circle', 'Live'],
+          ['sky', 'triangle', 'Pending'],
+          ['red', 'square', 'Expired'],
+          ['violet', 'diamond', 'All'],
+        ] as const
+      ).map(
+        ([fill, shape, label]) => html`
+          <span style="display: inline-flex; align-items: center; gap: 0.5rem">
+            <craft-indicator fill="${fill}" shape="${shape}"></craft-indicator>
+            ${label}
+          </span>
+        `
+      )}
+    </div>
+  `,
+};
