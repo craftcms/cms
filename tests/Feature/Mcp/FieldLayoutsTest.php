@@ -69,23 +69,38 @@ it('selects user custom fields while retaining the public account attribute allo
         ->and($user)->not->toHaveKeys(['admin', 'lastLoginDate', 'invalidLoginCount']);
 });
 
-it('keeps custom field content when a layout update omits layout element UIDs', function (): void {
+it('keeps custom field content when a layout update omits layout element UIDs', function (bool $reorderWithExplicitUid): void {
     $actor = User::query()->firstOrFail();
     actingAs($actor);
     app(Request::class)->setUserResolver(static fn (): User => $actor);
     $field = Field::factory()->create(['handle' => 'profileSummary', 'type' => PlainText::class]);
     Fields::refreshFields();
-    $config = ['tabs' => [['name' => 'Content', 'elements' => [
-        ['type' => CustomField::class, 'fieldUid' => $field->uid],
-    ]]]];
+    $first = ['type' => CustomField::class, 'fieldUid' => $field->uid];
+    $second = ['type' => CustomField::class, 'fieldUid' => $field->uid, 'handle' => 'secondarySummary'];
     $users = app(Users::class);
-    $users->updateFieldLayout($config);
-    app(ElementCapabilities::class)->update('users', id: $actor->id, fields: ['profileSummary' => 'A public profile']);
+    $layout = $users->updateFieldLayout(['tabs' => [['name' => 'Content', 'elements' => [$first, $second]]]])['fieldLayout'];
+    app(ElementCapabilities::class)->update('users', id: $actor->id, fields: [
+        'profileSummary' => 'First',
+        'secondarySummary' => 'Second',
+    ]);
 
-    $users->updateFieldLayout($config);
+    if ($reorderWithExplicitUid) {
+        // The UID-less instance comes first, so it must skip the UID the other instance claims.
+        $firstUid = array_find($layout['config']['tabs'][0]['elements'], fn (array $element) => ($element['fieldUid'] ?? null) === $field->uid)['uid'];
+        $elements = [$second, ['uid' => $firstUid, ...$first]];
+    } else {
+        $elements = [$first, $second];
+    }
 
-    expect(app(ElementCapabilities::class)->get('users', id: $actor->id)['element']['profileSummary'])->toBe('A public profile');
-});
+    $users->updateFieldLayout(['tabs' => [['name' => 'Content', 'elements' => $elements]]]);
+    $user = app(ElementCapabilities::class)->get('users', id: $actor->id)['element'];
+
+    expect($user['profileSummary'])->toBe('First')
+        ->and($user['secondarySummary'])->toBe('Second');
+})->with([
+    'instances in the same order' => [false],
+    'reordered, with an explicit UID' => [true],
+]);
 
 it('sets field layout tabs’ icons', function () {
     $layout = app(Users::class)->updateFieldLayout([
