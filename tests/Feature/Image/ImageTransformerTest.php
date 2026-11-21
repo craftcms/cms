@@ -514,6 +514,33 @@ it('revs a transform’s URL, and changes it only when the transform is regenera
         ->and(Url::removeParam($url(), 'v'))->toBe(Url::removeParam($generated, 'v'));
 });
 
+it('gives an eager-loaded transform the same URL for the rest of the request that generates it', function (bool $fileWasDeleted) {
+    $asset = ($this->createImageAsset)();
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    $transform = new ImageTransform(['width' => 100]);
+    $url = fn (): string => $this->transformer->getTransformUrl($asset, $transform, true);
+
+    if ($fileWasDeleted) {
+        $url();
+        $this->transformer->deleteImageTransformFile($asset, $this->transformer->getTransformIndex($asset, $transform));
+    } else {
+        $this->transformer->getTransformIndex($asset, $transform);
+    }
+
+    $this->transformer->eagerLoadTransforms([$transform], [$asset]);
+    $this->travel(1)->hours();
+    $generated = $url();
+    $this->travel(1)->hours();
+
+    expect($url())->toBe($generated);
+})->with([
+    'not generated yet' => false,
+    'generated, then its file was deleted' => true,
+]);
+
 it('rejects unsupported source kinds before generating transforms', function () {
     $asset = ($this->createImageAsset)([
         'filename' => 'transform-test.txt',
