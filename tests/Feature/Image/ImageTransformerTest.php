@@ -484,7 +484,7 @@ it('does not reuse a transform result older than the source Asset', function () 
     expect($disk->get($transformPath))->not->toBe($originalTransform);
 });
 
-it('revs a transform’s URL, and changes it only when the transform is regenerated', function () {
+it('revs a transform’s URL, and changes it only when the transform changes', function () {
     $asset = ($this->createImageAsset)();
     $asset->getVolume()->sourceDisk()->put(
         $asset->getPath(),
@@ -514,32 +514,39 @@ it('revs a transform’s URL, and changes it only when the transform is regenera
         ->and(Url::removeParam($url(), 'v'))->toBe(Url::removeParam($generated, 'v'));
 });
 
-it('gives an eager-loaded transform the same URL for the rest of the request that generates it', function (bool $fileWasDeleted) {
+it('gives an eager-loaded transform the same URL for the rest of the request that generates it', function () {
     $asset = ($this->createImageAsset)();
     $asset->getVolume()->sourceDisk()->put(
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
     $transform = new ImageTransform(['width' => 100]);
-    $url = fn (): string => $this->transformer->getTransformUrl($asset, $transform, true);
-
-    if ($fileWasDeleted) {
-        $url();
-        $this->transformer->deleteImageTransformFile($asset, $this->transformer->getTransformIndex($asset, $transform));
-    } else {
-        $this->transformer->getTransformIndex($asset, $transform);
-    }
-
+    $this->transformer->getTransformIndex($asset, $transform);
     $this->transformer->eagerLoadTransforms([$transform], [$asset]);
+
     $this->travel(1)->hours();
-    $generated = $url();
+    $generated = $this->transformer->getTransformUrl($asset, $transform, true);
     $this->travel(1)->hours();
 
-    expect($url())->toBe($generated);
-})->with([
-    'not generated yet' => false,
-    'generated, then its file was deleted' => true,
-]);
+    expect($this->transformer->getTransformUrl($asset, $transform, true))->toBe($generated);
+});
+
+it('doesn’t rev transform URLs that Craft serves itself', function () {
+    $asset = ($this->createImageAsset)();
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    config()->set('filesystems.disks.test-disk.asset_transformer', ['driver' => 'craft', 'has_urls' => false]);
+
+    $url = app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    );
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+    expect($query)->toHaveKey('transformToken')
+        ->not->toHaveKey('v');
+});
 
 it('rejects unsupported source kinds before generating transforms', function () {
     $asset = ($this->createImageAsset)([

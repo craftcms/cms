@@ -171,7 +171,8 @@ class ImageTransformer
             return $this->privateTransformUrl($index);
         }
 
-        return AssetsHelper::revUrl($disk->url($uri), $asset, $index->dateUpdated);
+        // The index is recreated whenever its image changes, so the date it was created revs the URL
+        return AssetsHelper::revUrl($disk->url($uri), $asset, $index->dateIndexed);
     }
 
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
@@ -303,7 +304,8 @@ class ImageTransformer
             $index = new ImageTransformIndex((array) $result);
 
             if ($this->validateTransformIndexResult($index, $transform, $asset)) {
-                $this->eagerLoadedTransformIndexes[$this->eagerLoadedIndexKey($index->assetId, $index->transformString, $index->format)] = [
+                $indexFingerprint = $result->assetId.':'.$transformFingerprint;
+                $this->eagerLoadedTransformIndexes[$indexFingerprint] = [
                     ...(array) $result,
                     'dateIndexed' => $index->dateIndexed,
                     'dateCreated' => $index->dateCreated,
@@ -493,10 +495,10 @@ class ImageTransformer
         $transformString = ImageTransformHelper::getTransformString($transform);
 
         // Was it eager-loaded?
-        $eagerLoadedKey = $this->eagerLoadedIndexKey($asset->id, $transformString, $transform->format);
+        $fingerprint = $asset->id.':'.$transformString.($transform->format === null ? '' : ':'.$transform->format);
 
-        if (isset($this->eagerLoadedTransformIndexes[$eagerLoadedKey])) {
-            $result = $this->eagerLoadedTransformIndexes[$eagerLoadedKey];
+        if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
+            $result = $this->eagerLoadedTransformIndexes[$fingerprint];
             $timeZone = null;
 
             foreach (['dateIndexed', 'dateCreated', 'dateUpdated'] as $attribute) {
@@ -591,8 +593,7 @@ class ImageTransformer
                 'dateIndexed',
             ], [], false)
         );
-        $dateUpdated = now();
-        $now = Query::prepareDateForDb($dateUpdated);
+        $now = Query::prepareDateForDb(now());
 
         if ($index->id !== null) {
             $this->createTransformIndexQuery()
@@ -610,17 +611,6 @@ class ImageTransformer
                     ...$values,
                 ]);
         }
-
-        // Transform URLs are revved with this date, so the request that stores the index needs it too
-        $index->dateUpdated = $dateUpdated;
-
-        // The eager-loaded copy is out of date now, so later lookups read the stored row
-        unset($this->eagerLoadedTransformIndexes[$this->eagerLoadedIndexKey($index->assetId, $index->transformString, $index->format)]);
-    }
-
-    private function eagerLoadedIndexKey(?int $assetId, ?string $transformString, ?string $format): string
-    {
-        return $assetId.':'.$transformString.($format ? ':'.$format : '');
     }
 
     /**
