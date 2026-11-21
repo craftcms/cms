@@ -5,6 +5,12 @@ declare(strict_types=1);
 use Composer\InstalledVersions;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\mail\transportadapters\Smtp;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -310,6 +316,63 @@ it('reports a Craft 5 mail transport adapter until a Laravel mailer is chosen', 
 
     expect($title)->toBe('Email is sent through the “SMTP” transport adapter saved in the project config.')
         ->and($afterChoosing)->toBe([]);
+});
+
+it('reports volumes with a separate Craft 5 transform filesystem until a transform disk is chosen', function(): void {
+    ProjectConfig::set('volumes', [
+        'uid-photos' => ['handle' => 'photos', 'fs' => 'photos', 'transformFs' => 'transforms'],
+        // Volumes migrated to Craft 6 store their disk as `disk`, not `fs`
+        'uid-same' => ['handle' => 'same', 'disk' => 'same', 'transformFs' => 'same'],
+        'uid-chosen' => ['handle' => 'chosen', 'fs' => 'chosen', 'transformFs' => 'transforms', 'assetTransformer' => 'craft'],
+        'uid-unset-env' => ['handle' => 'unsetEnv', 'fs' => 'unsetEnv', 'transformFs' => 'transforms', 'assetTransformer' => '$LOOSE_ENDS_UNSET_TRANSFORMER'],
+        // The disk's deprecated asset_transformer key chooses the transformer, through the scoped disk
+        'uid-disk-chosen' => ['handle' => 'diskChosen', 'disk' => 'disk-chosen-child', 'transformFs' => 'transforms'],
+    ]);
+    config()->set('filesystems.disks.disk-chosen', ['driver' => 'local', 'root' => storage_path('framework/testing/disk-chosen'), 'asset_transformer' => 'craft']);
+    config()->set('filesystems.disks.disk-chosen-child', ['driver' => 'scoped', 'disk' => 'disk-chosen', 'prefix' => 'child']);
+    Cms::config()->assetTransformers->transformer('craft', []);
+
+    $finding = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    Cms::config()->assetTransformers->transformer('craft', ['outputDisk' => '']);
+    $emptyDisk = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    Cms::config()->assetTransformers->transformer('craft', ['outputDisk' => 'transforms']);
+    $afterChoosing = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    // The default is another craft transformer that still stores transforms on the source disk
+    Cms::config()->assetTransformers->transformer('craft-private', ['driver' => 'craft'])->default('craft-private');
+    $craftDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    // The default's driver isn't registered, so volumes fall back to craft, which has no output disk
+    Cms::config()->assetTransformers->transformer('craft', [])->transformer('imgix', ['driver' => 'imgix'])->default('imgix');
+    $unregisteredDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    // The default's driver can't be built from its settings, so volumes fall back to craft
+    app(AssetTransformers::class)->extend('imgix', fn() => throw new InvalidAssetTransformException('The imgix driver needs a domain.'));
+    $unbuildableDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    // The default doesn't store transforms
+    app(AssetTransformers::class)->forgetTransformers()->extend('imgix', fn() => new class() implements AssetTransformDriver {
+        public function definition(): AssetTransformDriverDefinition
+        {
+            return new AssetTransformDriverDefinition();
+        }
+
+        public function transform(AssetTransformRequest $request): AssetTransformResult
+        {
+            return new AssetTransformResult('/imgix.jpg', 'image/jpeg');
+        }
+    });
+    $otherDriverDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
+    expect($finding?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($emptyDisk?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($afterChoosing)->toBeNull()
+        ->and($craftDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($unregisteredDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($unbuildableDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($otherDriverDefault)->toBeNull();
 });
 
 it('doesn’t claim nothing depends on the adapter when recorded usage can’t be read', function(): void {

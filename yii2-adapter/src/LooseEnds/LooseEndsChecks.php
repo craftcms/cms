@@ -10,6 +10,8 @@ use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\web\twig\variables\Rebrand;
+use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Table;
@@ -499,6 +501,40 @@ class LooseEndsChecks
                 t('Disks use the `{driver}` driver.', ['driver' => LegacyFsFlysystemAdapter::DISK_DRIVER], 'yii2-adapter'),
                 t('Give them a native Laravel disk driver.', category: 'yii2-adapter'),
                 detail: $bridgeDisks->join(', '),
+            );
+        }
+
+        // Volumes that don't choose a transformer use the default, which only stores transforms on the source disk when
+        // it uses the craft driver without an output disk. Like AssetTransformers::forVolume(), fall back to craft when the
+        // default can't be built.
+        $transformerConfig = Cms::config()->assetTransformers;
+        $default = $transformerConfig->default ?? 'craft';
+
+        try {
+            app(AssetTransformers::class)->transformer($default);
+        } catch (AssetTransformException) {
+            $default = 'craft';
+        }
+
+        $defaultTransformer = $transformerConfig->transformerConfig($default);
+        $defaultStoresOnSourceDisk = ($defaultTransformer['driver'] ?? null) === 'craft' && empty($defaultTransformer['outputDisk']);
+
+        $transformFilesystems = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES) ?? [])
+            ->filter(fn(mixed $volume) => is_array($volume)
+                && !empty($volume['transformFs'])
+                && $volume['transformFs'] !== ($volume['disk'] ?? $volume['fs'] ?? null)
+                && empty(Env::parse($volume['assetTransformer'] ?? null))
+                && !app(AssetTransformers::class)->diskChoosesTransformer((string) Env::parse($volume['disk'] ?? $volume['fs'] ?? '')))
+            ->mapWithKeys(fn(array $volume) => [(string) ($volume['handle'] ?? '') => (string) $volume['transformFs']]);
+
+        if ($transformFilesystems->isNotEmpty() && $defaultStoresOnSourceDisk) {
+            $findings[] = $this->finding(
+                'database.volume-transform-filesystems',
+                Section::Content,
+                Severity::ChangesBehavior,
+                t('Volumes store transforms on a separate Craft 5 transform filesystem, which Craft 6 ignores.', category: 'yii2-adapter'),
+                t('Set the `craft` transformer’s `outputDisk` in the `assetTransformers` general config setting to the disk that should hold transforms. If volumes need different transform disks, add another transformer with the `craft` driver for each one and choose it in the volume’s Asset Transformer setting. Use a `scoped` disk to keep a transform subpath.', category: 'yii2-adapter'),
+                detail: $transformFilesystems->map(fn(string $fs, string $volume) => "$volume → $fs")->join(', '),
             );
         }
 

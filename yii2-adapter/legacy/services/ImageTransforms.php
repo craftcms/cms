@@ -409,19 +409,20 @@ class ImageTransforms extends Component
         string $transformer,
         ?bool $immediately = null,
     ): ?AssetTransformRequest {
-        // A transformer chosen by the disk, including an explicit `craft` one, takes precedence over the legacy one.
-        $disk = $asset->getVolume()->getResolvedDisk();
+        // A transformer chosen by the volume or its disk, including an explicit `craft` one, takes precedence over the legacy one.
+        $volume = $asset->getVolume();
+        $disk = $volume->getResolvedDisk();
 
-        if ($disk !== null && app(AssetTransformers::class)->configForDisk($disk) !== null) {
+        if ($volume->getAssetTransformer() !== null || ($disk !== null && app(AssetTransformers::class)->diskChoosesTransformer($disk))) {
             return null;
         }
 
-        $assetTransformer = new AssetTransformer(driver: $transformer);
+        $assetTransformer = new AssetTransformer(name: $transformer);
 
         return new AssetTransformRequest(
             asset: $asset,
             transformer: $assetTransformer,
-            parameters: $this->transformParameters($definition, $assetTransformer->driver),
+            parameters: $this->transformParameters($definition, $assetTransformer->name),
             immediately: $immediately ?? app(AssetTransformers::class)->immediateTransforms(),
         );
     }

@@ -26,6 +26,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -48,9 +49,13 @@ uses(DatabaseTestCase::class);
 beforeEach(function(): void {
     $this->driver = $driver = new CompatibilityAssetTransformDriver();
     app(AssetTransformers::class)->extend('compatibility-test', fn() => $driver);
-    // Disks without an asset_transformer key use `craft`, so this stands in for it without the disk choosing a
-    // transformer, which would take precedence over legacy transformers.
-    app(AssetTransformers::class)->extend('craft', fn() => $driver);
+    // The default transformer stands in for `craft` without the volume choosing a transformer, which would take
+    // precedence over legacy transformers.
+    app(AssetTransformers::class)->extend('compatibility-default', fn() => $driver);
+    Cms::config()->assetTransformers
+        ->transformer('compatibility-test', ['driver' => 'compatibility-test'])
+        ->transformer('compatibility-default', ['driver' => 'compatibility-default'])
+        ->default('compatibility-default');
     $this->asset = function(array $attributes = []): LegacyAsset {
         $model = AssetModel::factory()->create([
             ...$attributes,
@@ -216,7 +221,7 @@ it('accepts the legacy immediate URL argument', function(): void {
 
 it('reports legacy URL failures and returns null', function(): void {
     Exceptions::fake();
-    app(AssetTransformers::class)->forgetDrivers()->extend('craft', fn() => new FailingCompatibilityAssetTransformDriver());
+    app(AssetTransformers::class)->forgetTransformers()->extend('compatibility-default', fn() => new FailingCompatibilityAssetTransformDriver());
     $asset = ($this->asset)();
 
     expect($asset->getUrl(['width' => 320]))->toBeNull();
@@ -225,7 +230,7 @@ it('reports legacy URL failures and returns null', function(): void {
 
 it('returns the source URL for assets the transformer can’t transform', function(): void {
     Exceptions::fake();
-    app(AssetTransformers::class)->forgetDrivers()->extend('craft', fn() => new UnsupportedCompatibilityAssetTransformDriver());
+    app(AssetTransformers::class)->forgetTransformers()->extend('compatibility-default', fn() => new UnsupportedCompatibilityAssetTransformDriver());
     config()->set('filesystems.disks.uploads', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/asset-transform-compatibility'),
@@ -293,7 +298,7 @@ it('routes registered legacy image transformers through adapter drivers', functi
     }
 });
 
-it('selects the volume before the legacy transformer candidate', function(string|array $diskTransformer): void {
+it('selects the volume’s or disk’s transformer before the legacy transformer candidate', function(?string $volumeTransformer, ?string $diskTransformer = null): void {
     Event::on(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS, function(RegisterComponentTypesEvent $event): void {
         $event->types[] = RegisteredLegacyImageTransformer::class;
     });
@@ -301,10 +306,11 @@ it('selects the volume before the legacy transformer candidate', function(string
     config()->set('filesystems.disks.legacy-precedence-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/legacy-precedence-source'),
-        'asset_transformer' => $diskTransformer,
+        ...($diskTransformer !== null ? ['asset_transformer' => $diskTransformer] : []),
     ]);
     $volume = Volume::factory()->create([
         'disk' => 'legacy-precedence-source',
+        'assetTransformer' => $volumeTransformer,
     ]);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
     $asset = ($this->asset)([
@@ -328,7 +334,8 @@ it('selects the volume before the legacy transformer candidate', function(string
     }
 })->with([
     'another driver' => 'compatibility-test',
-    'explicit craft' => [['driver' => 'craft']],
+    'the default driver, named explicitly' => 'compatibility-default',
+    'a disk’s deprecated asset_transformer key' => [null, 'compatibility-test'],
 ]);
 
 it('does not use the legacy selector for typed transform calls', function(): void {

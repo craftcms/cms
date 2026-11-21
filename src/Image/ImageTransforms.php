@@ -243,8 +243,8 @@ class ImageTransforms
     }
 
     /**
-     * Validates a named transform’s custom parameters, which are keyed by driver name. Stored parameters for drivers
-     * that aren’t registered are kept unchanged.
+     * Validates a named transform’s custom parameters, which are keyed by transformer name. Stored parameters for
+     * transformers that aren’t defined are kept unchanged.
      */
     private function prepareDriverParameters(ImageTransform $transform): bool
     {

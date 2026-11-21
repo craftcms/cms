@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Event;
 function registerNamedTransformTestDriver(string $driver = 'namedTransformTest'): string
 {
     app(AssetTransformers::class)->extend($driver, fn () => new NamedTransformTestDriver);
+    defineAssetTransformer($driver);
 
     return $driver;
 }

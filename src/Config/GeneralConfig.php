@@ -2213,6 +2213,26 @@ class GeneralConfig extends BaseConfig
     public bool $preserveImageColorProfiles = true;
 
     /**
+     * @var AssetTransformersConfig Asset transformer settings: the default transformer and the named transformers.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
+     *     ->default('imgix')
+     *     ->transformer('craft', ['outputDisk' => 'transforms'])
+     *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ASSET_TRANSFORMERS_DEFAULT=imgix
+     * ```
+     * :::
+     *
+     * @group Image Handling
+     */
+    public AssetTransformersConfig $assetTransformers;
+
+    /**
      * @var McpConfig Administrative MCP transport and authentication configuration.
      *
      * @group System
@@ -3038,6 +3058,7 @@ class GeneralConfig extends BaseConfig
     public function __construct()
     {
         $this->anchors = AnchorsConfig::create();
+        $this->assetTransformers = AssetTransformersConfig::create();
         $this->mcp = McpConfig::create();
 
         // (Re-)normalize everything.
@@ -5310,6 +5331,29 @@ class GeneralConfig extends BaseConfig
     public function preserveImageColorProfiles(bool $value = true): self
     {
         $this->preserveImageColorProfiles = $value;
+
+        return $this;
+    }
+
+    /**
+     * Asset transformer settings: the default transformer and the named transformers.
+     *
+     * ```php
+     * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
+     *     ->default('imgix')
+     *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+     * )
+     * ```
+     *
+     * @group Image Handling
+     *
+     * @see $assetTransformers
+     *
+     * @param  AssetTransformersConfig|array<string, mixed>|string  $value
+     */
+    public function assetTransformers(AssetTransformersConfig|array|string $value): self
+    {
+        $this->assetTransformers = $value instanceof AssetTransformersConfig ? $value : AssetTransformersConfig::fromConfig($value);
 
         return $this;
     }

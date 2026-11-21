@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
@@ -89,6 +91,14 @@ class VolumeEditViewModel extends ViewModel
             )
                 ->instructions(t('Where assets should be stored on the filesystem.'))
                 ->tip(t('Type <kbd>$</kbd> to choose an environment variable.')),
+            Field::make(
+                t('Asset Transformer'),
+                Combobox::make('assetTransformer')
+                    ->options($this->assetTransformerOptions())
+                    ->showAllOnEmpty(),
+            )
+                ->instructions(t('Which asset transformer generates image transforms for this volume. Leave blank to use the default.'))
+                ->tip(t('This can be set to an environment variable matching one of the option values.')),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -194,6 +204,7 @@ class VolumeEditViewModel extends ViewModel
             'disk' => $this->volume->getDisk(false) ?? '',
             'hasUrls' => $this->volume->hasUrls,
             'subpath' => $this->volume->getSubpath(ensureTrailing: false, parse: false),
+            'assetTransformer' => $this->volume->getAssetTransformer(false) ?? '',
             'titleTranslationMethod' => $this->volume->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->volume->titleTranslationKeyFormat ?? '',
             'altTranslationMethod' => $this->volume->altTranslationMethod->value,
@@ -205,6 +216,24 @@ class VolumeEditViewModel extends ViewModel
                 ...($fieldLayout->getConfig() ?? []),
             ],
         ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function assetTransformerOptions(): array
+    {
+        $options = collect(app(AssetTransformers::class)->names())
+            ->sort()
+            ->map(fn (string $driver): array => ['label' => $driver, 'value' => $driver])
+            ->prepend(['label' => $this->defaultTransformerLabel(), 'value' => ''])
+            ->values()
+            ->all();
+
+        return [...$options, ...SelectOptions::getEnvOptions(collect($options)->pluck('value')->all())];
+    }
+
+    private function defaultTransformerLabel(): string
+    {
+        return t('Default ({transformer})', ['transformer' => Cms::config()->assetTransformers->default ?? 'craft']);
     }
 
     /**

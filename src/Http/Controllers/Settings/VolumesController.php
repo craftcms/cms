@@ -110,6 +110,7 @@ class VolumesController extends BaseAssetSettingsController
             'values.disk' => ['nullable', 'string'],
             'values.hasUrls' => ['required', 'boolean'],
             'values.subpath' => ['nullable', 'string'],
+            'values.assetTransformer' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
             'values.titleTranslationKeyFormat' => ['nullable', 'string'],
             'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -151,6 +152,7 @@ class VolumesController extends BaseAssetSettingsController
         $volume->disk = $request->input('disk');
         $volume->hasUrls = $request->boolean('hasUrls');
         $volume->subpath = $subpath;
+        $volume->assetTransformer = $request->input('assetTransformer') ?: null;
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);
         $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
         $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);

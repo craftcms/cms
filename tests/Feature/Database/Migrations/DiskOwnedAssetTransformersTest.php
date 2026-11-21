@@ -16,7 +16,6 @@ it('drops alpha transformer profiles, everything keyed by their UIDs, and the tr
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
     $profileUid = '0f7dbd20-f39e-57db-8b25-dcadccdd1733';
 
-    Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->string('assetTransformer')->nullable());
     Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->string('transformer')->nullable());
     DB::table(Table::VOLUMES)->where('id', $volume->id)->update(['assetTransformer' => 'imgix']);
     $transformId = DB::table(Table::IMAGETRANSFORMS)->insertGetId([

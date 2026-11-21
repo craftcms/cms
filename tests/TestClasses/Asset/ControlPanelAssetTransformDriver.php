@@ -23,6 +23,7 @@ class ControlPanelAssetTransformDriver implements AssetTransformDriver
     {
         $driver = $this;
         app(AssetTransformers::class)->extend('test', fn () => $driver);
+        defineAssetTransformer('test');
     }
 
     public function definition(): AssetTransformDriverDefinition
