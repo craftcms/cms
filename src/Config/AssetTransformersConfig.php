@@ -117,7 +117,8 @@ class AssetTransformersConfig extends BaseConfig
     public function transformerConfig(string $name): ?array
     {
         if ($name === 'craft') {
-            return ['driver' => 'craft', ...($this->transformers['craft'] ?? [])];
+            // The driver goes last, so a `null` driver in the config can't replace it
+            return [...($this->transformers['craft'] ?? []), 'driver' => 'craft'];
         }
 
         return $this->transformers[$name] ?? null;

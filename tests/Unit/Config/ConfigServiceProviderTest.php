@@ -293,7 +293,7 @@ it('overrides the default asset transformer with an environment variable and kee
     }
 
     expect($config->default)->toBe('imgix')
-        ->and($config->transformerConfig('craft'))->toBe([
+        ->and($config->transformerConfig('craft'))->toEqual([
             'driver' => 'craft',
             'outputDisk' => 'transforms',
             'generateTransformsBeforePageLoad' => true,
@@ -308,6 +308,11 @@ it('rejects asset transformer names that would resolve to the default or a disk'
 it('rejects another driver for the craft asset transformer', function () {
     AssetTransformersConfig::create()->transformer('craft', ['driver' => 'imgix']);
 })->throws(InvalidArgumentException::class);
+
+it('keeps the craft asset transformer’s driver when its config sets it to null', function () {
+    expect(AssetTransformersConfig::create()->transformer('craft', ['driver' => null])->transformerConfig('craft'))
+        ->toBe(['driver' => 'craft']);
+});
 
 it('fails when an environment override cannot be normalized', function () {
     app(ConfigRepository::class)->set('craft.general', [

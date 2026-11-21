@@ -319,7 +319,11 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
         'uid-same' => ['handle' => 'same', 'fs' => 'same', 'transformFs' => 'same'],
         'uid-chosen' => ['handle' => 'chosen', 'fs' => 'chosen', 'transformFs' => 'transforms', 'assetTransformer' => 'craft'],
         'uid-unset-env' => ['handle' => 'unsetEnv', 'fs' => 'unsetEnv', 'transformFs' => 'transforms', 'assetTransformer' => '$LOOSE_ENDS_UNSET_TRANSFORMER'],
+        // The disk's deprecated asset_transformer key chooses the transformer, through the scoped disk
+        'uid-disk-chosen' => ['handle' => 'diskChosen', 'fs' => 'disk-chosen-child', 'transformFs' => 'transforms'],
     ]);
+    config()->set('filesystems.disks.disk-chosen', ['driver' => 'local', 'root' => storage_path('framework/testing/disk-chosen'), 'asset_transformer' => 'craft']);
+    config()->set('filesystems.disks.disk-chosen-child', ['driver' => 'scoped', 'disk' => 'disk-chosen', 'prefix' => 'child']);
     Cms::config()->assetTransformers->transformer('craft', []);
 
     $finding = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');

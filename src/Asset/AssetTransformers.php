@@ -284,7 +284,15 @@ class AssetTransformers extends MultipleInstanceManager
 
         $disk = $volume->getResolvedFsTarget();
 
-        return $disk !== null && $this->legacyDiskConfig($disk) !== null;
+        return $disk !== null && $this->diskChoosesTransformer($disk);
+    }
+
+    /**
+     * Returns whether a disk, or a disk it’s scoped to, has a deprecated `asset_transformer` key.
+     */
+    public function diskChoosesTransformer(string $disk): bool
+    {
+        return $this->legacyDiskConfig($disk) !== null;
     }
 
     public function transform(
