@@ -82,7 +82,7 @@ class UserGroupsController extends BaseUserSettingsController
                 ],
                 ...($this->readOnly ? [] : [
                     '_deleteUrl' => route('craft.cp.settings.users.groups.destroy', ['groupId' => $group->id]),
-                    '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $group->name]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}”?', ['name' => $group->name]),
                 ]),
             ]))
             ->emptyMessage(t('No groups exist yet.'))
