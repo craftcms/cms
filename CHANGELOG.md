@@ -19,7 +19,7 @@
 - Fixed a bug where the “Use shapes to represent statuses” preference had no effect. ([#20963](https://github.com/craftcms/cms/issues/20963))
 - Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Fixed an error that occurred when project config changes were saved, and on control panel pages for admins, if the project config folder couldn’t be written. The changes are still saved, and admins now see the “folder isn’t writable” alert. ([#20547](https://github.com/craftcms/cms/pull/20547))
-- Fixed a bug where updating a field layout with the MCP tools could orphan custom fields’ content. ([#20992](https://github.com/craftcms/cms/issues/20992))
+- Fixed a bug where updating a field layout with the MCP tools could orphan custom fields’ content. ([#21006](https://github.com/craftcms/cms/pull/21006))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
