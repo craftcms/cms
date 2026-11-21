@@ -778,6 +778,7 @@ describe('GraphQL', function () {
             $table->string('tier');
             $table->json('tags');
             $table->dateTime('signed_up_at');
+            $table->dateTime('renews_at');
         });
         app(EloquentElements::class)->register(TestTypedCustomerElement::class);
 
@@ -792,10 +793,11 @@ describe('GraphQL', function () {
             'tier' => TestCustomerTier::Gold,
             'tags' => ['math', 'engines'],
             'signed_up_at' => '2026-01-02 03:04:05',
+            'renews_at' => '2040-01-01 00:00:00',
         ]);
 
         $customer = executeEloquentElementsGql(['eloquent.test-typed-customer:read'], '{
-            testTypedCustomers { visits views reach score balance vip tier tags signedUpAt: signed_up_at }
+            testTypedCustomers { visits views reach score balance vip tier tags signedUpAt: signed_up_at renewsAt: renews_at }
         }')['data']['testTypedCustomers'][0];
 
         // The offset depends on the system time zone
@@ -809,6 +811,8 @@ describe('GraphQL', function () {
                 'vip' => true,
                 'tier' => 'gold',
                 'tags' => '["math","engines"]',
+                // Past 2038, so too wide for an `Int`
+                'renewsAt' => Date::parse('2040-01-01 00:00:00')->getTimestamp(),
             ]);
     });
 
@@ -825,6 +829,19 @@ describe('GraphQL', function () {
 
         expect(executeEloquentElementsGql(['eloquent.test-noted-customer:read'], '{ testNotedCustomers(notes: "Prefers email") { email notes } }'))
             ->toBe(['data' => ['testNotedCustomers' => [['email' => 'ada@example.com', 'notes' => 'Prefers email']]]]);
+    });
+
+    it('resolves custom fields named like model attributes to their own values', function () {
+        Field::factory()->create(['name' => 'Company', 'handle' => 'company', 'type' => PlainText::class]);
+        app(Fields::class)->refreshFields();
+        app(EloquentElements::class)->register(TestCompanyFieldCustomerElement::class);
+
+        $element = TestCompanyFieldCustomerElement::findForModel(TestKeptCustomer::create(['name' => 'Ada', 'email' => 'ada@example.com', 'company' => 'Hidden Engines']));
+        $element->setFieldValue('company', 'Analytical Engines');
+        Elements::saveElement($element);
+
+        expect(executeEloquentElementsGql(['eloquent.test-company-field-customer:read'], '{ testCompanyFieldCustomers { company } }'))
+            ->toBe(['data' => ['testCompanyFieldCustomers' => [['company' => 'Analytical Engines']]]]);
     });
 
     it('keeps out types the schema can’t query, and model attributes the model hides', function () {
@@ -871,8 +888,8 @@ describe('GraphQL', function () {
 
     it('checks the model policy anew for each authenticated request', function () {
         Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
-        Gate::policy(Customer::class, TestRevocableCustomerPolicy::class);
         $user = UserModel::factory()->createElement(['admin' => false]);
+        UserPermissionsFacade::saveUserPermissions($user->id, ['accessCp', 'elements:customer:view']);
 
         $gql = app(Gql::class);
         $gql->flushCaches();
@@ -884,8 +901,16 @@ describe('GraphQL', function () {
             return $gql->executeQuery($gql->getSchemaForUser($user), '{ customers { email } }', debugMode: true);
         };
 
+        $granted = ['data' => ['customers' => [['email' => 'ada@example.com']]]];
+        expect($request())->toBe($granted);
+
+        // A policy takes over from the View permission
+        Gate::policy(Customer::class, TestRevocableCustomerPolicy::class);
+        TestRevocableCustomerPolicy::$allowed = false;
+        expect($request()['errors'][0]['message'])->toContain('Cannot query field "customers"');
+
         TestRevocableCustomerPolicy::$allowed = true;
-        expect($request())->toBe(['data' => ['customers' => [['email' => 'ada@example.com']]]]);
+        expect($request())->toBe($granted);
 
         TestRevocableCustomerPolicy::$allowed = false;
         expect($request()['errors'][0]['message'])->toContain('Cannot query field "customers"');
@@ -949,6 +974,7 @@ class TestTypedCustomer extends Model
         'tier' => TestCustomerTier::class,
         'tags' => 'array',
         'signed_up_at' => 'datetime',
+        'renews_at' => 'timestamp',
     ];
 }
 
@@ -1036,6 +1062,19 @@ class TestRevocableCustomerPolicy
     public function viewAny(UserModel $user): bool
     {
         return self::$allowed;
+    }
+}
+
+class TestCompanyFieldCustomerElement extends TestKeptCustomerElement
+{
+    public static function refHandle(): string
+    {
+        return 'test-company-field-customer';
+    }
+
+    public static function defineFieldLayout(FieldLayout $layout): FieldLayout
+    {
+        return $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->field('company'));
     }
 }
 

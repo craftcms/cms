@@ -637,16 +637,16 @@ class Gql
     }
 
     /**
-     * Returns a hash of a user’s current permissions, including the Eloquent element types whose model policies let
-     * them view the type’s index, as a policy can base that on anything.
+     * Returns a hash of a user’s current permissions, including whether the model policies of Eloquent element types
+     * let them view the type’s index, as a policy can base that on anything.
      */
     private function userPermissionsHash(User $user): string
     {
         $permissions = $user->admin ? ['*'] : app(UserPermissions::class)->getPermissionsByUserId($user->id)->all();
 
         foreach (app(EloquentElements::class)->types() as $elementType) {
-            if (Gate::getPolicyFor($elementType::modelClass()) !== null && $elementType::canViewIndex($user)) {
-                $permissions[] = "policy:{$elementType::gqlScope()}";
+            if (Gate::getPolicyFor($elementType::modelClass()) !== null) {
+                $permissions[] = "policy:{$elementType::gqlScope()}:".($elementType::canViewIndex($user) ? 'allow' : 'deny');
             }
         }
 

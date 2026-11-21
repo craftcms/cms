@@ -12,7 +12,7 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
 use CraftCms\Cms\Gql\Types\DateTime;
-use CraftCms\Cms\Gql\Types\Elements\Element;
+use CraftCms\Cms\Gql\Types\Elements\EloquentElement as EloquentElementObjectType;
 use CraftCms\Cms\Gql\Types\Number;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Gql;
@@ -59,7 +59,7 @@ class EloquentElementType extends Generator implements GeneratorInterface
     {
         $typeName = $elementType::gqlTypeName();
 
-        return GqlEntityRegistry::getOrCreate($typeName, fn () => new Element([
+        return GqlEntityRegistry::getOrCreate($typeName, fn () => new EloquentElementObjectType([
             'name' => $typeName,
             'description' => "This is the type for {$elementType::pluralLowerDisplayName()}.",
             'fields' => function () use ($elementType, $typeName) {
@@ -111,7 +111,8 @@ class EloquentElementType extends Generator implements GeneratorInterface
 
     /**
      * Types an attribute by its cast, or by its column when it has none. Integers that can be too wide for GraphQL’s
-     * 32-bit `Int`, from `bigint` and unsigned `int` columns and SQLite’s 64-bit integer columns, are typed as `Number`.
+     * 32-bit `Int`, from `timestamp` casts, `bigint` and unsigned `int` columns and SQLite’s 64-bit integer columns, are
+     * typed as `Number`.
      *
      * @param  array{type_name: string, type: string}|null  $column
      */
@@ -130,7 +131,7 @@ class EloquentElementType extends Generator implements GeneratorInterface
         if ($cast !== null) {
             return match (strtolower(explode(':', $cast, 2)[0])) {
                 'int', 'integer' => $integerType,
-                'timestamp' => Type::int(),
+                'timestamp' => Number::getType(),
                 'real', 'float', 'double' => Type::float(),
                 'bool', 'boolean' => Type::boolean(),
                 'date', 'datetime', 'immutable_date', 'immutable_datetime' => DateTime::getType(),
