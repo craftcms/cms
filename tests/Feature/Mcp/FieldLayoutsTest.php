@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Mcp\Capabilities\Addresses;
 use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
@@ -66,6 +67,24 @@ it('selects user custom fields while retaining the public account attribute allo
 
     expect($user['profileSummary'])->toBe('A public profile')
         ->and($user)->not->toHaveKeys(['admin', 'lastLoginDate', 'invalidLoginCount']);
+});
+
+it('keeps custom field content when a layout update omits layout element UIDs', function (): void {
+    $actor = User::query()->firstOrFail();
+    actingAs($actor);
+    app(Request::class)->setUserResolver(static fn (): User => $actor);
+    $field = Field::factory()->create(['handle' => 'profileSummary', 'type' => PlainText::class]);
+    Fields::refreshFields();
+    $config = ['tabs' => [['name' => 'Content', 'elements' => [
+        ['type' => CustomField::class, 'fieldUid' => $field->uid],
+    ]]]];
+    $users = app(Users::class);
+    $users->updateFieldLayout($config);
+    app(ElementCapabilities::class)->update('users', id: $actor->id, fields: ['profileSummary' => 'A public profile']);
+
+    $users->updateFieldLayout($config);
+
+    expect(app(ElementCapabilities::class)->get('users', id: $actor->id)['element']['profileSummary'])->toBe('A public profile');
 });
 
 it('sets field layout tabs’ icons', function () {
