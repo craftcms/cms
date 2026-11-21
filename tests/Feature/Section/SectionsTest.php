@@ -7,6 +7,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -276,6 +277,23 @@ it('queues section jobs after committing section changes', function (string $con
     'section resaves' => ['handle', 'updatedSection', ResaveElements::class],
 ]);
 
+it('queues section jobs even when a SectionSaved listener fails', function () {
+    $sectionModel = Section::factory()->create();
+    $this->sections->refreshSections();
+
+    $section = $this->sections->getSectionById($sectionModel->id);
+    $config = $section->getConfig();
+    $config['handle'] = 'updatedSection';
+
+    Queue::fake();
+    Event::listen(SectionSaved::class, fn () => throw new RuntimeException('Listener failed'));
+
+    expect(fn () => $this->sections->handleChangedSection(new class(path: ProjectConfigService::PATH_SECTIONS.'.'.$section->uid, newValue: $config, tokenMatches: [$section->uid]) extends ConfigEvent {}))
+        ->toThrow(RuntimeException::class, 'Listener failed');
+
+    Queue::assertPushed(ResaveElements::class);
+});
+
 it('propagates existing entries to a site added through project config', function () {
     $newSite = Site::factory()->create();
     Sites::refreshSites();
@@ -298,6 +316,40 @@ it('propagates existing entries to a site added through project config', functio
 
     expect(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->orderBy('siteId')->pluck('siteId')->all())
         ->toBe([Sites::getPrimarySite()->id, $newSite->id]);
+});
+
+it('keeps each site’s content when project config stops propagating a section’s entries', function () {
+    $primarySite = Sites::getPrimarySite();
+    $otherSite = Site::factory()->create();
+    Sites::refreshSites();
+    SiteGroups::refreshGroups();
+
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
+        'propagationMethod' => PropagationMethod::All,
+    ]);
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $section->id,
+        'siteId' => $otherSite->id,
+        'hasUrls' => false,
+    ]);
+    $this->sections->refreshSections();
+
+    $entry = Entry::factory()->forSection($section)->createElement(['title' => 'Primary title']);
+    Elements::saveElement($entry);
+    $otherSiteEntry = EntryElement::find()->id($entry->id)->siteId($otherSite->id)->status(null)->one();
+    $otherSiteEntry->title = 'Other title';
+    Elements::saveElement($otherSiteEntry);
+    ProjectConfig::rebuild();
+
+    $config = ProjectConfig::get("sections.$section->uid");
+    $config['propagationMethod'] = PropagationMethod::None->value;
+
+    ProjectConfig::set("sections.$section->uid", $config);
+
+    $titles = fn (int $siteId) => EntryElement::find()->sectionId($section->id)->siteId($siteId)->status(null)->pluck('title', 'elements.id')->all();
+
+    expect($titles($primarySite->id))->toBe([$entry->id => 'Primary title'])
+        ->and($titles($otherSite->id))->toHaveCount(1)->toContain('Other title')->not->toHaveKey($entry->id);
 });
 
 it('can delete and restore a section by id', function () {

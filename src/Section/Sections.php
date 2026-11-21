@@ -824,25 +824,9 @@ class Sections
             });
         }
 
-        /** @var Section $section */
-        $section = $this->getSectionById($sectionModel->id);
-
-        if (! $isNewSection && $oldWorkflowId !== $sectionModel->workflowId) {
-            $this->workflows->invalidateSectionRuns($sectionModel->id);
-        }
-
-        // If this is a Single, ensure that the section has its one and only entry
-        if (! $isNewSection && $section->type === SectionType::Single) {
-            $this->ensureSingleEntry($section, $siteSettingData);
-        }
-
-        event(new SectionSaved($section, $isNewSection));
-
-        // Invalidate entry caches
-        $this->elementCaches->invalidateForElementType(Entry::class);
-
-        // Finally, deal with the existing entries. This comes after the cache refresh
-        // because the sync queue runs the job right away, in this process.
+        // Finally, deal with the existing entries. This comes after the cache refresh because
+        // the sync queue runs the job right away, in this process, and before the callbacks
+        // below so a failing one doesn't keep it from being queued.
         // -----------------------------------------------------------------
 
         if (! $isNewSection && $resaveEntries) {
@@ -878,6 +862,23 @@ class Sections
                 ))->afterCommit();
             }
         }
+
+        /** @var Section $section */
+        $section = $this->getSectionById($sectionModel->id);
+
+        if (! $isNewSection && $oldWorkflowId !== $sectionModel->workflowId) {
+            $this->workflows->invalidateSectionRuns($sectionModel->id);
+        }
+
+        // If this is a Single, ensure that the section has its one and only entry
+        if (! $isNewSection && $section->type === SectionType::Single) {
+            $this->ensureSingleEntry($section, $siteSettingData);
+        }
+
+        event(new SectionSaved($section, $isNewSection));
+
+        // Invalidate entry caches
+        $this->elementCaches->invalidateForElementType(Entry::class);
     }
 
     public function refreshSections(): void
