@@ -35,7 +35,7 @@
     "ext-pdo": "*",
     "ext-zip": "*",
     "bacon/bacon-qr-code": "^3.0",
-    "commerceguys/addressing": "^2.1.1",
+    "commerceguys/addressing": "^2.3.0",
     "composer/semver": "^3.3.2",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~5.1.0",

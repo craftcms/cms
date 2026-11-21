@@ -1243,6 +1243,17 @@ class ElementHelper
     }
 
     /**
+     * Returns the user set by [[setProvisionalDraftUser()]], if any.
+     *
+     * @return UserElement|null
+     * @since 5.13.0
+     */
+    public static function getProvisionalDraftUser(): ?UserElement
+    {
+        return self::$provisionalDraftUser;
+    }
+
+    /**
      * Removes values from a posted element query criteria, which would typically not be user-editable.
      *
      * @param array $criteria

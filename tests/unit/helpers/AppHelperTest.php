@@ -210,6 +210,32 @@ class AppHelperTest extends TestCase
         App::cliOption('no-dash');
     }
 
+    public function testTerminalCommands(): void
+    {
+        // the tests might be running in DDEV
+        $server = $_SERVER['IS_DDEV_PROJECT'] ?? null;
+        $env = getenv('IS_DDEV_PROJECT');
+        unset($_SERVER['IS_DDEV_PROJECT']);
+
+        try {
+            putenv('IS_DDEV_PROJECT');
+            self::assertSame('php craft oauth/generate-keys', App::craftCommand('oauth/generate-keys'));
+            self::assertSame('composer install', App::composerCommand('install'));
+
+            putenv('IS_DDEV_PROJECT=true');
+            self::assertSame('ddev craft oauth/generate-keys', App::craftCommand('oauth/generate-keys'));
+            self::assertSame('ddev composer install', App::composerCommand('install'));
+
+            putenv('IS_DDEV_PROJECT=false');
+            self::assertSame('php craft oauth/generate-keys', App::craftCommand('oauth/generate-keys'));
+        } finally {
+            putenv($env === false ? 'IS_DDEV_PROJECT' : "IS_DDEV_PROJECT=$env");
+            if ($server !== null) {
+                $_SERVER['IS_DDEV_PROJECT'] = $server;
+            }
+        }
+    }
+
     /**
      *
      */

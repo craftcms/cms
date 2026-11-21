@@ -7,9 +7,14 @@
 
 namespace crafttests\unit\helpers;
 
+use Craft;
+use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\HtmlPurifier;
 use craft\test\TestCase;
+use craft\utilities\ClearCaches;
 use HTMLPurifier_Config;
+use HTMLPurifier_HTMLDefinition;
 
 /**
  * Class HtmlPurifierTest.
@@ -41,6 +46,133 @@ class HtmlPurifierTest extends TestCase
         self::assertNull($config->get('HTML.DefinitionID'));
         self::assertSame('', $config->get('Attr.DefaultImageAlt'));
         self::assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
+    }
+
+    public function testProcessCachesHtmlDefinition(): void
+    {
+        $basePath = Craft::$app->getPath()->getHtmlPurifierCachePath(false);
+        $cachePath = $basePath . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($basePath);
+        $html = '<figure><a href="https://example.com" download="file.pdf">Link</a><figcaption>Caption</figcaption></figure>';
+
+        // Configs that disable caching are respected, and work when the cache directory can't be created
+        file_put_contents($basePath, '');
+        try {
+            self::assertSame($html, HtmlPurifier::process($html, ['Cache.DefinitionImpl' => null]));
+            self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->set('Cache.DefinitionImpl', null)));
+        } finally {
+            unlink($basePath);
+        }
+
+        // Closures can look up other definitions before purifying
+        self::assertSame($html, HtmlPurifier::process($html, fn(HTMLPurifier_Config $config) => $config->getCSSDefinition()));
+
+        // Caches cleared while purifying don't cause errors
+        self::assertSame($html, HtmlPurifier::process($html, fn() => FileHelper::removeDirectory($basePath)));
+        FileHelper::removeDirectory($basePath);
+
+        // Run each config twice, so the second call is served from the definition cache
+        for ($i = 0; $i < 2; $i++) {
+            self::assertSame($html, HtmlPurifier::process($html));
+            self::assertSame('<a href="https://example.com">Link</a>Caption', HtmlPurifier::process($html, ['HTML.Allowed' => 'a[href]']));
+        }
+
+        $cacheFiles = glob($cachePath . DIRECTORY_SEPARATOR . '*.ser');
+        self::assertCount(2, $cacheFiles);
+        self::assertCount(2, array_diff(scandir($cachePath), ['.', '..']), 'No temp files are left behind');
+
+        // A cache file that's still being written is treated as a cache miss, and replaced
+        foreach ($cacheFiles as $file) {
+            $contents = file_get_contents($file);
+            file_put_contents($file, substr($contents, 0, intdiv(strlen($contents), 2)));
+        }
+        self::assertSame($html, HtmlPurifier::process($html));
+        self::assertSame('<a href="https://example.com">Link</a>Caption', HtmlPurifier::process($html, ['HTML.Allowed' => 'a[href]']));
+        foreach ($cacheFiles as $file) {
+            self::assertInstanceOf(HTMLPurifier_HTMLDefinition::class, unserialize(file_get_contents($file)));
+        }
+    }
+
+    public function testEnableDefinitionCache(): void
+    {
+        $cachePath = Craft::$app->getPath()->getHtmlPurifierCachePath() . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($cachePath);
+        $html = '<p data-foo="bar">Hi</p><figure><figcaption>Caption</figcaption></figure>';
+
+        $builds = 0;
+        $process = function(string $id, bool $addAttribute) use ($html, &$builds): string {
+            $config = HTMLPurifier_Config::createDefault();
+            HtmlPurifier::enableDefinitionCache($config, $id);
+            // Look up the definition before process(), as callers like CKEditor do
+            if ($def = $config->maybeGetRawHTMLDefinition()) {
+                $builds++;
+                if ($addAttribute) {
+                    $def->addAttribute('p', 'data-foo', 'Text');
+                }
+            }
+            return HtmlPurifier::process($html, $config);
+        };
+
+        // Run each config twice, so the second call is served from the definition cache.
+        // Craft's own customizations (<figure>) must be cached along with the caller's.
+        for ($i = 0; $i < 2; $i++) {
+            self::assertSame($html, $process('test-with-attr', true));
+            // A different ID must not get the other config's cached definition
+            self::assertSame('<p>Hi</p><figure><figcaption>Caption</figcaption></figure>', $process('test-without-attr', false));
+        }
+
+        // Each definition is only built once
+        self::assertSame(2, $builds);
+        self::assertCount(2, glob($cachePath . DIRECTORY_SEPARATOR . '*.ser'));
+
+        // The Caches utility clears them
+        $option = ArrayHelper::firstWhere(ClearCaches::cacheOptions(), 'key', 'html-purifier');
+        $option['action']();
+        self::assertDirectoryDoesNotExist($cachePath);
+        self::assertDirectoryExists(dirname($cachePath));
+    }
+
+    public function testProcessIgnoresCacheCleanupFailures(): void
+    {
+        $cachePath = Craft::$app->getPath()->getHtmlPurifierCachePath() . DIRECTORY_SEPARATOR . 'HTML';
+        FileHelper::removeDirectory($cachePath);
+        // An old cache entry that can't be removed
+        FileHelper::createDirectory($cachePath . DIRECTORY_SEPARATOR . '1.0.0,abc,1.ser');
+
+        self::assertSame('<p><mark>Hi</mark></p>', HtmlPurifier::process('<p><mark>Hi</mark></p>'));
+    }
+
+    public function testProcessWithConfigObjectSettingDefinitionId(): void
+    {
+        $config = HTMLPurifier_Config::createDefault();
+        $config->autoFinalize = false;
+        $config->set('HTML.DefinitionID', 'my-plugin');
+        @$config->getHTMLDefinition(true)->addAttribute('p', 'data-foo', 'Text');
+
+        self::assertSame('<p data-foo="bar">Hi</p>', HtmlPurifier::process('<p data-foo="bar">Hi</p>', $config));
+    }
+
+    public function testProcessWithSubclassCanEditHtmlDefinition(): void
+    {
+        $purifier = new class() extends HtmlPurifier {
+            public static function configure($config): void
+            {
+                parent::configure($config);
+                $config->getHTMLDefinition(true)->addAttribute('p', 'data-foo', 'Text');
+            }
+        };
+
+        self::assertSame('<p data-foo="bar">Hi</p>', $purifier::process('<p data-foo="bar">Hi</p>'));
+    }
+
+    public function testProcessWithClosureCanEditHtmlDefinition(): void
+    {
+        for ($i = 0; $i < 2; $i++) {
+            $output = HtmlPurifier::process('<p data-foo="bar">Hi</p>', function(HTMLPurifier_Config $config) {
+                $config->getHTMLDefinition(true)->addAttribute('p', 'data-foo', 'Text');
+            });
+            self::assertSame('<p data-foo="bar">Hi</p>', $output);
+        }
     }
 
     /**
