@@ -136,9 +136,13 @@ class ApplyNewPropagationMethod extends BatchedJob
             try {
                 $newElement = app(ElementService::class)->duplicateElement($otherSiteElement, [], false);
             } catch (UnsupportedSiteException $e) {
-                // The site was probably removed from the element's owner, so there's nothing to keep
-                report($e);
+                // Rethrow failures from anything else, such as nested elements, so the original
+                // site's content isn't deleted below without a duplicate to replace it
+                if ($e->element !== $otherSiteElement || $e->siteId !== $otherSiteElement->siteId) {
+                    throw $e;
+                }
 
+                // The site was removed from the element's owner, so there's nothing to keep
                 continue;
             }
 

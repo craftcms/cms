@@ -6,6 +6,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementRestoring;
+use CraftCms\Cms\Element\Events\ElementSaving;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -36,6 +38,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
@@ -312,6 +315,31 @@ it('queues section jobs even when restoring a section’s entries fails', functi
     Queue::assertPushed(ResaveElements::class);
 });
 
+it('propagates restored entries to a site added through project config', function () {
+    $newSite = Site::factory()->create();
+    Sites::refreshSites();
+    SiteGroups::refreshGroups();
+
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create();
+    $entry = Entry::factory()->forSection($section)->createElement();
+    $this->sections->refreshSections();
+    ProjectConfig::rebuild();
+    $config = ProjectConfig::get("sections.$section->uid");
+    $this->sections->deleteSectionById($section->id);
+
+    $config['siteSettings'][$newSite->uid] = [
+        'enabledByDefault' => true,
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+    ];
+
+    ProjectConfig::set("sections.$section->uid", $config);
+
+    expect(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->orderBy('siteId')->pluck('siteId')->all())
+        ->toBe([Sites::getPrimarySite()->id, $newSite->id]);
+});
+
 it('propagates existing entries to a site added through project config', function () {
     $newSite = Site::factory()->create();
     Sites::refreshSites();
@@ -394,10 +422,47 @@ it('stops propagating a section’s entries while removing one of its sites thro
     $config['propagationMethod'] = PropagationMethod::None->value;
     unset($config['siteSettings'][$removedSite->uid]);
 
+    Exceptions::fake();
     ProjectConfig::set("sections.$section->uid", $config);
 
     expect(EntryElement::find()->sectionId($section->id)->site('*')->status(null)->pluck('title', 'elements_sites.siteId')->all())
         ->toBe([$primarySite->id => 'Primary title']);
+    Exceptions::assertNothingReported();
+});
+
+it('keeps a site’s content when splitting its entry fails while project config stops propagating a section’s entries', function () {
+    $otherSite = Site::factory()->create();
+    Sites::refreshSites();
+    SiteGroups::refreshGroups();
+
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
+        'propagationMethod' => PropagationMethod::All,
+    ]);
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $section->id,
+        'siteId' => $otherSite->id,
+        'hasUrls' => false,
+    ]);
+    $this->sections->refreshSections();
+
+    $entry = Entry::factory()->forSection($section)->createElement(['title' => 'Primary title']);
+    Elements::saveElement($entry);
+    $otherSiteEntry = EntryElement::find()->id($entry->id)->siteId($otherSite->id)->status(null)->one();
+    $otherSiteEntry->title = 'Other title';
+    Elements::saveElement($otherSiteEntry);
+    ProjectConfig::rebuild();
+
+    $config = ProjectConfig::get("sections.$section->uid");
+    $config['propagationMethod'] = PropagationMethod::None->value;
+
+    Event::listen(ElementSaving::class, function (ElementSaving $event) use ($otherSite) {
+        if ($event->element->duplicateOf) {
+            throw new UnsupportedSiteException(new EntryElement, $otherSite->id);
+        }
+    });
+
+    expect(fn () => ProjectConfig::set("sections.$section->uid", $config))->toThrow(UnsupportedSiteException::class);
+    expect(EntryElement::find()->id($entry->id)->siteId($otherSite->id)->status(null)->one()?->title)->toBe('Other title');
 });
 
 it('can delete and restore a section by id', function () {

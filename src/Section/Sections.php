@@ -795,72 +795,74 @@ class Sections
         // Clear caches, including the section's entry type assignments
         EntryTypes::refreshEntryTypes();
 
-        // Deal with the existing entries. This comes after the cache refresh because the sync
-        // queue runs the job right away, in this process, and before restoring trashed entries
-        // and running callbacks, so a failure there doesn't keep it from being queued.
-        // -----------------------------------------------------------------
+        try {
+            if ($wasTrashed) {
+                /** @var ElementCollection<int, Entry> $entries */
+                $entries = Entry::find()
+                    ->sectionId($sectionModel->id)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->trashed()
+                    ->site('*')
+                    ->unique()
+                    ->where('entries.deletedWithSection', true)
+                    ->get();
 
-        if (! $isNewSection && $resaveEntries) {
-            // If the propagation method just changed, we definitely need to update entries for that
-            if ($propagationMethodChanged) {
-                dispatch(new ApplyNewPropagationMethod(
-                    elementType: Entry::class,
-                    criteria: [
-                        'sectionId' => $sectionModel->id,
-                        'structureId' => $sectionModel->structureId,
-                    ],
-                    description: I18N::prep('Applying new propagation method to {name} entries', [
-                        'name' => $sectionModel->name,
-                    ]),
-                ))->afterCommit();
-            } elseif ($this->autoResaveEntries) {
-                dispatch(new ResaveElements(
-                    elementType: Entry::class,
-                    criteria: [
-                        'sectionId' => $sectionModel->id,
-                        'siteId' => array_values($siteIdMap),
-                        'preferSites' => [Sites::getPrimarySite()->id],
-                        'unique' => true,
-                        'status' => null,
-                        'drafts' => null,
-                        'provisionalDrafts' => null,
-                        'revisions' => null,
-                    ],
-                    updateSearchIndex: $hasNewSite,
-                    description: I18N::prep('Resaving {name} entries', [
-                        'name' => $sectionModel->name,
-                    ]),
-                ))->afterCommit();
-            }
-        }
+                SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
+                    $entriesByType = $entries->groupBy('typeId');
+                    foreach ($entriesByType as $typeEntries) {
+                        try {
+                            $typeEntries->each(function (Entry $entry) {
+                                $entry->deletedWithSection = false;
+                            });
 
-        if ($wasTrashed) {
-            /** @var ElementCollection<int, Entry> $entries */
-            $entries = Entry::find()
-                ->sectionId($sectionModel->id)
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->trashed()
-                ->site('*')
-                ->unique()
-                ->where('entries.deletedWithSection', true)
-                ->get();
-
-            SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
-                $entriesByType = $entries->groupBy('typeId');
-                foreach ($entriesByType as $typeEntries) {
-                    try {
-                        $typeEntries->each(function (Entry $entry) {
-                            $entry->deletedWithSection = false;
-                        });
-
-                        $this->elements->restoreElements($typeEntries->all());
-                    } catch (RuntimeException) {
-                        // the entry type probably wasn't restored
+                            $this->elements->restoreElements($typeEntries->all());
+                        } catch (RuntimeException) {
+                            // the entry type probably wasn't restored
+                        }
                     }
+                });
+            }
+        } finally {
+            // Deal with the existing entries. This comes after the cache refresh because the sync
+            // queue runs the job right away, in this process, and after restoring trashed entries
+            // so it covers them, even if restoring them fails.
+            // -----------------------------------------------------------------
+
+            if (! $isNewSection && $resaveEntries) {
+                // If the propagation method just changed, we definitely need to update entries for that
+                if ($propagationMethodChanged) {
+                    dispatch(new ApplyNewPropagationMethod(
+                        elementType: Entry::class,
+                        criteria: [
+                            'sectionId' => $sectionModel->id,
+                            'structureId' => $sectionModel->structureId,
+                        ],
+                        description: I18N::prep('Applying new propagation method to {name} entries', [
+                            'name' => $sectionModel->name,
+                        ]),
+                    ))->afterCommit();
+                } elseif ($this->autoResaveEntries) {
+                    dispatch(new ResaveElements(
+                        elementType: Entry::class,
+                        criteria: [
+                            'sectionId' => $sectionModel->id,
+                            'siteId' => array_values($siteIdMap),
+                            'preferSites' => [Sites::getPrimarySite()->id],
+                            'unique' => true,
+                            'status' => null,
+                            'drafts' => null,
+                            'provisionalDrafts' => null,
+                            'revisions' => null,
+                        ],
+                        updateSearchIndex: $hasNewSite,
+                        description: I18N::prep('Resaving {name} entries', [
+                            'name' => $sectionModel->name,
+                        ]),
+                    ))->afterCommit();
                 }
-            });
+            }
         }
 
         /** @var Section $section */
