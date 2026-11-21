@@ -18,6 +18,7 @@ use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Models\Info;
@@ -862,7 +863,7 @@ class ProjectConfig
      *
      * @param  bool  $force  Whether to write out the YAML even if there aren’t any new changes
      *
-     * @throws \Exception if something goes wrong
+     * @throws ProjectConfigWriteException if the YAML files can't be written
      */
     public function writeYamlFiles(bool $force = false): void
     {
@@ -876,6 +877,8 @@ class ProjectConfig
 
     /**
      * Regenerates the external config based on the loaded project config.
+     *
+     * @throws ProjectConfigWriteException if the YAML files can't be written
      */
     public function regenerateExternalConfig(): void
     {
