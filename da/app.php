@@ -2313,7 +2313,7 @@ return [
     'New {group} category' => 'Ny {group} kategori',
     'New {section} entry' => 'Ny {section} post',
     'New {total, plural, =1{position} other{positions}} saved.' => 'Ny(e) {total, plural, one {}=1{position} other{positioner}} gemt.',
-    'New {type}' => 'Ny {type}',
+    'New {type}' => '{type, select, post{Ny post} bruger{Ny bruger} Brugere{Nye brugere} kategori{Ny kategori} adresse{Ny adresse} indholdsblok{Ny indholdsblok} aktiv{Nyt aktiv} tag{Nyt tag} other{Nyt element ({type})}}',
     'New' => 'Ny',
     'Next Page' => 'Næste side',
     'Next' => 'Næste',

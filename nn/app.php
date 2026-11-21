@@ -2313,7 +2313,7 @@ return [
     'New {group} category' => 'Ny {group} kategori',
     'New {section} entry' => 'Ny artikkel i {section}',
     'New {total, plural, =1{position} other{positions}} saved.' => '{total, plural, =1{Ny posisjon} other{Nye posisjonar}} lagra.',
-    'New {type}' => 'Ny {type}',
+    'New {type}' => '{type, select, artikkel{Ny artikkel} brukar{Ny brukar} Brukarar{Nye brukarar} kategori{Ny kategori} adresse{Ny adresse} fil{Ny fil} innhaldsblokk{Ny innhaldsblokk} merke{Nytt merke} other{Nytt element ({type})}}',
     'New' => 'Ny',
     'Next Page' => 'Neste side',
     'Next' => 'Neste',

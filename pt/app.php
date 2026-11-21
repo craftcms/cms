@@ -2423,7 +2423,7 @@ return [
     'Palette' => 'Paleta',
     'Panels' => 'Painéis',
     'Parent {type} Title' => 'Título do {type} pai',
-    'Parent' => 'Parente',
+    'Parent' => 'Pai',
     'Parish' => 'Paróquia',
     'Partition' => 'Partição',
     'Passed with warning' => 'Passou com aviso',
