@@ -114,11 +114,11 @@ readonly class FormFields
 
         $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int) $config['siteId'] : null;
 
-        if (! is_callable($input)) {
+        if (is_string($input) || ! is_callable($input)) {
             $input = (string) $input;
         }
 
-        if (is_callable($input)) {
+        if (! is_string($input)) {
             $input = $input($config);
         } elseif (str_starts_with($input, 'template:')) {
             $input = self::renderTemplate(substr($input, 9), $config);
