@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\ElementRestoring;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -294,6 +295,23 @@ it('queues section jobs even when a SectionSaved listener fails', function () {
     Queue::assertPushed(ResaveElements::class);
 });
 
+it('queues section jobs even when restoring a section’s entries fails', function () {
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create();
+    Entry::factory()->forSection($section)->createElement();
+    $this->sections->refreshSections();
+    ProjectConfig::rebuild();
+    $config = ProjectConfig::get("sections.$section->uid");
+    $this->sections->deleteSectionById($section->id);
+
+    Queue::fake();
+    Event::listen(ElementRestoring::class, fn () => throw new LogicException('Restore failed'));
+
+    expect(fn () => ProjectConfig::set("sections.$section->uid", $config))
+        ->toThrow(LogicException::class, 'Restore failed');
+
+    Queue::assertPushed(ResaveElements::class);
+});
+
 it('propagates existing entries to a site added through project config', function () {
     $newSite = Site::factory()->create();
     Sites::refreshSites();
@@ -350,6 +368,36 @@ it('keeps each site’s content when project config stops propagating a section�
 
     expect($titles($primarySite->id))->toBe([$entry->id => 'Primary title'])
         ->and($titles($otherSite->id))->toHaveCount(1)->toContain('Other title')->not->toHaveKey($entry->id);
+});
+
+it('stops propagating a section’s entries while removing one of its sites through project config', function () {
+    $primarySite = Sites::getPrimarySite();
+    $removedSite = Site::factory()->create();
+    Sites::refreshSites();
+    SiteGroups::refreshGroups();
+
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
+        'propagationMethod' => PropagationMethod::All,
+    ]);
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $section->id,
+        'siteId' => $removedSite->id,
+        'hasUrls' => false,
+    ]);
+    $this->sections->refreshSections();
+
+    $entry = Entry::factory()->forSection($section)->createElement(['title' => 'Primary title']);
+    Elements::saveElement($entry);
+    ProjectConfig::rebuild();
+
+    $config = ProjectConfig::get("sections.$section->uid");
+    $config['propagationMethod'] = PropagationMethod::None->value;
+    unset($config['siteSettings'][$removedSite->uid]);
+
+    ProjectConfig::set("sections.$section->uid", $config);
+
+    expect(EntryElement::find()->sectionId($section->id)->site('*')->status(null)->pluck('title', 'elements_sites.siteId')->all())
+        ->toBe([$primarySite->id => 'Primary title']);
 });
 
 it('can delete and restore a section by id', function () {

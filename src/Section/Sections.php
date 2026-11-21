@@ -795,38 +795,9 @@ class Sections
         // Clear caches, including the section's entry type assignments
         EntryTypes::refreshEntryTypes();
 
-        if ($wasTrashed) {
-            /** @var ElementCollection<int, Entry> $entries */
-            $entries = Entry::find()
-                ->sectionId($sectionModel->id)
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->trashed()
-                ->site('*')
-                ->unique()
-                ->where('entries.deletedWithSection', true)
-                ->get();
-
-            SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
-                $entriesByType = $entries->groupBy('typeId');
-                foreach ($entriesByType as $typeEntries) {
-                    try {
-                        $typeEntries->each(function (Entry $entry) {
-                            $entry->deletedWithSection = false;
-                        });
-
-                        $this->elements->restoreElements($typeEntries->all());
-                    } catch (RuntimeException) {
-                        // the entry type probably wasn't restored
-                    }
-                }
-            });
-        }
-
-        // Finally, deal with the existing entries. This comes after the cache refresh because
-        // the sync queue runs the job right away, in this process, and before the callbacks
-        // below so a failing one doesn't keep it from being queued.
+        // Deal with the existing entries. This comes after the cache refresh because the sync
+        // queue runs the job right away, in this process, and before restoring trashed entries
+        // and running callbacks, so a failure there doesn't keep it from being queued.
         // -----------------------------------------------------------------
 
         if (! $isNewSection && $resaveEntries) {
@@ -861,6 +832,35 @@ class Sections
                     ]),
                 ))->afterCommit();
             }
+        }
+
+        if ($wasTrashed) {
+            /** @var ElementCollection<int, Entry> $entries */
+            $entries = Entry::find()
+                ->sectionId($sectionModel->id)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->trashed()
+                ->site('*')
+                ->unique()
+                ->where('entries.deletedWithSection', true)
+                ->get();
+
+            SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
+                $entriesByType = $entries->groupBy('typeId');
+                foreach ($entriesByType as $typeEntries) {
+                    try {
+                        $typeEntries->each(function (Entry $entry) {
+                            $entry->deletedWithSection = false;
+                        });
+
+                        $this->elements->restoreElements($typeEntries->all());
+                    } catch (RuntimeException) {
+                        // the entry type probably wasn't restored
+                    }
+                }
+            });
         }
 
         /** @var Section $section */

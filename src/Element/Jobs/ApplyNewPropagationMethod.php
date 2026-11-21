@@ -8,6 +8,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Elements as ElementService;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -131,7 +133,14 @@ class ApplyNewPropagationMethod extends BatchedJob
             /** @var ElementInterface $otherSiteElement */
             $otherSiteElement = array_pop($otherSiteElements);
 
-            $newElement = Elements::duplicateElement($otherSiteElement, [], false);
+            try {
+                $newElement = app(ElementService::class)->duplicateElement($otherSiteElement, [], false);
+            } catch (UnsupportedSiteException $e) {
+                // The site was probably removed from the element's owner, so there's nothing to keep
+                report($e);
+
+                continue;
+            }
 
             // Should we add the clone to the source element's structure?
             if (
