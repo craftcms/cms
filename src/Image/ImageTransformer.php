@@ -166,20 +166,12 @@ class ImageTransformer
             }
         }
 
-        $url = $transformHasUrls
-            ? $disk->url($uri)
-            : $this->privateTransformUrl($index);
-
-        $dateUpdated = Arr::get($asset, 'dateUpdated');
-        if (is_string($dateUpdated) || is_numeric($dateUpdated)) {
-            $dateUpdated = DateTimeHelper::toDateTime($dateUpdated);
+        // A private transform’s token already differs on every request, so only stored files’ URLs are revved
+        if (! $transformHasUrls) {
+            return $this->privateTransformUrl($index);
         }
 
-        if (! $dateUpdated instanceof DateTimeInterface || ($index->dateUpdated && $index->dateUpdated > $dateUpdated)) {
-            $dateUpdated = $index->dateUpdated;
-        }
-
-        return AssetsHelper::revUrl($url, $asset, $dateUpdated);
+        return AssetsHelper::revUrl($disk->url($uri), $asset, $index->dateUpdated);
     }
 
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
@@ -600,7 +592,8 @@ class ImageTransformer
                 'dateIndexed',
             ], [], false)
         );
-        $now = Query::prepareDateForDb(now());
+        $dateUpdated = now();
+        $now = Query::prepareDateForDb($dateUpdated);
 
         if ($index->id !== null) {
             $this->createTransformIndexQuery()
@@ -618,6 +611,9 @@ class ImageTransformer
                     ...$values,
                 ]);
         }
+
+        // Transform URLs are revved with this date, so the request that stores the index needs it too
+        $index->dateUpdated = $dateUpdated;
     }
 
     /**
