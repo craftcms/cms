@@ -919,7 +919,11 @@ class ProjectConfig
         }
 
         if (! $this->getDoesExternalConfigExist() || $this->getHadFileWriteIssues()) {
-            $this->writeYamlAutomatically ? $this->regenerateExternalConfig() : $this->saveModifiedConfigData();
+            try {
+                $this->writeYamlAutomatically ? $this->regenerateExternalConfig() : $this->saveModifiedConfigData();
+            } catch (ProjectConfigWriteException) {
+                // The failure is cached, so admins get the “folder isn’t writable” alert instead of an error
+            }
 
             return false;
         }
