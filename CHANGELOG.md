@@ -92,6 +92,10 @@
 - Condition builders now stack each rule’s controls when they’re narrow.
 - Multi-select comboboxes now keep their text box on the same line as the selected values when there’s room.
 - Redesigned dashboard widgets’ headers, and widget settings now have a footer with Save and Cancel buttons.
+- Singles now have their own entry sources, in place of the shared “Singles” source, which is replaced with a custom source when upgrading. ([#17760](https://github.com/craftcms/cms/discussions/17760), [#20684](https://github.com/craftcms/cms/pull/20684), [#20701](https://github.com/craftcms/cms/pull/20701))
+- Singles’ entry sources now open the single’s entry. ([#20701](https://github.com/craftcms/cms/pull/20701))
+- Pages with only one source now link straight to it from the control panel navigation. ([#20701](https://github.com/craftcms/cms/pull/20701))
+- Breadcrumbs no longer name a page’s only source after the page, such as “Team › Team”. ([#20701](https://github.com/craftcms/cms/pull/20701))
 - Recent Entries widgets now have an “Entry Criteria” setting, in place of their “Site” and “Section” settings.
 - Recent Entries widgets now have a “Widget Title” setting.
 - Recent Entries widgets now show entries’ thumbnails, sections, and authors.
@@ -101,16 +105,21 @@
 - New Users widgets now show the total number of new users, with a sparkline.
 - Craft Support widgets are now a list of support links. Support requests are now sent from craftcms.com/contact.
 - Quick Post widgets now show a large button in their entry type’s icon and color.
+- Dashboard widgets can now be given a color. ([#20662](https://github.com/craftcms/cms/pull/20662))
 - Dashboard widgets’ settings are now loaded when opened.
 - Element index tables now right-align numeric columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - Tabs now have a hover fill, and tabs, nav items, and plain, outline, and dashed buttons now share the same hover fill. ([#20836](https://github.com/craftcms/cms/pull/20836))
 - Added support for Laravel Octane. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Removed the bundled Composer executable. Package management now requires Composer 2.2.0 or later in the server’s `PATH`.
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
-- Table fields now have “Entries”, “Assets”, and “Users” column types. ([#20728](https://github.com/craftcms/cms/pull/20728))
+- Table fields now have “Entries”, “Assets”, and “Users” column types. ([#19343](https://github.com/craftcms/cms/discussions/19343), [#20728](https://github.com/craftcms/cms/pull/20728))
+- Added the “Section Type” entry condition rule. ([#13530](https://github.com/craftcms/cms/issues/13530), [#20701](https://github.com/craftcms/cms/pull/20701))
+- Entry sources that haven’t been placed in the Customize Sources modal yet are now put on the first page with an enabled source. ([#20701](https://github.com/craftcms/cms/pull/20701))
 - Individual settings within object config settings, such as `mcp` and `anchors`, can now be set with `CRAFT_{SETTING}_{NESTED_SETTING}` environment variables. ([#20783](https://github.com/craftcms/cms/pull/20783))
 - Added the `cpIconPath` and `cpLogoPath` config settings. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. ([#20647](https://github.com/craftcms/cms/issues/20647))
+- Deprecated the `ipHeaders` config setting. ([#20863](https://github.com/craftcms/cms/pull/20863))
+- Deprecated the `allowSimilarTags`, `buildId`, `defaultFileMode`, `rasterizeSvgThumbs`, and `sendContentLengthHeader` config settings. ([#20866](https://github.com/craftcms/cms/pull/20866))
 - OAuth providers’ `activatesUsers` setting has been renamed to `controlsAccess`. ([#20899](https://github.com/craftcms/cms/pull/20899))
 - The web installer now has a “Time Zone” field.
 - The Yii2 Loose Ends utility now lists cache components configured in `config/craft/app.php`.
@@ -118,6 +127,9 @@
 - The `craft:mcp:serve` MCP server now picks up project config changes made by other processes. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - MCP upload routes now always respond with JSON errors. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - Console messages now show commands as they should be run for the current environment. ([#20702](https://github.com/craftcms/cms/pull/20702))
+- Terminal commands shown in the control panel and console output now run Craft commands through Artisan, such as `ddev artisan craft:up`. ([#20677](https://github.com/craftcms/cms/pull/20677), [#20700](https://github.com/craftcms/cms/pull/20700))
+- The `entrify/global-set` command now puts the converted single’s entry source on a “Globals” page. ([#20701](https://github.com/craftcms/cms/pull/20701))
+- Updated `laravel/ai` to 1.4. ([#20727](https://github.com/craftcms/cms/pull/20727))
 - Nested entries’ and addresses’ action menus now have a “Field settings” item for admins. ([#20688](https://github.com/craftcms/cms/issues/20688), [#20696](https://github.com/craftcms/cms/pull/20696))
 - `relatedTo` and `notRelatedTo` element query params can now match references from Link, Markdown, Table, and other reference-tracking fields. ([#20764](https://github.com/craftcms/cms/issues/20764))
 - GraphQL API requests can now pass a GraphQL token via an `X-Craft-Gql-Token` header, alongside a user’s access token in the `Authorization` header. ([#20587](https://github.com/craftcms/cms/issues/20587))
@@ -187,6 +199,9 @@
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Deprecated `CraftCms\Cms\Entry\Elements\Entry::metaFieldsHtml()`. `metaFieldsNodes()` should be used instead. ([#20846](https://github.com/craftcms/cms/issues/20846))
 - Added `CraftCms\Cms\Dashboard\Dashboard::isWidgetTypeAvailable()`.
+- Added `CraftCms\Cms\Console\Commands\UpCommand::add()`. ([#20584](https://github.com/craftcms/cms/pull/20584))
+- Added `CraftCms\Cms\Dashboard\Contracts\WidgetInterface::$color`, `CraftCms\Cms\Dashboard\Dashboard::changeWidgetColor()`, and the `dashboard/change-widget-color` action. ([#20662](https://github.com/craftcms/cms/pull/20662))
+- Added the `swatch-only` property to `<craft-select-color>`. ([#20662](https://github.com/craftcms/cms/pull/20662))
 - Added `CraftCms\Cms\Http\RequestBodyLogProcessor`.
 - Fixed a bug where OAuth providers’ `clientId` and `clientSecret` settings weren’t parsed for environment variables. ([#20882](https://github.com/craftcms/cms/issues/20882), [#20890](https://github.com/craftcms/cms/pull/20890))
 - Fixed a bug where signing in with an OAuth provider returned a 404 error on sites whose base URL has a path. ([#20884](https://github.com/craftcms/cms/issues/20884), [#20889](https://github.com/craftcms/cms/pull/20889))
