@@ -22,6 +22,7 @@
 - Entry sources that haven’t been placed in the Customize Sources modal yet, such as new sections’, are now put on the first page that has an enabled source, rather than the first page. ([#20701](https://github.com/craftcms/cms/pull/20701))
 - Breadcrumbs no longer name a page’s source after the page itself when it’s the page’s only source, such as “Team › Team”. ([#20701](https://github.com/craftcms/cms/pull/20701))
 - Singles now have just their page as a breadcrumb, or none when their source is the page’s only source, rather than a “Singles” crumb. ([#20701](https://github.com/craftcms/cms/pull/20701))
+- Breadcrumbs that don’t fit now collapse into a menu, keeping the first and last crumbs for as long as there’s room, rather than overflowing. ([#20908](https://github.com/craftcms/cms/pull/20908))
 - `php craft entrify/global-set` now puts the converted single’s entry source on a “Globals” page. ([#20701](https://github.com/craftcms/cms/pull/20701))
 - Control panel success, notice, and error messages are now shown newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`.

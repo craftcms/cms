@@ -54,8 +54,23 @@ export default class CraftBreadcrumbItem extends LitElement {
         text-decoration: none;
       }
 
-      /* The current page, which <craft-breadcrumbs> marks on the last crumb. */
+      /* Important, so a page's own \`display\` for the crumb, such as a utility
+         class, can't show it again. */
+      :host([hidden]) {
+        display: none !important;
+      }
+
+      /* The current page, which <craft-breadcrumbs> marks on the last crumb.
+         It truncates rather than collapsing when the trail runs out of room. */
+      :host([aria-current='page']) {
+        min-width: 0;
+      }
+
       :host([aria-current='page']) .label {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
         font-weight: var(--font-weight-light);
       }
 
