@@ -71,10 +71,10 @@
   const noteMessage = computed(() => {
     return props.invert
       ? t(
-          "Make sure you're not overwriting changes in the YAML files that were made on another environment."
+          'Make sure you’re not overwriting changes in the YAML files that were made on another environment.'
         )
       : t(
-          'Make sure you\'ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.',
+          'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.',
           {
             url: 'https://craftcms.com/docs/5.x/system/project-config.html#environment-setup',
           }
@@ -144,7 +144,7 @@
               class="block my-md"
             >
               {{
-                t("There aren't any pending project config changes to apply.")
+                t('There aren’t any pending project config changes to apply.')
               }}
             </craft-callout>
             <div class="buttons">

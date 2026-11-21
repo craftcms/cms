@@ -63,7 +63,7 @@ class VolumesController extends BaseAssetSettingsController
                 ],
                 ...($this->readOnly ? [] : [
                     '_deleteUrl' => route('craft.cp.settings.assets.volumes.destroy', ['volumeId' => $volume->id]),
-                    '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $volume->name]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}”?', ['name' => $volume->name]),
                 ]),
             ]))
             ->emptyMessage(t('No volumes exist yet.'))

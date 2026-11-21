@@ -244,7 +244,7 @@ class Tag extends Element
         }
 
         if ($query->exists()) {
-            $this->errors()->add($attribute, t('{attribute} "{value}" has already been taken.'));
+            $this->errors()->add($attribute, t('{attribute} “{value}” has already been taken.'));
         }
     }
 
