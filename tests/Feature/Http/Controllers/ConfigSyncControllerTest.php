@@ -124,6 +124,7 @@ test('regenerate-yaml', function () {
 
 test('regenerate-yaml reports when the project config files can’t be written', function () {
     $blocker = config_path('craft/project-config-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
     File::put($blocker, '');
     app(ProjectConfig::class)->folderName = 'project-config-write-blocker/project';
 
