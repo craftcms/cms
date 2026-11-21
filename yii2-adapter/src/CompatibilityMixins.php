@@ -24,6 +24,7 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
@@ -38,6 +39,7 @@ use CraftCms\Yii2Adapter\Mixins\NestedElementManagerMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
+use Illuminate\Foundation\Application;
 
 readonly class CompatibilityMixins
 {
@@ -55,6 +57,12 @@ readonly class CompatibilityMixins
             $event ??= new YiiEvent();
 
             YiiEvent::trigger($this, $name, $event);
+        });
+
+        Application::macro('isEphemeral', function(): bool {
+            LegacyUsage::record('app()->isEphemeral()', '`app()->isEphemeral()` is deprecated. Craft no longer changes its behavior based on `CRAFT_EPHEMERAL`, so check whether the path you write to is writable instead.');
+
+            return Env::parseBoolean('$CRAFT_EPHEMERAL') === true;
         });
 
         foreach ([BaseRelationField::class, Matrix::class] as $fieldClass) {
