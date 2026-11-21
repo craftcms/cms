@@ -6,6 +6,11 @@ use Composer\InstalledVersions;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\mail\transportadapters\Smtp;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
+use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
+use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -342,8 +347,22 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
     Cms::config()->assetTransformers->transformer('craft', [])->transformer('imgix', ['driver' => 'imgix'])->default('imgix');
     $unregisteredDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
+    // The default's driver can't be built from its settings, so volumes fall back to craft
+    app(AssetTransformers::class)->extend('imgix', fn() => throw new InvalidAssetTransformException('The imgix driver needs a domain.'));
+    $unbuildableDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
+
     // The default doesn't store transforms
-    app(AssetTransformers::class)->extend('imgix', fn() => null);
+    app(AssetTransformers::class)->forgetTransformers()->extend('imgix', fn() => new class() implements AssetTransformDriver {
+        public function definition(): AssetTransformDriverDefinition
+        {
+            return new AssetTransformDriverDefinition();
+        }
+
+        public function transform(AssetTransformRequest $request): AssetTransformResult
+        {
+            return new AssetTransformResult('/imgix.jpg', 'image/jpeg');
+        }
+    });
     $otherDriverDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     expect($finding?->detail)->toBe('photos → transforms, unsetEnv → transforms')
@@ -351,6 +370,7 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
         ->and($afterChoosing)->toBeNull()
         ->and($craftDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
         ->and($unregisteredDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
+        ->and($unbuildableDefault?->detail)->toBe('photos → transforms, unsetEnv → transforms')
         ->and($otherDriverDefault)->toBeNull();
 });
 

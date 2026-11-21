@@ -11,6 +11,7 @@ use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\web\twig\variables\Rebrand;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Table;
@@ -505,12 +506,17 @@ class LooseEndsChecks
 
         // Volumes that don't choose a transformer use the default, which only stores transforms on the source disk when
         // it uses the craft driver without an output disk. Like AssetTransformers::forVolume(), fall back to craft when the
-        // default isn't defined or its driver isn't registered.
+        // default can't be built.
         $transformerConfig = Cms::config()->assetTransformers;
-        $default = $transformerConfig->default;
-        $defaultTransformer = $transformerConfig->transformerConfig(
-            $default !== null && app(AssetTransformers::class)->has($default) ? $default : 'craft',
-        );
+        $default = $transformerConfig->default ?? 'craft';
+
+        try {
+            app(AssetTransformers::class)->transformer($default);
+        } catch (AssetTransformException) {
+            $default = 'craft';
+        }
+
+        $defaultTransformer = $transformerConfig->transformerConfig($default);
         $defaultStoresOnSourceDisk = ($defaultTransformer['driver'] ?? null) === 'craft' && empty($defaultTransformer['outputDisk']);
 
         $transformFilesystems = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES) ?? [])

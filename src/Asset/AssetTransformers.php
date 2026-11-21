@@ -273,22 +273,9 @@ class AssetTransformers extends MultipleInstanceManager
     }
 
     /**
-     * Returns whether a volume chooses its transformer, with its Asset Transformer setting or its disk’s deprecated
-     * `asset_transformer` key, instead of using the default.
-     */
-    public function volumeChoosesTransformer(Volume $volume): bool
-    {
-        if ($volume->getAssetTransformer() !== null) {
-            return true;
-        }
-
-        $disk = $volume->getResolvedFsTarget();
-
-        return $disk !== null && $this->diskChoosesTransformer($disk);
-    }
-
-    /**
      * Returns whether a disk, or a disk it’s scoped to, has a deprecated `asset_transformer` key.
+     *
+     * @internal
      */
     public function diskChoosesTransformer(string $disk): bool
     {
