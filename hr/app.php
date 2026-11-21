@@ -2169,7 +2169,7 @@ return [
     'List all tabs' => 'Prikaži sve kartice',
     'List empty folders' => 'Prikaži prazne mape',
     'List' => 'Popis',
-    'Live' => 'Objavljeno',
+    'Live' => 'Dostupno',
     'Load this template' => 'Učitaj ovaj predložak',
     'Loaded Project Config Data' => 'Učitani podaci konfiguracije projekta',
     'Loading Plugin Store…' => 'Učitavanje Plugin Storea…',
