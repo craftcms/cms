@@ -1389,7 +1389,7 @@ return [
     'Project Config Sync' => 'Sync. config. projet',
     'Project Config' => 'Configuration du projet',
     'Project config rebuilt successfully.' => 'Configuration du projet reconstruite avec succès.',
-    'Propagating {type}' => 'Propagation {type,select,entrée{de l‘} entrées{des } catégorie{de la } ressource{de la } tag{du } other{des }}{type}',
+    'Propagating {type}' => 'Propagation {type,select,entrée{de l’} entrées{des } catégorie{de la } ressource{de la } etiquette{de l’} utilisateur{de l’} other{des }}{type}',
     'Propagation Key Format' => 'Format de la clef de propagation',
     'Propagation Method' => 'Méthode de propagation',
     'Province' => 'Province',
