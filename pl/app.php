@@ -2313,7 +2313,7 @@ return [
     'New {group} category' => 'Nowa {group} kategorii',
     'New {section} entry' => 'Nowy {section} wpis',
     'New {total, plural, =1{position} other{positions}} saved.' => 'Zaisano {total, plural, =1{nową pozycję} other{nowe pozycje}}.',
-    'New {type}' => 'Nowa klasa {type}',
+    'New {type}' => '{type, select, wpis{Nowy wpis} użytkownik{Nowy użytkownik} Użytkownicy{Nowi użytkownicy} kategoria{Nowa kategoria} zasób{Nowy zasób} tag{Nowy tag} adres{Nowy adres} element{Nowy element} other{Nowy element ({type})}}',
     'New' => 'Nowe',
     'Next Page' => 'Następna strona',
     'Next' => 'Następny',
