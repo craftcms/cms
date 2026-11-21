@@ -260,7 +260,7 @@ function closeReview() {
  * });
  *
  * function handleSubmit() {
- *   startIndexing({ volumes: [1, 2], cacheImages: true });
+ *   startIndexing({ volumes: [1, 2] });
  * }
  * </script>
  *

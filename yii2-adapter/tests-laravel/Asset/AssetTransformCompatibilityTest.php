@@ -35,13 +35,18 @@ use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Yii2Adapter\Asset\ImageTransformers;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
 uses(DatabaseTestCase::class);
 
@@ -549,6 +554,36 @@ it('provides deprecated Volume transform filesystem methods through the adapter'
         ->and($volume->transformHasUrls())->toBeTrue()
         ->and($volume->transformDisk()->put('image.jpg', 'image'))->toBeTrue()
         ->and(Storage::disk('legacy-volume-target')->exists('transforms/image.jpg'))->toBeTrue();
+});
+
+it('creates legacy editor thumbnails from remote originals and cleans temporary copies', function(): void {
+    Storage::extend('legacy-thumbnail-remote', function($app, array $config) {
+        $adapter = new LocalFilesystemAdapter($config['root']);
+
+        return new FilesystemAdapter(new Flysystem($adapter), $adapter, $config);
+    });
+    config()->set('filesystems.disks.legacy-thumbnail', [
+        'driver' => 'legacy-thumbnail-remote',
+        'root' => storage_path('framework/testing/legacy-thumbnail'),
+    ]);
+    $volume = Volume::factory()->create(['disk' => 'legacy-thumbnail']);
+    $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => $folder->id,
+        'filename' => 'original.jpg',
+        'kind' => 'image',
+    ]);
+    $original = file_get_contents(dirname(__DIR__, 3) . '/tests/_data/assets/files/background.jpg');
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), $original);
+    File::deleteDirectory(Path::imageEditorSources());
+    $before = glob(Path::temp('original*.jpg'));
+
+    $thumbnail = \craft\helpers\Assets::getImageEditorSource($asset->id, 80);
+
+    expect(max(array_slice(getimagesize($thumbnail), 0, 2)))->toBe(80)
+        ->and($asset->getVolume()->sourceDisk()->get($asset->getPath()))->toBe($original)
+        ->and(glob(Path::temp('original*.jpg')))->toBe($before);
 });
 
 class CompatibilityAssetTransformDriver implements AssetTransformDriver

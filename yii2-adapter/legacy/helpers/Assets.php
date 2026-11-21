@@ -7,11 +7,12 @@
  * @license https://craftcms.github.io/license/
  */
 
+declare(strict_types=1);
+
 namespace craft\helpers;
 
 use craft\base\Event as YiiEvent;
 use craft\events\SetAssetFilenameEvent;
-use craft\helpers\ImageTransforms as TransformHelper;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -26,7 +27,6 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Url;
 use DateTime;
 use Exception;
-use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 
@@ -154,8 +154,6 @@ class Assets extends AssetsHelper
             return false;
         }
 
-        $volume = $asset->getVolume();
-
         $imagePath = Path::imageEditorSources();
         $assetSourcesDirectory = $imagePath . '/' . $assetId;
         $targetSizedPath = $assetSourcesDirectory . '/' . $size;
@@ -197,18 +195,10 @@ class Assets extends AssetsHelper
 
         // No existing resources we could use.
 
-        // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = Cms::config()->maxCachedCloudImageSize;
-        $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
-
-        if (!$isLocalFs && $maxCachedSize > $size) {
-            // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
-            $localSource = TransformHelper::getLocalImageSource($asset);
+        $localSource = $asset->getCopyOfFile();
+        try {
             Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
-        } else {
-            // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
-            $localSource = $asset->getCopyOfFile();
-            Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+        } finally {
             File::delete($localSource);
         }
 
