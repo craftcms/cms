@@ -49,8 +49,28 @@ readonly class StatusHtml
         $attributes['label'] = $label ? sprintf('%s %s', t('Status:'), $label) : null;
         $attributes['fill'] = $color;
         $attributes['appearance'] = $appearance;
+        $attributes['shape'] = $this->statusShape($status);
 
         return Html::tag('craft-indicator', '', $attributes);
+    }
+
+    /**
+     * Returns the shape a status's dot takes when the user's “Use shapes to represent statuses”
+     * preference is on: a triangle for pending, a square for expired, suspended and off, a
+     * diamond for “all” (an empty status), and a circle for everything else.
+     *
+     * Mirrors `statusShape()` in `@craftcms/ui`.
+     *
+     * @return 'circle'|'square'|'triangle'|'diamond'
+     */
+    public function statusShape(string $status): string
+    {
+        return match ($status) {
+            '', 'all' => 'diamond',
+            'pending' => 'triangle',
+            'off', 'suspended', 'expired' => 'square',
+            default => 'circle',
+        };
     }
 
     /**
@@ -81,6 +101,7 @@ readonly class StatusHtml
             'color' => Color::Gray->value,
             'icon' => null,
             'label' => null,
+            'shape' => null,
         ];
 
         if ($config['color'] instanceof Color) {
@@ -103,6 +124,7 @@ readonly class StatusHtml
 
         return Html::tag('craft-badge', $contents, [
             'fill' => $config['color'],
+            'shape' => $config['shape'],
         ]);
     }
 
@@ -119,6 +141,7 @@ readonly class StatusHtml
             $config = ['label' => $config];
         }
         $config['color'] ??= Color::tryFromStatus($status) ?? Color::Gray;
+        $config['shape'] ??= $this->statusShape($status);
         $config['label'] ??= match ($status) {
             'draft' => t('Draft'),
             default => ucfirst($status),
