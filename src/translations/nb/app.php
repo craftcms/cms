@@ -1185,7 +1185,7 @@ return [
     'New {group} category' => 'Ny {group}-kategori',
     'New {section} entry' => 'Ny {section}-artikkel',
     'New {total, plural, =1{position} other{positions}} saved.' => 'Ny(e) {total, plural, =1{posisjon} other{posisjoner}} lagret.',
-    'New {type}' => 'Ny {type}',
+    'New {type}' => '{type, select, artikkel{Ny artikkel} bruker{Ny bruker} Brukere{Nye brukere} kategori{Ny kategori} adresse{Ny adresse} fil{Ny fil} innholdsblokk{Ny innholdsblokk} merke{Nytt merke} other{Nytt element ({type})}}',
     'New' => 'Ny',
     'Next Page' => 'Neste side',
     'Next' => 'Neste',
