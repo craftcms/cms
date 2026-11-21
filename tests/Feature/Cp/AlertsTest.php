@@ -58,6 +58,7 @@ it('merges alerts from CpAlertsResolving listeners', function () {
 
 it('alerts admins when the project config folder can’t be written, instead of failing', function () {
     $blocker = config_path('craft/alerts-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
     File::put($blocker, '');
     $projectConfig = app(ProjectConfig::class)->writeYamlAutomatically();
     $projectConfig->folderName = 'alerts-write-blocker/project';
