@@ -38,4 +38,13 @@ export default css`
     background-color: var(--c-status-disabled-fill);
     border: 1px solid var(--c-status-disabled-border);
   }
+
+  .status--square,
+  .status--triangle {
+    border-radius: var(--c-status-shape-radius, var(--c-radius-full));
+  }
+
+  .status--triangle {
+    clip-path: var(--c-status-triangle-clip, none);
+  }
 `;

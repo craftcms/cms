@@ -5,6 +5,7 @@ import variantsStyles from '@src/styles/variants.styles';
 import {Color, colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
 import {Appearance} from '@src/constants/appearances';
+import type {StatusShape} from '@src/constants/statuses';
 
 /**
  * @summary A small dot representing the status of an object.
@@ -69,6 +70,20 @@ export default class CraftIndicator extends LitElement {
         background: transparent;
         border-color: var(--_fill);
       }
+
+      .indicator--square,
+      .indicator--triangle,
+      .indicator--diamond {
+        border-radius: var(--c-status-shape-radius, var(--c-radius-full));
+      }
+
+      .indicator--triangle {
+        clip-path: var(--c-status-triangle-clip, none);
+      }
+
+      .indicator--diamond {
+        clip-path: var(--c-status-diamond-clip, none);
+      }
     `,
   ];
 
@@ -109,6 +124,15 @@ export default class CraftIndicator extends LitElement {
    */
   @property({reflect: true})
   appearance?: 'solid' | 'outline-fill' | 'outline';
+
+  /**
+   * The shape the dot takes when the user's "Use shapes to represent
+   * statuses" preference is on (the `use-shapes` class on `<body>`), so a
+   * status differs by more than color. It's a circle otherwise. `statusShape()`
+   * gives the shape for a status.
+   */
+  @property({reflect: true})
+  shape: StatusShape = 'circle';
 
   /** The appearance to draw: the one set, or the default for the fill. */
   private get effectiveAppearance(): 'solid' | 'outline-fill' | 'outline' {
@@ -156,6 +180,7 @@ export default class CraftIndicator extends LitElement {
       class="${classMap({
         indicator: true,
         [`indicator--${this.effectiveAppearance}`]: true,
+        [`indicator--${this.shape}`]: true,
         'indicator--white': this.fill === Color.White,
         'indicator--black': this.fill === Color.Black,
       })}"

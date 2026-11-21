@@ -22,6 +22,7 @@ describe('statusIndicatorHtml', function () {
 
         expect($html)->toContain('fill="teal"')
             ->and($html)->toContain('label="Status: Enabled"')
+            ->and($html)->toContain('shape="circle"')
             ->and($html)->not->toContain('appearance=');
     });
 
@@ -50,7 +51,8 @@ describe('component status helpers', function () {
         $html = app(StatusHtml::class)->componentStatusIndicatorHtml($component);
 
         expect($html)->toContain('fill="yellow"')
-            ->and($html)->toContain('label="Status: Pending"');
+            ->and($html)->toContain('label="Status: Pending"')
+            ->and($html)->toContain('shape="triangle"');
     });
 
     it('renders component status label and edited status label', function () {
@@ -73,6 +75,7 @@ describe('component status helpers', function () {
 
         expect($labelHtml)->toContain('<craft-badge')
             ->and($labelHtml)->toContain('fill="yellow"')
+            ->and($labelHtml)->toContain('shape="triangle"')
             ->and($labelHtml)->toContain('Pending')
             ->and($editedHtml)->toContain('<craft-badge')
             ->and($editedHtml)->toContain('slot="prefix"')

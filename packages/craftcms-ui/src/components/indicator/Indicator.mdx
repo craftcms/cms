@@ -44,6 +44,15 @@ of the palette; reach for an arbitrary value only when a color falls outside it.
   subtle outline: dark, or white on a black dot.
 - `outline` — hollow dot: a ring in the fill color over a transparent center.
 
+## Shape
+
+`shape` (`circle`, `square`, `triangle` or `diamond`) is the shape the dot takes
+when the user turns on the "Use shapes to represent statuses" preference, which
+adds `use-shapes` to `<body>`. Without it, every dot is a circle. For a status
+dot, set it with `statusShape()`, which gives `pending` a triangle, `expired`,
+`suspended` and `off` a square, an empty status (“all”) a diamond, and
+everything else a circle.
+
 ## Sizing
 
 `size` switches between two preset sizes. Because the dimensions are defined in
@@ -65,7 +74,8 @@ wrapper to fine-tune it.
   status apart by color alone, which fails WCAG 1.4.1 Use of Color, so pair a
   meaningful dot with visible text that names the status. A tooltip isn't
   enough, because it only appears on hover or focus. Varying `appearance`
-  (`solid` or `outline`) also helps, since it changes the dot's shape.
+  (`solid` or `outline`) also helps, since it changes the dot's shape, and so
+  does setting `shape` on a status dot, for users who turn on shapes.
 - A `solid` dot has no ring, so it relies on its fill for contrast. The palette
   and variant fills reach 3:1 on the default, sunken and selected-row surfaces.
   Check any custom color

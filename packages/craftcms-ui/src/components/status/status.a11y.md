@@ -12,7 +12,7 @@
 
 ### Visual
 
-- [ ] States differ by more than color. Per WCAG 1.4.1 (Use of Color). Known gap: every state is the same filled circle.
+- [x] With the "Use shapes to represent statuses" preference on (`use-shapes` on `<body>`), `pending` is a triangle and `expired` a square, so those states differ by more than color. With it off, every state is a circle. Per WCAG 1.4.1 (Use of Color). Verified by `draws a %s dot as a %s with the use-shapes preference on` and `draws a %s dot as a circle with the use-shapes preference off` in `status.browser.test.ts`.
 - [ ] Each state's fill or border reaches 3:1 against the default, sunken and selected-row surfaces, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
 - [ ] In forced-colors mode, the dot keeps a visible edge. Not yet verified. All states would then look the same, so the name is the only cue.
 

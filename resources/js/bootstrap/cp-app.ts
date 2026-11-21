@@ -10,7 +10,7 @@ import {registerWidgetComponents} from '@/modules/dashboard/register';
 import {registerActivityComponents} from '@/modules/activity/register';
 import {registerWorkflowComponents} from '@/modules/workflows/register';
 import {registerLayoutComponents} from '@/common/layouts/register';
-import {useUnderlineLinks} from '@/common/composables/useUnderlineLinks';
+import {useAccessibilityClasses} from '@/common/composables/useAccessibilityClasses';
 import {useTheme} from '@/common/composables/useTheme';
 
 /**
@@ -89,7 +89,7 @@ export function installCpApp(app: App): void {
   }
   app.component('CpLink', CpLink);
 
-  app.runWithContext(useUnderlineLinks);
+  app.runWithContext(useAccessibilityClasses);
   app.runWithContext(useTheme);
 
   cpComponentRegistry.install(app);

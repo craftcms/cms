@@ -405,7 +405,7 @@ it('shows entry statuses on cards when their entry type shows the Status field',
     expect($cardContent)->toBeString();
 
     if ($showStatusField) {
-        expect($cardContent)->toContain('<craft-badge fill="teal">Live</craft-badge>');
+        expect($cardContent)->toContain('<craft-badge fill="teal" shape="circle">Live</craft-badge>');
     } else {
         expect($cardContent)->not->toContain('<craft-badge');
     }
