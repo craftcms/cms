@@ -3204,7 +3204,7 @@ return [
     'Updating database…' => 'Mise à jour de la base de données…',
     'Updating element references' => 'Mise à jour des références d’élément',
     'Updating element slugs and URIs' => 'Mise à jour des slugs des éléments et des URIs',
-    'Updating search indexes' => 'Mise à jour des répertoires de recherche en cour',
+    'Updating search indexes' => 'Mise à jour des index de recherche en cours',
     'Updating the plugin…' => 'Mise à jour du plugiciel…',
     'Updating…' => 'Mise à jour en cours…',
     'Upgrade Craft CMS' => 'Mettre à niveau Craft CMS',
