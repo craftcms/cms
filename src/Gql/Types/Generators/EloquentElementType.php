@@ -110,8 +110,8 @@ class EloquentElementType extends Generator implements GeneratorInterface
     }
 
     /**
-     * Types an attribute by its cast, or by its column when it has none. Integers too wide for GraphQL’s 32-bit `Int`,
-     * from `bigint` and unsigned `int` columns, are typed as `Number`.
+     * Types an attribute by its cast, or by its column when it has none. Integers that can be too wide for GraphQL’s
+     * 32-bit `Int`, from `bigint` and unsigned `int` columns and SQLite’s 64-bit integer columns, are typed as `Number`.
      *
      * @param  array{type_name: string, type: string}|null  $column
      */
@@ -120,7 +120,10 @@ class EloquentElementType extends Generator implements GeneratorInterface
         $cast = $model->getCasts()[$attribute] ?? null;
         $columnType = strtolower($column['type_name'] ?? '');
         $integerType = in_array($columnType, ['bigint', 'int8'], true)
-            || (in_array($columnType, ['int', 'integer'], true) && str_contains(strtolower($column['type'] ?? ''), 'unsigned'))
+            || (in_array($columnType, ['int', 'integer'], true) && (
+                str_contains(strtolower($column['type'] ?? ''), 'unsigned')
+                || $model->getConnection()->getDriverName() === 'sqlite'
+            ))
             ? Number::getType()
             : Type::int();
 

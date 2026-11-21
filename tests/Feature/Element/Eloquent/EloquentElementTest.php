@@ -749,14 +749,29 @@ describe('GraphQL', function () {
         ]]);
     });
 
+    it('names a type’s list query apart from its single-element query when its plural is the same', function () {
+        app(EloquentElements::class)->register(TestSpeciesElement::class);
+        TestKeptCustomer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
+        TestKeptCustomer::create(['name' => 'Grace Hopper', 'email' => 'grace@example.com']);
+
+        expect(executeEloquentElementsGql(['eloquent.species:read'], '{
+            speciesList(orderBy: "id") { email }
+            species(search: "grace") { email }
+            speciesCount
+        }'))->toBe(['data' => [
+            'speciesList' => [['email' => 'ada@example.com'], ['email' => 'grace@example.com']],
+            'species' => ['email' => 'grace@example.com'],
+            'speciesCount' => 2,
+        ]]);
+    });
+
     it('types model attributes by their casts, or their columns without one', function () {
         createEloquentElementsTable('typed_customers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->integer('visits');
-            // A raw type, as SQLite reports `bigInteger()` columns as `integer`
-            $table->rawColumn('views', 'bigint');
-            $table->rawColumn('reach', 'bigint');
+            $table->bigInteger('views');
+            $table->bigInteger('reach');
             $table->float('score');
             $table->decimal('balance', 8, 2);
             $table->boolean('vip');
@@ -1021,6 +1036,14 @@ class TestRevocableCustomerPolicy
     public function viewAny(UserModel $user): bool
     {
         return self::$allowed;
+    }
+}
+
+class TestSpeciesElement extends TestKeptCustomerElement
+{
+    public static function refHandle(): string
+    {
+        return 'species';
     }
 }
 

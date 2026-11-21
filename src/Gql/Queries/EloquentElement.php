@@ -17,7 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Adds queries for each registered Eloquent element type the schema can query, named after its
- * handle: `customers`, `customer` and `customerCount` for a `customer` type.
+ * handle: `customers`, `customer` and `customerCount` for a `customer` type. A handle whose plural is
+ * the same, such as `species`, gets `speciesList` for its list query.
  *
  * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
  *
@@ -87,9 +88,10 @@ class EloquentElement extends Query
     {
         $handle = (string) $elementType::refHandle();
         $singular = Str::camel($handle);
+        $plural = Str::camel(Str::plural($handle));
 
         return [
-            'all' => Str::camel(Str::plural($handle)),
+            'all' => $plural === $singular ? "{$plural}List" : $plural,
             'one' => $singular,
             'count' => "{$singular}Count",
         ];

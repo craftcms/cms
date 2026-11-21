@@ -354,7 +354,7 @@ Model attributes are typed by their casts, or by their columns when they don't h
 
 | Cast or column | GraphQL type |
 | --- | --- |
-| `int` or `integer` cast on a `bigint` or unsigned `int` column, or one of those columns | `Number` |
+| `int` or `integer` cast on a `bigint`, unsigned `int` or SQLite integer column, or one of those columns | `Number` |
 | `int`, `integer` or `timestamp` cast, or another integer column | `Int` |
 | `float`, `double` or `real` cast, or a floating-point column | `Float` |
 | `bool` or `boolean` cast, or a boolean column | `Boolean` |
@@ -365,7 +365,7 @@ MySQL and SQLite store booleans as integers, so cast boolean columns to `boolean
 
 Requests authenticated as a user get the component when the user can see the type's index: the **View** permission, or the model policy's `viewAny` ability. The queries return every element the type's query finds, as the index does.
 
-Override `refHandle()` if a query name clashes with another, and `gqlTypeName()` if the type name clashes with another GraphQL type, such as `Site` or `Section`.
+A handle whose plural is the same, such as `species`, gets `speciesList` for its list query. Override `refHandle()` if a query name clashes with another, and `gqlTypeName()` if the type name clashes with another GraphQL type, such as `Site` or `Section`.
 
 ## Permissions
 
