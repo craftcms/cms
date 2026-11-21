@@ -6,6 +6,7 @@
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))
 - Fixed a bug where the “Use shapes to represent statuses” preference had no effect. ([#20963](https://github.com/craftcms/cms/issues/20963))
+- Fixed a bug where element indexes didn’t remember the chosen number of elements per page. ([#20979](https://github.com/craftcms/cms/issues/20979))
 
 ## 6.0.0-beta.2 - 2026-11-20
 

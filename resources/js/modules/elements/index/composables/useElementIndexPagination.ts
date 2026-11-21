@@ -1,7 +1,11 @@
-import {watch} from 'vue';
-import type {IndexVisitor} from '@/modules/elements/index/composables/useElementIndexVisits';
+import {watch, type Ref} from 'vue';
+import type {
+  IndexRestore,
+  IndexVisitor,
+} from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useServerPagination} from '@/common/table/useServerPagination';
 import type {PaginationData} from '@/common/types';
+import type {ViewState} from '@/modules/elements/types/view-state';
 
 interface ElementIndexPaginationContext {
   pagination?: PaginationData;
@@ -22,17 +26,33 @@ const pendingPagination: PaginationData = {
 /**
  * Server-driven pagination for an element index. Page/size changes push a
  * `data` + `pagination` Inertia visit, and the server-confirmed pagination is
- * mirrored back into the table state.
+ * mirrored back into the table state. The page size is kept per source, as
+ * sort and columns are.
  */
 export function useElementIndexPagination(
   props: ElementIndexPaginationContext,
-  visitor: IndexVisitor
+  viewState: Ref<ViewState>,
+  visitor: IndexVisitor,
+  sourceKey: () => string
 ) {
+  const persistedPageSize = () =>
+    viewState.value.sources?.[sourceKey()]?.pageSize;
+
   const {paginationState, paginationConfig} = useServerPagination({
     initialState: props.pagination ?? pendingPagination,
     // A non-page index keeps its query in the visitor, not in the URL.
     currentQuery: () => visitor.currentQuery(),
-    onChange: ({query}) => {
+    onChange: ({state, query}) => {
+      if (query.per_page !== state.pageSize) {
+        viewState.value.sources = {
+          ...viewState.value.sources,
+          [sourceKey()]: {
+            ...viewState.value.sources?.[sourceKey()],
+            pageSize: Number(query.per_page),
+          },
+        };
+      }
+
       visitor.visit(query, {only: ['data', 'pagination']});
     },
   });
@@ -53,5 +73,24 @@ export function useElementIndexPagination(
     }
   );
 
-  return {paginationState, paginationConfig};
+  // The server has no access to the persisted view state, so the first
+  // payload is paginated by the URL's `per_page`, or else the default. A size
+  // named in the URL wins; otherwise a persisted one is requested as part of
+  // the page's mount-time restore visit (see `useElementIndex`).
+  function restore(): IndexRestore | null {
+    const persisted = persistedPageSize();
+    const rendered = props.pagination?.per_page ?? pendingPagination.per_page;
+
+    if (
+      persisted === undefined ||
+      persisted === rendered ||
+      visitor.currentQuery().per_page !== undefined
+    ) {
+      return null;
+    }
+
+    return {params: {per_page: persisted}, only: ['data', 'pagination']};
+  }
+
+  return {paginationState, paginationConfig, restore};
 }
