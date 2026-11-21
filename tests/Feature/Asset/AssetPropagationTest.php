@@ -44,7 +44,7 @@ beforeEach(function () {
 function assetPropagationVolume(PropagationMethod $propagationMethod): Volume
 {
     $model = VolumeModel::factory()->create([
-        'fs' => 'asset-propagation-test',
+        'disk' => 'asset-propagation-test',
         'propagationMethod' => $propagationMethod->value,
     ]);
 
@@ -87,7 +87,7 @@ it('only allows the all and custom propagation methods', function (PropagationMe
     $volume = new Volume([
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fsHandle' => 'asset-propagation-test',
+        'disk' => 'asset-propagation-test',
         'propagationMethod' => $propagationMethod,
     ]);
 
@@ -183,7 +183,7 @@ it('resaves assets when a volume is switched to save assets to all sites', funct
     $volume = new Volume([
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fsHandle' => 'asset-propagation-test',
+        'disk' => 'asset-propagation-test',
         'propagationMethod' => PropagationMethod::Custom,
     ]);
     expect(app(Volumes::class)->saveVolume($volume))->toBeTrue();
@@ -223,7 +223,7 @@ it('saves assets to all sites for new volumes from config saved before the setti
         newValue: [
             'name' => 'Legacy Volume',
             'handle' => 'legacyVolume',
-            'fs' => 'asset-propagation-test',
+            'disk' => 'asset-propagation-test',
             'sortOrder' => 1,
         ],
         tokenMatches: [$uid],

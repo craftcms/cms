@@ -592,7 +592,7 @@ it('skips directories starting with underscore in index list', function () {
 function createIndexerTestVolume(array $attributes = []): Volume
 {
     return Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         ...$attributes,
     ]);
 }
@@ -908,7 +908,7 @@ describe('remote images', function () {
         });
         config()->set('filesystems.disks.remote-test-disk', ['driver' => 'remote-test', 'root' => $root]);
 
-        $this->volumeData = resolveIndexerVolumeData(createIndexerTestVolume(['fs' => 'remote-test-disk']));
+        $this->volumeData = resolveIndexerVolumeData(createIndexerTestVolume(['disk' => 'remote-test-disk']));
         $this->session = $this->indexer->createIndexingSession([$this->volumeData], isCli: true);
 
         $image = imagecreatetruecolor(100, 100);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {capitalize, colors, statusColor} from '@craftcms/ui';
+  import {capitalize, colors, statusColor, statusShape} from '@craftcms/ui';
 
   type Color = string | {value: string};
 
@@ -94,7 +94,10 @@
       'gap-1 px-1.5 py-0.5 rounded-full text-xs': mode === 'badge',
     }"
   >
-    <craft-indicator v-bind="indicatorBindings"></craft-indicator>
+    <craft-indicator
+      v-bind="indicatorBindings"
+      :shape="statusShape(value.toString())"
+    ></craft-indicator>
     {{ computedLabel }}
   </div>
 </template>

@@ -145,7 +145,7 @@ class ContentSeeder extends Seeder
                 $volume = new Volume([
                     'name' => $name,
                     'handle' => $handle,
-                    'fsHandle' => 'assets',
+                    'disk' => 'assets',
                     'hasUrls' => true,
                     'subpath' => $handle,
                 ]);

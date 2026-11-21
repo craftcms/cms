@@ -10,6 +10,7 @@ use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -551,7 +552,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
      * Resolved here rather than on the client because the status definitions,
      * their labels and their colors are all element-type concerns.
      *
-     * @return array{fill: string, label: string, draft: bool}|null
+     * @return array{fill: string, shape?: string, label: string, draft: bool}|null
      */
     private static function statusPayload(ElementInterface $element): ?array
     {
@@ -576,6 +577,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
 
         return [
             'fill' => $color instanceof Color ? $color->value : (string) $color,
+            'shape' => app(StatusHtml::class)->statusShape($status),
             'label' => (string) ($definition['label'] ?? ucfirst($status)),
             'draft' => false,
         ];

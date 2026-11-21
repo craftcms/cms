@@ -57,7 +57,7 @@ it('returns source path info for asset folder steps', function () {
         'root' => storage_path('framework/testing/element-index-controller-test/test-disk'),
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolder::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Docs',

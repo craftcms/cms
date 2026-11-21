@@ -32,7 +32,7 @@ beforeEach(function () {
         'uid' => ASSET_POLICY_VOLUME_UID,
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fs' => 'asset-policy-test',
+        'disk' => 'asset-policy-test',
     ]);
 
     $this->volume = new Volume([

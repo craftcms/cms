@@ -26,7 +26,7 @@ beforeEach(function (): void {
 
 function focalPointImage(?array $focalPoint = null): Asset
 {
-    $volume = VolumeModel::factory()->create(['fs' => 'focal-point-test']);
+    $volume = VolumeModel::factory()->create(['disk' => 'focal-point-test']);
     app(Volumes::class)->reset();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,

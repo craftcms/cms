@@ -14,8 +14,13 @@
 - Removed `CraftCms\Cms\Http\ResponseHeaders::$noCache`, `$duration`, `$replace`, and `$headers`, and the `$replace` argument of `ResponseHeaders::setCache()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Responses to token and site token requests now have no-cache headers, so shared caches and browsers don’t store them. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where error pages were sent with the cache headers and other response headers queued by the template or controller that threw the exception. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- Volumes’ `fs` setting has been renamed to `disk`, in project config, the `volumes` table, and the volume MCP tools. Existing project config is updated automatically, and project config that still uses `fs` can still be applied. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Deprecated the `fsHandle` parameter of the volume MCP tools. `disk` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
+- Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))
+- Fixed a bug where the “Use shapes to represent statuses” preference had no effect. ([#20963](https://github.com/craftcms/cms/issues/20963))
 
 ## 6.0.0-beta.2 - 2026-11-20
 

@@ -125,7 +125,7 @@ class Actions
         if (Edition::isAtLeast(Edition::Team) && $user->can('save', new User)) {
             $actions[] = new CommandPaletteItem()
                 ->id('create-user')
-                ->label(t('Create user'))
+                ->label(mb_ucfirst(t('Create {type}', ['type' => User::lowerDisplayName()])))
                 ->description(t('Users'))
                 ->icon('plus')
                 ->href(Url::cpUrl('users/new'));

@@ -162,7 +162,7 @@ class Html
      */
     public static function disableInputs(callable|string|null $html): ?string
     {
-        if (is_callable($html)) {
+        if (! is_string($html) && is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
             HtmlStack::startJsBuffer();
             try {

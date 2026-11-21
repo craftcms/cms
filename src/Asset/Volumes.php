@@ -26,6 +26,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -113,7 +114,7 @@ class Volumes
     {
         $volume = new Volume([
             'name' => t('Temporary Uploads'),
-            'fs' => Cms::config()->getTempAssetUploadDisk(),
+            'disk' => Cms::config()->getTempAssetUploadDisk(),
             'propagationMethod' => PropagationMethod::All,
         ]);
         $volume->markAsTemporary();
@@ -174,7 +175,10 @@ class Volumes
 
             $volumeModel->name = $data['name'];
             $volumeModel->handle = $data['handle'];
-            $volumeModel->fs = $data['fs'] ?? null;
+            if (array_key_exists('fs', $data)) {
+                Deprecator::log("volumes.$volumeUid.fs", "The `{$data['handle']}` volume’s project config has an `fs` key, which has been renamed to `disk`.");
+            }
+            $volumeModel->disk = $data['disk'] ?? $data['fs'] ?? null;
             $volumeModel->hasUrls = $data['hasUrls'] ?? false;
             $volumeModel->subpath = $data['subpath'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
