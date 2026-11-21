@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -103,5 +104,25 @@ it('includes the legacy asset bundles on every control panel page', function () 
     foreach ($responses as $response) {
         expect($response->getStatusCode())->toBe(200)
             ->and($response->getContent())->toContain('Craft.registeredAssetBundles');
+    }
+});
+
+it('drops cache headers queued before an exception on every request', function () {
+    Route::middleware(['web', 'craft'])->get('/octane-error', function () {
+        ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-Test', 'value');
+
+        abort(500);
+    });
+
+    $responses = serveFromOctaneWorker([
+        Request::create('/octane-error'),
+        Request::create('/octane-error'),
+    ]);
+
+    foreach ($responses as $response) {
+        expect($response->getStatusCode())->toBe(500)
+            ->and($response->headers->has('X-Test'))->toBeFalse()
+            ->and($response->headers->hasCacheControlDirective('public'))->toBeFalse();
     }
 });

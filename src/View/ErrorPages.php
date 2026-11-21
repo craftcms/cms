@@ -10,6 +10,7 @@ use CraftCms\Cms\Http\Responses\CpErrorPage;
 use CraftCms\Cms\Route\Events\Redirecting;
 use CraftCms\Cms\Route\RedirectRule;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Auth\AuthenticationException;
@@ -56,8 +57,16 @@ readonly class ErrorPages
             return null;
         }
 
+        // Laravel sends the exception’s own response, which keeps the headers queued before it, such as for `{% redirect %}`.
+        if ($e instanceof HttpResponseException) {
+            return null;
+        }
+
+        // Headers queued for the response that failed don’t apply to the error response.
+        ResponseHeaders::reset();
+
         // Laravel renders these itself after the renderable callbacks.
-        if ($e instanceof HttpResponseException || $e instanceof AuthenticationException || $e instanceof ValidationException) {
+        if ($e instanceof AuthenticationException || $e instanceof ValidationException) {
             return null;
         }
 
@@ -101,7 +110,7 @@ readonly class ErrorPages
                 );
             }
 
-            return response(Template::renderPageTemplate($siteTemplate, [
+            $response = response(Template::renderPageTemplate($siteTemplate, [
                 'message' => $httpException->getMessage(),
                 'code' => $e->getCode(),
                 'file' => $e->getFile(),
@@ -111,6 +120,11 @@ readonly class ErrorPages
                 'errors' => new ViewErrorBag,
                 ...get_object_vars($e),
             ], TemplateMode::Site), $statusCode, $httpException->getHeaders());
+
+            // SetHeaders discards the queue for responses rendered from exceptions, so apply the error template’s own here.
+            ResponseHeaders::applyTo($response);
+
+            return $response;
         } catch (Throwable $renderException) {
             if (app()->hasDebugModeEnabled()) {
                 throw $renderException;

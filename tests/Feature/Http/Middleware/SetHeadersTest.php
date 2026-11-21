@@ -7,9 +7,15 @@ use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\ResponseHeaders as ResponseHeaderAccumulator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\View\TemplateManager;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
@@ -193,9 +199,29 @@ it('applies request-scoped cache settings', function () {
 
     $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
 
-    expect($response->getMaxAge())->toBe(60)
-        ->and($response->headers->get('Pragma'))->toBe('cache');
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=60, public');
 });
+
+it('applies queued cache settings in order, so the last one wins', function (Closure $queue, string $cacheControl) {
+    $queue($this->responseHeaders);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->get('Cache-Control'))->toBe($cacheControl);
+})->with([
+    'cache after no-cache' => [function (ResponseHeaderAccumulator $headers) {
+        $headers->noCache();
+        $headers->setCache(60);
+    }, 'max-age=60, public'],
+    'no-cache after cache' => [function (ResponseHeaderAccumulator $headers) {
+        $headers->setCache(60);
+        $headers->noCache();
+    }, 'must-revalidate, no-cache, no-store, private'],
+    'header after cache' => [function (ResponseHeaderAccumulator $headers) {
+        $headers->cacheControl()->setSharedMaxAge(60);
+        $headers->add('Cache-Control', 'private');
+    }, 'private'],
+]);
 
 it('applies request-scoped no-cache settings', function () {
     $this->responseHeaders->noCache();
@@ -215,8 +241,7 @@ it('applies request-scoped headers and cache settings to JSON responses', functi
 
     $response = $this->get('/test-json-response-headers')
         ->assertOk()
-        ->assertHeader('Access-Control-Allow-Origin', '*')
-        ->assertHeader('Pragma', 'cache');
+        ->assertHeader('Access-Control-Allow-Origin', '*');
 
     expect($response->baseResponse->getMaxAge())->toBe(60);
 });
@@ -228,3 +253,68 @@ it('isolates facade state across long-lived request scopes', function () {
 
     $this->get('/test-response-headers?value=second')->assertHeader('X-Test', 'second');
 });
+
+it('sets no-cache headers for responses that contain the CSRF token', function (string $template) {
+    TemplateMode::set(TemplateMode::Site);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('csrf-page', fn () => app(TemplateManager::class)->renderString($template));
+
+    $response = $this->get('/csrf-page')->assertOk();
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
+})->with([
+    'csrfInput() before expires' => '{{ csrfInput() }}{% expires in 1 hour %}',
+    'csrf_token() before expires' => '<meta name="csrf-token" content="{{ csrf_token() }}">{% expires in 1 hour %}',
+    'token in a header' => '{% header "X-CSRF-Token: " ~ csrf_token() %}{% expires in 1 hour %}',
+]);
+
+it('keeps cache headers for responses without the CSRF token', function () {
+    TemplateMode::set(TemplateMode::Site);
+
+    PreventRequestForgery::useOriginOnly();
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('cached-page', fn () => app(TemplateManager::class)->renderString('{{ csrfInput() }}{% expires in 1 hour %}'));
+
+    try {
+        $response = $this->get('/cached-page')->assertOk();
+    } finally {
+        PreventRequestForgery::useOriginOnly(false);
+    }
+
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=3600, public');
+});
+
+it('sets no-cache headers for site token requests', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->get('site-token-page', function () {
+        ResponseHeaders::setCache(3600);
+
+        return 'page';
+    });
+
+    $response = $this->get('/site-token-page?'.http_build_query([
+        Cms::config()->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+    ]))->assertOk();
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
+});
+
+it('keeps headers queued before a redirect', function (string $source) {
+    TemplateMode::set(TemplateMode::Site);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('redirecting-page', function () use ($source) {
+        if ($source === 'twig') {
+            return app(TemplateManager::class)->renderString('{% header "X-Test: yes" %}{% redirect "/foo" %}');
+        }
+
+        ResponseHeaders::add('X-Test', 'yes');
+
+        throw new HttpResponseException(redirect('/foo'));
+    });
+
+    $this->get('/redirecting-page')
+        ->assertRedirect('/foo')
+        ->assertHeader('X-Test', 'yes');
+})->with([
+    'Twig {% redirect %}' => 'twig',
+    'HttpResponseException' => 'php',
+]);

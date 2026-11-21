@@ -8,10 +8,19 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\ResponseHeaders;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Throwable;
 
 /**
+ * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
+ * action, and preview requests, and for responses that contain the session’s CSRF token. Site token requests get
+ * theirs from {@see ResolveSite}, which also runs on site routes outside the `craft` group.
+ *
  * @since 6.0.0
  */
 class SetHeaders
@@ -30,20 +39,6 @@ class SetHeaders
         }
 
         $hasPreviewParam = $request->previewParam() !== null;
-
-        if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || $this->responseHeaders->noCache) {
-            $this->setNoCacheHeaders($response);
-        } elseif ($this->responseHeaders->duration !== null) {
-            if ($this->responseHeaders->duration <= 0) {
-                $this->setNoCacheHeaders($response);
-            } else {
-                $response->headers->set('Pragma', 'cache', $this->responseHeaders->replace);
-                $response
-                    ->setExpires(now()->addSeconds($this->responseHeaders->duration))
-                    ->setPublic()
-                    ->setMaxAge($this->responseHeaders->duration);
-            }
-        }
 
         // Tell bots not to index/follow control panel and tokenized pages
         if (
@@ -68,8 +63,26 @@ class SetHeaders
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
-        foreach ($this->responseHeaders->headers as $header) {
-            $response->headers->set($header['header'], $header['value'], $header['replace']);
+        // Headers queued for a response that failed don’t apply to the response rendered for its exception.
+        // Error templates apply their own (see ErrorPages), and Laravel keeps those queued before an
+        // HttpResponseException, such as for `{% redirect %}`.
+        $exception = $response instanceof Response || $response instanceof JsonResponse || $response instanceof RedirectResponse
+            ? $response->exception
+            : null;
+
+        if ($exception !== null && ! $this->isResponseException($exception)) {
+            $this->responseHeaders->reset();
+        }
+
+        $this->responseHeaders->applyTo($response);
+
+        if (
+            $request->isCpRequest() ||
+            $request->isActionRequest() ||
+            $hasPreviewParam ||
+            $this->containsCsrfToken($request, $response)
+        ) {
+            ResponseHeaders::setNoCacheHeaders($response);
         }
 
         $this->setPoweredByHeader($response);
@@ -77,11 +90,49 @@ class SetHeaders
         return $response;
     }
 
-    private function setNoCacheHeaders(SymfonyResponse $response): void
+    /**
+     * Whether the response contains the session’s CSRF token, which no cache may store, as it’s only valid for
+     * this visitor’s session.
+     *
+     * The body and headers are checked, but not cookies, which already keep shared caches from storing the response.
+     * Streamed bodies aren’t checked, as they’re only sent after this middleware, so streamed responses keep the
+     * cache headers they were given, unless {@see StartLazySession} saves the session for them. Neither are the
+     * bodies of HEAD responses, which are emptied before this middleware runs, so a HEAD response can have cache
+     * headers that the GET response for the same page doesn’t.
+     */
+    private function containsCsrfToken(Request $request, SymfonyResponse $response): bool
     {
-        $response->headers->set('Expires', '0');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        $token = $request->hasSession() ? $request->session()->token() : null;
+
+        if (! is_string($token) || $token === '') {
+            return false;
+        }
+
+        $content = $response->getContent();
+
+        if (is_string($content) && str_contains($content, $token)) {
+            return true;
+        }
+
+        return array_any(
+            $response->headers->allPreserveCaseWithoutCookies(),
+            fn (array $values) => array_any($values, fn ($value) => is_string($value) && str_contains($value, $token)),
+        );
+    }
+
+    /**
+     * Whether the exception is, or wraps, an HttpResponseException. Twig wraps exceptions thrown while rendering,
+     * such as the one `{% redirect %}` throws, and Laravel attaches the wrapped exception to the response.
+     */
+    private function isResponseException(Throwable $exception): bool
+    {
+        for ($e = $exception; $e !== null; $e = $e->getPrevious()) {
+            if ($e instanceof HttpResponseException) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void
