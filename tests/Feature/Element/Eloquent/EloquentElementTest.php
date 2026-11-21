@@ -754,6 +754,9 @@ describe('GraphQL', function () {
             $table->id();
             $table->string('name');
             $table->integer('visits');
+            // A raw type, as SQLite reports `bigInteger()` columns as `integer`
+            $table->rawColumn('views', 'bigint');
+            $table->rawColumn('reach', 'bigint');
             $table->float('score');
             $table->decimal('balance', 8, 2);
             $table->boolean('vip');
@@ -766,6 +769,8 @@ describe('GraphQL', function () {
         TestTypedCustomer::create([
             'name' => 'Ada Lovelace',
             'visits' => 3,
+            'views' => 2147483648,
+            'reach' => 9007199254740993,
             'score' => 1.5,
             'balance' => 12.3,
             'vip' => true,
@@ -775,13 +780,15 @@ describe('GraphQL', function () {
         ]);
 
         $customer = executeEloquentElementsGql(['eloquent.test-typed-customer:read'], '{
-            testTypedCustomers { visits score balance vip tier tags signedUpAt: signed_up_at }
+            testTypedCustomers { visits views reach score balance vip tier tags signedUpAt: signed_up_at }
         }')['data']['testTypedCustomers'][0];
 
         // The offset depends on the system time zone
         expect(Arr::pull($customer, 'signedUpAt'))->toStartWith('2026-01-02T03:04:05')
             ->and($customer)->toBe([
                 'visits' => 3,
+                'views' => 2147483648,
+                'reach' => 9007199254740993,
                 'score' => 1.5,
                 'balance' => '12.30',
                 'vip' => true,
@@ -846,6 +853,35 @@ describe('GraphQL', function () {
             ->toBe(['data' => ['customers' => [['email' => 'ada@example.com']]]])
             ->and($gql->getSchemaForUser($other)->scope)->not->toContain('eloquent.customer:read');
     });
+
+    it('checks the model policy anew for each authenticated request', function () {
+        Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
+        Gate::policy(Customer::class, TestRevocableCustomerPolicy::class);
+        $user = UserModel::factory()->createElement(['admin' => false]);
+
+        $gql = app(Gql::class);
+        $gql->flushCaches();
+
+        // Each request builds its schema anew, but shares the cache
+        $request = function () use ($gql, $user): array {
+            $gql->setActiveSchema();
+
+            return $gql->executeQuery($gql->getSchemaForUser($user), '{ customers { email } }', debugMode: true);
+        };
+
+        TestRevocableCustomerPolicy::$allowed = true;
+        expect($request())->toBe(['data' => ['customers' => [['email' => 'ada@example.com']]]]);
+
+        TestRevocableCustomerPolicy::$allowed = false;
+        expect($request()['errors'][0]['message'])->toContain('Cannot query field "customers"');
+    });
+
+    it('adds the type’s component to a group with the same label', function () {
+        app(EloquentElements::class)->register(TestMemberElement::class);
+
+        expect(app(Gql::class)->getAllSchemaComponents()['queries']['Users'])
+            ->toHaveKeys(['usergroups.everyone:read', 'eloquent.test-member:read']);
+    });
 });
 
 class TestKeptCustomer extends Model
@@ -892,6 +928,7 @@ class TestTypedCustomer extends Model
 
     #[Override]
     protected $casts = [
+        'reach' => 'integer',
         'balance' => 'decimal:2',
         'vip' => 'boolean',
         'tier' => TestCustomerTier::class,
@@ -974,6 +1011,29 @@ class TestCustomerPolicy
     public function update(UserModel $user, Customer $customer): bool
     {
         return true;
+    }
+}
+
+class TestRevocableCustomerPolicy
+{
+    public static bool $allowed = true;
+
+    public function viewAny(UserModel $user): bool
+    {
+        return self::$allowed;
+    }
+}
+
+class TestMemberElement extends TestKeptCustomerElement
+{
+    public static function refHandle(): string
+    {
+        return 'test-member';
+    }
+
+    public static function displayName(): string
+    {
+        return 'User';
     }
 }
 

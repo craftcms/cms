@@ -77,6 +77,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
@@ -544,13 +545,11 @@ class Gql
         // Eloquent elements
         foreach (app(EloquentElements::class)->types() as $elementType) {
             $label = $elementType::pluralDisplayName();
-            $queries[$label] = [
-                "{$elementType::gqlScope()}:read" => [
-                    'label' => t('Query for {type}', ['type' => $elementType::pluralLowerDisplayName()]),
-                    'authenticated' => fn (User $user): bool => $elementType::canViewIndex($user),
-                ],
+            $queries[$label]["{$elementType::gqlScope()}:read"] = [
+                'label' => t('Query for {type}', ['type' => $elementType::pluralLowerDisplayName()]),
+                'authenticated' => fn (User $user): bool => $elementType::canViewIndex($user),
             ];
-            $mutations[$label] = [];
+            $mutations[$label] ??= [];
         }
 
         event($event = new GqlSchemaComponentsResolving(
@@ -638,11 +637,19 @@ class Gql
     }
 
     /**
-     * Returns a hash of a user’s current permissions.
+     * Returns a hash of a user’s current permissions, including the Eloquent element types whose model policies let
+     * them view the type’s index, as a policy can base that on anything.
      */
     private function userPermissionsHash(User $user): string
     {
         $permissions = $user->admin ? ['*'] : app(UserPermissions::class)->getPermissionsByUserId($user->id)->all();
+
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            if (Gate::getPolicyFor($elementType::modelClass()) !== null && $elementType::canViewIndex($user)) {
+                $permissions[] = "policy:{$elementType::gqlScope()}";
+            }
+        }
+
         sort($permissions);
 
         return md5(implode(',', $permissions));

@@ -13,6 +13,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
 use CraftCms\Cms\Gql\Types\DateTime;
 use CraftCms\Cms\Gql\Types\Elements\Element;
+use CraftCms\Cms\Gql\Types\Number;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Json;
@@ -36,8 +37,8 @@ use UnitEnum;
  */
 class EloquentElementType extends Generator implements GeneratorInterface
 {
-    /** @var array<class-string, array<string, string>> */
-    private static array $columnTypes = [];
+    /** @var array<class-string, array<string, array{type_name: string, type: string}>> */
+    private static array $columns = [];
 
     public static function generateTypes(mixed $context = null): array
     {
@@ -85,7 +86,7 @@ class EloquentElementType extends Generator implements GeneratorInterface
     {
         $model = $elementType::newModel();
         $visible = $model->getVisible();
-        $columnTypes = self::$columnTypes[$elementType] ??= array_column(DB::getReadSchemaBuilder()->getColumns($model->getTable()), 'type_name', 'name');
+        $columns = self::$columns[$elementType] ??= array_column(DB::getReadSchemaBuilder()->getColumns($model->getTable()), null, 'name');
         $fields = [];
 
         foreach ($elementType::listedModelAttributes() as $attribute) {
@@ -95,7 +96,7 @@ class EloquentElementType extends Generator implements GeneratorInterface
 
             $fields[$attribute] = [
                 'name' => $attribute,
-                'type' => self::attributeType($model, $attribute, $columnTypes[$attribute] ?? null),
+                'type' => self::attributeType($model, $attribute, $columns[$attribute] ?? null),
                 'description' => "The {$elementType::lowerDisplayName()}’s `$attribute` model attribute.",
                 'resolve' => fn (EloquentElement $source, array $arguments, mixed $context, ResolveInfo $resolveInfo) => GqlHelper::applyDirectives(
                     $source,
@@ -109,15 +110,24 @@ class EloquentElementType extends Generator implements GeneratorInterface
     }
 
     /**
-     * Types an attribute by its cast, or by its column when it has none.
+     * Types an attribute by its cast, or by its column when it has none. Integers too wide for GraphQL’s 32-bit `Int`,
+     * from `bigint` and unsigned `int` columns, are typed as `Number`.
+     *
+     * @param  array{type_name: string, type: string}|null  $column
      */
-    private static function attributeType(Model $model, string $attribute, ?string $columnType): Type
+    private static function attributeType(Model $model, string $attribute, ?array $column): Type
     {
         $cast = $model->getCasts()[$attribute] ?? null;
+        $columnType = strtolower($column['type_name'] ?? '');
+        $integerType = in_array($columnType, ['bigint', 'int8'], true)
+            || (in_array($columnType, ['int', 'integer'], true) && str_contains(strtolower($column['type'] ?? ''), 'unsigned'))
+            ? Number::getType()
+            : Type::int();
 
         if ($cast !== null) {
             return match (strtolower(explode(':', $cast, 2)[0])) {
-                'int', 'integer', 'timestamp' => Type::int(),
+                'int', 'integer' => $integerType,
+                'timestamp' => Type::int(),
                 'real', 'float', 'double' => Type::float(),
                 'bool', 'boolean' => Type::boolean(),
                 'date', 'datetime', 'immutable_date', 'immutable_datetime' => DateTime::getType(),
@@ -125,8 +135,8 @@ class EloquentElementType extends Generator implements GeneratorInterface
             };
         }
 
-        return match (strtolower((string) $columnType)) {
-            'integer', 'int', 'bigint', 'smallint', 'mediumint', 'tinyint', 'int2', 'int4', 'int8' => Type::int(),
+        return match ($columnType) {
+            'integer', 'int', 'bigint', 'smallint', 'mediumint', 'tinyint', 'int2', 'int4', 'int8' => $integerType,
             'real', 'float', 'double', 'float4', 'float8' => Type::float(),
             'bool', 'boolean' => Type::boolean(),
             default => Type::string(),

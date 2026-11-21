@@ -354,7 +354,8 @@ Model attributes are typed by their casts, or by their columns when they don't h
 
 | Cast or column | GraphQL type |
 | --- | --- |
-| `int`, `integer` or `timestamp` cast, or an integer column | `Int` |
+| `int` or `integer` cast on a `bigint` or unsigned `int` column, or one of those columns | `Number` |
+| `int`, `integer` or `timestamp` cast, or another integer column | `Int` |
 | `float`, `double` or `real` cast, or a floating-point column | `Float` |
 | `bool` or `boolean` cast, or a boolean column | `Boolean` |
 | `date`, `datetime`, `immutable_date` or `immutable_datetime` cast | `DateTime` |

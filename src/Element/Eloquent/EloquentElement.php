@@ -845,7 +845,7 @@ abstract class EloquentElement extends Element
      */
     public static function canViewIndex(CraftUser $user): bool
     {
-        $gate = Gate::forUser($user);
+        $gate = Gate::forUser($user instanceof User ? self::policyUser($user) : $user);
 
         return Gate::getPolicyFor(static::modelClass()) === null
             ? $gate->check(static::permission('view'))

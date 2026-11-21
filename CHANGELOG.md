@@ -12,8 +12,8 @@
 - Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
-- Eloquent element types and their relation fields are now available in GraphQL. ([#20995](https://github.com/craftcms/cms/issues/20995))
-- Added `CraftCms\Cms\Element\Eloquent\EloquentElement::gqlScope()` and `gqlTypeName()`. ([#20995](https://github.com/craftcms/cms/issues/20995))
+- Eloquent element types and their relation fields are now available in GraphQL. ([#21014](https://github.com/craftcms/cms/pull/21014))
+- Added `CraftCms\Cms\Element\Eloquent\EloquentElement::gqlScope()` and `gqlTypeName()`. ([#21014](https://github.com/craftcms/cms/pull/21014))
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
