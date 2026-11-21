@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
+- Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
+- Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
+
 ## 6.0.0-beta.2 - 2026-11-20
 
 - Added Croatian translations, and completed the Indonesian, Kyrgyz, and Welsh translations.
