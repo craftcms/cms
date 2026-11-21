@@ -276,6 +276,30 @@ it('queues section jobs after committing section changes', function (string $con
     'section resaves' => ['handle', 'updatedSection', ResaveElements::class],
 ]);
 
+it('propagates existing entries to a site added through project config', function () {
+    $newSite = Site::factory()->create();
+    Sites::refreshSites();
+    SiteGroups::refreshGroups();
+
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create();
+    $entry = Entry::factory()->forSection($section)->createElement();
+    $this->sections->refreshSections();
+    ProjectConfig::rebuild();
+
+    $config = ProjectConfig::get("sections.$section->uid");
+    $config['siteSettings'][$newSite->uid] = [
+        'enabledByDefault' => true,
+        'hasUrls' => false,
+        'uriFormat' => null,
+        'template' => null,
+    ];
+
+    ProjectConfig::set("sections.$section->uid", $config);
+
+    expect(DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->orderBy('siteId')->pluck('siteId')->all())
+        ->toBe([Sites::getPrimarySite()->id, $newSite->id]);
+});
+
 it('can delete and restore a section by id', function () {
     Event::fake([
         SectionDeleting::class,

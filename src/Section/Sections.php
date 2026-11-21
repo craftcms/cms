@@ -786,43 +786,6 @@ class Sections
                 $this->populateNewStructure($sectionModel);
             }
 
-            // Finally, deal with the existing entries...
-            // -----------------------------------------------------------------
-
-            if (! $isNewSection && $resaveEntries) {
-                // If the propagation method just changed, we definitely need to update entries for that
-                if ($propagationMethodChanged) {
-                    dispatch(new ApplyNewPropagationMethod(
-                        elementType: Entry::class,
-                        criteria: [
-                            'sectionId' => $sectionModel->id,
-                            'structureId' => $sectionModel->structureId,
-                        ],
-                        description: I18N::prep('Applying new propagation method to {name} entries', [
-                            'name' => $sectionModel->name,
-                        ]),
-                    ))->afterCommit();
-                } elseif ($this->autoResaveEntries) {
-                    dispatch(new ResaveElements(
-                        elementType: Entry::class,
-                        criteria: [
-                            'sectionId' => $sectionModel->id,
-                            'siteId' => array_values($siteIdMap),
-                            'preferSites' => [Sites::getPrimarySite()->id],
-                            'unique' => true,
-                            'status' => null,
-                            'drafts' => null,
-                            'provisionalDrafts' => null,
-                            'revisions' => null,
-                        ],
-                        updateSearchIndex: $hasNewSite,
-                        description: I18N::prep('Resaving {name} entries', [
-                            'name' => $sectionModel->name,
-                        ]),
-                    ))->afterCommit();
-                }
-            }
-
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
@@ -877,6 +840,44 @@ class Sections
 
         // Invalidate entry caches
         $this->elementCaches->invalidateForElementType(Entry::class);
+
+        // Finally, deal with the existing entries. This comes after the cache refresh
+        // because the sync queue runs the job right away, in this process.
+        // -----------------------------------------------------------------
+
+        if (! $isNewSection && $resaveEntries) {
+            // If the propagation method just changed, we definitely need to update entries for that
+            if ($propagationMethodChanged) {
+                dispatch(new ApplyNewPropagationMethod(
+                    elementType: Entry::class,
+                    criteria: [
+                        'sectionId' => $sectionModel->id,
+                        'structureId' => $sectionModel->structureId,
+                    ],
+                    description: I18N::prep('Applying new propagation method to {name} entries', [
+                        'name' => $sectionModel->name,
+                    ]),
+                ))->afterCommit();
+            } elseif ($this->autoResaveEntries) {
+                dispatch(new ResaveElements(
+                    elementType: Entry::class,
+                    criteria: [
+                        'sectionId' => $sectionModel->id,
+                        'siteId' => array_values($siteIdMap),
+                        'preferSites' => [Sites::getPrimarySite()->id],
+                        'unique' => true,
+                        'status' => null,
+                        'drafts' => null,
+                        'provisionalDrafts' => null,
+                        'revisions' => null,
+                    ],
+                    updateSearchIndex: $hasNewSite,
+                    description: I18N::prep('Resaving {name} entries', [
+                        'name' => $sectionModel->name,
+                    ]),
+                ))->afterCommit();
+            }
+        }
     }
 
     public function refreshSections(): void
