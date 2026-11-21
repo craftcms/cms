@@ -13,6 +13,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -539,6 +540,18 @@ class Gql
         // Users
         $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
+
+        // Eloquent elements
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            $label = $elementType::pluralDisplayName();
+            $queries[$label] = [
+                "{$elementType::gqlScope()}:read" => [
+                    'label' => t('Query for {type}', ['type' => $elementType::pluralLowerDisplayName()]),
+                    'authenticated' => fn (User $user): bool => $elementType::canViewIndex($user),
+                ],
+            ];
+            $mutations[$label] = [];
+        }
 
         event($event = new GqlSchemaComponentsResolving(
             queries: $queries,

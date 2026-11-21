@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -23,8 +24,12 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\GarbageCollection\Actions\HardDeleteElements;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\UserPermissions as UserPermissionsFacade;
 use CraftCms\Cms\Support\Url;
@@ -712,6 +717,137 @@ describe('relation fields', function () {
     });
 });
 
+describe('GraphQL', function () {
+    /**
+     * @param  list<string>  $scope
+     * @return array<string, mixed>
+     */
+    function executeEloquentElementsGql(array $scope, string $query): array
+    {
+        $gql = app(Gql::class);
+        $gql->flushCaches();
+
+        // Debug mode reports fields the schema doesn’t have, rather than skipping them
+        return $gql->executeQuery(new GqlSchema(['name' => 'Test', 'scope' => $scope]), $query, debugMode: true);
+    }
+
+    it('queries the type’s elements and their model attributes', function () {
+        Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com', 'company' => 'Analytical Engines']);
+        Customer::create(['name' => 'Grace Hopper', 'email' => 'grace@example.com']);
+
+        expect(executeEloquentElementsGql(['eloquent.customer:read'], '{
+            customers(orderBy: "id") { __typename name email company }
+            customerCount
+            customer(search: "grace") { email }
+        }'))->toBe(['data' => [
+            'customers' => [
+                ['__typename' => 'Customer', 'name' => 'Ada Lovelace', 'email' => 'ada@example.com', 'company' => 'Analytical Engines'],
+                ['__typename' => 'Customer', 'name' => 'Grace Hopper', 'email' => 'grace@example.com', 'company' => null],
+            ],
+            'customerCount' => 2,
+            'customer' => ['email' => 'grace@example.com'],
+        ]]);
+    });
+
+    it('types model attributes by their casts, or their columns without one', function () {
+        createEloquentElementsTable('typed_customers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->integer('visits');
+            $table->float('score');
+            $table->decimal('balance', 8, 2);
+            $table->boolean('vip');
+            $table->string('tier');
+            $table->json('tags');
+            $table->dateTime('signed_up_at');
+        });
+        app(EloquentElements::class)->register(TestTypedCustomerElement::class);
+
+        TestTypedCustomer::create([
+            'name' => 'Ada Lovelace',
+            'visits' => 3,
+            'score' => 1.5,
+            'balance' => 12.3,
+            'vip' => true,
+            'tier' => TestCustomerTier::Gold,
+            'tags' => ['math', 'engines'],
+            'signed_up_at' => '2026-01-02 03:04:05',
+        ]);
+
+        $customer = executeEloquentElementsGql(['eloquent.test-typed-customer:read'], '{
+            testTypedCustomers { visits score balance vip tier tags signedUpAt: signed_up_at }
+        }')['data']['testTypedCustomers'][0];
+
+        // The offset depends on the system time zone
+        expect(Arr::pull($customer, 'signedUpAt'))->toStartWith('2026-01-02T03:04:05')
+            ->and($customer)->toBe([
+                'visits' => 3,
+                'score' => 1.5,
+                'balance' => '12.30',
+                'vip' => true,
+                'tier' => 'gold',
+                'tags' => '["math","engines"]',
+            ]);
+    });
+
+    it('queries custom fields', function () {
+        Field::factory()->create(['name' => 'Notes', 'handle' => 'notes', 'type' => PlainText::class]);
+        app(Fields::class)->refreshFields();
+        app(EloquentElements::class)->register(TestNotedCustomerElement::class);
+
+        foreach (['ada' => 'Prefers email', 'grace' => 'Prefers phone'] as $name => $notes) {
+            $element = TestNotedCustomerElement::findForModel(TestKeptCustomer::create(['name' => $name, 'email' => "$name@example.com"]));
+            $element->setFieldValue('notes', $notes);
+            Elements::saveElement($element);
+        }
+
+        expect(executeEloquentElementsGql(['eloquent.test-noted-customer:read'], '{ testNotedCustomers(notes: "Prefers email") { email notes } }'))
+            ->toBe(['data' => ['testNotedCustomers' => [['email' => 'ada@example.com', 'notes' => 'Prefers email']]]]);
+    });
+
+    it('keeps out types the schema can’t query, and model attributes the model hides', function () {
+        app(EloquentElements::class)->register(TestKeptCustomerElement::class);
+
+        expect(executeEloquentElementsGql(['eloquent.test-kept-customer:read'], '{ customers { email } }')['errors'][0]['message'])
+            ->toContain('Cannot query field "customers"')
+            ->and(executeEloquentElementsGql(['eloquent.test-kept-customer:read'], '{ testKeptCustomers { company } }')['errors'][0]['message'])
+            ->toContain('Cannot query field "company"');
+    });
+
+    it('resolves relation fields to the type’s elements in schemas that can query it', function () {
+        $ada = CustomerElement::findForModel(Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']));
+        $grace = CustomerElement::findForModel(Customer::create(['name' => 'Grace Hopper', 'email' => 'grace@example.com']));
+        EntryModel::factory()
+            ->forEntryType(EntryType::factory()->create(['handle' => 'article']))
+            ->withField('customers', CustomersField::class, value: [$ada->id, $grace->id])
+            ->createElementWithFields();
+
+        $scope = GqlHelper::createFullAccessSchema()->scope;
+        $query = '{ entries { ... on article_Entry { customers(search: "grace") { __typename email } } } }';
+
+        expect(executeEloquentElementsGql($scope, $query))
+            ->toBe(['data' => ['entries' => [['customers' => [['__typename' => 'Customer', 'email' => 'grace@example.com']]]]]])
+            ->and(executeEloquentElementsGql(array_values(array_diff($scope, ['eloquent.customer:read'])), $query)['errors'][0]['message'])
+            ->toContain('Cannot query field "customers"');
+    });
+
+    it('lets authenticated requests query the type when the user can view its index', function () {
+        Customer::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com']);
+
+        $viewer = UserModel::factory()->createElement(['admin' => false]);
+        UserPermissionsFacade::saveUserPermissions($viewer->id, ['accessCp', 'elements:customer:view']);
+        $other = UserModel::factory()->createElement(['admin' => false]);
+        UserPermissionsFacade::saveUserPermissions($other->id, ['accessCp']);
+
+        $gql = app(Gql::class);
+        $gql->flushCaches();
+
+        expect($gql->executeQuery($gql->getSchemaForUser($viewer), '{ customers { email } }'))
+            ->toBe(['data' => ['customers' => [['email' => 'ada@example.com']]]])
+            ->and($gql->getSchemaForUser($other)->scope)->not->toContain('eloquent.customer:read');
+    });
+});
+
 class TestKeptCustomer extends Model
 {
     #[Override]
@@ -735,6 +871,46 @@ class TestKeptCustomerElement extends EloquentElement
     public static function modelClass(): string
     {
         return TestKeptCustomer::class;
+    }
+}
+
+enum TestCustomerTier: string
+{
+    case Gold = 'gold';
+}
+
+class TestTypedCustomer extends Model
+{
+    #[Override]
+    public $timestamps = false;
+
+    #[Override]
+    protected $table = 'typed_customers';
+
+    #[Override]
+    protected $guarded = [];
+
+    #[Override]
+    protected $casts = [
+        'balance' => 'decimal:2',
+        'vip' => 'boolean',
+        'tier' => TestCustomerTier::class,
+        'tags' => 'array',
+        'signed_up_at' => 'datetime',
+    ];
+}
+
+/** @extends EloquentElement<TestTypedCustomer> */
+class TestTypedCustomerElement extends EloquentElement
+{
+    public static function refHandle(): string
+    {
+        return 'test-typed-customer';
+    }
+
+    public static function modelClass(): string
+    {
+        return TestTypedCustomer::class;
     }
 }
 

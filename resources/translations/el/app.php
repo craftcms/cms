@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Ερώτημα για χρήστες στην ομάδα χρηστών «{name}»',
     'Query for users' => 'Ερώτημα για χρήστες',
     'Query for volumes' => 'Ερώτημα για τόμους',
+    'Query for {type}' => 'Ερώτημα: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Παράμετροι ερωτήματος (π.χ. {ex1}) ή ένα fragment URI (π.χ. {ex2}) που θα προστεθεί στο URL.',
     'Queue Manager' => 'Διαχειριστής Ουράς',
     'Quick Post' => 'Γρήγορη Δημοσίευση',

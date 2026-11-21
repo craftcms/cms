@@ -126,6 +126,25 @@ abstract class EloquentElement extends Element
     }
 
     /**
+     * The name of the element type's GraphQL type.
+     *
+     * Defaults to the {@see refHandle()}, studly-cased (`Customer`, `OrderLine`). Override it if
+     * that clashes with another GraphQL type's name, such as `Site` or `Section`.
+     */
+    public static function gqlTypeName(): string
+    {
+        return Str::studly((string) static::refHandle());
+    }
+
+    /**
+     * The GraphQL schema component that lets a schema query the element type (`eloquent.customer`).
+     */
+    public static function gqlScope(): string
+    {
+        return 'eloquent.'.static::refHandle();
+    }
+
+    /**
      * The control panel path of the element type's index, or `null` for no index page.
      *
      * Defaults to the plural of {@see refHandle()} (`customers`, `order-lines`).
@@ -357,6 +376,12 @@ abstract class EloquentElement extends Element
     public static function editViewModelClass(): string
     {
         return EloquentElementEditViewModel::class;
+    }
+
+    #[Override]
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeName();
     }
 
     /** @return TModel */
