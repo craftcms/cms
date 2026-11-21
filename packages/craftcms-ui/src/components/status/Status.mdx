@@ -23,6 +23,12 @@ Leaving it unset renders the neutral dot:
 
 <Canvas of={StatusStories.NoStatus} sourceState="shown" />
 
+### Shapes
+
+When the user turns on the "Use shapes to represent statuses" preference, which adds `use-shapes` to `<body>`, each state takes its own shape too, so states differ by more than color. There's nothing to set: `pending` is a triangle, `expired` a square, and the rest stay circles.
+
+<Canvas of={StatusStories.Shapes} sourceState="shown" />
+
 ## Status, Indicator, or Badge?
 
 Three components draw a small colored mark, and they are not interchangeable:

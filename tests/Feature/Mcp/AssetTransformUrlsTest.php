@@ -28,7 +28,7 @@ beforeEach(function () {
     Storage::fake('transform-preview');
     Queue::fake();
 
-    $this->volume = Volume::factory()->create(['fs' => 'transform-preview']);
+    $this->volume = Volume::factory()->create(['disk' => 'transform-preview']);
     $this->asset = Asset::factory()->createElement([
         'volumeId' => $this->volume->id,
         'filename' => 'source.jpg',
@@ -94,7 +94,7 @@ it('returns absolute transform URLs for volumes with root-relative URLs', functi
     ]);
     configureCraftTransformer(['generateTransformsBeforePageLoad' => true]);
     $asset = Asset::factory()->createElement([
-        'volumeId' => Volume::factory()->create(['fs' => 'transform-relative', 'hasUrls' => true])->id,
+        'volumeId' => Volume::factory()->create(['disk' => 'transform-relative', 'hasUrls' => true])->id,
         'filename' => 'café.png',
     ]);
     Storage::disk('transform-relative')->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/google.png'));

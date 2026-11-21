@@ -18,7 +18,7 @@ it('deletes orphaned data', function () {
         'fieldLayoutId' => $fieldLayoutId,
         'name' => 'Test',
         'handle' => 'test',
-        'fs' => 'local',
+        'disk' => 'local',
         'dateCreated' => now(),
         'dateUpdated' => now(),
     ]);

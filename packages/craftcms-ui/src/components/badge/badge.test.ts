@@ -22,6 +22,14 @@ beforeEach(() => {
 });
 
 describe('craft-badge', () => {
+  it('gives the default indicator its shape', async () => {
+    const element = await createBadge({fill: 'red', shape: 'square'});
+
+    expect(element.shadowRoot!.querySelector('craft-indicator')!.shape).toBe(
+      'square'
+    );
+  });
+
   it('defaults to gray', async () => {
     const element = await createBadge();
 

@@ -411,7 +411,7 @@ class ImageTransforms extends Component
     ): ?AssetTransformRequest {
         // A transformer chosen by the volume or its disk, including an explicit `craft` one, takes precedence over the legacy one.
         $volume = $asset->getVolume();
-        $disk = $volume->getResolvedFsTarget();
+        $disk = $volume->getResolvedDisk();
 
         if ($volume->getAssetTransformer() !== null || ($disk !== null && app(AssetTransformers::class)->diskChoosesTransformer($disk))) {
             return null;

@@ -39,7 +39,7 @@ beforeEach(function () {
     Storage::disk('test-disk')->deleteDirectory('');
 
     $this->volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'hasUrls' => true,
     ]);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
@@ -291,7 +291,7 @@ it('uses Craft driver output disk settings', function () {
     Storage::disk('configured-transform-source')->deleteDirectory('');
     Storage::disk('configured-transform-target')->deleteDirectory('');
     $volume = Volume::factory()->create([
-        'fs' => 'configured-transform-source',
+        'disk' => 'configured-transform-source',
         'hasUrls' => true,
     ]);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
@@ -322,7 +322,7 @@ it('gives transforms direct URLs on their output disk only for public volumes', 
     config()->set('filesystems.disks.url-output', ['driver' => 'local', 'root' => "{$root}/output", 'url' => 'https://transforms.example.test']);
     config()->set('filesystems.disks.no-url-output', ['driver' => 'local', 'root' => "{$root}/no-url-output"]);
     configureCraftTransformer(['outputDisk' => $outputDisk]);
-    $volume = Volume::factory()->create(['fs' => 'url-source', 'hasUrls' => $volumeHasUrls]);
+    $volume = Volume::factory()->create(['disk' => 'url-source', 'hasUrls' => $volumeHasUrls]);
     $asset = ($this->createImageAsset)([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
@@ -368,7 +368,7 @@ it('stores transforms on a second craft transformer’s own output disk', functi
     config()->set('filesystems.disks.private-transforms', ['driver' => 'local', 'root' => "{$root}/output"]);
     Storage::disk('private-transforms')->deleteDirectory('');
     defineAssetTransformer('craft-private', ['driver' => 'craft', 'outputDisk' => 'private-transforms']);
-    $volume = Volume::factory()->create(['fs' => 'test-disk', 'hasUrls' => true, 'assetTransformer' => 'craft-private']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'hasUrls' => true, 'assetTransformer' => 'craft-private']);
     $asset = ($this->createImageAsset)([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
@@ -426,7 +426,7 @@ it('fails when the configured Craft driver output disk doesn’t name a disk', f
     ]);
     configureCraftTransformer(['outputDisk' => $outputDisk]);
     $volume = Volume::factory()->create([
-        'fs' => 'missing-transform-target-source',
+        'disk' => 'missing-transform-target-source',
     ]);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
 
@@ -471,7 +471,7 @@ it('reports Craft cleanup failures with redacted context', function () {
 });
 
 it('stores transforms at the root of the volume’s own disk, outside its subpath, without an output disk', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => 'uploads', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'subpath' => 'uploads', 'hasUrls' => true]);
     $asset = ($this->createImageAsset)([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,

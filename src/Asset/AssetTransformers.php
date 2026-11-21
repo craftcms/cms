@@ -245,7 +245,7 @@ class AssetTransformers extends MultipleInstanceManager
             return $this->validTransformer($name, "the [{$volume->handle}] volume’s assetTransformer", new AssetTransformer('craft'));
         }
 
-        $disk = $volume->getResolvedFsTarget();
+        $disk = $volume->getResolvedDisk();
         $legacyConfig = $disk !== null ? $this->legacyDiskConfig($disk) : null;
 
         if ($legacyConfig !== null) {

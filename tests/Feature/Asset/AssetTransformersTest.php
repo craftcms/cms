@@ -166,9 +166,9 @@ it('still reads a disk’s deprecated asset_transformer key, with a deprecation 
         'has_urls' => true,
     ]]);
     $transformers = app(AssetTransformers::class);
-    $scoped = Volume::factory()->create(['fs' => 'legacy-child']);
-    $craft = Volume::factory()->create(['fs' => 'legacy-craft']);
-    $chosen = Volume::factory()->create(['fs' => 'legacy', 'assetTransformer' => 'craft']);
+    $scoped = Volume::factory()->create(['disk' => 'legacy-child']);
+    $craft = Volume::factory()->create(['disk' => 'legacy-craft']);
+    $chosen = Volume::factory()->create(['disk' => 'legacy', 'assetTransformer' => 'craft']);
 
     $scopedAsset = Asset::factory()->createElement(['volumeId' => $scoped->id]);
     $scopedTransformer = $transformers->forVolume($scopedAsset->getVolume());
@@ -210,7 +210,7 @@ it('returns the source values for assets the transformer can’t transform', fun
         'root' => storage_path('framework/testing/asset-transformers'),
         'url' => 'https://example.test/uploads',
     ]);
-    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'uploads', 'hasUrls' => true]);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
@@ -496,7 +496,7 @@ function assetOnVolume(string $disk, array $volumeAttributes = [], array $assetA
         'driver' => 'local',
         'root' => storage_path("framework/testing/{$disk}"),
     ]);
-    $volume = Volume::factory()->create(['fs' => $disk, ...$volumeAttributes]);
+    $volume = Volume::factory()->create(['disk' => $disk, ...$volumeAttributes]);
     app(Volumes::class)->reset();
 
     return Asset::factory()->createElement(['volumeId' => $volume->id, ...$assetAttributes]);

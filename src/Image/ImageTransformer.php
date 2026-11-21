@@ -780,7 +780,7 @@ class ImageTransformer
         $volume = $asset->getVolume();
         $disk = $volume->isTemporary() ? null : $this->craftDriver($transformer)->outputDisk;
         $diskName = $disk === null
-            ? $volume->getResolvedFsTarget()
+            ? $volume->getResolvedDisk()
             : $volume->resolveStorageTargetKey($disk, parse: false);
 
         if ($diskName === null) {

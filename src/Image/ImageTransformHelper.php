@@ -178,11 +178,10 @@ class ImageTransformHelper
 
                         self::storeLocalSource($tempFilePath, $imageSourcePath);
 
-                        // And delete it after the request, if nobody wants it.
+                        // And delete it after the request, command, or queued job, if nobody wants it.
+                        // A queue worker only terminates when it stops.
                         if (Cms::config()->maxCachedCloudImageSize === 0) {
-                            app()->terminating(function () use ($imageSourcePath) {
-                                File::delete($imageSourcePath);
-                            });
+                            defer(fn () => File::delete($imageSourcePath), always: true);
                         }
                     } finally {
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {

@@ -100,7 +100,7 @@ describe('as a background', function () {
         new ControlPanelAssetTransformDriver()->register();
         useAssetTransformer('test');
         $this->asset = AssetModel::factory()->createElement([
-            'volumeId' => Volume::factory()->create(['fs' => 'test-disk'])->id,
+            'volumeId' => Volume::factory()->create(['disk' => 'test-disk'])->id,
             'kind' => FileKind::Image->value,
         ]);
     });

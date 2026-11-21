@@ -321,11 +321,12 @@ it('reports a Craft 5 mail transport adapter until a Laravel mailer is chosen', 
 it('reports volumes with a separate Craft 5 transform filesystem until a transform disk is chosen', function(): void {
     ProjectConfig::set('volumes', [
         'uid-photos' => ['handle' => 'photos', 'fs' => 'photos', 'transformFs' => 'transforms'],
-        'uid-same' => ['handle' => 'same', 'fs' => 'same', 'transformFs' => 'same'],
+        // Volumes migrated to Craft 6 store their disk as `disk`, not `fs`
+        'uid-same' => ['handle' => 'same', 'disk' => 'same', 'transformFs' => 'same'],
         'uid-chosen' => ['handle' => 'chosen', 'fs' => 'chosen', 'transformFs' => 'transforms', 'assetTransformer' => 'craft'],
         'uid-unset-env' => ['handle' => 'unsetEnv', 'fs' => 'unsetEnv', 'transformFs' => 'transforms', 'assetTransformer' => '$LOOSE_ENDS_UNSET_TRANSFORMER'],
         // The disk's deprecated asset_transformer key chooses the transformer, through the scoped disk
-        'uid-disk-chosen' => ['handle' => 'diskChosen', 'fs' => 'disk-chosen-child', 'transformFs' => 'transforms'],
+        'uid-disk-chosen' => ['handle' => 'diskChosen', 'disk' => 'disk-chosen-child', 'transformFs' => 'transforms'],
     ]);
     config()->set('filesystems.disks.disk-chosen', ['driver' => 'local', 'root' => storage_path('framework/testing/disk-chosen'), 'asset_transformer' => 'craft']);
     config()->set('filesystems.disks.disk-chosen-child', ['driver' => 'scoped', 'disk' => 'disk-chosen', 'prefix' => 'child']);

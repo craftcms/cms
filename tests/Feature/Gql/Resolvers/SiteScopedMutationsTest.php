@@ -101,7 +101,7 @@ it('refuses to delete an asset that exists in sites outside the schema', functio
 
     $asset = AssetModel::factory()->createElement([
         'volumeId' => Volume::factory()->state([
-            'fs' => 'site-scoped-mutations',
+            'disk' => 'site-scoped-mutations',
             'propagationMethod' => PropagationMethod::All,
         ]),
     ]);

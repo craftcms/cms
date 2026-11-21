@@ -12,6 +12,7 @@ use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\Schema\FieldLayoutConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
@@ -62,7 +63,7 @@ readonly class Volumes
 
     /**
      * @param  string  $name  Volume name.
-     * @param  string  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
+     * @param  string|null  $disk  Required. Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
      * @param  string|null  $assetTransformer  Asset transformer name, or an environment variable. Uses the configured default when null.
      * @param  TranslationMethod  $titleTranslationMethod  Asset title translation method.
@@ -71,13 +72,14 @@ readonly class Volumes
      * @param  string|null  $altTranslationKeyFormat  Custom asset alternative-text translation key format.
      * @param  bool  $hasUrls  Whether assets in the volume have public URLs.
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
+     * @param  string|null  $fsHandle  Deprecated. Use `disk` instead.
      * @return array{volume: array<string, mixed>}
      */
     #[RequiresAdminChanges]
     public function create(
         string $name,
         string $handle,
-        string $fsHandle,
+        ?string $disk = null,
         ?string $subpath = null,
         ?string $assetTransformer = null,
         TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
@@ -87,11 +89,17 @@ readonly class Volumes
         bool $hasUrls = false,
         #[Schema(definition: FieldLayoutConfig::Schema)]
         ?array $fieldLayout = null,
+        ?string $fsHandle = null,
     ): array {
+        if ($fsHandle !== null) {
+            $this->logFsHandleDeprecation();
+            $disk ??= $fsHandle;
+        }
+
         $volume = new Volume([
             'name' => $name,
             'handle' => $handle,
-            'fsHandle' => $fsHandle,
+            'disk' => $disk,
             'subpath' => $subpath,
             'assetTransformer' => $assetTransformer,
             'titleTranslationMethod' => $titleTranslationMethod,
@@ -116,7 +124,7 @@ readonly class Volumes
      * @param  string|null  $currentHandle  Existing volume handle.
      * @param  string|null  $name  Volume name.
      * @param  string|null  $handle  New volume handle.
-     * @param  string|null  $fsHandle  Laravel filesystem disk name configured in filesystems.disks.
+     * @param  string|null  $disk  Laravel filesystem disk name configured in filesystems.disks.
      * @param  string|null  $subpath  Asset subpath within the disk.
      * @param  string|null  $assetTransformer  Asset transformer name, or an environment variable. Uses the configured default when null.
      * @param  TranslationMethod  $titleTranslationMethod  Asset title translation method.
@@ -125,6 +133,7 @@ readonly class Volumes
      * @param  string|null  $altTranslationKeyFormat  Custom asset alternative-text translation key format.
      * @param  bool  $hasUrls  Whether assets in the volume have public URLs.
      * @param  array<string, mixed>|null  $fieldLayout  Native Craft field layout config.
+     * @param  string|null  $fsHandle  Deprecated. Use `disk` instead.
      * @return array{volume: array<string, mixed>}
      */
     #[RequiresAdminChanges]
@@ -136,7 +145,7 @@ readonly class Volumes
         ?string $currentHandle = null,
         ?string $name = null,
         ?string $handle = null,
-        ?string $fsHandle = null,
+        ?string $disk = null,
         ?string $subpath = null,
         ?string $assetTransformer = null,
         TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
@@ -146,6 +155,7 @@ readonly class Volumes
         bool $hasUrls = false,
         #[Schema(definition: FieldLayoutConfig::NullableSchema)]
         ?array $fieldLayout = null,
+        ?string $fsHandle = null,
     ): array {
         $volume = $this->find($id, $uid, $currentHandle);
 
@@ -155,11 +165,18 @@ readonly class Volumes
 
         $request = $context->getRequest();
         assert($request instanceof CallToolRequest);
+        $arguments = $request->arguments;
+
+        if (array_key_exists('fsHandle', $arguments)) {
+            $this->logFsHandleDeprecation();
+            $disk ??= $fsHandle;
+            $arguments['disk'] = $disk;
+        }
 
         Typecast::configure($volume, array_intersect_key([
             'name' => $name,
             'handle' => $handle,
-            'fsHandle' => $fsHandle,
+            'disk' => $disk,
             'subpath' => $subpath,
             'assetTransformer' => $assetTransformer,
             'titleTranslationMethod' => $titleTranslationMethod,
@@ -167,7 +184,7 @@ readonly class Volumes
             'altTranslationMethod' => $altTranslationMethod,
             'altTranslationKeyFormat' => $altTranslationKeyFormat,
             'hasUrls' => $hasUrls,
-        ], $request->arguments));
+        ], $arguments));
 
         if (array_key_exists('fieldLayout', $request->arguments)) {
             $volume->setFieldLayout($this->fieldLayouts->make(
@@ -205,6 +222,11 @@ readonly class Volumes
         return ['deleted' => true];
     }
 
+    private function logFsHandleDeprecation(): void
+    {
+        Deprecator::log('mcp.volumes.fsHandle', 'The `fsHandle` parameter of the volume MCP tools has been renamed to `disk`.');
+    }
+
     private function find(?int $id, ?string $uid, ?string $handle): ?Volume
     {
         if (count(Arr::whereNotNull([$id, $uid, $handle])) !== 1) {
@@ -227,7 +249,7 @@ readonly class Volumes
             'uid' => $volume->uid,
             'name' => $volume->name,
             'handle' => $volume->handle,
-            'fsHandle' => $volume->getFsHandle(false),
+            'disk' => $volume->getDisk(false),
             'subpath' => $volume->getSubpath(ensureTrailing: false, parse: false),
         ];
     }

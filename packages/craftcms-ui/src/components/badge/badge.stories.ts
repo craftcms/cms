@@ -131,3 +131,22 @@ export const CustomPrefix: Story = {
     await expect(computeAccessibleName(prefix!)).toBe('Done');
   },
 };
+
+/**
+ * `shape` sets the default indicator's shape, which it takes on while the
+ * user's "Use shapes to represent statuses" preference is on (`use-shapes` on
+ * `<body>` or another ancestor).
+ */
+export const Shapes: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      class="use-shapes"
+      style="display: grid; gap: 0.5rem; justify-items: start"
+    >
+      <craft-badge fill="teal" shape="circle">Live</craft-badge>
+      <craft-badge fill="sky" shape="triangle">Pending</craft-badge>
+      <craft-badge fill="red" shape="square">Expired</craft-badge>
+    </div>
+  `,
+};

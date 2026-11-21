@@ -522,9 +522,9 @@ class LooseEndsChecks
         $transformFilesystems = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_VOLUMES) ?? [])
             ->filter(fn(mixed $volume) => is_array($volume)
                 && !empty($volume['transformFs'])
-                && $volume['transformFs'] !== ($volume['fs'] ?? null)
+                && $volume['transformFs'] !== ($volume['disk'] ?? $volume['fs'] ?? null)
                 && empty(Env::parse($volume['assetTransformer'] ?? null))
-                && !app(AssetTransformers::class)->diskChoosesTransformer((string) Env::parse($volume['fs'] ?? '')))
+                && !app(AssetTransformers::class)->diskChoosesTransformer((string) Env::parse($volume['disk'] ?? $volume['fs'] ?? '')))
             ->mapWithKeys(fn(array $volume) => [(string) ($volume['handle'] ?? '') => (string) $volume['transformFs']]);
 
         if ($transformFilesystems->isNotEmpty() && $defaultStoresOnSourceDisk) {

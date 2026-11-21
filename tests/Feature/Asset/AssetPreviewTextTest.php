@@ -26,7 +26,7 @@ beforeEach(function () {
     Storage::fake('preview-text-source');
     Storage::fake('preview-text-volume');
 
-    $volume = Volume::factory()->create(['fs' => 'preview-text-volume']);
+    $volume = Volume::factory()->create(['disk' => 'preview-text-volume']);
     $folderModel = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'path' => '',

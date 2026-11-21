@@ -24,7 +24,7 @@ beforeEach(function () {
     $this->volume = Volume::factory()->create([
         'name' => 'Uploads',
         'handle' => 'uploads',
-        'fs' => 'graphql-mutation-delete-disk',
+        'disk' => 'graphql-mutation-delete-disk',
     ]);
     $this->rootFolder = app(Folders::class)->getRootFolderByVolumeId($this->volume->id);
 

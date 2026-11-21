@@ -92,7 +92,7 @@ it('resolves source values for Assets the transformer can’t transform', functi
         'root' => storage_path('framework/testing/gql-asset-transforms'),
         'url' => 'https://example.test/uploads',
     ]);
-    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true, 'assetTransformer' => 'craft']);
+    $volume = Volume::factory()->create(['disk' => 'uploads', 'hasUrls' => true, 'assetTransformer' => 'craft']);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
@@ -135,7 +135,7 @@ it('generates craft transforms before returning their URLs when requested', func
         'url' => 'https://example.test/uploads',
     ]);
     Storage::disk('uploads')->deleteDirectory('');
-    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true, 'assetTransformer' => 'craft']);
+    $volume = Volume::factory()->create(['disk' => 'uploads', 'hasUrls' => true, 'assetTransformer' => 'craft']);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,

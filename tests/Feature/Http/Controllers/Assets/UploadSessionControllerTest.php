@@ -49,7 +49,7 @@ beforeEach(function () {
     Cms::config()->uploadSessionDisk = 'upload-parts';
     Cms::config()->uploadChunkSize = 3;
 
-    $this->volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    $this->volume = Volume::factory()->create(['disk' => 'upload-destination']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);
 });
 
@@ -498,7 +498,7 @@ it('keeps the staged bytes when required processing fails and retries completion
 
 it('replaces the existing asset without creating a second asset', function (string $subpath) {
     config()->set('filesystems.disks.upload-destination.root', Storage::disk('upload-destination')->path(''));
-    $this->volume = Volume::factory()->create(['fs' => 'upload-destination', 'subpath' => $subpath]);
+    $this->volume = Volume::factory()->create(['disk' => 'upload-destination', 'subpath' => $subpath]);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);
 
     $upload = function (string $bytes, array $parameters): array {

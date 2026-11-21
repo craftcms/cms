@@ -53,7 +53,7 @@ class VolumeRules extends Ruleset
                 Rule::unique(Table::VOLUMES, 'handle')->ignore($this->subject->id)->withoutTrashed('dateDeleted'),
             ],
             'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->subject->validateFieldLayout()],
-            'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
+            'disk' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
             'assetTransformer' => [new EnvValueRule([
                 'nullable',
                 'string',
@@ -70,7 +70,7 @@ class VolumeRules extends Ruleset
         ];
 
         $tempAssetUploadTarget = Cms::config()->getTempAssetUploadDisk();
-        $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
+        $rules['disk'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
 
         return $rules;
     }
@@ -119,7 +119,7 @@ class VolumeRules extends Ruleset
      */
     private function volumesSharingStorageTarget(): Collection
     {
-        $storageTarget = $this->subject->resolveStorageTargetKey($this->subject->getFsHandle(false));
+        $storageTarget = $this->subject->resolveStorageTargetKey($this->subject->getDisk(false));
         if ($storageTarget === null) {
             return collect();
         }
@@ -127,7 +127,7 @@ class VolumeRules extends Ruleset
         return VolumeModel::query()
             ->when($this->subject->id !== null, fn (Builder $query) => $query->whereNot('id', $this->subject->id))
             ->get()
-            ->filter(fn (VolumeModel $record): bool => $this->subject->resolveStorageTargetKey($record->fs) === $storageTarget)
+            ->filter(fn (VolumeModel $record): bool => $this->subject->resolveStorageTargetKey($record->disk) === $storageTarget)
             ->values();
     }
 
@@ -136,7 +136,7 @@ class VolumeRules extends Ruleset
         $handle = $this->storageHandleForAttribute($attribute);
 
         if ($handle === null || $handle === '') {
-            if ($attribute === 'fsHandle') {
+            if ($attribute === 'disk') {
                 $this->pushValidationError($attribute, t('{attribute} cannot be blank.', [
                     'attribute' => $this->subject->getAttributeLabel($attribute),
                 ]), $fail);
@@ -181,7 +181,7 @@ class VolumeRules extends Ruleset
     private function storageHandleForAttribute(string $attribute): ?string
     {
         return match ($attribute) {
-            'fsHandle' => $this->subject->getFsHandle(false),
+            'disk' => $this->subject->getDisk(false),
             default => null,
         };
     }

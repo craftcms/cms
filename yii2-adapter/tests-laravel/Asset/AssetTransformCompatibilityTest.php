@@ -236,7 +236,7 @@ it('returns the source URL for assets the transformer can’t transform', functi
         'root' => storage_path('framework/testing/asset-transform-compatibility'),
         'url' => 'https://example.test/uploads',
     ]);
-    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'uploads', 'hasUrls' => true]);
     $attributes = [
         'volumeId' => $volume->id,
         'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
@@ -309,7 +309,7 @@ it('selects the volume’s or disk’s transformer before the legacy transformer
         ...($diskTransformer !== null ? ['asset_transformer' => $diskTransformer] : []),
     ]);
     $volume = Volume::factory()->create([
-        'fs' => 'legacy-precedence-source',
+        'disk' => 'legacy-precedence-source',
         'assetTransformer' => $volumeTransformer,
     ]);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
@@ -496,7 +496,7 @@ it('bridges built-in transformed-image deletion events', function(): void {
 it('keeps deprecated transform destinations distinct per Volume', function(): void {
     $first = Volume::factory()->create();
     $second = Volume::factory()->create([
-        'fs' => $first->fs,
+        'disk' => $first->disk,
     ]);
     $volumes = app(Volumes::class);
     $firstVolume = $volumes->getVolumeById($first->id);
@@ -546,7 +546,7 @@ it('provides deprecated Volume transform filesystem methods through the adapter'
     $volume = new VolumeData([
         'name' => 'Legacy Volume',
         'handle' => 'legacyVolume',
-        'fs' => 'legacy-volume-source',
+        'disk' => 'legacy-volume-source',
         'transformFs' => 'legacy-volume-target',
         'transformSubpath' => 'transforms',
     ]);

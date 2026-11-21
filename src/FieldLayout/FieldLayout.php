@@ -1400,7 +1400,7 @@ class FieldLayout extends Component
             'value' => $key,
         ]);
 
-        if (is_callable($html)) {
+        if (! is_string($html) && is_callable($html)) {
             return $html();
         }
 
