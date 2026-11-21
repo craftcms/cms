@@ -246,7 +246,8 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        if ($siteUrl && ! in_array($siteUrl[0], ['@', '$'])) {
+        // Laravel doesn’t load .env while the config is cached, so `$APP_URL` wouldn’t resolve to what we write
+        if ($siteUrl && ! in_array($siteUrl[0], ['@', '$']) && ! app()->configurationIsCached()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
                 $siteUrl = '$APP_URL';
