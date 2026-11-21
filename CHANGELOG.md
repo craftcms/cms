@@ -2,10 +2,23 @@
 
 ## Unreleased
 
+> [!WARNING]
+> Sites that set `CRAFT_EPHEMERAL` on a read-only filesystem should now turn off automatic project config YAML writes by calling `writeYamlAutomatically(false)` on `CraftCms\Cms\ProjectConfig\ProjectConfig` from a service provider, and make sure Laravel’s storage path is writable. With the Yii adapter installed, `resourceBasePath` should also point to a writable directory, or the `assetManager` component should serve resources published at build time.
+
+- Volumes’ `fs` setting has been renamed to `disk`, in project config, the `volumes` table, and the volume MCP tools. Existing project config is updated automatically, and project config that still uses `fs` can still be applied. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Deprecated the `fsHandle` parameter of the volume MCP tools. `disk` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Removed the `maxCachedCloudImageSize` config setting and asset indexing’s “Cache remote images” option, including the `--cacheRemoteImages` CLI option. Remote image sources are no longer resized or retained between requests; transforms and image editing download originals as needed and delete the local copies afterward. Sites that opted into source caching may see more downloads, bandwidth use, and image-processing work. ([#20983](https://github.com/craftcms/cms/pull/20983))
+- Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
+- Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
+- The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
+- Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))
 - Fixed a bug where the “Use shapes to represent statuses” preference had no effect. ([#20963](https://github.com/craftcms/cms/issues/20963))
+- Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode. ([#20547](https://github.com/craftcms/cms/pull/20547))
+- Fixed an error that occurred when project config changes were saved, and on control panel pages for admins, if the project config folder couldn’t be written. The changes are still saved, and admins now see the “folder isn’t writable” alert. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Fixed a bug where element indexes didn’t remember the chosen number of elements per page. ([#20979](https://github.com/craftcms/cms/issues/20979))
 
 ## 6.0.0-beta.2 - 2026-11-20

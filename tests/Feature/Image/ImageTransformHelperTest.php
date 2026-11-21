@@ -5,18 +5,21 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Image\Images;
+use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Http\Request;
+use Illuminate\Support\Defer\DeferredCallbackCollection;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
-
-use function Pest\Laravel\mock;
 
 beforeEach(function () {
     Storage::extend('image-transform-helper-test-fake-remote', function ($app, array $config) {
@@ -32,16 +35,65 @@ beforeEach(function () {
         'root' => $this->remoteRoot,
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'image-transform-helper-test-remote-disk']);
+    $this->volume = Volume::factory()->create(['disk' => 'image-transform-helper-test-remote-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 
     File::deleteDirectory(Path::assetSources());
 });
 
-test('re-downloads the cached source file when the remote object has changed since it was cached', function () {
-    $unrelatedPath = Path::temp('get-local-image-source-test.delimiter.unrelated.jpg');
-    file_put_contents($unrelatedPath, 'unrelated download');
-    $this->beforeApplicationDestroyed(fn () => File::delete($unrelatedPath));
+test('uses original remote sources for transforms and editor previews, then deletes them', function (bool $oldCachedSource) {
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => $this->volume->id,
+        'folderId' => $this->folder->id,
+        'filename' => 'original-source.png',
+        'kind' => 'image',
+        'width' => 1200,
+        'height' => 700,
+    ]);
+    $image = imagecreatetruecolor(1200, 700);
+    ob_start();
+    imagepng($image);
+    $original = ob_get_clean();
+    $disk = $asset->getVolume()->sourceDisk();
+    $disk->put($asset->getPath(), $original);
+    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
+    if ($oldCachedSource) {
+        ob_start();
+        imagepng(imagecreatetruecolor(600, 350));
+        file_put_contents($asset->getImageTransformSourcePath(), ob_get_clean());
+    }
+
+    $transformPath = ImageTransformHelper::generateTransform($asset, new ImageTransform([
+        'width' => 80,
+        'height' => 35,
+        'mode' => 'stretch',
+    ]));
+    $this->beforeApplicationDestroyed(fn () => File::delete($transformPath));
+    $sourcePath = ImageTransformHelper::getLocalImageSource($asset);
+
+    expect(array_slice(getimagesize($transformPath), 0, 2))->toBe([80, 35])
+        ->and(file_get_contents($sourcePath))->toBe($original);
+
+    $this->actingAs(User::findOne());
+    Assets::partialMock()->shouldReceive('getImagePreviewUrl')->andThrow(new NotSupportedException);
+    $response = app(ImageEditorController::class)->editImage(Request::create('/', 'GET', [
+        'assetId' => $asset->id,
+        'size' => 500,
+    ]));
+
+    expect(file_get_contents($response->getFile()->getPathname()))->toBe($original);
+
+    app(DeferredCallbackCollection::class)->invoke();
+
+    expect(is_file($sourcePath))->toBeFalse()
+        ->and($disk->get($asset->getPath()))->toBe($original);
+})->with(['downloaded' => false, 'ignoring a downscaled copy an earlier version cached' => true]);
+
+test('downloads remote sources once per request, command, or queued job, into files of their own', function () {
+    // Another request's download of a file with the same name
+    $otherDownload = Path::temp('get-local-image-source-test.delimiter.other.jpg');
+    file_put_contents($otherDownload, 'other download');
+    $this->beforeApplicationDestroyed(fn () => File::delete($otherDownload));
 
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
@@ -49,56 +101,33 @@ test('re-downloads the cached source file when the remote object has changed sin
         'filename' => 'get-local-image-source-test.jpg',
         'kind' => 'image',
     ]);
-
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($asset->getPath(), 'original bytes');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
-
-    $sourcePath = ImageTransformHelper::getLocalImageSource($asset);
-
-    expect(file_get_contents($sourcePath))->toBe('original bytes');
-
-    $disk->put($asset->getPath(), 'updated bytes');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() + 100);
-
-    $sourcePath = ImageTransformHelper::getLocalImageSource($asset);
-
-    expect(file_get_contents($sourcePath))->toBe('updated bytes');
-    expect(file_get_contents($unrelatedPath))->toBe('unrelated download');
-    expect(glob(Path::temp('get-local-image-source-test.delimiter.*.jpg')))->toBe([$unrelatedPath]);
-});
-
-test('does not re-download the cached source file when the remote object is unchanged', function () {
-    $asset = AssetModel::factory()->createElement([
-        'volumeId' => $this->volume->id,
-        'folderId' => $this->folder->id,
-        'filename' => 'get-local-image-source-unchanged-test.jpg',
-        'kind' => 'image',
-    ]);
-
-    $disk = $asset->getVolume()->sourceDisk();
-    $disk->put($asset->getPath(), 'original bytes');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 100);
 
     $firstSourcePath = ImageTransformHelper::getLocalImageSource($asset);
+    $disk->put($asset->getPath(), 'modified bytes');
 
-    $disk->put($asset->getPath(), 'this should not be downloaded');
-    touch($this->remoteRoot.'/'.$asset->getPath(), time() - 50);
+    expect(ImageTransformHelper::getLocalImageSource($asset))->toBe($firstSourcePath)
+        ->and(file_get_contents($firstSourcePath))->toBe('original bytes');
+
+    app(DeferredCallbackCollection::class)->invoke();
+    app()->forgetScopedInstances();
 
     $secondSourcePath = ImageTransformHelper::getLocalImageSource($asset);
 
-    expect($secondSourcePath)->toBe($firstSourcePath)
-        ->and(file_get_contents($secondSourcePath))->toBe('original bytes');
+    expect(is_file($firstSourcePath))->toBeFalse()
+        ->and($secondSourcePath)->not->toBe($firstSourcePath)
+        ->and(file_get_contents($secondSourcePath))->toBe('modified bytes')
+        ->and(file_get_contents($otherDownload))->toBe('other download');
 });
 
-test('cleans its staging file when downloading or storing the source fails', function (string $failure) {
+test('deletes its download when downloading the source fails', function (string $failure) {
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => $this->folder->id,
         'filename' => 'failed-source.jpg',
         'kind' => 'image',
     ]);
-    $sourcePath = $asset->getImageTransformSourcePath();
     $tempFilePath = Path::temp('failed-source.delimiter.owned.jpg');
     $paths = Mockery::mock(Path::getFacadeRoot())->makePartial();
     $paths->shouldReceive('temp')->with(Mockery::type('string'))->andReturn($tempFilePath);
@@ -107,7 +136,6 @@ test('cleans its staging file when downloading or storing the source fails', fun
     $disk = $asset->getVolume()->sourceDisk();
     $disk->put($asset->getPath(), $failure === 'empty' ? '' : 'image bytes');
 
-    Cms::config()->maxCachedCloudImageSize = $failure === 'resize' ? 100 : 0;
     $exception = new RuntimeException('Download failed');
 
     if ($failure === 'download') {
@@ -117,30 +145,23 @@ test('cleans its staging file when downloading or storing the source fails', fun
             throw $exception;
         });
         Storage::set('image-transform-helper-test-remote-disk', $remoteDisk);
-    } elseif ($failure === 'copy') {
-        File::makeDirectory($sourcePath);
-    } elseif ($failure === 'resize') {
-        $images = mock(Images::class);
-        $images->shouldReceive('getSupportedImageFormats')->andReturn(['jpg']);
-        $images->shouldReceive('loadImage')->once()->with($tempFilePath)->andThrow($exception);
     }
 
     try {
         ImageTransformHelper::getLocalImageSource($asset);
-        test()->fail('Expected source staging to fail.');
+        test()->fail('Expected the download to fail.');
     } catch (Throwable $caught) {
-        if (in_array($failure, ['download', 'resize'], true)) {
+        if ($failure === 'download') {
             expect($caught)->toBe($exception, $caught->getMessage());
         } else {
-            expect($caught)->toBeInstanceOf($failure === 'empty' ? FilesystemException::class : ErrorException::class);
+            expect($caught)->toBeInstanceOf(FilesystemException::class);
         }
     }
 
     expect(is_file($tempFilePath))->toBeFalse();
-})->with(['empty', 'download', 'copy', 'resize']);
+})->with(['empty', 'download']);
 
-test('interleaved downloads keep each others staging files', function () {
-    Cms::config()->maxCachedCloudImageSize = 0;
+test('interleaved downloads keep each others files', function () {
     $assets = collect(['first', 'second'])->map(fn (string $folder) => AssetModel::factory()->createElement([
         'volumeId' => $this->volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id, 'path' => $folder.'/'])->id,
@@ -168,7 +189,7 @@ test('interleaved downloads keep each others staging files', function () {
 
         expect(file_get_contents($secondSource))->toBe('second image');
         expect(file_get_contents($tempPaths[0]))->toBe('partial first image');
-        expect(is_file($tempPaths[1]))->toBeFalse();
+        expect($secondSource)->toBe($tempPaths[1]);
 
         return $disk->readStream($assets[0]->getPath());
     });
@@ -176,19 +197,8 @@ test('interleaved downloads keep each others staging files', function () {
 
     $firstSource = ImageTransformHelper::getLocalImageSource($assets[0]);
 
-    expect(file_get_contents($firstSource))->toBe('first image');
-    expect($tempPaths)->toHaveCount(2);
-    expect($tempPaths[0])->not->toBe($tempPaths[1]);
-    expect(is_file($tempPaths[0]))->toBeFalse();
-});
-
-test('storeLocalSource resizes the source in place when no destination is given', function () {
-    $path = Path::temp('store-local-source-in-place.png');
-    $this->beforeApplicationDestroyed(fn () => File::delete($path));
-    imagepng(imagecreatetruecolor(200, 100), $path);
-    Cms::config()->maxCachedCloudImageSize = 50;
-
-    ImageTransformHelper::storeLocalSource($path);
-
-    expect(getimagesize($path))->toMatchArray([0 => 50, 1 => 25]);
+    expect($firstSource)->toBe($tempPaths[0])
+        ->and(file_get_contents($firstSource))->toBe('first image')
+        ->and(file_get_contents($tempPaths[1]))->toBe('second image')
+        ->and($tempPaths)->toHaveCount(2);
 });

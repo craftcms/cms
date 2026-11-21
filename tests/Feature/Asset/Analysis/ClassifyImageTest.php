@@ -42,7 +42,7 @@ function aiClassifySettings(array $tasks = []): void
  */
 function classifiableImage(?array $analysis = null): Asset
 {
-    $volume = VolumeModel::factory()->create(['fs' => 'classify-image-test']);
+    $volume = VolumeModel::factory()->create(['disk' => 'classify-image-test']);
     app(Volumes::class)->reset();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,

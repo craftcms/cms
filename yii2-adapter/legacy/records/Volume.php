@@ -20,7 +20,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
- * @property string $fs The filesystem handle, or an environment variable that references it
+ * @property string $disk The disk name, or an environment variable that references it
  * @property string $subpath The filesystem subpath to use for this volume
  * @property string $transformFs The transform filesystem handle, or an environment variable that references it
  * @property string $transformSubpath The transform filesystem subpath for storing transforms

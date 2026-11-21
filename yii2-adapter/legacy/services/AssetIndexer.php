@@ -27,6 +27,8 @@ use yii\base\Component;
  *
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->getAssetIndexer()`]].
  *
+ * The legacy `$cacheImages` and `$cacheRemoteImages` parameters are ignored.
+ *
  * @property-read array $existingIndexingSessions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -64,7 +66,7 @@ class AssetIndexer extends Component
         bool $cacheRemoteImages = true,
         bool $listEmptyFolders = false,
     ): AssetIndexingSession {
-        return $this->service()->startIndexingSession($volumes, $cacheRemoteImages, $listEmptyFolders);
+        return $this->service()->startIndexingSession($volumes, listEmptyFolders: $listEmptyFolders);
     }
 
     public function stopIndexingSession(AssetIndexingSession $session): void
@@ -81,7 +83,7 @@ class AssetIndexer extends Component
         bool $isCli = false,
         bool $listEmptyFolders = false,
     ): AssetIndexingSession {
-        return $this->service()->createIndexingSession($volumeList, $cacheRemoteImages, $isCli, $listEmptyFolders);
+        return $this->service()->createIndexingSession($volumeList, isCli: $isCli, listEmptyFolders: $listEmptyFolders);
     }
 
     public function storeIndexList(Generator $indexList, int $sessionId, Volume $volume): int
@@ -159,7 +161,7 @@ class AssetIndexer extends Component
         bool $cacheImages = false,
         bool $createIfMissing = true,
     ): Asset {
-        return $this->service()->indexFile($volume, $path, $sessionId, $cacheImages, $createIfMissing);
+        return $this->service()->indexFile($volume, $path, $sessionId, createIfMissing: $createIfMissing);
     }
 
     public function indexFileByListing(
@@ -169,7 +171,7 @@ class AssetIndexer extends Component
         bool $cacheImages = false,
         bool $createIfMissing = true,
     ): Asset {
-        return $this->service()->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing);
+        return $this->service()->indexFileByListing($volume, $listing, $sessionId, createIfMissing: $createIfMissing);
     }
 
     public function indexFolderByListing(
@@ -186,7 +188,7 @@ class AssetIndexer extends Component
         bool $cacheImages = false,
         bool $createIfMissing = true,
     ): Asset {
-        return $this->service()->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
+        return $this->service()->indexFileByEntry($indexEntry, createIfMissing: $createIfMissing);
     }
 
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder

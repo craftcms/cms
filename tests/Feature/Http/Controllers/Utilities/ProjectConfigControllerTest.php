@@ -6,6 +6,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\File;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -56,6 +57,21 @@ it('can discard the project config changes', function () {
     post(action([ProjectConfigController::class, 'discard']))
         ->assertRedirectBack()
         ->assertMessage('success', t('External project config changes discarded.'));
+});
+
+it('reports when the project config files can’t be written', function () {
+    $blocker = config_path('craft/project-config-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
+    File::put($blocker, '');
+    app(ProjectConfig::class)->folderName = 'project-config-write-blocker/project';
+
+    try {
+        post(action([ProjectConfigController::class, 'discard']))
+            ->assertRedirectBack()
+            ->assertMessage('error', t('Project config YAML files can’t be written in this environment.'));
+    } finally {
+        File::delete($blocker);
+    }
 });
 
 it('cannot discard the project config changes if it is readonly', function () {

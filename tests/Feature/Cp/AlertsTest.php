@@ -11,10 +11,13 @@ use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\CpAlertsResolving;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 
 it('returns no alerts for guests', function () {
@@ -51,4 +54,23 @@ it('merges alerts from CpAlertsResolving listeners', function () {
     $contents = array_map(fn (string|array $alert) => is_array($alert) ? $alert['content'] : $alert, $alerts);
 
     expect(implode(' ', $contents))->toContain('custom alert from event');
+});
+
+it('alerts admins when the project config folder can’t be written, instead of failing', function () {
+    $blocker = config_path('craft/alerts-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
+    File::put($blocker, '');
+    $projectConfig = app(ProjectConfig::class)->writeYamlAutomatically();
+    $projectConfig->folderName = 'alerts-write-blocker/project';
+    actingAs(User::findOne());
+
+    try {
+        $contents = array_map(fn (string|array $alert) => is_array($alert) ? $alert['content'] : $alert, app(Alerts::class)->get(path: 'dashboard'));
+    } finally {
+        File::delete($blocker);
+    }
+
+    expect(implode(' ', $contents))->toContain(t('Your {folder} folder isn’t writable.', [
+        'folder' => 'config/alerts-write-blocker/project/',
+    ]));
 });
