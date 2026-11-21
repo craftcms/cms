@@ -30,7 +30,7 @@ it('records safe asset file replacement facts', function () {
     $volume = Volume::factory()->create([
         'name' => 'Activity assets',
         'handle' => 'activityAssets',
-        'fs' => 'activity-assets',
+        'disk' => 'activity-assets',
     ]);
     $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $original = Path::temp('original.txt');

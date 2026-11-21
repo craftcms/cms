@@ -58,7 +58,7 @@ class VolumeEditViewModel extends ViewModel
         $envTextExpanderTriggers = SelectOptions::getEnvTextExpanderTriggers();
         $disabledFilesystemTargets = $this->volumes->getAllVolumes()
             ->reject(fn (Volume $volume): bool => $volume->id === $this->volume->id || (bool) $volume->getSubpath())
-            ->map(fn (Volume $volume): ?string => $volume->getResolvedFsTarget())
+            ->map(fn (Volume $volume): ?string => $volume->getResolvedDisk())
             ->filter(fn (?string $target): bool => $target !== null)
             ->values()
             ->all();
@@ -73,7 +73,7 @@ class VolumeEditViewModel extends ViewModel
             Separator::make('filesystem-separator'),
             Field::make(
                 t('Asset Disk'),
-                Combobox::make('fsHandle')
+                Combobox::make('disk')
                     ->options($this->diskOptions($disabledFilesystemTargets))
                     ->showAllOnEmpty()
                     ->showSelectedHint(),
@@ -191,7 +191,7 @@ class VolumeEditViewModel extends ViewModel
             'volumeId' => $this->volume->id,
             'name' => $this->volume->name ?? '',
             'handle' => $this->volume->handle ?? '',
-            'fsHandle' => $this->volume->getFsHandle(false) ?? '',
+            'disk' => $this->volume->getDisk(false) ?? '',
             'hasUrls' => $this->volume->hasUrls,
             'subpath' => $this->volume->getSubpath(ensureTrailing: false, parse: false),
             'titleTranslationMethod' => $this->volume->titleTranslationMethod->value,

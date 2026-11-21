@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Volumes’ `fs` setting has been renamed to `disk`, in project config, the `volumes` table, and the volume MCP tools. Existing project config is updated automatically, and project config that still uses `fs` can still be applied. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
+- Deprecated the `fsHandle` parameter of the volume MCP tools. `disk` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))

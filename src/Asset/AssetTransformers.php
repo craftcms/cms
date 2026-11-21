@@ -329,7 +329,7 @@ class AssetTransformers extends Manager
 
     private function forAsset(Asset $asset): AssetTransformer
     {
-        return $this->forDisk($asset->getVolume()->getResolvedFsTarget());
+        return $this->forDisk($asset->getVolume()->getResolvedDisk());
     }
 
     /**

@@ -152,7 +152,7 @@ describe('asset folders', function () {
         ]);
 
         $this->volume = Volumes::getVolumeById(Volume::factory()->create([
-            'fs' => 'test-disk',
+            'disk' => 'test-disk',
             'handle' => 'testvolume',
             'name' => 'Test volume',
         ])->id);
@@ -295,7 +295,7 @@ describe('asset folders', function () {
 
     it('ignores a requested folder outside the current volume', function () {
         Folders::ensureFolderByFullPathAndVolume('mine', $this->volume);
-        $otherVolumeId = Volume::factory()->create(['fs' => 'test-disk'])->id;
+        $otherVolumeId = Volume::factory()->create(['disk' => 'test-disk'])->id;
         Volumes::reset();
         $otherVolume = Volumes::getVolumeById($otherVolumeId);
         $elsewhere = Folders::ensureFolderByFullPathAndVolume('elsewhere', $otherVolume)->id;
