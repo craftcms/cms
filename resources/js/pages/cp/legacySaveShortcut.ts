@@ -1,6 +1,6 @@
 import {t} from '@craftcms/ui/utilities/translate';
 import {useShortcut} from '@/common/shortcuts';
-import {topStackedPanel} from '@/common/slideouts/panel-stack';
+import {topStackedPanel, uiLayerManager} from '@/common/slideouts/panel-stack';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 
 /** A Craft 5 form action, as `_layouts/cp` takes them in `formActions`. */
@@ -51,12 +51,15 @@ export function legacySaveShortcuts(
       ? props.formActions
       : null;
 
+  const fallbackRedirect =
+    data['saveshortcut-redirect'] || props.saveShortcutRedirect;
+  const redirect =
+    typeof fallbackRedirect === 'string' ? fallbackRedirect : undefined;
+
   if (!actions) {
-    const redirect =
-      data['saveshortcut-redirect'] || props.saveShortcutRedirect;
     shortcuts.set(false, {
       options: {
-        redirect: typeof redirect === 'string' ? redirect : undefined,
+        redirect,
         retainScroll: Boolean(data['saveshortcut-scroll']),
       },
     });
@@ -66,7 +69,11 @@ export function legacySaveShortcuts(
 
   for (const {label, shortcut, shift, ...options} of actions) {
     if (shortcut && !shortcuts.has(Boolean(shift))) {
-      shortcuts.set(Boolean(shift), {label, options});
+      // An action without its own redirect uses the form's, as `Craft.cp.submitPrimaryForm()` does.
+      shortcuts.set(Boolean(shift), {
+        label,
+        options: {...options, redirect: options.redirect || redirect},
+      });
     }
   }
 
@@ -126,9 +133,14 @@ export function useLegacySaveShortcut(
   const inSlideout = useSlideout() !== null;
 
   for (const shift of [false, true]) {
-    // While a slideout is open, the key is its to handle.
+    // While a slideout, modal, or HUD is open, the key is its to handle, unless its layer lets
+    // shortcuts through, as Craft 5's base-layer shortcut allowed.
     const current = () =>
-      inSlideout || topStackedPanel()
+      inSlideout ||
+      topStackedPanel() ||
+      uiLayerManager()
+        .layers.slice(1)
+        .some((layer) => !layer.options.bubble)
         ? undefined
         : legacySaveShortcuts(props()).get(shift);
 

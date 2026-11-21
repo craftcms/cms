@@ -8,7 +8,11 @@ import {
   ScreenContentReadyKey,
   ScreenPropsStoreKey,
 } from '@/common/composables/screen';
-import {registerPanel, unregisterPanel} from '@/common/slideouts/panel-stack';
+import {
+  registerPanel,
+  uiLayerManager,
+  unregisterPanel,
+} from '@/common/slideouts/panel-stack';
 import Screen from './Screen.vue';
 
 vi.mock('@craftcms/ui', () => import('@craftcms/ui/utilities/dom'));
@@ -290,10 +294,18 @@ it('saves with the form action a shortcut is assigned to', () => {
         shortcut: true,
         shift: true,
       },
+      {label: 'Save and continue editing', shortcut: true},
     ],
+    saveShortcutRedirect: 'encrypted-url',
   });
 
-  expect(pressSave().defaultPrevented).toBe(false);
+  expect(pressSave().defaultPrevented).toBe(true);
+  expect(postedParams(form)).toEqual({redirect: 'encrypted-url'});
+  form
+    .querySelectorAll('input[type=hidden]')
+    .forEach((input) => input.remove());
+  submit.mockClear();
+
   expect(pressSave(true).defaultPrevented).toBe(true);
   expect(submit).toHaveBeenCalledTimes(1);
   expect(postedParams(form)).toEqual({
@@ -359,3 +371,26 @@ it('leaves Mod+S to an open slideout', () => {
   unregisterPanel(panel);
   submit.mockRestore();
 });
+
+it.each([
+  [false, false],
+  [true, true],
+])(
+  'saves on Mod+S over a modal layer only when it bubbles (%s)',
+  (bubble, saves) => {
+    const submit = vi
+      .spyOn(HTMLFormElement.prototype, 'requestSubmit')
+      .mockImplementation(() => {});
+    mountForm({fullPageForm: true});
+    const modal = document.createElement('div');
+    document.body.append(modal);
+    uiLayerManager().addLayer(modal, {bubble});
+
+    expect(pressSave().defaultPrevented).toBe(saves);
+    expect(submit).toHaveBeenCalledTimes(saves ? 1 : 0);
+
+    uiLayerManager().removeLayer(modal);
+    modal.remove();
+    submit.mockRestore();
+  }
+);
