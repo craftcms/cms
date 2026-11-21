@@ -124,10 +124,10 @@ class McpServersCest
         $general = Craft::$app->getConfig()->getGeneral();
         $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp"]);
 
-        // Upload URLs use the authenticated server's endpoint, and their token routes them to the upload action,
-        // which rejects this unreserved upload with a JSON error, even though upload clients like curl don't ask for
-        // JSON, rather than with a control panel page
-        $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => StringHelper::UUID()]]);
+        // Upload URLs use the authenticated server's endpoint, and their token routes them to the uploads/transfer
+        // action, which rejects this unreserved upload with a JSON error, even though upload clients like curl don't
+        // ask for JSON, rather than with a control panel page
+        $token = Craft::$app->getTokens()->createToken(['uploads/transfer', ['uploadId' => StringHelper::UUID()]]);
         $I->haveHttpHeader('Accept', '*/*');
         $I->sendAjaxPostRequest("/$general->cpTrigger/mcp?$general->tokenParam=$token");
         $I->seeResponseCodeIs(404);

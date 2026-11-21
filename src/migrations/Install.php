@@ -81,6 +81,7 @@ class Install extends Migration
 
         $this->createTables();
         (new m261007_100000_oauth())->createTables();
+        (new m261117_000000_upload_sessions())->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();

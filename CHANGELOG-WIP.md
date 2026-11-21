@@ -12,6 +12,14 @@
 - Commands suggested by the `entrify/*`, `entry-types/merge`, `fields/merge`, `fields/auto-merge`, `setup`, `setup/welcome`, and `update` console commands now use `ddev craft` when Craft is running in DDEV, and `php craft` otherwise. ([#20702](https://github.com/craftcms/cms/pull/20702))
 - Added the “HTML Purifier caches” option to the Caches utility and the `clear-caches/html-purifier` command. ([#20861](https://github.com/craftcms/cms/pull/20861))
 
+### Assets
+
+- Assets can now be uploaded straight to filesystems that accept direct uploads, such as Craft Cloud’s, so files don’t pass through Craft’s request handling or its request size limits. Uploads are started with the `uploads/start` action, sent to the returned URL, and completed with `uploads/complete`.
+- The `assets_upload_url` MCP tool now accepts an optional `size` argument, and returns `headers` that must be sent with the upload. Its upload URLs send files straight to the temporary asset upload filesystem when it accepts direct uploads.
+- Asset indexes, Assets fields and the “Replace file” action upload files this way for volumes whose filesystem implements `craft\base\TemporaryUploadUrlInterface`.
+- Front-end forms can upload files the same way by registering the `craft\web\assets\uploads\UploadsAsset` asset bundle and adding a `data-upload-session` attribute to file inputs. Chosen files are uploaded right away and replaced with hidden inputs holding the new asset IDs.
+- Guests can upload assets when a `craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD` event handler allows them. Guests can start 60 uploads per minute per IP address, unless the `defaultRateLimit` config setting is disabled.
+
 ### Control Panel
 
 - The control panel is now available in Croatian, and its Indonesian, Kyrgyz, and Welsh translations are now complete. Previously, most of their strings were shown in English.
@@ -31,6 +39,19 @@
 - Added `craft\helpers\ElementHelper::getProvisionalDraftUser()`. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - Added `craft\helpers\HtmlPurifier::enableDefinitionCache()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
 - Added `craft\services\Path::getHtmlPurifierCachePath()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
+- Added `craft\base\ApplicationTrait::getUploads()`.
+- Added `craft\base\TemporaryUploadUrlInterface`.
+- Added `craft\controllers\UploadsController`.
+- Added `craft\events\AuthorizeUploadEvent`.
+- Added `craft\services\Uploads`.
+- Added `craft\uploads\AssetUploadHandler`.
+- Added `craft\uploads\StagedUpload`.
+- Added `craft\uploads\TemporaryUploadHandler`.
+- Added `craft\uploads\UploadHandlerInterface`.
+- Added `craft\web\assets\uploads\UploadsAsset`.
+- Added `Craft.UploadSessionUploader` and `Craft.Uploads.FileUpload`.
+- `Craft.createUploader()` now returns a `Craft.UploadSessionUploader` for filesystems that implement `craft\base\TemporaryUploadUrlInterface`.
+- Removed the `mcp/upload` action. MCP upload URLs now use `uploads/transfer`.
 
 ### Performance
 
