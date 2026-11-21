@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'שאילתת משתמשים בקבוצת המשתמשים “{name}”',
     'Query for users' => 'שאילתת משתמשים',
     'Query for volumes' => 'שאילתת אמצעי אחסון',
+    'Query for {type}' => 'שאילתת {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'פרמטרים של השאילתה (לדוגמה {ex1}) או פרגמנט URI (לדוגמה {ex2}) שיש להוסיף לכתובת ה-URL.',
     'Queue Manager' => 'מנהל תורים',
     'Quick Post' => 'פוסט מהיר',
