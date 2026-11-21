@@ -1072,7 +1072,7 @@ return [
     'Make not required' => 'Jadikan tidak wajib',
     'Make optional' => 'Jadikan opsional',
     'Make required' => 'Jadikan wajib',
-    'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => 'Pastikan Anda tidak menimpa perubahan dalam berkas YAML yang dibuat di lingkungan lain.',
+    'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => 'Pastikan Anda tidak menimpa perubahan di berkas YAML yang dibuat di lingkungan lain.',
     'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => 'Pastikan Anda telah mengikuti petunjuk <a href="{url}" target="_blank">Penyiapan Lingkungan</a> sebelum menerapkan perubahan YAML konfigurasi proyek.',
     'Make this the primary site' => 'Jadikan ini situs utama',
     'Manage categories' => 'Kelola kategori',

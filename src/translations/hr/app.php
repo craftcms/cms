@@ -1073,7 +1073,7 @@ return [
     'Make optional' => 'Učini neobaveznim',
     'Make required' => 'Učini obaveznim',
     'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => 'Provjerite da ne prepisujete promjene u YAML datotekama koje su napravljene u drugom okruženju.',
-    'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => 'Prije primjene promjena YAML datoteka konfiguracije projekta provjerite jeste li slijedili upute za <a href="{url}" target="_blank">postavljanje okruženja</a>.',
+    'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => 'Provjerite jeste li slijedili upute za <a href="{url}" target="_blank">postavljanje okruženja</a> prije primjene promjena YAML konfiguracije projekta.',
     'Make this the primary site' => 'Postavi kao primarno web-mjesto',
     'Manage categories' => 'Upravljanje kategorijama',
     'Manage element thumbnails' => 'Upravljanje sličicama elemenata',
