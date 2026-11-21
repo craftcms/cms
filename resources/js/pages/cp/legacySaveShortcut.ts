@@ -1,5 +1,7 @@
 import {t} from '@craftcms/ui/utilities/translate';
 import {useShortcut} from '@/common/shortcuts';
+import {topStackedPanel} from '@/common/slideouts/panel-stack';
+import {useSlideout} from '@/common/slideouts/useSlideout';
 
 /** A Craft 5 form action, as `_layouts/cp` takes them in `formActions`. */
 export interface LegacyFormAction {
@@ -42,11 +44,14 @@ export function legacySaveShortcuts(
     return shortcuts;
   }
 
+  // Like Craft 5, a form that declares its actions, even none, gets only their shortcuts.
   const actions = Array.isArray(data.actions)
     ? (data.actions as Array<LegacyFormAction>)
-    : props.formActions;
+    : props.formActions?.length
+      ? props.formActions
+      : null;
 
-  if (!actions?.length) {
+  if (!actions) {
     const redirect =
       data['saveshortcut-redirect'] || props.saveShortcutRedirect;
     shortcuts.set(false, {
@@ -118,8 +123,14 @@ export function submitLegacyForm(options: SubmitOptions): void {
 export function useLegacySaveShortcut(
   props: () => LegacySaveShortcutProps
 ): void {
+  const inSlideout = useSlideout() !== null;
+
   for (const shift of [false, true]) {
-    const current = () => legacySaveShortcuts(props()).get(shift);
+    // While a slideout is open, the key is its to handle.
+    const current = () =>
+      inSlideout || topStackedPanel()
+        ? undefined
+        : legacySaveShortcuts(props()).get(shift);
 
     useShortcut(
       shift ? 'Mod+Shift+S' : 'Mod+S',

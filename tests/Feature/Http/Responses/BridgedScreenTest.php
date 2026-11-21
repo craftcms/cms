@@ -50,6 +50,22 @@ it('preserves the header fragments of a Twig page in the Inertia shell', functio
             ->where('content', fn (string $html): bool => str_contains($html, '<p>hi</p>')));
 });
 
+it('declares no form actions on a bridged Twig form that has none', function () {
+    app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 3).'/Support/templates');
+
+    Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
+        ->prefix(Cms::config()->cpTrigger)
+        ->get('bridged-form-test', fn () => pageTemplate('test-plugin/bridged-header', ['fullPageForm' => true]));
+
+    get(cp_url('bridged-form-test'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component(BridgedScreen::PAGE)
+            ->where('fullPageForm', true)
+            ->where('mainFormAttributes.data.saveshortcut', true)
+            ->where('mainFormAttributes.data.actions', false));
+});
+
 dataset('bridgedScreens', [
     'cp screen response' => [
         function (): string {

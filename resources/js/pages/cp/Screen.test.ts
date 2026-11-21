@@ -8,6 +8,7 @@ import {
   ScreenContentReadyKey,
   ScreenPropsStoreKey,
 } from '@/common/composables/screen';
+import {registerPanel, unregisterPanel} from '@/common/slideouts/panel-stack';
 import Screen from './Screen.vue';
 
 vi.mock('@craftcms/ui', () => import('@craftcms/ui/utilities/dom'));
@@ -263,6 +264,7 @@ it('saves a full-page form on Mod+S', () => {
     mainFormAttributes: {
       data: {saveshortcut: true, 'saveshortcut-redirect': 'encrypted-url'},
     },
+    formActions: [],
   });
 
   expect(pressSave().defaultPrevented).toBe(true);
@@ -309,6 +311,13 @@ it.each([
     'a form that opted out',
     {fullPageForm: true, mainFormAttributes: {data: {saveshortcut: false}}},
   ],
+  [
+    'a form that declares no actions',
+    {
+      fullPageForm: true,
+      mainFormAttributes: {data: {saveshortcut: true, actions: []}},
+    },
+  ],
 ])('leaves Mod+S to the browser on %s', (_, props) => {
   const submit = vi.spyOn(HTMLFormElement.prototype, 'requestSubmit');
   mountForm(props);
@@ -332,4 +341,21 @@ it('leaves the save to the legacy CP when it’s loaded', () => {
   expect(postedParams(form)).toEqual({});
 
   vi.unstubAllGlobals();
+});
+
+it('leaves Mod+S to an open slideout', () => {
+  const submit = vi.spyOn(HTMLFormElement.prototype, 'requestSubmit');
+  mountForm({fullPageForm: true});
+  const panel = {
+    element: document.createElement('div'),
+    position: () => {},
+    handleShadeClick: () => {},
+  };
+  registerPanel(panel);
+
+  expect(pressSave().defaultPrevented).toBe(false);
+  expect(submit).not.toHaveBeenCalled();
+
+  unregisterPanel(panel);
+  submit.mockRestore();
 });
