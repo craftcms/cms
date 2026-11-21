@@ -1,14 +1,17 @@
 ---
 name: pr
-description: "Use when writing a PR body."
+description: "Use when writing or updating a PR title or PR body."
 ---
+
+Keep the PR title under 72 characters and in sync with the PR body.
 
 Use this template for writing the PR body:
 
 ```markdown
 ### Description
 
-<diagram, diff-sketch, or tree>
+- <why the change is needed>
+- <what it changes>
 
 ### Evidence
 
@@ -22,11 +25,17 @@ Use this template for writing the PR body:
 
 ## Sections
 
-Skip all preambles and keep prose brief.
+Skip all preambles and keep prose concise and quickly scannable by a human:
+
+- use hierarchy within each section (subheadings, bulleted lists, nesting) to avoid dense blocks of text
+- use GitHub footnotes (`[^1]`) to include detail without sacrificing readability
+- put test output, console output, and other literal text in code blocks, and identifiers in inline code
 
 ### Description
 
-Load and follow the `show-me` skill to create the smallest visual that clearly explains the change.
+Start with a few bullets on why the change is needed and what it changes. Don't jump straight to how.
+
+Leave the how to the code. Mention an implementation detail only to call it out for the reviewer, and move longer reasoning into footnotes.
 
 ### Evidence
 

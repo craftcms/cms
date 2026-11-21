@@ -13,6 +13,8 @@
 - Removed `CraftCms\Cms\Http\ResponseHeaders::$noCache`, `$duration`, `$replace`, and `$headers`, and the `$replace` argument of `ResponseHeaders::setCache()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Responses to token and site token requests now have no-cache headers, so shared caches and browsers don’t store them. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where error pages were sent with the cache headers and other response headers queued by the template or controller that threw the exception. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
+- Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 
 ## 6.0.0-beta.2 - 2026-11-20
 
