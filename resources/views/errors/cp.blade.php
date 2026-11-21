@@ -51,7 +51,7 @@
             margin: 0;
             padding: 24px;
             background:
-              radial-gradient(var(--texture) 1px, transparent 1px) 0 0 / 14px 14px,
+              radial-gradient(var(--texture) 1px, transparent 1px) center / 14px 14px,
               var(--bg);
             color: var(--text);
             font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
