@@ -831,7 +831,7 @@ describe('GraphQL', function () {
             ->toBe(['data' => ['testNotedCustomers' => [['email' => 'ada@example.com', 'notes' => 'Prefers email']]]]);
     });
 
-    it('resolves custom fields named like model attributes to their own values', function () {
+    it('leaves out custom fields named like model attributes', function () {
         Field::factory()->create(['name' => 'Company', 'handle' => 'company', 'type' => PlainText::class]);
         app(Fields::class)->refreshFields();
         app(EloquentElements::class)->register(TestCompanyFieldCustomerElement::class);
@@ -840,8 +840,9 @@ describe('GraphQL', function () {
         $element->setFieldValue('company', 'Analytical Engines');
         Elements::saveElement($element);
 
-        expect(executeEloquentElementsGql(['eloquent.test-company-field-customer:read'], '{ testCompanyFieldCustomers { company } }'))
-            ->toBe(['data' => ['testCompanyFieldCustomers' => [['company' => 'Analytical Engines']]]]);
+        // The model hides its `company` attribute, so neither gets a field
+        expect(executeEloquentElementsGql(['eloquent.test-company-field-customer:read'], '{ testCompanyFieldCustomers { company } }')['errors'][0]['message'])
+            ->toContain('Cannot query field "company"');
     });
 
     it('keeps out types the schema can’t query, and model attributes the model hides', function () {

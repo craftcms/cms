@@ -12,7 +12,7 @@ use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
 use CraftCms\Cms\Gql\Types\DateTime;
-use CraftCms\Cms\Gql\Types\Elements\EloquentElement as EloquentElementObjectType;
+use CraftCms\Cms\Gql\Types\Elements\Element;
 use CraftCms\Cms\Gql\Types\Number;
 use CraftCms\Cms\Gql\Types\ObjectType;
 use CraftCms\Cms\Support\Facades\Gql;
@@ -59,13 +59,14 @@ class EloquentElementType extends Generator implements GeneratorInterface
     {
         $typeName = $elementType::gqlTypeName();
 
-        return GqlEntityRegistry::getOrCreate($typeName, fn () => new EloquentElementObjectType([
+        return GqlEntityRegistry::getOrCreate($typeName, fn () => new Element([
             'name' => $typeName,
             'description' => "This is the type for {$elementType::pluralLowerDisplayName()}.",
             'fields' => function () use ($elementType, $typeName) {
+                // The element’s model attributes shadow custom fields with the same handles, so those are left out
                 $fields = array_merge(
                     ElementInterface::getFieldDefinitions(),
-                    self::getContentFields($elementType::resolveFieldLayout()),
+                    array_diff_key(self::getContentFields($elementType::resolveFieldLayout()), array_flip($elementType::modelAttributes())),
                 );
 
                 // Model attributes can’t shadow the element’s fields or custom fields.
