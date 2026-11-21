@@ -20,6 +20,10 @@
 - Front-end forms can upload files the same way by registering the `craft\web\assets\uploads\UploadsAsset` asset bundle and adding a `data-upload-session` attribute to file inputs. Chosen files are uploaded right away and replaced with hidden inputs holding the new asset IDs.
 - Guests can upload assets when a `craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD` event handler allows them. Guests can start 60 uploads per minute per IP address, unless the `defaultRateLimit` config setting is disabled.
 
+### Control Panel
+
+- The control panel is now available in Croatian, and its Indonesian, Kyrgyz, and Welsh translations are now complete. Previously, most of their strings were shown in English.
+
 ### Development
 
 - Added the `craftCommand()` Twig function. ([#20487](https://github.com/craftcms/cms/pull/20487))

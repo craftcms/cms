@@ -1239,7 +1239,8 @@ class Html extends \yii\helpers\Html
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
-            if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+            // Only local file paths are allowed, not stream wrapper URLs (`ftp://`, `phar://`, etc.)
+            if (str_contains($svg, '://') || !is_file($svg) || !FileHelper::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }

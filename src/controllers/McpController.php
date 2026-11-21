@@ -51,6 +51,12 @@ class McpController extends Controller
             throw new NotFoundHttpException();
         }
 
+        // The authenticated server only answers at its own routes, and not at action URLs, so a server in the control
+        // panel always requires control panel access.
+        if ($action->id === 'authenticated' && $settings->requestRoute($this->request) !== ['mcp/authenticated', []]) {
+            throw new NotFoundHttpException();
+        }
+
         // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute(),
         // and not on the control panel’s own host.
         if ($action->id !== 'authenticated' && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
