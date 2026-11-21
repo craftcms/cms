@@ -1183,7 +1183,7 @@ return [
     'New {group} category' => 'Neue {group}-Kategorie',
     'New {section} entry' => 'Neuer Eintrag in „{section}“',
     'New {total, plural, =1{position} other{positions}} saved.' => 'Neue {total, plural, one {}=1{Position} other{Positionen}} gespeichert.',
-    'New {type}' => '{type, select, Eintrag{Neuer} Benutzer{Neuer} other{Neue}} {type}',
+    'New {type}' => '{type, select, Eintrag{Neuer Eintrag} Benutzer{Neuer Benutzer} Inhaltsblock{Neuer Inhaltsblock} Kategorie{Neue Kategorie} Adresse{Neue Adresse} Datei{Neue Datei} Asset{Neues Asset} Schlagwort{Neues Schlagwort} other{Neues Element ({type})}}',
     'New' => 'Neue',
     'Next Page' => 'Nächste Seite',
     'Next' => 'Weiter',
