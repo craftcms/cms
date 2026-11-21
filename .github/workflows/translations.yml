@@ -1,0 +1,42 @@
+name: Translations
+on:
+  push:
+    branches:
+      - 5.x
+      - 5.13
+      - 6.x
+    paths:
+      - 'src/translations/**'
+      - 'resources/translations/**'
+      - '.github/workflows/translations.yml'
+  pull_request:
+    paths:
+      - 'src/translations/**'
+      - 'resources/translations/**'
+      - '.github/workflows/translations.yml'
+permissions:
+  contents: read
+concurrency:
+  group: translations-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    name: Check translations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # check.php from the craft-translations skill. Update the ref to pick up
+      # new checks.
+      - uses: actions/checkout@v4
+        with:
+          repository: craftcms/skills
+          ref: b23292c6c2a635d168c81307b87db56df0999948
+          path: .skills
+          sparse-checkout: skills/craft-translations/scripts
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: intl, mbstring
+          coverage: none
+      # 5.x keeps translations in src/translations, and 6.x in resources/translations.
+      - run: php .skills/skills/craft-translations/scripts/check.php "$(ls -d src/translations resources/translations 2>/dev/null | head -1)"
