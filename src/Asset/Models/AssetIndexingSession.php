@@ -32,7 +32,6 @@ class AssetIndexingSession extends BaseModel
         return [
             'totalEntries' => 'int',
             'processedEntries' => 'int',
-            'cacheRemoteImages' => 'bool',
             'listEmptyFolders' => 'bool',
             'analyzeImages' => 'bool',
             'isCli' => 'bool',

@@ -81,7 +81,8 @@ class RouteServiceProvider extends ServiceProvider
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
-        $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
+        // Before `auth`, so guests are sent to the requested site's login URL.
+        $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
         $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class, StartLazySession::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(

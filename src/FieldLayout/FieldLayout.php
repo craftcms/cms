@@ -356,7 +356,7 @@ class FieldLayout extends Component
                     'handle' => $field->handle,
                 ]));
             } elseif (isset($handles[$field->handle])) {
-                $fail(t('{attribute} "{value}" has already been taken.', [
+                $fail(t('{attribute} “{value}” has already been taken.', [
                     'attribute' => t('Handle'),
                     'value' => $field->handle,
                 ]));
@@ -390,7 +390,7 @@ class FieldLayout extends Component
             $error = $validator->fails() ? $validator->errors()->first('handle') : null;
 
             if ($error === null && isset($handles[$field['handle']])) {
-                $error = t('{attribute} "{value}" has already been taken.', [
+                $error = t('{attribute} “{value}” has already been taken.', [
                     'attribute' => t('Handle'),
                     'value' => $field['handle'],
                 ]);

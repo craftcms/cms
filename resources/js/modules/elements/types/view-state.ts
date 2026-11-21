@@ -10,8 +10,8 @@ export type ViewMode = {
 };
 
 /**
- * A source's persisted view overrides (view mode, columns, sort, and
- * thumbnail sizes).
+ * A source's persisted view overrides (view mode, columns, sort, thumbnail
+ * sizes, and page size).
  */
 export type SourceViewState = {
   /**
@@ -36,6 +36,11 @@ export type SourceViewState = {
    * views too. Absent entries fall back to that view's default size.
    */
   thumbSizes?: Partial<Record<'table' | 'thumbs', ThumbSize>>;
+  /**
+   * The number of elements per page the user chose for this source. Absent,
+   * the server's default applies.
+   */
+  pageSize?: number;
 };
 
 /** How cards show a thumbnail, as a source's field layout has it. */
@@ -52,9 +57,10 @@ export type ThumbSize = ChipThumbSizeValue;
  */
 export type ViewState = {
   /**
-   * Per-source view overrides (view mode, columns, sort, and thumbnail sizes), keyed by source key. Absent
-   * entries fall back to the source's own config (`tableAttributes` /
-   * `defaultSort`) or the element-type defaults.
+   * Per-source view overrides (view mode, columns, sort, thumbnail sizes, and
+   * page size), keyed by source key. Absent entries fall back to the source's
+   * own config (`tableAttributes` / `defaultSort`) or the element-type
+   * defaults.
    */
   sources?: Record<string, SourceViewState>;
   nestedInputNamespace?: string | null;

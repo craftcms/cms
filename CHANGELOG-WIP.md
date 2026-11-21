@@ -122,6 +122,7 @@
 - `<img>` tags returned by `asset.getImg()` now have a blurred placeholder as their background, unless the image has transparent regions. ([#19750](https://github.com/craftcms/cms/pull/19750))
 - Added the `blurhash`, `analysis`, and `placeholderDataUrl` fields to assets in GraphQL queries. `analysis` holds what was found in an image, such as its colors, embedded metadata, and type. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#19755](https://github.com/craftcms/cms/pull/19755), [#20103](https://github.com/craftcms/cms/pull/20103))
 - Images can now be queried by orientation via the `orientation` asset query param and GraphQL argument, and image assets’ orientations are available via `asset.orientation` in templates and the `orientation` GraphQL field. ([#20114](https://github.com/craftcms/cms/pull/20114))
+- Removed asset indexing’s “Cache remote images” option and the `--cacheRemoteImages` CLI option. Remote image sources are no longer resized or kept between requests; transforms and image editing download originals as needed and delete the local copies afterward. ([#20983](https://github.com/craftcms/cms/pull/20983))
 
 #### Users & Auth
 - Users can now connect their accounts to one or more Laravel Socialite providers, which are listed on the login page. ([#19202](https://github.com/craftcms/cms/pull/19202))
@@ -212,7 +213,7 @@
 - The “Addresses” settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
-- Removed the `allowedGraphqlOrigins`, `disableGraphqlTransformDirective`, `enableBasicHttpAuth`, `enableTwigSandbox`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `previewIframeResizerOptions`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, `useIframeResizer`, and `usePathInfo` config settings, which no longer have any effect.
+- Removed the `allowedGraphqlOrigins`, `disableGraphqlTransformDirective`, `enableBasicHttpAuth`, `enableTwigSandbox`, `maxCachedCloudImageSize`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `previewIframeResizerOptions`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, `useIframeResizer`, and `usePathInfo` config settings, which no longer have any effect.
 - Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and are listed in the Yii2 Loose Ends utility when they’re set.
 
 ### Development
@@ -293,6 +294,7 @@
 
 ### System
 - Removed the bundled Composer executable. Package installation, updates, and removal now require Composer 2.2.0 or later in the server’s `PATH`, and are disabled when it’s unavailable.
+- Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and asset publishing no longer depend on it. `craft\helpers\App::isEphemeral()` is deprecated. Sites that set it on a read-only filesystem should turn off automatic project config YAML writes with `writeYamlAutomatically(false)`, and serve legacy resources that were published at build time. The `CRAFT_LICENSE_KEY` license key can now be set as an environment variable, not only a PHP constant. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The database table prefix is now set with the `DB_PREFIX` environment variable. When `craftcms/yii2-adapter` is installed, Craft 5’s `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are still applied, with a trailing underscore. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color, a grid of the average colors of its regions, its main colors and how much of the image each covers, and how light its regions are. Control panel uploads sample it in the browser. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#20103](https://github.com/craftcms/cms/pull/20103))
@@ -300,6 +302,8 @@
 - Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and changes made by other workers or commands, such as to the project config, are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Two-factor authentication recovery codes are now encrypted at rest. ([#19252](https://github.com/craftcms/cms/pull/19252))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
+- The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
+- Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode. ([#20547](https://github.com/craftcms/cms/pull/20547))
 
 ### Extensibility
 - Added the `craft-slide-picker-button` component, a button that shows a value as a small copy of a slide picker’s segments and opens a full-size `craft-slide-picker` in a popover, for slide pickers in dense rows. Its tooltip shows the value and is its label, so it’s named by the value, such as “3 columns”, and described by its `item-label`, such as “Recent Entries”. Its `slider-label` labels the slider in the popover. Its `value-unit`, such as `% width`, is shown and announced after the value. ([#20681](https://github.com/craftcms/cms/pull/20681))
@@ -1267,6 +1271,7 @@ Moved the following controllers:
 - Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
 - Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
+- Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Removed `craft\models\ProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ProjectConfigData`
 - Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
 - Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.

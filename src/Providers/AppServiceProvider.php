@@ -33,7 +33,6 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Log\ContextLogProcessor;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
@@ -165,8 +164,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerMacros(): void
     {
-        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
-
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
 
