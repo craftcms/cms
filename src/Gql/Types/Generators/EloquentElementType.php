@@ -21,6 +21,7 @@ use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Utils\Utils;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use UnitEnum;
@@ -91,7 +92,8 @@ class EloquentElementType extends Generator implements GeneratorInterface
         $fields = [];
 
         foreach ($elementType::listedModelAttributes() as $attribute) {
-            if ($visible !== [] && ! in_array($attribute, $visible, true)) {
+            // Columns can be named in ways GraphQL field names can’t, which would invalidate the whole schema
+            if (($visible !== [] && ! in_array($attribute, $visible, true)) || Utils::isValidNameError($attribute) !== null) {
                 continue;
             }
 

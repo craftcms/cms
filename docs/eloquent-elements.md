@@ -348,7 +348,7 @@ Registering a type adds a **Query for customers** component to GraphQL schemas, 
 
 The queries take the arguments every element query takes, plus one per custom field. Model attributes can't be used as arguments.
 
-The elements' GraphQL type is named after `gqlTypeName()`, `Customer`. It implements `ElementInterface`, and has a field per custom field and per model attribute. Model attributes listed in the model's `$hidden` property are left out, and so are those missing from its `$visible` property when it has one. A model attribute named like an element field doesn't get a field of its own, and a custom field named like a model attribute is left out, as the element's property by that name returns the model attribute.
+The elements' GraphQL type is named after `gqlTypeName()`, `Customer`. It implements `ElementInterface`, and has a field per custom field and per model attribute. Model attributes listed in the model's `$hidden` property are left out, and so are those missing from its `$visible` property when it has one, and those whose names GraphQL doesn't allow, such as `external-id`. A model attribute named like an element field doesn't get a field of its own, and a custom field named like a model attribute is left out, as the element's property by that name returns the model attribute.
 
 Model attributes are typed by their casts, or by their columns when they don't have one:
 

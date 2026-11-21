@@ -779,6 +779,7 @@ describe('GraphQL', function () {
             $table->json('tags');
             $table->dateTime('signed_up_at');
             $table->dateTime('renews_at');
+            $table->string('external-id')->nullable();
         });
         app(EloquentElements::class)->register(TestTypedCustomerElement::class);
 
@@ -814,6 +815,9 @@ describe('GraphQL', function () {
                 // Past 2038, so too wide for an `Int`
                 'renewsAt' => Date::parse('2040-01-01 00:00:00')->getTimestamp(),
             ]);
+
+        // GraphQL doesn’t allow the `external-id` column’s name, so it doesn’t get a field
+        app(Gql::class)->getSchemaDef(new GqlSchema(['name' => 'Test', 'scope' => ['eloquent.test-typed-customer:read']]), true)->assertValid();
     });
 
     it('queries custom fields', function () {
