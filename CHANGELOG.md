@@ -21,6 +21,7 @@
 - Fixed an error that occurred when resolving users for a GraphQL schema without any user groups. ([#21004](https://github.com/craftcms/cms/pull/21004))
 - Fixed an error that occurred when project config changes were saved, and on control panel pages for admins, if the project config folder couldn’t be written. The changes are still saved, and admins now see the “folder isn’t writable” alert. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Fixed a bug where the `auth` middleware redirected front-end guests to the primary site’s login path rather than the current site’s. ([#21007](https://github.com/craftcms/cms/pull/21007))
+- Fixed a bug where updating a field layout with the MCP tools could orphan custom fields’ content. ([#21006](https://github.com/craftcms/cms/pull/21006))
 - Fixed a bug where element indexes didn’t remember the chosen number of elements per page. ([#20979](https://github.com/craftcms/cms/issues/20979))
 
 ## 6.0.0-beta.2 - 2026-11-20
