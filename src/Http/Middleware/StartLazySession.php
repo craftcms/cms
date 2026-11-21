@@ -122,8 +122,17 @@ readonly class StartLazySession
             return $startSession->handle($request, $next, ...$parameters);
         }
 
+        // Responses that save or refresh the session get no-cache headers. They're set on the response rather than
+        // queued with ResponseHeaders, as SetHeaders has already applied the queue, and routes without SetHeaders
+        // are covered too.
         if ($request->cookies->get($config['cookie']) !== null) {
-            return $this->preventCaching($startSession->handle($request, $next, ...$parameters));
+            $response = $startSession->handle($request, $next, ...$parameters);
+
+            if ($response instanceof Response) {
+                ResponseHeaders::setNoCacheHeaders($response);
+            }
+
+            return $response;
         }
 
         $session = $this->manager->driver();
@@ -155,27 +164,16 @@ readonly class StartLazySession
 
         if ($regenerated || $keys !== [] || $tokenLocation !== null) {
             $bufferedHandler->flush();
-            $this->preventCaching($response);
+
+            if ($response instanceof Response) {
+                ResponseHeaders::setNoCacheHeaders($response);
+            }
+
             $this->report($request, $keys, $regenerated, $tokenLocation);
         } elseif ($response instanceof Response) {
             // `StartSession` and `PreventRequestForgery` add these to every response.
             $response->headers->removeCookie($config['cookie'], $config['path'], $config['domain']);
             $response->headers->removeCookie('XSRF-TOKEN', $config['path'], $config['domain']);
-        }
-
-        return $response;
-    }
-
-    /**
-     * Keeps browsers and shared caches from storing a response that saves or refreshes the session.
-     *
-     * Set on the response rather than queued with {@see ResponseHeaders}, as {@see SetHeaders} has already
-     * applied the queue, and so routes without {@see SetHeaders} are covered too.
-     */
-    private function preventCaching(mixed $response): mixed
-    {
-        if ($response instanceof Response) {
-            ResponseHeaders::setNoCacheHeaders($response);
         }
 
         return $response;

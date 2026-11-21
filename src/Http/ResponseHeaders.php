@@ -27,13 +27,10 @@ class ResponseHeaders
      */
     public const array NO_CACHE_HEADERS = [
         'Cache-Control' => 'no-cache, no-store, must-revalidate',
-        'Pragma' => 'no-cache',
-        'Expires' => '0',
     ];
 
     /**
-     * Keeps browsers and shared caches from storing the response, replacing its `Cache-Control`, `Pragma` and
-     * `Expires` headers.
+     * Keeps browsers and shared caches from storing the response, replacing its `Cache-Control` header.
      */
     public static function setNoCacheHeaders(Response $response): void
     {

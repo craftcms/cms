@@ -61,31 +61,22 @@ readonly class HandleTokenRequest
         if ($this->isPreviewRoute((string) $tokenRoute[0])) {
             $this->previews->prepare((array) ($tokenRoute[1] ?? []));
 
-            $previewRequest = $request->duplicateWithUri(
+            $newRequest = $request->duplicateWithUri(
                 $originalUri->value(),
                 $originalUri->query()->all(),
             );
-            app()->instance('request', $previewRequest);
-
-            return $this->preventCaching($next($previewRequest));
+        } else {
+            $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
+            $newRequest->attributes->set(self::ROUTE_RESOLVED_ATTRIBUTE, true);
+            $newRequest->attributes->set('isCpRequest', $request->isCpRequest());
+            $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, $request->decodedPath());
         }
 
-        $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
-        $newRequest->attributes->set(self::ROUTE_RESOLVED_ATTRIBUTE, true);
-        $newRequest->attributes->set('isCpRequest', $request->isCpRequest());
-        $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, $request->decodedPath());
         app()->instance('request', $newRequest);
+        $response = $next($newRequest);
 
-        return $this->preventCaching($next($newRequest));
-    }
-
-    /**
-     * Keeps browsers and shared caches from storing a token’s response, which they could otherwise serve for the
-     * URL without the token, such as when the token was sent in a header. Applied here rather than in
-     * {@see SetHeaders}, as token routes can be outside the `craft` middleware group.
-     */
-    private function preventCaching(mixed $response): mixed
-    {
+        // Caches could otherwise serve a token's response for the URL without the token, such as when the token
+        // was sent in a header. Set here rather than in SetHeaders, as token routes can be outside the `craft` group.
         if ($response instanceof Response) {
             ResponseHeaders::setNoCacheHeaders($response);
         }
