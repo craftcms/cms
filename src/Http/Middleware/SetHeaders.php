@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Throwable;
 
 /**
  * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
@@ -69,7 +70,7 @@ class SetHeaders
             ? $response->exception
             : null;
 
-        if ($exception !== null && ! $exception instanceof HttpResponseException) {
+        if ($exception !== null && ! $this->isResponseException($exception)) {
             $this->responseHeaders->reset();
         }
 
@@ -117,6 +118,21 @@ class SetHeaders
             $response->headers->allPreserveCaseWithoutCookies(),
             fn (array $values) => array_any($values, fn ($value) => is_string($value) && str_contains($value, $token)),
         );
+    }
+
+    /**
+     * Whether the exception is, or wraps, an HttpResponseException. Twig wraps exceptions thrown while rendering,
+     * such as the one `{% redirect %}` throws, and Laravel attaches the wrapped exception to the response.
+     */
+    private function isResponseException(Throwable $exception): bool
+    {
+        for ($e = $exception; $e !== null; $e = $e->getPrevious()) {
+            if ($e instanceof HttpResponseException) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void

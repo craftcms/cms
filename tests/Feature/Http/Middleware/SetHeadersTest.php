@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -296,3 +297,24 @@ it('sets no-cache headers for site token requests', function () {
 
     expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
 });
+
+it('keeps headers queued before a redirect', function (string $source) {
+    TemplateMode::set(TemplateMode::Site);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('redirecting-page', function () use ($source) {
+        if ($source === 'twig') {
+            return app(TemplateManager::class)->renderString('{% header "X-Test: yes" %}{% redirect "/foo" %}');
+        }
+
+        ResponseHeaders::add('X-Test', 'yes');
+
+        throw new HttpResponseException(redirect('/foo'));
+    });
+
+    $this->get('/redirecting-page')
+        ->assertRedirect('/foo')
+        ->assertHeader('X-Test', 'yes');
+})->with([
+    'Twig {% redirect %}' => 'twig',
+    'HttpResponseException' => 'php',
+]);
