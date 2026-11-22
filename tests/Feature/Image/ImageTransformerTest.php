@@ -503,7 +503,6 @@ it('excludes generated transform directories from asset indexing with the defaul
 
     $session = app(AssetIndexer::class)->startIndexingSession(
         volumes: [$asset->volumeId],
-        cacheRemoteImages: false,
         listEmptyFolders: true,
     );
 

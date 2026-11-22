@@ -19,7 +19,7 @@ class FilesystemServiceProvider extends ServiceProvider
 
         $config->set('filesystems.disks.craft-tmp', [
             'driver' => 'local',
-            'root' => app()->isEphemeral() ? '/tmp' : storage_path('app/temp'),
+            'root' => storage_path('app/temp'),
         ]);
 
         $config->set('filesystems.disks.craft-asset-temp', [

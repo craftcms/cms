@@ -231,7 +231,6 @@ class Install extends Migration
             $table->text('indexedVolumes')->nullable();
             $table->integer('totalEntries')->nullable();
             $table->integer('processedEntries')->default(0);
-            $table->boolean('cacheRemoteImages')->nullable();
             $table->boolean('listEmptyFolders')->default(false)->nullable();
             $table->boolean('analyzeImages')->default(false);
             $table->boolean('isCli')->default(false)->nullable();

@@ -118,7 +118,7 @@ describe('index', function () {
                     expect($row['name']['label'])->toBe('Volume B')
                         ->and($row['name']['url'])->toBe(action([VolumesController::class, 'edit'], ['volumeId' => $firstVolume->id]))
                         ->and($row['_deleteUrl'])->toBe(action([VolumesController::class, 'destroy'], ['volumeId' => $firstVolume->id]))
-                        ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete "Volume B"?')
+                        ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “Volume B”?')
                         ->and($handle->attr('value'))->toBe('volumeB')
                         ->and($handle->text())->toBe('volumeB');
 

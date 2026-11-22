@@ -888,6 +888,23 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public ?bool $useFileLocks = null;
 
     /**
+     * @var int The maximum dimension size to use when caching images from external sources to use in transforms.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->maxCachedCloudImageSize(0)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=0
+     * ```
+     * :::
+     *
+     * @group Image Handling
+     * @deprecated in 6.0.0. It no longer has any effect. Remote images are downloaded when needed and deleted afterward.
+     */
+    public int $maxCachedCloudImageSize = 0;
+
+    /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
      *
      * ::: code
@@ -1933,6 +1950,27 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public function useFileLocks(?bool $value): self
     {
         $this->deprecate('useFileLocks', 'It no longer has any effect.');
+
+        return $this;
+    }
+
+    /**
+     * The maximum dimension size to use when caching images from external sources to use in transforms.
+     *
+     * ```php
+     * ->maxCachedCloudImageSize(0)
+     * ```
+     *
+     * @group Image Handling
+     * @see $maxCachedCloudImageSize
+     * @deprecated in 6.0.0. It no longer has any effect. Remote images are downloaded when needed and deleted afterward.
+     */
+    #[Deprecated(message: 'in 6.0.0. It no longer has any effect. Remote images are downloaded when needed and deleted afterward.')]
+    public function maxCachedCloudImageSize(int $value): self
+    {
+        $this->deprecate('maxCachedCloudImageSize', 'It no longer has any effect. Remote images are downloaded when needed and deleted afterward.');
+
+        $this->maxCachedCloudImageSize = $value;
 
         return $this;
     }

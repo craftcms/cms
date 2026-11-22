@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Flash;
@@ -57,7 +58,13 @@ readonly class ProjectConfigController
     {
         abort_if($projectConfig->readOnly, 403, 'Rebuilding the project config is not allowed while it’s in read-only mode.');
 
-        $projectConfig->regenerateExternalConfig();
+        try {
+            $projectConfig->regenerateExternalConfig();
+        } catch (ProjectConfigWriteException $exception) {
+            report($exception);
+
+            return $this->asFailure(t('Project config YAML files can’t be written in this environment.'));
+        }
 
         return $this->asSuccess(t('External project config changes discarded.'));
     }

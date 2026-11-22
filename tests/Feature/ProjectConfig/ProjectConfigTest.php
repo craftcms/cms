@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
@@ -558,3 +559,21 @@ it('starts each config application with fresh path claims', function (bool $fail
     expect($projectConfig->claimPath(ProjectConfig::PATH_FIELDS, true))->toBeTrue();
     expect(new ProjectConfig(Cms::config())->claimPath(ProjectConfig::PATH_FIELDS, true))->toBeTrue();
 })->with([false, true]);
+
+it('keeps a saved change when the YAML files can’t be written', function () {
+    $blocker = config_path('craft/flush-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
+    File::put($blocker, '');
+    $projectConfig = app(ProjectConfig::class)->writeYamlAutomatically();
+    $projectConfig->folderName = 'flush-write-blocker/project';
+
+    try {
+        $projectConfig->set('flushTest.value', 'Saved');
+        $projectConfig->flush();
+    } finally {
+        File::delete($blocker);
+    }
+
+    expect(DB::table(Table::PROJECTCONFIG)->where('path', 'flushTest.value')->value('value'))->toBe('"Saved"')
+        ->and(Cache::get(ProjectConfig::FILE_ISSUES_CACHE_KEY))->toBeTrue();
+});
