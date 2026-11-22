@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Route;
 use CraftCms\Cms\Http\Controllers\ProjectConfigRouteController;
 use CraftCms\Cms\Route\Data\Route;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Matching\UriValidator;
 use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
@@ -22,11 +24,11 @@ use Illuminate\Support\Collection;
 #[Singleton]
 class ProjectConfigRoutes
 {
-    /** The route action key with the `[siteUid, template]` pairs for a URI, in sort order. */
-    public const string TEMPLATES_ACTION = 'craftTemplates';
-
     /** @var list<LaravelRoute> */
     private array $registered = [];
+
+    /** @var list<array{?string, string, LaravelRoute}> Each route’s site UID, template, and Laravel route, in sort order */
+    private array $siteRoutes = [];
 
     /** A hash of the registered routes, or null if none have been registered. */
     private ?string $signature = null;
@@ -34,20 +36,6 @@ class ProjectConfigRoutes
     public function __construct(
         private readonly Router $router,
     ) {}
-
-    /**
-     * Returns the template a route from {@see register()} renders on a site, or `null` if it isn’t for the site.
-     */
-    public static function template(LaravelRoute $route, string $siteUid): ?string
-    {
-        foreach ($route->getAction(self::TEMPLATES_ACTION) ?? [] as [$routeSiteUid, $template]) {
-            if (empty($routeSiteUid) || $routeSiteUid === $siteUid) {
-                return $template;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Registers each URI once for all sites. Routes are registered when the app boots, before the requested
@@ -60,19 +48,40 @@ class ProjectConfigRoutes
         }
 
         $routes = $this->routes();
+        $registered = [];
 
         $this->signature = $this->signature($routes);
-        $this->registered = $routes
-            ->groupBy(fn (Route $route) => $route->getUri())
-            ->map(fn (Collection $uriRoutes, string $uri) => $this->router
-                ->get($uri, [
-                    'uses' => ProjectConfigRouteController::class,
-                    self::TEMPLATES_ACTION => $uriRoutes->map(fn (Route $route) => [$route->siteUid, $route->template])->all(),
-                ])
-                ->middleware(['craft', 'craft.web'])
-                ->withLazySession())
-            ->values()
+        $this->siteRoutes = $routes
+            ->map(function (Route $route) use (&$registered): array {
+                $uri = $route->getUri();
+                $registered[$uri] ??= $this->router
+                    ->get($uri, ProjectConfigRouteController::class)
+                    ->middleware(['craft', 'craft.web'])
+                    ->withLazySession();
+
+                return [$route->siteUid, $route->template, $registered[$uri]];
+            })
             ->all();
+        $this->registered = array_values($registered);
+    }
+
+    /**
+     * Returns the first route for a site that matches the request, in the routes’ sort order, as its Laravel route
+     * and template.
+     *
+     * @return array{LaravelRoute, string}|null
+     */
+    public function match(Request $request, string $siteUid): ?array
+    {
+        $uriValidator = new UriValidator;
+
+        foreach ($this->siteRoutes as [$routeSiteUid, $template, $route]) {
+            if ((empty($routeSiteUid) || $routeSiteUid === $siteUid) && $uriValidator->matches($route, $request)) {
+                return [$route, $template];
+            }
+        }
+
+        return null;
     }
 
     /**

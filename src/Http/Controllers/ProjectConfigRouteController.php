@@ -19,16 +19,14 @@ use Symfony\Component\HttpFoundation\Response;
 readonly class ProjectConfigRouteController
 {
     public function __construct(
+        private ProjectConfigRoutes $projectConfigRoutes,
         private Sites $sites,
     ) {}
 
     public function __invoke(Request $request): Response
     {
-        $route = $request->route();
-        $template = ProjectConfigRoutes::template($route, $this->sites->getCurrentSite()->uid);
+        [, $template] = $this->projectConfigRoutes->match($request, $this->sites->getCurrentSite()->uid) ?? abort(404);
 
-        abort_if($template === null, 404);
-
-        return response()->view($template, $route->parameters());
+        return response()->view($template, $request->route()->parameters());
     }
 }

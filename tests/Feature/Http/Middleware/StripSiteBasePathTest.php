@@ -146,6 +146,9 @@ it('matches project config routes for the requested site', function () {
     $routes->saveRoute(new ProjectConfigRoute(uriParts: ['actualites/', ['slug', '[^\\/]+']], template: 'site-routes/french', siteUid: $frenchUid));
     $routes->saveRoute(new ProjectConfigRoute(uriParts: ['site-routes/primary'], template: 'site-routes/french', siteUid: $frenchUid));
     $routes->saveRoute(new ProjectConfigRoute(uriParts: ['all-sites'], template: 'field-layout-template'));
+    $routes->saveRoute(new ProjectConfigRoute(uriParts: ['articles/', ['slug', '[^\\/]+']], template: 'site-routes/primary', siteUid: $primaryUid));
+    $routes->saveRoute(new ProjectConfigRoute(uriParts: ['articles/special'], template: 'site-routes/french', siteUid: $frenchUid));
+    $routes->saveRoute(new ProjectConfigRoute(uriParts: ['articles/', ['slug', '[^\\/]+']], template: 'field-layout-template', siteUid: $frenchUid));
     app(ProjectConfigRoutes::class)->register();
 
     $this->get('https://localhost/news')->assertOk()->assertSeeText('Primary news');
@@ -155,4 +158,7 @@ it('matches project config routes for the requested site', function () {
     $this->get('https://localhost/fr/site-routes/primary')->assertOk()->assertSeeText('French news');
     $this->get('https://localhost/site-routes/primary')->assertOk()->assertSeeText('Primary news');
     $this->get('https://localhost/fr/all-sites')->assertOk()->assertSee('Display only');
+    $this->get('https://localhost/articles/special')->assertOk()->assertSeeText('Primary news');
+    $this->get('https://localhost/fr/articles/special')->assertOk()->assertSeeText('French news')->assertDontSee('Display only');
+    $this->get('https://localhost/fr/articles/other')->assertOk()->assertSee('Display only');
 });

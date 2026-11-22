@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Http\Controllers\ProjectConfigRouteController;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Matching\ValidatorInterface;
@@ -11,7 +12,8 @@ use Illuminate\Routing\Route;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
- * Matches routes from Settings → Routes only on the sites they’re for, so other sites get Craft’s fallback route.
+ * Matches a route from Settings → Routes only if it’s the requested site’s first route for the request, so other
+ * sites get Craft’s fallback route and each site keeps its routes’ sort order.
  *
  * @internal
  *
@@ -21,7 +23,7 @@ class ProjectConfigRouteValidator implements ValidatorInterface
 {
     public function matches(Route $route, Request $request): bool
     {
-        if ($route->getAction(ProjectConfigRoutes::TEMPLATES_ACTION) === null) {
+        if ($route->getControllerClass() !== ProjectConfigRouteController::class) {
             return true;
         }
 
@@ -31,6 +33,10 @@ class ProjectConfigRouteValidator implements ValidatorInterface
             return false;
         }
 
-        return $site !== null && ProjectConfigRoutes::template($route, $site->uid) !== null;
+        if ($site === null) {
+            return false;
+        }
+
+        return (app(ProjectConfigRoutes::class)->match($request, $site->uid)[0] ?? null) === $route;
     }
 }
