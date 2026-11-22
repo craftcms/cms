@@ -15,6 +15,7 @@
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
+  import {usePhotoColors} from '@/common/composables/usePhotoColors';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
@@ -37,6 +38,7 @@
     updated: [event: ActivityEvent];
   }>();
 
+  const photoColors = usePhotoColors(() => props.event?.actor.photoColors);
   const eventItem =
     useTemplateRef<InstanceType<typeof ActivityTimelineEvent>>('eventItem');
   const editing = shallowRef(false);
@@ -283,7 +285,11 @@
       <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
     </div>
 
-    <MessageBubble v-else class="activity-timeline__comment">
+    <MessageBubble
+      v-else
+      class="activity-timeline__comment"
+      :style="photoColors"
+    >
       <MarkdownHtml :html="comment.html" />
     </MessageBubble>
 
@@ -303,12 +309,6 @@
 </template>
 
 <style scoped>
-  /* Flat, so the comment reads as part of the timeline rather than a toast. */
-  .message-bubble.activity-timeline__comment {
-    background-image: none;
-    box-shadow: none;
-  }
-
   /* Pills as tall as the comment form's round send button. */
   .activity-timeline__comment-button {
     --c-button-height: var(--c-size-control-sm);
