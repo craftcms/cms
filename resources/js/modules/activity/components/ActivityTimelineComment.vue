@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, shallowRef, useId} from 'vue';
+  import {computed, nextTick, shallowRef, useId, useTemplateRef} from 'vue';
   import {
     destroy,
     store,
@@ -15,7 +15,6 @@
     COMMENT_MAX_LENGTH,
     useCharacterLimit,
   } from '@/common/composables/useCharacterLimit';
-  import {usePhotoColors} from '@/common/composables/usePhotoColors';
   import type {ActionItem} from '@/common/types';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineEvent from './ActivityTimelineEvent.vue';
@@ -38,7 +37,8 @@
     updated: [event: ActivityEvent];
   }>();
 
-  const photoColors = usePhotoColors(() => props.event?.actor.photoColors);
+  const eventItem =
+    useTemplateRef<InstanceType<typeof ActivityTimelineEvent>>('eventItem');
   const editing = shallowRef(false);
   const draft = shallowRef('');
   const mutating = shallowRef(false);
@@ -89,16 +89,43 @@
     },
   ]);
 
+  /** Focus moves into the editor, and back to the actions menu after it. */
+  async function focusIn(selector: string): Promise<void> {
+    await nextTick();
+    (eventItem.value?.$el as HTMLElement | undefined)
+      ?.querySelector<HTMLElement>(selector)
+      ?.focus();
+  }
+
   function startEditing(): void {
     editing.value = true;
     draft.value = comment.value!.markdown ?? '';
     error.value = false;
+    void focusIn('textarea');
+  }
+
+  /**
+   * Esc in the text cancels, unless it's closing the mention suggestions.
+   * Checked while capturing, before the suggestions close themselves.
+   */
+  function onEditorEscape(event: KeyboardEvent): void {
+    const target = event.target;
+    if (
+      !(target instanceof HTMLTextAreaElement) ||
+      target.hasAttribute('aria-activedescendant')
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    cancelEditing();
   }
 
   function cancelEditing(): void {
     editing.value = false;
     draft.value = '';
     error.value = false;
+    void focusIn('[slot="invoker"]');
   }
 
   async function saveComment(): Promise<void> {
@@ -175,64 +202,30 @@
 </script>
 
 <template>
-  <div
-    v-if="creating || editing"
-    :data-activity-comment="editing ? '' : undefined"
-    :data-activity-comment-draft="creating ? '' : undefined"
-  >
-    <div
-      class="activity-timeline__comment-editor"
-      :class="{'activity-timeline__comment-edit': !creating}"
+  <div v-if="creating" data-activity-comment-draft>
+    <CommentField
+      :id="editorId"
+      v-model="draft"
+      :label="t('Add a comment')"
+      :overage-message="overageMessage"
+      :submit-label="t('Comment')"
+      :submit-disabled="mutating || overage > 0"
+      @submit="onDraftSubmit"
     >
-      <CommentField
-        :id="editorId"
-        v-model="draft"
-        :label="creating ? t('Add a comment') : t('Edit comment')"
-        :overage-message="overageMessage"
-        :submit-button="creating"
-        :submit-label="t('Comment')"
-        :submit-disabled="mutating || overage > 0"
-        @submit="onDraftSubmit"
-      >
-        <template #info>
-          <!-- A translated string with fixed markup for the key. -->
-          <span v-html="mentionHint"></span>
-        </template>
-      </CommentField>
-      <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
-      <div v-if="error || !creating" class="activity-timeline__comment-actions">
-        <p v-if="error" class="error" role="alert">
-          {{
-            creating
-              ? t('Couldn’t post comment.')
-              : t('Couldn’t update comment.')
-          }}
-        </p>
-        <craft-button
-          v-if="!creating"
-          type="button"
-          size="small"
-          @click="cancelEditing"
-        >
-          {{ t('Cancel') }}
-        </craft-button>
-        <craft-button
-          v-if="!creating"
-          type="button"
-          variant="primary"
-          size="small"
-          .disabled="draft.trim() === '' || mutating || overage > 0"
-          :aria-keyshortcuts="postShortcut"
-          @click="saveComment"
-        >
-          {{ t('Save') }}
-        </craft-button>
-      </div>
-    </div>
+      <template #info>
+        <!-- A translated string with fixed markup for the key. -->
+        <span v-html="mentionHint"></span>
+      </template>
+    </CommentField>
+    <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
+    <p v-if="error" class="error" role="alert">
+      {{ t('Couldn’t post comment.') }}
+    </p>
   </div>
 
   <ActivityTimelineEvent
     v-else-if="event && comment && !comment.deleted"
+    ref="eventItem"
     data-activity-comment
     :event="event"
     :element-type="elementType"
@@ -240,21 +233,63 @@
     :site-id="siteId"
     :last="last ?? false"
   >
-    <template v-if="comment.edited || commentActions.length" #meta-start>
+    <template
+      v-if="comment.edited || (commentActions.length && !editing)"
+      #meta-start
+    >
       <span v-if="comment.edited">{{ t('Edited') }}</span>
       <ActionMenu
-        v-if="commentActions.length"
+        v-if="commentActions.length && !editing"
         :actions="commentActions"
         :label="t('Comment actions')"
       />
     </template>
 
-    <MessageBubble class="activity-timeline__comment" :style="photoColors">
+    <div v-if="editing" @keydown.esc.capture="onEditorEscape">
+      <CommentField
+        :id="editorId"
+        v-model="draft"
+        :label="t('Edit comment')"
+        :overage-message="overageMessage"
+        :submit-button="false"
+        @submit="onDraftSubmit"
+      >
+        <template #info>
+          <!-- A translated string with fixed markup for the key. -->
+          <span v-html="mentionHint"></span>
+        </template>
+        <template #footer>
+          <div class="activity-timeline__comment-actions">
+            <craft-button
+              class="activity-timeline__comment-button"
+              type="button"
+              @click="cancelEditing"
+            >
+              {{ t('Cancel') }}
+            </craft-button>
+            <craft-button
+              class="activity-timeline__comment-button"
+              type="button"
+              variant="primary"
+              .disabled="draft.trim() === '' || mutating || overage > 0"
+              :aria-keyshortcuts="postShortcut"
+              @click="saveComment"
+            >
+              {{ t('Save') }}
+            </craft-button>
+          </div>
+        </template>
+      </CommentField>
+      <craft-text-expander :for="editorId" .triggers="mentionTriggers" />
+    </div>
+
+    <MessageBubble v-else class="activity-timeline__comment">
       <MarkdownHtml :html="comment.html" />
-      <p v-if="error" class="error" role="alert">
-        {{ t('Couldn’t update comment.') }}
-      </p>
     </MessageBubble>
+
+    <p v-if="error" class="error" role="alert">
+      {{ t('Couldn’t update comment.') }}
+    </p>
   </ActivityTimelineEvent>
 
   <ActivityTimelineEvent
@@ -268,26 +303,28 @@
 </template>
 
 <style scoped>
-  .activity-timeline__comment {
-    display: grid;
-    gap: var(--c-spacing-md);
+  /* Flat, so the comment reads as part of the timeline rather than a toast. */
+  .message-bubble.activity-timeline__comment {
+    background-image: none;
+    box-shadow: none;
+  }
+
+  /* Pills as tall as the comment form's round send button. */
+  .activity-timeline__comment-button {
+    --c-button-height: var(--c-size-control-sm);
+    --c-button-radius: 9999px;
+    --c-button-spacing-inline: var(--c-spacing-md);
   }
 
   .activity-timeline__comment-actions {
     display: flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
+    gap: var(--c-spacing-sm);
   }
 
-  .activity-timeline__comment .error {
-    margin: 0;
-  }
-
-  .activity-timeline__comment-editor .activity-timeline__comment-actions {
-    margin-block-start: var(--c-spacing-md);
-  }
-
-  .activity-timeline__comment-actions .error {
-    margin-inline-end: auto;
+  .error {
+    margin-block: var(--c-spacing-sm) 0;
+    margin-inline: 0;
+    color: var(--c-color-danger-on-quiet);
+    font-size: var(--c-text-sm);
   }
 </style>

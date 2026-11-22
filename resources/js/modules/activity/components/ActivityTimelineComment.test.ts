@@ -81,24 +81,6 @@ it('renders an existing comment with its activity metadata', async () => {
   expect(container.textContent).toContain('Edited');
 });
 
-it.each<[string, ActivityEvent['actor'], string]>([
-  [
-    'its author, with their own colors',
-    {label: 'Grace', url: null, deleted: false, photoColors: ['teal', 'amber']},
-    'var(--color-teal-500)',
-  ],
-  [
-    'an author without colors, without any',
-    {label: 'Craft', url: null, deleted: false},
-    '',
-  ],
-])('tints a comment by %s', async (_, actor, startColor) => {
-  await mountComment(commentEvent(actor));
-
-  const bubble = container.querySelector<HTMLElement>('.message-bubble')!;
-  expect(bubble.style.getPropertyValue('--photo-color-start')).toBe(startColor);
-});
-
 it('inserts mentions into the active composer without changing another comment', async () => {
   vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(1);
   vi.spyOn(actionClient, 'get').mockResolvedValue({
