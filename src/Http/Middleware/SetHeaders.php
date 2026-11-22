@@ -14,7 +14,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Throwable;
 
 /**
  * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
@@ -63,19 +62,15 @@ class SetHeaders
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
-        // Headers queued for a response that failed don’t apply to the response rendered for its exception.
-        // Error templates apply their own (see ErrorPages), and Laravel keeps those queued before an
-        // HttpResponseException, such as for `{% redirect %}`.
-        $exception = $response instanceof Response || $response instanceof JsonResponse || $response instanceof RedirectResponse
-            ? $response->exception
-            : null;
-
-        if ($exception !== null && ! $this->isResponseException($exception)) {
+        // Headers the page queued before it failed are meant for the page, not its error page.
+        // Error templates queue their own, which ErrorPages applies.
+        if ($this->isErrorResponse($response)) {
             $this->responseHeaders->reset();
         }
 
         $this->responseHeaders->applyTo($response);
 
+        // No cache may store these, whatever headers were queued
         if (
             $request->isCpRequest() ||
             $request->isActionRequest() ||
@@ -121,18 +116,25 @@ class SetHeaders
     }
 
     /**
-     * Whether the exception is, or wraps, an HttpResponseException. Twig wraps exceptions thrown while rendering,
-     * such as the one `{% redirect %}` throws, and Laravel attaches the wrapped exception to the response.
+     * Whether the response was rendered for an exception the request threw, such as an error page.
+     *
+     * An {@see HttpResponseException} doesn’t count, as it carries the response the page chose, such as the
+     * redirect `{% redirect %}` throws, so headers queued before it still apply. Twig wraps exceptions thrown while
+     * rendering, and Laravel attaches the wrapped exception to the response, so the whole chain is checked.
      */
-    private function isResponseException(Throwable $exception): bool
+    private function isErrorResponse(SymfonyResponse $response): bool
     {
+        $exception = $response instanceof Response || $response instanceof JsonResponse || $response instanceof RedirectResponse
+            ? $response->exception
+            : null;
+
         for ($e = $exception; $e !== null; $e = $e->getPrevious()) {
             if ($e instanceof HttpResponseException) {
-                return true;
+                return false;
             }
         }
 
-        return false;
+        return $exception !== null;
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void
