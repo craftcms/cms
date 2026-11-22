@@ -91,7 +91,7 @@ class Routes
     }
 
     /**
-     * @var array<string, Route>|null all the routes in project config for current site
+     * @var list<Route>|null all the routes in project config for current site
      */
     private ?array $projectConfigRoutes = null;
 
@@ -126,8 +126,30 @@ class Routes
             return collect($this->projectConfigRoutes);
         }
 
-        if (Cms::config()->headlessMode) {
+        try {
+            $currentSiteUid = $this->sites->getCurrentSite()->uid;
+        } catch (SiteNotFoundException) {
             return collect($this->projectConfigRoutes = []);
+        }
+
+        $this->projectConfigRoutes = $this->getAllProjectConfigRoutes()
+            ->filter(fn (Route $route) => empty($route->siteUid) || $route->siteUid === $currentSiteUid)
+            ->unique(fn (Route $route) => $route->getUri())
+            ->values()
+            ->all();
+
+        return collect($this->projectConfigRoutes);
+    }
+
+    /**
+     * Returns the routes defined in the project config for all sites, in their sort order.
+     *
+     * @return Collection<int, Route>
+     */
+    public function getAllProjectConfigRoutes(): Collection
+    {
+        if (Cms::config()->headlessMode) {
+            return collect();
         }
 
         $configRoutes = $this->projectConfig->get(ProjectConfig::PATH_ROUTES);
@@ -141,13 +163,7 @@ class Routes
             ->filter(fn (array $route) => array_key_exists('siteUid', $route))
             ->all();
 
-        try {
-            $currentSiteUid = $this->sites->getCurrentSite()->uid;
-        } catch (SiteNotFoundException) {
-            return collect($this->projectConfigRoutes = []);
-        }
-
-        $this->projectConfigRoutes = [];
+        $allRoutes = [];
 
         foreach ($routes as $uid => $route) {
             $route = new Route(
@@ -164,20 +180,10 @@ class Routes
                 continue;
             }
 
-            $uri = $route->getUri();
-
-            if (isset($this->projectConfigRoutes[$uri])) {
-                continue;
-            }
-
-            if (empty($route->siteUid) || $route->siteUid === $currentSiteUid) {
-                $this->projectConfigRoutes[$uri] = $route;
-            }
+            $allRoutes[] = $route;
         }
 
-        return collect($this->projectConfigRoutes)
-            ->sortBy('sortOrder')
-            ->values();
+        return collect($allRoutes);
     }
 
     /**

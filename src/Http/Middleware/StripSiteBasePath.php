@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -18,8 +19,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * on a site whose base URL is `https://example.com/fr/` matches the `news` route.
  *
  * Only routes in the `craft` middleware group are matched this way, such as plugins’ web routes and
- * Settings → Routes. Craft’s fallback route for element URIs and templates is in that group too, but a
- * request that matches another route with its full path, such as an app route for `fr/news`, keeps that path.
+ * Settings → Routes. Craft’s fallback route for element URIs and templates is in that group too. A
+ * request whose full path matches a route outside the group, such as an app route for `fr/news`, keeps that path,
+ * as does one whose full path matches a route in the group while its site path only matches the fallback route.
  *
  * The request is served as if the app were installed in the `fr` folder: `path()` and `is()` leave the
  * base path out, while `url()` and `fullUrl()` keep it. {@see UrlGenerator} keeps generating URLs from the
@@ -44,8 +46,14 @@ readonly class StripSiteBasePath
             return $next($request);
         }
 
-        $site = $this->resolveSite->requestedSite($request);
-        $basePath = trim((string) parse_url((string) $site?->getBaseUrl(), PHP_URL_PATH), '/');
+        try {
+            $site = $this->resolveSite->requestedSite($request);
+        } catch (HttpExceptionInterface) {
+            // ResolveSite rejects the site token or `X-Craft-Site` header if the route is Craft’s
+            return $next($request);
+        }
+
+        $basePath = trim(rawurldecode((string) parse_url((string) $site?->getBaseUrl(), PHP_URL_PATH)), '/');
         $appPath = trim(rawurldecode($request->getBasePath()), '/');
         $path = trim($request->decodedPath(), '/');
 
@@ -72,13 +80,12 @@ readonly class StripSiteBasePath
             return $next($request);
         }
 
-        // Another route for the full path wins over Craft’s fallback route
-        if ($siteRoute->isFallback) {
-            $route = $this->matchingRoute($request);
+        // The full path wins if it matches a route that isn't a site route, such as an app route for `fr/news`,
+        // or a route other than Craft’s fallback route when that's all the site path matches
+        $route = $this->matchingRoute($request);
 
-            if ($route !== null && ! $route->isFallback) {
-                return $next($request);
-            }
+        if ($route !== null && (! UrlGenerator::isSiteRoute($route) || ($siteRoute->isFallback && ! $route->isFallback))) {
+            return $next($request);
         }
 
         $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, ResolveSite::requestPath($request));

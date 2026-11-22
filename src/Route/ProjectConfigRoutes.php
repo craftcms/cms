@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Http\Controllers\ProjectConfigRouteController;
 use CraftCms\Cms\Route\Data\Route;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Routing\Route as LaravelRoute;
@@ -21,6 +22,9 @@ use Illuminate\Support\Collection;
 #[Singleton]
 class ProjectConfigRoutes
 {
+    /** The route action key with the `[siteUid, template]` pairs for a URI, in sort order. */
+    public const string TEMPLATES_ACTION = 'craftTemplates';
+
     /** @var list<LaravelRoute> */
     private array $registered = [];
 
@@ -31,14 +35,40 @@ class ProjectConfigRoutes
         private readonly Router $router,
     ) {}
 
+    /**
+     * Returns the template a route from {@see register()} renders on a site, or `null` if it isn’t for the site.
+     */
+    public static function template(LaravelRoute $route, string $siteUid): ?string
+    {
+        foreach ($route->getAction(self::TEMPLATES_ACTION) ?? [] as [$routeSiteUid, $template]) {
+            if (empty($routeSiteUid) || $routeSiteUid === $siteUid) {
+                return $template;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Registers each URI once for all sites. Routes are registered when the app boots, before the requested
+     * site is known, so {@see ProjectConfigRouteValidator} only matches them on the sites they’re for.
+     */
     public function register(): void
     {
+        if (! array_any(LaravelRoute::getValidators(), fn (object $validator) => $validator instanceof ProjectConfigRouteValidator)) {
+            LaravelRoute::$validators[] = new ProjectConfigRouteValidator;
+        }
+
         $routes = $this->routes();
 
         $this->signature = $this->signature($routes);
         $this->registered = $routes
-            ->map(fn (Route $route) => $this->router
-                ->view($route->getUri(), $route->template)
+            ->groupBy(fn (Route $route) => $route->getUri())
+            ->map(fn (Collection $uriRoutes, string $uri) => $this->router
+                ->get($uri, [
+                    'uses' => ProjectConfigRouteController::class,
+                    self::TEMPLATES_ACTION => $uriRoutes->map(fn (Route $route) => [$route->siteUid, $route->template])->all(),
+                ])
                 ->middleware(['craft', 'craft.web'])
                 ->withLazySession())
             ->values()
@@ -70,18 +100,18 @@ class ProjectConfigRoutes
     }
 
     /**
-     * @return Collection<string, Route>
+     * @return Collection<int, Route>
      */
     private function routes(): Collection
     {
-        return app(Routes::class)->getProjectConfigRoutes();
+        return app(Routes::class)->getAllProjectConfigRoutes();
     }
 
     /**
-     * @param  Collection<string, Route>  $routes
+     * @param  Collection<int, Route>  $routes
      */
     private function signature(Collection $routes): string
     {
-        return hash('xxh128', serialize($routes->map(fn (Route $route) => [$route->getUri(), $route->template])->all()));
+        return hash('xxh128', serialize($routes->map(fn (Route $route) => [$route->getUri(), $route->template, $route->siteUid])->all()));
     }
 }

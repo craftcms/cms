@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @since 6.0.0
@@ -37,6 +38,11 @@ readonly class ResolveSite
     {
         if (($site = $this->requestedSite($request)) !== null) {
             $this->sites->setCurrentSite($site);
+
+            // requestedSite() rejects invalid site tokens, so a token selected this site
+            if (filled($request->siteToken())) {
+                Context::addHidden(self::HAD_SITE_TOKEN_KEY, true);
+            }
         }
 
         return $next($request);
@@ -45,6 +51,8 @@ readonly class ResolveSite
     /**
      * Returns the site a site request is for, or `null` for control panel requests and when Craft
      * isn’t installed or has an update pending.
+     *
+     * @throws HttpException if the request has an invalid site token or `X-Craft-Site` header
      */
     public function requestedSite(Request $request): ?Site
     {
@@ -114,7 +122,6 @@ readonly class ResolveSite
         $site = $this->sites->getSiteById((int) $siteId, true);
 
         abort_if($site === null, 400, 'Invalid site ID: '.$siteId);
-        Context::addHidden(self::HAD_SITE_TOKEN_KEY, true);
 
         return $site;
     }
@@ -152,7 +159,7 @@ readonly class ResolveSite
             return 0;
         }
 
-        $parsedPath = trim((string) ($parsed['path'] ?? ''), '/');
+        $parsedPath = trim(rawurldecode((string) ($parsed['path'] ?? '')), '/');
         $requestPath = trim($path, '/');
 
         if ($parsedPath !== '' && ! str_starts_with($requestPath.'/', $parsedPath.'/')) {

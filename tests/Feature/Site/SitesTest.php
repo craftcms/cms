@@ -59,6 +59,8 @@ it('can get site by uid', function () {
 });
 
 it('can determine if the current site has been set', function () {
+    $this->sites->setCurrentSite(Site::first()->id);
+
     expect($this->sites->getHasCurrentSite())->toBeTrue();
 
     app()->forgetInstance(Sites::class);

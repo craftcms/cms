@@ -53,6 +53,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -112,12 +113,16 @@ class RouteServiceProvider extends ServiceProvider
                 : $middleware,
             $kernel->getGlobalMiddleware(),
         );
-        $kernel->setGlobalMiddleware(array_merge([
+        $trustsProxies = fn (string $middleware): bool => is_a($middleware, TrustProxies::class, true);
+        $kernel->setGlobalMiddleware([
+            // First, so StripSiteBasePath finds the requested site from the forwarded host
+            ...array_filter($globalMiddleware, $trustsProxies),
             ExtractNamespace::class,
             HandleTokenRequest::class,
             StripSiteBasePath::class,
             HandleActionRequest::class,
-        ], $globalMiddleware));
+            ...array_filter($globalMiddleware, fn (string $middleware): bool => ! $trustsProxies($middleware)),
+        ]);
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             $templates = require $this->app->getCachedRoutesPath();
