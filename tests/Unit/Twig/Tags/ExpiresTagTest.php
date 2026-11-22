@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\SetHeaders;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -29,9 +28,7 @@ it('sets cache headers with duration', function () {
         ->and($response->headers->has('Expires'))->toBeFalse();
 });
 
-it('sets no-cache headers with no duration, which is deprecated', function () {
-    Deprecator::shouldReceive('log')->once()->with('expires-tag-without-duration', Mockery::type('string'));
-
+it('sets no-cache headers with no duration', function () {
     $response = renderAndApplyExpiresHeaders('{% expires %}');
 
     expect($response->headers->get('Cache-Control'))->toContain('no-cache');

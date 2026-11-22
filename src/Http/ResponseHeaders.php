@@ -26,7 +26,7 @@ class ResponseHeaders
      * The headers that keep browsers and shared caches from storing a response.
      */
     public const array NO_CACHE_HEADERS = [
-        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Cache-Control' => 'no-cache, no-store, must-revalidate, private',
     ];
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Blade\Directives;
 
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
@@ -55,7 +54,6 @@ class ResponseDirective
         } elseif ($expiration !== null) {
             $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();
         } else {
-            Deprecator::log('craftExpires-without-duration', '`@craftExpires` without a duration has been deprecated. `ResponseHeaders::noCache()` should be used instead.');
             $duration = 0;
         }
 

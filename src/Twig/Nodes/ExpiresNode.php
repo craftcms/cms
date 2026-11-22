@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use Override;
 use Twig\Attribute\YieldReady;
@@ -34,13 +33,7 @@ class ExpiresNode extends Node
                     DateTimeHelper::class,
                 ));
         } elseif (! $this->hasAttribute('durationNum')) {
-            $compiler
-                ->write(sprintf(
-                    "%s::log('expires-tag-without-duration', %s);\n",
-                    Deprecator::class,
-                    var_export('`{% expires %}` without a duration has been deprecated. `{% do ResponseHeaders.noCache() %}` should be used instead.', true),
-                ))
-                ->write("\$duration = 0;\n");
+            $compiler->write("\$duration = 0;\n");
         } else {
             $now = now();
             $duration = (int) $now->diffInSeconds((clone $now)->add(
