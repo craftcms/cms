@@ -32,6 +32,9 @@ class UrlGenerator extends BaseUrlGenerator
 
     private const string ROOT_ONLY_METADATA = 'craft.rootOnly';
 
+    /** The base path of the site whose route URL is being generated, while {@see toRoute()} generates it */
+    private ?string $siteBasePath = null;
+
     /**
      * Registers the `rootOnly()` route macro, for routes that keep Craft’s middleware but only live at
      * the app’s root URL, such as `.well-known` URLs or callbacks registered with third parties.
@@ -59,7 +62,7 @@ class UrlGenerator extends BaseUrlGenerator
     /**
      * Returns whether a route belongs to the sites: it’s in the `craft` middleware group, isn’t a control panel
      * route or under the CP trigger, and wasn’t registered with `rootOnly()`. Site routes match under a site’s
-     * base path, and their URLs include it. Routes with a domain keep it.
+     * base path, and their URLs include it, after the domain for routes registered with `domain()`.
      */
     public static function isSiteRoute(Route $route): bool
     {
@@ -97,21 +100,36 @@ class UrlGenerator extends BaseUrlGenerator
         }
 
         $forcedRoot = $this->forcedRoot;
+        $forcedScheme = $this->forceScheme;
         $this->useOrigin($root);
+        $this->siteBasePath = trim((string) parse_url($root, PHP_URL_PATH), '/') ?: null;
+
+        // Another site's base URL may have another scheme. A scheme forced for the app, or for the route, still wins.
+        if ($forcedScheme === null && ($scheme = parse_url($root, PHP_URL_SCHEME)) !== null) {
+            $this->forceScheme($scheme);
+        }
 
         try {
             return parent::toRoute($route, $parameters, $absolute);
         } finally {
             $this->useOrigin($forcedRoot);
+            $this->forceScheme = $forcedScheme;
+            $this->cachedScheme = null;
+            $this->siteBasePath = null;
         }
     }
 
     /**
-     * Leaves the site’s base path that {@see StripSiteBasePath} moved into the request’s base URL out of the root URL.
+     * Leaves the site’s base path that {@see StripSiteBasePath} moved into the request’s base URL out of the root URL,
+     * and adds the site’s base path to the domain of a site route registered with `domain()`.
      */
     #[Override]
     public function formatRoot($scheme, $root = null)
     {
+        if ($root !== null && $this->siteBasePath !== null) {
+            return parent::formatRoot($scheme, $root).'/'.$this->siteBasePath;
+        }
+
         if ($root === null && $this->forcedRoot === null) {
             $root = $this->request->attributes->get(StripSiteBasePath::ROOT_ATTRIBUTE);
         }

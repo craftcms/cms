@@ -21,6 +21,7 @@ beforeEach(function () {
         Route::get('/', fn () => 'home:'.Sites::getCurrentSite()->handle)->name('test.home');
         Route::get('target', fn () => 'target:'.Sites::getCurrentSite()->handle)->name('test.target');
         Route::get('sites/{site}', fn (string $site) => $site)->name('test.site-param');
+        Route::domain('localhost')->get('domain-target', fn () => 'domain-target:'.Sites::getCurrentSite()->handle)->name('test.domain');
         Route::get(Cms::config()->cpTrigger.'/cp-path', fn () => 'cp-path')->name('test.cp-path');
         Route::rootOnly()->get('root-only', fn () => 'root-only')->name('test.root-only');
         Route::get('signed', fn (Request $request) => $request->hasValidSignature() ? 'valid' : 'invalid')->name('test.signed');
@@ -38,6 +39,7 @@ beforeEach(function () {
             'otherById' => route('test.target', ['site' => Sites::getSiteByHandle('other')->id]),
             'unknownSite' => route('test.target', ['site' => 'nope']),
             'siteParam' => route('test.site-param', ['site' => 'other']),
+            'domain' => route('test.domain'),
             'signed' => URL::signedRoute('test.signed'),
         ]);
     });
@@ -68,6 +70,7 @@ it('generates site route URLs under the current site’s base URL', function () 
         'otherById' => 'https://other.test/de/target',
         'unknownSite' => 'https://localhost/fr/target?site=nope',
         'siteParam' => 'https://localhost/fr/sites/other',
+        'domain' => 'https://localhost/fr/domain-target',
     ]);
 
     expect($this->get('https://localhost/links')->json())->toMatchArray([
@@ -75,6 +78,13 @@ it('generates site route URLs under the current site’s base URL', function () 
         'home' => 'https://localhost',
         'cp' => $cp,
         'other' => 'https://other.test/de/target',
+    ]);
+});
+
+it('generates other sites’ URLs with their own scheme', function () {
+    expect($this->get('http://localhost/fr/links')->json())->toMatchArray([
+        'other' => 'https://other.test/de/target',
+        'siteParam' => 'http://localhost/fr/sites/other',
     ]);
 });
 
@@ -89,6 +99,7 @@ it('resolves the URLs it generates for the site', function () {
 
     $this->get($links['route'])->assertContent('target:french');
     $this->get($links['home'])->assertContent('home:french');
+    $this->get($links['domain'])->assertContent('domain-target:french');
     $this->get($links['signed'])->assertContent('valid');
     $this->get(str_replace('/fr/', '/', $links['signed']))->assertContent('invalid');
     $this->get($links['rootOnly'])->assertContent('root-only');

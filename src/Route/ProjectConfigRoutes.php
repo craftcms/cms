@@ -8,7 +8,6 @@ use CraftCms\Cms\Http\Controllers\ProjectConfigRouteController;
 use CraftCms\Cms\Route\Data\Route;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Matching\UriValidator;
 use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
@@ -30,6 +29,9 @@ class ProjectConfigRoutes
     /** @var list<array{?string, string, LaravelRoute}> Each route’s site UID, template, and Laravel route, in sort order */
     private array $siteRoutes = [];
 
+    /** @var array<string, string> The compiled regular expressions of the registered routes’ URIs */
+    private array $regexes = [];
+
     /** A hash of the registered routes, or null if none have been registered. */
     private ?string $signature = null;
 
@@ -49,6 +51,7 @@ class ProjectConfigRoutes
 
         $routes = $this->routes();
         $registered = [];
+        $this->regexes = [];
 
         $this->signature = $this->signature($routes);
         $this->siteRoutes = $routes
@@ -73,10 +76,18 @@ class ProjectConfigRoutes
      */
     public function match(Request $request, string $siteUid): ?array
     {
-        $uriValidator = new UriValidator;
+        // Matched like Laravel's UriValidator does, with regexes compiled here, since Laravel only compiles a route
+        // once it tries to match it
+        $path = rawurldecode(rtrim($request->getPathInfo(), '/') ?: '/');
 
         foreach ($this->siteRoutes as [$routeSiteUid, $template, $route]) {
-            if ((empty($routeSiteUid) || $routeSiteUid === $siteUid) && $uriValidator->matches($route, $request)) {
+            if (! empty($routeSiteUid) && $routeSiteUid !== $siteUid) {
+                continue;
+            }
+
+            $regex = $this->regexes[$route->uri()] ??= $route->toSymfonyRoute()->compile()->getRegex();
+
+            if (preg_match($regex, $path) === 1) {
                 return [$route, $template];
             }
         }
