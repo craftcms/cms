@@ -508,7 +508,7 @@ class LooseEndsChecks
         // it uses the craft driver without an output disk. Like AssetTransformers::forVolume(), fall back to craft when the
         // default can't be built.
         $transformerConfig = Cms::config()->assetTransformers;
-        $default = $transformerConfig->default ?? 'craft';
+        $default = $transformerConfig->defaultTransformer ?? 'craft';
 
         try {
             app(AssetTransformers::class)->transformer($default);

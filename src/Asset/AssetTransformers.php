@@ -94,7 +94,7 @@ class AssetTransformers extends MultipleInstanceManager
     #[Override]
     public function getDefaultInstance(): string
     {
-        return Cms::config()->assetTransformers->default ?? 'craft';
+        return Cms::config()->assetTransformers->defaultTransformer ?? 'craft';
     }
 
     /**
@@ -103,7 +103,7 @@ class AssetTransformers extends MultipleInstanceManager
     #[Override]
     public function setDefaultInstance($name): void
     {
-        Cms::config()->assetTransformers->default($name);
+        Cms::config()->assetTransformers->defaultTransformer($name);
     }
 
     /**
@@ -259,7 +259,7 @@ class AssetTransformers extends MultipleInstanceManager
             return $this->validTransformer($name, "the [{$disk}] disk’s asset_transformer", new AssetTransformer('craft'));
         }
 
-        $default = Cms::config()->assetTransformers->default;
+        $default = Cms::config()->assetTransformers->defaultTransformer;
 
         if ($default === null) {
             return new AssetTransformer('craft');

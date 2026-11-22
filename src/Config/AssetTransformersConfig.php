@@ -13,9 +13,9 @@ use InvalidArgumentException;
  *
  * ```php
  * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
- *     ->default('imgix')
- *     ->transformer('craft', ['outputDisk' => 'transforms'])
- *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+ *     ->defaultTransformer('imgix')
+ *     ->addTransformer('craft', ['outputDisk' => 'transforms'])
+ *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
  * )
  * ```
  *
@@ -27,7 +27,7 @@ class AssetTransformersConfig extends BaseConfig
      * The transformer for volumes that don’t choose one. `null` uses `craft`, and lets a hosting package such as Craft
      * Cloud’s set its own default without overriding a project that chose one.
      */
-    public ?string $default = null;
+    public ?string $defaultTransformer = null;
 
     /**
      * Transformers keyed by name. Each has a `driver`, registered with `AssetTransformers::extend()`, and that driver’s
@@ -59,9 +59,9 @@ class AssetTransformersConfig extends BaseConfig
         return $config;
     }
 
-    public function default(?string $value): self
+    public function defaultTransformer(?string $value): self
     {
-        $this->default = $value !== '' ? $value : null;
+        $this->defaultTransformer = $value !== '' ? $value : null;
 
         return $this;
     }
@@ -69,7 +69,7 @@ class AssetTransformersConfig extends BaseConfig
     /**
      * Defines a transformer. Its config needs a `driver`, and can hold that driver’s settings. Transformers with the
      * `craft` driver take `outputDisk` and `generateTransformsBeforePageLoad`. The `craft` transformer’s config can
-     * leave out `driver`.
+     * leave out `driver`. Adding a name that’s already defined replaces its config.
      *
      * @param  array<string, mixed>  $config
      *
@@ -77,7 +77,7 @@ class AssetTransformersConfig extends BaseConfig
      *                                  starts with `disk:`, which names disks’ deprecated `asset_transformer` keys, or
      *                                  if the `craft` transformer is given another driver.
      */
-    public function transformer(string $name, array $config): self
+    public function addTransformer(string $name, array $config): self
     {
         // PHP turns integer-like array keys into integers, and `0` would resolve to the default transformer
         if ($name === '' || (string) (int) $name === $name) {
@@ -103,7 +103,7 @@ class AssetTransformersConfig extends BaseConfig
         $this->transformers = [];
 
         foreach ($value as $name => $config) {
-            $this->transformer((string) $name, $config);
+            $this->addTransformer((string) $name, $config);
         }
 
         return $this;

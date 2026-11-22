@@ -279,20 +279,20 @@ it('extends the default Twig sandbox allowlist with project entries', function (
 it('overrides the default asset transformer with an environment variable and keeps named transformers', function () {
     app(ConfigRepository::class)->set('craft.general', GeneralConfig::create()->assetTransformers(
         AssetTransformersConfig::create()
-            ->transformer('craft', ['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true])
-            ->transformer('imgix', ['driver' => 'imgix', 'domain' => 'example.imgix.net']),
+            ->addTransformer('craft', ['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true])
+            ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => 'example.imgix.net']),
     ));
     app()->forgetInstance(GeneralConfig::class);
-    $_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT'] = 'imgix';
+    $_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER'] = 'imgix';
 
     try {
         new ConfigServiceProvider(app())->register();
         $config = app(GeneralConfig::class)->assetTransformers;
     } finally {
-        unset($_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT']);
+        unset($_SERVER['CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER']);
     }
 
-    expect($config->default)->toBe('imgix')
+    expect($config->defaultTransformer)->toBe('imgix')
         ->and($config->transformerConfig('craft'))->toEqual([
             'driver' => 'craft',
             'outputDisk' => 'transforms',
@@ -302,15 +302,15 @@ it('overrides the default asset transformer with an environment variable and kee
 });
 
 it('rejects asset transformer names that would resolve to the default or a disk', function (string $name) {
-    AssetTransformersConfig::create()->transformer($name, ['driver' => 'imgix']);
+    AssetTransformersConfig::create()->addTransformer($name, ['driver' => 'imgix']);
 })->throws(InvalidArgumentException::class)->with(['empty' => '', 'zero' => '0', 'integer' => '123', 'negative integer' => '-1', 'disk prefix' => 'disk:photos']);
 
 it('rejects another driver for the craft asset transformer', function () {
-    AssetTransformersConfig::create()->transformer('craft', ['driver' => 'imgix']);
+    AssetTransformersConfig::create()->addTransformer('craft', ['driver' => 'imgix']);
 })->throws(InvalidArgumentException::class);
 
 it('keeps the craft asset transformer’s driver when its config sets it to null', function () {
-    expect(AssetTransformersConfig::create()->transformer('craft', ['driver' => null])->transformerConfig('craft'))
+    expect(AssetTransformersConfig::create()->addTransformer('craft', ['driver' => null])->transformerConfig('craft'))
         ->toBe(['driver' => 'craft']);
 });
 

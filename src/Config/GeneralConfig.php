@@ -2202,13 +2202,13 @@ class GeneralConfig extends BaseConfig
      * ::: code
      * ```php Static Config
      * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
-     *     ->default('imgix')
-     *     ->transformer('craft', ['outputDisk' => 'transforms'])
-     *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+     *     ->defaultTransformer('imgix')
+     *     ->addTransformer('craft', ['outputDisk' => 'transforms'])
+     *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
      * )
      * ```
      * ```shell Environment Override
-     * CRAFT_ASSET_TRANSFORMERS_DEFAULT=imgix
+     * CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER=imgix
      * ```
      * :::
      *
@@ -5306,8 +5306,8 @@ class GeneralConfig extends BaseConfig
      *
      * ```php
      * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
-     *     ->default('imgix')
-     *     ->transformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+     *     ->defaultTransformer('imgix')
+     *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
      * )
      * ```
      *

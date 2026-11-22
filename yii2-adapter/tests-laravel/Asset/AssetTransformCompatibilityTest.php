@@ -58,9 +58,9 @@ beforeEach(function(): void {
     // precedence over legacy transformers.
     app(AssetTransformers::class)->extend('compatibility-default', fn() => $driver);
     Cms::config()->assetTransformers
-        ->transformer('compatibility-test', ['driver' => 'compatibility-test'])
-        ->transformer('compatibility-default', ['driver' => 'compatibility-default'])
-        ->default('compatibility-default');
+        ->addTransformer('compatibility-test', ['driver' => 'compatibility-test'])
+        ->addTransformer('compatibility-default', ['driver' => 'compatibility-default'])
+        ->defaultTransformer('compatibility-default');
     $this->asset = function(array $attributes = []): LegacyAsset {
         $model = AssetModel::factory()->create([
             ...$attributes,

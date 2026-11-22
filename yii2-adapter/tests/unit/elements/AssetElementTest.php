@@ -48,7 +48,7 @@ class AssetElementTest extends TestCase
         ]);
 
         config()->set('filesystems.disks.asset-element-test', ['driver' => 'local']);
-        \CraftCms\Cms\Cms::config()->assetTransformers->transformer('test', ['driver' => 'test']);
+        \CraftCms\Cms\Cms::config()->assetTransformers->addTransformer('test', ['driver' => 'test']);
         app(AssetTransformers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
             public function definition(): AssetTransformDriverDefinition
             {

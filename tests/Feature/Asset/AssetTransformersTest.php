@@ -115,7 +115,7 @@ it('throws for invalid transformer config with debug mode on', function (string 
     defineAssetTransformer('unregistered', ['driver' => 'missing']);
     defineAssetTransformer('case-variant', ['driver' => 'CRAFT']);
     $volume = assetOnVolume('broken-source', ['handle' => 'broken', 'assetTransformer' => $value])->getVolume();
-    Cms::config()->assetTransformers->default = $value;
+    Cms::config()->assetTransformers->defaultTransformer = $value;
     $default = assetOnVolume('default-source')->getVolume();
 
     expect(fn () => app(AssetTransformers::class)->forVolume($volume))
