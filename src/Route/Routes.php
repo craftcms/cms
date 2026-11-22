@@ -116,20 +116,6 @@ class Routes
     }
 
     /**
-     * Returns the unique paths of the sites’ base URLs, such as `fr` for `https://example.com/fr/`.
-     *
-     * @return Collection<int, non-empty-string>
-     */
-    public function siteBasePaths(): Collection
-    {
-        return $this->sites->getAllSites()
-            ->map(fn (Site $site) => trim((string) parse_url((string) $site->getBaseUrl(), PHP_URL_PATH), '/'))
-            ->filter(fn (string $path) => $path !== '')
-            ->unique()
-            ->values();
-    }
-
-    /**
      * Returns the routes defined in the project config.
      *
      * @return Collection<array-key, Route>

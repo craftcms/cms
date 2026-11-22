@@ -24,7 +24,7 @@ readonly class ResolveSite
 
     /**
      * The path the site is resolved from when a middleware rewrote the request URI,
-     * such as an `action` param or a token route on a subpath site.
+     * such as an `action` param or a token route on a subpath site. See {@see requestPath()}.
      */
     public const string REQUEST_PATH_ATTRIBUTE = 'craft.resolveSite.requestPath';
 
@@ -35,19 +35,27 @@ readonly class ResolveSite
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (
-            Cms::isInstalled() &&
-            ! $this->updates->isCraftUpdatePending() &&
-            ! $request->isCpRequest()
-        ) {
-            $this->sites->setCurrentSite($this->resolveRequestedSite($request));
+        if (($site = $this->requestedSite($request)) !== null) {
+            $this->sites->setCurrentSite($site);
         }
 
         return $next($request);
     }
 
-    private function resolveRequestedSite(Request $request): Site
+    /**
+     * Returns the site a site request is for, or `null` for control panel requests and when Craft
+     * isn’t installed or has an update pending.
+     */
+    public function requestedSite(Request $request): ?Site
     {
+        if (
+            ! Cms::isInstalled() ||
+            $this->updates->isCraftUpdatePending() ||
+            $request->isCpRequest()
+        ) {
+            return null;
+        }
+
         if (($site = $this->siteFromToken($request)) !== null) {
             return $site;
         }
@@ -62,11 +70,21 @@ readonly class ResolveSite
             return $site;
         }
 
-        return $this->siteForPath($request, (string) $request->attributes->get(self::REQUEST_PATH_ATTRIBUTE, $request->decodedPath()));
+        return $this->siteForPath($request, self::requestPath($request));
     }
 
     /**
-     * Returns the site whose base URL best matches the request host and the given path.
+     * Returns the request’s path from the root of its host, which sites’ base URLs are compared with, such as
+     * `craft/fr/news` for an app in a `craft` folder.
+     */
+    public static function requestPath(Request $request): string
+    {
+        return (string) ($request->attributes->get(self::REQUEST_PATH_ATTRIBUTE)
+            ?? trim(rawurldecode($request->getBasePath()).'/'.$request->decodedPath(), '/'));
+    }
+
+    /**
+     * Returns the site whose base URL best matches the request host and the given path from the host’s root.
      */
     public function siteForPath(Request $request, string $path): Site
     {

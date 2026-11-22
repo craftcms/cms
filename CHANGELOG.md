@@ -13,6 +13,8 @@
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
+- URLs generated with `route()` and `action()` for routes in the `craft` middleware group now use the current site’s base URL, and a `site` parameter generates them for another site. ([#20988](https://github.com/craftcms/cms/issues/20988))
+- Added the `rootOnly()` route macro, for routes in the `craft` middleware group that should only match at the app’s root URL and keep it in their URLs. ([#20988](https://github.com/craftcms/cms/issues/20988))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))
@@ -24,6 +26,10 @@
 - Fixed a bug where updating a field layout with the MCP tools could orphan custom fields’ content. ([#21006](https://github.com/craftcms/cms/pull/21006))
 - Fixed a bug where existing entries weren’t updated when a section’s sites or propagation method were changed through project config while using the `sync` queue connection. ([#21005](https://github.com/craftcms/cms/pull/21005))
 - Fixed a bug where element indexes didn’t remember the chosen number of elements per page. ([#20979](https://github.com/craftcms/cms/issues/20979))
+- Fixed a bug where routes defined in Settings → Routes, plugins’ `routes/web.php` files, and other routes in the `craft` middleware group returned a 404 error on sites whose base URL has a path. ([#20988](https://github.com/craftcms/cms/issues/20988))
+- Fixed a bug where sites weren’t detected when Craft is installed in a folder and their base URLs are inside it, such as `https://example.com/craft/fr/`. ([#20988](https://github.com/craftcms/cms/issues/20988))
+- Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988))
+- Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`.
 
 ## 6.0.0-beta.2 - 2026-11-20
 
