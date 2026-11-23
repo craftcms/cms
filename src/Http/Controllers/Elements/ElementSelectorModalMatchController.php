@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Http\JsonResponse;
@@ -25,7 +26,11 @@ readonly class ElementSelectorModalMatchController
             'criteria' => ['nullable', 'array'],
         ]);
 
-        $query = $request->elementType()::find()->status(null);
+        $elementType = $request->elementType();
+        $query = $elementType::find()->status(null);
+
+        // What the modal lists, saved unpublished drafts included
+        Typecast::configure($query, app(ElementIndexes::class)->baseCriteria($elementType));
 
         if ($criteria = $request->array('criteria')) {
             Typecast::configure($query, ElementHelper::cleanseQueryCriteria($criteria));

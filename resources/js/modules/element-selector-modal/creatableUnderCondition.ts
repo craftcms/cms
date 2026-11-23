@@ -57,22 +57,31 @@ const knownRules: Record<
       multiSelectAllows(rule, entryType.uid),
 };
 
-/**
- * Returns which entry types an entry created from an entry selector can have,
- * in which sections, and still meet the selector's selection condition, or
- * `null` when the condition has a rule that depends on more than that, such as
- * a custom field's value, which can't be known until the entry is saved.
- */
-export function creatableUnderCondition(
-  condition: unknown
-): ((creatable: CreatableType) => boolean) | null {
-  const configs =
-    (condition as {conditionRules?: RuleConfig[]} | null | undefined)
-      ?.conditionRules ?? [];
-  const tests: Array<(creatable: CreatableType) => boolean> = [];
+type Test = (creatable: CreatableType) => boolean;
 
-  for (const config of configs) {
-    const test = knownRules[config.class ?? '']?.(config) ?? null;
+/** A condition's rule group, as `BaseConditionGroup::getConfig()` gives it. */
+type GroupConfig = {operator?: string; rules?: Array<RuleConfig | GroupConfig>};
+
+/**
+ * Returns the test for a rule group, or `null` when it has a rule anywhere
+ * that `knownRules` doesn't cover. A group given as a plain list of rules,
+ * as older configs are, is an `and` group.
+ */
+function groupTest(
+  group: GroupConfig | Array<RuleConfig | GroupConfig>
+): Test | null {
+  const {operator = 'and', rules = []} = Array.isArray(group)
+    ? {rules: group}
+    : group;
+  const tests: Test[] = [];
+
+  for (const config of rules) {
+    const test =
+      'rules' in config && !('class' in config)
+        ? groupTest(config as GroupConfig)
+        : (knownRules[(config as RuleConfig).class ?? '']?.(
+            config as RuleConfig
+          ) ?? null);
 
     if (!test) {
       return null;
@@ -81,5 +90,28 @@ export function creatableUnderCondition(
     tests.push(test);
   }
 
-  return (creatable) => tests.every((test) => test(creatable));
+  if (tests.length === 0) {
+    return () => true;
+  }
+
+  return operator === 'or'
+    ? (creatable) => tests.some((test) => test(creatable))
+    : (creatable) => tests.every((test) => test(creatable));
+}
+
+/**
+ * Returns which entry types an entry created from an entry selector can have,
+ * in which sections, and still meet the selector's selection condition, or
+ * `null` when the condition has a rule that depends on more than that, such as
+ * a custom field's value, which can't be known until the entry is saved.
+ */
+export function creatableUnderCondition(condition: unknown): Test | null {
+  const rules = (
+    condition as
+      | {conditionRules?: GroupConfig | Array<RuleConfig | GroupConfig>}
+      | null
+      | undefined
+  )?.conditionRules;
+
+  return groupTest(rules ?? []);
 }

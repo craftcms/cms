@@ -607,9 +607,9 @@ describe('the new entry button', () => {
 
   const rules = 'CraftCms\\Cms\\Entry\\Conditions\\';
   const viewableRule = {class: `${rules}ViewableConditionRule`, value: true};
-  const condition = (conditionRules: object[]) => ({
+  const condition = (rulesInGroup: object[], operator = 'and') => ({
     class: `${rules}EntryCondition`,
-    conditionRules,
+    conditionRules: {operator, rules: rulesInGroup},
   });
 
   async function openWith(options: object) {
@@ -690,6 +690,55 @@ describe('the new entry button', () => {
       unmount();
     }
   );
+
+  it.each([
+    [
+      'shows for',
+      'an “or” group where one branch allows the section',
+      condition(
+        [
+          {
+            class: `${rules}SectionConditionRule`,
+            operator: 'in',
+            values: ['x'],
+          },
+          {
+            class: `${rules}SectionTypeConditionRule`,
+            operator: 'in',
+            values: ['channel'],
+          },
+        ],
+        'or'
+      ),
+      true,
+    ],
+    [
+      'stays away for',
+      'a nested group with a rule that depends on more',
+      condition([
+        viewableRule,
+        {
+          operator: 'or',
+          rules: [{class: `${rules}SlugConditionRule`, value: 'x'}],
+        },
+      ]),
+      false,
+    ],
+    [
+      'shows for',
+      'a condition given as a plain list of rules',
+      {class: `${rules}EntryCondition`, conditionRules: [viewableRule]},
+      true,
+    ],
+  ])('%s %s', async (_verb, _case, selectionCondition, shown) => {
+    const {host, unmount} = await openWith({condition: selectionCondition});
+
+    expect(
+      host.querySelector('[slot="secondary-actions"] craft-button') !== null
+    ).toBe(shown);
+
+    unmount();
+  });
 
   it('stays away when the user can’t save the section’s entries', async () => {
     window.Craft!.creatableSections[0].canSave = false;

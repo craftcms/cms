@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -45,6 +46,13 @@ it('tells whether an element meets the selection condition', function () {
 it('counts disabled elements, which selector modals list', function () {
     $entry = EntryModel::factory()->createElement();
     DB::table(Table::ELEMENTS)->where('id', $entry->id)->update(['enabled' => false]);
+
+    expect(($this->matches)($entry, 'in'))->toBeTrue();
+});
+
+it('counts saved unpublished drafts, which selector modals list', function () {
+    $entry = EntryModel::factory()->createElement();
+    expect(app(Drafts::class)->saveElementAsDraft($entry, User::findOne()->id))->toBeTrue();
 
     expect(($this->matches)($entry, 'in'))->toBeTrue();
 });
