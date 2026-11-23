@@ -66,8 +66,6 @@ export interface IndexingResponse {
 export interface StartIndexingParams {
   /** Volume IDs to index */
   volumes: (string | number)[];
-  /** Whether to cache remote images locally */
-  cacheImages?: boolean;
   /** Whether to list empty folders */
   listEmptyFolders?: boolean;
   /** Whether to sample missing image colors and queue images for AI tasks, even if their files haven't changed */
@@ -149,7 +147,7 @@ interface QueuedTask {
  * indexer.on('error', ({ message }) => console.error(message));
  * indexer.on('complete', () => console.log('All done'));
  *
- * await indexer.startIndexing({ volumes: [1, 2, 3], cacheImages: true });
+ * await indexer.startIndexing({ volumes: [1, 2, 3] });
  * ```
  *
  * @example Resuming existing sessions

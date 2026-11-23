@@ -767,7 +767,7 @@ class ImageTransformer
 
         $volume = $asset->getVolume();
 
-        return $this->outputDisk($asset, $transformer) === $volume->getResolvedFsTarget() && $volume->sourceHasUrls();
+        return $this->outputDisk($asset, $transformer) === $volume->getResolvedDisk() && $volume->sourceHasUrls();
     }
 
     /**
@@ -783,7 +783,7 @@ class ImageTransformer
 
         $volume = $asset->getVolume();
         $diskName = $disk === null || $disk === ''
-            ? $volume->getResolvedFsTarget()
+            ? $volume->getResolvedDisk()
             : $volume->resolveStorageTargetKey($disk, parse: false);
 
         if ($diskName === null) {
@@ -811,7 +811,7 @@ class ImageTransformer
      */
     private function currentTransformer(Asset $asset): AssetTransformer
     {
-        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedFsTarget());
+        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedDisk());
 
         return $transformer->driver === 'craft' ? $transformer : new AssetTransformer('craft');
     }

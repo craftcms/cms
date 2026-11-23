@@ -2,9 +2,10 @@ import {afterEach, expect, it} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import '../../../css/cp.css';
 import '../../../css/legacy.css';
+import {renderedShape} from '../../../../packages/craftcms-ui/test/shape';
 
 afterEach(() => {
-  document.body.classList.remove('cp-legacy-screen');
+  document.body.classList.remove('cp-legacy-screen', 'use-shapes');
   document.documentElement.removeAttribute('dir');
   document.body.innerHTML = '';
 });
@@ -85,6 +86,31 @@ it('draws legacy indicators, arrows and table headers', async () => {
   expect(box('.status.green').width).toBe(0);
   expect(after('.menubtn').borderRightStyle).toBe('none');
 });
+
+it.each([
+  ['live', 'circle'],
+  ['disabled', 'circle'],
+  ['pending', 'triangle'],
+  ['expired', 'square'],
+  ['suspended', 'square'],
+  ['all', 'diamond'],
+])(
+  'draws a legacy %s status as a %s with the use-shapes preference on',
+  async (status, shape) => {
+    document.body.classList.add('cp-legacy-screen', 'use-shapes');
+    document.body.innerHTML = `<span class="status ${status}" style="width: 60px"></span>`;
+
+    expect(renderedShape(document.querySelector<HTMLElement>('.status')!)).toBe(
+      shape
+    );
+
+    document.body.classList.remove('use-shapes');
+
+    expect(renderedShape(document.querySelector<HTMLElement>('.status')!)).toBe(
+      'circle'
+    );
+  }
+);
 
 it('styles legacy plugin controls at desktop and narrow widths without leaking to modern screens', async () => {
   document.body.classList.add('cp-legacy-screen');

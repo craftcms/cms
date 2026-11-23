@@ -51,9 +51,9 @@ readonly class License
 
     public function key(): ?string
     {
-        if (defined('CRAFT_LICENSE_KEY')) {
-            $licenseKey = CRAFT_LICENSE_KEY;
-        } else {
+        $licenseKey = $this->environmentKey();
+
+        if ($licenseKey === null) {
             $path = $this->keyPath();
 
             // Check to see if the key exists
@@ -71,6 +71,16 @@ readonly class License
         }
 
         return $licenseKey;
+    }
+
+    /**
+     * Returns the license key set by the `CRAFT_LICENSE_KEY` environment variable or PHP constant, if any.
+     */
+    public function environmentKey(): ?string
+    {
+        $licenseKey = defined('CRAFT_LICENSE_KEY') ? CRAFT_LICENSE_KEY : Env::get('CRAFT_LICENSE_KEY');
+
+        return is_string($licenseKey) && $licenseKey !== '' ? $licenseKey : null;
     }
 
     /**
@@ -377,7 +387,7 @@ readonly class License
             'target' => '_blank',
         ]);
 
-        if (defined('CRAFT_LICENSE_KEY')) {
+        if ($this->environmentKey() !== null) {
             $message = t('The Craft CMS license key in use belongs to {domain}', [
                 'domain' => $domainLink,
             ]);

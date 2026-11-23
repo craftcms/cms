@@ -79,7 +79,7 @@ class McpOutputTestField extends PlainText implements McpOutputFieldInterface
 it('makes root-relative element URLs absolute, such as those of assets in a volume with a relative URL', function (): void {
     config()->set('filesystems.disks.mcp-relative', ['driver' => 'local', 'root' => storage_path('mcp-relative'), 'url' => '/uploads']);
     $asset = AssetModel::factory()->createElement([
-        'volumeId' => Volume::factory()->create(['fs' => 'mcp-relative', 'hasUrls' => true])->id,
+        'volumeId' => Volume::factory()->create(['disk' => 'mcp-relative', 'hasUrls' => true])->id,
     ]);
     $expected = rtrim((string) Sites::getPrimarySite()->getBaseUrl(), '/').$asset->getUrl();
 

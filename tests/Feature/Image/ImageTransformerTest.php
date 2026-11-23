@@ -40,7 +40,7 @@ beforeEach(function () {
     Storage::disk('test-disk')->deleteDirectory('');
 
     $this->volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'hasUrls' => true,
     ]);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
@@ -296,7 +296,7 @@ it('uses Craft driver output disk settings', function () {
     Storage::disk('configured-transform-source')->deleteDirectory('');
     Storage::disk('configured-transform-target')->deleteDirectory('');
     $volume = Volume::factory()->create([
-        'fs' => 'configured-transform-source',
+        'disk' => 'configured-transform-source',
     ]);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -334,7 +334,7 @@ it('does not reuse similar transform results across output locations', function 
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    $sourceDisk = $asset->getVolume()->getResolvedFsTarget();
+    $sourceDisk = $asset->getVolume()->getResolvedDisk();
     app(AssetTransformers::class)->withImmediateTransforms(function () use ($asset, $sourceDisk): void {
         foreach (['first', 'second'] as $target) {
             config()->set("filesystems.disks.{$sourceDisk}.asset_transformer", [
@@ -357,7 +357,7 @@ it('fails when the configured Craft driver output disk doesn’t name a disk', f
         'asset_transformer' => ['driver' => 'craft', 'output_disk' => $outputDisk],
     ]);
     $volume = Volume::factory()->create([
-        'fs' => 'missing-transform-target-source',
+        'disk' => 'missing-transform-target-source',
     ]);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
 
@@ -402,7 +402,7 @@ it('reports Craft cleanup failures with redacted context', function () {
 });
 
 it('stores transforms at the root of the volume’s own disk, outside its subpath, without an output disk', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => 'uploads', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'subpath' => 'uploads', 'hasUrls' => true]);
     $asset = ($this->createImageAsset)([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
@@ -434,7 +434,6 @@ it('excludes generated transform directories from asset indexing with the defaul
 
     $session = app(AssetIndexer::class)->startIndexingSession(
         volumes: [$asset->volumeId],
-        cacheRemoteImages: false,
         listEmptyFolders: true,
     );
 

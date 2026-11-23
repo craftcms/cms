@@ -665,7 +665,7 @@ it('links each draft in the Versions panel to a comparison without looking up th
 function comparedAsset(): Asset
 {
     config()->set('filesystems.disks.compare-test', ['driver' => 'local', 'root' => storage_path('framework/testing/compare')]);
-    $volume = Volume::factory()->create(['fs' => 'compare-test', 'propagationMethod' => PropagationMethod::All->value]);
+    $volume = Volume::factory()->create(['disk' => 'compare-test', 'propagationMethod' => PropagationMethod::All->value]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,

@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import ModalForm from '@/common/components/ModalForm.vue';
   import {t} from '@craftcms/ui/utilities/translate';
+  import {elementTypeName} from '@/common/craft/element-types';
+  import {uppercaseFirst} from '@/common/craft/strings';
   import {useAssetIndexer} from '@/modules/utilities/composables/useAssetIndexer';
   import {computed, reactive, shallowRef} from 'vue';
   import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
@@ -149,7 +151,17 @@
             <p>{{ missingItemsCopy('files', {items: 'files'}) }}</p>
             <CheckboxGroup
               class="my-2"
-              :label="t('Delete assets')"
+              :label="
+                uppercaseFirst(
+                  t('Delete {type}', {
+                    type:
+                      elementTypeName(
+                        'CraftCms\\Cms\\Asset\\Elements\\Asset',
+                        true
+                      ) ?? 'assets',
+                  })
+                )
+              "
               :model-value="formData.deleteAsset?.map(String) ?? []"
               @update:model-value="(value) => (formData.deleteAsset = value)"
               :options="deleteAssetOptions"

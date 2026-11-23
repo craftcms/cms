@@ -66,7 +66,7 @@ beforeEach(function (): void {
             'driver' => 'local', 'root' => storage_path('framework/testing/lifecycle-assets'),
         ]);
         Storage::fake('lifecycle-assets');
-        $volume = Volume::factory()->create(['fs' => 'lifecycle-assets']);
+        $volume = Volume::factory()->create(['disk' => 'lifecycle-assets']);
         $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
         $asset = AssetModel::factory()->createElement([
             'volumeId' => $volume->id, 'folderId' => $folder->id, 'filename' => 'original.txt', 'kind' => 'text',

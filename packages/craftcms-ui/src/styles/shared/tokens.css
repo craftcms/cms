@@ -515,3 +515,9 @@
   --c-link-decoration: underline;
   --c-link-decoration-hover: none;
 }
+
+.use-shapes {
+  --c-status-shape-radius: 15%;
+  --c-status-triangle-clip: polygon(50% 0, 100% 100%, 0 100%);
+  --c-status-diamond-clip: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}

@@ -58,3 +58,32 @@ export function statusColor(status: string | null | undefined): ColorValue {
 
   return 'gray';
 }
+
+/**
+ * A status dot's shape, which it takes on when the user's "Use shapes to
+ * represent statuses" preference is on.
+ */
+export type StatusShape = 'circle' | 'square' | 'triangle' | 'diamond';
+
+/**
+ * Maps a status name to the shape its dot takes with that preference on:
+ * a triangle for pending, a square for expired, suspended and off, a
+ * diamond for “all” (an empty status), and a circle for everything else.
+ *
+ * Mirrors `\CraftCms\Cms\Cp\Html\StatusHtml::statusShape()`.
+ */
+export function statusShape(status: string | null | undefined): StatusShape {
+  switch (status) {
+    case '':
+    case 'all':
+      return 'diamond';
+    case 'pending':
+      return 'triangle';
+    case 'off':
+    case 'suspended':
+    case 'expired':
+      return 'square';
+    default:
+      return 'circle';
+  }
+}
