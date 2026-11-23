@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
@@ -85,11 +86,7 @@ readonly class EnforceLicenses
         ])->toResponse($request);
 
         $response->setStatusCode(402);
-        $response->headers->add([
-            'Expires' => '0',
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'no-cache, no-store, must-revalidate',
-        ]);
+        ResponseHeaders::setNoCacheHeaders($response);
 
         return $response;
     }

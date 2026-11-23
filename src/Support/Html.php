@@ -10,7 +10,6 @@ use CraftCms\Cms\Http\Middleware\PreventRequestForgery;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
@@ -215,8 +214,6 @@ class Html
         if (PreventRequestForgery::checksOriginOnly()) {
             return '';
         }
-
-        ResponseHeaders::noCache();
 
         return (string) csrf_field();
     }

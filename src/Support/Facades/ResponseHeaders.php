@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
+ * @method static \CraftCms\Cms\Http\CacheControl cacheControl()
  * @method static void noCache()
- * @method static void setCache(int $duration = 31536000, bool $replace = true)
+ * @method static void setCache(int $duration = 31536000)
  * @method static void add(string $header, string $value, bool $replace = true)
+ * @method static void applyTo(\Symfony\Component\HttpFoundation\Response $response)
+ * @method static void reset()
  *
  * @see \CraftCms\Cms\Http\ResponseHeaders
  */
