@@ -4,7 +4,7 @@
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import {elementIndexQueryParams} from '@/modules/elements/index/composables/useContentIndexData';
-  import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
+  import {useElementRowActions} from '@/modules/elements/index/composables/useElementRowActions';
   import type {ElementIndexRoute} from '@/modules/elements/index/composables/useElementIndexVisits';
   import {
     sourcesLandingUrl,
@@ -19,7 +19,6 @@
   import {useNavItemAction} from '@/common/composables/useNavItemActions';
   import useCraftData from '@/common/composables/useCraftData';
   import {router} from '@inertiajs/vue3';
-  import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
   import type {ElementIndexModel} from '@/modules/elements/index/types/model';
   import type {ActionItems} from '@/common/types';
 
@@ -53,14 +52,13 @@
       filterParams: () => props.filterParams ?? {},
     });
 
-  // Double-click an element to edit it in a slideout.
-  const quickEdit = useElementQuickEdit({
-    refreshResults: () => {
+  const {elementIndex, selection, selectAll} = page.view;
+  const {quickEdit, editElement, viewElement} = useElementRowActions({
+    rows: () => elementIndex.data,
+    refresh: () => {
       void page.refresh();
     },
   });
-
-  const {elementIndex, selection, selectAll} = page.view;
   const footerActive = computed(
     () => Boolean(elementIndex.actions?.length) && selectAll.count.value > 0
   );
@@ -112,34 +110,6 @@
    */
   function onSourcesSaved(landing: SourcesLanding): void {
     router.visit(sourcesLandingUrl(landing, props.route, props.sourceHref));
-  }
-
-  function actionRow(detail: BulkActionEventDetail) {
-    if (detail.elementIds.length !== 1) {
-      return null;
-    }
-
-    const id = String(detail.elementIds[0]);
-
-    return elementIndex.data.find((row) => String(row.id) === id) ?? null;
-  }
-
-  function editElement(detail: BulkActionEventDetail): void {
-    const row = actionRow(detail);
-    const url = row?.cpEditUrl;
-
-    if (url) {
-      quickEdit.openEditor(url, detail.trigger);
-    }
-  }
-
-  function viewElement(detail: BulkActionEventDetail): void {
-    const row = actionRow(detail);
-    const url = row?.viewUrl;
-
-    if (url) {
-      window.open(url, '_blank', 'noopener');
-    }
   }
 </script>
 

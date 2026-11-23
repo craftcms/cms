@@ -1,9 +1,9 @@
 import {createApp, defineComponent, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import ReadOnlyElementIndex from './ReadOnlyElementIndex.vue';
+import EmbeddedElementIndex from './EmbeddedElementIndex.vue';
 
 const post = vi.hoisted(() => vi.fn());
-const picker = vi.hoisted(() => ({
+const view = vi.hoisted(() => ({
   props: null as Record<string, any> | null,
   emit: null as ((event: string, payload?: unknown) => void) | null,
 }));
@@ -13,27 +13,27 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
   actionClient: {post},
 }));
 
-vi.mock('./ElementPicker.vue', async () => {
+vi.mock('./EmbeddedElementIndexView.vue', async () => {
   const {defineComponent: define, h: create} = await import('vue');
 
   return {
     default: define({
-      name: 'ElementPickerStub',
-      props: ['action', 'initial', 'params', 'readOnly', 'storageKey'],
+      name: 'EmbeddedElementIndexViewStub',
+      props: ['elementType', 'initial', 'params', 'storageKey', 'readOnly'],
       emits: ['error'],
       setup(props, {emit}) {
-        picker.emit = emit as (event: string, payload?: unknown) => void;
+        view.emit = emit as (event: string, payload?: unknown) => void;
 
         return () => {
-          picker.props = props as Record<string, any>;
-          return create('div', {class: 'picker-stub'}, [create('input')]);
+          view.props = props as Record<string, any>;
+          return create('div', {class: 'view-stub'}, [create('input')]);
         };
       },
     }),
   };
 });
 
-const response = (marker: string) => ({data: {props: {marker}}});
+const response = (marker: string) => ({data: {marker}});
 
 let host: HTMLElement;
 let app: ReturnType<typeof createApp>;
@@ -49,7 +49,7 @@ function mount(extra: Record<string, unknown> = {}) {
   app = createApp(
     defineComponent({
       render: () =>
-        h(ReadOnlyElementIndex, {
+        h(EmbeddedElementIndex, {
           elementType: 'Order',
           criteria: criteria.value,
           storageKey: 'orders',
@@ -62,7 +62,7 @@ function mount(extra: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   post.mockReset();
-  picker.props = null;
+  view.props = null;
   criteria.value = {customerId: 1};
   host = document.createElement('div');
   document.body.append(host);
@@ -73,31 +73,42 @@ afterEach(() => {
   host.remove();
 });
 
-describe('ReadOnlyElementIndex', () => {
-  it('requests a read-only index for the criteria and hands the payload to the picker', async () => {
+describe('EmbeddedElementIndex', () => {
+  it('requests the embedded index for the criteria and hands the payload to the view', async () => {
     post.mockResolvedValue(response('first'));
     mount();
     await flush();
 
-    expect(post).toHaveBeenCalledWith('element-selector-modals/body', {
-      context: 'modal',
+    expect(post).toHaveBeenCalledWith(expect.any(String), {
       elementType: 'Order',
-      criteria: {customerId: 1},
-      readOnly: true,
+      context: 'embeddedIndex',
+      source: '__IMP__',
+      embeddedCriteria: {customerId: 1},
     });
-    expect(picker.props).toMatchObject({
+    expect(view.props).toMatchObject({
       initial: {marker: 'first'},
-      readOnly: '',
-      storageKey: 'orders',
+      params: {embeddedCriteria: {customerId: 1}},
+      storageKey: 'embeddedindex.orders',
     });
   });
 
-  it('asks for the given source', async () => {
+  it('passes read-only on to the view', async () => {
     post.mockResolvedValue(response('first'));
-    mount({source: 'volume:abc'});
+    mount({readOnly: true});
     await flush();
 
-    expect(post.mock.lastCall?.[1]).toMatchObject({source: 'volume:abc'});
+    expect(view.props?.readOnly).toBe(true);
+  });
+
+  it('shows a token’s first page without requesting it', async () => {
+    mount({token: 'sealed', initial: {marker: 'server'}, criteria: undefined});
+    await flush();
+
+    expect(post).not.toHaveBeenCalled();
+    expect(view.props).toMatchObject({
+      initial: {marker: 'server'},
+      params: {embeddedIndexToken: 'sealed'},
+    });
   });
 
   it('reloads when the criteria change, dropping a superseded response', async () => {
@@ -116,10 +127,10 @@ describe('ReadOnlyElementIndex', () => {
 
     expect(post).toHaveBeenCalledTimes(2);
     expect(post.mock.lastCall?.[1]).toMatchObject({
-      criteria: {customerId: 2},
+      embeddedCriteria: {customerId: 2},
     });
-    expect(picker.props?.initial).toEqual({marker: 'second'});
-    expect(picker.props?.params.criteria).toEqual({customerId: 2});
+    expect(view.props?.initial).toEqual({marker: 'second'});
+    expect(view.props?.params.embeddedCriteria).toEqual({customerId: 2});
   });
 
   it('shows an error with a retry when the request fails', async () => {
@@ -129,21 +140,21 @@ describe('ReadOnlyElementIndex', () => {
     await flush();
 
     expect(host.querySelector('[role="alert"]')).not.toBeNull();
-    expect(picker.props).toBeNull();
+    expect(view.props).toBeNull();
 
     (host.querySelector('craft-button') as HTMLElement).click();
     await flush();
 
     expect(host.querySelector('[role="alert"]')).toBeNull();
-    expect(picker.props?.initial).toEqual({marker: 'recovered'});
+    expect(view.props?.initial).toEqual({marker: 'recovered'});
   });
 
-  it('shows the error and retry when the picker’s row request fails', async () => {
+  it('shows the error and retry when the view’s row request fails', async () => {
     post.mockResolvedValue(response('first'));
     mount();
     await flush();
 
-    picker.emit?.('error', new Error('offline'));
+    view.emit?.('error', new Error('offline'));
     await flush();
 
     expect(host.querySelector('[role="alert"]')).not.toBeNull();
@@ -161,7 +172,7 @@ describe('ReadOnlyElementIndex', () => {
     await flush();
     (host.querySelector('input') as HTMLElement).focus();
 
-    picker.emit?.('error', new Error('offline'));
+    view.emit?.('error', new Error('offline'));
     await flush();
 
     expect(document.activeElement).toBe(host.querySelector('craft-button'));
