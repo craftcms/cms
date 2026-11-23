@@ -114,23 +114,12 @@ class ResponseTagger
         return $this->expiryTimestamp === null ? null : new DateTimeImmutable("@{$this->expiryTimestamp}");
     }
 
-    public function hasTags(): bool
-    {
-        return $this->tags !== [];
-    }
-
-    public function clear(): void
-    {
-        $this->tags = [];
-        $this->expiryTimestamp = null;
-    }
-
     /**
      * Adds the encoded tags to the response's tag header, if a formatter is configured.
      */
     public function tagResponse(Response $response): void
     {
-        if ($this->formatter === null || ! $this->hasTags()) {
+        if ($this->formatter === null || $this->tags === []) {
             return;
         }
 

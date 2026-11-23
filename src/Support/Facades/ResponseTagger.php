@@ -10,8 +10,7 @@ use Override;
 /**
  * @method static \CraftCms\Cms\HttpCache\ResponseTagger addTags(string|list<string> $tags)
  * @method static list<string> getTags()
- * @method static bool hasTags()
- * @method static void clear()
+ * @method static \DateTimeImmutable|null getExpiryDate()
  *
  * @see \CraftCms\Cms\HttpCache\ResponseTagger
  * @since 6.0.0

@@ -14,7 +14,7 @@ use FOS\HttpCache\ProxyClient\Varnish;
 use Illuminate\Support\MultipleInstanceManager;
 
 /**
- * Builds the FOSHttpCache clients named in `config/http-cache.php`.
+ * Builds the FOSHttpCache clients named in `config/craft/http-cache.php`.
  *
  * Each client's config has a `driver`, optional `servers` and `base_uri` for the dispatcher, and the FOSHttpCache
  * client's own options. Register other drivers with `extend()`:
