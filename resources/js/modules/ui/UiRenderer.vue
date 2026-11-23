@@ -50,6 +50,7 @@
     withUis,
   } from './renderer/uiTree';
   import {useClearedErrors} from './renderer/useClearedErrors';
+  import {stripEmphasis} from '@/common/utils/emphasis';
   import {useUiRefresh} from './renderer/useUiRefresh';
   import {useUiValues} from './renderer/useUiValues';
 
@@ -640,7 +641,9 @@
   <p v-if="renderError" role="alert">{{ renderError }}</p>
   <template v-else>
     <ul v-if="payload.globalErrors.length" class="error-list" role="alert">
-      <li v-for="error in payload.globalErrors" :key="error">{{ error }}</li>
+      <li v-for="error in payload.globalErrors" :key="error">
+        {{ stripEmphasis(error) }}
+      </li>
     </ul>
     <UiNodeList
       :nodes="nodes"

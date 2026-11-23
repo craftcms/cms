@@ -120,7 +120,8 @@ class InputNamespace
      */
     public function namespaceInputs(callable|string|Stringable $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
-        if (is_callable($html)) {
+        // Strings are always HTML, even when they match a function name like `blank`.
+        if (! is_string($html) && is_callable($html)) {
             // If no namespace was passed in, just return the callable response directly.
             // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
             if ($namespace === null) {

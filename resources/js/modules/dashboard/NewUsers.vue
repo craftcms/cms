@@ -141,7 +141,7 @@
         :caption="data.dateRangeLabel"
         :data="chart.data"
         :scale="chart.scale"
-        :label="t('New Users')"
+        :label="chart.data.columns[1]?.label ?? ''"
         :tooltip="tooltip"
       />
     </div>

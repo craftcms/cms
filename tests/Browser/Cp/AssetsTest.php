@@ -23,7 +23,7 @@ beforeEach(function () {
     File::ensureDirectoryExists($this->uploads);
     config()->set('filesystems.disks.browser-assets', ['driver' => 'local', 'root' => $this->root]);
 
-    $this->volume = Volume::factory()->create(['name' => 'Photos', 'handle' => 'photos', 'fs' => 'browser-assets']);
+    $this->volume = Volume::factory()->create(['name' => 'Photos', 'handle' => 'photos', 'disk' => 'browser-assets']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'parentId' => null, 'name' => 'Photos', 'path' => '']);
     Volumes::reset();
 });

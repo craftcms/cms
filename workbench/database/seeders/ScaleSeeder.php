@@ -288,7 +288,7 @@ class ScaleSeeder extends Seeder
             $volume = new Volume([
                 'name' => "Scale volume $v",
                 'handle' => "scaleVolume$v",
-                'fsHandle' => 'assets',
+                'disk' => 'assets',
                 'hasUrls' => true,
                 'subpath' => "scale-$v",
             ]);

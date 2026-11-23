@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Responses;
 
+use CraftCms\Cms\Http\ResponseHeaders;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -29,9 +30,7 @@ class GqlResponse extends JsonResponse
 
     public function noCache(): self
     {
-        $this->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-        $this->header('Pragma', 'no-cache');
-        $this->header('Expires', '0');
+        ResponseHeaders::setNoCacheHeaders($this);
 
         return $this;
     }

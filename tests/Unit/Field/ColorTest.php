@@ -165,3 +165,11 @@ it('shows the custom opacity setting only when custom colors are allowed', funct
     expect($crawler->filter('[name="settings[allowCustomAlpha]"]')->count() > 0)->toBe($allowCustomColors)
         ->and($crawler->filter('[name="settings[graphqlMode]"]')->count())->toBeGreaterThan(0);
 })->with([true, false]);
+
+it('names the palette color in its errors', function () {
+    $field = new Color(['validateHandleUniqueness' => false, 'name' => 'Brand', 'handle' => 'brand', 'palette' => [['color' => 'not-a-color', 'label' => 'Broken']]]);
+
+    $field->validate();
+
+    expect($field->errors()->first('palette.0.color'))->toBe('Color is invalid.');
+});

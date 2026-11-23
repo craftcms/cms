@@ -41,6 +41,5 @@ it('isolates response headers to the request scope', function () {
 it('sets cache headers with duration', function () {
     $response = renderBladeAndApplyHeaders('@craftExpires(7200)');
 
-    expect($response->headers->get('Cache-Control'))->toContain('max-age=7200')
-        ->and($response->headers->get('Pragma'))->toBe('cache');
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=7200, public');
 });

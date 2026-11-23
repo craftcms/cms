@@ -22,7 +22,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/action-controller-test/test-disk'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $this->volume = Volume::factory()->create(['disk' => 'test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
@@ -76,7 +76,7 @@ describe('moveAsset', function () {
             'uploaderId' => $user->id,
         ]);
 
-        $targetVolume = Volume::factory()->create(['fs' => 'test-disk']);
+        $targetVolume = Volume::factory()->create(['disk' => 'test-disk']);
         $targetFolder = VolumeFolderModel::factory()->create(['volumeId' => $targetVolume->id]);
         $conflictingAsset = AssetModel::factory()->createElement([
             'volumeId' => $targetVolume->id,

@@ -134,9 +134,7 @@ it('denies access when the schema has no site permissions', function () {
 
 it('always adds no-cache headers for mutations', function () {
     $response = get(action_url('graphql/api').'?query=mutation%20%7Bbogus%7D')
-        ->assertOk()
-        ->assertHeader('Pragma', 'no-cache')
-        ->assertHeader('Expires', '0');
+        ->assertOk();
 
     expect($response->headers->get('Cache-Control'))
         ->toContain('no-cache')
@@ -145,9 +143,7 @@ it('always adds no-cache headers for mutations', function () {
 
     $response = get(action_url('graphql/api').'?query=mutation%20%7Bbogus%7D', [
         'X-Craft-Gql-Cache' => 'cache',
-    ])->assertOk()
-        ->assertHeader('Pragma', 'no-cache')
-        ->assertHeader('Expires', '0');
+    ])->assertOk();
 
     expect($response->headers->get('Cache-Control'))
         ->toContain('no-cache')
@@ -162,9 +158,7 @@ it('adds no-cache headers for the selected mutation operation', function () {
     ]);
 
     $response = get($url)
-        ->assertOk()
-        ->assertHeader('Pragma', 'no-cache')
-        ->assertHeader('Expires', '0');
+        ->assertOk();
 
     expect($response->headers->get('Cache-Control'))
         ->toContain('no-cache')
