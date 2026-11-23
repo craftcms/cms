@@ -146,6 +146,21 @@ export const inputStyles = css`
     --_control-height: var(--c-input-height, var(--c-size-control-sm));
   }
 
+  :host([size~='large']) {
+    --_control-height: var(--c-input-height, var(--c-size-control-lg));
+    --_spacing-block: var(--c-spacing-lg);
+  }
+
+  :host([size~='large']) .input-group__input {
+    font-size: var(--c-text-md);
+  }
+
+  :host([size~='large']) ::slotted([slot='input']) {
+    line-height: 1.375;
+    padding-block: var(--_spacing-block);
+    padding-inline: var(--c-spacing-lg);
+  }
+
   :host([monospace]) .input-group__container {
     font-family: var(--c-font-mono);
     font-size: 0.9em;

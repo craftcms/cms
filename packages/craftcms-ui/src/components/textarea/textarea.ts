@@ -81,6 +81,9 @@ export default class CraftTextarea extends NativeField(LitElement) {
   @property({type: Boolean, reflect: true})
   monospace: boolean = false;
 
+  /** Control size. */
+  @property({type: String, reflect: true}) size?: 'medium' | 'large';
+
   #resizeObserver?: ResizeObserver;
   #styleObserver?: MutationObserver;
   #intersectionObserver?: IntersectionObserver;

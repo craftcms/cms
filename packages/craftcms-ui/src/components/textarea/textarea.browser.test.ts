@@ -112,3 +112,23 @@ describe('in an editable table cell', () => {
     expect(getComputedStyle(textarea).overflowY).toBe('auto');
   });
 });
+
+it('enlarges its text and padding at size large, and still fits its rows', async () => {
+  const normal = getComputedStyle(await render({rows: '3'}));
+  const textarea = await render({rows: '3', size: 'large'});
+  const large = getComputedStyle(textarea);
+
+  expect(parseFloat(large.fontSize)).toBeGreaterThan(
+    parseFloat(normal.fontSize)
+  );
+  expect(parseFloat(large.paddingTop)).toBeGreaterThan(
+    parseFloat(normal.paddingTop)
+  );
+  expect(parseFloat(large.paddingLeft)).toBeGreaterThan(
+    parseFloat(normal.paddingLeft)
+  );
+  expect(textarea.getBoundingClientRect().height).toBeCloseTo(
+    heightOfRows(textarea, 3),
+    0
+  );
+});

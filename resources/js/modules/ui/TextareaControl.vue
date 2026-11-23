@@ -11,6 +11,7 @@
     maxLength?: number;
     placeholder?: string;
     monospace?: boolean;
+    enlarged?: boolean;
     singleLine?: boolean;
     textExpanderTriggers?: TextExpanderTriggers;
   };
@@ -68,6 +69,7 @@
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
     .monospace="control.props.monospace === true"
+    :size="control.props.enlarged ? 'large' : 'medium'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="control.mode === 'disabled'"
