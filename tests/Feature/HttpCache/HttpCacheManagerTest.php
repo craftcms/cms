@@ -65,3 +65,10 @@ it('builds drivers registered with extend() without a config entry', function ()
 
     expect(HttpCache::client('custom'))->toBeInstanceOf(Noop::class);
 });
+
+it('passes options to drivers registered with extend() without a driver key', function () {
+    config(['craft.http-cache.clients.custom' => ['soft_purge' => true]]);
+    HttpCache::extend('custom', fn ($app, array $config) => $config['soft_purge'] ? new Noop : null);
+
+    expect(HttpCache::client('custom'))->toBeInstanceOf(Noop::class);
+});
