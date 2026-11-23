@@ -1,5 +1,6 @@
 <?php
 
+use craft\helpers\App as CraftApp;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
@@ -11,6 +12,12 @@ use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use yii\base\Application;
+
+it('treats legacy web requests as HTTP under the CLI SAPI', function() {
+    $request = Craft::createObject(CraftApp::webRequestConfig());
+
+    expect($request->getIsConsoleRequest())->toBeFalse();
+});
 
 it('can restore empty strings', function() {
     $_POST = [
