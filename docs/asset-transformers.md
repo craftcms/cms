@@ -23,11 +23,11 @@ return GeneralConfig::create()
 
 `AssetTransformersConfig` has these settings:
 
-| Setting | Environment override | Meaning |
-| --- | --- | --- |
-| `defaultTransformer($name)` | `CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER` | The transformer for volumes that don't choose one. Without one, they use `craft`. |
-| `addTransformer($name, $config)` | | Defines a transformer. `$config` needs a `driver`. |
-| `transformers($transformers)` | | Replaces all transformers with an array of configs keyed by name. |
+| Setting | Meaning |
+| --- | --- |
+| `defaultTransformer($name)` | The transformer for volumes that don't choose one. Without one, they use `craft`. |
+| `addTransformer($name, $config)` | Defines a transformer. `$config` needs a `driver`. |
+| `transformers($transformers)` | Replaces all transformers with an array of configs keyed by name. |
 
 Craft always defines the `craft` transformer. `addTransformer('craft', [...])` sets its settings, and can leave out
 `driver`. Giving it another driver throws. Adding a name that's already defined replaces its config.
@@ -44,8 +44,17 @@ Each volume uses one transformer. Craft picks it in this order:
 2. The `assetTransformers` setting's `defaultTransformer`.
 3. The `craft` transformer.
 
-Most sites use one transformer per environment, so they set `CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER` and leave
-the volume setting empty. Set the volume setting when one volume needs a different transformer than the rest, such as a Cloud
+Most sites use one transformer per environment, so they set `defaultTransformer` with `env()` and leave the volume
+setting empty:
+
+```php
+->assetTransformers(AssetTransformersConfig::create()
+    ->defaultTransformer(env('ASSET_TRANSFORMER'))
+    ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
+)
+```
+
+An unset variable leaves it `null`, so that environment uses `craft`. Set the volume setting when one volume needs a different transformer than the rest, such as a Cloud
 volume next to an S3 volume.
 
 A hosting package can set its own default, as Craft Cloud's does, by setting it only when it's `null`. That way it
@@ -296,7 +305,7 @@ Volumes can only choose transformers that are defined in config, so registering 
 yet. Like a Flysystem adapter package that documents the disk to add to `config/filesystems.php`, document the
 `addTransformer()` call users should add to `config/craft/general.php`, as in [Settings](#settings). Don't add it to the
 project's config from your plugin. Once it's defined, users choose `remote-images` in a volume's Asset Transformer
-setting, or set `CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER=remote-images`.
+setting, or make it the `defaultTransformer`.
 
 `craft` is a reserved driver name. For a second set of settings, add a second transformer with the same driver, as in
 [Multiple transformers of the same type](#multiple-transformers-of-the-same-type).

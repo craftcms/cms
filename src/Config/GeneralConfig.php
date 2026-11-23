@@ -1764,18 +1764,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var AssetTransformersConfig Asset transformer settings: the default transformer and the named transformers.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
-     *     ->defaultTransformer('imgix')
+     *     ->defaultTransformer(env('ASSET_TRANSFORMER'))
      *     ->addTransformer('craft', ['outputDisk' => 'transforms'])
      *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
      * )
      * ```
-     * ```shell Environment Override
-     * CRAFT_ASSET_TRANSFORMERS_DEFAULT_TRANSFORMER=imgix
-     * ```
-     * :::
      *
      * @group Image Handling
      */
