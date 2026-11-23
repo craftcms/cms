@@ -59,3 +59,9 @@ it('reports failed purges', function () {
 
     HttpCache::invalidator('varnish')->invalidatePath('/blog')->flush();
 })->throws(ExceptionCollection::class);
+
+it('builds drivers registered with extend() without a config entry', function () {
+    HttpCache::extend('custom', fn () => new Noop);
+
+    expect(HttpCache::client('custom'))->toBeInstanceOf(Noop::class);
+});

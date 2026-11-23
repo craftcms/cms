@@ -62,7 +62,9 @@ class HttpCacheManager extends MultipleInstanceManager
      */
     public function getInstanceConfig($name): ?array
     {
-        return $this->config->get("craft.http-cache.clients.$name");
+        // A driver registered with `extend()` works without a config entry of its own.
+        return $this->config->get("craft.http-cache.clients.$name")
+            ?? (isset($this->customCreators[$name]) ? ['driver' => $name] : null);
     }
 
     protected function createNoopDriver(): Noop
