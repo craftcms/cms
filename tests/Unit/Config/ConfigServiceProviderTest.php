@@ -11,6 +11,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateManager;
@@ -200,6 +201,7 @@ it('logs a deprecation warning for each environment override', function () {
     app()->forgetInstance(GeneralConfig::class);
     putenv('CRAFT_CP_TRIGGER=adminus');
     putenv('CRAFT_DISABLE_2FA=true');
+    putenv('CRAFT_HTTP_PROXY=http://user:hunter2@proxy.test');
     $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
 
     try {
@@ -207,11 +209,14 @@ it('logs a deprecation warning for each environment override', function () {
         app(GeneralConfig::class);
     } finally {
         putenv('CRAFT_DISABLE_2FA');
+        putenv('CRAFT_HTTP_PROXY');
     }
 
-    $messages = collect(Deprecator::getRequestLogs())->mapWithKeys(fn ($log) => [$log->key => $log->message]);
+    $logs = collect(Deprecator::getRequestLogs());
+    $messages = $logs->mapWithKeys(fn ($log) => [$log->key => $log->message]);
 
-    expect($messages->keys()->sort()->values()->all())->toBe(['env:CRAFT_CP_TRIGGER', 'env:CRAFT_DISABLE_2FA', 'env:CRAFT_MCP_INSTRUCTIONS'])
+    expect($messages->keys()->sort()->values()->all())->toBe(['env:CRAFT_CP_TRIGGER', 'env:CRAFT_DISABLE_2FA', 'env:CRAFT_HTTP_PROXY', 'env:CRAFT_MCP_INSTRUCTIONS'])
+        ->and(Json::encode($logs->pluck('traces')))->not->toContain('hunter2')
         ->and($messages['env:CRAFT_MCP_INSTRUCTIONS'])->toStartWith('Setting `mcp.instructions` with the `CRAFT_MCP_INSTRUCTIONS` environment variable is deprecated.')
         ->and($messages['env:CRAFT_DISABLE_2FA'])->toStartWith('Setting `disable2fa` with the `CRAFT_DISABLE_2FA` environment variable is deprecated.');
 });
