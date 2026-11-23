@@ -9,7 +9,7 @@
   import '@craftcms/ui/components/checkbox/checkbox';
   import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/tooltip/tooltip';
-  import {formatDate, t} from '@craftcms/ui';
+  import {t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
@@ -386,10 +386,8 @@
                     :progress="lastRun(plan)!.progress"
                   />
                 </span>
-                <span>{{
-                  t('Last run {date}', {
-                    date: formatDate(lastRun(plan)!.dateCreated),
-                  })
+                <span :title="lastRun(plan)!.started.title">{{
+                  t('Last run {date}', {date: lastRun(plan)!.started.label})
                 }}</span>
                 <template v-if="lastRunFailures(lastRun(plan)!)">
                   <span class="plan-list__last-run-bullet" aria-hidden="true"
