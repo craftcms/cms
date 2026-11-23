@@ -8,9 +8,12 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\ResponseTagger;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+
+use function CraftCms\Cms\renderString;
 
 it('installs Craft and the plugin with its install migration', function () {
     expect(Cms::isInstalled())->toBeTrue()
@@ -41,4 +44,10 @@ it('saves and queries elements', function () {
 
     expect(app(Elements::class)->saveElement($user))->toBeTrue()
         ->and(User::find()->id($user->id)->one()?->email)->toBe('plugin-tester@example.com');
+});
+
+it('exposes Craft facades as Twig globals', function () {
+    renderString("{% do ResponseTagger.addTags('plugin-tag') %}");
+
+    expect(ResponseTagger::getTags())->toBe(['plugin-tag']);
 });

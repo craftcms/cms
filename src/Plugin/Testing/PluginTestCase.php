@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use Illuminate\Contracts\Config\Repository;
@@ -78,6 +79,19 @@ abstract class PluginTestCase extends BaseTestCase
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
+    }
+
+    /**
+     * Craft's facade aliases, which plugin suites don't get from package discovery. Craft also exposes them to
+     * templates as Twig globals, such as `Sites`. Testbench asks for them before the `files` binding exists, so this
+     * reads `composer.json` without the `File` facade.
+     *
+     * @return array<string, class-string>
+     */
+    #[Override]
+    protected function getPackageAliases($app): array
+    {
+        return Json::decode((string) file_get_contents(dirname(__DIR__, 3).'/composer.json'))['extra']['laravel']['aliases'];
     }
 
     #[Override]
