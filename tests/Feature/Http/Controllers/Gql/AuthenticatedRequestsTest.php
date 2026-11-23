@@ -211,6 +211,16 @@ it('lets OAuth clients discover, register for, and use the API with the access l
     'read and write' => ['graphql:write', ['graphql:read', 'graphql:write'], true],
 ]);
 
+it('advertises OAuth endpoints that resolve in headless mode', function (): void {
+    Cms::config()->headlessMode = true;
+
+    $metadata = $this->getJson('/.well-known/oauth-authorization-server/actions/graphql')->assertOk()->json();
+
+    expect($metadata['issuer'])->toBe('https://localhost/actions/graphql');
+    $this->postJson($metadata['token_endpoint'])->assertStatus(400);
+    $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
+});
+
 it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
     Cms::config()->enableGraphqlCaching = true;
     $schema = new GqlSchema(['name' => 'Front end', 'scope' => GqlHelper::createFullAccessSchema()->scope]);

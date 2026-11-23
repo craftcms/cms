@@ -57,7 +57,14 @@ class GqlServiceProvider extends ServiceProvider
             // metadata and the resource’s identifier
             $resourceUrl = Url::stripQueryString(action_url('graphql/api'));
             $path = "/$actionTrigger/graphql/api";
-            $baseUrl = str_ends_with($resourceUrl, $path) ? Str::beforeLast($resourceUrl, $path) : (string) config('app.url');
+            // Action URLs include the control panel trigger on control panel requests and in headless mode, but the
+            // OAuth routes don’t
+            $cpPath = '/'.Url::prependCpTrigger($path);
+            $baseUrl = match (true) {
+                str_ends_with($resourceUrl, $cpPath) => Str::beforeLast($resourceUrl, $cpPath),
+                str_ends_with($resourceUrl, $path) => Str::beforeLast($resourceUrl, $path),
+                default => (string) config('app.url'),
+            };
 
             return new OAuthResource(
                 handle: 'graphql',
