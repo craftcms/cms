@@ -89,6 +89,24 @@ class RecordCacheInfo
     }
 }
 
+it('keeps a private response private when capping its lifetimes', function () {
+    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
+
+    Route::get('/page', function () use ($entry) {
+        Entry::find()->id($entry->id)->one();
+
+        $response = response('ok')->setPrivate()->setMaxAge(3600);
+        $response->headers->addCacheControlDirective('s-maxage', '86400');
+
+        return $response;
+    });
+
+    $response = $this->get('/page');
+
+    expect($response->headers->hasCacheControlDirective('private'))->toBeTrue()
+        ->and($response->headers->hasCacheControlDirective('public'))->toBeFalse();
+});
+
 it('leaves lifetimes shorter than the earliest expiry alone', function () {
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addDay()]);
 

@@ -73,11 +73,12 @@ readonly class TagResponse
      */
     private function capLifetime(Response $response, int $ttl): void
     {
-        foreach (['s-maxage' => 'setSharedMaxAge', 'max-age' => 'setMaxAge'] as $directive => $setter) {
+        // Set the directives directly: `setSharedMaxAge()` also makes the response public.
+        foreach (['s-maxage', 'max-age'] as $directive) {
             $value = $response->headers->getCacheControlDirective($directive);
 
             if (is_numeric($value) && (int) $value > $ttl) {
-                $response->$setter($ttl);
+                $response->headers->addCacheControlDirective($directive, (string) $ttl);
             }
         }
 
