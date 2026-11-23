@@ -1886,6 +1886,14 @@ class ExtensionTest extends TestCase
             '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
         );
+
+        // Tokens are never checked in origin-only mode
+        Craft::$app->getConfig()->getGeneral()->csrfOriginOnly = true;
+        try {
+            $this->testRenderResult('', '{{ csrfInput() }}');
+        } finally {
+            Craft::$app->getConfig()->getGeneral()->csrfOriginOnly = false;
+        }
     }
 
     /**

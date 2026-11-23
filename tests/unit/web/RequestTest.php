@@ -362,6 +362,27 @@ class RequestTest extends TestCase
     }
 
     /**
+     * @dataProvider validateCsrfTokenDataProvider
+     * @param bool $expected
+     * @param bool $originOnly
+     * @param array $headers
+     * @param bool $withToken
+     */
+    public function testValidateCsrfToken(bool $expected, bool $originOnly, array $headers, bool $withToken = false): void
+    {
+        Craft::$app->getConfig()->getGeneral()->csrfOriginOnly = $originOnly;
+        $this->request->setHostInfo('https://craft.test');
+        $this->request->getHeaders()->fromArray($headers + ['X-Http-Method-Override' => 'POST']);
+        $this->request->setBodyParams($withToken ? [$this->request->csrfParam => $this->request->getCsrfToken()] : []);
+
+        try {
+            self::assertSame($expected, $this->request->validateCsrfToken());
+        } finally {
+            Craft::$app->getConfig()->getGeneral()->csrfOriginOnly = false;
+        }
+    }
+
+    /**
      * @dataProvider getParamDataProvider
      * @param mixed $expected
      * @param mixed $defaultValue
@@ -521,6 +542,32 @@ class RequestTest extends TestCase
             ['login'],
             ['logout'],
             ['update'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function validateCsrfTokenDataProvider(): array
+    {
+        return [
+            'same-origin Sec-Fetch-Site' => [true, false, ['Sec-Fetch-Site' => 'same-origin']],
+            'matching Origin without Sec-Fetch-Site' => [true, false, ['Origin' => 'https://CRAFT.test/']],
+            'no Origin' => [false, false, []],
+            'other host' => [false, false, ['Origin' => 'https://evil.test']],
+            'other scheme' => [false, false, ['Origin' => 'http://craft.test']],
+            'other port' => [false, false, ['Origin' => 'https://craft.test:8443']],
+            'opaque Origin' => [false, false, ['Origin' => 'null']],
+            'same-site Sec-Fetch-Site' => [false, false, ['Sec-Fetch-Site' => 'same-site', 'Origin' => 'https://craft.test']],
+            'cross-site Sec-Fetch-Site' => [false, false, ['Sec-Fetch-Site' => 'cross-site', 'Origin' => 'https://craft.test']],
+            'cross-site with token' => [true, false, ['Sec-Fetch-Site' => 'cross-site'], true],
+            'no Origin with token' => [true, false, [], true],
+            'GET' => [true, false, ['X-Http-Method-Override' => 'GET']],
+            'origin-only, same-origin Sec-Fetch-Site' => [true, true, ['Sec-Fetch-Site' => 'same-origin']],
+            'origin-only, matching Origin' => [true, true, ['Origin' => 'https://craft.test']],
+            'origin-only, cross-site with token' => [false, true, ['Sec-Fetch-Site' => 'cross-site'], true],
+            'origin-only, no Origin with token' => [false, true, [], true],
+            'origin-only, GET' => [true, true, ['X-Http-Method-Override' => 'GET']],
         ];
     }
 

@@ -48,7 +48,7 @@ class UploadsAsset extends AssetBundle
         $request = Craft::$app->getRequest();
         $defaults = ['url' => UrlHelper::actionUrl('uploads/start')];
 
-        if ($request->enableCsrfValidation) {
+        if ($request->enableCsrfValidation && !Craft::$app->getConfig()->getGeneral()->csrfOriginOnly) {
             // Forms' own CSRF inputs are used first, since this token is stale on statically cached pages
             $defaults['csrfTokenName'] = $request->csrfParam;
             $defaults['csrfToken'] = $request->getCsrfToken();
