@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
 use CraftCms\Cms\Element\Actions\SetStatus;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\EmbeddedElementIndex;
+use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -33,6 +35,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -317,6 +320,25 @@ it('offers element actions unless it’s read-only', function () {
         ->and(collect($editable['actions'])->pluck('action.body.elementAction')->all())->toContain(SetStatus::class)
         ->and($readOnly['readOnly'])->toBeTrue()
         ->and($readOnly['actions'])->toBeEmpty();
+});
+
+it('resolves element actions against the site it lists', function () {
+    [$entry, $otherSite] = embeddedIndexEntryInTwoSites();
+    $index = EmbeddedElementIndex::make(Entry::class)->criteria(['id' => $entry->id, 'siteId' => $otherSite->id]);
+    $requestedSiteIds = [];
+    Event::listen(function (ElementActionsResolving $event) use (&$requestedSiteIds): void {
+        $requestedSiteIds[] = app(RequestedSite::class)->get()?->id;
+    });
+
+    EmbeddedIndexViewModel::forDefinition($index)->payload(false);
+    ($this->postToIndex)(PerformElementActionController::class, $index, [
+        'elementAction' => SetStatus::class,
+        'elementIds' => [$entry->id],
+        'status' => SetStatus::DISABLED,
+    ])->assertOk();
+
+    expect($requestedSiteIds)->toBe([$otherSite->id, $otherSite->id])
+        ->and(app(RequestedSite::class)->get()->id)->toBe($entry->siteId);
 });
 
 it('runs element actions only on the elements it lists', function () {
