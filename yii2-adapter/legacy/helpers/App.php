@@ -932,6 +932,8 @@ class App
 
         $config = [
             'class' => WebRequest::class,
+            // Octane serves HTTP requests using the CLI SAPI.
+            'isConsoleRequest' => false,
             'enableCookieValidation' => true,
             'cookieValidationKey' => $generalConfig->securityKey,
             'enableCsrfValidation' => true,
