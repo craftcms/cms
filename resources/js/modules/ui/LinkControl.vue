@@ -63,10 +63,10 @@
   const buttonText = computed(() =>
     hasValue.value ? t('Edit link') : t('Add link')
   );
-  // `defaultLabel` is only for display.
+  // `defaultLabel` and `element` are only for display.
   const formValues = computed(() =>
     Object.entries(props.value ?? {})
-      .filter(([key]) => key !== 'defaultLabel')
+      .filter(([key]) => key !== 'defaultLabel' && key !== 'element')
       .map(([key, value]) => ({
         key,
         value: typeof value === 'boolean' ? (value ? '1' : '') : (value ?? ''),

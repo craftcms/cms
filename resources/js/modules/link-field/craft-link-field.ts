@@ -1,8 +1,19 @@
-import {t, type ElementInfo} from '@craftcms/ui';
+import {actionClient, t, type ElementInfo} from '@craftcms/ui';
 import {createElementSelectorModal} from '@/modules/element-selector-modal/create-element-selector-modal';
+import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+import {openSlideout} from '@/common/slideouts';
+import {isInteractiveClick} from '@/common/utils/dom';
+import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+import type {ChipElement} from '@/modules/elements/types/element-data';
+import {chipMenu} from '@/modules/ui/element-select/chipMenu';
+import type {ElementPresentation} from '@/modules/ui/element-select/types';
+import '@craftcms/ui/components/action-menu/action-menu';
+import '@craftcms/ui/components/chip/chip';
 import '@craftcms/ui/components/disclosure/disclosure';
 import '@craftcms/ui/components/field/field';
 import '@craftcms/ui/components/field-group/field-group';
+import '@craftcms/ui/components/icon/icon';
+import '@craftcms/ui/components/indicator/indicator';
 import '@craftcms/ui/components/pane/pane';
 import {
   html,
@@ -12,7 +23,12 @@ import {
   type TemplateResult,
 } from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import './craft-link-field.css';
+
+/** A linked element, as its chip and its action menu draw it. */
+export type LinkedElement = ElementPresentation &
+  Pick<ChipElement, 'color'> & {status?: ChipElement['status']};
 
 export type LinkTypeConfig = {
   id: string;
@@ -51,6 +67,8 @@ type LinkAttributes = {
 
 export type LinkFieldValue = LinkAttributes & {
   defaultLabel: string;
+  /** The linked element's chip, for display only. */
+  element?: LinkedElement | null;
   href: string;
   label: string;
   type: string;
@@ -134,6 +152,13 @@ class CraftLinkField extends LitElement {
   @state()
   private label = '';
 
+  /** The linked element, drawn as a chip. */
+  @state()
+  private selectedElement: LinkedElement | null = null;
+
+  /** One dispatcher for the actions the server describes for the chip's element. */
+  private readonly toActionItems = createElementActionMenu();
+
   @state()
   private linkAttributes: LinkAttributes = {...emptyAttributes};
 
@@ -164,6 +189,12 @@ class CraftLinkField extends LitElement {
   override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('modelValue') && !this.isEcho(this.modelValue)) {
       const value = this.modelValue ?? {};
+      // An echo of the same link doesn't carry its chip, so the one we have is kept.
+      this.selectedElement =
+        value.element ??
+        (value.value && value.value === this.value
+          ? this.selectedElement
+          : null);
       this.defaultLabel = value.defaultLabel ?? '';
       this.label = value.label ?? '';
       this.linkAttributes = {
@@ -217,6 +248,7 @@ class CraftLinkField extends LitElement {
     this.typeId = event.target.value;
     this.value = '';
     this.defaultLabel = '';
+    this.selectedElement = null;
     this.valueError = '';
     this.change('discrete');
   }
@@ -270,7 +302,8 @@ class CraftLinkField extends LitElement {
     };
   }
 
-  private async chooseElement(event: Event): Promise<void> {
+  /** Opens the element selector, from `trigger`, which focus returns to. */
+  private async chooseElement(trigger: HTMLElement | null): Promise<void> {
     const type = this.selectedType;
 
     if (!type?.elementType || !type.refHandle) {
@@ -282,10 +315,7 @@ class CraftLinkField extends LitElement {
     delete config.limit;
     delete config.single;
 
-    const chooseButton =
-      event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-
-    await this.dispatchElementSelectStartEvent(chooseButton);
+    await this.dispatchElementSelectStartEvent(trigger);
 
     /** Set when the selector hands off to a new entry's slideout. */
     let handoff: Promise<void> | null = null;
@@ -297,21 +327,31 @@ class CraftLinkField extends LitElement {
       multiSelect: false,
       // Where a slideout opened from the selector, such as a new entry's,
       // nests and returns focus to
-      triggerElement: () => chooseButton,
+      triggerElement: () => trigger,
       onHandoff: (settled) => {
         handoff = settled;
       },
       onSelect: (elements: ElementInfo[]) => {
         const [element] = elements;
 
-        if (!element) {
+        if (!element?.id) {
           return;
         }
 
         this.value = `{${type.refHandle}:${element.id}@${element.siteId}:url}`;
         this.defaultLabel = String(element.label || '');
+        this.selectedElement = {
+          id: element.id,
+          label: this.defaultLabel,
+          siteId: element.siteId,
+        };
         this.valueError = '';
         this.change('discrete');
+        void this.loadSelectedElement(
+          type.elementType!,
+          element.id,
+          element.siteId
+        );
       },
     });
 
@@ -330,6 +370,126 @@ class CraftLinkField extends LitElement {
 
       modal.destroy();
     });
+  }
+
+  /** Fetches the selected element's chip, which the selector doesn't report. */
+  private async loadSelectedElement(
+    elementType: string,
+    id: number,
+    siteId: number | null
+  ): Promise<void> {
+    const value = this.value;
+    let elements: LinkedElement[] | undefined;
+
+    try {
+      ({
+        data: {elements},
+      } = await actionClient.post<{elements?: LinkedElement[]}>(
+        'relational-fields/structured-elements',
+        {elementType, elementIds: [id], siteId}
+      ));
+    } catch {
+      return;
+    }
+
+    const element = elements?.find((candidate) => candidate.id === id);
+
+    if (element && this.value === value) {
+      this.selectedElement = element;
+    }
+  }
+
+  /** Unlinks the element, and moves focus to the Choose button that takes the chip's place. */
+  private async removeElement(): Promise<void> {
+    this.value = '';
+    this.defaultLabel = '';
+    this.selectedElement = null;
+    this.change('discrete');
+    await this.updateComplete;
+    this.querySelector<HTMLElement>(
+      '.craft-link-field__element > craft-button'
+    )?.focus();
+  }
+
+  /** Opens the linked element's editor in a slideout, refreshing the chip when it's saved. */
+  private async editElement(
+    type: LinkTypeConfig,
+    element: LinkedElement
+  ): Promise<void> {
+    const opener = this.actionMenuInvoker();
+    const href =
+      element.cpEditUrl ??
+      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
+        undefined,
+        {
+          query: {
+            elementType: type.elementType!,
+            elementId: element.id,
+            siteId: element.siteId ?? null,
+          },
+        }
+      );
+
+    // A popover this field is in would otherwise be dismissed by focus moving
+    // into the slideout.
+    await this.dispatchElementSelectStartEvent(opener);
+
+    const panel = await openSlideout(href, {
+      opener,
+      onSaved: () =>
+        void this.loadSelectedElement(
+          type.elementType!,
+          element.id,
+          Number(element.siteId) || null
+        ),
+      onClosed: () => this.dispatchElementSelectEvent('element-select-end'),
+    });
+
+    if (!panel) {
+      this.dispatchElementSelectEvent('element-select-end');
+    }
+  }
+
+  /** Opens the editor on a double-click, unless it landed on one of the chip's own controls. */
+  private handleChipDoubleClick(type: LinkTypeConfig, event: MouseEvent): void {
+    const element = this.selectedElement;
+
+    if (
+      element?.canEdit !== true ||
+      isInteractiveClick(event, event.currentTarget)
+    ) {
+      return;
+    }
+
+    void this.editElement(type, element);
+  }
+
+  /** The button that opens the chip's action menu. */
+  private actionMenuInvoker(): HTMLElement | null {
+    return this.querySelector<HTMLElement>(
+      '.craft-link-field__chip craft-action-menu > [slot="invoker"]'
+    );
+  }
+
+  /** The chip's menu: the element's own actions, then Edit and Replace, then Remove. */
+  private chipActions(type: LinkTypeConfig, element: LinkedElement) {
+    return chipMenu(
+      element,
+      {
+        elementType: type.elementType ?? '',
+        elementDisplayName: type.label,
+        editable: !this.disabled,
+        toActionItems: this.toActionItems,
+      },
+      {
+        edit: {
+          label: t('Edit {type}', {type: type.label}),
+          open: () => void this.editElement(type, element),
+        },
+        replace: () => void this.chooseElement(this.actionMenuInvoker()),
+        remove: () => void this.removeElement(),
+      }
+    );
   }
 
   private async dispatchElementSelectStartEvent(
@@ -561,6 +721,59 @@ class CraftLinkField extends LitElement {
     `;
   }
 
+  /** The linked element's chip and its action menu, as relation fields draw them. */
+  private renderSelectedElement(
+    type: LinkTypeConfig
+  ): TemplateResult | typeof nothing {
+    const element = this.selectedElement;
+    const label = element?.label || this.defaultLabel || this.value;
+
+    if (!this.value) {
+      return nothing;
+    }
+
+    const status = element?.status;
+    const actions = this.chipActions(type, element ?? {id: 0, label});
+
+    return html`
+      <craft-chip
+        size="small"
+        class="craft-link-field__chip"
+        data-color=${element?.color ?? nothing}
+        ?show-status=${Boolean(status)}
+        ?show-thumb=${Boolean(element?.thumbHtml)}
+        @dblclick=${(event: MouseEvent) =>
+          this.handleChipDoubleClick(type, event)}
+      >
+        ${element?.thumbHtml
+          ? html`<div slot="thumbnail" class="flex">
+              ${unsafeHTML(element.thumbHtml)}
+            </div>`
+          : nothing}
+        ${status
+          ? html`<div slot="status">
+              ${status.draft
+                ? html`<craft-icon
+                    name="scribble"
+                    label=${`${t('Status:')} ${status.label}`}
+                  ></craft-icon>`
+                : html`<craft-indicator
+                    fill=${status.fill}
+                    shape=${status.shape ?? nothing}
+                    label=${`${t('Status:')} ${status.label}`}
+                  ></craft-indicator>`}
+            </div>`
+          : nothing}
+        ${label}
+        ${actions.length
+          ? html`<div slot="suffix" class="flex items-center">
+              <craft-action-menu .actions=${actions}></craft-action-menu>
+            </div>`
+          : nothing}
+      </craft-chip>
+    `;
+  }
+
   private renderTypeInput(): TemplateResult | typeof nothing {
     const type = this.selectedType;
 
@@ -573,22 +786,22 @@ class CraftLinkField extends LitElement {
         <craft-field>
           ${this.renderLabel(type.label)}
           <div slot="input" class="craft-link-field__element">
-            <craft-button
-              type="button"
-              variant="dashed"
-              icon=${this.value ? nothing : 'plus'}
-              ?disabled=${this.disabled}
-              aria-describedby=${this.valueError ? this.valueErrorId : nothing}
-              aria-invalid=${this.valueError ? 'true' : nothing}
-              @click=${this.chooseElement}
-            >
-              ${this.value ? t('Change') : t('Choose')}
-            </craft-button>
-            ${this.value && this.defaultLabel
-              ? html`<span class="craft-link-selected-label"
-                  >${this.defaultLabel}</span
-                >`
-              : nothing}
+            ${this.value
+              ? this.renderSelectedElement(type)
+              : html`<craft-button
+                  type="button"
+                  variant="dashed"
+                  icon="plus"
+                  ?disabled=${this.disabled}
+                  aria-describedby=${this.valueError
+                    ? this.valueErrorId
+                    : nothing}
+                  aria-invalid=${this.valueError ? 'true' : nothing}
+                  @click=${(event: Event) =>
+                    void this.chooseElement(event.currentTarget as HTMLElement)}
+                >
+                  ${t('Choose')}
+                </craft-button>`}
           </div>
           ${this.renderValueError('feedback')}
         </craft-field>

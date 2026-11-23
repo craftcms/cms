@@ -31,6 +31,12 @@ vi.mock(
   () => selector
 );
 
+const slideouts = vi.hoisted(() => ({
+  openSlideout: vi.fn(async () => ({id: 'slideout-1'})),
+}));
+
+vi.mock('@/common/slideouts', () => slideouts);
+
 /**
  * The link type and its destination render as one grouped input, like a
  * grouped UI field (“Field Limit”). Runs in Chromium so names, descriptions
@@ -84,6 +90,159 @@ it('labels the element chooser with its link type', async () => {
         .getByRole('button', {name: 'Choose'})
     )
     .toBeVisible();
+});
+
+it('shows the linked element as a chip with its status', async () => {
+  linkField.modelValue = {
+    type: 'entry',
+    value: '{entry:12@1:url}',
+    defaultLabel: 'pending',
+    element: {
+      id: 12,
+      label: 'pending',
+      siteId: 1,
+      status: {fill: 'blue', label: 'Pending', draft: false},
+    },
+  };
+  await linkField.updateComplete;
+
+  const chip = linkField.querySelector('craft-chip');
+  expect(chip).not.toBeNull();
+  await expect.element(chip!).toHaveTextContent('pending');
+  await expect
+    .element(page.getByRole('img', {name: 'Status: Pending'}))
+    .toBeVisible();
+});
+
+describe('a linked element', () => {
+  beforeEach(async () => {
+    selector.createElementSelectorModal.mockClear();
+    slideouts.openSlideout.mockClear();
+    linkField.types = [
+      types[0]!,
+      {
+        id: 'entry',
+        label: 'Entry',
+        kind: 'element',
+        elementType: 'Entry',
+        refHandle: 'entry',
+      },
+    ];
+    linkField.modelValue = {
+      type: 'entry',
+      value: '{entry:12@1:url}',
+      defaultLabel: 'pending',
+      element: {
+        id: 12,
+        label: 'pending',
+        siteId: 1,
+        url: 'https://example.com/pending',
+        cpEditUrl: '/admin/entries/pending',
+        canEdit: true,
+        canCopy: true,
+      },
+    };
+    await linkField.updateComplete;
+  });
+
+  async function openMenu(): Promise<void> {
+    await page.getByRole('button', {name: 'Actions'}).click();
+    await expect
+      .element(page.getByRole('button', {name: 'Remove'}))
+      .toBeVisible();
+  }
+
+  it('takes the place of the Choose button', async () => {
+    await expect
+      .element(page.getByRole('button', {name: 'Choose'}))
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', {name: 'Change'}))
+      .not.toBeInTheDocument();
+  });
+
+  it('offers to view, edit, copy, replace and remove it', async () => {
+    await openMenu();
+
+    for (const name of [
+      'View in a new tab',
+      'Copy Entry',
+      'Edit Entry',
+      'Replace',
+      'Remove',
+    ]) {
+      await expect.element(page.getByRole('button', {name})).toBeVisible();
+    }
+  });
+
+  it('only offers its own actions when the field is disabled', async () => {
+    linkField.disabled = true;
+    await linkField.updateComplete;
+    await page.getByRole('button', {name: 'Actions'}).click();
+
+    await expect
+      .element(page.getByRole('button', {name: 'View in a new tab'}))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', {name: 'Replace'}))
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', {name: 'Remove'}))
+      .not.toBeInTheDocument();
+  });
+
+  it('is removed, with focus moving to the Choose button', async () => {
+    await openMenu();
+    await page.getByRole('button', {name: 'Remove'}).click();
+
+    expect(linkField.querySelector('craft-chip')).toBeNull();
+    await expect
+      .element(page.getByRole('button', {name: 'Choose'}))
+      .toHaveFocus();
+  });
+
+  it('opens its editor when double-clicked', async () => {
+    await userEvent.dblClick(linkField.querySelector('craft-chip')!);
+
+    expect(slideouts.openSlideout).toHaveBeenCalledWith(
+      '/admin/entries/pending',
+      expect.anything()
+    );
+  });
+
+  it('leaves a double-click on its action menu to the menu', async () => {
+    await userEvent.dblClick(
+      page.getByRole('button', {name: 'Actions'}).element()
+    );
+
+    expect(slideouts.openSlideout).not.toHaveBeenCalled();
+  });
+
+  it('doesn’t open an editor it can’t be edited in', async () => {
+    linkField.modelValue = {
+      ...linkField.modelValue,
+      element: {id: 12, label: 'pending', siteId: 1, canEdit: false},
+    };
+    await linkField.updateComplete;
+
+    await userEvent.dblClick(linkField.querySelector('craft-chip')!);
+
+    expect(slideouts.openSlideout).not.toHaveBeenCalled();
+  });
+
+  it('is replaced through the element selector, from the menu button', async () => {
+    await openMenu();
+    await page.getByRole('button', {name: 'Replace'}).click();
+
+    await expect
+      .poll(() => selector.createElementSelectorModal.mock.calls.length)
+      .toBe(1);
+    const [, settings] = selector.createElementSelectorModal.mock
+      .calls[0] as unknown as [string, SelectorSettings];
+    expect(settings.triggerElement()).toBe(
+      page.getByRole('button', {name: 'Actions'}).element()
+    );
+  });
 });
 
 it('describes the destination with its error', async () => {
