@@ -449,12 +449,38 @@ class CraftLinkField extends LitElement {
 
     const panel = await openSlideout(href, {
       opener,
-      onSaved: () =>
+      onSaved: ({data}) => {
+        if (
+          this.typeId !== type.id ||
+          this.selectedElement?.id !== element.id
+        ) {
+          return;
+        }
+
+        const newId = Number(data?.newAssetId);
+        const id =
+          !this.disabled &&
+          Number(data?.replacedAssetId) === element.id &&
+          newId
+            ? newId
+            : element.id;
+
+        if (id !== element.id) {
+          this.value = this.value.replace(/^\{(\w+):\d+/, `{$1:${id}`);
+          this.selectedElement = {
+            id,
+            label: this.defaultLabel,
+            siteId: element.siteId,
+          };
+          this.change('discrete');
+        }
+
         void this.loadSelectedElement(
           type.elementType!,
-          element.id,
+          id,
           Number(element.siteId) || null
-        ),
+        );
+      },
       onClosed: () => this.dispatchElementSelectEvent('element-select-end'),
     });
 

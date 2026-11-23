@@ -279,6 +279,62 @@ describe('a linked element', () => {
       .toBeVisible();
   });
 
+  describe('saved as a new asset in its editor', () => {
+    async function saveAsNewAsset(): Promise<{
+      changes: string[];
+      post: ReturnType<typeof vi.spyOn>;
+    }> {
+      const changes: string[] = [];
+      linkField.addEventListener('link-change', (event) =>
+        changes.push(
+          (event as CustomEvent<LinkChangeDetail>).detail.value.value
+        )
+      );
+      const post = vi
+        .spyOn(actionClient, 'post')
+        .mockImplementation(() => new Promise(() => {}));
+      await userEvent.dblClick(page.getByText('pending'));
+      const [, options] = slideouts.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: {data?: Record<string, unknown>}) => void},
+      ];
+      options.onSaved({data: {replacedAssetId: 12, newAssetId: 34}});
+
+      return {changes, post};
+    }
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('links to the new asset', async () => {
+      linkField.live = true;
+      await linkField.updateComplete;
+
+      const {changes, post} = await saveAsNewAsset();
+
+      expect(changes).toEqual(['{entry:34@1:url}']);
+      expect(post).toHaveBeenCalledWith(
+        'relational-fields/structured-elements',
+        expect.objectContaining({elementIds: [34]})
+      );
+    });
+
+    it('keeps its link when the field is disabled', async () => {
+      linkField.live = true;
+      linkField.disabled = true;
+      await linkField.updateComplete;
+
+      const {changes, post} = await saveAsNewAsset();
+
+      expect(changes).toEqual([]);
+      expect(post).toHaveBeenCalledWith(
+        'relational-fields/structured-elements',
+        expect.objectContaining({elementIds: [12]})
+      );
+    });
+  });
+
   it('draws only the latest refresh when its editor saves twice', async () => {
     const respond: Array<(label: string) => void> = [];
     const post = vi.spyOn(actionClient, 'post').mockImplementation(
@@ -292,11 +348,11 @@ describe('a linked element', () => {
     await userEvent.dblClick(page.getByText('pending'));
     const [, options] = slideouts.openSlideout.mock.calls[0] as unknown as [
       string,
-      {onSaved: () => void},
+      {onSaved: (result: object) => void},
     ];
 
-    options.onSaved();
-    options.onSaved();
+    options.onSaved({});
+    options.onSaved({});
     respond[1]!('newer');
     await expect
       .element(linkField.querySelector('craft-chip')!)
