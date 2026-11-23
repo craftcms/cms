@@ -23,7 +23,7 @@ beforeEach(function () {
     File::ensureDirectoryExists($this->uploads);
     config()->set('filesystems.disks.browser-assets', ['driver' => 'local', 'root' => $this->root]);
 
-    $this->volume = Volume::factory()->create(['name' => 'Photos', 'handle' => 'photos', 'fs' => 'browser-assets']);
+    $this->volume = Volume::factory()->create(['name' => 'Photos', 'handle' => 'photos', 'disk' => 'browser-assets']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'parentId' => null, 'name' => 'Photos', 'path' => '']);
     Volumes::reset();
 });
@@ -68,4 +68,15 @@ it('renames an asset', function () {
     expect(AssetElement::find()->id($asset->id)->one()->filename)->toBe('trip-notes.txt')
         ->and(File::exists("$this->root/trip-notes.txt"))->toBeTrue()
         ->and(File::exists("$this->root/field-notes.txt"))->toBeFalse();
+});
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the asset pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'images volume' => ['assets/images', 'Images'],
+        'asset' => [fn () => cpEditPath(AssetElement::find()->volume('images')->one()), 'Showcase image'],
+    ]);
 });

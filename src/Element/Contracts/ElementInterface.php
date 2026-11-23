@@ -216,7 +216,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *    matching all of them (or null if not found).
      *
      * Note that this method will automatically call the `one()` method and return an
-     * [[ElementInterface|\craft\base\Element]] instance. For example,
+     * [[ElementInterface|\CraftCms\Cms\Element\Element]] instance. For example,
      *
      * ```php
      * // find a single entry whose ID is 10
@@ -249,7 +249,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *    matching all of them (or an empty array if none was found).
      *
      * Note that this method will automatically call the `all()` method and return an array of
-     * [[ElementInterface|\craft\base\Element]] instances. For example,
+     * [[ElementInterface|\CraftCms\Cms\Element\Element]] instances. For example,
      *
      * ```php
      * // find the entries whose ID is 10
@@ -320,7 +320,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *   as top-level sources.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineSources()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::defineSources()]]
      * instead of this method.
      * :::
      *
@@ -354,7 +354,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     public static function fieldLayouts(?string $source): array;
 
     /**
-     * Modifies a custom source’s config, before it’s returned by [[craft\services\ElementSources::getSources()]]
+     * Modifies a custom source’s config, before it’s returned by [[\CraftCms\Cms\Element\ElementSources::getSources()]]
      */
     /**
      * @param  SourceConfig  $config
@@ -392,7 +392,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * set to a `type` key, or by an instantiated element action object.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineActions()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::defineActions()]]
      * instead of this method.
      * :::
      *
@@ -410,7 +410,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * set to a `type` key, or by an instantiated element exporter object.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineExporters()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::defineExporters()]]
      * instead of this method.
      * :::
      *
@@ -423,7 +423,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Defines which element attributes should be searchable.
      *
      * This method should return an array of attribute names that can be accessed on your elements.
-     * [[\craft\services\Search]] will call this method when it is indexing keywords for one of your elements,
+     * [[\CraftCms\Cms\Search\Search]] will call this method when it is indexing keywords for one of your elements,
      * and for each attribute it returns, it will fetch the corresponding property’s value on the element.
      * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
      *
@@ -440,8 +440,8 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * those are indexed automatically.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override
-     * [[\craft\base\Element::defineSearchableAttributes()]] instead of this method.
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override
+     * [[\CraftCms\Cms\Element\Element::defineSearchableAttributes()]] instead of this method.
      * :::
      *
      * @return string[] The element attributes that should be searchable
@@ -501,8 +501,8 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * - `label` – The sort option label
      * - `orderBy` – An array, comma-delimited string, or a callback function that defines the columns to order the query by. If set to a callback
-     *   function, the function will be passed two arguments: `$dir` (either `SORT_ASC` or `SORT_DESC`) and `$db` (a [[\craft\db\Connection]] object),
-     *   and it should return an array of column names or an [[\yii\db\ExpressionInterface]] object.
+     *   function, the function will be passed one argument: `$dir` (either `SORT_ASC` or `SORT_DESC`),
+     *   and it should return an array of column names or an [[\Illuminate\Contracts\Database\Query\Expression]] object.
      * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
      *   with (required if `orderBy` is an array or more than one column name)
      * - `defaultDir` _(optional)_ – The default sort direction that should be used when sorting by this option
@@ -632,17 +632,18 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *
      * ```php
      * use CraftCms\Cms\Element\Contracts\ElementInterface;
-     * use craft\db\Query;
+     * use Illuminate\Support\Facades\DB;
      *
      * public static function eagerLoadingMap(array $sourceElements, string $handle)
      * {
      *     switch ($handle) {
      *         case 'author':
      *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
-     *             $map = (new Query)
-     *                 ->select(['source' => 'id', 'target' => 'authorId'])
-     *                 ->from('{{%books}}')
-     *                 ->where(['id' => $bookIds)
+     *             $map = DB::table('books')
+     *                 ->select(['id as source', 'authorId as target'])
+     *                 ->whereIn('id', $bookIds)
+     *                 ->get()
+     *                 ->map(fn(object $row) => (array) $row)
      *                 ->all();
      *             return [
      *                 'elementType' => \my\plugin\Author::class,
@@ -650,17 +651,18 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      *             ];
      *         case 'bookClubs':
      *             $bookIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
-     *             $map = (new Query)
-     *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
-     *                 ->from('{{%bookclub_books}}')
-     *                 ->where(['bookId' => $bookIds)
+     *             $map = DB::table('bookclub_books')
+     *                 ->select(['bookId as source', 'clubId as target'])
+     *                 ->whereIn('bookId', $bookIds)
+     *                 ->get()
+     *                 ->map(fn(object $row) => (array) $row)
      *                 ->all();
      *             return [
      *                 'elementType' => \my\plugin\BookClub::class,
      *                 'map' => $map,
      *             ];
      *         default:
-     *             return parent::eagerLoadMap($sourceElements, $handle);
+     *             return parent::eagerLoadingMap($sourceElements, $handle);
      *     }
      * }
      * ```
@@ -822,7 +824,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the route that should be used when the element’s URI is requested.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::route()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::route()]]
      * instead of this method.
      * :::
      *
@@ -1022,7 +1024,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * - `refresh` – Whether preview frames should be automatically refreshed when content changes (`true` by default).
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::previewTargets()]]
      * instead of this method.
      * :::
      */
@@ -1292,7 +1294,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the Title’s translation key.
      *
-     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\CraftCms\Cms\Element\Elements::saveElement()]],
      * then `getTitleTranslationKey()` will be called for each site the element should be propagated to.
      * If the method returns the same value as it did for the initial site, then the initial site’s title will be copied over
      * to the target site.
@@ -1317,7 +1319,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
     /**
      * Returns the Slug’s translation key.
      *
-     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\CraftCms\Cms\Element\Elements::saveElement()]],
      * then `getSlugTranslationKey()` will be called for each site the element should be propagated to.
      * If the method returns the same value as it did for the initial site, then the initial site’s slug will be copied over
      * to the target site.
@@ -1625,7 +1627,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Returns the HTML that should be shown for a given attribute in table and card views.
      *
      * ::: tip
-     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::attributeHtml()]]
+     * Element types that extend [[\CraftCms\Cms\Element\Element]] should override [[\CraftCms\Cms\Element\Element::attributeHtml()]]
      * instead of this method.
      * :::
      *
@@ -1721,7 +1723,7 @@ interface ElementInterface extends Actionable, ArrayAccess, Chippable, Component
      * Performs actions after an element is fully saved and propagated to other sites.
      *
      * ::: tip
-     * This will get called regardless of whether `$propagate` is `true` or `false` for [[\craft\services\Elements::saveElement()]].
+     * This will get called regardless of whether `$propagate` is `true` or `false` for [[\CraftCms\Cms\Element\Elements::saveElement()]].
      * :::
      *
      * @param  bool  $isNew  Whether the element is brand new

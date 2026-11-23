@@ -418,6 +418,79 @@ describe('plain', () => {
   });
 });
 
+describe('link', () => {
+  async function mountLink(decoration = ''): Promise<CraftButton> {
+    document.body.innerHTML = `<div class="frame" style="display: flex; align-items: flex-start; font: 16px/normal sans-serif; --c-size-control-sm: 24px; --c-spacing-sm: 6px; --c-text-link: rgb(200, 100, 0); ${decoration}"><craft-button variant="link" size="small" style="box-sizing: border-box">Mark as read</craft-button></div>`;
+    const button = document.querySelector('craft-button') as CraftButton;
+    await button.updateComplete;
+    return button;
+  }
+
+  function tint(alpha: number): string {
+    return `color(srgb 0.784314 0.392157 0 / ${alpha})`;
+  }
+
+  it('takes the link color, with no fill or underline at rest', async () => {
+    const style = getComputedStyle(await mountLink());
+
+    expect(style.color).toBe('rgb(200, 100, 0)');
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(style.textDecorationLine).toBe('none');
+  });
+
+  it('is underlined when the link decoration asks for it', async () => {
+    const button = await mountLink('--c-link-decoration: underline');
+
+    expect(getComputedStyle(button).textDecorationLine).toBe('underline');
+  });
+
+  it('keeps the link color while pressed, behind a tint of it', async () => {
+    const button = await mountLink();
+    button.active = true;
+    await button.updateComplete;
+    const style = getComputedStyle(button);
+
+    expect(style.backgroundColor).toBe(tint(0.12));
+    expect(style.color).toBe('rgb(200, 100, 0)');
+  });
+
+  it('keeps the link color and its tint while pressed under the pointer', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const button = await mountLink();
+    await userEvent.hover(button);
+    button.active = true;
+    await button.updateComplete;
+    const style = getComputedStyle(button);
+
+    expect(style.backgroundColor).toBe(tint(0.12));
+    expect(style.color).toBe('rgb(200, 100, 0)');
+    await userEvent.unhover(button);
+  });
+
+  it('keeps the link color while hovered, behind a lighter tint of it', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const button = await mountLink();
+    await userEvent.hover(button);
+    const style = getComputedStyle(button);
+
+    expect(style.backgroundColor).toBe(tint(0.05));
+    expect(style.color).toBe('rgb(200, 100, 0)');
+    await userEvent.unhover(button);
+  });
+
+  it('is flush, so its text starts where its container’s does', async () => {
+    const button = await mountLink();
+    const frame = document.querySelector('.frame')!;
+    const text = document.createRange();
+    text.selectNodeContents(button);
+
+    expect(text.getBoundingClientRect().left).toBeCloseTo(
+      frame.getBoundingClientRect().left,
+      1
+    );
+  });
+});
+
 describe('outline and dashed borders', () => {
   async function mount(variant: string): Promise<CraftButton> {
     document.body.innerHTML = `

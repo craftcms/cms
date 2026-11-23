@@ -192,6 +192,11 @@ class Plugin extends Module implements PluginInterface
     }
 
     /** @internal */
+    final public function registerPublishables(): void
+    {
+    }
+
+    /** @internal */
     final public function removeAssets(): void
     {
     }

@@ -517,14 +517,17 @@ class App
     }
 
     /**
-     * Returns whether Craft is running on an environment with ephemeral storage.
+     * Returns whether the `CRAFT_EPHEMERAL` environment variable is enabled.
      *
      * @return bool
      * @since 3.4.0
+     * @deprecated 6.0.0 Craft no longer changes its behavior based on `CRAFT_EPHEMERAL`. Check whether the path you write to is writable instead.
      */
     public static function isEphemeral(): bool
     {
-        return app()->isEphemeral();
+        LegacyUsage::record(__METHOD__, '`craft\\helpers\\App::isEphemeral()` is deprecated. Craft no longer changes its behavior based on `CRAFT_EPHEMERAL`, so check whether the path you write to is writable instead.');
+
+        return Env::parseBoolean('$CRAFT_EPHEMERAL') === true;
     }
 
     /**
@@ -847,7 +850,6 @@ class App
         return [
             'class' => \craft\services\ProjectConfig::class,
             'readOnly' => Cms::isInstalled() && !Cms::config()->allowAdminChanges,
-            'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
 

@@ -110,10 +110,10 @@ class Sections
      * ---
      *
      * ```php
-     * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::allSectionIds;
+     * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::getAllSectionIds();
      * ```
      * ```twig
-     * {% set sectionIds = craft.sections.getAllSectionIds %}
+     * {% set sectionIds = Sections.getAllSectionIds() %}
      * ```
      *
      * @return Collection<int, int> All the sections’ IDs.
@@ -129,10 +129,10 @@ class Sections
      * ---
      *
      * ```php
-     * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::editableSectionIds;
+     * $sectionIds = \CraftCms\Cms\Support\Facades\Sections::getEditableSectionIds();
      * ```
      * ```twig
-     * {% set sectionIds = craft.sections.getEditableSectionIds %}
+     * {% set sectionIds = Sections.getEditableSectionIds() %}
      * ```
      *
      * @return Collection<int, int> All the editable sections’ IDs.
@@ -233,10 +233,10 @@ class Sections
      * ---
      *
      * ```php
-     * $sections = \CraftCms\Cms\Support\Facades\Sections::allSections;
+     * $sections = \CraftCms\Cms\Support\Facades\Sections::getAllSections();
      * ```
      * ```twig
-     * {% set sections = craft.sections.getAllSections %}
+     * {% set sections = Sections.getAllSections() %}
      * ```
      *
      * @return Collection<int, Section> All the sections.
@@ -252,10 +252,10 @@ class Sections
      * ---
      *
      * ```php
-     * $sections = \CraftCms\Cms\Support\Facades\Sections::editableSections;
+     * $sections = \CraftCms\Cms\Support\Facades\Sections::getEditableSections();
      * ```
      * ```twig
-     * {% set sections = craft.sections.getEditableSections %}
+     * {% set sections = Sections.getEditableSections() %}
      * ```
      *
      * @return Collection<int, Section> All the editable sections.
@@ -330,12 +330,12 @@ class Sections
      * ---
      *
      * ```php
-     * use craft\models\Section;
+     * use CraftCms\Cms\Section\Enums\SectionType;
      *
-     * $singles = \CraftCms\Cms\Support\Facades\Sections::getSectionsByType(Section::TYPE_SINGLE);
+     * $singles = \CraftCms\Cms\Support\Facades\Sections::getSectionsByType(SectionType::Single);
      * ```
      * ```twig
-     * {% set singles = craft.sections.getSectionsByType('single') %}
+     * {% set singles = Sections.getSectionsByType(enum('CraftCms\\Cms\\Section\\Enums\\SectionType').Single) %}
      * ```
      *
      * @param  SectionType  $type  The section type (`single`, `channel`, or `structure`)
@@ -352,10 +352,10 @@ class Sections
      * ---
      *
      * ```php
-     * $total = \CraftCms\Cms\Support\Facades\Sections::totalSections;
+     * $total = \CraftCms\Cms\Support\Facades\Sections::getTotalSections();
      * ```
      * ```twig
-     * {% set total = craft.sections.getTotalSections %}
+     * {% set total = Sections.getTotalSections() %}
      * ```
      */
     public function getTotalSections(): int
@@ -369,10 +369,10 @@ class Sections
      * ---
      *
      * ```php
-     * $total = \CraftCms\Cms\Support\Facades\Sections::totalEditableSections;
+     * $total = \CraftCms\Cms\Support\Facades\Sections::getTotalEditableSections();
      * ```
      * ```twig
-     * {% set total = craft.sections.getTotalEditableSections %}
+     * {% set total = Sections.getTotalEditableSections() %}
      * ```
      */
     public function getTotalEditableSections(): int
@@ -420,7 +420,7 @@ class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionById(1);
      * ```
      * ```twig
-     * {% set section = craft.sections.getSectionById(1) %}
+     * {% set section = Sections.getSectionById(1) %}
      * ```
      */
     public function getSectionById(int $sectionId): ?Section
@@ -437,7 +437,7 @@ class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2');
      * ```
      * ```twig
-     * {% set section = craft.sections.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
+     * {% set section = Sections.getSectionByUid('b3a9eef3-9444-4995-84e2-6dc6b60aebd2') %}
      * ```
      */
     public function getSectionByUid(string $uid): ?Section
@@ -454,7 +454,7 @@ class Sections
      * $section = \CraftCms\Cms\Support\Facades\Sections::getSectionByHandle('news');
      * ```
      * ```twig
-     * {% set section = craft.sections.getSectionByHandle('news') %}
+     * {% set section = Sections.getSectionByHandle('news') %}
      * ```
      */
     public function getSectionByHandle(string $sectionHandle): ?Section
@@ -786,7 +786,48 @@ class Sections
                 $this->populateNewStructure($sectionModel);
             }
 
-            // Finally, deal with the existing entries...
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        // Clear caches, including the section's entry type assignments
+        EntryTypes::refreshEntryTypes();
+
+        try {
+            if ($wasTrashed) {
+                /** @var ElementCollection<int, Entry> $entries */
+                $entries = Entry::find()
+                    ->sectionId($sectionModel->id)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->trashed()
+                    ->site('*')
+                    ->unique()
+                    ->where('entries.deletedWithSection', true)
+                    ->get();
+
+                SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
+                    $entriesByType = $entries->groupBy('typeId');
+                    foreach ($entriesByType as $typeEntries) {
+                        try {
+                            $typeEntries->each(function (Entry $entry) {
+                                $entry->deletedWithSection = false;
+                            });
+
+                            $this->elements->restoreElements($typeEntries->all());
+                        } catch (RuntimeException) {
+                            // the entry type probably wasn't restored
+                        }
+                    }
+                });
+            }
+        } finally {
+            // Deal with the existing entries. This comes after the cache refresh because the sync
+            // queue runs the job right away, in this process, and after restoring trashed entries
+            // so it covers them, even if restoring them fails.
             // -----------------------------------------------------------------
 
             if (! $isNewSection && $resaveEntries) {
@@ -822,43 +863,6 @@ class Sections
                     ))->afterCommit();
                 }
             }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        // Clear caches, including the section's entry type assignments
-        EntryTypes::refreshEntryTypes();
-
-        if ($wasTrashed) {
-            /** @var ElementCollection<int, Entry> $entries */
-            $entries = Entry::find()
-                ->sectionId($sectionModel->id)
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->trashed()
-                ->site('*')
-                ->unique()
-                ->where('entries.deletedWithSection', true)
-                ->get();
-
-            SectionOperation::for($sectionModel->id, $sectionModel->name)->scope(function () use ($entries): void {
-                $entriesByType = $entries->groupBy('typeId');
-                foreach ($entriesByType as $typeEntries) {
-                    try {
-                        $typeEntries->each(function (Entry $entry) {
-                            $entry->deletedWithSection = false;
-                        });
-
-                        $this->elements->restoreElements($typeEntries->all());
-                    } catch (RuntimeException) {
-                        // the entry type probably wasn't restored
-                    }
-                }
-            });
         }
 
         /** @var Section $section */

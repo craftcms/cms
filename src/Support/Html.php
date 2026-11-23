@@ -163,7 +163,7 @@ class Html
      */
     public static function disableInputs(callable|string|null $html): ?string
     {
-        if (is_callable($html)) {
+        if (! is_string($html) && is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
             HtmlStack::startJsBuffer();
             try {
@@ -1376,7 +1376,8 @@ class Html
 
                 return '';
             }
-            if (! is_file($svg) || ! File::isSvg($svg)) {
+            // Only local file paths are allowed, not stream wrapper URLs (`ftp://`, `phar://`, etc.)
+            if (str_contains($svg, '://') || ! is_file($svg) || ! File::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }

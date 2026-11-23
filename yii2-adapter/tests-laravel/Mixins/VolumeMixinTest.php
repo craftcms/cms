@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\base\Fs;
+use craft\fs\MissingFs;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Yii2Adapter\Tests\TestCase;
@@ -13,7 +14,7 @@ uses(TestCase::class);
 beforeEach(function() {
     config()->set('filesystems.disks.volume-mixin', ['driver' => 'local']);
     $this->disk = Storage::fake('volume-mixin');
-    $this->volume = new Volume(['fs' => 'volume-mixin']);
+    $this->volume = new Volume(['disk' => 'volume-mixin']);
 });
 
 it('writes files and directories through the legacy volume methods', function() {
@@ -46,4 +47,10 @@ it('renames nested directories', function() {
 
     expect($this->disk->get('new/nested/file.txt'))->toBe('contents')
         ->and($this->disk->directoryExists('old'))->toBeFalse();
+});
+
+it('accepts a filesystem object for the legacy fs setting', function() {
+    $volume = new Volume(['fs' => new MissingFs(['handle' => 'volume-mixin'])]);
+
+    expect($volume->getDisk(false))->toBe('volume-mixin');
 });

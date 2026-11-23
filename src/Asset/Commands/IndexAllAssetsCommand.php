@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
 use Override;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @since 6.0.0
@@ -32,20 +31,6 @@ class IndexAllAssetsCommand extends Command
 
     #[Override]
     protected $aliases = ['index-assets/all'];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        if (! app()->isEphemeral()) {
-            $this->getDefinition()->addOption(new InputOption(
-                name: 'cacheRemoteImages',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Cache remote-stored images in the process.',
-                default: 'false',
-            ));
-        }
-    }
 
     public function handle(Volumes $volumes): void
     {

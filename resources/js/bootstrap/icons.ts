@@ -77,6 +77,9 @@ const FLIPPED_NAMES = new Map(
   })
 );
 
+/** Icons drawn only in the regular style, as `scripts/copyicons.php` lists them in `$styles`. */
+const REGULAR_NAMES = new Set(['globe']);
+
 function normalizeIconName(
   name: string,
   earthIcon: string
@@ -121,7 +124,12 @@ export function configureIcons(
       // A flipped icon's name says where its original is, whatever family the old name was given.
       return icon.flip
         ? {url: getIconUrl(icon.name, 'classic', 'solid', baseUrl), flip: true}
-        : getIconUrl(icon.name, family, variant, baseUrl);
+        : getIconUrl(
+            icon.name,
+            family,
+            REGULAR_NAMES.has(icon.name) ? 'regular' : variant,
+            baseUrl
+          );
     })
   );
 }

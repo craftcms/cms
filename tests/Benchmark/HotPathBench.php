@@ -20,6 +20,11 @@ use function CraftCms\Cms\t;
  *
  * These are memoized for the rest of a request, so each benchmark clears its memo and measures what the first call
  * in a request costs. The warmup call loads their classes first, so that isn't counted.
+ *
+ * PHP's cycle collector is off, so the memory of a call only depends on what the call allocates. The collector runs
+ * whenever its buffer of possible garbage cycles fills up, and booting and the warmup call fill much of that buffer.
+ * Whether a collection freed memory during the counted call depended on what booting allocated, so changes outside the
+ * measured code moved its memory by several percent.
  */
 #[Warmup(1)]
 class HotPathBench extends BenchCase
@@ -32,6 +37,8 @@ class HotPathBench extends BenchCase
     #[Before]
     public function boot(): void
     {
+        gc_disable();
+
         $app = $this->createApplication();
         $this->editor = User::query()->where('username', 'editor')->firstOrFail();
         $this->actingAs($app, $this->editor);

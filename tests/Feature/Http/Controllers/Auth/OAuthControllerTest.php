@@ -121,6 +121,14 @@ describe('redirect flow', function () {
             ->and(session('url.intended'))->toContain(app(GeneralConfig::class)->getPostCpLoginRedirect());
     });
 
+    test('redirect sends inertia visits to the provider with a full page load', function () {
+        configureOAuthControllerProvider();
+
+        get(oauthControllerRedirectUrl(true), ['X-Inertia' => 'true'])
+            ->assertConflict()
+            ->assertHeader('X-Inertia-Location', 'https://provider.test/oauth/authorize');
+    });
+
     test('unknown providers return 404', function () {
         get('oauth/missing')->assertNotFound();
     });
@@ -130,7 +138,7 @@ describe('callback flow', function () {
     test('callback rejects user creation without maintenance access', function (bool $isCpRequest) {
         configureOAuthControllerProvider([
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
         app()->maintenanceMode()->activate([]);
 
@@ -181,7 +189,7 @@ describe('callback flow', function () {
 
         configureOAuthControllerProvider([
             'groups' => [$group->handle],
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
 
         completeOAuthControllerCallback([
@@ -203,7 +211,7 @@ describe('callback flow', function () {
         Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
         Sites::refreshSites();
         Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
-        configureOAuthControllerProvider(['activatesUsers' => true]);
+        configureOAuthControllerProvider(['controlsAccess' => true]);
         FakeOAuthProvider::$fakeUser = FakeOAuthProvider::fakeUser([
             'id' => 'provider-user-fr',
             'email' => 'oauth-fr@example.com',
@@ -256,7 +264,7 @@ describe('callback flow', function () {
 
         configureOAuthControllerProvider([
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
 
         completeOAuthControllerCallback([

@@ -18,6 +18,7 @@ use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Models\Info;
@@ -245,7 +246,6 @@ class ProjectConfig
     public function __construct(GeneralConfig $generalConfig)
     {
         $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
-        $this->writeYamlAutomatically = ! app()->isEphemeral();
         $this->handlers = new ChangeHandlers;
         $this->storage = new ConfigStorage;
 
@@ -787,7 +787,12 @@ class ProjectConfig
         $this->saveModifiedConfigData();
 
         if ($this->writeYamlAutomatically) {
-            $this->writeYamlFiles();
+            try {
+                $this->writeYamlFiles();
+            } catch (ProjectConfigWriteException $exception) {
+                // The change is already saved. The failure is cached, so admins get the “folder isn’t writable” alert.
+                report($exception);
+            }
         }
     }
 
@@ -863,7 +868,7 @@ class ProjectConfig
      *
      * @param  bool  $force  Whether to write out the YAML even if there aren’t any new changes
      *
-     * @throws \Exception if something goes wrong
+     * @throws ProjectConfigWriteException if the YAML files can't be written
      */
     public function writeYamlFiles(bool $force = false): void
     {
@@ -877,6 +882,8 @@ class ProjectConfig
 
     /**
      * Regenerates the external config based on the loaded project config.
+     *
+     * @throws ProjectConfigWriteException if the YAML files can't be written
      */
     public function regenerateExternalConfig(): void
     {
@@ -917,7 +924,12 @@ class ProjectConfig
         }
 
         if (! $this->getDoesExternalConfigExist() || $this->getHadFileWriteIssues()) {
-            $this->writeYamlAutomatically ? $this->regenerateExternalConfig() : $this->saveModifiedConfigData();
+            try {
+                $this->writeYamlAutomatically ? $this->regenerateExternalConfig() : $this->saveModifiedConfigData();
+            } catch (ProjectConfigWriteException $exception) {
+                // The failure is cached, so admins get the “folder isn’t writable” alert instead of an error
+                report($exception);
+            }
 
             return false;
         }

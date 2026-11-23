@@ -576,7 +576,7 @@ trait DisplayedInIndex
     {
         return match ($attribute['value']) {
             'link', 'uri' => $attribute['placeholder'],
-            default => app(ElementAttributeRenderer::class)->attributeHtml(is_callable($attribute['placeholder'] ?? null)
+            default => app(ElementAttributeRenderer::class)->attributeHtml(! is_string($attribute['placeholder'] ?? null) && is_callable($attribute['placeholder'] ?? null)
                 ? $attribute['placeholder']()
                 : $attribute['placeholder'] ?? $attribute['label'],
             ),

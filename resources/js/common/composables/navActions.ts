@@ -37,8 +37,11 @@ export function navItemActions(
 }
 
 /**
- * A badge is a dot on a top-level item, and a number on one nested under
- * another — an element index source, counting what it lists.
+ * A badge is a dot on a top-level item with children, whose own items show
+ * the numbers, and a number everywhere else: on one nested under another (an
+ * element index source, counting what it lists), and on a top-level item with
+ * nothing beneath it to show the number instead, such as an entries page that
+ * links straight to its one source.
  */
 export function navItemAction(
   item: NavItem,
@@ -53,7 +56,7 @@ export function navItemAction(
     ...(item.iconSvg ? {iconSvg: item.iconSvg} : {}),
     ...(item.status ? {status: item.status} : {}),
     ...(item.badgeCount > 0
-      ? nested
+      ? nested || children.length === 0
         ? {
             count: item.badgeCount,
             ...(item.badgeLabel ? {countLabel: item.badgeLabel} : {}),

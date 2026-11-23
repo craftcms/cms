@@ -26,3 +26,16 @@ it('creates a plain text field and keeps editing it', function () {
 
     $page->assertPathEndsWith("/settings/fields/edit/$field->id");
 });
+
+describe('with the workbench content', function () {
+    beforeEach(fn () => seedWorkbenchContent());
+
+    it('renders the field pages', function (string $path, string $heading) {
+        assertCpPageRenders($path, $heading);
+    })->with([
+        'fields' => ['settings/fields', 'Fields'],
+        'new field' => ['settings/fields/new', 'Create a new field'],
+        'markdown field' => [fn () => 'settings/fields/edit/'.Fields::getFieldByHandle('body')->id, 'Body'],
+        'link field' => [fn () => 'settings/fields/edit/'.Fields::getFieldByHandle('linkField')->id, 'Link'],
+    ]);
+});

@@ -64,9 +64,7 @@
         <template #action>
           <!-- Leads off-site, so it opens in a new tab, and says so -->
           <craft-button
-            variant="plain"
-            inherit
-            flush="inline block"
+            variant="link"
             icon="circle-right"
             icon-position="suffix"
             :href="trial.cartUrl"

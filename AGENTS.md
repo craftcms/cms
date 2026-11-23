@@ -52,6 +52,22 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Use the `pr` skill to write the pull request body.
 - Use the `requesting-accessibility-reviews` skill to request an accessibility review.
 
+## Workspace skills
+
+The Craft workspace skills cover processes shared with Craft 5 and the plugin repos: `releasing`, `changelog-entries`, `merging-pull-requests`, `watching-copilot-reviews`, `requesting-accessibility-reviews`, `feature-screenshots`, and `pr`. Follow them, along with the details for this repo below.
+
+### Releasing
+
+- Release Craft 6 from `6.x`. The version is `VERSION` in `src/Cms.php`, and the Finish commit bumps it.
+- `6.x` gets Craft 5 fixes through the next-minor 5.x branch, such as `5.13`. When releasing both majors, finish the 5.x release and merge it forward into `6.x` first.
+- Unreleased security fixes are on `6.x-internal` in craftcms/cms-internal.
+
+### Changelog entries
+
+- `CHANGELOG-WIP.md` (`# Release Notes for Craft CMS 6.0 (WIP)`) is for people upgrading from Craft 5. Something first released in a 6.0 alpha or beta is new to them, so later changes to it get no WIP entry.
+- Use Craft 6 class names in code references, such as `CraftCms\Cms\Database\Claim` or `CraftCms\Cms\Support\Facades\FacadeName`, and name macros as ``the `Request::isPreview()` macro``.
+- When ordering entries, front-end developer changes include Blade, and plugin and module development changes include Laravel and control panel Inertia, Vue and web components.
+
 ## Control panel trigger
 
 Sites can use a custom `cpTrigger` to keep their control panel URL private, so

@@ -131,7 +131,7 @@ class CardDesigner
 
         // User cards don't show a status badge elsewhere in the CP.
         $labels = [$sampleElement && ! $sampleUser ? app(StatusHtml::class)->componentStatusLabelHtml($sampleElement) : null];
-        $bodyHtml = Html::beginTag('div');
+        $bodyHtml = '';
 
         // get body elements (fields and attributes)
         $cardElements = $fieldLayout->getCardBodyElements();
@@ -146,10 +146,15 @@ class CardDesigner
             $bodyHtml .= Html::ul()
                 ->items(...array_map(fn ($label) => Html::li($label)->encode(false), $labels))
                 ->class('flex', 'gap-xs')
+                // Hidden in the browser while the owner's Show the Status field setting is off.
+                ->attribute('data-cvd-status', true)
                 ->render();
         }
 
-        $bodyHtml .= Html::endTag('div');
+        // Only when it has something in it, as element cards leave it out (`ElementHtml::cardContentHtml()`).
+        if ($bodyHtml !== '') {
+            $bodyHtml = Html::tag('div', $bodyHtml, ['class' => 'card-body']);
+        }
 
         $theme = Theme::resolveFor(currentUserElement())->value;
         $previewSrc = Cp::publicAssetUrl("images/thumb-styles/bachelor-$theme.jpg");

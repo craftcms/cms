@@ -17,11 +17,13 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\Cache as YiiAdapterCache;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
@@ -35,6 +37,7 @@ use ReflectionProperty;
 use Throwable;
 use yii\base\Component;
 use yii\base\Event;
+use yii\caching\FileCache;
 
 use function CraftCms\Cms\t;
 
@@ -223,6 +226,49 @@ class LooseEndsChecks
                 detail: implode(', ', array_keys($appConfig)),
                 file: is_file("$configPath/app.php") ? "$configPath/app.php" : null,
             );
+
+            // A Craft 5 cache component only reaches `Craft::$app->cache`; Craft's own caches and locks use Laravel's store,
+            // which is the adapter's `file` default until something sets another one. Like the bootstrap, this merges the
+            // common config into the web and console configs. The adapter's own `Cache` uses Laravel's store, and a
+            // `FileCache` in the default runtime folder matches Laravel's `file` store, but one elsewhere, such as on a
+            // shared mount, doesn't.
+            $yiiCache = $class = null;
+
+            foreach (['web', 'console'] as $appType) {
+                $config = Arr::merge(Arr::except($appConfig, ['web', 'console']), $appConfig[$appType] ?? []);
+                $cache = $config['components']['cache'] ?? null;
+                $cacheClass = is_string($cache) ? $cache : (is_array($cache) ? ($cache['class'] ?? $cache['__class'] ?? null) : null);
+                $matchesLaravel = is_string($cacheClass) && (
+                    is_a($cacheClass, YiiAdapterCache::class, true) || (
+                        is_a($cacheClass, FileCache::class, true) &&
+                        !isset($config['runtimePath']) &&
+                        in_array($cache['cachePath'] ?? '@runtime/cache', ['@runtime/cache', '@runtime/cache/'], true)
+                    )
+                );
+
+                if ($cache !== null && !$matchesLaravel) {
+                    [$yiiCache, $class] = [$cache, $cacheClass];
+
+                    break;
+                }
+            }
+
+            if (
+                $yiiCache !== null &&
+                !file_exists(config_path('cache.php')) &&
+                !Env::get('CACHE_STORE') &&
+                Config::get('cache.default') === 'file'
+            ) {
+                $findings[] = $this->finding(
+                    'config.yii-cache',
+                    Section::Config,
+                    Severity::Breaks,
+                    t('`config/craft/app.php` configures a Yii cache component.', category: 'yii2-adapter'),
+                    t('Set `CACHE_STORE` to the matching Laravel cache store, such as `redis`.', category: 'yii2-adapter'),
+                    detail: is_string($class) ? "`$class`" : null,
+                    file: is_file("$configPath/app.php") ? "$configPath/app.php" : null,
+                );
+            }
         }
 
         if (function_exists('craft_modify_app_config')) {

@@ -216,6 +216,11 @@ describe('namespaceInputs with string html', function () {
             ->toContain('id="foo-title"');
     });
 
+    it('does not call text that matches a global function name', function (string $text) {
+        expect($this->inputNamespace->namespaceInputs($text, 'foo'))->toBe($text)
+            ->and($this->inputNamespace->namespaceInputs(fn () => $text, 'foo'))->toBe($text);
+    })->with(['Blank', 'Time']);
+
     it('does not namespace excluded element name attributes', function () {
         $html = '<input type="text" name="title"><craft-icon name="check"><slot name="prefix">';
 

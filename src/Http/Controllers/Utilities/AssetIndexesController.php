@@ -38,13 +38,11 @@ readonly class AssetIndexesController
     {
         $validated = $request->validate([
             'volumes' => ['required', 'array'],
-            'cacheImages' => ['nullable', 'boolean'],
             'listEmptyFolders' => ['nullable', 'boolean'],
             'analyzeImages' => ['nullable', 'boolean'],
         ]);
 
         $volumeIds = array_map(fn ($volumeId) => (int) $volumeId, $validated['volumes']);
-        $cacheRemoteImages = (bool) ($validated['cacheImages'] ?? false);
         $listEmptyFolders = (bool) ($validated['listEmptyFolders'] ?? false);
         $analyzeImages = (bool) ($validated['analyzeImages'] ?? false);
 
@@ -56,7 +54,7 @@ readonly class AssetIndexesController
             return $this->asFailure(t('No volumes specified.'));
         }
 
-        $indexingSession = $this->assetIndexer->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders, $analyzeImages);
+        $indexingSession = $this->assetIndexer->startIndexingSession($volumeIds, $listEmptyFolders, $analyzeImages);
 
         $data = ['session' => $indexingSession];
         $error = null;

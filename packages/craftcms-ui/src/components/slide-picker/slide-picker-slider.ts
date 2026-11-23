@@ -1,5 +1,5 @@
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import styles from './slide-picker-slider.styles.js';
 
@@ -35,6 +35,23 @@ export default class CraftSlidePickerSlider extends LitElement {
   /** Announces a value, as `aria-valuetext` and each segment's tooltip. */
   @property({attribute: false}) valueText: (value: number) => string = String;
 
+  /**
+   * The value the pointer is previewing, or null. Tracked here rather than
+   * left to `:hover`: browsers don't reliably restyle the segments before the
+   * hovered one, and leave a preview behind once the pointer has gone.
+   */
+  @state() private preview: number | null = null;
+
+  /** The value just clicked, shown as selected rather than previewed until the pointer enters another segment. */
+  #justSelected: number | null = null;
+
+  /** Drops the preview when the slider is hidden, as when its popover closes. */
+  #resizeObserver = new ResizeObserver(([entry]) => {
+    if (entry && entry.contentRect.width === 0) {
+      this.#endPreview();
+    }
+  });
+
   constructor() {
     super();
     this.addEventListener('keydown', this.#handleKeyDown);
@@ -43,6 +60,34 @@ export default class CraftSlidePickerSlider extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'slider');
+    this.#resizeObserver.observe(this);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.#resizeObserver.disconnect();
+    this.#endPreview();
+  }
+
+  #startPreview(event: PointerEvent, value: number) {
+    // A tap has no hover, so it would leave a preview behind.
+    if (event.pointerType === 'touch' || value === this.#justSelected) {
+      return;
+    }
+
+    this.#justSelected = null;
+    this.preview = value;
+  }
+
+  #endPreview = () => {
+    this.#justSelected = null;
+    this.preview = null;
+  };
+
+  #select(value: number) {
+    this.#setValue(value);
+    this.#justSelected = value;
+    this.preview = null;
   }
 
   get #editable(): boolean {
@@ -126,8 +171,16 @@ export default class CraftSlidePickerSlider extends LitElement {
   }
 
   override render() {
+    const preview = this.#editable ? this.preview : null;
+
     return html`
-      <div class="slide-picker">
+      <div
+        class=${classMap({
+          'slide-picker': true,
+          'is-previewing': preview !== null,
+        })}
+        @pointerleave=${this.#endPreview}
+      >
         ${this.#values().map((segmentValue) => {
           return html`
             <span
@@ -135,9 +188,12 @@ export default class CraftSlidePickerSlider extends LitElement {
                 'slide-picker__segment': true,
                 'is-active': segmentValue <= this.#number,
                 'is-last-active': segmentValue === this.#number,
+                'is-previewed': preview !== null && segmentValue <= preview,
               })}
               aria-hidden="true"
-              @click=${() => this.#setValue(segmentValue)}
+              @pointerenter=${(event: PointerEvent) =>
+                this.#startPreview(event, segmentValue)}
+              @click=${() => this.#select(segmentValue)}
               title=${this.valueText(segmentValue)}
               >${nothing}</span
             >

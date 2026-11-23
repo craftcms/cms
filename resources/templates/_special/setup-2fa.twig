@@ -5,11 +5,12 @@
 {% set title = 'Two-Step Verification Setup'|t('app') %}
 
 {% block body %}
-  <div id="setup-2fa">
+  <main id="setup-2fa">
     <div id="setup-2fa-intro" class="readable">
       <h1>{{ 'Two-Step Verification Setup'|t('app') }}</h1>
       <p>{{ 'Your account requires two-step verification. Please enable one of these methods before proceeding.'|t('app') }}</p>
     </div>
+    <h2 class="sr-only">{{ 'Two-Step Verification'|t('app') }}</h2>
     {% include 'users/_auth-methods.twig' %}
     <div id="setup-2fa-btn" class="hidden">
       {{ ui('button', {
@@ -18,7 +19,7 @@
         attributes: {class: ['secondary', 'submit']},
       }) }}
     </div>
-  </div>
+  </main>
 {% endblock %}
 
 {% css %}

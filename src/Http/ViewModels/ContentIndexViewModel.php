@@ -1667,6 +1667,7 @@ abstract class ContentIndexViewModel extends ViewModel
                 'autoReload' => false,
                 'selectable' => false,
                 'sortable' => false,
+                'showStatus' => true,
                 ...$this->cardConfig($element),
             ];
 

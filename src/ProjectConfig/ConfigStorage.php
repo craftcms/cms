@@ -7,13 +7,13 @@ namespace CraftCms\Cms\ProjectConfig;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
-use Exception;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -412,7 +412,7 @@ class ConfigStorage
             // Don’t use the YAML files until they’ve been written successfully
             Cache::put(ProjectConfig::FILE_ISSUES_CACHE_KEY, true, ProjectConfig::CACHE_DURATION);
 
-            throw new Exception("Unable to write new project config files: {$exception->getMessage()}", 0, $exception);
+            throw new ProjectConfigWriteException("Unable to write new project config files: {$exception->getMessage()}", 0, $exception);
         }
 
         Cache::forget(ProjectConfig::FILE_ISSUES_CACHE_KEY);

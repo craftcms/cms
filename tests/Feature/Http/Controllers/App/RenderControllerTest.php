@@ -3,16 +3,23 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\Enums\Appearance;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -63,6 +70,29 @@ test('render elements returns chip html for entries', function () {
 
     $response->assertOk()
         ->assertJsonPath("elements.{$entry->id}.default", fn (string $html) => str_contains($html, 'chip') && str_contains($html, (string) $entry->id));
+});
+
+test('re-rendered chips keep their appearance', function () {
+    $entry = EntryModel::factory()->create();
+    $element = Entry::find()->id($entry->id)->status(null)->one();
+
+    $chip = new Crawler(app(ElementHtml::class)->elementChipHtml($element, [
+        'appearance' => Appearance::Plain->value,
+    ]))->filter('craft-chip');
+
+    $response = postJson(action([RenderController::class, 'elements']), [
+        'elements' => [
+            [
+                'type' => Entry::class,
+                'id' => $entry->id,
+                'siteId' => $chip->attr('data-site-id'),
+                'instances' => [Json::decode($chip->attr('data-settings'))],
+            ],
+        ],
+    ])->assertOk();
+
+    expect(new Crawler($response->json("elements.{$entry->id}.0"))->filter('craft-chip')->attr('appearance'))
+        ->toBe('plain');
 });
 
 test('rendered nested element cards include the nested actions for their owner', function () {
@@ -189,7 +219,7 @@ test('render components returns chip and menu item html for sections', function 
             $html = $response->json('components.'.SectionData::class.'.'.$section->id.'.'.$position);
             $chip = new Crawler($html)->filter('craft-chip');
             expect($chip->attr('data-label'))->toBe($instance['overrides']['name'] ?? $section->name);
-            expect($chip->attr('data-id'))->toBe((string) ($instance['overrides']['id'] ?? $section->id));
+            expect($chip->attr('data-id'))->toBe((string) $section->id);
         }
 
         $menu = $response->json('menuItems.'.SectionData::class.'.'.$section->id);
@@ -202,6 +232,39 @@ test('render components returns chip and menu item html for sections', function 
 })->with([
     'label then unmodified then ID' => [[0, 1, 2]],
     'ID then label then unmodified' => [[2, 0, 1]],
+]);
+
+test('render components ignores overrides other than the name, handle, and description', function () {
+    $entryType = EntryType::factory()->create(['icon' => 'house']);
+
+    $html = postJson(action([RenderController::class, 'components']), [
+        'components' => [
+            [
+                'type' => EntryTypeData::class,
+                'id' => $entryType->id,
+                'instances' => [['overrides' => ['name' => 'Custom label', 'icon' => 'ftp://example.com/icon.svg']]],
+            ],
+        ],
+    ])->assertOk()->json('components.'.EntryTypeData::class.'.'.$entryType->id.'.0');
+
+    $chip = new Crawler($html)->filter('craft-chip');
+    expect($chip->attr('data-label'))->toBe('Custom label')
+        ->and($chip->filter('craft-icon[slot="icon"]')->attr('name'))->toBe('house');
+});
+
+test('render components rejects types that are not chippable', function (string $type) {
+    postJson(action([RenderController::class, 'components']), [
+        'components' => [
+            [
+                'type' => $type,
+                'id' => 'foo',
+                'instances' => [[]],
+            ],
+        ],
+    ])->assertBadRequest();
+})->with([
+    'class with a static get() method' => [Session::class],
+    'interface extending Chippable' => [FieldInterface::class],
 ]);
 
 test('render markdown validates required flavor', function () {

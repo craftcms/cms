@@ -24,7 +24,7 @@ beforeEach(function () {
     $this->driver->register();
     config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
     $this->user = User::factory()->createElement();
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $this->user->setPhoto(Asset::factory()->createElement(['volumeId' => $volume->id, 'width' => 800, 'height' => 400]));
 });
 

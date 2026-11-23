@@ -187,7 +187,7 @@ it('can upload a photo for another user', function () {
     ]);
 
     $volume = Volume::factory()->create([
-        'fs' => 'test',
+        'disk' => 'test',
         'hasUrls' => true,
     ]);
 

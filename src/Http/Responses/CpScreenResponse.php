@@ -862,7 +862,7 @@ class CpScreenResponse implements Responsable
             InputNamespace::with($namespace, fn () => call_user_func($this->prepareScreen, $this, $containerId));
         }
 
-        $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
+        $extraToolbarItems = ! is_string($this->toolbarHtml) && is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
         $notice = $this->noticeHtml ? InputNamespace::namespaceInputs($this->noticeHtml, $namespace) : null;
 
         $tabs = count($this->tabs) > 1 ? InputNamespace::namespaceInputs(fn () => template('_includes/tabs', [
@@ -873,7 +873,7 @@ class CpScreenResponse implements Responsable
             $components = [];
 
             if ($this->contentHtml) {
-                $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
+                $components[] = ! is_string($this->contentHtml) && is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
             }
 
             if ($this->action) {
@@ -1014,14 +1014,14 @@ class CpScreenResponse implements Responsable
 
         $docTitle = $this->docTitle ?? strip_tags($this->title ?? '');
         $crumbs = (is_callable($this->crumbs) ? call_user_func($this->crumbs) : $this->crumbs) ?? [];
-        $toolbar = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
-        $addlButtons = is_callable($this->additionalButtonsHtml) ? call_user_func($this->additionalButtonsHtml) : $this->additionalButtonsHtml;
+        $toolbar = ! is_string($this->toolbarHtml) && is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
+        $addlButtons = ! is_string($this->additionalButtonsHtml) && is_callable($this->additionalButtonsHtml) ? call_user_func($this->additionalButtonsHtml) : $this->additionalButtonsHtml;
         $altActions = is_callable($this->altActions) ? call_user_func($this->altActions) : $this->altActions;
-        $notice = is_callable($this->noticeHtml) ? call_user_func($this->noticeHtml) : $this->noticeHtml;
-        $content = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : ($this->contentHtml ?? '');
-        $sidebar = is_callable($this->metaSidebarHtml) ? call_user_func($this->metaSidebarHtml) : $this->metaSidebarHtml;
-        $pageSidebar = is_callable($this->pageSidebarHtml) ? call_user_func($this->pageSidebarHtml) : $this->pageSidebarHtml;
-        $errorSummary = is_callable($this->errorSummary) ? call_user_func($this->errorSummary) : $this->errorSummary;
+        $notice = ! is_string($this->noticeHtml) && is_callable($this->noticeHtml) ? call_user_func($this->noticeHtml) : $this->noticeHtml;
+        $content = ! is_string($this->contentHtml) && is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : ($this->contentHtml ?? '');
+        $sidebar = ! is_string($this->metaSidebarHtml) && is_callable($this->metaSidebarHtml) ? call_user_func($this->metaSidebarHtml) : $this->metaSidebarHtml;
+        $pageSidebar = ! is_string($this->pageSidebarHtml) && is_callable($this->pageSidebarHtml) ? call_user_func($this->pageSidebarHtml) : $this->pageSidebarHtml;
+        $errorSummary = ! is_string($this->errorSummary) && is_callable($this->errorSummary) ? call_user_func($this->errorSummary) : $this->errorSummary;
 
         if ($this->action) {
             $content .= Html::actionInput($this->action, [

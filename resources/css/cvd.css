@@ -223,6 +223,12 @@
   inline-size: min(100%, calc(360rem / 16));
 }
 
+/* The status badge and indicator, while the owner's Show the Status field
+   setting is off. The badge list's `flex` class would otherwise show it. */
+.cvd-preview [data-cvd-status][hidden] {
+  display: none;
+}
+
 .cvd-chip-thumbnail {
   inline-size: 100%;
   block-size: 100%;

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Route;
 
+use CraftCms\Cms\Http\Controllers\ProjectConfigRouteController;
 use CraftCms\Cms\Route\Data\Route;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
@@ -24,6 +26,12 @@ class ProjectConfigRoutes
     /** @var list<LaravelRoute> */
     private array $registered = [];
 
+    /** @var list<array{?string, string, LaravelRoute}> Each route’s site UID, template, and Laravel route, in sort order */
+    private array $siteRoutes = [];
+
+    /** @var array<string, string> The compiled regular expressions of the registered routes’ URIs */
+    private array $regexes = [];
+
     /** A hash of the registered routes, or null if none have been registered. */
     private ?string $signature = null;
 
@@ -31,18 +39,60 @@ class ProjectConfigRoutes
         private readonly Router $router,
     ) {}
 
+    /**
+     * Registers each URI once for all sites. Routes are registered when the app boots, before the requested
+     * site is known, so {@see ProjectConfigRouteValidator} only matches them on the sites they’re for.
+     */
     public function register(): void
     {
+        if (! array_any(LaravelRoute::getValidators(), fn (object $validator) => $validator instanceof ProjectConfigRouteValidator)) {
+            LaravelRoute::$validators[] = new ProjectConfigRouteValidator;
+        }
+
         $routes = $this->routes();
+        $registered = [];
+        $this->regexes = [];
 
         $this->signature = $this->signature($routes);
-        $this->registered = $routes
-            ->map(fn (Route $route) => $this->router
-                ->view($route->getUri(), $route->template)
-                ->middleware(['craft', 'craft.web'])
-                ->withLazySession())
-            ->values()
+        $this->siteRoutes = $routes
+            ->map(function (Route $route) use (&$registered): array {
+                $uri = $route->getUri();
+                $registered[$uri] ??= $this->router
+                    ->get($uri, ProjectConfigRouteController::class)
+                    ->middleware(['craft', 'craft.web'])
+                    ->withLazySession();
+
+                return [$route->siteUid, $route->template, $registered[$uri]];
+            })
             ->all();
+        $this->registered = array_values($registered);
+    }
+
+    /**
+     * Returns the first route for a site that matches the request, in the routes’ sort order, as its Laravel route
+     * and template.
+     *
+     * @return array{LaravelRoute, string}|null
+     */
+    public function match(Request $request, string $siteUid): ?array
+    {
+        // Matched like Laravel's UriValidator does, with regexes compiled here, since Laravel only compiles a route
+        // once it tries to match it
+        $path = rawurldecode(rtrim($request->getPathInfo(), '/') ?: '/');
+
+        foreach ($this->siteRoutes as [$routeSiteUid, $template, $route]) {
+            if (! empty($routeSiteUid) && $routeSiteUid !== $siteUid) {
+                continue;
+            }
+
+            $regex = $this->regexes[$route->uri()] ??= $route->toSymfonyRoute()->compile()->getRegex();
+
+            if (preg_match($regex, $path) === 1) {
+                return [$route, $template];
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -70,18 +120,18 @@ class ProjectConfigRoutes
     }
 
     /**
-     * @return Collection<string, Route>
+     * @return Collection<int, Route>
      */
     private function routes(): Collection
     {
-        return app(Routes::class)->getProjectConfigRoutes();
+        return app(Routes::class)->getAllProjectConfigRoutes();
     }
 
     /**
-     * @param  Collection<string, Route>  $routes
+     * @param  Collection<int, Route>  $routes
      */
     private function signature(Collection $routes): string
     {
-        return hash('xxh128', serialize($routes->map(fn (Route $route) => [$route->getUri(), $route->template])->all()));
+        return hash('xxh128', serialize($routes->map(fn (Route $route) => [$route->getUri(), $route->template, $route->siteUid])->all()));
     }
 }

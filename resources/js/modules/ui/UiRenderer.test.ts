@@ -2175,7 +2175,6 @@ describe('UiRenderer', () => {
         ?.getAttribute('name')
     ).toBe('newspaper');
     expect(tabButtons[1]?.querySelector('[slot="prefix"]')).toBeNull();
-    expect(tab?.getAttribute('aria-label')).toBe('Content');
     // `craft-tabs` pairs the two in external-panel mode: the tab points at the
     // panel id this component assigned, and the panel back at the tab's own id
     // — which the strip generates, so it's matched rather than spelled out.

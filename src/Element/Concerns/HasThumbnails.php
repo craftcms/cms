@@ -111,9 +111,10 @@ trait HasThumbnails
 
         if ($alt = $this->thumbAlt()) {
             $thumbSvg = Html::prependToTag($thumbSvg, Html::tag('title', Html::encode($alt)), ifExists: 'replace');
+            $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
+        } else {
+            $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['aria-hidden' => 'true']);
         }
-
-        $thumbSvg = Html::modifyTagAttributes($thumbSvg, ['role' => 'img']);
 
         return Html::tag('div', $thumbSvg, [
             'class' => [

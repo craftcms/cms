@@ -164,7 +164,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @var DateTimeInterface|null Post date
      *                             ---
      *                             ```php
-     *                             echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     *                             echo \CraftCms\Cms\Support\Facades\I18N::getFormatter()->asDate($entry->postDate, 'short');
      *                             ```
      *                             ```twig
      *                             {{ entry.postDate|date('short') }}
@@ -179,7 +179,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ---
      *                             ```php
      *                             if ($entry->expiryDate) {
-     *                             echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     *                             echo \CraftCms\Cms\Support\Facades\I18N::getFormatter()->asDate($entry->expiryDate, 'short');
      *                             }
      *                             ```
      *                             ```twig
