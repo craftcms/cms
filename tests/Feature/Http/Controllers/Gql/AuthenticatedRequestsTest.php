@@ -211,20 +211,30 @@ it('lets OAuth clients discover, register for, and use the API with the access l
     'read and write' => ['graphql:write', ['graphql:read', 'graphql:write'], true],
 ]);
 
-it('advertises OAuth endpoints that resolve in headless mode', function (): void {
-    Cms::config()->headlessMode = true;
+it('lets OAuth clients discover the API’s OAuth endpoints', function (bool $headlessMode, bool $cpRequest): void {
+    Cms::config()->headlessMode = $headlessMode;
+    $apiPath = ($cpRequest ? Cms::config()->cpTrigger.'/' : '').'actions/graphql/api';
 
-    $challenge = gqlAsUser('not.a.jwt', '{ __typename }')->assertUnauthorized()->headers->get('WWW-Authenticate');
+    $challenge = $this->postJson("/$apiPath", ['query' => '{ __typename }'], ['Authorization' => 'Bearer not.a.jwt'])
+        ->assertUnauthorized()
+        ->headers->get('WWW-Authenticate');
     preg_match('/resource_metadata="([^"]+)"/', $challenge, $match);
-    $issuer = parse_url($this->getJson($match[1])->assertOk()->json('authorization_servers.0'));
+
+    $resource = $this->getJson($match[1])->assertOk()->json();
+    $issuer = parse_url($resource['authorization_servers'][0]);
     $metadata = $this->getJson("{$issuer['scheme']}://{$issuer['host']}/.well-known/oauth-authorization-server{$issuer['path']}")
         ->assertOk()
         ->json();
 
+    expect($resource['resource'])->toEndWith('://localhost/actions/graphql/api')
+        ->and($metadata['issuer'])->toBe($resource['authorization_servers'][0]);
     $this->postJson($metadata['token_endpoint'])->assertStatus(400);
     $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
-    expect($this->get($metadata['authorization_endpoint'])->getStatusCode())->not->toBe(404);
-});
+    $this->get($metadata['authorization_endpoint'])->assertStatus(400);
+})->with([
+    'in headless mode' => [true, false],
+    'from its control panel action URL' => [false, true],
+]);
 
 it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
     Cms::config()->enableGraphqlCaching = true;
