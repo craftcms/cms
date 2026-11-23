@@ -10,6 +10,7 @@ use CraftCms\Cms\Config\McpConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateManager;
@@ -192,6 +193,27 @@ it('applies environment overrides when resolved', function () {
     new ConfigServiceProvider(app())->register();
 
     expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
+});
+
+it('logs a deprecation warning for each environment override', function () {
+    app(ConfigRepository::class)->set('craft.general', []);
+    app()->forgetInstance(GeneralConfig::class);
+    putenv('CRAFT_CP_TRIGGER=adminus');
+    putenv('CRAFT_DISABLE_2FA=true');
+    $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
+
+    try {
+        new ConfigServiceProvider(app())->register();
+        app(GeneralConfig::class);
+    } finally {
+        putenv('CRAFT_DISABLE_2FA');
+    }
+
+    $messages = collect(Deprecator::getRequestLogs())->mapWithKeys(fn ($log) => [$log->key => $log->message]);
+
+    expect($messages->keys()->sort()->values()->all())->toBe(['env:CRAFT_CP_TRIGGER', 'env:CRAFT_DISABLE_2FA', 'env:CRAFT_MCP_INSTRUCTIONS'])
+        ->and($messages['env:CRAFT_MCP_INSTRUCTIONS'])->toStartWith('Setting `mcp.instructions` with the `CRAFT_MCP_INSTRUCTIONS` environment variable is deprecated.')
+        ->and($messages['env:CRAFT_DISABLE_2FA'])->toStartWith('Setting `disable2fa` with the `CRAFT_DISABLE_2FA` environment variable is deprecated.');
 });
 
 it('materializes typed MCP configuration from JSON environment overrides', function () {
