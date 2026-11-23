@@ -1,3 +1,5 @@
+import {stripEmphasis} from '../utils/emphasis';
+
 type ElementLike = Element | ArrayLike<Element>;
 
 function toElements(target: ElementLike | null | undefined): Element[] {
@@ -40,7 +42,7 @@ export function addErrorsToField(
 
     for (const error of Array.isArray(errors) ? errors : [errors]) {
       const item = document.createElement('li');
-      item.textContent = error.split('*').join('');
+      item.textContent = stripEmphasis(error);
       list.append(item);
     }
 

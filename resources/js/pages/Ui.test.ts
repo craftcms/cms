@@ -10,6 +10,9 @@ import {
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UiChange, UiPayload, UiValue} from '@/modules/ui/types';
+import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
+import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+import ErrorSummary from '@/common/form/ErrorSummary.vue';
 import UiPage from './Ui.vue';
 
 const state = vi.hoisted<{
@@ -26,6 +29,7 @@ const state = vi.hoisted<{
   >;
   setValue: ReturnType<typeof vi.fn>;
   page: {props: {errors?: Record<string, string>}};
+  formErrors: Record<string, string>;
   change?: (change: UiChange, values: UiPayload['values']) => void;
   currentValues: UiPayload['values'];
   confirmElevation: ReturnType<typeof vi.fn>;
@@ -36,6 +40,7 @@ const state = vi.hoisted<{
   submit: vi.fn(),
   setValue: vi.fn(),
   page: {props: {}},
+  formErrors: {},
   change: undefined,
   currentValues: {siteId: 42, name: 'Changed', live: '1'},
   confirmElevation: vi.fn(),
@@ -61,7 +66,8 @@ vi.mock('@inertiajs/vue3', () => ({
   useForm: () => {
     let transform = (data: UiPayload['values']) => data;
     const ui = {
-      errors: {},
+      errors: state.formErrors,
+      hasErrors: Object.keys(state.formErrors).length > 0,
       isDirty: false,
       name: undefined,
       data: () => (ui.name === undefined ? {} : {name: ui.name}),
@@ -131,6 +137,7 @@ beforeEach(() => {
   state.change = undefined;
   state.setValue.mockReset();
   state.page = {props: {}};
+  state.formErrors = {};
   state.submit.mockClear();
   state.confirmElevation.mockReset();
   state.currentValues = {siteId: 42, name: 'Changed', live: '1'};
@@ -354,4 +361,50 @@ it('forwards path-keyed control slots to the UI renderer', async () => {
   expect(container.querySelector('[data-name-override]')?.textContent).toBe(
     'Original'
   );
+});
+
+it('links an error to its field where the payload scopes it', async () => {
+  const field = document.createElement('craft-field');
+  field.id = 'ui-settings-name';
+  document.body.append(field);
+  state.formErrors = {name: '*Name* cannot be blank.'};
+  app = createApp(
+    defineComponent({
+      setup: () => {
+        provideLayoutSlotRegistry();
+
+        return () =>
+          h('div', [
+            // Falls back to the shell's own summary, as PageScreen does.
+            h(LayoutSlotOutlet, {name: 'error-summary'}, () =>
+              h(ErrorSummary, {errors: state.formErrors})
+            ),
+            h(UiPage, {
+              ui: {
+                ...payload,
+                scope: ['settings'],
+                nodes: [
+                  {type: 'field', control: {path: ['settings', 'name']}},
+                ] as unknown as UiPayload['nodes'],
+              },
+              submit: {method: 'post', url: '/settings/general'},
+            }),
+          ]);
+      },
+    })
+  );
+  app.mount(container);
+  await nextTick();
+  await nextTick();
+
+  const link = container.querySelector<HTMLAnchorElement>(
+    'craft-callout[variant="danger"] a'
+  );
+  const items = container.querySelectorAll(
+    'craft-callout[variant="danger"] li'
+  );
+  expect(items).toHaveLength(1);
+  expect(link?.getAttribute('href')).toBe('#ui-settings-name');
+  expect(link?.textContent?.trim()).toBe('Name cannot be blank.');
+  field.remove();
 });

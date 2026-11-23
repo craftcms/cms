@@ -2,6 +2,7 @@
   import '@craftcms/ui/components/field/field';
   import {computed, getCurrentInstance, provide} from 'vue';
   import {FieldLabelSrOnly, uiChangeFromEvent, pathsMatch} from '../runtime';
+  import {stripEmphasis} from '@/common/utils/emphasis';
   import {useOptionalUiRenderer} from '../renderer/context';
   import type {
     UiChange,
@@ -89,7 +90,9 @@
       @change="onChange"
     />
     <ul v-if="messages.length" slot="feedback" class="error-list">
-      <li v-for="message in messages" :key="message">{{ message }}</li>
+      <li v-for="message in messages" :key="message">
+        {{ stripEmphasis(message) }}
+      </li>
     </ul>
   </craft-field>
 </template>
