@@ -13,6 +13,7 @@ use CraftCms\Cms\Gql\Commands\CreateTokenCommand;
 use CraftCms\Cms\Gql\Commands\DumpSchemaCommand;
 use CraftCms\Cms\Gql\Commands\ListSchemasCommand;
 use CraftCms\Cms\Gql\Commands\PrintSchemaCommand;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\ServiceProvider;
 
@@ -56,6 +57,24 @@ class GqlServiceProvider extends ServiceProvider
             // metadata and the resource’s identifier
             $resourceUrl = Url::stripQueryString(action_url('graphql/api'));
 
+            // The OAuth routes live at the app’s root, while action URLs include the control panel trigger on control
+            // panel requests and in headless mode
+            $baseUrl = url('/');
+
+            // Every host shares one authorization server, whose clients, keys, and tokens work on all of them, so its
+            // issuer comes from the configured URL rather than the request’s host. The API itself stays on each host.
+            // In headless mode, and without a control panel trigger, `APP_URL` may be a front end that Craft doesn’t
+            // serve, so the control panel’s URL is used. Only the scheme and host are taken, so a site path in
+            // `APP_URL` stays out of the OAuth URLs.
+            $configuredUrl = Cms::config()->headlessMode || trim((string) Cms::config()->cpTrigger, '/') === ''
+                ? (string) Env::parse(Cms::config()->baseCpUrl)
+                : (string) config('app.url');
+
+            // …unless it’s unset, or Laravel’s default
+            if ($configuredUrl !== 'http://localhost' && parse_url($configuredUrl, PHP_URL_HOST)) {
+                $baseUrl = Url::hostInfo($configuredUrl).parse_url($baseUrl, PHP_URL_PATH);
+            }
+
             return new OAuthResource(
                 handle: 'graphql',
                 levels: [
@@ -64,9 +83,7 @@ class GqlServiceProvider extends ServiceProvider
                 ],
                 resourceUrl: $resourceUrl,
                 authorizationRoute: ltrim("$actionTrigger/graphql", '/'),
-                // The OAuth routes live at the app’s root, while action URLs include the control panel trigger on
-                // control panel requests and in headless mode
-                baseUrl: url('/'),
+                baseUrl: $baseUrl,
                 routeName: 'craft.graphql.oauth',
             );
         });

@@ -221,6 +221,24 @@ it('advertises OAuth endpoints that resolve in headless mode', function (): void
     $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
 });
 
+it('advertises a configured issuer rather than the request’s host', function (bool $headless, string $base): void {
+    Cms::config()->headlessMode = $headless;
+    Cms::config()->baseCpUrl('https://cp.example.test/admin');
+    config()->set('app.url', 'https://site.example.test/en/');
+
+    $this->getJson('https://other.example/.well-known/oauth-protected-resource/actions/graphql/api')
+        ->assertOk()
+        ->assertJsonPath('authorization_servers', ["$base/actions/graphql"]);
+    $this->getJson('https://other.example/.well-known/oauth-authorization-server/actions/graphql')
+        ->assertOk()
+        ->assertJsonPath('issuer', "$base/actions/graphql")
+        ->assertJsonPath('token_endpoint', "$base/oauth/token")
+        ->assertJsonPath('registration_endpoint', "$base/actions/graphql/oauth/register");
+})->with([
+    'APP_URL' => [false, 'https://site.example.test'],
+    'baseCpUrl in headless mode' => [true, 'https://cp.example.test'],
+]);
+
 it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
     Cms::config()->enableGraphqlCaching = true;
     $schema = new GqlSchema(['name' => 'Front end', 'scope' => GqlHelper::createFullAccessSchema()->scope]);
