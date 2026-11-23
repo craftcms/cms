@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\HttpCache;
 
+use DateTimeImmutable;
 use FOS\HttpCache\TagHeaderFormatter\TagHeaderFormatter;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Collects the tags the current response depends on.
  *
- * Tags are opaque strings. Craft's element tags are added at the end of the request, and templates, controllers
- * and plugins add their own through the `ResponseTagger` facade, which is also a Twig global:
+ * Tags are opaque strings. Craft adds the tags of elements the request queries as they're collected, along with
+ * the earliest expiry date among those elements ({@see getExpiryDate()}). Templates, controllers and plugins add
+ * their own tags through the `ResponseTagger` facade, which is also a Twig global:
  *
  * ```twig
  * {% do ResponseTagger.addTags(['nav']) %}
  * ```
  *
- * The tags reach the response only when a tag header formatter is configured. Drivers that keep their own index
- * read them with {@see getTags()}.
+ * The tags reach the response only when a tag header formatter is configured. Cache drivers read them with
+ * {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`, at
+ * {@see getExpiryDate()}.
  *
  * Unlike FOSHttpCache's `ResponseTagger`, tagging a response doesn't clear the tags, so drivers can still read them.
  *
@@ -37,6 +40,8 @@ class ResponseTagger
      * @var list<array<string, true>>
      */
     private array $captures = [];
+
+    private ?int $expiryTimestamp = null;
 
     public function __construct(
         private readonly TagEncoder $encoder,
@@ -91,6 +96,24 @@ class ResponseTagger
         return array_map(strval(...), array_keys($this->tags));
     }
 
+    /**
+     * Records an expiry date the response depends on, keeping the earliest.
+     */
+    public function setExpiryTimestamp(int $timestamp): void
+    {
+        if ($this->expiryTimestamp === null || $timestamp < $this->expiryTimestamp) {
+            $this->expiryTimestamp = $timestamp;
+        }
+    }
+
+    /**
+     * The earliest expiry date among the elements the response depends on, if any expire.
+     */
+    public function getExpiryDate(): ?DateTimeImmutable
+    {
+        return $this->expiryTimestamp === null ? null : new DateTimeImmutable("@{$this->expiryTimestamp}");
+    }
+
     public function hasTags(): bool
     {
         return $this->tags !== [];
@@ -99,6 +122,7 @@ class ResponseTagger
     public function clear(): void
     {
         $this->tags = [];
+        $this->expiryTimestamp = null;
     }
 
     /**
