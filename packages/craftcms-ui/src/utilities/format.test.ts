@@ -3,6 +3,7 @@ import type {WindowWithCraft} from '../types/globals.js';
 import {
   formatCurrency,
   formatDate,
+  formatDuration,
   formatNumber,
   formattingLocale,
 } from './format.js';
@@ -155,6 +156,23 @@ describe('formatDate', () => {
     expect(formatDate(new Date(2026, 9, 30), {dateStyle: 'medium'})).toBe(
       'Oct 30, 2026'
     );
+  });
+});
+
+describe('formatDuration', () => {
+  test.for([
+    [0, '0s'],
+    [42.4, '42s'],
+    [90, '1m 30s'],
+    [120, '2m'],
+    [3_725, '1h 2m'],
+    [90_061, '1d 1h'],
+  ] as const)('formatDuration(%s) -> %s', ([seconds, expected]) => {
+    expect(formatDuration(seconds)).toBe(expected);
+  });
+
+  test('spells the units out in the long style', () => {
+    expect(formatDuration(90, 'long')).toBe('1 minute, 30 seconds');
   });
 });
 
