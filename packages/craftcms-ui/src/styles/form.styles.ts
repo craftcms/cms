@@ -151,7 +151,8 @@ export const inputStyles = css`
     --_spacing-block: var(--c-textarea-spacing-block, var(--c-spacing-lg));
   }
 
-  :host([size~='large']) .input-group__input {
+  :host([size~='large']) .input-group__input,
+  :host([size~='large']) .input-group__input ::slotted([slot='input']) {
     font-size: var(--c-text-md);
   }
 
