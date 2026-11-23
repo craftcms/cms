@@ -259,8 +259,8 @@
 - Pages that print a CSRF token save the visitor’s session and are marked `no-cache`, so shared caches can’t store them. To make them cacheable, enable origin-only request forgery checks with `$middleware->preventRequestForgery(originOnly: true)`, and `csrfInput()` prints nothing. Requests from clients that send neither `Sec-Fetch-Site` nor `Origin` then get a 403 response. Sites can also remove `csrfInput()` from their own templates. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - Plugins that render forms should keep using `csrfInput()` rather than `csrf_field()`, so their forms follow the site’s request forgery settings. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - `csrfInput()` no longer accepts an `async` option or tag attributes. ([#20429](https://github.com/craftcms/cms/pull/20429))
-- Site responses to GET and HEAD requests are now tagged with the elements they query, and their `max-age`, `s-maxage` and `Expires` are capped at the earliest expiry date of those elements, so caches stop serving an expired entry on time.
-- Added `ResponseTagger.addTags()`, which tags the response with arbitrary strings, such as `{% do ResponseTagger.addTags(['nav']) %}`. Tags added inside `{% cache %}` blocks are added again on cache hits. A tag header is only sent when `config/craft/http-cache.php` sets a tag header formatter.
+- Site responses to GET and HEAD requests are now tagged with the elements they query, and their `max-age`, `s-maxage` and `Expires` are capped at the earliest expiry date of those elements, so caches stop serving an expired entry on time. ([#21032](https://github.com/craftcms/cms/pull/21032))
+- Added `ResponseTagger.addTags()`, which tags the response with arbitrary strings, such as `{% do ResponseTagger.addTags(['nav']) %}`. Tags added inside `{% cache %}` blocks are added again on cache hits. A tag header is only sent when `config/craft/http-cache.php` sets a tag header formatter. ([#21032](https://github.com/craftcms/cms/pull/21032))
 
 #### GraphQL
 - Added the `hasUrls` field to volumes in GraphQL queries.
@@ -368,9 +368,9 @@
 - Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
 
 ##### Added
-- Added `CraftCms\Cms\HttpCache\HttpCacheManager` and `CraftCms\Cms\Support\Facades\HttpCache`, which build the FOSHttpCache invalidation clients named in `config/craft/http-cache.php`. Invalidation requests are sent through Laravel’s HTTP client, so `Http::fake()` works.
-- Added `CraftCms\Cms\HttpCache\ResponseTagger`, `CraftCms\Cms\Support\Facades\ResponseTagger` and `CraftCms\Cms\HttpCache\TagEncoder`.
-- Added `CraftCms\Cms\HttpCache\CachePolicy`, which decides what a cache may serve and store.
+- Added `CraftCms\Cms\HttpCache\HttpCacheManager` and `CraftCms\Cms\Support\Facades\HttpCache`, which build the FOSHttpCache invalidation clients named in `config/craft/http-cache.php`. Invalidation requests are sent through Laravel’s HTTP client, so `Http::fake()` works. ([#21032](https://github.com/craftcms/cms/pull/21032))
+- Added `CraftCms\Cms\HttpCache\ResponseTagger`, `CraftCms\Cms\Support\Facades\ResponseTagger` and `CraftCms\Cms\HttpCache\TagEncoder`. ([#21032](https://github.com/craftcms/cms/pull/21032))
+- Added `CraftCms\Cms\HttpCache\CachePolicy`, which decides what a cache may serve and store. ([#21032](https://github.com/craftcms/cms/pull/21032))
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
 
 ##### Deprecations
