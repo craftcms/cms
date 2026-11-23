@@ -9,6 +9,7 @@
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- Removed the `Response::setNoCacheHeaders()` macro. `CraftCms\Cms\Http\ResponseHeaders::setNoCacheHeaders()` should be used instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Removed `CraftCms\Cms\Http\ResponseHeaders::$noCache`, `$duration`, `$replace`, and `$headers`, and the `$replace` argument of `ResponseHeaders::setCache()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Volumes’ `fs` setting has been renamed to `disk`, in project config, the `volumes` table, and the volume MCP tools. Existing project config is updated automatically, and project config that still uses `fs` can still be applied. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))

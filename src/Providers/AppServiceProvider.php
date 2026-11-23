@@ -15,7 +15,6 @@ use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\Http\RequestBodyLogProcessor;
-use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -39,7 +38,6 @@ use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
@@ -190,14 +188,6 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
-
-        Response::macro('setNoCacheHeaders', function (bool $replace = true) {
-            foreach (ResponseHeaders::NO_CACHE_HEADERS as $name => $value) {
-                $this->header($name, $value, $replace);
-            }
-
-            return $this;
-        });
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
