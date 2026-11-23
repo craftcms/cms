@@ -338,7 +338,7 @@ it('resolves element actions against the site it lists', function () {
     ])->assertOk();
 
     expect($requestedSiteIds)->toBe([$otherSite->id, $otherSite->id])
-        ->and(app(RequestedSite::class)->get()->id)->toBe($entry->siteId);
+        ->and(app(RequestedSite::class)->get()->id)->toBe(app(Sites::class)->getPrimarySite()->id);
 });
 
 it('runs element actions only on the elements it lists', function () {

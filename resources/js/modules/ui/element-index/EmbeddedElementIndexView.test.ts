@@ -37,7 +37,11 @@ const archive: BulkActionItem = {
 const inspect: BulkActionItem = {
   key: 'plugin:inspect',
   label: 'Inspect selected',
-  action: {type: 'event', name: 'plugin:inspect', detail: {mode: 'deep'}},
+  action: {
+    type: 'event',
+    name: 'plugin:inspect',
+    detail: {mode: 'deep', params: {format: 'pdf'}},
+  },
 };
 
 describe('EmbeddedElementIndexView', () => {
@@ -143,9 +147,10 @@ describe('EmbeddedElementIndexView', () => {
       name: 'plugin:inspect',
       detail: {
         mode: 'deep',
+        params: {format: 'pdf'},
         elementType: 'Entry',
         elementIds: [11],
-        params: {
+        indexParams: {
           elementType: 'Entry',
           elementIds: [11],
           context: 'embeddedIndex',
