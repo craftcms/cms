@@ -108,6 +108,7 @@
     .inputSize="control.props.size"
     :dir="control.props.dir"
     .monospace="control.props.monospace === true"
+    :size="control.props.enlarged ? 'large' : 'medium'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="

@@ -81,6 +81,9 @@ export default class CraftTextarea extends NativeField(LitElement) {
   @property({type: Boolean, reflect: true})
   monospace: boolean = false;
 
+  /** Control size. */
+  @property({type: String, reflect: true}) size?: 'medium' | 'large';
+
   #resizeObserver?: ResizeObserver;
   #styleObserver?: MutationObserver;
   #intersectionObserver?: IntersectionObserver;
@@ -117,7 +120,13 @@ export default class CraftTextarea extends NativeField(LitElement) {
       this.resizeTextarea();
     }
 
-    if (changed.has('rows') || changed.has('maxRows')) {
+    // Size and monospace change the line height and padding the cap is measured from.
+    if (
+      changed.has('rows') ||
+      changed.has('maxRows') ||
+      changed.has('size') ||
+      changed.has('monospace')
+    ) {
       this.#setMaxHeight();
     }
   }
@@ -151,6 +160,7 @@ export default class CraftTextarea extends NativeField(LitElement) {
 
     if (!Number.isFinite(this.maxRows)) {
       input.style.removeProperty('max-height');
+      this.resizeTextarea();
       return;
     }
 
