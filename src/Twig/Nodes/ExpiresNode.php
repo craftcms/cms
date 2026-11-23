@@ -32,6 +32,8 @@ class ExpiresNode extends Node
                     '$duration = %s::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();',
                     DateTimeHelper::class,
                 ));
+        } elseif (! $this->hasAttribute('durationNum')) {
+            $compiler->write("\$duration = 0;\n");
         } else {
             $now = now();
             $duration = (int) $now->diffInSeconds((clone $now)->add(

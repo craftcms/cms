@@ -38,7 +38,6 @@ use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
@@ -189,14 +188,6 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
-
-        Response::macro('setNoCacheHeaders', function (bool $replace = true) {
-            $this->header('Expires', '0', $replace);
-            $this->header('Pragma', 'no-cache', $replace);
-            $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
-
-            return $this;
-        });
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
