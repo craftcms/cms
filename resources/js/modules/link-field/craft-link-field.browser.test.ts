@@ -279,8 +279,8 @@ describe('a linked element', () => {
       .toBeVisible();
   });
 
-  describe('saved as a new asset in its editor', () => {
-    async function saveAsNewAsset(): Promise<{
+  describe('saved in its editor', () => {
+    async function save(data: Record<string, unknown> = {}): Promise<{
       changes: string[];
       post: ReturnType<typeof vi.spyOn>;
     }> {
@@ -298,20 +298,22 @@ describe('a linked element', () => {
         string,
         {onSaved: (result: {data?: Record<string, unknown>}) => void},
       ];
-      options.onSaved({data: {replacedAssetId: 12, newAssetId: 34}});
+      options.onSaved({data});
 
       return {changes, post};
     }
+
+    beforeEach(async () => {
+      linkField.live = true;
+      await linkField.updateComplete;
+    });
 
     afterEach(() => {
       vi.restoreAllMocks();
     });
 
-    it('links to the new asset', async () => {
-      linkField.live = true;
-      await linkField.updateComplete;
-
-      const {changes, post} = await saveAsNewAsset();
+    it('links to the new asset when it’s saved as one', async () => {
+      const {changes, post} = await save({replacedAssetId: 12, newAssetId: 34});
 
       expect(changes).toEqual(['{entry:34@1:url}']);
       expect(post).toHaveBeenCalledWith(
@@ -320,18 +322,45 @@ describe('a linked element', () => {
       );
     });
 
-    it('keeps its link when the field is disabled', async () => {
-      linkField.live = true;
-      linkField.disabled = true;
-      await linkField.updateComplete;
-
-      const {changes, post} = await saveAsNewAsset();
+    it('keeps its link and refreshes it when it’s saved without being replaced', async () => {
+      const {changes, post} = await save();
 
       expect(changes).toEqual([]);
       expect(post).toHaveBeenCalledWith(
         'relational-fields/structured-elements',
         expect.objectContaining({elementIds: [12]})
       );
+    });
+
+    it('keeps its link when the field is disabled', async () => {
+      linkField.disabled = true;
+      await linkField.updateComplete;
+
+      const {changes, post} = await save({replacedAssetId: 12, newAssetId: 34});
+
+      expect(changes).toEqual([]);
+      expect(post).toHaveBeenCalledWith(
+        'relational-fields/structured-elements',
+        expect.objectContaining({elementIds: [12]})
+      );
+    });
+
+    it.each([1.5, -34, 'new'])(
+      'keeps its link when the new asset’s ID is %s',
+      async (newAssetId) => {
+        const {changes} = await save({replacedAssetId: 12, newAssetId});
+
+        expect(changes).toEqual([]);
+      }
+    );
+
+    it('keeps a link that isn’t an element reference', async () => {
+      linkField.modelValue = {...linkField.modelValue, value: 'pending'};
+      await linkField.updateComplete;
+
+      const {changes} = await save({replacedAssetId: 12, newAssetId: 34});
+
+      expect(changes).toEqual([]);
     });
   });
 

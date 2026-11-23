@@ -119,7 +119,7 @@ let advancedPanelIndex = 0;
  * or advanced attributes.
  *
  * @fires apply - The link was applied. `detail` is the `LinkFieldValue`, whose `value` is empty when the given link's element was removed.
- * @fires cancel - Editing was canceled.
+ * @fires cancel - Editing was canceled. Give the link back as a new `modelValue` to discard the edits.
  * @fires link-change - A `live` field was edited. `detail` is a `LinkChangeDetail`.
  */
 @customElement('craft-link-field')
@@ -156,7 +156,11 @@ class CraftLinkField extends LitElement {
   @state()
   private selectedElement: LinkedElement | null = null;
 
-  /** Whether the given link's element was removed, so applying it unlinks it. */
+  /**
+   * Whether the given link's element was removed, so applying it unlinks it.
+   * Part of the editing state, so it resets with the rest of it: when a new
+   * link is given, an element is chosen, or the link type changes.
+   */
   private elementRemoved = false;
 
   /** Numbers each chip fetch, so only the latest one's answer is drawn. */
@@ -457,16 +461,20 @@ class CraftLinkField extends LitElement {
           return;
         }
 
+        const replacedId = Number(data?.replacedAssetId);
         const newId = Number(data?.newAssetId);
-        const id =
+        // Swaps only the ID, keeping the reference's site and whatever follows.
+        const newValue = this.value.replace(/^\{(\w+):\d+/, `{$1:${newId}`);
+        const replaced =
           !this.disabled &&
-          Number(data?.replacedAssetId) === element.id &&
-          newId
-            ? newId
-            : element.id;
+          replacedId === element.id &&
+          Number.isInteger(newId) &&
+          newId > 0 &&
+          newValue !== this.value;
+        const id = replaced ? newId : element.id;
 
-        if (id !== element.id) {
-          this.value = this.value.replace(/^\{(\w+):\d+/, `{$1:${id}`);
+        if (replaced) {
+          this.value = newValue;
           this.selectedElement = {
             id,
             label: this.defaultLabel,
@@ -725,6 +733,11 @@ class CraftLinkField extends LitElement {
     );
   }
 
+  /**
+   * Leaves the link as it was given to whatever contains the field, which gives
+   * it back as a new `modelValue` to discard the edits, resetting the editing
+   * state with it.
+   */
   private cancel(): void {
     this.dispatchEvent(new CustomEvent('cancel', {bubbles: true}));
   }
