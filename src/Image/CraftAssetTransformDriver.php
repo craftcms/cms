@@ -50,7 +50,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         $transform = $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
         $immediately = $request->immediately ?? $this->generateBeforePageLoad;
         try {
-            $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $immediately, $request->transformer);
+            $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $immediately, $this);
         } catch (ImageTransformException $exception) {
             throw new AssetTransformFailedException($exception->getMessage(), previous: $exception);
         }

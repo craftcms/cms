@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
@@ -63,9 +62,9 @@ class ImageTransformer
         Asset $asset,
         ImageTransform $imageTransform,
         bool $immediately,
-        ?AssetTransformer $transformer = null,
+        ?CraftAssetTransformDriver $driver = null,
     ): string {
-        $transformer ??= $this->currentTransformer($asset);
+        $driver ??= $this->currentDriver($asset);
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
@@ -78,7 +77,7 @@ class ImageTransformer
         }
 
         $index = $this->getTransformIndex($asset, $imageTransform);
-        $disk = $this->transformDisk($asset, $transformer);
+        $disk = $this->transformDisk($asset, $driver);
         $transformHasUrls = $this->transformHasUrls($asset);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
 
@@ -152,7 +151,7 @@ class ImageTransformer
             if (! $index->fileExists) {
                 // Generate the transform
                 try {
-                    $this->generateTransform($index, $asset, $transformer);
+                    $this->generateTransform($index, $asset, $driver);
                 } catch (Exception $e) {
                     $index->markFailed();
                     $this->storeTransformIndexData($index);
@@ -195,10 +194,10 @@ class ImageTransformer
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
     {
-        $transformer = $this->currentTransformer($asset);
-        $this->getTransformUrl($asset, $index->getTransform(), true, $transformer);
+        $driver = $this->currentDriver($asset);
+        $this->getTransformUrl($asset, $index->getTransform(), true, $driver);
         $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
-        $stream = $this->transformDisk($asset, $transformer)->readStream($path);
+        $stream = $this->transformDisk($asset, $driver)->readStream($path);
 
         if (! is_resource($stream)) {
             throw new ImageTransformException('Unable to read generated transform.');
@@ -239,9 +238,9 @@ class ImageTransformer
     public function deleteImageTransformFile(
         Asset $asset,
         ImageTransformIndex $transformIndex,
-        ?AssetTransformer $transformer = null,
+        ?CraftAssetTransformDriver $driver = null,
     ): void {
-        $transformer ??= $this->currentTransformer($asset);
+        $driver ??= $this->currentDriver($asset);
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
 
         try {
@@ -250,7 +249,7 @@ class ImageTransformer
                 imageTransformIndex: $transformIndex,
                 path: $diskPath,
             ));
-            $this->transformDisk($asset, $transformer)->delete($diskPath);
+            $this->transformDisk($asset, $driver)->delete($diskPath);
         } catch (Throwable) {
             $this->reportCleanupFailure($asset);
         }
@@ -369,13 +368,13 @@ class ImageTransformer
     private function generateTransformedImage(
         Asset $asset,
         ImageTransformIndex $index,
-        AssetTransformer $transformer,
+        CraftAssetTransformDriver $driver,
     ): void {
         if (! ImageHelper::canManipulateAsImage($asset->getExtension())) {
             return;
         }
 
-        $transformDisk = $this->transformDisk($asset, $transformer);
+        $transformDisk = $this->transformDisk($asset, $driver);
         $transformPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
 
         if ($transformDisk->exists($transformPath)) {
@@ -440,7 +439,7 @@ class ImageTransformer
     private function generateTransform(
         ImageTransformIndex $index,
         ?Asset $asset = null,
-        ?AssetTransformer $transformer = null,
+        ?CraftAssetTransformDriver $driver = null,
     ): void {
         $asset ??= app(Assets::class)->getAssetById($index->assetId);
 
@@ -448,13 +447,13 @@ class ImageTransformer
             throw new ImageTransformException('Asset not found - '.$index->assetId);
         }
 
-        $transformer ??= $this->currentTransformer($asset);
+        $driver ??= $this->currentDriver($asset);
         $index->detectedFormat = $index->format ?: ImageTransformHelper::detectTransformFormat($asset);
         $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $disk = $this->transformDisk($asset, $transformer);
+        $disk = $this->transformDisk($asset, $driver);
 
         $target = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
 
@@ -475,7 +474,7 @@ class ImageTransformer
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
             }
         } else {
-            $this->generateTransformedImage($asset, $index, $transformer);
+            $this->generateTransformedImage($asset, $index, $driver);
         }
 
         if (! $disk->exists($target)) {
@@ -756,9 +755,9 @@ class ImageTransformer
         return '_'.$asset->getVolume()->uid.DIRECTORY_SEPARATOR.($asset->folderPath ?? '');
     }
 
-    private function transformDisk(Asset $asset, AssetTransformer $transformer): FilesystemAdapter
+    private function transformDisk(Asset $asset, CraftAssetTransformDriver $driver): FilesystemAdapter
     {
-        return Storage::disk($this->outputDisk($asset, $transformer));
+        return Storage::disk($this->outputDisk($asset, $driver));
     }
 
     /**
@@ -775,10 +774,10 @@ class ImageTransformer
      * volume’s own disk. Temporary uploads always use their own disk, since they have no setting to opt out of a public
      * output disk.
      */
-    private function outputDisk(Asset $asset, AssetTransformer $transformer): string
+    private function outputDisk(Asset $asset, CraftAssetTransformDriver $driver): string
     {
         $volume = $asset->getVolume();
-        $disk = $volume->isTemporary() ? null : $this->craftDriver($transformer)->outputDisk;
+        $disk = $volume->isTemporary() ? null : $driver->outputDisk;
         $diskName = $disk === null
             ? $volume->getResolvedDisk()
             : $volume->resolveStorageTargetKey($disk, parse: false);
@@ -788,24 +787,6 @@ class ImageTransformer
         }
 
         return $diskName;
-    }
-
-    /**
-     * Returns the `craft` driver instance a transformer resolves to. Another driver that hands a file to Craft gets
-     * the default `craft` driver.
-     */
-    private function craftDriver(AssetTransformer $transformer): CraftAssetTransformDriver
-    {
-        $transformers = app(AssetTransformers::class);
-        $driver = $transformers->has($transformer->name) ? $transformers->transformer($transformer->name) : null;
-
-        $driver = $driver instanceof CraftAssetTransformDriver ? $driver : $transformers->transformer('craft');
-
-        if (! $driver instanceof CraftAssetTransformDriver) {
-            throw new LogicException('The craft asset transform driver is invalid.');
-        }
-
-        return $driver;
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void
@@ -821,18 +802,20 @@ class ImageTransformer
     }
 
     /**
-     * Returns the transformer for an asset’s volume when it uses the `craft` driver. A volume whose transformer uses
-     * another driver gets the `craft` transformer, for when that driver hands a file to `craft` or a caller uses this
-     * class directly.
+     * Returns the `craft` driver instance for an asset’s volume: its transformer’s, when that uses the `craft` driver,
+     * or the `craft` transformer’s, for when another driver hands a file to `craft` or a caller uses this class directly.
      */
-    private function currentTransformer(Asset $asset): AssetTransformer
+    private function currentDriver(Asset $asset): CraftAssetTransformDriver
     {
         $transformers = app(AssetTransformers::class);
-        $transformer = $transformers->forVolume($asset->getVolume());
+        $driver = $transformers->transformer($transformers->forVolume($asset->getVolume())->name);
+        $driver = $driver instanceof CraftAssetTransformDriver ? $driver : $transformers->transformer('craft');
 
-        return $transformers->transformer($transformer->name) instanceof CraftAssetTransformDriver
-            ? $transformer
-            : new AssetTransformer('craft');
+        if (! $driver instanceof CraftAssetTransformDriver) {
+            throw new LogicException('The craft asset transform driver is invalid.');
+        }
+
+        return $driver;
     }
 
     /**

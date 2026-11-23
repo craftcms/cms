@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
+use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\AssetIndexData;
@@ -391,6 +394,39 @@ it('stores transforms on a second craft transformer’s own output disk', functi
     $this->transformer->invalidateAssetTransforms($asset);
 
     expect($transforms('private-transforms'))->toBe([]);
+});
+
+it('stores transforms on the output disk of the craft transformer another driver hands them to', function () {
+    $root = storage_path('framework/testing/image-transformer-test/handoff');
+    config()->set('filesystems.disks.handoff-transforms', ['driver' => 'local', 'root' => "{$root}/output"]);
+    Storage::disk('handoff-transforms')->deleteDirectory('');
+    defineAssetTransformer('craft-private', ['driver' => 'craft', 'outputDisk' => 'handoff-transforms']);
+    app(AssetTransformers::class)->extend('handoff', fn () => new class implements AssetTransformDriver
+    {
+        public function definition(): AssetTransformDriverDefinition
+        {
+            return new AssetTransformDriverDefinition;
+        }
+
+        public function transform(AssetTransformRequest $request): AssetTransformResult
+        {
+            return app(AssetTransformers::class)->transformer('craft-private')->transform($request);
+        }
+    });
+    defineAssetTransformer('handoff');
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'hasUrls' => true, 'assetTransformer' => 'handoff']);
+    $asset = ($this->createImageAsset)([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+    ]);
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+    app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
+
+    expect(Storage::disk('handoff-transforms')->allFiles())->toHaveCount(1)
+        ->and(array_filter(Storage::disk('test-disk')->allFiles(), fn (string $path): bool => str_starts_with($path, '_')))->toBe([]);
 });
 
 it('does not reuse similar transform results across output locations', function () {
