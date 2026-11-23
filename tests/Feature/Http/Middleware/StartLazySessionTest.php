@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\SessionTimeout;
+use CraftCms\Cms\Http\Events\LazySessionSaved;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Tests\TestClasses\Http\HostStartSession;
 use CraftCms\Cms\Tests\TestClasses\Http\HostTokenStartSession;
 use CraftCms\Cms\User\Elements\User;
@@ -14,7 +16,9 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -29,6 +33,8 @@ beforeEach(function () {
     File::put($this->tempDir.'/reads.twig', "{{ currentUser ? 'in' : 'out' }} {{ session('notice') }} {{ errors.first('email') }} {{ old('email') }}");
     File::put($this->tempDir.'/writes.twig', "{% do session().flash('notice', 'Saved') %}written");
     File::put($this->tempDir.'/form.twig', '<form method="post">{{ csrfInput() }}</form>');
+    File::put($this->tempDir.'/cached-reads.twig', "{% expires in 1 hour %}{{ session('notice') }}");
+    File::put($this->tempDir.'/cached-writes.twig', "{% expires in 1 hour %}{% do session().flash('notice', 'Saved') %}written");
 
     Aliases::set('@templates', $this->tempDir);
     TemplateMode::set(TemplateMode::Site);
@@ -160,4 +166,53 @@ it('saves the session for streamed responses', function () {
     get('/streamed')
         ->assertOk()
         ->assertCookie(config('session.cookie'));
+});
+
+it('sets cache headers by whether the session is saved', function (string $path, bool $hasSessionCookie, string $cacheControl) {
+    if ($hasSessionCookie) {
+        $this->withCookie(config('session.cookie'), Str::random(40));
+    }
+
+    expect(get($path)->headers->get('Cache-Control'))->toBe($cacheControl);
+})->with([
+    'reads the session' => ['/cached-reads', false, 'max-age=3600, public'],
+    'writes the session' => ['/cached-writes', false, 'must-revalidate, no-cache, no-store, private'],
+    'arrives with a session cookie' => ['/cached-reads', true, 'must-revalidate, no-cache, no-store, private'],
+]);
+
+it('saves the session when a queued header contains the CSRF token', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('header-token', function () {
+        ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-CSRF-Token', csrf_token());
+
+        return 'page';
+    });
+
+    $response = get('/header-token')->assertCookie(config('session.cookie'));
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
+});
+
+it('prevents caching responses that save the session on routes without Craft’s middleware', function () {
+    Route::middleware('web')->withLazySession()->get('web-writes', function () {
+        session()->flash('notice', 'Saved');
+
+        return response('written')->setPublic()->setMaxAge(3600);
+    });
+
+    expect(get('/web-writes')->assertCookie(config('session.cookie'))->headers->get('Cache-Control'))
+        ->toBe('must-revalidate, no-cache, no-store, private');
+});
+
+it('reports why a lazy session was saved', function () {
+    Event::fake([LazySessionSaved::class]);
+    Log::spy();
+
+    get('/writes?code=secret');
+    get('/form');
+
+    Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === ['_flash', 'notice'] && $event->tokenLocation === null);
+    Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === [] && $event->tokenLocation === 'body');
+    Log::shouldHaveReceived('debug')->with('Saved a new session for /writes (keys=_flash,notice).')->once();
+    Log::shouldHaveReceived('debug')->with('Saved a new session for /form (token=body).')->once();
 });

@@ -1,7 +1,5 @@
 import {router} from '@inertiajs/vue3';
-import {runAction} from '@craftcms/ui/actions.mjs';
 import {onMounted, onScopeDispose} from 'vue';
-import exportIndex from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ExportElementIndexController';
 import {
   elementIndexQueryParams,
   useContentIndexData,
@@ -14,9 +12,9 @@ import {
   type ElementIndexRoute,
   type IndexQueryParams,
 } from './useElementIndexVisits';
-import type {ElementIndexModel} from '../types/model';
+import type {ElementIndexModel, ExportElementIndex} from '../types/model';
+import {exportElementIndex} from '../export-element-index';
 import {saveInlineElements} from '../save-inline-elements';
-import type {ElementIndexExportFormat} from '../types/exporters';
 
 interface UseElementIndexPageOptions {
   route: ElementIndexRoute;
@@ -75,31 +73,11 @@ export function useElementIndexPage(
     return result;
   }
 
-  async function exportElements(
-    format: ElementIndexExportFormat,
-    type: string,
-    selectedIds: ReadonlyArray<string | number>,
-    limit?: number
-  ): Promise<void> {
-    const params = elementIndexQueryParams(elementIndex);
-
-    await runAction({
-      type: 'download',
-      method: 'POST',
-      url: exportIndex.url(),
-      body: {
-        ...params,
-        criteria: {
-          ...params.criteria,
-          ...(selectedIds.length ? {id: [...selectedIds]} : {}),
-          ...(limit ? {limit} : {}),
-        },
-        sort: elementIndex.sort,
-        type,
-        format,
-      },
-    });
-  }
+  const exportElements: ExportElementIndex = (...args) =>
+    exportElementIndex(
+      {...elementIndexQueryParams(elementIndex), sort: elementIndex.sort},
+      ...args
+    );
 
   const index = useElementIndex({
     elementIndex,

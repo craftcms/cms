@@ -33,6 +33,7 @@
   import {
     nestedCreateChoices,
     nestedIndexParams,
+    nestedOwnerParams,
     type NestedElementsProps,
     type NestedElement,
     type NestedIndexElement,
@@ -267,11 +268,7 @@
       | false = false;
     await operations.mutate(async (ownerId) => {
       result = await saveInlineElements(body, {
-        ...nestedIndexParams(
-          currentManager,
-          ownerId,
-          props.control.index?.initial
-        ),
+        ...nestedOwnerParams(currentManager, ownerId),
         elementType: currentManager.elementType,
         siteId: currentManager.ownerSiteId,
         context: 'embeddedIndex',

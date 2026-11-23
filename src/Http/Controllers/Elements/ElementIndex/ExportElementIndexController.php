@@ -8,11 +8,13 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementExporters;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Exporters\Raw;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Support\Typecast;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -42,8 +44,10 @@ class ExportElementIndexController
         $elementType = $validated['elementType'];
         $context = $request->context();
         $embedded = $context === ElementSources::CONTEXT_EMBEDDED_INDEX;
-        if ($embedded) {
-            $nestedElementScope = new EmbeddedNestedElementScope($request);
+        $nestedElementScope = $embedded ? $request->embeddedIndexScope() : null;
+        $nested = $nestedElementScope instanceof EmbeddedNestedElementScope;
+
+        if ($nested) {
             $nestedSource = $nestedElementScope->indexSource($elementType);
             $baseCriteria = $nestedSource->criteria;
             $criteria = $nestedElementScope->filterCriteria($request->criteria());
@@ -60,6 +64,9 @@ class ExportElementIndexController
                 ];
             }
             [$sourceKey, $source] = [$nestedSource::NESTED_KEY, $nestedSource->source];
+        } elseif ($embedded) {
+            [$sourceKey, $source] = [ElementIndexSourceSettings::NESTED_KEY, null];
+            $baseCriteria = $criteria = [];
         } else {
             $baseCriteria = $request->baseCriteria();
             $criteria = $request->criteria();
@@ -82,15 +89,27 @@ class ExportElementIndexController
 
         abort_if($exporter === null, 400, 'Element exporter is not supported by the element type');
 
-        $query = $this->elementIndexes->buildQueryState(
-            elementType: $elementType,
-            source: $source,
-            condition: $request->condition(),
-            baseCriteria: $baseCriteria,
-            criteria: $criteria,
-            filterConditionConfig: $request->filterConditionConfig(),
-            collapsedElementIds: $request->collapsedElementIds(),
-        )['query'];
+        if ($embedded && ! $nested) {
+            $query = EmbeddedIndexViewModel::listedQuery($request);
+
+            if ($selectedIds = $request->array('criteria.id')) {
+                $query->whereIn('elements.id', $selectedIds);
+            }
+
+            if ($limit = $request->integer('criteria.limit')) {
+                $query->limit($limit);
+            }
+        } else {
+            $query = $this->elementIndexes->buildQueryState(
+                elementType: $elementType,
+                source: $source,
+                condition: $request->condition(),
+                baseCriteria: $baseCriteria,
+                criteria: $criteria,
+                filterConditionConfig: $request->filterConditionConfig(),
+                collapsedElementIds: $request->collapsedElementIds(),
+            )['query'];
+        }
 
         $sort = array_values(array_filter(
             $request->array('sort'),
@@ -108,7 +127,7 @@ class ExportElementIndexController
             );
         }
 
-        if ($embedded) {
+        if ($nested) {
             Typecast::configure($query, ElementHelper::cleanseQueryCriteria($baseCriteria));
         }
 

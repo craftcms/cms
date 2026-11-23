@@ -166,20 +166,13 @@ class ImageTransformer
             }
         }
 
-        $url = $transformHasUrls
-            ? $disk->url($uri)
-            : $this->privateTransformUrl($index);
-
-        $dateUpdated = Arr::get($asset, 'dateUpdated');
-        if (is_string($dateUpdated) || is_numeric($dateUpdated)) {
-            $dateUpdated = DateTimeHelper::toDateTime($dateUpdated);
+        // A private transform’s token already differs on every request, so only stored files’ URLs are revved
+        if (! $transformHasUrls) {
+            return $this->privateTransformUrl($index);
         }
 
-        if (! $dateUpdated instanceof DateTimeInterface || ($index->dateUpdated && $index->dateUpdated > $dateUpdated)) {
-            $dateUpdated = $index->dateUpdated;
-        }
-
-        return AssetsHelper::revUrl($url, $asset, $dateUpdated);
+        // The index is recreated whenever its image changes, so the date it was created revs the URL
+        return AssetsHelper::revUrl($disk->url($uri), $asset, $index->dateIndexed);
     }
 
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
