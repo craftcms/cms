@@ -68,6 +68,10 @@ The Craft workspace skills cover processes shared with Craft 5 and the plugin re
 - Use Craft 6 class names in code references, such as `CraftCms\Cms\Database\Claim` or `CraftCms\Cms\Support\Facades\FacadeName`, and name macros as ``the `Request::isPreview()` macro``.
 - When ordering entries, front-end developer changes include Blade, and plugin and module development changes include Laravel and control panel Inertia, Vue and web components.
 
+## Breaking changes during 6.0 betas
+
+Don't break anything that shipped in a tagged 6.0 beta. Deprecate it instead: keep it working, call `Deprecator::log()`, add a "Deprecated" changelog entry, and leave removal for Craft 7. Ask before any unavoidable break.
+
 ## Control panel trigger
 
 Sites can use a custom `cpTrigger` to keep their control panel URL private, so
