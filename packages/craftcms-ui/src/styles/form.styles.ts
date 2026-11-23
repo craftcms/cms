@@ -148,7 +148,7 @@ export const inputStyles = css`
 
   :host([size~='large']) {
     --_control-height: var(--c-input-height, var(--c-size-control-lg));
-    --_spacing-block: var(--c-spacing-lg);
+    --_spacing-block: var(--c-textarea-spacing-block, var(--c-spacing-lg));
   }
 
   :host([size~='large']) .input-group__input {
