@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
+use CraftCms\Cms\Auth\OAuthServer\AccessToken;
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
@@ -49,6 +50,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Bridge\AccessToken as PassportAccessToken;
 use Laravel\Passport\Events\AccessTokenCreated;
 use Laravel\Passport\Passport;
 use Override;
@@ -96,7 +98,14 @@ class AuthServiceProvider extends ServiceProvider
         $this->bootRedirects();
         $this->registerElementPolicies();
 
-        $this->app->booted(fn () => $this->app->make(PersonalAccessTokens::class)->registerPassportScopes());
+        $this->app->booted(function (): void {
+            $this->app->make(PersonalAccessTokens::class)->registerPassportScopes();
+
+            // Add the `kid` header and `iss` claim to access tokens, unless the app uses its own access token entity
+            if (Passport::$accessTokenEntity === PassportAccessToken::class) {
+                Passport::useAccessTokenEntity(AccessToken::class);
+            }
+        });
     }
 
     private function bootRedirects(): void

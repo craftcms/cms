@@ -88,6 +88,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
 - Asset selector modals’ index adapters now have `refresh()` and `selectElements()` methods. ([#21036](https://github.com/craftcms/cms/issues/21036))
+- Craft now publishes the public key that verifies its OAuth access tokens as a JSON Web Key Set at `/.well-known/jwks.json`, advertised as `jwks_uri` in the OAuth authorization server metadata. Access tokens now have a `kid` header naming their signing key, and an `iss` claim with the issuer of the API they were granted for.
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where elements selected in Link fields weren’t shown as chips, and couldn’t be edited, copied, replaced, or removed from an action menu. ([#21025](https://github.com/craftcms/cms/pull/21025))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.

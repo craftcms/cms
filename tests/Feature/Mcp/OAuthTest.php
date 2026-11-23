@@ -18,6 +18,8 @@ use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -139,6 +141,10 @@ it('discovers and completes dynamic client registration and authorization', func
         'code_verifier' => str_repeat('v', 43),
     ])->assertOk()->json();
 
+    $claims = JWT::decode($tokens['access_token'], JWK::parseKeySet($this->getJson($metadata['jwks_uri'])->assertOk()->json()));
+    expect($claims->iss)->toBe($metadata['issuer'])
+        ->and(parse_url($metadata['jwks_uri'], PHP_URL_HOST))->toBe(parse_url($metadata['issuer'], PHP_URL_HOST));
+
     Auth::forgetGuards();
     Route::getRoutes()->getByName('craft.mcp.server')->flushController();
     $this->postJson($endpoint, McpRequest::payload('server/discover'), [
@@ -154,6 +160,28 @@ it('discovers and completes dynamic client registration and authorization', func
     'event stream preferred' => [['HTTP_ACCEPT' => 'text/event-stream, application/json']],
     'unspecified acceptance' => [['HTTP_ACCEPT' => null]],
 ]);
+
+it('publishes the public key that verifies access tokens', function (): void {
+    $rsa = openssl_pkey_get_details(openssl_pkey_get_public(config('passport.public_key')))['rsa'];
+    $n = rtrim(strtr(base64_encode($rsa['n']), '+/', '-_'), '=');
+
+    $this->getJson(route('craft.oauth.jwks'))
+        ->assertOk()
+        ->assertExactJson(['keys' => [[
+            'kty' => 'RSA',
+            'n' => $n,
+            'e' => 'AQAB',
+            'alg' => 'RS256',
+            'use' => 'sig',
+            'kid' => rtrim(strtr(base64_encode(hash('sha256', '{"e":"AQAB","kty":"RSA","n":"'.$n.'"}', true)), '+/', '-_'), '='),
+        ]]]);
+
+    config()->set('passport.public_key', 'not-a-key');
+    $this->getJson(route('craft.oauth.jwks'))->assertOk()->assertExactJson(['keys' => []]);
+
+    config()->set('passport.public_key');
+    $this->getJson(route('craft.oauth.jwks'))->assertOk()->assertExactJson(['keys' => []]);
+});
 
 it('keeps the Passport consent page out of frames', function (): void {
     $clientId = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->json('client_id');
@@ -184,6 +212,7 @@ it('uses configured base URLs rather than the request host in OAuth metadata', f
         ->assertJsonPath('issuer', $expectedResource)
         ->assertJsonPath('authorization_endpoint', $expectedResource.'/oauth/authorize')
         ->assertJsonPath('token_endpoint', "$base/oauth/token")
+        ->assertJsonPath('jwks_uri', "$base/.well-known/jwks.json")
         ->assertJsonPath('registration_endpoint', $expectedResource.'/oauth/register');
 })->with(['control panel endpoint' => true, 'site endpoint' => false]);
 
