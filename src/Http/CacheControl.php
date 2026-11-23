@@ -9,7 +9,7 @@ use DateTimeInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Queues cache directives for the response to the current request, through {@see ResponseHeaders::cacheControl()}.
+ * Queues cache directives for the current request’s response. {@see ResponseHeaders::cacheControl()} returns one.
  *
  * Each method calls the Symfony `Response` method of the same name once the response exists, so directives
  * combine as they would on the response itself. {@see ResponseHeaders::noCache()} and
@@ -116,7 +116,7 @@ readonly class CacheControl
      */
     public function setCache(array $options): static
     {
-        // Validated now, so an unknown option fails where it was passed rather than once the response exists.
+        // Check the options now, so an unknown option fails where it was passed instead of later in SetHeaders.
         new Response()->setCache($options);
 
         return $this->queue(fn (Response $response) => $response->setCache($options));

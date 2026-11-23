@@ -122,9 +122,9 @@ readonly class StartLazySession
             return $startSession->handle($request, $next, ...$parameters);
         }
 
-        // Responses that save or refresh the session get no-cache headers. They're set on the response rather than
-        // queued with ResponseHeaders, as SetHeaders has already applied the queue, and routes without SetHeaders
-        // are covered too.
+        // Responses that save or refresh the session get no-cache headers. This sets them on the response instead
+        // of queueing them, because SetHeaders has already applied the queue. It also covers routes without
+        // SetHeaders.
         if ($request->cookies->get($config['cookie']) !== null) {
             $response = $startSession->handle($request, $next, ...$parameters);
 
@@ -246,8 +246,8 @@ readonly class StartLazySession
     }
 
     /**
-     * Returns where the session's CSRF token was put in the response, which only works if the session is saved:
-     * `body`, `header`, or `cookie`. Streamed responses are assumed to contain it in their body, as it can't be checked.
+     * Returns where the response contains the session's CSRF token: `body`, `header`, or `cookie`. The token only
+     * works if the session is saved. Streamed responses return `body`, because their content can't be checked.
      *
      * @return 'body'|'header'|'cookie'|null
      */
@@ -287,9 +287,9 @@ readonly class StartLazySession
     }
 
     /**
-     * Reports why the session was saved, as it keeps shared caches from storing the response, with an event and a
-     * debug-level log entry. The entry names the request's path, but not its query string, which can hold one-time
-     * codes.
+     * Dispatches an event and logs a debug message saying why the session was saved, because saving it keeps shared
+     * caches from storing the response. The message names the request's path but not its query string, which can
+     * contain one-time codes.
      *
      * @param  list<string>  $keys
      */

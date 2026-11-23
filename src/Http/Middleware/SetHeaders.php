@@ -16,9 +16,9 @@ use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
- * action, and preview requests, and for responses that contain the session’s CSRF token. Site token requests get
- * theirs from {@see ResolveSite}, which also runs on site routes outside the `craft` group.
+ * Applies the headers queued with {@see ResponseHeaders}. Then it sends no-cache headers for control panel, action,
+ * and preview requests, and for responses that contain the session’s CSRF token. {@see ResolveSite} sends them for
+ * site token requests, because it also runs on site routes outside the `craft` group.
  *
  * @since 6.0.0
  */
@@ -70,7 +70,7 @@ class SetHeaders
 
         $this->responseHeaders->applyTo($response);
 
-        // No cache may store these, whatever headers were queued
+        // Caches must never store these responses, whatever headers the page queued
         if (
             $request->isCpRequest() ||
             $request->isActionRequest() ||
@@ -86,14 +86,14 @@ class SetHeaders
     }
 
     /**
-     * Whether the response contains the session’s CSRF token, which no cache may store, as it’s only valid for
-     * this visitor’s session.
+     * Whether the response contains the session’s CSRF token. No cache may store such a response, because the token
+     * is only valid for this visitor’s session.
      *
-     * The body and headers are checked, but not cookies, which already keep shared caches from storing the response.
-     * Streamed bodies aren’t checked, as they’re only sent after this middleware, so streamed responses keep the
-     * cache headers they were given, unless {@see StartLazySession} saves the session for them. Neither are the
-     * bodies of HEAD responses, which are emptied before this middleware runs, so a HEAD response can have cache
-     * headers that the GET response for the same page doesn’t.
+     * This checks the body and headers. It skips cookies, because a cookie already keeps shared caches from storing
+     * the response. It can’t check streamed bodies, which are sent after this middleware, so streamed responses keep
+     * their cache headers unless {@see StartLazySession} saves the session for them. It can’t check the bodies of HEAD
+     * responses either, which are emptied before this middleware runs, so a HEAD response can have cache headers that the GET response
+     * for the same page doesn’t.
      */
     private function containsCsrfToken(Request $request, SymfonyResponse $response): bool
     {
@@ -118,9 +118,9 @@ class SetHeaders
     /**
      * Whether the response was rendered for an exception the request threw, such as an error page.
      *
-     * An {@see HttpResponseException} doesn’t count, as it carries the response the page chose, such as the
-     * redirect `{% redirect %}` throws, so headers queued before it still apply. Twig wraps exceptions thrown while
-     * rendering, and Laravel attaches the wrapped exception to the response, so the whole chain is checked.
+     * An {@see HttpResponseException} doesn’t count. It carries the response the page chose, such as the redirect
+     * that `{% redirect %}` throws, so headers queued before it still apply. Twig wraps exceptions thrown while
+     * rendering, and Laravel attaches the wrapped exception to the response, so this checks the whole chain.
      */
     private function isErrorResponse(SymfonyResponse $response): bool
     {

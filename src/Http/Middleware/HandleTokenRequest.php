@@ -75,8 +75,9 @@ readonly class HandleTokenRequest
         app()->instance('request', $newRequest);
         $response = $next($newRequest);
 
-        // Caches could otherwise serve a token's response for the URL without the token, such as when the token
-        // was sent in a header. Set here rather than in SetHeaders, as token routes can be outside the `craft` group.
+        // Without these, a cache could serve a token's response to requests for the same URL without the token,
+        // such as when the token came in a header. SetHeaders can't set them, as token routes can be outside the
+        // `craft` group.
         if ($response instanceof Response) {
             ResponseHeaders::setNoCacheHeaders($response);
         }

@@ -62,7 +62,7 @@ readonly class ErrorPages
             return null;
         }
 
-        // Headers queued for the response that failed don’t apply to the error response.
+        // The error page doesn’t get the headers that the failed page queued.
         ResponseHeaders::reset();
 
         // Laravel renders these itself after the renderable callbacks.

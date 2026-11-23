@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Queues headers for the response to the current request, for code that runs before the response exists,
  * such as templates.
  *
- * Everything queued is applied in order by {@see SetHeaders}, so when two calls set the same header, the
+ * {@see SetHeaders} applies everything queued, in order, so when two calls set the same header, the
  * last one wins. Directives set with {@see cacheControl()} combine with earlier ones instead, so they don’t
  * override an earlier {@see noCache()}.
  *

@@ -49,7 +49,7 @@ readonly class ResolveSite
 
         $response = $next($request);
 
-        // A site token can select a disabled site, so its response must not be served to visitors without the token.
+        // A site token can select a disabled site, so caches must not serve its response to visitors without the token.
         if ($response instanceof Response && Context::getHidden(self::HAD_SITE_TOKEN_KEY) === true) {
             ResponseHeaders::setNoCacheHeaders($response);
         }

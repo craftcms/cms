@@ -8,8 +8,8 @@ use CraftCms\Cms\Http\Middleware\StartLazySession;
 use Illuminate\Http\Request;
 
 /**
- * Dispatched when {@see StartLazySession} saves the session for a request that arrived without one, which
- * sends a session cookie and keeps shared caches from storing the response.
+ * {@see StartLazySession} dispatches this event when it saves the session for a request that arrived without one.
+ * Saving the session sends a session cookie, which keeps shared caches from storing the response.
  *
  * @since 6.0.0
  */
@@ -28,8 +28,8 @@ readonly class LazySessionSaved
          */
         public bool $regenerated,
         /**
-         * Where the session’s CSRF token was found in the response, if it was. Streamed responses are reported as
-         * `body`, as their content can’t be checked.
+         * Where the session’s CSRF token was found in the response, if it was. Streamed responses report `body`,
+         * because their content can’t be checked.
          *
          * @var 'body'|'header'|'cookie'|null
          */
