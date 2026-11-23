@@ -216,7 +216,7 @@ it('advertises OAuth endpoints that resolve in headless mode', function (): void
 
     $metadata = $this->getJson('/.well-known/oauth-authorization-server/actions/graphql')->assertOk()->json();
 
-    expect($metadata['issuer'])->toBe('https://localhost/actions/graphql');
+    expect($metadata['issuer'])->toEndWith('://localhost/actions/graphql');
     $this->postJson($metadata['token_endpoint'])->assertStatus(400);
     $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
 });

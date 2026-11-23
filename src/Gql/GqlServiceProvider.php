@@ -15,7 +15,6 @@ use CraftCms\Cms\Gql\Commands\ListSchemasCommand;
 use CraftCms\Cms\Gql\Commands\PrintSchemaCommand;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
@@ -56,15 +55,6 @@ class GqlServiceProvider extends ServiceProvider
             // Action URLs carry over the request’s site and preview tokens, which must stay out of public discovery
             // metadata and the resource’s identifier
             $resourceUrl = Url::stripQueryString(action_url('graphql/api'));
-            $path = "/$actionTrigger/graphql/api";
-            // Action URLs include the control panel trigger on control panel requests and in headless mode, but the
-            // OAuth routes don’t
-            $cpPath = '/'.Url::prependCpTrigger($path);
-            $baseUrl = match (true) {
-                str_ends_with($resourceUrl, $cpPath) => Str::beforeLast($resourceUrl, $cpPath),
-                str_ends_with($resourceUrl, $path) => Str::beforeLast($resourceUrl, $path),
-                default => (string) config('app.url'),
-            };
 
             return new OAuthResource(
                 handle: 'graphql',
@@ -74,7 +64,9 @@ class GqlServiceProvider extends ServiceProvider
                 ],
                 resourceUrl: $resourceUrl,
                 authorizationRoute: ltrim("$actionTrigger/graphql", '/'),
-                baseUrl: $baseUrl,
+                // The OAuth routes live at the app’s root, while action URLs include the control panel trigger on
+                // control panel requests and in headless mode
+                baseUrl: url('/'),
                 routeName: 'craft.graphql.oauth',
             );
         });
