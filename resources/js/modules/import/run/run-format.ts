@@ -1,4 +1,4 @@
-import {t} from '@craftcms/ui';
+import {formatDuration, t} from '@craftcms/ui';
 import type {ItemOutcome, RunState, RunStatus} from './run-state';
 
 export const statusLabels: Record<RunStatus, () => string> = {
@@ -26,26 +26,8 @@ export function runDuration(
   }
 
   const end = run.dateFinished ? Date.parse(run.dateFinished) : now;
-  const seconds = Math.max(
-    0,
-    Math.round((end - Date.parse(run.dateStarted)) / 1000)
-  );
 
-  if (seconds < 60) {
-    return t('{seconds, number}s', {seconds});
-  }
-
-  const minutes = Math.floor(seconds / 60);
-
-  return minutes < 60
-    ? t('{minutes, number}m {seconds, number}s', {
-        minutes,
-        seconds: seconds % 60,
-      })
-    : t('{hours, number}h {minutes, number}m', {
-        hours: Math.floor(minutes / 60),
-        minutes: minutes % 60,
-      });
+  return formatDuration((end - Date.parse(run.dateStarted)) / 1000);
 }
 
 /** The run's item counts, added up across its step runs. */
