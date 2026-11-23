@@ -124,7 +124,7 @@
 </script>
 
 <template>
-  <div class="py-3">
+  <div :class="groupsTableNode ? 'pb-3' : 'py-3'">
     <LayoutSlot v-if="groupsTableNode" name="content-tabs">
       <craft-tabs :label="t('CP Navigation')" @craft-tab-show="onTabShow">
         <craft-tab slot="tab" controls="cp-nav-default">{{

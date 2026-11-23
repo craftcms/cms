@@ -21,6 +21,7 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import {useLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 
   const page = usePage<{
     details?: string | null;
@@ -29,13 +30,14 @@
 
   const detailsFragment = computed(() => page.props.detailsFragment ?? null);
   const details = computed(() => page.props.details ?? null);
+  const layoutSlots = useLayoutSlotRegistry();
   const hasDetails = computed(() =>
     Boolean(detailsFragment.value || details.value)
   );
 </script>
 
 <template>
-  <div class="py-3">
+  <div :class="layoutSlots.has('content-tabs') ? 'pb-3' : 'py-3'">
     <CpContainer>
       <slot></slot>
     </CpContainer>

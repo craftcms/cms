@@ -441,7 +441,7 @@
                             </slot>
 
                             <CpContainer v-show="hasTabs()">
-                              <div>
+                              <div class="pt-md pb-lg">
                                 <LayoutSlotOutlet name="content-tabs">
                                   <slot name="content-tabs"></slot>
                                 </LayoutSlotOutlet>
@@ -778,9 +778,6 @@ Content: the secondary nav, content, and details panes
     /* For the gutters below. Its track is a definite `minmax(…, 1fr)`, so
        containment can't collapse it. */
     container: cp-content-main / inline-size;
-    /* The field layout's tabs sit a little further from the first field
-       here than in slideouts. See UiNodeList.vue. */
-    --cp-content-tabs-gap: calc(var(--c-spacing-lg) + var(--c-spacing-md));
     /* Fields here are further apart than elsewhere, such as in slideouts,
        the details pane and the content sidebar. */
     --c-field-group-gap: calc(var(--c-spacing) * 6);

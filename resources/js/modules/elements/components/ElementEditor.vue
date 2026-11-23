@@ -935,7 +935,10 @@
     <craft-spinner :label="t('Loading')"></craft-spinner>
   </div>
   <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
-    <div ref="content" :class="hasContentTabs ? 'pb-lg' : 'py-lg'">
+    <div
+      ref="content"
+      :class="hasContentTabs ? ['pb-lg', {'pt-md': !isSlideout}] : 'py-lg'"
+    >
       <CpContainer>
         <component
           :is="formWrapper ?? 'div'"

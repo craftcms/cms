@@ -30,6 +30,7 @@
 - Fixed a bug where updating a field layout with the MCP tools could orphan custom fields’ content. ([#21006](https://github.com/craftcms/cms/pull/21006))
 - Fixed a bug where existing entries weren’t updated when a section’s sites or propagation method were changed through project config while using the `sync` queue connection. ([#21005](https://github.com/craftcms/cms/pull/21005))
 - Fixed a bug where element indexes didn’t remember the chosen number of elements per page. ([#20979](https://github.com/craftcms/cms/issues/20979))
+- Fixed a bug where tabs had inconsistent heights and spacing across control panel screens. ([commerce#4454](https://github.com/craftcms/commerce/pull/4454))
 - Fixed a bug where routes defined in Settings → Routes, plugins’ `routes/web.php` files, and other routes in the `craft` middleware group returned a 404 error on sites whose base URL has a path. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Fixed a bug where sites weren’t detected when Craft is installed in a folder and their base URLs are inside it, such as `https://example.com/craft/fr/`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Fixed a bug where site-specific routes in Settings → Routes only worked on the primary site. ([#21015](https://github.com/craftcms/cms/pull/21015))
