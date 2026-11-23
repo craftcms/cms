@@ -241,17 +241,15 @@ class Sites
         }
     }
 
+    /**
+     * Returns the request’s path relative to its site’s base URL, such as `news/story` for
+     * `https://example.com/fr/news/story` on a site whose base URL is `https://example.com/fr/`.
+     *
+     * @param  Site|null  $site  Deprecated and unused. Requests for site routes already leave out the site’s base path.
+     */
     public function getRequestPath(Request $request, ?Site $site = null): string
     {
-        $path = trim($request->decodedPath(), '/');
-        $site ??= $this->getCurrentSite();
-        $basePath = trim((string) parse_url((string) $site->getBaseUrl(), PHP_URL_PATH), '/');
-
-        if ($basePath !== '' && str_starts_with($path.'/', $basePath.'/')) {
-            return ltrim(substr($path, strlen($basePath)), '/');
-        }
-
-        return $path;
+        return trim($request->decodedPath(), '/');
     }
 
     /**

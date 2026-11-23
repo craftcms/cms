@@ -213,7 +213,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the field’s translation key, based on a given element.
      *
-     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\CraftCms\Cms\Element\Elements::saveElement()]],
      * then `getTranslationKey()` will be called for each custom field and for each site the element should be propagated to.
      * If the method returns the same value as it did for the initial site, then the initial site’s value will be copied over
      * to the target site.
@@ -342,7 +342,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the search keywords that should be associated with this field.
      *
-     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
+     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\CraftCms\Cms\Search\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
      * @param  mixed  $value  The field’s value

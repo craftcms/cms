@@ -111,8 +111,10 @@
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
   --c-text-link: var(--color-blue-600);
-  --c-link-decoration: none;
-  --c-link-decoration-hover: underline;
+  /* Read from the “Underline links” preference rather than reset, so a themed
+     subtree keeps the underline it inherits. */
+  --c-link-decoration: var(--c-underline-links, none);
+  --c-link-decoration-hover: var(--c-underline-links-hover, underline);
 
   /* Transparent tokens */
   --c-color-border-translucent: color-mix(
@@ -508,6 +510,14 @@
 }
 
 .underline-links {
+  --c-underline-links: underline;
+  --c-underline-links-hover: none;
   --c-link-decoration: underline;
   --c-link-decoration-hover: none;
+}
+
+.use-shapes {
+  --c-status-shape-radius: 15%;
+  --c-status-triangle-clip: polygon(50% 0, 100% 100%, 0 100%);
+  --c-status-diamond-clip: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }

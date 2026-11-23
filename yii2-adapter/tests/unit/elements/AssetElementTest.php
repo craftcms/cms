@@ -40,7 +40,7 @@ class AssetElementTest extends TestCase
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
                 'hasUrls' => true,
-                'getResolvedFsTarget' => 'asset-element-test',
+                'getResolvedDisk' => 'asset-element-test',
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',

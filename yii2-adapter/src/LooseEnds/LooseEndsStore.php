@@ -118,13 +118,23 @@ class LooseEndsStore
             return;
         }
 
-        $now = Query::prepareDateForDb(CarbonImmutable::now());
+        $pending = [];
 
         foreach ($usages as $usage) {
             $fingerprint = $this->fingerprint($usage['file'], $usage['line']);
-            $cacheKey = $this->cacheKey($usage['key'], $fingerprint);
+            $pending[$this->cacheKey($usage['key'], $fingerprint)] = [$usage, $fingerprint];
+        }
 
-            if (!Cache::add($cacheKey, true, self::USAGE_WRITE_INTERVAL)) {
+        if ($pending === []) {
+            return;
+        }
+
+        // Most usage was already written within the interval, so check it all in one read before claiming any
+        $written = array_filter(Cache::many(array_keys($pending)));
+        $now = Query::prepareDateForDb(CarbonImmutable::now());
+
+        foreach ($pending as $cacheKey => [$usage, $fingerprint]) {
+            if (isset($written[$cacheKey]) || !Cache::add($cacheKey, true, self::USAGE_WRITE_INTERVAL)) {
                 continue;
             }
 

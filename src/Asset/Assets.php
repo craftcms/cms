@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
+use WeakMap;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -58,11 +59,21 @@ class Assets
     /** @var array<int|string, VolumeFolder> */
     private array $userTempFolders = [];
 
+    /**
+     * Thumbnail URLs that `ThumbUrlResolving` listeners resolved while preloading, keyed by size and mode.
+     * A null URL means no listener set one, so the thumbnail is transformed.
+     *
+     * @var WeakMap<Asset, array<string, string|null>>
+     */
+    private WeakMap $preloadedThumbUrls;
+
     public function __construct(
         private readonly Folders $folders,
         private readonly Elements $elements,
         private readonly AssetTransformers $assetTransformers,
-    ) {}
+    ) {
+        $this->preloadedThumbUrls = new WeakMap;
+    }
 
     /**
      * Returns an asset by its ID.
@@ -161,27 +172,46 @@ class Assets
     /**
      * Loads the transform indexes for assets' thumbnails up front, so they aren't looked up one at a time.
      *
+     * When `ThumbUrlResolving` has listeners, it's triggered for each asset and size here instead of in
+     * {@see getThumbUrl()}, and only the thumbnails that no listener set a URL for are preloaded.
+     *
      * @param  list<Asset>  $assets
      * @param  list<int|array{int, int}>  $sizes  The sizes of square thumbnails, or their widths and heights
      */
     public function preloadThumbs(array $assets, array $sizes, ImageTransformMode $mode = ImageTransformMode::Fit): void
     {
-        if (Event::hasListeners(ThumbUrlResolving::class)) {
-            return;
-        }
-
         $assets = array_values(array_filter($assets, fn (Asset $asset): bool => $asset::class === Asset::class
             && ! $asset->isFolder
             && empty($asset->getFieldLayout()->thumbSources)));
 
-        $this->assetTransformers->preload($assets, fn (Asset $asset): array => array_map(
-            fn (int|array $size): array => [
-                'width' => is_array($size) ? $size[0] : $size,
-                'height' => is_array($size) ? $size[1] : $size,
-                'mode' => $mode->value,
-            ],
-            $sizes,
-        ));
+        $sizes = array_map(fn (int|array $size): array => is_array($size) ? $size : [$size, $size], $sizes);
+        $hasListeners = Event::hasListeners(ThumbUrlResolving::class);
+
+        $this->assetTransformers->preload($assets, function (Asset $asset) use ($sizes, $mode, $hasListeners): array {
+            $transforms = [];
+
+            foreach ($sizes as [$width, $height]) {
+                if ($hasListeners) {
+                    $url = $this->resolveThumbUrlOverride($asset, $width, $height, $mode);
+                    $this->preloadedThumbUrls[$asset] = [
+                        ...$this->preloadedThumbUrls[$asset] ?? [],
+                        "{$width}x{$height}:{$mode->value}" => $url,
+                    ];
+
+                    if ($url !== null) {
+                        continue;
+                    }
+                }
+
+                $transforms[] = [
+                    'width' => $width,
+                    'height' => $height,
+                    'mode' => $mode->value,
+                ];
+            }
+
+            return $transforms;
+        });
     }
 
     /** @return array{int, int} */
@@ -197,16 +227,14 @@ class Assets
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null, bool $iconFallback = true, ImageTransformMode $mode = ImageTransformMode::Crop): ?string
     {
         $height ??= $width;
+        $preloadedUrls = $this->preloadedThumbUrls[$asset] ?? [];
+        $key = "{$width}x{$height}:{$mode->value}";
+        $url = array_key_exists($key, $preloadedUrls)
+            ? $preloadedUrls[$key]
+            : $this->resolveThumbUrlOverride($asset, $width, $height, $mode);
 
-        event($event = new ThumbUrlResolving(
-            asset: $asset,
-            width: $width,
-            height: $height,
-            mode: $mode,
-        ));
-
-        if ($event->url !== null) {
-            return $event->url;
+        if ($url !== null) {
+            return $url;
         }
 
         $extension = $asset->getExtension();
@@ -222,6 +250,21 @@ class Assets
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
+    }
+
+    /**
+     * Returns the thumbnail URL a `ThumbUrlResolving` listener set, if any.
+     */
+    private function resolveThumbUrlOverride(Asset $asset, int $width, int $height, ImageTransformMode $mode): ?string
+    {
+        event($event = new ThumbUrlResolving(
+            asset: $asset,
+            width: $width,
+            height: $height,
+            mode: $mode,
+        ));
+
+        return $event->url;
     }
 
     /**

@@ -90,7 +90,7 @@ interface ElementQueryInterface extends Builder
 
     /**
      * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
-     * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
+     * elements that were set by [[\CraftCms\Cms\Element\Elements::setPlaceholderElement()]].
      *
      * @param  bool  $value  The property value (defaults to true)
      * @return static self reference
@@ -236,7 +236,7 @@ interface ElementQueryInterface extends Builder
      * ```php
      * // Fetch drafts by the current user
      * ${elements-var} = {php-method}
-     *     ->draftCreator(Craft::$app->user->identity)
+     *     ->draftCreator(\CraftCms\Cms\currentUserElement())
      *     ->all();
      * ```
      *
@@ -262,7 +262,7 @@ interface ElementQueryInterface extends Builder
      * // Fetch provisional drafts created by the current user
      * ${elements-var} = {php-method}
      *     ->provisionalDrafts()
-     *     ->draftCreator(Craft::$app->user->identity)
+     *     ->draftCreator(\CraftCms\Cms\currentUserElement())
      *     ->all();
      * ```
      *
@@ -419,7 +419,7 @@ interface ElementQueryInterface extends Builder
      * ```php
      * // Fetch revisions by the current user
      * ${elements-var} = {php-method}
-     *     ->revisionCreator(Craft::$app->user->identity)
+     *     ->revisionCreator(\CraftCms\Cms\currentUserElement())
      *     ->all();
      * ```
      *
@@ -1033,7 +1033,7 @@ interface ElementQueryInterface extends Builder
      *
      * ```twig
      * {# Get the requested {element} slug from the URL #}
-     * {% set requestedSlug = craft.app.request.getSegment(3) %}
+     * {% set requestedSlug = Request.segment(3) %}
      *
      * {# Fetch the {element} with that slug #}
      * {% set {element-var} = {twig-method}
@@ -1043,11 +1043,11 @@ interface ElementQueryInterface extends Builder
      *
      * ```php
      * // Get the requested {element} slug from the URL
-     * $requestedSlug = \Craft::$app->request->getSegment(3);
+     * $requestedSlug = request()->segment(3);
      *
      * // Fetch the {element} with that slug
      * ${element-var} = {php-method}
-     *     ->slug(\craft\helpers\Db::escapeParam($requestedSlug))
+     *     ->slug(\CraftCms\Cms\Support\Query::escapeParam($requestedSlug))
      *     ->one();
      * ```
      *
@@ -1075,7 +1075,7 @@ interface ElementQueryInterface extends Builder
      *
      * ```twig
      * {# Get the requested URI #}
-     * {% set requestedUri = craft.app.request.getPathInfo() %}
+     * {% set requestedUri = Sites.getRequestPath(Request.instance()) %}
      *
      * {# Fetch the {element} with that URI #}
      * {% set {element-var} = {twig-method}
@@ -1085,11 +1085,11 @@ interface ElementQueryInterface extends Builder
      *
      * ```php
      * // Get the requested URI
-     * $requestedUri = \Craft::$app->request->getPathInfo();
+     * $requestedUri = \CraftCms\Cms\Support\Facades\Sites::getRequestPath(request());
      *
      * // Fetch the {element} with that URI
      * ${element-var} = {php-method}
-     *     ->uri(\craft\helpers\Db::escapeParam($requestedUri))
+     *     ->uri(\CraftCms\Cms\Support\Query::escapeParam($requestedUri))
      *     ->one();
      * ```
      *
@@ -1107,7 +1107,7 @@ interface ElementQueryInterface extends Builder
      *
      * ```twig
      * {# Get the search query from the 'q' query string param #}
-     * {% set searchQuery = craft.app.request.getQueryParam('q') %}
+     * {% set searchQuery = Request.query('q') %}
      *
      * {# Fetch all {elements} that match the search query #}
      * {% set {elements-var} = {twig-method}
@@ -1117,7 +1117,7 @@ interface ElementQueryInterface extends Builder
      *
      * ```php
      * // Get the search query from the 'q' query string param
-     * $searchQuery = \Craft::$app->request->getQueryParam('q');
+     * $searchQuery = request()->query('q');
      *
      * // Fetch all {elements} that match the search query
      * ${elements-var} = {php-method}

@@ -1,20 +1,15 @@
-import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
-import {runAction} from '@craftcms/ui/actions.mjs';
+import {t} from '@craftcms/ui';
 import {
   computed,
-  nextTick,
   shallowRef,
   watch,
   type MaybeRefOrGetter,
   type Ref,
 } from 'vue';
 import {pageParam} from '@/common/craft/url';
-import {getElements} from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ElementIndexController';
-import exportIndex from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/ExportElementIndexController';
-import {
-  useDetachedElementIndex,
-  type UseDetachedElementIndexOptions,
-} from '@/modules/elements/index/composables/useDetachedElementIndex';
+import {exportElementIndex} from '@/modules/elements/index/export-element-index';
+import {normalizeSort} from '@/modules/elements/index/composables/useElementIndexSort';
+import type {UseDetachedElementIndexOptions} from '@/modules/elements/index/composables/useDetachedElementIndex';
 import type {
   IndexQueryParams,
   IndexQueryValue,
@@ -22,6 +17,7 @@ import type {
 import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
 import type {ElementIndexExportFormat} from '@/modules/elements/index/types/exporters';
 import {
+  appendPayloadAssets,
   markInvalidElements,
   nestedElementsErrorMessage,
   nestedIndexParams,
@@ -29,36 +25,10 @@ import {
   type NestedElementsProps,
   type NestedIndexElement,
 } from './nested-elements';
+import {useEmbeddedIndexElements} from '../element-index/useEmbeddedIndexElements';
 
 type NestedColumns =
   UseDetachedElementIndexOptions<NestedContentIndexData>['columns'];
-
-function normalizedSort(value: unknown): Array<{
-  field: string;
-  direction: 'asc' | 'desc';
-}> {
-  const items = Array.isArray(value)
-    ? value
-    : value instanceof Object
-      ? Object.values(value)
-      : [];
-
-  return items.filter(
-    (item): item is {field: string; direction: 'asc' | 'desc'} =>
-      item instanceof Object &&
-      !Array.isArray(item) &&
-      typeof item.field === 'string' &&
-      (item.direction === 'asc' || item.direction === 'desc') &&
-      item.field !== 'score'
-  );
-}
-
-async function appendPayloadAssets(
-  payload: NestedContentIndexData
-): Promise<void> {
-  await appendHeadHtml(payload.headHtml ?? '');
-  await appendBodyHtml(payload.bodyHtml ?? '');
-}
 
 export function useNestedElementsQuery(options: {
   props: () => NestedElementsProps;
@@ -84,12 +54,8 @@ export function useNestedElementsQuery(options: {
   }
 
   const prevalidate = shallowRef(Boolean(manager.prevalidate));
-  let loadEditable = false;
   const renderedMode = initial.viewState.mode;
-  const renderedColumns = initial.defaultTableColumns.filter(
-    (column) => column !== 'title'
-  );
-  const initialSort = normalizedSort(initial.sort);
+  const initialSort = normalizeSort(initial.sort, {withoutScore: true});
   let preferredSort = initialSort;
   let appliedQuery: IndexQueryParams = {
     search: initial.search || undefined,
@@ -98,18 +64,9 @@ export function useNestedElementsQuery(options: {
       | IndexQueryValue
       | undefined,
     viewMode: renderedMode,
-    columns: renderedColumns,
+    columns: initial.defaultTableColumns.filter((column) => column !== 'title'),
     sort: initialSort,
   };
-
-  function completeQuery(query: IndexQueryParams): IndexQueryParams {
-    return {
-      viewMode: renderedMode,
-      columns: renderedColumns,
-      ...query,
-      sort: normalizedSort(query.sort ?? initialSort),
-    };
-  }
 
   void appendPayloadAssets(initial).catch((cause) => {
     options.error.value = nestedElementsErrorMessage(
@@ -118,7 +75,7 @@ export function useNestedElementsQuery(options: {
     );
   });
 
-  const index = useDetachedElementIndex<NestedContentIndexData>({
+  const embedded = useEmbeddedIndexElements<NestedContentIndexData>({
     initial,
     storageKey: `nestedentries.${
       props.index?.indexSettings?.storageKey ?? manager.fieldId
@@ -137,53 +94,31 @@ export function useNestedElementsQuery(options: {
         ),
       };
     },
-    inlineEditing: options.saveInline
-      ? {load: () => load(true), save: options.saveInline}
-      : undefined,
+    requestParams: () => {
+      const currentManager = options.props().manager;
+
+      return currentManager
+        ? {
+            ...nestedIndexParams(
+              currentManager,
+              currentManager.ownerId,
+              options.props().index?.initial
+            ),
+            elementType: currentManager.elementType,
+            ...(prevalidate.value ? {prevalidate: true} : {}),
+          }
+        : null;
+    },
+    showHeaderColumn: props.index?.indexSettings?.showHeaderColumn,
+    withoutScore: true,
+    editable: () => Boolean(options.editable?.()),
+    saveInline: options.saveInline,
     exportElements: exportElements,
     rowReorder: options.rowReorder,
-    pinnedColumn:
-      props.index?.indexSettings?.showHeaderColumn === false
-        ? null
-        : {key: 'title', label: initial.elementDisplayName},
-    data: (rows, mode, elementIndex) =>
-      elementIndex.viewState.mode === mode ? rows : [],
     columns: options.columns,
-    fetch: async (query) => {
-      const currentManager = options.props().manager;
-      if (!currentManager) {
-        return initial;
-      }
-
-      const requestQuery = completeQuery(query);
-      const {data} = await actionClient.post<NestedContentIndexData>(
-        getElements.url(),
-        {
-          ...nestedIndexParams(
-            currentManager,
-            currentManager.ownerId,
-            options.props().index?.initial
-          ),
-          elementType: currentManager.elementType,
-          context: 'embeddedIndex',
-          source: '__IMP__',
-          ...requestQuery,
-          ...(loadEditable && options.editable?.() ? {editable: true} : {}),
-          ...(prevalidate.value ? {prevalidate: true} : {}),
-          showInGrid: requestQuery.viewMode === 'cards',
-        }
-      );
-
-      return data;
-    },
-    onLoaded: async (payload, query) => {
-      appliedQuery = completeQuery(query);
-      const confirmedSort = normalizedSort(appliedQuery.sort);
-      if (confirmedSort[0]?.field !== 'score') {
-        preferredSort = confirmedSort;
-      }
-      await nextTick();
-      await appendPayloadAssets(payload);
+    onLoaded: async (_payload, query) => {
+      appliedQuery = query;
+      preferredSort = normalizeSort(query.sort, {withoutScore: true});
       options.error.value = '';
       await options.onLoaded();
     },
@@ -194,6 +129,7 @@ export function useNestedElementsQuery(options: {
       );
     },
   });
+  const index = embedded.model;
 
   index.restore();
 
@@ -212,14 +148,8 @@ export function useNestedElementsQuery(options: {
   const payloadActions = computed(() => index.payload.value.actions);
   const exporters = computed(() => index.payload.value.exporters);
 
-  async function load(inlineEditing = false): Promise<void> {
-    loadEditable = inlineEditing;
-
-    try {
-      await index.load();
-    } finally {
-      loadEditable = false;
-    }
+  function load(inlineEditing = false): Promise<void> {
+    return inlineEditing ? embedded.loadInlineInputs() : index.load();
   }
 
   async function exportElements(
@@ -237,11 +167,8 @@ export function useNestedElementsQuery(options: {
     options.error.value = '';
 
     try {
-      await runAction({
-        type: 'download',
-        method: 'POST',
-        url: exportIndex.url(),
-        body: {
+      await exportElementIndex(
+        {
           ...nestedIndexParams(
             currentManager,
             currentManager.ownerId,
@@ -256,15 +183,15 @@ export function useNestedElementsQuery(options: {
                 ? appliedQuery.search
                 : '',
             status: appliedQuery.status || null,
-            ...(selectedIds.length ? {id: [...selectedIds]} : {}),
-            ...(limit ? {limit} : {}),
           },
-          sort: normalizedSort(appliedQuery.sort),
+          sort: normalizeSort(appliedQuery.sort, {withoutScore: true}),
           condition: appliedQuery.condition ?? null,
-          type,
-          format,
         },
-      });
+        format,
+        type,
+        selectedIds,
+        limit
+      );
     } catch (cause) {
       options.error.value = nestedElementsErrorMessage(
         cause,

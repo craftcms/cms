@@ -220,14 +220,23 @@ test('update returns success message', function () {
         ]);
 });
 
-test('the underline links preference is shared with every screen', function () {
+test('the underline links and use shapes preferences are shared with every screen', function () {
     get(cp_url('dashboard'))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.underlineLinks', false));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.underlineLinks', false)
+            ->where('craft.currentUser.useShapes', false));
 
     patchJson(cp_url('myaccount/preferences'), ['underlineLinks' => true])->assertOk();
 
     get(cp_url('dashboard'))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.underlineLinks', true));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.underlineLinks', true)
+            ->where('craft.currentUser.useShapes', false));
+
+    patchJson(cp_url('myaccount/preferences'), ['useShapes' => true])->assertOk();
+
+    get(cp_url('dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.useShapes', true));
 });
 
 test('update saves the theme', function () {

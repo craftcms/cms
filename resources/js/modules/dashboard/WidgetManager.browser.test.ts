@@ -115,20 +115,29 @@ it.each([
   }
 );
 
-it('names each widget’s reorder button, column picker and delete button after the widget', async () => {
-  await mountManager();
-  const row = [...document.querySelectorAll('li')].find((li) =>
-    li.textContent?.includes('Updates')
+/** The list item for the widget titled `title`. */
+function rowOf(title: string): HTMLLIElement {
+  return [...document.querySelectorAll('li')].find((li) =>
+    li.textContent?.includes(title)
   )!;
+}
+
+it('names each widget’s reorder and delete buttons after the widget, and describes its column picker by it', async () => {
+  await mountManager();
+  const row = rowOf('Updates');
   const reorder = row.querySelector('craft-reorder-button')!;
-  const picker = row.querySelector('craft-slide-picker')!;
+  const picker = row.querySelector('craft-slide-picker-button')!;
   await reorder.updateComplete;
   await picker.updateComplete;
 
   expect(reorder.label).toBe('Reorder Updates');
   await expect
-    .element(page.getByRole('slider', {name: 'Number of columns Updates'}))
-    .toBeInTheDocument();
+    .element(
+      page
+        .elementLocator(row)
+        .getByRole('button', {name: '1 column', exact: true})
+    )
+    .toHaveAccessibleDescription('Updates');
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
     .toBeInTheDocument();
@@ -136,12 +145,13 @@ it('names each widget’s reorder button, column picker and delete button after 
 
 it('resizes a widget to the column count picked from the keyboard', async () => {
   const {resizes} = await mountManager();
-  const picker = [...document.querySelectorAll('li')]
-    .find((li) => li.textContent?.includes('Updates'))!
-    .querySelector('craft-slide-picker')!;
-  await picker.updateComplete;
-
-  picker.focus();
+  await page
+    .elementLocator(rowOf('Updates'))
+    .getByRole('button', {name: '1 column', exact: true})
+    .click();
+  await page.getByRole('slider', {name: 'Columns'}).click({
+    position: {x: 1, y: 1},
+  });
   await userEvent.keyboard('{End}');
 
   expect(resizes).toEqual([[2, 2]]);

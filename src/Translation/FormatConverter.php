@@ -166,7 +166,7 @@ class FormatConverter
      * @param  string  $pattern  date format pattern in ICU format.
      * @param  string  $type  'date', 'time', or 'datetime'.
      * @param  string|null  $locale  the locale to use for converting ICU short patterns `short`, `medium`, `long` and `full`.
-     *                               If not given, `Yii::$app->language` will be used.
+     *                               If not given, `app()->getLocale()` will be used.
      * @return string The converted date format pattern.
      *
      * @throws \Exception

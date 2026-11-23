@@ -93,7 +93,7 @@ it('returns not found when the element has no control panel edit url', function 
     ]);
     Cms::config()->tempAssetUploadDisk = 'element-redirect-temp-disk';
 
-    $volume = Volume::factory()->create(['fs' => 'element-redirect-temp-disk']);
+    $volume = Volume::factory()->create(['disk' => 'element-redirect-temp-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,

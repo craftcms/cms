@@ -1,5 +1,13 @@
-import {beforeAll, beforeEach, describe, expect, it} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'vite-plus/test';
 import {contrast, loadTokens} from '../../../test/contrast';
+import {renderedShape} from '../../../test/shape';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
 import './indicator.js';
@@ -108,4 +116,37 @@ it('draws a white dot solid, like a gray one, in the dark theme', async () => {
 
   expect(style.borderTopColor).toBe(style.backgroundColor);
   expect(contrast(style.backgroundColor, background)).toBeGreaterThanOrEqual(3);
+});
+
+describe('shapes', () => {
+  async function renderShape(shape: string): Promise<HTMLElement> {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `<craft-indicator shape="${shape}" fill="sky" style="font-size: 100px"></craft-indicator>`
+    );
+    const indicator = document.body.lastElementChild as CraftIndicator;
+    await indicator.updateComplete;
+
+    return indicator.shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+  }
+
+  afterEach(() => {
+    document.body.classList.remove('use-shapes');
+  });
+
+  it.each(['circle', 'square', 'triangle', 'diamond'])(
+    'draws a %s with the use-shapes preference on',
+    async (shape) => {
+      document.body.classList.add('use-shapes');
+
+      expect(renderedShape(await renderShape(shape))).toBe(shape);
+    }
+  );
+
+  it.each(['square', 'triangle', 'diamond'])(
+    'draws a %s dot as a circle with the use-shapes preference off',
+    async (shape) => {
+      expect(renderedShape(await renderShape(shape))).toBe('circle');
+    }
+  );
 });

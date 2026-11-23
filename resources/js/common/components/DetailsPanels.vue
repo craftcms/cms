@@ -302,7 +302,7 @@
         class="details-panels__rail"
         :class="{'details-panels__rail--detached': rail}"
         role="group"
-        :aria-label="t('Details')"
+        :aria-label="t('Panels')"
         :data-open="String(openPanelId !== null)"
       >
         <craft-disclosure
@@ -393,6 +393,19 @@
     padding-block-start: var(--cp-header-touch-target-offset);
     border-inline-start: none;
     background-color: transparent;
+  }
+
+  /* Centers the tabs under the header's 24px avatar. */
+  @media (width < var(--breakpoint-lg)) {
+    .details-panels__rail--detached {
+      --_rail-padding-inline: calc(
+        var(--c-spacing-md) + (24rem / 16 - var(--cp-rail-item-size)) / 2
+      );
+      inline-size: calc(
+        var(--cp-rail-item-size) + var(--_rail-padding-inline) * 2
+      );
+      padding-inline: var(--_rail-padding-inline);
+    }
   }
 
   .details-panels__trigger {

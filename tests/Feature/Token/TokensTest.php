@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $this->tokens = app(RouteTokens::class);
@@ -100,6 +103,29 @@ it('counts a token use once per request', function () {
 
     expect(RouteToken::where('token', $token)->firstOrFail()->usageCount)->toBe(1);
 });
+
+it('doesn’t grant a token use that another request claimed after it was read', function (int $usageLimit, array|false $expectedRoute) {
+    $token = $this->tokens->createToken('do/stuff', $usageLimit);
+    $id = RouteToken::where('token', $token)->value('id');
+
+    // Another request uses the token right after this one reads it
+    $competed = false;
+    DB::listen(function (QueryExecuted $query) use (&$competed, $id) {
+        if (! $competed && str_contains($query->sql, 'routetokens') && str_starts_with($query->sql, 'select')) {
+            $competed = true;
+            $competitor = DB::table(Table::ROUTETOKENS)->where('id', $id);
+            $competitor->value('usageCount') + 1 < $competitor->value('usageLimit')
+                ? $competitor->increment('usageCount')
+                : $competitor->delete();
+        }
+    });
+
+    expect($this->tokens->getTokenRoute($token))->toBe($expectedRoute)
+        ->and(RouteToken::where('token', $token)->exists())->toBeFalse();
+})->with([
+    'its last use' => [1, false],
+    'its second-last use' => [2, ['do/stuff']],
+]);
 
 it('decodes if the route is json', function () {
     $token = $this->tokens->createToken(Json::encode([

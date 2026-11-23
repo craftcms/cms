@@ -77,9 +77,9 @@ it('resolves a chip’s status the way an element index chip does', function (st
     // indicator server-side for an index chip.
     expect($method->invoke(null, $element))->toBe($expected);
 })->with([
-    'live' => ['live', ['fill' => 'teal', 'label' => 'Live', 'draft' => false]],
-    'pending' => ['pending', ['fill' => 'sky', 'label' => 'Pending', 'draft' => false]],
-    'expired' => ['expired', ['fill' => 'red', 'label' => 'Expired', 'draft' => false]],
+    'live' => ['live', ['fill' => 'teal', 'shape' => 'circle', 'label' => 'Live', 'draft' => false]],
+    'pending' => ['pending', ['fill' => 'sky', 'shape' => 'triangle', 'label' => 'Pending', 'draft' => false]],
+    'expired' => ['expired', ['fill' => 'red', 'shape' => 'square', 'label' => 'Expired', 'draft' => false]],
 ]);
 
 it('omits the status for an element type that doesn’t show one', function () {

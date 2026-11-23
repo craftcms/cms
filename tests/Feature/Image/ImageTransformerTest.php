@@ -22,6 +22,7 @@ use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
@@ -39,7 +40,7 @@ beforeEach(function () {
     Storage::disk('test-disk')->deleteDirectory('');
 
     $this->volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'hasUrls' => true,
     ]);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
@@ -295,7 +296,7 @@ it('uses Craft driver output disk settings', function () {
     Storage::disk('configured-transform-source')->deleteDirectory('');
     Storage::disk('configured-transform-target')->deleteDirectory('');
     $volume = Volume::factory()->create([
-        'fs' => 'configured-transform-source',
+        'disk' => 'configured-transform-source',
     ]);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -333,7 +334,7 @@ it('does not reuse similar transform results across output locations', function 
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    $sourceDisk = $asset->getVolume()->getResolvedFsTarget();
+    $sourceDisk = $asset->getVolume()->getResolvedDisk();
     app(AssetTransformers::class)->withImmediateTransforms(function () use ($asset, $sourceDisk): void {
         foreach (['first', 'second'] as $target) {
             config()->set("filesystems.disks.{$sourceDisk}.asset_transformer", [
@@ -356,7 +357,7 @@ it('fails when the configured Craft driver output disk doesn’t name a disk', f
         'asset_transformer' => ['driver' => 'craft', 'output_disk' => $outputDisk],
     ]);
     $volume = Volume::factory()->create([
-        'fs' => 'missing-transform-target-source',
+        'disk' => 'missing-transform-target-source',
     ]);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
 
@@ -401,7 +402,7 @@ it('reports Craft cleanup failures with redacted context', function () {
 });
 
 it('stores transforms at the root of the volume’s own disk, outside its subpath, without an output disk', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => 'uploads', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'subpath' => 'uploads', 'hasUrls' => true]);
     $asset = ($this->createImageAsset)([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
@@ -433,7 +434,6 @@ it('excludes generated transform directories from asset indexing with the defaul
 
     $session = app(AssetIndexer::class)->startIndexingSession(
         volumes: [$asset->volumeId],
-        cacheRemoteImages: false,
         listEmptyFolders: true,
     );
 
@@ -483,24 +483,68 @@ it('does not reuse a transform result older than the source Asset', function () 
     expect($disk->get($transformPath))->not->toBe($originalTransform);
 });
 
-it('includes the source revision in transform URL identity', function () {
+it('revs a transform’s URL, and changes it only when the transform changes', function () {
     $asset = ($this->createImageAsset)();
     $asset->getVolume()->sourceDisk()->put(
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    Cms::config()->revAssetUrls(false);
-
-    $transformers = app(AssetTransformers::class);
-    $firstUrl = $transformers->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
-    );
-    $asset->dateUpdated = now()->addMinute();
-    $secondUrl = $transformers->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    $transforms = app(ImageTransforms::class);
+    $transforms->saveTransform(new ImageTransform(['name' => 'Thumb', 'handle' => 'thumb', 'width' => 100, 'height' => 100]));
+    $url = fn (): string => app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, 'thumb')->url,
     );
 
-    expect($secondUrl)->not->toBe($firstUrl);
+    $this->travel(1)->hours();
+    $generated = $url();
+    $this->travel(1)->hours();
+    $asset->dateUpdated = now();
+
+    expect($generated)->toContain('?v=')
+        ->and($url())->toBe($generated);
+
+    $thumb = $transforms->getTransformByHandle('thumb');
+    $thumb->width = 200;
+    $thumb->height = 200;
+    $transforms->saveTransform($thumb);
+    $this->travel(1)->hours();
+
+    expect($url())->not->toBe($generated)
+        ->and(Url::removeParam($url(), 'v'))->toBe(Url::removeParam($generated, 'v'));
+});
+
+it('gives an eager-loaded transform the same URL for the rest of the request that generates it', function () {
+    $asset = ($this->createImageAsset)();
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    $transform = new ImageTransform(['width' => 100]);
+    $this->transformer->getTransformIndex($asset, $transform);
+    $this->transformer->eagerLoadTransforms([$transform], [$asset]);
+
+    $this->travel(1)->hours();
+    $generated = $this->transformer->getTransformUrl($asset, $transform, true);
+    $this->travel(1)->hours();
+
+    expect($this->transformer->getTransformUrl($asset, $transform, true))->toBe($generated);
+});
+
+it('doesn’t rev transform URLs that Craft serves itself', function () {
+    $asset = ($this->createImageAsset)();
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    config()->set('filesystems.disks.test-disk.asset_transformer', ['driver' => 'craft', 'has_urls' => false]);
+
+    $url = app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    );
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+    expect($query)->toHaveKey('transformToken')
+        ->not->toHaveKey('v');
 });
 
 it('rejects unsupported source kinds before generating transforms', function () {

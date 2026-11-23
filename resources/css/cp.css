@@ -73,7 +73,6 @@ CP Styles
   );
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);
-  --cp-body-border-width: 1px;
   --cp-header-bg: color-mix(
     in oklab,
     color-mix(in oklab, var(--color-blue-50), white 50%),

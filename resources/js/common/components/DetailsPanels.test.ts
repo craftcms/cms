@@ -4,6 +4,7 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vite-plus/test';
 import {
   createApp,
   defineComponent,
+  effectScope,
   h,
   nextTick,
   provide,
@@ -21,6 +22,7 @@ import {
   createScreenPanels,
   type ScreenPanels,
 } from '@/common/composables/screenPanels';
+import {useResizable} from '@/common/composables/useResizable';
 import DetailsPanels from './DetailsPanels.vue';
 import ScreenPanel from './ScreenPanel.vue';
 
@@ -166,7 +168,7 @@ it('puts the triggers in the rail and the panels in place', async () => {
   const rail = document.getElementById('rail')!;
   const group = rail.querySelector('[role="group"]');
 
-  expect(group?.getAttribute('aria-label')).toBe('Details');
+  expect(group?.getAttribute('aria-label')).toBe('Panels');
   expect(
     [...rail.querySelectorAll('craft-disclosure > button')].map((button) =>
       button.getAttribute('aria-controls')
@@ -277,6 +279,43 @@ describe('overlaying a page', () => {
     await settle();
 
     expect(panel('info').hidden).toBe(false);
+  });
+
+  it('stays open while it’s resized from a handle outside it', async () => {
+    const details = await openOverlaid();
+    const handle = outsideIn(details);
+    const scope = effectScope();
+    scope
+      .run(() => useResizable({target: details, minWidth: 200, maxWidth: 600}))!
+      .setHandle(handle);
+    await settle();
+
+    handle.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    details.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}));
+    details.click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+    scope.stop();
+  });
+
+  it('closes on a click elsewhere after a resize handle was pressed', async () => {
+    const details = await openOverlaid();
+    const handle = outsideIn(details);
+    const scope = effectScope();
+    scope
+      .run(() => useResizable({target: details, minWidth: 200, maxWidth: 600}))!
+      .setHandle(handle);
+    await settle();
+
+    handle.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    details.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}));
+    await new Promise((resolve) => setTimeout(resolve));
+    outsideIn(details).click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+    scope.stop();
   });
 
   it('switches panels from the rail', async () => {

@@ -39,7 +39,7 @@ beforeEach(function () {
     $this->volume = Volume::factory()->create([
         'name' => 'Uploads',
         'handle' => 'uploads',
-        'fs' => 'import-assets-field-disk',
+        'disk' => 'import-assets-field-disk',
         'fieldLayoutId' => FieldLayout::factory()->create(['type' => Asset::class])->id,
     ]);
 

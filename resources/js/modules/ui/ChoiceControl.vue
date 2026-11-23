@@ -602,7 +602,6 @@
     "
     role="group"
     :aria-invalid="invalid ? 'true' : undefined"
-    :aria-required="required ? 'true' : undefined"
   >
     <input
       v-if="editable"
@@ -654,7 +653,6 @@
     :all-value="allValue()"
     :all-mode="allIsSingleValue() ? 'single-value' : 'each-value'"
     :aria-invalid="invalid ? 'true' : undefined"
-    :aria-required="required ? 'true' : undefined"
     .options="selectOptionsInOrder"
     .value="groupValue"
     @change="onCheckboxSelectChange"
@@ -673,7 +671,6 @@
     :required="editable && required"
     .disabled="!editable"
     .invalid="invalid"
-    :aria-required="required ? 'true' : undefined"
   >
     <input
       v-if="control.props.multiple && editable"

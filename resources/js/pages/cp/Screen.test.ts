@@ -1,3 +1,4 @@
+import {detectPlatform} from '@tanstack/hotkeys';
 import {createApp, h, type App} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
@@ -7,9 +8,16 @@ import {
   ScreenContentReadyKey,
   ScreenPropsStoreKey,
 } from '@/common/composables/screen';
+import {
+  registerPanel,
+  uiLayerManager,
+  unregisterPanel,
+} from '@/common/slideouts/panel-stack';
 import Screen from './Screen.vue';
 
 vi.mock('@craftcms/ui', () => import('@craftcms/ui/utilities/dom'));
+
+const mod = detectPlatform() === 'mac' ? 'metaKey' : 'ctrlKey';
 
 let app: App;
 let host: HTMLElement;
@@ -208,3 +216,181 @@ it('switches legacy tab panes without jQuery', async () => {
     'true'
   );
 });
+
+function mountForm(props: Record<string, unknown>): HTMLFormElement {
+  host = document.createElement('div');
+  document.body.append(host);
+  app = createApp({
+    setup() {
+      provideLayoutSlotRegistry();
+
+      return () =>
+        h('form', {id: 'main-form'}, [
+          h(Screen, {content: '<p>Fields</p>', ...props}),
+        ]);
+    },
+  });
+  app.provide(ScreenPropsStoreKey, createScreenPropsStore());
+  app.provide(ScreenContentReadyKey, () => {});
+  app.mount(host);
+
+  return host.querySelector('form')!;
+}
+
+function pressSave(shift = false): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', {
+    key: shift ? 'S' : 's',
+    code: 'KeyS',
+    [mod]: true,
+    shiftKey: shift,
+    bubbles: true,
+    cancelable: true,
+  });
+  document.body.dispatchEvent(event);
+
+  return event;
+}
+
+function postedParams(form: HTMLFormElement): Record<string, string> {
+  return Object.fromEntries(
+    [...form.querySelectorAll<HTMLInputElement>('input[type=hidden]')].map(
+      (input) => [input.name, input.value]
+    )
+  );
+}
+
+it('saves a full-page form on Mod+S', () => {
+  const submit = vi
+    .spyOn(HTMLFormElement.prototype, 'requestSubmit')
+    .mockImplementation(() => {});
+  const form = mountForm({
+    fullPageForm: true,
+    mainFormAttributes: {
+      data: {saveshortcut: true, 'saveshortcut-redirect': 'encrypted-url'},
+    },
+    formActions: [],
+  });
+
+  expect(pressSave().defaultPrevented).toBe(true);
+  expect(submit).toHaveBeenCalledTimes(1);
+  expect(postedParams(form)).toEqual({redirect: 'encrypted-url'});
+  expect(pressSave(true).defaultPrevented).toBe(false);
+
+  submit.mockRestore();
+});
+
+it('saves with the form action a shortcut is assigned to', () => {
+  const submit = vi
+    .spyOn(HTMLFormElement.prototype, 'requestSubmit')
+    .mockImplementation(() => {});
+  const form = mountForm({
+    fullPageForm: true,
+    formActions: [
+      {
+        label: 'Save and add another',
+        action: 'plugin/save',
+        redirect: 'next',
+        params: {addAnother: '1'},
+        shortcut: true,
+        shift: true,
+      },
+      {label: 'Save and continue editing', shortcut: true},
+    ],
+    saveShortcutRedirect: 'encrypted-url',
+  });
+
+  expect(pressSave().defaultPrevented).toBe(true);
+  expect(postedParams(form)).toEqual({redirect: 'encrypted-url'});
+  form
+    .querySelectorAll('input[type=hidden]')
+    .forEach((input) => input.remove());
+  submit.mockClear();
+
+  expect(pressSave(true).defaultPrevented).toBe(true);
+  expect(submit).toHaveBeenCalledTimes(1);
+  expect(postedParams(form)).toEqual({
+    action: 'plugin/save',
+    redirect: 'next',
+    addAnother: '1',
+  });
+
+  submit.mockRestore();
+});
+
+it.each([
+  ['a screen with no form', {fullPageForm: false}],
+  [
+    'a form that opted out',
+    {fullPageForm: true, mainFormAttributes: {data: {saveshortcut: false}}},
+  ],
+  [
+    'a form that declares no actions',
+    {
+      fullPageForm: true,
+      mainFormAttributes: {data: {saveshortcut: true, actions: []}},
+    },
+  ],
+])('leaves Mod+S to the browser on %s', (_, props) => {
+  const submit = vi.spyOn(HTMLFormElement.prototype, 'requestSubmit');
+  mountForm(props);
+
+  expect(pressSave().defaultPrevented).toBe(false);
+  expect(submit).not.toHaveBeenCalled();
+
+  submit.mockRestore();
+});
+
+it('leaves the save to the legacy CP when it’s loaded', () => {
+  const submitPrimaryForm = vi.fn();
+  const form = mountForm({fullPageForm: true});
+  vi.stubGlobal('Craft', {cp: {$primaryForm: [form], submitPrimaryForm}});
+
+  expect(pressSave().defaultPrevented).toBe(true);
+  expect(submitPrimaryForm).toHaveBeenCalledWith({
+    redirect: undefined,
+    retainScroll: false,
+  });
+  expect(postedParams(form)).toEqual({});
+
+  vi.unstubAllGlobals();
+});
+
+it('leaves Mod+S to an open slideout', () => {
+  const submit = vi.spyOn(HTMLFormElement.prototype, 'requestSubmit');
+  mountForm({fullPageForm: true});
+  const panel = {
+    element: document.createElement('div'),
+    position: () => {},
+    handleShadeClick: () => {},
+  };
+  registerPanel(panel);
+
+  expect(pressSave().defaultPrevented).toBe(false);
+  expect(submit).not.toHaveBeenCalled();
+
+  unregisterPanel(panel);
+  submit.mockRestore();
+});
+
+it.each([
+  [false, false],
+  [true, true],
+])(
+  'saves on Mod+S over a modal layer only when it bubbles (%s)',
+  (bubble, saves) => {
+    const submit = vi
+      .spyOn(HTMLFormElement.prototype, 'requestSubmit')
+      .mockImplementation(() => {});
+    mountForm({fullPageForm: true});
+    const modal = document.createElement('div');
+    document.body.append(modal);
+    uiLayerManager().addLayer(modal, {bubble});
+
+    expect(pressSave().defaultPrevented).toBe(saves);
+    expect(submit).toHaveBeenCalledTimes(saves ? 1 : 0);
+
+    uiLayerManager().removeLayer(modal);
+    modal.remove();
+    submit.mockRestore();
+  }
+);

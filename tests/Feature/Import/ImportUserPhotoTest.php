@@ -25,7 +25,7 @@ beforeEach(function () {
         'root' => $this->diskRoot,
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'import-user-photo-disk']);
+    $this->volume = Volume::factory()->create(['disk' => 'import-user-photo-disk']);
     ProjectConfig::set('users.photoVolumeUid', $this->volume->uid);
 
     $this->sourceDir = Path::temp('import-user-photo-'.bin2hex(random_bytes(4)));

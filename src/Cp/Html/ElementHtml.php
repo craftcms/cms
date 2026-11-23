@@ -152,6 +152,7 @@ readonly class ElementHtml
                     'overrides' => $config['overrides'],
                     'size' => $config['size'],
                     'thumbSize' => $thumbSize?->value,
+                    'appearance' => $config['appearance'] ?? null,
                     'ui' => 'chip',
                 ] : false,
             ]),
@@ -302,7 +303,7 @@ readonly class ElementHtml
      * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
      * - `id` – The chip’s `id` attribute
      * - `inputName` – The `name` attribute that should be set on a hidden input, if set
-     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\craft\base\Identifiable::getId()`]].
+     * - `inputValue` – The `value` attribute that should be set on the hidden input, if `inputName` is set. Defaults to [[\CraftCms\Cms\Component\Contracts\Identifiable::getId()]].
      * - `labelHtml` – The label HTML, if it should be different from [[Chippable::getUiLabel()]]
      * - `overrides` – Any config overrides that should persist when the chip is re-rendered
      * - `selectable` – Whether the chip should include a checkbox input

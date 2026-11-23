@@ -35,8 +35,8 @@ export const ElementIndexPage = defineAsyncComponent(
   () => import('./modules/elements/index/components/ElementIndexPage.vue')
 );
 
-export const ReadOnlyElementIndex = defineAsyncComponent(
-  () => import('./modules/element-selector-modal/ReadOnlyElementIndex.vue')
+export const EmbeddedElementIndex = defineAsyncComponent(
+  () => import('./modules/ui/element-index/EmbeddedElementIndex.vue')
 );
 
 export const ElementEditor = defineAsyncComponent(

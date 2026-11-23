@@ -579,7 +579,7 @@ describe('store', function () {
             'root' => storage_path('framework/testing/save-element-controller-test'),
         ]);
 
-        $volume = Volume::factory()->create(['fs' => 'save-element-controller-test']);
+        $volume = Volume::factory()->create(['disk' => 'save-element-controller-test']);
         $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
         $assetModel = AssetModel::factory()->create([
             'volumeId' => $volume->id,

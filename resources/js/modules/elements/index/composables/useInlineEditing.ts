@@ -80,6 +80,12 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
   async function start(): Promise<void> {
     await options.load(true);
+
+    // The index can be replaced while its inputs load, such as by an error message
+    if (!options.container.value) {
+      return;
+    }
+
     editingIds.value = toValue(options.editableRows)
       .filter((entry) => Boolean(entry.inlineInputHtml))
       .map((entry) => entry.id);

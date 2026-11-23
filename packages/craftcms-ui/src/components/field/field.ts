@@ -209,6 +209,12 @@ export default class CraftField extends FormControl(LitElement) {
   override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
 
+    // The light DOM observer catches help text nodes being added or swapped,
+    // but not the help text property gaining or losing content.
+    if (changedProperties.has('helpText')) {
+      this.__wireDescribedBy();
+    }
+
     if (changedProperties.has('fieldset')) {
       this.__syncFieldsetSemantics();
     }
@@ -574,14 +580,30 @@ export default class CraftField extends FormControl(LitElement) {
 
     for (const slotName of ['help-text', 'feedback']) {
       const node = this.__lightChild(slotName);
-      if (node) {
-        // Already-registered nodes are ignored by addToAriaDescribedBy.
-        this.addToAriaDescribedBy(node, {idPrefix: slotName});
+      if (!node) {
+        continue;
+      }
+
+      // Empty help text describes nothing, and a control given an empty
+      // description reads to axe as having no visible label.
+      if (
+        slotName === 'help-text' &&
+        node.textContent!.trim() === '' &&
+        node.childElementCount === 0
+      ) {
+        this.removeFromAriaDescribedBy(node);
         for (const control of afterControls) {
-          control.addToAriaDescribedBy(node, {
-            idPrefix: `field-${slotName}`,
-          });
+          control.removeFromAriaDescribedBy(node);
         }
+        continue;
+      }
+
+      // Already-registered nodes are ignored by addToAriaDescribedBy.
+      this.addToAriaDescribedBy(node, {idPrefix: slotName});
+      for (const control of afterControls) {
+        control.addToAriaDescribedBy(node, {
+          idPrefix: `field-${slotName}`,
+        });
       }
     }
   }

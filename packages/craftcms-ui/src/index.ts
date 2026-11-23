@@ -61,6 +61,7 @@ export {default as CraftInputSearch} from './components/input-search/input-searc
 export {default as CraftInputTime} from './components/input-time/input-time.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftLink} from './components/link/link.js';
+export {default as CraftMediaItem} from './components/media-item/media-item.js';
 export {
   default as CraftMetadataList,
   type MetadataListLayout,
@@ -103,6 +104,7 @@ export {default as CraftSelectRich} from './components/select-rich/select-rich.j
 export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 export {default as CraftSlidePicker} from './components/slide-picker/slide-picker.js';
+export {default as CraftSlidePickerButton} from './components/slide-picker-button/slide-picker-button.js';
 export {default as CraftSlideRule} from './components/slide-rule/slide-rule.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';

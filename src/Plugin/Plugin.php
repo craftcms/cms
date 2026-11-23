@@ -141,6 +141,27 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         $this->publishConfiguredFiles();
     }
 
+    /**
+     * Registers the plugin’s publishable files with `vendor:publish`, tagged with its handle, without booting it.
+     *
+     * @internal
+     */
+    final public function registerPublishables(): void
+    {
+        $this->ensurePackageNameIsSet();
+
+        $paths = array_merge($this->frontendAssetPublishPaths(), $this->publishableFilePaths());
+
+        if ($this->vite) {
+            [$source, $target] = $this->getSourceAndTarget($this, $this->vite);
+            $paths[$source] = $this->app->publicPath($target);
+        }
+
+        if ($paths !== []) {
+            $this->publishes($paths, $this->handle);
+        }
+    }
+
     /** @internal */
     final public function removeAssets(): void
     {

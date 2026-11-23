@@ -25,6 +25,8 @@ return new class extends Migration
         $configuredDisks = config('filesystems.disks', []);
         $configuredDisks = is_array($configuredDisks) ? $configuredDisks : [];
         $missingDisks = [];
+        // The column is `disk` when a later migration that renames it has already run, such as when every migration is rerun
+        $column = Schema::hasColumn(Table::VOLUMES, 'fs') ? 'fs' : 'disk';
 
         foreach ($volumes as $volume) {
             if (! is_array($volume)) {
@@ -34,7 +36,7 @@ return new class extends Migration
             $this->requireConfiguredDisk($volume['fs'] ?? null, $filesystems, $configuredDisks, $missingDisks);
         }
 
-        foreach (DB::table(Table::VOLUMES)->pluck('fs') as $reference) {
+        foreach (DB::table(Table::VOLUMES)->pluck($column) as $reference) {
             $this->requireConfiguredDisk($reference, $filesystems, $configuredDisks, $missingDisks);
         }
 
@@ -66,7 +68,7 @@ return new class extends Migration
         }
 
         if (! Schema::hasColumn(Table::VOLUMES, 'hasUrls')) {
-            Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->boolean('hasUrls')->default(false)->after('fs'));
+            Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->boolean('hasUrls')->default(false)->after($column));
         }
 
         foreach ($volumes as $uid => $volume) {
@@ -85,8 +87,9 @@ return new class extends Migration
             $volumes[$uid] = $volume;
         }
 
-        foreach (DB::table(Table::VOLUMES)->select(['id', 'fs'])->get() as $volume) {
-            $diskName = $this->diskName($volume->fs);
+        foreach (DB::table(Table::VOLUMES)->select(['id', $column])->get() as $volume) {
+            $reference = $volume->$column;
+            $diskName = $this->diskName($reference);
             if ($diskName === null) {
                 continue;
             }
@@ -94,8 +97,8 @@ return new class extends Migration
             DB::table(Table::VOLUMES)
                 ->where('id', $volume->id)
                 ->update([
-                    'fs' => $this->diskReference($volume->fs, $diskName),
-                    'hasUrls' => $this->referenceHasUrls($volume->fs, $filesystems, $configuredDisks),
+                    $column => $this->diskReference($reference, $diskName),
+                    'hasUrls' => $this->referenceHasUrls($reference, $filesystems, $configuredDisks),
                 ]);
         }
 

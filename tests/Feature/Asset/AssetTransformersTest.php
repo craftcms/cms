@@ -148,7 +148,7 @@ it('returns the source values for assets the transformer can’t transform', fun
         'root' => storage_path('framework/testing/asset-transformers'),
         'url' => 'https://example.test/uploads',
     ]);
-    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'uploads', 'hasUrls' => true]);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
@@ -448,7 +448,7 @@ function assetOnDisk(string $disk, array $diskConfig = [], array $assetAttribute
         'root' => storage_path("framework/testing/{$disk}"),
         ...$diskConfig,
     ]);
-    $volume = Volume::factory()->create(['fs' => $disk]);
+    $volume = Volume::factory()->create(['disk' => $disk]);
 
     return Asset::factory()->createElement(['volumeId' => $volume->id, ...$assetAttributes]);
 }

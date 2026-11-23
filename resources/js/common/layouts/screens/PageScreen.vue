@@ -55,6 +55,7 @@
   import ContentToolbar from './page/ContentToolbar.vue';
   import ScreenOverlays from './page/ScreenOverlays.vue';
   import ScreenSkipLinks from './page/ScreenSkipLinks.vue';
+  import {t} from '@craftcms/ui/utilities/translate';
   import {
     ScreenPanelsKey,
     screenPanels,
@@ -325,7 +326,9 @@
               sits in the panel. -->
               <div class="cp-body__panel">
                 <slot name="page-main">
-                  <main id="main" tabindex="-1">
+                  <!-- `#main` is what legacy `Craft.cp.$main` looks for. The landmark is `#content-main`, so the
+                  secondary nav and details beside it are landmarks of their own. -->
+                  <div id="main">
                     <form
                       method="post"
                       accept-charset="UTF-8"
@@ -380,8 +383,9 @@
                           </LayoutSlotOutlet>
                         </div>
 
-                        <div
+                        <main
                           id="content-main"
+                          tabindex="-1"
                           class="cp-content__main"
                           :style="contentMainStyle"
                         >
@@ -506,7 +510,7 @@
                               </ContentFooter>
                             </div>
                           </div>
-                        </div>
+                        </main>
                         <!-- Paired ids for the legacy editor's `$('#details .details')`. -->
                         <ContentDetailsAside
                           ref="detailsAside"
@@ -524,14 +528,17 @@
                         </ContentDetailsAside>
                       </div>
                     </form>
-                  </main>
+                  </div>
                 </slot>
               </div>
-              <div
+              <!-- Holds only the buttons that open each panel, which DetailsPanels teleports in. The panels
+                themselves are in the details aside. -->
+              <nav
                 v-show="regions.hasDetails()"
                 id="cp-details-rail"
                 class="cp-details-rail"
-              ></div>
+                :aria-label="t('Panels')"
+              ></nav>
             </div>
           </div>
 
@@ -630,12 +637,14 @@ Body: the inset panel holding `page-main`, and the details rail beside it
   }
 
   .cp-body__panel {
-    margin-inline-end: var(--cp-body-inset);
+    margin-inline: var(--cp-body-inset);
     background-color: var(--c-surface-default);
-    border: var(--cp-body-border-width) solid
-      var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-xl);
-    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
+    /* A ring rather than a border, so the panel's content starts at its edge. */
+    box-shadow:
+      0 0 0 1px var(--c-color-neutral-border-quiet),
+      var(--c-shadow-xs),
+      var(--c-shadow-lg);
     overflow: clip;
   }
 
@@ -644,7 +653,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     margin-inline-end: 0;
   }
 
-  main,
+  #main,
   .cp-main {
     height: 100%;
   }
@@ -837,23 +846,17 @@ Content: the secondary nav, content, and details panes
     min-height: calc(var(--cp-footer-height) + 1px);
   }
 
-  /* Once the global nav stops docking beside it, the panel runs edge to edge.
-     The border goes transparent rather than away, so the panel's width
-     doesn't move when it flips. */
-  @media (width < var(--breakpoint-lg)) {
+  @media (width < var(--breakpoint-sm)) {
     .cp-body {
       --cp-body-inset: 0px;
     }
 
     .cp-body__panel {
-      border-color: transparent;
       border-radius: 0;
-      box-shadow: none;
     }
 
-    /* The border still divides the panel from the details rail. */
     .cp-body--details .cp-body__panel {
-      border-inline-end-color: var(--c-color-neutral-border-quiet);
+      border-start-end-radius: var(--c-radius-xl);
     }
   }
 
@@ -897,27 +900,6 @@ Folds
   }
 
   @media (width >= var(--breakpoint-lg)) {
-    /* With the global nav docked, the panel still floats only while there'd be
-       room for a details pane beside the content, on every page alike. Below
-       that it goes edge to edge as it does below this breakpoint, keeping a
-       dividing line beside the sidebar. */
-    @container cp-shell (width < 932px) {
-      .cp-body {
-        --cp-body-inset: 0px;
-      }
-
-      .cp-body__panel {
-        border-color: transparent;
-        border-inline-start-color: var(--c-color-neutral-border-quiet);
-        border-radius: 0;
-        box-shadow: none;
-      }
-
-      .cp-body--details .cp-body__panel {
-        border-inline-end-color: var(--c-color-neutral-border-quiet);
-      }
-    }
-
     /* The same fold 250px sooner, for the one case where a third column shares
        the row: a secondary nav beside the content, counted from its minimum. */
     @container cp-shell (width < 1182px) {

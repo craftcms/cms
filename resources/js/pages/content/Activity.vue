@@ -17,6 +17,7 @@
       :element-type="elementType"
       :element-id="elementId"
       :site-id="siteId"
+      :day-heading-level="2"
     />
   </craft-pane>
 </template>

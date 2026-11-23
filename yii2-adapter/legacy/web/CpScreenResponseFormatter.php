@@ -205,7 +205,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 }
                 return $action;
             }, $altActions ?? []),
-            'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
+            'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl
+                ? Crypt::encrypt($behavior->saveShortcutRedirectUrl)
+                : null,
             'contentNotice' => $notice,
             'content' => $content,
             'details' => $sidebar,

@@ -4,6 +4,7 @@ import styles from './status.styles.js';
 import type {CSSResultGroup} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 import {t} from '@src/utilities/translate';
+import {statusShape} from '@src/constants/statuses';
 
 /**
  * @summary A colored dot standing for an object's state — an entry that is
@@ -26,8 +27,9 @@ export default class CraftStatus extends LitElement {
   @property() label: string | null = null;
 
   /**
-   * The state the dot stands for. Each renders in its own color; leaving it
-   * unset renders the neutral dot.
+   * The state the dot stands for. Each renders in its own color, and with the
+   * user's "Use shapes to represent statuses" preference on, `pending` is a
+   * triangle and `expired` a square. Leaving it unset renders the neutral dot.
    */
   @property() status:
     | 'live'
@@ -55,6 +57,7 @@ export default class CraftStatus extends LitElement {
           'status--pending': this.status === 'pending',
           'status--expired': this.status === 'expired',
           'status--disabled': this.status === 'disabled',
+          [`status--${statusShape(this.status)}`]: true,
         })}"
         role="${this.getLabel() ? 'img' : nothing}"
         aria-label="${this.getLabel() ?? nothing}"

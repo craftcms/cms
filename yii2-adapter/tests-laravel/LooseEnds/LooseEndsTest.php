@@ -182,6 +182,87 @@ it('reads config files without running them', function(): void {
         ->not->toHaveKey('config.legacy-classes:custom.php');
 });
 
+it('reports a Yii cache component until a Laravel cache store is configured', function(): void {
+    $configPath = sys_get_temp_dir() . '/loose-ends-config-' . uniqid();
+    mkdir("$configPath/craft", recursive: true);
+    app()->useConfigPath($configPath);
+    Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\redis\\Cache']]]);
+    Config::set('cache.default', 'file');
+    $cacheStore = getenv('CACHE_STORE');
+    $setCacheStore = function(string|false $value): void {
+        putenv($value === false ? 'CACHE_STORE' : "CACHE_STORE=$value");
+
+        if ($value === false) {
+            unset($_ENV['CACHE_STORE'], $_SERVER['CACHE_STORE']);
+        } else {
+            $_ENV['CACHE_STORE'] = $_SERVER['CACHE_STORE'] = $value;
+        }
+    };
+    $finding = fn() => collect(app(LooseEndsChecks::class)->configFiles())->firstWhere('key', 'config.yii-cache');
+
+    try {
+        $setCacheStore(false);
+        $withoutStore = $finding();
+
+        $setCacheStore('redis');
+        $withEnvVar = $finding();
+
+        $setCacheStore(false);
+        Config::set('cache.default', 'redis');
+        $withProviderStore = $finding();
+
+        Config::set('cache.default', 'file');
+        Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\caching\\FileCache']]]);
+        $withYiiFileCache = $finding();
+
+        Config::set('craft.app', [
+            'components' => ['cache' => ['class' => 'yii\\caching\\FileCache']],
+            'web' => ['components' => ['cache' => ['class' => 'yii\\caching\\MemCache']]],
+        ]);
+        $withWebCache = $finding();
+
+        Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\caching\\FileCache', 'cachePath' => '/mnt/shared/cache']]]);
+        $withSharedFileCache = $finding();
+
+        Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\caching\\FileCache', 'cachePath' => '@runtime/cache']]]);
+        $withDefaultPathFileCache = $finding();
+
+        Config::set('craft.app', [
+            'components' => ['cache' => ['class' => 'yii\\caching\\FileCache']],
+            'web' => ['components' => ['cache' => ['keyPrefix' => 'web']]],
+        ]);
+        $withWebKeyPrefix = $finding();
+
+        Config::set('craft.app', [
+            'runtimePath' => '/mnt/shared/runtime',
+            'components' => ['cache' => ['class' => 'yii\\caching\\FileCache']],
+        ]);
+        $withSharedRuntimePath = $finding();
+
+        Config::set('craft.app', ['components' => ['cache' => ['class' => 'CraftCms\\Yii2Adapter\\Cache', 'keyPrefix' => 'site']]]);
+        $withAdapterCache = $finding();
+
+        Config::set('craft.app', ['components' => ['cache' => ['class' => 'yii\\redis\\Cache']]]);
+        file_put_contents("$configPath/cache.php", '<?php return [];');
+        $withConfigFile = $finding();
+    } finally {
+        $setCacheStore($cacheStore);
+        File::deleteDirectory($configPath);
+    }
+
+    expect($withoutStore?->detail)->toBe('`yii\\redis\\Cache`')
+        ->and($withEnvVar)->toBeNull()
+        ->and($withProviderStore)->toBeNull()
+        ->and($withYiiFileCache)->toBeNull()
+        ->and($withWebCache?->detail)->toBe('`yii\\caching\\MemCache`')
+        ->and($withSharedFileCache?->detail)->toBe('`yii\\caching\\FileCache`')
+        ->and($withDefaultPathFileCache)->toBeNull()
+        ->and($withWebKeyPrefix)->toBeNull()
+        ->and($withSharedRuntimePath?->detail)->toBe('`yii\\caching\\FileCache`')
+        ->and($withAdapterCache)->toBeNull()
+        ->and($withConfigFile)->toBeNull();
+});
+
 it('reports a Craft 5 table prefix when `DB_PREFIX` is empty, with the underscore Craft 5 added', function(): void {
     $set = function(string $name, ?string $value): void {
         putenv($value === null ? $name : "$name=$value");
