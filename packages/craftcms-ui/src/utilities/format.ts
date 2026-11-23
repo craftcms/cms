@@ -138,7 +138,11 @@ export function formatDuration(
   const locale = formattingLocale();
 
   if ('DurationFormat' in Intl) {
-    return new Intl.DurationFormat(locale, {style}).format(duration);
+    // it leaves out units that are zero, which would leave nothing of no time at all
+    return new Intl.DurationFormat(locale, {
+      style,
+      ...(largest === -1 ? {secondsDisplay: 'always'} : {}),
+    }).format(duration);
   }
 
   // where it isn't supported yet, each unit is formatted on its own

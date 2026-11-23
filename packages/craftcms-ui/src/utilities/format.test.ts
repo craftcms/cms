@@ -1,4 +1,5 @@
-import {afterEach, describe, test, expect} from 'vite-plus/test';
+import {DurationFormat} from '@formatjs/intl-durationformat';
+import {afterEach, beforeEach, describe, test, expect} from 'vite-plus/test';
 import type {WindowWithCraft} from '../types/globals.js';
 import {
   formatCurrency,
@@ -159,7 +160,30 @@ describe('formatDate', () => {
   });
 });
 
-describe('formatDuration', () => {
+// browsers have Intl.DurationFormat, and Node doesn't yet, so both ways of formatting are checked
+describe.for([
+  ['with Intl.DurationFormat', DurationFormat],
+  ['without it', undefined],
+] as const)('formatDuration, %s', ([, implementation]) => {
+  const intl = Intl as {DurationFormat?: unknown};
+  const native = intl.DurationFormat;
+
+  beforeEach(() => {
+    if (implementation) {
+      intl.DurationFormat = implementation;
+    } else {
+      delete intl.DurationFormat;
+    }
+  });
+
+  afterEach(() => {
+    if (native) {
+      intl.DurationFormat = native;
+    } else {
+      delete intl.DurationFormat;
+    }
+  });
+
   test.for([
     [0, '0s'],
     [42.4, '42s'],
@@ -173,6 +197,7 @@ describe('formatDuration', () => {
 
   test('spells the units out in the long style', () => {
     expect(formatDuration(90, 'long')).toBe('1 minute, 30 seconds');
+    expect(formatDuration(0, 'long')).toBe('0 seconds');
   });
 });
 
