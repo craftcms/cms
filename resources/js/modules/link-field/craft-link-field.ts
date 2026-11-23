@@ -156,6 +156,9 @@ class CraftLinkField extends LitElement {
   @state()
   private selectedElement: LinkedElement | null = null;
 
+  /** Numbers each chip fetch, so only the latest one's answer is drawn. */
+  private elementRequest = 0;
+
   /** One dispatcher for the actions the server describes for the chip's element. */
   private readonly toActionItems = createElementActionMenu();
 
@@ -224,7 +227,8 @@ class CraftLinkField extends LitElement {
       emitted &&
       value &&
       (Object.keys(emitted) as Array<keyof LinkFieldValue>).every(
-        (key) => key === 'href' || value[key] === emitted[key]
+        (key) =>
+          key === 'href' || key === 'element' || value[key] === emitted[key]
       )
     );
   }
@@ -327,7 +331,7 @@ class CraftLinkField extends LitElement {
       multiSelect: false,
       // Where a slideout opened from the selector, such as a new entry's,
       // nests and returns focus to
-      triggerElement: () => trigger,
+      triggerElement: () => this.actionMenuInvoker() ?? trigger,
       onHandoff: (settled) => {
         handoff = settled;
       },
@@ -379,6 +383,7 @@ class CraftLinkField extends LitElement {
     siteId: number | null
   ): Promise<void> {
     const value = this.value;
+    const request = ++this.elementRequest;
     let elements: LinkedElement[] | undefined;
 
     try {
@@ -394,8 +399,9 @@ class CraftLinkField extends LitElement {
 
     const element = elements?.find((candidate) => candidate.id === id);
 
-    if (element && this.value === value) {
+    if (element && this.value === value && request === this.elementRequest) {
       this.selectedElement = element;
+      this.defaultLabel = element.label;
     }
   }
 
@@ -620,6 +626,7 @@ class CraftLinkField extends LitElement {
     return {
       ...this.linkAttributes,
       defaultLabel: this.defaultLabelFor(value),
+      element: type.kind === 'element' ? this.selectedElement : null,
       href: value ? `${destination}${urlSuffix}` : '',
       label: this.label.trim(),
       title: this.linkAttributes.title.trim(),

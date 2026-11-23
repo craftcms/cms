@@ -1,3 +1,4 @@
+import {actionClient} from '@craftcms/ui';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/input/input';
 import '@craftcms/ui/components/select/select';
@@ -5,7 +6,11 @@ import '@craftcms/ui/components/switch/switch';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import './craft-link-field';
-import type {LinkChangeDetail, LinkTypeConfig} from './craft-link-field';
+import type {
+  LinkChangeDetail,
+  LinkFieldValue,
+  LinkTypeConfig,
+} from './craft-link-field';
 
 const selector = vi.hoisted(() => {
   const listeners = new Map<string, () => void>();
@@ -228,6 +233,69 @@ describe('a linked element', () => {
     await userEvent.dblClick(page.getByText('pending'));
 
     expect(slideouts.openSlideout).not.toHaveBeenCalled();
+  });
+
+  it('draws only the latest refresh when its editor saves twice', async () => {
+    const respond: Array<(label: string) => void> = [];
+    const post = vi.spyOn(actionClient, 'post').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          respond.push((label) =>
+            resolve({data: {elements: [{id: 12, label, siteId: 1}]}} as never)
+          );
+        })
+    );
+    await userEvent.dblClick(page.getByText('pending'));
+    const [, options] = slideouts.openSlideout.mock.calls[0] as unknown as [
+      string,
+      {onSaved: () => void},
+    ];
+
+    options.onSaved();
+    options.onSaved();
+    respond[1]!('newer');
+    await expect
+      .element(linkField.querySelector('craft-chip')!)
+      .toHaveTextContent('newer');
+    respond[0]!('older');
+    await new Promise((resolve) => setTimeout(resolve));
+    await linkField.updateComplete;
+
+    expect(linkField.querySelector('craft-chip')!.textContent).toContain(
+      'newer'
+    );
+    post.mockRestore();
+  });
+
+  it('keeps its chip when the applied link is restored after it was removed', async () => {
+    linkField.modelValue = {
+      ...linkField.modelValue,
+      element: {
+        id: 12,
+        label: 'pending',
+        siteId: 1,
+        status: {fill: 'blue', label: 'Pending', draft: false},
+      },
+    };
+    await linkField.updateComplete;
+    const applied = new Promise<LinkFieldValue>((resolve) => {
+      linkField.addEventListener(
+        'apply',
+        (event) => resolve((event as CustomEvent<LinkFieldValue>).detail),
+        {once: true}
+      );
+    });
+
+    await page.getByRole('button', {name: 'Apply'}).click();
+    const value = await applied;
+    await openMenu();
+    await page.getByRole('button', {name: 'Remove'}).click();
+    linkField.modelValue = {...value};
+    await linkField.updateComplete;
+
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Pending'}))
+      .toBeVisible();
   });
 
   it('is replaced through the element selector, from the menu button', async () => {
