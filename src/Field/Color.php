@@ -319,8 +319,12 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
     public function getElementRules(ElementInterface $element): array
     {
         return [
-            new ColorRule(allowAlpha: true),
-            function ($attribute, ColorData $value, $fail) {
+            function ($attribute, ?ColorData $value, $fail) {
+                if ($value === null) {
+                    return;
+                }
+                new ColorRule(allowAlpha: true)->validate($attribute, $value, $fail);
+
                 if (
                     (! $this->allowCustomColors || (! $this->allowCustomAlpha && $value->getAlpha() < 1)) &&
                     Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())
