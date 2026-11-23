@@ -9,7 +9,9 @@
   import type {UrlMethodPair} from '@inertiajs/core';
   import '@craftcms/ui/components/button/button';
   import {ButtonVariant, t, type BaseAction} from '@craftcms/ui';
-  import {computed, shallowRef, useTemplateRef} from 'vue';
+  import {router} from '@inertiajs/vue3';
+  import {computed, shallowRef} from 'vue';
+  import {run as runAction} from '@actions/Import/ImportPlansController';
   import type {ActionItemButton, FormAction} from '@/common/types';
   import UiPage from '@/pages/Ui.vue';
   import type {UiPayload, UiValue} from '@/modules/ui/types';
@@ -36,7 +38,8 @@
     earlierRuns?: RunState[];
     /** How many runs the plan has kept, and where they're listed. Missing until it's saved. */
     runs?: {count: number; url: string} | null;
-    canRun?: boolean;
+    /** Whether the plan can be run from here. Missing until it's saved. */
+    canTrigger?: boolean;
     /** Deletes the plan once it's confirmed. Missing when it can't be deleted. */
     deleteAction?: BaseAction | null;
     /** Whether the plan is only shown, as one registered in code is. */
@@ -55,21 +58,48 @@
     return Array.isArray(value) ? (value as unknown as ImportStep[]) : [];
   }
 
-  /** The steps as the form has them, for the preview. Only the list of steps changes them. */
-  const page = useTemplateRef('page');
+  const planName = String(props.ui.values.name ?? '');
+  /** Whether a run has been asked for that the page doesn't know about yet. */
+  const starting = shallowRef(false);
+  const running = computed(
+    () => run.value?.status === 'pending' || run.value?.status === 'running'
+  );
 
-  /** Saves, then starts a run, coming back to the plan to watch it. */
+  /** Runs the plan as it's saved, then follows the run to its page. */
+  function startRun(): void {
+    if (
+      !savedHandle ||
+      !window.confirm(
+        t('Are you sure you want to run “{name}”?', {name: planName})
+      )
+    ) {
+      return;
+    }
+
+    router.post(
+      runAction().url,
+      props.ui.values.uid ? {uid: props.ui.values.uid} : {handle: savedHandle},
+      {
+        onStart: () => (starting.value = true),
+        onFinish: () => (starting.value = false),
+      }
+    );
+  }
+
+  /** Runs the plan as it's saved, beside the Save button that can save and run it. */
   const additionalButtons = computed<ActionItemButton[]>(() =>
-    props.canRun
+    props.canTrigger
       ? [
           {
-            label: t('Save and run'),
-            onClick: () => page.value?.save?.({data: {run: true}}),
+            label: t('Run plan'),
+            disabled: starting.value || running.value,
+            onClick: startRun,
           },
         ]
       : []
   );
 
+  /** The steps as the form has them, for the preview. Only the list of steps changes them. */
   const steps = shallowRef(asSteps(props.ui.values.steps));
   /** Each step at a glance, kept up to date by the list as steps are applied, for the preview's tabs too. */
   const stepSummaries = shallowRef(props.stepSummaries);
@@ -114,7 +144,6 @@
   />
 
   <UiPage
-    ref="page"
     :ui="ui"
     :submit="submit"
     :content-max-width="false"

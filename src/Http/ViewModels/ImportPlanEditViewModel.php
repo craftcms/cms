@@ -68,10 +68,10 @@ class ImportPlanEditViewModel extends ViewModel
         return $this->readOnly() ? t('This import plan is registered in code, so it can’t be edited here.') : null;
     }
 
-    /** Whether the plan can be saved and run in one go. */
-    public function canRun(): bool
+    /** Whether the plan can be run from its page: one that's saved or registered, by those allowed to run plans. */
+    public function canTrigger(): bool
     {
-        return $this->canSave && $this->canRun;
+        return $this->canRun && $this->exists();
     }
 
     public function ui(): UiPayload

@@ -785,7 +785,7 @@ it('gives a plan’s edit page the runs before its latest, and how many it has',
             ->where('runs.url', route('craft.cp.import.activity.index', ['plan' => 'alpha'])));
 });
 
-it('shows a plan registered in code on a read-only page, with its runs and nothing to save', function () {
+it('shows a plan registered in code on a read-only page, with its runs and nothing to save, though it can still be run', function () {
     $imports = app(ImportPlans::class);
     $imports->register('registeredImport', fn () => new ImportPlanData()
         ->name('Registered Import')
@@ -798,7 +798,7 @@ it('shows a plan registered in code on a read-only page, with its runs and nothi
             ->component('import/Edit')
             ->where('readOnly', true)
             ->where('readOnlyNotice', 'This import plan is registered in code, so it can’t be edited here.')
-            ->where('canRun', false)
+            ->where('canTrigger', true)
             ->where('deleteAction', null)
             ->where('runState.id', 'registered-run')
             ->where('runs.count', 1));
@@ -1068,16 +1068,18 @@ describe('step pages', function () {
             ->assertNotFound();
     });
 
-    it('returns to the plans after saving, with an option to keep editing the plan', function () {
+    it('returns to the plans after saving, with options to keep editing the plan or to run it', function () {
         $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
             ->assertOk()
             ->assertInertia(function ($page) {
                 $props = $page->toArray()['props'];
                 $continue = collect($props['formActions'])->firstWhere('label', 'Save and continue editing');
+                $run = collect($props['formActions'])->firstWhere('label', 'Save and run');
 
                 expect(Crypt::decrypt($props['redirectUrl']))->toBe('import')
                     ->and(Crypt::decrypt($continue['redirect']))->toBe('import/{handle}')
-                    ->and($props['saveShortcutRedirect'])->toBe('import/{handle}');
+                    ->and($props['saveShortcutRedirect'])->toBe('import/{handle}')
+                    ->and($run['params'])->toBe(['run' => true]);
             });
     });
 

@@ -977,16 +977,9 @@ class ImportPlansController
                         ]);
 
                     if ($currentUser?->can('triggerImportPlans')) {
-                        $response->addAltAction(t('Run this import plan'), [
-                            'action' => [
-                                'type' => 'http',
-                                'method' => 'POST',
-                                'url' => action([self::class, 'run']),
-                                'body' => ['uid' => $importPlan->uid],
-                                'confirm' => t('Are you sure you want to run “{name}”?', [
-                                    'name' => $importPlan->name,
-                                ]),
-                            ],
+                        // saves, then goes to the run it starts to watch it
+                        $response->addAltAction(t('Save and run'), [
+                            'params' => ['run' => true],
                         ]);
                         $response->addAltAction(t('Run in the background'), [
                             'action' => [
