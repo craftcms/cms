@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import {computed, onBeforeUnmount, ref} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
+  import {elementTypeName} from '@/common/craft/element-types';
+  import {uppercaseFirst} from '@/common/craft/strings';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
   import {useSlideoutOpener} from '@/common/slideouts';
   import type {DashboardWidget} from './types';
@@ -72,7 +74,15 @@
       <WidgetTile
         v-else
         :icon="entryType?.icon || 'newspaper'"
-        :label="t('Create entry')"
+        :label="
+          uppercaseFirst(
+            t('Create {type}', {
+              type:
+                elementTypeName('CraftCms\\Cms\\Entry\\Elements\\Entry') ??
+                'entry',
+            })
+          )
+        "
         :color="entryType?.color"
         :loading="creating"
         @click="create"

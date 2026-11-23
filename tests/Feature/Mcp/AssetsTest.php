@@ -57,7 +57,7 @@ beforeEach(function () {
     Cms::config()->uploadSessionDisk = 'upload-parts';
     Cms::config()->uploadChunkSize = 3;
 
-    $volume = Volume::factory()->create(['fs' => 'upload-destination']);
+    $volume = Volume::factory()->create(['disk' => 'upload-destination']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
 
     app()->instance(UrlValidator::class, new UrlValidator(resolver: static fn (string $host): array => match ($host) {
@@ -519,7 +519,7 @@ describe('field uploads', function (): void {
 
         $caption = Field::factory()->create(['handle' => 'caption', 'type' => PlainText::class]);
         $this->volume = Volume::factory()->create([
-            'fs' => 'upload-destination',
+            'disk' => 'upload-destination',
             'fieldLayoutId' => FieldLayout::factory()->forField($caption)->create(['type' => Asset::class])->id,
         ]);
         VolumeFolder::factory()->create(['volumeId' => $this->volume->id, 'path' => '']);

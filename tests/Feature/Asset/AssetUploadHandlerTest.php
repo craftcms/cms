@@ -56,7 +56,7 @@ beforeEach(function () {
         ->create(['type' => Asset::class]);
 
     $this->volume = Volume::factory()->create([
-        'fs' => 'asset-ingest-destination',
+        'disk' => 'asset-ingest-destination',
         'fieldLayoutId' => $fieldLayout->id,
     ]);
     app(Fields::class)->invalidateCaches();

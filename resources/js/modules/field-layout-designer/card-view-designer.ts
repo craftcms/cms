@@ -9,6 +9,10 @@ import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
 import {announce} from '@/common/announcer';
 
+/** The owner's controls that the preview card reflects. */
+const APPEARANCE_KEYS = ['name', 'color', 'icon', 'showStatusField'] as const;
+type AppearanceKey = (typeof APPEARANCE_KEYS)[number];
+
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
  * port of the legacy `Craft.FieldLayoutDesigner.CardViewDesigner`. jQuery
@@ -169,19 +173,22 @@ export class CardViewDesigner extends Base {
   }
 
   /**
-   * The Name, Color, and Icon controls of the component that owns the layout
-   * (an entry type, say), when its edit form has them.
+   * The Name, Color, Icon, and Show the Status field controls of the
+   * component that owns the layout (an entry type, say), when its edit form
+   * has them.
    */
-  appearanceControl(key: 'name' | 'color' | 'icon'): HTMLElement | null {
+  appearanceControl(key: AppearanceKey): HTMLElement | null {
     return (this.$container.closest('form') ?? document).querySelector(
       `[data-ui-control-path='["${key}"]']`
     );
   }
 
-  /** Reflects changes to the Name, Color, and Icon controls in the preview card. */
+  /** Reflects changes to the owner's appearance controls in the preview card. */
   listenToAppearanceControls(): void {
     // The container may not be in the form yet, so listen on the document.
+    // Text controls report changes with `input`, switches with `change`.
     document.addEventListener('input', this.onAppearanceChange);
+    document.addEventListener('change', this.onAppearanceChange);
   }
 
   /** The owner's appearance controls that haven't rendered yet. */
@@ -225,7 +232,7 @@ export class CardViewDesigner extends Base {
     const target = ev.target;
     if (
       target instanceof Node &&
-      (['name', 'color', 'icon'] as const).some((key) => {
+      APPEARANCE_KEYS.some((key) => {
         const control = this.appearanceControl(key);
         return control !== null && control.contains(target);
       })
@@ -279,6 +286,8 @@ export class CardViewDesigner extends Base {
       return;
     }
 
+    this.syncPreviewStatus();
+
     // Only for owners with a color or icon, like entry types, whose elements'
     // cards show the owner in their headers.
     if (!this.appearanceControl('color') && !this.appearanceControl('icon')) {
@@ -328,6 +337,32 @@ export class CardViewDesigner extends Base {
       label.append(nameElement);
     }
     header.append(label);
+  }
+
+  /**
+   * Shows the preview card's status badge and the sample chip's status
+   * indicator only while the owner's Show the Status field control is on, as
+   * its elements' cards and chips show their status.
+   */
+  syncPreviewStatus(): void {
+    const control = this.appearanceControl('showStatusField') as
+      | (HTMLElement & {checked?: boolean})
+      | null;
+    if (!control) {
+      return;
+    }
+
+    const show = Boolean(control.checked);
+    this.$previewContainer
+      .querySelectorAll('[data-cvd-status]')
+      .forEach((element: HTMLElement) => {
+        element.hidden = !show;
+      });
+
+    const chip = this.$previewContainer.querySelector('craft-chip.cvd-chip');
+    if (chip?.querySelector(':scope > [data-cvd-status]')) {
+      chip.toggleAttribute('show-status', show);
+    }
   }
 
   /**
@@ -619,6 +654,7 @@ export class CardViewDesigner extends Base {
     this.themeObserver.disconnect();
     this.appearanceControlObserver?.disconnect();
     document.removeEventListener('input', this.onAppearanceChange);
+    document.removeEventListener('change', this.onAppearanceChange);
 
     if (this.$container) {
       cvdData.delete(this.$container);

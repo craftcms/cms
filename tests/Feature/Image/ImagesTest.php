@@ -7,6 +7,7 @@ use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Image\Data\ImageSample;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\ImageHash;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
 use CraftCms\Cms\Image\Svg;
@@ -225,6 +226,65 @@ it('cleans orientation with imagick when available', function () {
     $image = new Imagick($path);
 
     expect($image->getImageOrientation())->toBe(0);
+});
+
+it('keeps the pixels of indexed PNGs when cleaning them with imagick', function () {
+    if (! $this->service->getIsImagick()) {
+        $this->markTestSkipped('Need Imagick to verify PNG palettes.');
+    }
+
+    if (! extension_loaded('gd')) {
+        $this->markTestSkipped('Need GD to create the indexed PNG.');
+    }
+
+    $path = $this->sandboxPath.'/indexed.png';
+    $image = imagecreate(200, 50);
+    for ($x = 0; $x < 200; $x++) {
+        imageline($image, $x, 0, $x, 49, imagecolorallocate($image, $x, 255 - $x, intdiv($x, 2)));
+    }
+    imagepng($image, $path);
+    $source = new Imagick($path);
+
+    $this->service->cleanImage($path);
+    $this->service->cleanImage($path);
+
+    $cleaned = new Imagick($path);
+
+    expect(ord(file_get_contents($path, false, null, 25, 1)))->toBe(3)
+        ->and($source->getImageColors())->toBe(200)
+        ->and($cleaned->getImageColors())->toBe(200)
+        ->and($cleaned->getImageSignature())->toBe($source->getImageSignature());
+});
+
+it('keeps the levels of 16-bit greyscale PNGs when cleaning them with imagick', function () {
+    if (! $this->service->getIsImagick()) {
+        $this->markTestSkipped('Need Imagick to verify PNG bit depths.');
+    }
+
+    $path = $this->sandboxPath.'/greyscale.png';
+    $height = 1000;
+    $pixels = '';
+    for ($y = 0; $y < $height; $y++) {
+        $pixels .= "\0".pack('n', $y * 65);
+    }
+    $chunk = fn (string $type, string $data) => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
+    file_put_contents($path, "\x89PNG\r\n\x1a\n".
+        $chunk('IHDR', pack('NNCCCCC', 1, $height, 16, 0, 0, 0, 0)).
+        $chunk('IDAT', gzcompress($pixels)).
+        $chunk('IEND', ''));
+    $source = new Imagick($path);
+
+    $this->service->cleanImage($path);
+    $this->service->cleanImage($path);
+
+    $cleaned = new Imagick($path);
+    $pngInfo = ImageHelper::pngImageInfo($path);
+    $levels = fn (Imagick $image) => $image->exportImagePixels(0, 0, 1, $height, 'I', Imagick::PIXEL_SHORT);
+
+    expect($pngInfo['bit-depth'])->toBe(16)
+        ->and($pngInfo['color'])->toBeIn([0, 4])
+        ->and($source->getImageColors())->toBe($height)
+        ->and($levels($cleaned))->toBe($levels($source));
 });
 
 it('removes orientation exif data when imagick and exif are available', function () {

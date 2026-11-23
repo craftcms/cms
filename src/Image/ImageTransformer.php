@@ -166,20 +166,13 @@ class ImageTransformer
             }
         }
 
-        $url = $transformHasUrls
-            ? $disk->url($uri)
-            : $this->privateTransformUrl($index);
-
-        $dateUpdated = Arr::get($asset, 'dateUpdated');
-        if (is_string($dateUpdated) || is_numeric($dateUpdated)) {
-            $dateUpdated = DateTimeHelper::toDateTime($dateUpdated);
+        // A private transform’s token already differs on every request, so only stored files’ URLs are revved
+        if (! $transformHasUrls) {
+            return $this->privateTransformUrl($index);
         }
 
-        if (! $dateUpdated instanceof DateTimeInterface || ($index->dateUpdated && $index->dateUpdated > $dateUpdated)) {
-            $dateUpdated = $index->dateUpdated;
-        }
-
-        return AssetsHelper::revUrl($url, $asset, $dateUpdated);
+        // The index is recreated whenever its image changes, so the date it was created revs the URL
+        return AssetsHelper::revUrl($disk->url($uri), $asset, $index->dateIndexed);
     }
 
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
@@ -774,7 +767,7 @@ class ImageTransformer
 
         $volume = $asset->getVolume();
 
-        return $this->outputDisk($asset, $transformer) === $volume->getResolvedFsTarget() && $volume->sourceHasUrls();
+        return $this->outputDisk($asset, $transformer) === $volume->getResolvedDisk() && $volume->sourceHasUrls();
     }
 
     /**
@@ -790,7 +783,7 @@ class ImageTransformer
 
         $volume = $asset->getVolume();
         $diskName = $disk === null || $disk === ''
-            ? $volume->getResolvedFsTarget()
+            ? $volume->getResolvedDisk()
             : $volume->resolveStorageTargetKey($disk, parse: false);
 
         if ($diskName === null) {
@@ -818,7 +811,7 @@ class ImageTransformer
      */
     private function currentTransformer(Asset $asset): AssetTransformer
     {
-        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedFsTarget());
+        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedDisk());
 
         return $transformer->driver === 'craft' ? $transformer : new AssetTransformer('craft');
     }

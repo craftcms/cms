@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql;
@@ -25,21 +26,13 @@ it('returns a UserQuery for top-level resolution with full access schema', funct
 });
 
 it('returns empty collection when schema does not allow querying users', function () {
-    // Schema with no usergroups scope - canQueryUsers returns false
-    // but without everyone scope, the resolver tries to access $pairs['usergroups']
-    // so we need at least a group in scope to avoid the key error, but canQueryUsers
-    // checks for the 'usergroups' key in the read scope
     app(Gql::class)->setActiveSchema(new GqlSchema([
         'scope' => ['sections.test:read'],
     ]));
 
-    // With no usergroups in scope at all, canQueryUsers() returns false
-    // but the code first checks canSchema('usergroups.everyone') which is false,
-    // then tries to access $pairs['usergroups'] which doesn't exist.
-    // This is actually a bug in the resolver - but we test the actual behavior.
-    // The resolver will error on $pairs['usergroups'] access when scope has
-    // no usergroups at all. So we skip this test scenario.
-    expect(true)->toBeTrue();
+    expect(User::prepareQuery(null, []))
+        ->toBeInstanceOf(ElementCollection::class)
+        ->toBeEmpty();
 });
 
 it('applies group filtering based on schema when not everyone is allowed', function () {

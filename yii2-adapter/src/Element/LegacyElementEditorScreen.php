@@ -152,6 +152,6 @@ class LegacyElementEditorScreen
 
     private function resolveHtml(mixed $html): string
     {
-        return (string) (is_callable($html) ? $html() : $html);
+        return (string) (!is_string($html) && is_callable($html) ? $html() : $html);
     }
 }

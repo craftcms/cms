@@ -42,7 +42,7 @@ beforeEach(function (): void {
 function altTextImage(string $altTranslationMethod, array $alt = []): Asset
 {
     $volume = VolumeModel::factory()->create([
-        'fs' => 'alt-text-test',
+        'disk' => 'alt-text-test',
         'propagationMethod' => PropagationMethod::All->value,
         'altTranslationMethod' => $altTranslationMethod,
     ]);
@@ -195,7 +195,7 @@ it('doesn’t replace alt text written for a site with the alt text embedded in 
 it('gives each site of an uploaded image the alt text embedded in its language', function (): void {
     Queue::fake();
     $volume = VolumeModel::factory()->create([
-        'fs' => 'alt-text-test',
+        'disk' => 'alt-text-test',
         'propagationMethod' => PropagationMethod::All->value,
         'altTranslationMethod' => 'site',
     ]);

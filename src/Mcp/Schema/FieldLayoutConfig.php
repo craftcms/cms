@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Mcp\Schema;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 
 /**
  * @since 6.0.0
@@ -37,12 +39,41 @@ readonly class FieldLayoutConfig
     {
         $config['type'] = $elementType;
 
-        if ($existing) {
-            $config['id'] = $existing->id;
-            $config['uid'] = $existing->uid;
+        if (! $existing) {
+            return $this->fields->createLayout($config);
         }
 
-        return $this->fields->createLayout($config);
+        $config['id'] = $existing->id;
+        $config['uid'] = $existing->uid;
+        $layout = $this->fields->createLayout($config);
+        $this->keepCustomFieldUids($layout, $existing);
+
+        return $layout;
+    }
+
+    /**
+     * Gives custom fields sent without a UID the UID they have in the existing layout, since element content is
+     * stored under it. Multiple instances of a field take the existing UIDs in order.
+     */
+    private function keepCustomFieldUids(FieldLayout $layout, FieldLayout $existing): void
+    {
+        $takenUids = array_flip(array_filter(array_map(
+            fn (FieldLayoutElement $element) => $element->uid,
+            $layout->getAllElements(),
+        )));
+        $existingUids = [];
+
+        foreach ($existing->getElementsByType(CustomField::class) as $element) {
+            if (! isset($takenUids[$element->uid])) {
+                $existingUids[$element->getFieldUid()][] = $element->uid;
+            }
+        }
+
+        foreach ($layout->getElementsByType(CustomField::class) as $element) {
+            if ($element->uid === null && ! empty($existingUids[$element->getFieldUid()])) {
+                $element->uid = array_shift($existingUids[$element->getFieldUid()]);
+            }
+        }
     }
 
     /** @return array<string, mixed> */

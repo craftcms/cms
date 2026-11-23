@@ -11,7 +11,9 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Search;
@@ -150,7 +152,7 @@ describe('asset folders', function () {
         ]);
 
         $this->volume = Volumes::getVolumeById(Volume::factory()->create([
-            'fs' => 'test-disk',
+            'disk' => 'test-disk',
             'handle' => 'testvolume',
             'name' => 'Test volume',
         ])->id);
@@ -293,7 +295,7 @@ describe('asset folders', function () {
 
     it('ignores a requested folder outside the current volume', function () {
         Folders::ensureFolderByFullPathAndVolume('mine', $this->volume);
-        $otherVolumeId = Volume::factory()->create(['fs' => 'test-disk'])->id;
+        $otherVolumeId = Volume::factory()->create(['disk' => 'test-disk'])->id;
         Volumes::reset();
         $otherVolume = Volumes::getVolumeById($otherVolumeId);
         $elsewhere = Folders::ensureFolderByFullPathAndVolume('elsewhere', $otherVolume)->id;
@@ -389,3 +391,25 @@ describe('read-only card view', function () {
         expect(($this->cardContent)(false))->not->toContain('href="');
     });
 });
+
+it('shows entry statuses on cards when their entry type shows the Status field', function (bool $showStatusField) {
+    $entryType = EntryType::factory()->create(['showStatusField' => $showStatusField]);
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    $entry = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement();
+
+    $cardContent = ($this->postBody)([
+        'viewMode' => 'cards',
+        'criteria' => ['id' => $entry->id],
+    ])->json('props.data.0.cardContentHtml');
+
+    expect($cardContent)->toBeString();
+
+    if ($showStatusField) {
+        expect($cardContent)->toContain('<craft-badge fill="teal" shape="circle">Live</craft-badge>');
+    } else {
+        expect($cardContent)->not->toContain('<craft-badge');
+    }
+})->with([
+    'Status field shown' => true,
+    'Status field hidden' => false,
+]);

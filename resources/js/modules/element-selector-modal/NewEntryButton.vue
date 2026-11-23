@@ -7,6 +7,8 @@
     type ElementSelectorController,
   } from '@craftcms/ui';
   import {uniqueId} from '@craftcms/ui/utilities/unique-id';
+  import {elementTypeName} from '@/common/craft/element-types';
+  import {uppercaseFirst} from '@/common/craft/strings';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {openSlideout} from '@/common/slideouts';
@@ -58,7 +60,13 @@
 
     return sections.size === 1
       ? t('New {section} entry', {section: section!.name})
-      : t('New entry');
+      : uppercaseFirst(
+          t('New {type}', {
+            type:
+              elementTypeName('CraftCms\\Cms\\Entry\\Elements\\Entry') ??
+              'entry',
+          })
+        );
   });
 
   /**

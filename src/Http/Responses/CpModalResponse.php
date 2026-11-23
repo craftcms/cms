@@ -192,7 +192,7 @@ class CpModalResponse implements Responsable
         $content = InputNamespace::namespaceInputs(function () {
             $components = [];
             if ($this->contentHtml) {
-                $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
+                $components[] = ! is_string($this->contentHtml) && is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
             }
             if ($this->ui !== null) {
                 $components[] = app(UiHtmlRenderer::class)->render(

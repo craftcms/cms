@@ -93,8 +93,8 @@ class UpdaterController extends BaseUpdaterController
             if (! empty($this->data['install'])) {
                 $firstAction = $this->actionOption(t('Revert the update'), self::ACTION_REVERT);
             } else {
-                $firstAction = $this->finishedState([
-                    'label' => t('Abort the update'),
+                // Go through the finish action so maintenance mode is turned off
+                $firstAction = $this->actionOption(t('Abort the update'), self::ACTION_FINISH, [
                     'status' => t('Update aborted.'),
                 ]);
             }
@@ -192,7 +192,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function pageTitle(): string
     {
-        return t('updater/Index');
+        return t('Updater');
     }
 
     #[Override]

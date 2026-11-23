@@ -75,14 +75,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a controller action.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->actionTrigger('do-it')
      * ```
-     * ```shell Environment Override
-     * CRAFT_ACTION_TRIGGER=do-it
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -94,14 +89,9 @@ class GeneralConfig extends BaseConfig
      * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
      * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->authGuard('craft')
      * ```
-     * ```shell Environment Override
-     * CRAFT_AUTH_GUARD=craft
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -115,14 +105,9 @@ class GeneralConfig extends BaseConfig
      * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
      * and token table in `config/auth.php`, and set this to the broker name.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->authPasswordBroker('craft')
      * ```
-     * ```shell Environment Override
-     * CRAFT_AUTH_PASSWORD_BROKER=craft
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -137,14 +122,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->activityRetentionDuration('P90D')
      * ```
-     * ```shell Environment Override
-     * CRAFT_ACTIVITY_RETENTION_DURATION=P90D
-     * ```
-     * :::
      *
      * @group Garbage Collection
      *
@@ -157,14 +137,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->activateAccountSuccessPath('welcome')
      * ```
-     * ```shell Environment Override
-     * CRAFT_ACTIVATE_ACCOUNT_SUCCESS_PATH=welcome
-     * ```
-     * :::
      *
      * @see getActivateAccountSuccessPath()
      *
@@ -175,14 +150,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether auto-generated URLs should have trailing slashes.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->addTrailingSlashesToUrls(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ADD_TRAILING_SLASHES_TO_URLS=true
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -206,14 +176,9 @@ class GeneralConfig extends BaseConfig
      *
      * If this is set to `null`, Craft will store compiled templates in `storage/runtime/compiled_templates`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->compiledTemplatesPath('@storage/runtime/templates')
      * ```
-     * ```shell Environment Override
-     * CRAFT_COMPILED_TEMPLATES_PATH=@storage/runtime/templates
-     * ```
-     * :::
      *
      * @group Environment
      *
@@ -234,14 +199,9 @@ class GeneralConfig extends BaseConfig
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->allowAdminChanges(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_ADMIN_CHANGES=false
-     * ```
-     * :::
      *
      * @group System
      */
@@ -252,14 +212,9 @@ class GeneralConfig extends BaseConfig
      *
      * This setting will automatically be disabled if <config5:allowAdminChanges> is disabled.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->allowUpdates(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_UPDATES=false
-     * ```
-     * :::
      *
      * @group System
      */
@@ -419,14 +374,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether uppercase letters should be allowed in slugs.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->allowUppercaseInSlug(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_UPPERCASE_IN_SLUG=true
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -444,17 +394,12 @@ class GeneralConfig extends BaseConfig
      * - `anchorLinkTitleText` – The title and `aria-label` text that anchor links should have, translated with the `site` category. `{heading}` is replaced with the heading text. (Default is `'Direct link to {heading}'`.)
      * - `useAdditionalTagToAnchorTo` – Whether to render an empty `<span>` with the anchor `id` before each heading, rather than adding the `id` to the heading itself. (Default is `true`.)
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->anchors(\CraftCms\Cms\Config\AnchorsConfig::create()
      *     ->anchorLinkText('¶')
      *     ->useAdditionalTagToAnchorTo(false)
      * )
      * ```
-     * ```shell Environment Override
-     * CRAFT_ANCHORS='{"anchorLinkText":"¶","useAdditionalTagToAnchorTo":false}'
-     * ```
-     * :::
      *
      * @group System
      *
@@ -465,14 +410,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->autoEagerLoadElements(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_AUTO_EAGER_LOAD_ELEMENTS=false
-     * ```
-     * :::
      *
      * @group System
      */
@@ -481,14 +421,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether users should automatically be logged in after activating their account.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->autoLoginAfterAccountActivation(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -503,14 +438,9 @@ class GeneralConfig extends BaseConfig
      * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->baseCpUrl('https://cms.my-project.tld/')
      * ```
-     * ```shell Environment Override
-     * CRAFT_BASE_CP_URL=https://cms.my-project.tld/
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -519,14 +449,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether Craft should create a database backup before applying a new system update.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->backupOnUpdate(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_BACKUP_ON_UPDATE=false
-     * ```
-     * :::
      *
      * @see backupCommand
      *
@@ -552,14 +477,9 @@ class GeneralConfig extends BaseConfig
      *
      * This can also be set to `false` to disable database backups completely.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->backupCommand(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_BACKUP_COMMAND=false
-     * ```
-     * :::
      *
      * @group Environment
      */
@@ -575,14 +495,9 @@ class GeneralConfig extends BaseConfig
      *
      * @see https://www.postgresql.org/docs/current/app-pgdump.html
      *
-     *  ::: code
-     *  ```php Static Config
-     *  ->backupCommandFormat('custom')
-     *  ```
-     *  ```shell Environment Override
-     *  CRAFT_BACKUP_COMMAND_FORMAT=custom
-     *  ```
-     *  :::
+     * ```php
+     * ->backupCommandFormat('custom')
+     * ```
      *
      * @group Environment
      */
@@ -594,14 +509,9 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to an aliased path such as `@webroot/assets/404.svg`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->brokenImagePath('@webroot/assets/404.svg')
      * ```
-     * ```shell Environment Override
-     * CRAFT_BROKEN_IMAGE_PATH=@webroot/assets/404.svg
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -614,14 +524,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->cacheDuration(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_CACHE_DURATION=0
-     * ```
-     * :::
      *
      * @group System
      *
@@ -636,14 +541,9 @@ class GeneralConfig extends BaseConfig
      * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->convertFilenamesToAscii(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_CONVERT_FILENAMES_TO_ASCII=false
-     * ```
-     * :::
      *
      * @group Assets
      */
@@ -657,14 +557,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->cooldownDuration(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_COOLDOWN_DURATION=0
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -714,14 +609,9 @@ class GeneralConfig extends BaseConfig
      * </svg>
      * ```
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->cpIconPath('@root/branding/icon.svg')
      * ```
-     * ```shell Environment Override
-     * CRAFT_CP_ICON_PATH=@root/branding/icon.svg
-     * ```
-     * :::
      *
      * @group System
      *
@@ -752,14 +642,9 @@ class GeneralConfig extends BaseConfig
      * `currentColor` within the SVG, as you would for `cpIconPath`. Once nobody is logged in, sign-in screens
      * show the theme the last user to sign in on the browser had selected.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->cpLogoPath('@root/branding/logo.svg')
      * ```
-     * ```shell Environment Override
-     * CRAFT_CP_LOGO_PATH=@root/branding/logo.svg
-     * ```
-     * :::
      *
      * @group System
      *
@@ -795,14 +680,9 @@ class GeneralConfig extends BaseConfig
      *
      * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->cpTrigger(null)
      * ```
-     * ```shell Environment Override
-     * CRAFT_CP_TRIGGER=
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -816,14 +696,9 @@ class GeneralConfig extends BaseConfig
      * Each file’s name (sans `.svg` extension) becomes its icon name, and icons selected from it will be stored as
      * `custom:icon-name`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->customIconPath('@config/icons')
      * ```
-     * ```shell Environment Override
-     * CRAFT_CUSTOM_ICON_PATH=@config/icons
-     * ```
-     * :::
      *
      * @group System
      *
@@ -836,14 +711,9 @@ class GeneralConfig extends BaseConfig
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultCountryCode('GB')
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_COUNTRY_CODE=GB
-     * ```
-     * :::
      *
      * @group System
      */
@@ -852,14 +722,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultCpLanguage('en-US')
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_CP_LANGUAGE=en-US
-     * ```
-     * :::
      *
      * @group System
      */
@@ -871,14 +736,9 @@ class GeneralConfig extends BaseConfig
      *
      * If this is `null`, the <config5:defaultCpLanguage> config setting will determine which locale is used for date/number formatting by default.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultCpLocale('en-US')
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_CP_LOCALE=en-US
-     * ```
-     * :::
      *
      * @group System
      */
@@ -889,14 +749,9 @@ class GeneralConfig extends BaseConfig
      *
      * If set to `null`, the permission will be determined by the current environment.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultDirMode(0744)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_DIR_MODE=0744
-     * ```
-     * :::
      *
      * @group System
      */
@@ -906,14 +761,9 @@ class GeneralConfig extends BaseConfig
      * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
      *          100 (best quality, biggest file).
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultImageQuality(90)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_IMAGE_QUALITY=90
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -940,14 +790,9 @@ class GeneralConfig extends BaseConfig
      * applied to each visitor’s IP rather than the proxy’s.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultRateLimit(20)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_RATE_LIMIT=20
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -958,16 +803,10 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 5 minutes
      * ->defaultRateLimitDuration(300)
      * ```
-     * ```shell Environment Override
-     * # 5 minutes
-     * CRAFT_DEFAULT_RATE_LIMIT_DURATION=300
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -999,14 +838,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[] The template file extensions Craft will look for when matching a template path to a file on the front end.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultTemplateExtensions(['twig', 'html', 'blade.php', 'txt'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,blade.php,txt
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1017,16 +851,10 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // One week
      * ->defaultTokenDuration(604800)
      * ```
-     * ```shell Environment Override
-     * # One week
-     * CRAFT_DEFAULT_TOKEN_DURATION=604800
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -1047,14 +875,9 @@ class GeneralConfig extends BaseConfig
      * - `5` – Friday
      * - `6` – Saturday
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultWeekStartDay(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_WEEK_START_DAY=0
-     * ```
-     * :::
      *
      * @group System
      *
@@ -1067,14 +890,9 @@ class GeneralConfig extends BaseConfig
      *           `true` removes that requirement for the initial registration form. Instead, new users will set their password
      *           once they’ve followed the link in their activation email.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->deferPublicRegistrationPassword(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFER_PUBLIC_REGISTRATION_PASSWORD=true
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -1098,14 +916,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether two-step verification features should be disabled.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->disable2fa()
      * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLE_2FA=true
-     * ```
-     * :::
      *
      * @group Users
      */
@@ -1132,17 +945,12 @@ class GeneralConfig extends BaseConfig
      * between environments, which will prevent project config changes from getting applied.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->disabledPlugins([
      *     'redactor',
      *     'webhooks',
      * ])
      * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLED_PLUGINS=redactor,webhooks
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1151,17 +959,12 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[] Array of utility IDs that should be disabled.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      *  ->disabledUtilities([
      *      'updates',
      *      'find-replace',
      *  ])
      * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLED_UTILITIES=updates,find-replace
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1175,14 +978,9 @@ class GeneralConfig extends BaseConfig
      * This should be set to `true` for development and staging environments.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->disallowRobots(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DISALLOW_ROBOTS=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1191,14 +989,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableGraphqlIntrospection(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_INTROSPECTION=false
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1209,14 +1002,9 @@ class GeneralConfig extends BaseConfig
      *
      * The GraphQL API is only available for Craft Pro.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableGql(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GQL=false
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1248,14 +1036,9 @@ class GeneralConfig extends BaseConfig
      * This setting will have no effect if a plugin is using the [[\CraftCms\Cms\Gql\Events\GqlQueryExecuting]] event to provide its own
      * caching logic and setting the `result` property.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableGraphqlCaching(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_CACHING=false
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1264,14 +1047,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->setGraphqlDatesToSystemTimeZone(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SET_GRAPHQL_DATES_TO_SYSTEM_TIMEZONE=true
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1280,14 +1058,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableTemplateCaching(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_TEMPLATE_CACHING=false
-     * ```
-     * :::
      *
      * @see https://craftcms.com/docs/templating/cache
      *
@@ -1298,14 +1071,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[]|null List of file extensions that will be merged into the <config5:allowedFileExtensions> config setting.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->extraAllowedFileExtensions(['mbox', 'xml'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS=mbox,xml
-     * ```
-     * :::
      *
      * @see allowedFileExtensions
      *
@@ -1316,14 +1084,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[] List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->extraAppLocales(['uk'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_APP_LOCALES=uk
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1359,14 +1122,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[] Any additional last name prefixes that should be supported by the name parser.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->extraLastNamePrefixes(['Dal', 'Van Der'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_LAST_NAME_PREFIXES="Dal,Van Der"
-     * ```
-     * :::
      *
      * @group Users
      */
@@ -1375,14 +1133,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[] Any additional name salutations that should be supported by the name parser.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->extraNameSalutations(['Lady', 'Sire'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_NAME_SALUTATIONS=Lady,Sire
-     * ```
-     * :::
      *
      * @group Users
      */
@@ -1391,14 +1144,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string[] Any additional name suffixes that should be supported by the name parser.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->extraNameSuffixes(['CCNA', 'OBE'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_EXTRA_NAME_SUFFIXES=CCNA,OBE
-     * ```
-     * :::
      *
      * @group Users
      */
@@ -1407,14 +1155,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|false The string to use to separate words when uploading assets. If set to `false`, spaces will be left alone.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->filenameWordSeparator(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_FILENAME_WORD_SEPARATOR=false
-     * ```
-     * :::
      *
      * @group Assets
      */
@@ -1423,14 +1166,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string Prefix to use for all type names returned by GraphQL.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->gqlTypePrefix('craft_')
      * ```
-     * ```shell Environment Override
-     * CRAFT_GQL_TYPE_PREFIX=craft_
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1447,14 +1185,9 @@ class GeneralConfig extends BaseConfig
      * - `pascal` – for PascalCase (aka UpperCamelCase)
      * - `snake` – for snake_case
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->handleCasing('pascal')
      * ```
-     * ```shell Environment Override
-     * CRAFT_HANDLE_CASING=pascal
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1478,14 +1211,9 @@ class GeneralConfig extends BaseConfig
      * panel is located on a different domain than your front end.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->headlessMode(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_HEADLESS_MODE=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1496,14 +1224,9 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to a URL (`http://localhost`) or a URL plus a port (`http://localhost:8125`).
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->httpProxy('http://localhost')
      * ```
-     * ```shell Environment Override
-     * CRAFT_HTTP_PROXY=http://localhost
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1515,14 +1238,9 @@ class GeneralConfig extends BaseConfig
      * When enabled, Craft will generate PHPDoc metadata files in the IDE helper path
      * whenever field layouts are saved. This improves IDE autocompletion for custom fields.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->ideHelperEnabled(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_IDE_HELPER_ENABLED=true
-     * ```
-     * :::
      *
      * @group System
      *
@@ -1533,14 +1251,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The path where IDE helper files should be written, relative to the project root.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->ideHelperPath('vendor/_craft')
      * ```
-     * ```shell Environment Override
-     * CRAFT_IDE_HELPER_PATH=vendor/_craft
-     * ```
-     * :::
      *
      * @group System
      *
@@ -1552,14 +1265,9 @@ class GeneralConfig extends BaseConfig
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed,
      *            followed by libvips and GD. You can explicitly set `'imagick'`, `'vips'`, or `'gd'` to override that behavior.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->imageDriver('imagick')
      * ```
-     * ```shell Environment Override
-     * CRAFT_IMAGE_DRIVER=imagick
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -1616,14 +1324,9 @@ class GeneralConfig extends BaseConfig
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
      *               matching a template path to a file on the front end.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->indexTemplateFilenames(['index', 'default'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_INDEX_TEMPLATE_FILENAMES=index,default
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1634,16 +1337,10 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 1 day
      * ->invalidLoginWindowDuration(86400)
      * ```
-     * ```shell Environment Override
-     * # 1 day
-     * CRAFT_INVALID_LOGIN_WINDOW_DURATION=86400
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -1659,16 +1356,10 @@ class GeneralConfig extends BaseConfig
      *
      * Note that this only affects front-end site requests.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 1 day
      * ->invalidUserTokenPath('nope')
      * ```
-     * ```shell Environment Override
-     * # 1 day
-     * CRAFT_INVALID_USER_TOKEN_PATH=nope
-     * ```
-     * :::
      *
      * @see getInvalidUserTokenPath()
      *
@@ -1679,14 +1370,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether GraphQL types should be generated lazily.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->lazyGqlTypes(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_LAZY_GQL_TYPES=true
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1699,14 +1385,9 @@ class GeneralConfig extends BaseConfig
      * This only affects the JavaScript auto-generated slugs. Non-ASCII characters can still be used in slugs if entered manually.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->limitAutoSlugsToAscii(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_LIMIT_AUTO_SLUGS_TO_ASCII=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1743,14 +1424,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->loginPath('login')
      * ```
-     * ```shell Environment Override
-     * CRAFT_LOGIN_PATH=login
-     * ```
-     * :::
      *
      * @see getLoginPath()
      *
@@ -1808,14 +1484,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->logoutPath(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_LOGOUT_PATH=false
-     * ```
-     * :::
      *
      * @see getLogoutPath()
      *
@@ -1824,32 +1495,11 @@ class GeneralConfig extends BaseConfig
     public mixed $logoutPath = 'logout';
 
     /**
-     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->maxCachedCloudImageSize(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=0
-     * ```
-     * :::
-     *
-     * @group Image Handling
-     */
-    public int $maxCachedCloudImageSize = 0;
-
-    /**
      * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
      *
-     *  ::: code
-     *  ```php Static Config
-     *  ->maxGraphqlBatchSize(5)
-     *  ```
-     *  ```shell Environment Override
-     *  CRAFT_MAX_GRAPHQL_BATCH_SIZE=5
-     *  ```
-     *  :::
+     * ```php
+     * ->maxGraphqlBatchSize(5)
+     * ```
      *
      * @group GraphQL
      */
@@ -1858,14 +1508,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxGraphqlComplexity(500)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_GRAPHQL_COMPLEXITY=500
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1874,14 +1519,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxGraphqlDepth(5)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_GRAPHQL_DEPTH=5
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1890,14 +1530,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxGraphqlResults(100)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_GRAPHQL_RESULTS=100
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -1906,14 +1541,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var int|false The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxInvalidLogins(3)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_INVALID_LOGINS=3
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -1923,14 +1553,9 @@ class GeneralConfig extends BaseConfig
      * @var int|false The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will
      *                not delete any backups.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxBackups(5)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_BACKUPS=5
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1941,14 +1566,9 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` if you want to store an unlimited number of revisions.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxRevisions(25)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_REVISIONS=25
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1957,14 +1577,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var int The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->maxSlugIncrement(10)
      * ```
-     * ```shell Environment Override
-     * CRAFT_MAX_SLUG_INCREMENT=10
-     * ```
-     * :::
      *
      * @group System
      */
@@ -1975,16 +1590,10 @@ class GeneralConfig extends BaseConfig
      *
      * See [[PHP::sizeToBytes()]] for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 25MB
      * ->maxUploadFileSize(26214400)
      * ```
-     * ```shell Environment Override
-     * # 25MB
-     * CRAFT_MAX_UPLOAD_FILE_SIZE=26214400
-     * ```
-     * :::
      *
      * @group Assets
      *
@@ -2017,14 +1626,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether Craft should favor reduced file sizes over lossless encoding where supported.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->optimizeImageFilesize(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_OPTIMIZE_IMAGE_FILESIZE=false
-     * ```
-     * :::
      *
      * @see imageDriver
      *
@@ -2040,14 +1644,9 @@ class GeneralConfig extends BaseConfig
      * | `page` | `/news?page=5` |
      * | `p` | `/news?p=5` |
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->pageTrigger('page')
      * ```
-     * ```shell Environment Override
-     * CRAFT_PAGE_TRIGGER=page
-     * ```
-     * :::
      *
      * @see getPageTrigger()
      *
@@ -2071,14 +1670,9 @@ class GeneralConfig extends BaseConfig
      * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
      * that would be: `_partials/entry/article.twig`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->partialTemplatesPath('_cp/partials')
      * ```
-     * ```shell Environment Override
-     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2090,14 +1684,9 @@ class GeneralConfig extends BaseConfig
      *
      * See <https://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->phpMaxMemoryLimit('512M')
      * ```
-     * ```shell Environment Override
-     * CRAFT_PHP_MAX_MEMORY_LIMIT=512M
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2111,14 +1700,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->postCpLoginRedirect('entries')
      * ```
-     * ```shell Environment Override
-     * CRAFT_POST_CP_LOGIN_REDIRECT=entries
-     * ```
-     * :::
      *
      * @see getPostCpLoginRedirect()
      *
@@ -2134,14 +1718,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->postLoginRedirect('welcome')
      * ```
-     * ```shell Environment Override
-     * CRAFT_POST_LOGIN_REDIRECT=welcome
-     * ```
-     * :::
      *
      * @see getPostLoginRedirect()
      *
@@ -2154,14 +1733,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->postLogoutRedirect('goodbye')
      * ```
-     * ```shell Environment Override
-     * CRAFT_POST_LOGOUT_REDIRECT=goodbye
-     * ```
-     * :::
      *
      * @see getPostLogoutRedirect()
      *
@@ -2172,14 +1746,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether the <config5:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->prefixGqlRootTypes(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PREFIX_GQL_ROOT_TYPES=false
-     * ```
-     * :::
      *
      * @group GraphQL
      */
@@ -2195,14 +1764,9 @@ class GeneralConfig extends BaseConfig
      * You will need to clear your compiled templates from the Caches utility before this setting will take effect.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->preloadSingles()
      * ```
-     * ```shell Environment Override
-     * CRAFT_PRELOAD_SINGLES=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2213,14 +1777,9 @@ class GeneralConfig extends BaseConfig
      *
      * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB when the active image driver supports CMYK.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->preserveCmykColorspace(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PRESERVE_CMYK_COLORSPACE=true
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2233,14 +1792,9 @@ class GeneralConfig extends BaseConfig
      *
      * This will only have an effect if the active image driver supports preserving EXIF data.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->preserveExifData(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PRESERVE_EXIF_DATA=true
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2252,14 +1806,9 @@ class GeneralConfig extends BaseConfig
      * Setting this to `false` will reduce the image size a little bit, but can cause images to be saved with an incorrect gamma value.
      * This will only have an effect if the active image driver supports embedded color profiles.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->preserveImageColorProfiles(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PRESERVE_IMAGE_COLOR_PROFILES=false
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2279,14 +1828,9 @@ class GeneralConfig extends BaseConfig
      * whether the username/email exists and whether an email was sent with further instructions. This can be helpful for the user attempting to
      * log in but allow for username/email enumeration based on the response.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->preventUserEnumeration(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PREVENT_USER_ENUMERATION=true
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -2299,16 +1843,10 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 1 hour
      * ->previewTokenDuration(3600)
      * ```
-     * ```shell Environment Override
-     * # 1 hour
-     * CRAFT_PREVIEW_TOKEN_DURATION=3600
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -2320,14 +1858,9 @@ class GeneralConfig extends BaseConfig
      *
      * Set to an empty value to disable public template routing.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->privateTemplateTrigger('')
      * ```
-     * ```shell Environment Override
-     * CRAFT_PRIVATE_TEMPLATE_TRIGGER=
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2346,16 +1879,10 @@ class GeneralConfig extends BaseConfig
      * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 2 weeks
      * ->purgePendingUsersDuration(1209600)
      * ```
-     * ```shell Environment Override
-     * # 2 weeks
-     * CRAFT_PURGE_PENDING_USERS_DURATION=1209600
-     * ```
-     * :::
      *
      * @group Garbage Collection
      */
@@ -2368,14 +1895,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->purgeUnsavedDraftsDuration(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=0
-     * ```
-     * :::
      *
      * @group Garbage Collection
      *
@@ -2390,14 +1912,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->rememberUsernameDuration(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_REMEMBER_USERNAME_DURATION=0
-     * ```
-     * :::
      *
      * @group Session
      *
@@ -2422,14 +1939,9 @@ class GeneralConfig extends BaseConfig
      *
      * This can also be set to `false` to disable database restores completely.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->restoreCommand(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_RESTORE_COMMAND=false
-     * ```
-     * :::
      *
      * @group Environment
      */
@@ -2438,14 +1950,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->revAssetUrls(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_REV_ASSET_URLS=true
-     * ```
-     * :::
      *
      * @group Assets
      */
@@ -2454,14 +1961,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->rotateImagesOnUploadByExifData(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ROTATE_IMAGES_ON_UPLOAD_BY_EXIF_DATA=false
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2493,14 +1995,9 @@ class GeneralConfig extends BaseConfig
      * where PHP’s [flush()](https://php.net/manual/en/function.flush.php) method won’t work.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->runQueueAutomatically(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_RUN_QUEUE_AUTOMATICALLY=false
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2509,14 +2006,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The name of the queue that Craft jobs should be sent to.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->queueName('craft')
      * ```
-     * ```shell Environment Override
-     * CRAFT_QUEUE_NAME=craft
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2527,15 +2019,10 @@ class GeneralConfig extends BaseConfig
      *             By default, all jobs go to the same queue. Make sure to update `trackedQueueNames`
      *             as well if you change this setting.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->lowPriorityQueueName('craft-low-prio')
      * ->trackedQueueNames(['craft', 'craft-low-prio'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_LOW_PRIORITY_QUEUE_NAME=craft-low-prio
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2562,14 +2049,9 @@ class GeneralConfig extends BaseConfig
      *
      * Safe Mode disables all plugins and application config that can alter Craft's expected default behavior.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->safeMode(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SAFE_MODE=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2578,14 +2060,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether images uploaded via the control panel should be sanitized.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->sanitizeCpImageUploads(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SANITIZE_CP_IMAGE_UPLOADS=false
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -2596,14 +2073,9 @@ class GeneralConfig extends BaseConfig
      *
      * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->sanitizeSvgUploads(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SANITIZE_SVG_UPLOADS=false
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -2613,14 +2085,9 @@ class GeneralConfig extends BaseConfig
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      *           [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->sendPoweredByHeader(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SEND_POWERED_BY_HEADER=false
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2635,14 +2102,9 @@ class GeneralConfig extends BaseConfig
      * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->setPasswordPath('set-password')
      * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_PATH=set-password
-     * ```
-     * :::
      *
      * @see getSetPasswordPath()
      *
@@ -2662,14 +2124,9 @@ class GeneralConfig extends BaseConfig
      * where the user resets their password after following the link in the Password Reset email.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->setPasswordRequestPath('request-password')
      * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_REQUEST_PATH=request-password
-     * ```
-     * :::
      *
      * @see getSetPasswordRequestPath()
      *
@@ -2682,14 +2139,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->setPasswordSuccessPath('password-set')
      * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_SUCCESS_PATH=password-set
-     * ```
-     * :::
      *
      * @see getSetPasswordSuccessPath()
      *
@@ -2700,14 +2152,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The query string parameter name that site tokens should be set to.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->siteToken('t')
      * ```
-     * ```shell Environment Override
-     * CRAFT_SITE_TOKEN=t
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -2716,14 +2163,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The character(s) that should be used to separate words in slugs.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->slugWordSeparator('.')
      * ```
-     * ```shell Environment Override
-     * CRAFT_SLUG_WORD_SEPARATOR=.
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2732,14 +2174,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->showFirstAndLastNameFields()
      * ```
-     * ```shell Environment Override
-     * CRAFT_SHOW_FIRST_AND_LAST_NAME_FIELDS=true
-     * ```
-     * :::
      *
      * @group Users
      */
@@ -2752,14 +2189,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->softDeleteDuration(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SOFT_DELETE_DURATION=0
-     * ```
-     * :::
      *
      * @group Garbage Collection
      *
@@ -2771,14 +2203,9 @@ class GeneralConfig extends BaseConfig
      * @var bool Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
      *           `update-statuses` command is executed.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->staticStatuses()
      * ```
-     * ```shell Environment Override
-     * CRAFT_STATIC_STATUSES=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2787,14 +2214,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether user IP addresses should be stored/logged by the system.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->storeUserIps(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_STORE_USER_IPS=true
-     * ```
-     * :::
      *
      * @group Security
      */
@@ -2804,14 +2226,9 @@ class GeneralConfig extends BaseConfig
      * @var string|null The URL to a CSS file that should be included when rendering system templates on the front end,
      *                  such as the Login and Set Password templates.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->systemTemplateCss('/css/cp-theme.css');
      * ```
-     * ```shell Environment Override
-     * CRAFT_SYSTEM_TEMPLATE_CSS=/css/cp-theme.css
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2822,14 +2239,9 @@ class GeneralConfig extends BaseConfig
      *
      *                  A local temp folder will be used by default.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->tempAssetUploadDisk('$TEMP_ASSET_UPLOAD_DISK')
      * ```
-     * ```shell Environment Override
-     * CRAFT_TEMP_ASSET_UPLOAD_DISK=tempAssetUploads
-     * ```
-     * :::
      *
      * @group Assets
      */
@@ -2845,14 +2257,9 @@ class GeneralConfig extends BaseConfig
      *
      *                  If this isn’t set, soft-deleting an asset deletes its file, and the asset can’t be restored.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->trashedAssetDisk('$TRASHED_ASSET_DISK')
      * ```
-     * ```shell Environment Override
-     * CRAFT_TRASHED_ASSET_DISK=trashedAssets
-     * ```
-     * :::
      *
      * @group Assets
      */
@@ -2873,14 +2280,9 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->timezone('Europe/London')
      * ```
-     * ```shell Environment Override
-     * CRAFT_TIMEZONE=Europe/London
-     * ```
-     * :::
      *
      * @group System
      */
@@ -2890,14 +2292,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether GIF files should be cleansed/transformed.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->transformGifs(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_TRANSFORM_GIFS=false
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2906,14 +2303,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether SVG files should be transformed.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->transformSvgs(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_TRANSFORM_SVGS=false
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2923,14 +2315,9 @@ class GeneralConfig extends BaseConfig
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
      *           `t()` or the `|translate` filter.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->translationDebugOutput(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_TRANSLATION_DEBUG_OUTPUT=true
-     * ```
-     * :::
      *
      * The symbols are as follows:
      *
@@ -2949,14 +2336,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string The query string parameter name that Craft tokens should be set to.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->tokenParam('t')
      * ```
-     * ```shell Environment Override
-     * CRAFT_TOKEN_PARAM=t
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -2965,14 +2347,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->upscaleImages(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_UPSCALE_IMAGES=false
-     * ```
-     * :::
      *
      * @group Image Handling
      */
@@ -2987,14 +2364,9 @@ class GeneralConfig extends BaseConfig
      * php artisan craft:utils:update-usernames
      * ```
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->useEmailAsUsername(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_USE_EMAIL_AS_USERNAME=true
-     * ```
-     * :::
      *
      * @group System
      */
@@ -3013,14 +2385,9 @@ class GeneralConfig extends BaseConfig
      *
      * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->useIdnaNontransitionalToUnicode(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_USE_IDNA_NONTRANSITIONAL_TO_UNICODE=true
-     * ```
-     * :::
      *
      * @group System
      *
@@ -3035,14 +2402,9 @@ class GeneralConfig extends BaseConfig
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->useSslOnTokenizedUrls(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_USE_SSL_ON_TOKENIZED_URLS=true
-     * ```
-     * :::
      *
      * @group Routing
      */
@@ -3053,14 +2415,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->verifyEmailPath('verify-email')
      * ```
-     * ```shell Environment Override
-     * CRAFT_VERIFY_EMAIL_PATH=verify-email
-     * ```
-     * :::
      *
      * @see getVerifyEmailPath()
      *
@@ -3073,14 +2430,9 @@ class GeneralConfig extends BaseConfig
      *
      * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->verifyEmailSuccessPath('verified-email')
      * ```
-     * ```shell Environment Override
-     * CRAFT_VERIFY_EMAIL_SUCCESS_PATH=verified-email
-     * ```
-     * :::
      *
      * @see getVerifyEmailSuccessPath()
      *
@@ -4156,14 +3508,9 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether two-step verification features should be disabled.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->disable2fa()
      * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLE_2FA=true
-     * ```
-     * :::
      *
      * @group Users
      *
@@ -4220,17 +3567,12 @@ class GeneralConfig extends BaseConfig
     /**
      * Array of utility IDs that should be disabled.
      *
-     *  ::: code
-     *  ```php Static Config
-     *   ->disabledUtilities([
-     *       'updates',
-     *       'find-replace',
-     *   ])
-     *  ```
-     *  ```shell Environment Override
-     *  CRAFT_DISABLED_UTILITIES=updates,find-replace
-     *  ```
-     *  :::
+     * ```php
+     *  ->disabledUtilities([
+     *      'updates',
+     *      'find-replace',
+     *  ])
+     * ```
      *
      * @group System
      *
@@ -4930,24 +4272,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
-     *
-     * ```php
-     * ->maxCachedCloudImageSize(0)
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $maxCachedCloudImageSize
-     */
-    public function maxCachedCloudImageSize(int $value): self
-    {
-        $this->maxCachedCloudImageSize = $value;
-
-        return $this;
-    }
-
-    /**
      * The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
      *
      * ```php
@@ -5195,14 +4519,9 @@ class GeneralConfig extends BaseConfig
      * field layout provider’s handle (e.g. the volume handle or entry type handle). For an entry of type `article`,
      * that would be: `_partials/entry/article.twig`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->partialTemplatesPath('_cp/partials')
      * ```
-     * ```shell Environment Override
-     * CRAFT_PARTIAL_TEMPLATES_PATH=_cp/partials
-     * ```
-     * :::
      *
      * @group System
      *
@@ -5330,14 +4649,9 @@ class GeneralConfig extends BaseConfig
      * You will need to clear your compiled templates from the Caches utility before this setting will take effect.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->preloadSingles()
      * ```
-     * ```shell Environment Override
-     * CRAFT_PRELOAD_SINGLES=true
-     * ```
-     * :::
      *
      * @group System
      *
@@ -5958,14 +5272,9 @@ class GeneralConfig extends BaseConfig
      * Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
      * `update-statuses` command is executed.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->staticStatuses()
      * ```
-     * ```shell Environment Override
-     * CRAFT_STATIC_STATUSES=true
-     * ```
-     * :::
      *
      * @group System
      *
@@ -6000,14 +5309,9 @@ class GeneralConfig extends BaseConfig
      * The URL to a CSS file that should be included when rendering system templates on the front end,
      * such as the Login and Set Password templates.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->systemTemplateCss('/css/cp-theme.css');
      * ```
-     * ```shell Environment Override
-     * CRAFT_SYSTEM_TEMPLATE_CSS=/css/cp-theme.css
-     * ```
-     * :::
      *
      * @group System
      *

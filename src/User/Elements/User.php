@@ -92,6 +92,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use JsonSerializable;
 use LogicException;
 use Override;
 use Stringable;
@@ -119,7 +120,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(UserRules::class)]
-class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, ImportableContainerPropertiesInterface, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, ImportableContainerPropertiesInterface, JsonSerializable, MustVerifyEmailContract
 {
     use Authenticatable {
         getAuthPassword as getAuthPasswordAuthenticatable;
@@ -194,6 +195,16 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         'photoId',
         'suspended',
         'unverifiedEmail',
+    ];
+
+    /**
+     * These attributes are left out of the user’s array and JSON representations.
+     */
+    public const array HIDDEN_ATTRIBUTES = [
+        'currentPassword',
+        'newPassword',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -943,6 +954,25 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $names[] = 'remainingCooldownTime';
 
         return $names;
+    }
+
+    /**
+     * Leaves [[HIDDEN_ATTRIBUTES]] out of the user’s array and JSON representations.
+     */
+    #[Override]
+    public function fields(): array
+    {
+        return Arr::except(parent::fields(), self::HIDDEN_ATTRIBUTES);
+    }
+
+    /**
+     * Encodes the user with [[fields()]], so `json_encode()` and Twig’s `json_encode` filter leave out its secrets too.
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     #[Override]

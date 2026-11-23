@@ -7,7 +7,9 @@ namespace CraftCms\Cms\Config;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -15,6 +17,7 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Override;
+use ReflectionProperty;
 
 /**
  * @since 6.0.0
@@ -161,6 +164,7 @@ class ConfigServiceProvider extends ServiceProvider
         }
 
         $envConfig = Env::config($config::class, 'CRAFT_');
+        $this->deprecateEnvironmentOverrides($config::class, 'CRAFT_', $envConfig);
         Typecast::properties($config::class, $envConfig);
 
         foreach ($envConfig as $setting => $value) {
@@ -194,11 +198,14 @@ class ConfigServiceProvider extends ServiceProvider
                 continue;
             }
 
-            $envConfig = Env::config($nested::class, 'CRAFT_'.str($setting)->snake()->upper()->value());
+            $prefix = 'CRAFT_'.str($setting)->snake()->upper()->value().'_';
+            $envConfig = Env::config($nested::class, $prefix);
 
             if ($envConfig === []) {
                 continue;
             }
+
+            $this->deprecateEnvironmentOverrides($nested::class, $prefix, $envConfig, "$setting.");
 
             Typecast::properties($nested::class, $envConfig);
 
@@ -214,6 +221,22 @@ class ConfigServiceProvider extends ServiceProvider
             }
 
             $config->{$setting} = $nested;
+        }
+    }
+
+    /**
+     * Logs a deprecation warning for each `CRAFT_` environment variable that overrides a general config setting.
+     *
+     * @param  class-string<BaseConfig>  $class
+     * @param  array<string, mixed>  $settings  The settings the variables set, from [[Env::config()]]
+     */
+    private function deprecateEnvironmentOverrides(string $class, string $prefix, #[\SensitiveParameter] array $settings, string $settingPrefix = ''): void
+    {
+        foreach (array_keys($settings) as $setting) {
+            $attribute = Arr::first(new ReflectionProperty($class, $setting)->getAttributes(EnvName::class));
+            $var = $prefix.($attribute?->newInstance()->name ?? str($setting)->snake()->upper()->value());
+
+            Deprecator::log("env:$var", "Setting `$settingPrefix$setting` with the `$var` environment variable is deprecated. Set it in `config/craft/general.php` instead, using an environment variable that doesn’t start with `CRAFT_`, such as `->allowAdminChanges(env('ALLOW_ADMIN_CHANGES'))`.");
         }
     }
 

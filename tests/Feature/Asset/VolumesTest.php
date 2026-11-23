@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Volumes as VolumesFacade;
@@ -35,7 +36,7 @@ it('can get all volumes', function () {
     expect($this->volumes->getAllVolumeIds())->toBeEmpty();
     expect($this->volumes->getTotalVolumes())->toBe(0);
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -45,7 +46,7 @@ it('can get all volumes', function () {
 });
 
 it('can get viewable volumes in console', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -56,7 +57,7 @@ it('can get viewable volumes in console', function () {
 });
 
 it('can get a volume by id', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -65,7 +66,7 @@ it('can get a volume by id', function () {
 });
 
 it('can get a volume by uid', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -74,7 +75,7 @@ it('can get a volume by uid', function () {
 });
 
 it('can get a volume by handle', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     app()->forgetInstance(Volumes::class);
     $this->volumes = app(Volumes::class);
 
@@ -97,7 +98,7 @@ it('can save a new volume', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
     ]));
 
     expect(Volume::count())->toBe(1);
@@ -116,7 +117,7 @@ it('can save an existing volume', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Original Name',
         'handle' => 'originalHandle',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
     ]));
 
     app()->forgetInstance(Volumes::class);
@@ -163,7 +164,7 @@ it('can delete a volume by id', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Delete Me',
         'handle' => 'deleteMe',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
     ]));
 
     app()->forgetInstance(Volumes::class);
@@ -200,7 +201,7 @@ it('can delete a volume', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Delete Me Too',
         'handle' => 'deleteMeToo',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
     ]));
 
     app()->forgetInstance(Volumes::class);
@@ -229,14 +230,14 @@ it('can reorder volumes', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Volume A',
         'handle' => 'volumeA',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
         'subpath' => 'a',
     ]));
 
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Volume B',
         'handle' => 'volumeB',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
         'subpath' => 'b',
     ]));
 
@@ -274,7 +275,7 @@ it('stores volume in project config on save', function () {
     $this->volumes->saveVolume(new VolumeData([
         'name' => 'Config Volume',
         'handle' => 'configVolume',
-        'fsHandle' => 'test-disk',
+        'disk' => 'test-disk',
     ]));
 
     app()->forgetInstance(Volumes::class);
@@ -288,4 +289,18 @@ it('stores volume in project config on save', function () {
     expect($projectConfigData)->not()->toBeNull();
     expect($projectConfigData['name'])->toBe('Config Volume');
     expect($projectConfigData['handle'])->toBe('configVolume');
+});
+
+it('applies volume project config that still uses the fs key', function () {
+    $uid = Str::uuid()->toString();
+
+    ProjectConfig::set(CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_VOLUMES.".$uid", [
+        'name' => 'Legacy Volume',
+        'handle' => 'legacyVolume',
+        'fs' => 'test-disk',
+        'sortOrder' => 1,
+    ]);
+
+    expect(Volume::query()->where('uid', $uid)->value('disk'))->toBe('test-disk')
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key'))->toContain("volumes.$uid.fs");
 });

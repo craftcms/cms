@@ -176,9 +176,40 @@ fieldset {
   --_colorable-on-loud: var(--c-color-on-loud);
 }
 
+/* A card's title is set off from its attributes. */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--c-spacing-sm);
+}
+
+/* Text attributes stack like lines of text. A chip with a border and fill
+   gets room from the attributes beside it; a plain one reads as text. */
+.card-attribute-preview:has(craft-chip:not([appearance~='plain']))
+  + .card-attribute-preview,
+.card-attribute-preview
+  + .card-attribute-preview:has(craft-chip:not([appearance~='plain'])) {
+  margin-block-start: var(--c-spacing-sm);
+}
+
+/* A small chip is as tall as a small button, and its box sits on the
+   baseline, with room for descenders below. A plain one has no box to show
+   that, so its label would look further from the lines around it. It's as
+   tall as its text instead. */
+.card-attribute-preview craft-chip[appearance~='plain']::part(body) {
+  min-height: 0;
+}
+
+.card-attribute-preview craft-chip[appearance~='plain']::part(chip) {
+  vertical-align: top;
+}
+
 /* A card's attribute previews are capped at two lines, or one on a cover card,
-   unless they opt out with `no-truncate` (generated fields, chips, addresses). */
-.card-attribute-preview:not(:has(> .no-truncate)) {
+   unless they opt out with `no-truncate` (generated fields, chips, addresses).
+   The cap is for text, so it leaves chips alone too, even with no wrapper (the
+   “Last edited by” and “Parent” attributes): a chip is taller than a line,
+   and a cover card's one-line cap would cut it off. */
+.card-attribute-preview:not(:has(> .no-truncate, craft-chip)) {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -191,7 +222,8 @@ fieldset {
   overflow-wrap: anywhere;
 }
 
-[data-cover='body'] .card-attribute-preview:not(:has(> .no-truncate)) {
+[data-cover='body']
+  .card-attribute-preview:not(:has(> .no-truncate, craft-chip)) {
   -webkit-line-clamp: 1;
   line-clamp: 1;
   max-block-size: 1lh;
@@ -203,9 +235,10 @@ fieldset {
   --c-link-max-width: 200px;
 }
 
-/* The status badges after a card's attributes */
+/* The status badges after a card's attributes, a little further off, as their
+   own group */
 .card-attribute-preview + ul {
-  margin-block-start: var(--c-spacing-sm);
+  margin-block-start: calc(var(--c-spacing-sm) + var(--c-spacing-xs));
 }
 
 /*

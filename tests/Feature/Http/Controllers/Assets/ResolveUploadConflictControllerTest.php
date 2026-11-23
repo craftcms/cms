@@ -23,7 +23,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/upload-conflicts'),
     ]);
     Storage::fake('upload-conflicts');
-    $volume = Volume::factory()->create(['fs' => 'upload-conflicts']);
+    $volume = Volume::factory()->create(['disk' => 'upload-conflicts']);
     $this->folder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $this->source = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,

@@ -13,6 +13,8 @@ export interface CpUser {
   photoColors: [string, string];
   name: string | null;
   admin: boolean;
+  /** The "Use shapes to represent statuses" accessibility preference. */
+  useShapes: boolean;
   /** The "Underline links" accessibility preference. */
   underlineLinks: boolean;
   /** Whether the user can use the AI assistant, and it can run. */

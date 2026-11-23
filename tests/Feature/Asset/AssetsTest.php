@@ -48,7 +48,7 @@ it('is a singleton', function () {
 });
 
 it('can get an asset by id', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $assetModel = AssetModel::factory()->create([
         'volumeId' => $volume->id,
@@ -67,7 +67,7 @@ it('returns null for non-existent asset id', function () {
 it('can get total assets', function () {
     expect($this->assets->getTotalAssets())->toBe(0);
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     AssetModel::factory()->count(3)->create([
         'volumeId' => $volume->id,
@@ -91,7 +91,7 @@ it('resolves thumbnail dimensions for table and card sizes', function (?int $wid
 it('dispatches ThumbUrlResolving event in getThumbUrl', function () {
     Event::fake([ThumbUrlResolving::class]);
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -113,7 +113,7 @@ it('uses ThumbUrlResolving event url when set', function () {
         $event->url = 'https://example.com/custom-thumb.jpg';
     });
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -131,7 +131,7 @@ it('renders non-image thumbnails and previews through the selected driver', func
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -155,7 +155,7 @@ it('uses file-kind images only when the selected driver does not support the sou
         new NotSupportedException('unsupported'),
     )->register();
     config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -174,7 +174,7 @@ it('uses file-kind images only when the selected driver does not support the sou
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {
     config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -192,7 +192,7 @@ it('does not disguise control-panel transform configuration failures as file-kin
 it('dispatches PreviewHandlerResolving event', function () {
     Event::fake([PreviewHandlerResolving::class]);
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -207,7 +207,7 @@ it('dispatches PreviewHandlerResolving event', function () {
 });
 
 it('returns default preview handler for known asset kinds', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 
     $textAsset = AssetModel::factory()->createElement([
@@ -225,7 +225,7 @@ it('returns default preview handler for known asset kinds', function () {
 it('marks text previews with the language to highlight them as', function (string $filename, string $kind, string $contents, string $expected) {
     $disk = Storage::fake('test-disk');
     config()->set('filesystems.disks.test-disk.root', $disk->path(''));
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -246,7 +246,7 @@ it('marks text previews with the language to highlight them as', function (strin
 ]);
 
 it('returns null preview handler for unknown asset kinds', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 
     $asset = AssetModel::factory()->createElement([
@@ -274,7 +274,7 @@ it('can create a temp asset query', function () {
 });
 
 it('can get name replacement in folder when no conflict', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
 
@@ -288,7 +288,7 @@ it('can get name replacement in folder when no conflict', function () {
 it('dispatches AssetReplacing event with filename', function () {
     Event::fake([AssetReplacing::class]);
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -311,7 +311,7 @@ it('dispatches AssetReplacing event with filename', function () {
 });
 
 it('invalidates asset transforms once for each source lifecycle operation', function (Closure $operation) {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $rootFolder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $folder = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
@@ -359,7 +359,7 @@ it('invalidates asset transforms once for each source lifecycle operation', func
 it('preserves visibility when renaming an asset within its volume', function (string $subpath) {
     $disk = Storage::fake('test-disk');
     config()->set('filesystems.disks.test-disk.root', $disk->path(''));
-    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => $subpath]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'subpath' => $subpath]);
     $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -380,7 +380,7 @@ it('preserves visibility when renaming an asset within its volume', function (st
 it('uses the disk native move when renaming within a volume', function () {
     $disk = Storage::fake('test-disk');
     config()->set('filesystems.disks.test-disk.root', $disk->path(''));
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -401,7 +401,7 @@ it('uses the disk native move when renaming within a volume', function () {
 it('keeps replacement bytes in a volume with a subpath', function () {
     $disk = Storage::fake('test-disk');
     config()->set('filesystems.disks.test-disk.root', $disk->path(''));
-    $volume = Volume::factory()->create(['fs' => 'test-disk', 'subpath' => 'uploads/']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk', 'subpath' => 'uploads/']);
     $folder = app(Folders::class)->getRootFolderByVolumeId($volume->id);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -426,8 +426,8 @@ it('moves existing assets between volumes while preserving their contents and me
     ]);
     $sourceDisk = Storage::fake('test-disk');
     $destinationDisk = $sameDisk ? $sourceDisk : Storage::fake('asset-move-destination');
-    $sourceVolume = Volume::factory()->create(['fs' => 'test-disk']);
-    $destinationVolume = Volume::factory()->create(['fs' => $sameDisk ? 'test-disk' : 'asset-move-destination']);
+    $sourceVolume = Volume::factory()->create(['disk' => 'test-disk']);
+    $destinationVolume = Volume::factory()->create(['disk' => $sameDisk ? 'test-disk' : 'asset-move-destination']);
     $sourceFolder = app(Folders::class)->getRootFolderByVolumeId($sourceVolume->id);
     $destinationFolder = app(Folders::class)->getRootFolderByVolumeId($destinationVolume->id);
     $image = UploadedFile::fake()->image('photo.png', 13, 17);
@@ -478,7 +478,7 @@ it('passes explicit modes and bounds to the driver without treating event mode a
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
     config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
     $requests = [];
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests) {
@@ -509,7 +509,7 @@ it('honors empty thumbnail URL overrides without calling the driver', function (
 
 describe('colors', function () {
     beforeEach(function () {
-        $volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume = Volume::factory()->create(['disk' => 'test-disk']);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $this->asset = AssetModel::factory()->createElement([
             'volumeId' => $volume->id,
@@ -584,7 +584,7 @@ it('dates a replaced file by where it was stored, so indexing doesn’t mistake 
     $path = tempnam(sys_get_temp_dir(), 'craft-colors-');
     file_put_contents($path, 'not an image');
     touch($path, time() - 3600);
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $original = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
@@ -600,7 +600,7 @@ it('dates a replaced file by where it was stored, so indexing doesn’t mistake 
 
 describe('metadata', function () {
     beforeEach(function () {
-        $volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume = Volume::factory()->create(['disk' => 'test-disk']);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $this->asset = AssetModel::factory()->createElement([
             'volumeId' => $volume->id,
@@ -675,7 +675,7 @@ describe('metadata', function () {
 
 describe('titles', function () {
     beforeEach(function () {
-        $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+        $this->volume = Volume::factory()->create(['disk' => 'test-disk']);
         $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
     });
 

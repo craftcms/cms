@@ -20,11 +20,7 @@ class ExpiresTokenParser extends AbstractTokenParser
         $stream = $this->parser->getStream();
 
         $nodes = [];
-
-        $attributes = [
-            'durationNum' => 0,
-            'durationUnit' => 'seconds',
-        ];
+        $attributes = [];
 
         if ($stream->test(Token::OPERATOR_TYPE, 'in')) {
             $stream->next();

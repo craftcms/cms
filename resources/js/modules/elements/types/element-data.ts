@@ -1,3 +1,5 @@
+import type {StatusShape} from '@craftcms/ui';
+
 /**
  * The element data a chip draws, as `ElementHtml::presentation()` gives it for
  * a list view. Everything past `id` and `label` is optional.
@@ -10,7 +12,12 @@ export interface ChipElement {
    * Already resolved to a fill and a label. Which statuses exist, and what
    * they're called, is an element-type concern the server settles.
    */
-  status?: {fill: string; label: string; draft: boolean} | null;
+  status?: {
+    fill: string;
+    shape?: StatusShape;
+    label: string;
+    draft: boolean;
+  } | null;
   thumbHtml?: string | null;
   /** A Craft color name, such as an entry's type color. */
   color?: string | null;

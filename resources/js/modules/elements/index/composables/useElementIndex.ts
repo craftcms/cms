@@ -139,10 +139,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
     isDefault: sortIsDefault,
     resetToDefault: resetSort,
   } = useElementIndexSort(elementIndex, viewState, visitor);
-  const {paginationState, paginationConfig} = useElementIndexPagination(
-    elementIndex,
-    visitor
-  );
+  const {
+    paginationState,
+    paginationConfig,
+    restore: restorePageSize,
+  } = useElementIndexPagination(elementIndex, viewState, visitor, sourceKey);
   // The selection watcher below is sync, so it reruns this when a visit swaps
   // in the next page's props, before the index unmounts. Throwing there would
   // reject Inertia's swap, which then skips loading the next page's deferred
@@ -375,6 +376,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     const restores = [
       restoreColumns(),
       restoreSort(),
+      restorePageSize(),
       restoreViewMode(),
       restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),

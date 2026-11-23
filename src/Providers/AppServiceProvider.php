@@ -14,6 +14,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
+use CraftCms\Cms\Http\RequestBodyLogProcessor;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -29,15 +30,14 @@ use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Log\ContextLogProcessor;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
@@ -77,6 +77,9 @@ class AppServiceProvider extends ServiceProvider
         $this->registerMacros();
         $this->registerSerializableClasses();
         $this->registerThrottleExceptionHandler();
+
+        // Every log channel runs this processor, so decorating it reaches all of them.
+        $this->app->extend(ContextLogProcessor::class, fn (ContextLogProcessor $processor) => new RequestBodyLogProcessor($processor));
 
         // Inertia DevTools records every request in local environments unless told otherwise, which adds hundreds of
         // milliseconds to control panel requests, so it's opt-in. Set before providers boot, when DevTools checks it.
@@ -159,8 +162,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerMacros(): void
     {
-        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
-
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
 
@@ -187,14 +188,6 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
-
-        Response::macro('setNoCacheHeaders', function (bool $replace = true) {
-            $this->header('Expires', '0', $replace);
-            $this->header('Pragma', 'no-cache', $replace);
-            $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
-
-            return $this;
-        });
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
