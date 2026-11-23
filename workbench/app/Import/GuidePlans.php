@@ -14,7 +14,7 @@ use Ramsey\Uuid\Uuid;
 use RuntimeException;
 
 /**
- * The workbench's import plans, which all import into the Guides section: three editable ones the
+ * The workbench's import plans, which all import into the Guides section: the editable ones the
  * seeder saves, and two registered in code that can be run but not edited.
  */
 final class GuidePlans
@@ -48,6 +48,10 @@ final class GuidePlans
             // a batch per guide, so the run's progress moves as each one finishes
             self::plan('Guides: every field, slowly', 'guidesCompleteSlow', 'The same as every field, with each guide taking six seconds to import.', [
                 self::completeStep(source: self::COMPLETE_SLOW_SOURCE, batchSize: 1),
+            ]),
+            // batches of 25, so its progress moves steadily across the whole run
+            self::plan('Guides: stress test', 'guidesStress', sprintf('%d guides with every field filled in, to see how a long run holds up.', GuideStress::COUNT), [
+                self::completeStep(source: GuideStress::SOURCE, batchSize: GuideStress::BATCH_SIZE, map: ['slug' => 'slug']),
             ]),
             self::plan('Guides: with errors', 'guidesWithErrors', 'Ten new guides, some of which fail validation or reference people who don’t exist.', [
                 self::step([
@@ -91,8 +95,11 @@ final class GuidePlans
             ->steps($steps);
     }
 
-    /** @return array<string, mixed> */
-    private static function completeStep(?string $registeredHandle = null, string $source = self::COMPLETE_SOURCE, ?int $batchSize = null): array
+    /**
+     * @param  array<string, mixed>  $map  Mappings in place of the usual ones.
+     * @return array<string, mixed>
+     */
+    private static function completeStep(?string $registeredHandle = null, string $source = self::COMPLETE_SOURCE, ?int $batchSize = null, array $map = []): array
     {
         return self::step([
             ...self::ownFields(),
@@ -113,6 +120,7 @@ final class GuidePlans
             'guideFaq' => [
                 'guideFaqItem' => ['title' => 'faq.question', 'fields' => ['blockBody' => 'faq.answer']],
             ],
+            ...$map,
         ], [
             'matchCriteria' => ['slug' => '1'],
             'fieldSettings' => [

@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Database\Seeder;
 use RuntimeException;
 use Workbench\App\Import\GuidePlans;
+use Workbench\App\Import\GuideStress;
 
 /**
  * Saves the workbench's editable import plans, unless one with the same handle is already there.
@@ -18,6 +19,8 @@ class ImportPlansSeeder extends Seeder
     public function run(): void
     {
         $plans = app(ImportPlans::class);
+        // its plan's source has to be there for the plan to save
+        GuideStress::write();
 
         foreach (GuidePlans::editable() as $plan) {
             if ($plans->getImportPlanByHandle($plan->handle) !== null) {
