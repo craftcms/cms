@@ -17,6 +17,7 @@ use CraftCms\Cms\Translation\Locale;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
@@ -96,6 +97,20 @@ class ImportRuns
     public function latest(ImportPlanData $importPlan): ?ImportRun
     {
         return $this->forPlan($importPlan)->latest('dateCreated')->latest('id')->first();
+    }
+
+    /**
+     * Returns the runs that haven't finished, newest first.
+     *
+     * @return Collection<int, ImportRun>
+     */
+    public function unfinished(): Collection
+    {
+        return ImportRun::query()
+            ->whereIn('status', [ImportRunStatus::Pending, ImportRunStatus::Running])
+            ->latest('dateCreated')
+            ->latest('id')
+            ->get();
     }
 
     /**

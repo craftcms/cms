@@ -353,6 +353,40 @@ class Import
     }
 
     /**
+     * Each plan with a run going and where it's got, for the control panel to follow from any page.
+     *
+     * @return list<array{handle: string, name: string, run: array<string, mixed>}>
+     */
+    public function runningImports(): array
+    {
+        $importPlans = app(ImportPlans::class);
+        $running = [];
+
+        foreach ($this->importRuns->unfinished() as $run) {
+            $importPlan = $importPlans->getImportPlanByHandleOrUid($run->planUid ?? $run->planHandle);
+
+            if ($importPlan === null || isset($running[$importPlan->handle])) {
+                continue;
+            }
+
+            $state = $this->runState($importPlan, withFailures: false);
+
+            // a run whose worker has gone away is reported as failed, and has nothing left to follow
+            if ($state === null || ! in_array($state['status'], ['pending', 'running'], true)) {
+                continue;
+            }
+
+            $running[$importPlan->handle] = [
+                'handle' => (string) $importPlan->handle,
+                'name' => (string) $importPlan->name,
+                'run' => $state,
+            ];
+        }
+
+        return array_values($running);
+    }
+
+    /**
      * Releases the lock that marks the import plan as running, if the given run holds it.
      *
      * @param  ImportPlanData  $importPlan  The import plan that was run.

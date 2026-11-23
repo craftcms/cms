@@ -868,7 +868,16 @@ class ImportPlansController
         }
 
         // the run's page shows how it's going, unless it was asked to run in the background
-        return $this->asSuccess(t('Import started.'), redirect: $this->request->boolean('background') ? null : $this->latestRunUrl($importPlan));
+        if (! $this->request->boolean('background')) {
+            return $this->asSuccess(t('Import started.'), redirect: $this->latestRunUrl($importPlan));
+        }
+
+        // a page that can follow the run swaps this message for its progress
+        return $this->asSuccess(
+            t('Import started.'),
+            notificationSettings: ['importPlan' => ['handle' => $importPlan->handle, 'name' => (string) $importPlan->name]],
+            target: 'import-runs',
+        );
     }
 
     /** The page of the plan's latest run, to follow one that was just started. */

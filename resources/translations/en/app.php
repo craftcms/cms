@@ -3998,6 +3998,8 @@ return [
     '“{handle}” is a reserved word.' => '“{handle}” is a reserved word.',
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
+    '“{name}” finished importing, with problems.' => '“{name}” finished importing, with problems.',
+    '“{name}” finished importing.' => '“{name}” finished importing.',
     '“{name}” value copied.' => '“{name}” value copied.',
     'Deprecated' => 'Deprecated',
     '“{{entry}}” is approved' => '“{{entry}}” is approved',

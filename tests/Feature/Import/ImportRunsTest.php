@@ -115,6 +115,24 @@ it('shows a run that let go of its plan without finishing as failed, and fails i
         ->dateFinished->not->toBeNull();
 });
 
+it('lists the plans with a run going, until it lets go of its plan', function () {
+    $import = app(Import::class);
+
+    expect($import->runningImports())->toBe([]);
+
+    $import->dispatchImport($this->importPlan);
+
+    expect($import->runningImports())->toHaveCount(1)
+        ->and($import->runningImports()[0])
+        ->handle->toBe('guides')
+        ->name->toBe('Guides')
+        ->and($import->runningImports()[0]['run']['id'])->toBe(($this->latest)()->uid);
+
+    $import->unlock($this->importPlan);
+
+    expect($import->runningImports())->toBe([]);
+});
+
 it('deletes a plan’s runs with it', function () {
     $this->runs->start($this->importPlan, 'run-id', null, null);
 

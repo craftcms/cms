@@ -42,6 +42,7 @@ import {
 } from './element-details-panels.js';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
+import {setUpImportRunNotifications} from '@/modules/import/run/run-notifications';
 import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
 import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
 import {uiValues} from '@/modules/ui/ui-values';
@@ -199,6 +200,7 @@ const Cp = {
 
     // Before the app mounts, so the first page's messages have somewhere to go.
     setUpInertiaMessages();
+    setUpImportRunNotifications();
     relayPageBroadcasts();
 
     // A prefetched page's component loads with its response, rather than once

@@ -58,8 +58,9 @@ trait RespondsWithFlash
     /**
      * @param  array<string, mixed>  $data
      * @param  array<string, mixed>  $notificationSettings
+     * @param  string|null  $target  The inline message outlet to show the message in, when it's on the page.
      */
-    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): Response
+    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = [], ?string $target = null): Response
     {
         $redirect ??= $this->getPostedRedirectUrl();
 
@@ -69,10 +70,10 @@ trait RespondsWithFlash
         if (request()->expectsJson()) {
             $message = request()->getSigned('successMessage', $message);
 
-            return $this->asJsonSuccess($message, $data, $redirect, $notificationSettings);
+            return $this->asJsonSuccess($message, $data, $redirect, $notificationSettings, $target);
         }
 
-        Flash::success($message, $notificationSettings);
+        Flash::success($message, $notificationSettings, $target);
 
         if ($redirect) {
             return redirect($redirect)->with($data);
@@ -85,9 +86,9 @@ trait RespondsWithFlash
      * @param  array<string, mixed>  $data
      * @param  array<string, mixed>  $notificationSettings
      */
-    public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = []): JsonResponse
+    public function asJsonSuccess(?string $message = null, array $data = [], ?string $redirect = null, array $notificationSettings = [], ?string $target = null): JsonResponse
     {
-        return new JsonResponse($data + self::messageData('success', $message, $notificationSettings) + array_filter([
+        return new JsonResponse($data + self::messageData('success', $message, $notificationSettings, $target) + array_filter([
             'redirect' => $redirect,
         ]), 200);
     }
@@ -104,7 +105,7 @@ trait RespondsWithFlash
      * @param  array<string, mixed>  $settings
      * @return array<string, mixed>
      */
-    private static function messageData(string $type, ?string $message, array $settings = []): array
+    private static function messageData(string $type, ?string $message, array $settings = [], ?string $target = null): array
     {
         if ($message === null) {
             return [];
@@ -114,7 +115,7 @@ trait RespondsWithFlash
             return ['message' => $message];
         }
 
-        $flashed = Flash::make($type, $message, $settings);
+        $flashed = Flash::make($type, $message, $settings, $target);
 
         return [
             'message' => $message,

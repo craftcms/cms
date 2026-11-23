@@ -18,6 +18,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
@@ -208,6 +209,10 @@ class HandleInertiaRequests extends Middleware
                 'hasReservedJobs' => false,
                 'hasWaitingJobs' => false,
             ],
+            // so a run's progress can be followed from any page, not just its own
+            'runningImports' => fn () => ! $updatePending && $request->user()?->can('viewImportPlans')
+                ? app(Import::class)->runningImports()
+                : [],
             'isMultiSite' => fn () => Sites::isMultiSite(),
             // Disabling admin changes locks settings, not content, so only
             // settings screens are read-only for it. Other screens that can be

@@ -108,10 +108,12 @@ export function stepRunId(stepUid: string): string {
 /**
  * Follows an import plan's latest run while it's running, and checks for a new one
  * whenever the page comes back into view, as a run can be started from elsewhere.
+ * With `immediate`, it checks straight away too, for a run that's only just started.
  */
 export function useRunState(
   handle: () => string | null,
-  initial: RunState | null
+  initial: RunState | null,
+  {immediate = false}: {immediate?: boolean} = {}
 ): ShallowRef<RunState | null> {
   const state = shallowRef(initial);
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -146,6 +148,9 @@ export function useRunState(
   }
 
   watch(state, schedule, {immediate: true});
+  if (immediate) {
+    void refresh();
+  }
   useEventListener(document, 'visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       void refresh();

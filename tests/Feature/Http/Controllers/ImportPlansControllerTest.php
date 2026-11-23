@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\get;
@@ -549,10 +550,27 @@ it('stays put when a run is started in the background', function () {
 
     postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport', 'background' => true])
         ->assertOk()
-        ->assertJsonPath('redirect', null);
+        ->assertJsonPath('redirect', null)
+        ->assertJsonPath('messages.0.target', 'import-runs')
+        ->assertJsonPath('messages.0.settings.importPlan', ['handle' => 'fixtureImport', 'name' => 'Fixture Import']);
 
     Bus::assertDispatchedTimes(ImportPipeline::class, 1);
 });
+
+it('tells every page about a running import, for those who can see import plans', function (array $permissions, int $count) {
+    Bus::fake();
+    ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport', 'background' => true])->assertOk();
+
+    actingAs(UserModel::factory()->withPermissions($permissions)->createElement());
+
+    get(cp_url('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('runningImports', $count));
+})->with([
+    'can see import plans' => [['accessCp', 'viewImportPlans'], 1],
+    'can’t' => [['accessCp'], 0],
+]);
 
 it('saves an import plan that is already running without starting it again', function () {
     Bus::fake();
