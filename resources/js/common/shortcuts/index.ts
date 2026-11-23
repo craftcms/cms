@@ -39,7 +39,8 @@ export interface ShortcutOptions {
   ignoreInputs?: boolean | 'auto';
   /**
    * `'always'` also prevents the browser's default while the shortcut isn't
-   * available, such as Save's on a read-only screen.
+   * available, such as Save's on a read-only screen. Other shortcuts for the
+   * same keys still run, such as Save's on a slideout above that screen.
    */
   preventDefault?: 'always';
   /**
@@ -62,6 +63,9 @@ function resolve(label: Label | undefined): string | undefined {
  */
 export type ShortcutCallback = (event: KeyboardEvent) => void | false;
 
+/** Presses whose default was only prevented by unavailable `'always'` shortcuts. */
+const blockedOnly = new WeakSet<Event>();
+
 export interface ShortcutRegistration {
   unregister: () => void;
 }
@@ -83,13 +87,14 @@ export function registerShortcut(
   const handle = getHotkeyManager().register(
     hotkey,
     (event) => {
-      if (event.defaultPrevented) {
+      if (event.defaultPrevented && !blockedOnly.has(event)) {
         return;
       }
 
       if (options.isAvailable?.() === false) {
         if (options.preventDefault === 'always') {
           event.preventDefault();
+          blockedOnly.add(event);
         }
 
         return;
