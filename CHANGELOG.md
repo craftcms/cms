@@ -34,6 +34,7 @@
 - Fixed a bug where elements selected in Link fields weren’t shown as chips, and couldn’t be edited, copied, replaced, or removed from an action menu. ([#21025](https://github.com/craftcms/cms/pull/21025))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
+- Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> didn’t save element editor slideouts opened from full-page element editors. ([#21021](https://github.com/craftcms/cms/pull/21021))
 - Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))
 - Fixed a bug where the “Use shapes to represent statuses” preference had no effect. ([#20963](https://github.com/craftcms/cms/issues/20963))
 - Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode. ([#20547](https://github.com/craftcms/cms/pull/20547))
