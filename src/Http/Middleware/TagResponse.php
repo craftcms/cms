@@ -18,6 +18,11 @@ use Symfony\Component\HttpFoundation\Response;
  * the element tags to the {@see ResponseTagger}, caps the response's lifetimes at that expiry, and writes the tag
  * header. Whether the response is stored is still up to the cache, from its headers.
  *
+ * It does this after the rest of the request returns, so a cache driver that reads the tags or the capped lifetime
+ * runs outside it: global middleware added with `prependMiddleware()`, or a `RequestHandled` listener. A driver that
+ * sets a default lifetime sets it as `s-maxage` from middleware that runs inside it, such as global middleware added
+ * with `pushMiddleware()`, so the cap applies to the default too.
+ *
  * @since 6.0.0
  */
 readonly class TagResponse

@@ -7,7 +7,10 @@ use CraftCms\Cms\Database\Factories\EntryFactory;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\ResponseTagger;
 use FOS\HttpCache\TagHeaderFormatter\CommaSeparatedTagHeaderFormatter;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\renderString;
 
@@ -36,6 +39,55 @@ it('tags a page with the elements it queried and caps its lifetimes at the earli
         ->and($response->headers->getCacheControlDirective('s-maxage'))->toBe('600')
         ->and($response->getExpires()->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
 });
+
+it('lets cache drivers outside it read the tags and the capped default lifetime', function () {
+    $this->freezeSecond();
+    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
+    $seen = [];
+    $kernel = app(Kernel::class);
+
+    $kernel->pushMiddleware(DefaultSharedMaxAge::class);
+    $kernel->prependMiddleware(RecordCacheInfo::class);
+    app()->instance('test.seen', function (array $info) use (&$seen) {
+        $seen = $info;
+    });
+
+    Route::get('/page', function () use ($entry) {
+        Entry::find()->id($entry->id)->one();
+
+        return response('ok')->setPublic();
+    });
+
+    $this->get('/page');
+
+    expect($seen['tags'])->toContain('element', 'element::'.Entry::class)
+        ->and($seen['s-maxage'])->toBe('600');
+});
+
+class DefaultSharedMaxAge
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = $next($request);
+
+        return $response->headers->hasCacheControlDirective('s-maxage') ? $response : $response->setSharedMaxAge(31536000);
+    }
+}
+
+class RecordCacheInfo
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = $next($request);
+
+        app('test.seen')([
+            'tags' => ResponseTagger::getTags(),
+            's-maxage' => $response->headers->getCacheControlDirective('s-maxage'),
+        ]);
+
+        return $response;
+    }
+}
 
 it('leaves lifetimes shorter than the earliest expiry alone', function () {
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addDay()]);
