@@ -103,8 +103,8 @@ class OAuthResources
     }
 
     /**
-     * Registers the resource’s discovery, client registration, and authorization routes, and the JWK Set route. Tokens
-     * are issued by Passport’s token endpoint.
+     * Registers the resource’s discovery, client registration, and authorization routes. Tokens are issued by
+     * Passport’s token endpoint.
      */
     public function routes(string $handle): void
     {
@@ -117,9 +117,6 @@ class OAuthResources
         $this->router->name("$resource->routeName.authorization-server")->get($this->wellKnownPath($resource->authorizationServerMetadataUrl()), [MetadataController::class, 'authorizationServer'])
             ->middleware(EnsureInstalled::class)
             ->defaults('oauthResource', $handle);
-        // Every resource shares Passport’s signing key, so they share one key set
-        $this->router->name('craft.oauth.jwks')->get('.well-known/jwks.json', [MetadataController::class, 'keys'])
-            ->middleware(EnsureInstalled::class);
 
         $this->router->prefix(trim($resource->authorizationRoute, '/').'/oauth')
             ->name("$resource->routeName.")
