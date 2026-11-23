@@ -272,6 +272,7 @@
 
 #### Deprecations
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
+- Deprecated setting general config settings with `CRAFT_` environment variables. They should be set in `config/craft/general.php` instead, with `env()`. ([#21018](https://github.com/craftcms/cms/pull/21018))
 - Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
   - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Deprecated the `errorTemplatePrefix` general config setting. Error templates now go in an `errors/` folder within the site templates, such as `errors/404.twig`, `errors/_404.twig`, or `errors/404.blade.php`, with `errors/offline` and `errors/error` as fallbacks, and a site’s own template folder takes precedence, such as `resources/views/siteHandle/errors/404.twig`. ([#20448](https://github.com/craftcms/cms/pull/20448))

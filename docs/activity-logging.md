@@ -294,6 +294,6 @@ return Cms::config()
     ->activityRetentionDuration('P90D');
 ```
 
-The `CRAFT_ACTIVITY_RETENTION_DURATION` environment variable accepts the same duration values. Set the value to `0` for unlimited retention. Garbage collection deletes events older than the configured cutoff in chunks.
+Set the value to `0` for unlimited retention. Garbage collection deletes events older than the configured cutoff in chunks.
 
 Choose a retention period based on the history users need and the data included in plugin payloads. Changing the period affects future garbage collection; it does not archive events before deleting them.
