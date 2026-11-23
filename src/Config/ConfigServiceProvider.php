@@ -230,7 +230,7 @@ class ConfigServiceProvider extends ServiceProvider
      * @param  class-string<BaseConfig>  $class
      * @param  array<string, mixed>  $settings  The settings the variables set, from [[Env::config()]]
      */
-    private function deprecateEnvironmentOverrides(string $class, string $prefix, array $settings, string $settingPrefix = ''): void
+    private function deprecateEnvironmentOverrides(string $class, string $prefix, #[\SensitiveParameter] array $settings, string $settingPrefix = ''): void
     {
         foreach (array_keys($settings) as $setting) {
             $attribute = Arr::first(new ReflectionProperty($class, $setting)->getAttributes(EnvName::class));
