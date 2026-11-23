@@ -114,18 +114,18 @@ it('allows duplicate name and handle values from soft deleted volumes', function
         ->and($handle->errors()->has('handle'))->toBeFalse();
 });
 
-it('validates fsHandle for required invalid references and internal disks', function () {
+it('validates the disk for required invalid references and internal disks', function () {
     $required = new Volume;
 
-    expect($required->validate(['fsHandle']))->toBeFalse()
-        ->and($required->errors()->has('fsHandle'))->toBeTrue();
+    expect($required->validate(['disk']))->toBeFalse()
+        ->and($required->errors()->has('disk'))->toBeTrue();
 
     $invalid = new Volume([
-        'fsHandle' => 'missing-filesystem',
+        'disk' => 'missing-filesystem',
     ]);
 
-    expect($invalid->validate(['fsHandle']))->toBeFalse()
-        ->and($invalid->errors()->has('fsHandle'))->toBeTrue();
+    expect($invalid->validate(['disk']))->toBeFalse()
+        ->and($invalid->errors()->has('disk'))->toBeTrue();
 
     config()->set('filesystems.disks.validation-disk', [
         'driver' => 'local',
@@ -133,11 +133,11 @@ it('validates fsHandle for required invalid references and internal disks', func
     ]);
 
     $valid = new Volume([
-        'fsHandle' => 'validation-disk',
+        'disk' => 'validation-disk',
     ]);
 
-    expect($valid->validate(['fsHandle']))->toBeTrue()
-        ->and($valid->errors()->has('fsHandle'))->toBeFalse();
+    expect($valid->validate(['disk']))->toBeTrue()
+        ->and($valid->errors()->has('disk'))->toBeFalse();
 
     config()->set('filesystems.disks.craft-tmp', [
         'driver' => 'local',
@@ -145,14 +145,14 @@ it('validates fsHandle for required invalid references and internal disks', func
     ]);
 
     $internal = new Volume([
-        'fsHandle' => 'craft-tmp',
+        'disk' => 'craft-tmp',
     ]);
 
-    expect($internal->validate(['fsHandle']))->toBeFalse()
-        ->and($internal->errors()->has('fsHandle'))->toBeTrue();
+    expect($internal->validate(['disk']))->toBeFalse()
+        ->and($internal->errors()->has('disk'))->toBeTrue();
 });
 
-it('rejects the temp upload filesystem target for fsHandle', function () {
+it('rejects the temp upload filesystem target for the disk', function () {
     config()->set('filesystems.disks.temp-reserved', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-validation/temp-reserved'),
@@ -160,11 +160,11 @@ it('rejects the temp upload filesystem target for fsHandle', function () {
     Cms::config()->assets->tempUploadDisk = 'temp-reserved';
 
     $volumeFs = new Volume([
-        'fsHandle' => 'temp-reserved',
+        'disk' => 'temp-reserved',
     ]);
 
-    expect($volumeFs->validate(['fsHandle']))->toBeFalse()
-        ->and($volumeFs->errors()->has('fsHandle'))->toBeTrue();
+    expect($volumeFs->validate(['disk']))->toBeFalse()
+        ->and($volumeFs->errors()->has('disk'))->toBeTrue();
 });
 
 it('requires subpath for shared filesystems and rejects overlapping roots', function () {
@@ -176,14 +176,14 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
     insertVolumeValidationRow([
         'name' => 'Existing Shared',
         'handle' => 'existingShared',
-        'fs' => 'shared-validation-disk',
+        'disk' => 'shared-validation-disk',
         'subpath' => 'foo/bar',
     ]);
 
     $missingSubpath = new Volume([
         'name' => 'Missing Subpath',
         'handle' => 'missingSubpath',
-        'fsHandle' => 'shared-validation-disk',
+        'disk' => 'shared-validation-disk',
     ]);
 
     expect($missingSubpath->validate(['subpath']))->toBeFalse()
@@ -192,7 +192,7 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
     $missingEnvironmentSubpath = new Volume([
         'name' => 'Missing Environment Subpath',
         'handle' => 'missingEnvironmentSubpath',
-        'fsHandle' => 'shared-validation-disk',
+        'disk' => 'shared-validation-disk',
         'subpath' => '$CRAFT_TEST_VOLUME_SUBPATH',
     ]);
 
@@ -202,7 +202,7 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
     $overlap = new Volume([
         'name' => 'Overlap',
         'handle' => 'overlap',
-        'fsHandle' => 'shared-validation-disk',
+        'disk' => 'shared-validation-disk',
         'subpath' => 'foo',
     ]);
 
@@ -212,7 +212,7 @@ it('requires subpath for shared filesystems and rejects overlapping roots', func
     $valid = new Volume([
         'name' => 'Non Overlap',
         'handle' => 'nonOverlap',
-        'fsHandle' => 'shared-validation-disk',
+        'disk' => 'shared-validation-disk',
         'subpath' => 'baz/qux',
     ]);
 
@@ -261,7 +261,7 @@ function insertVolumeValidationRow(array $overrides = []): void
     DB::table(Table::VOLUMES)->insert(array_merge([
         'name' => "Volume {$counter}",
         'handle' => "volume{$counter}",
-        'fs' => 'default-validation-disk',
+        'disk' => 'default-validation-disk',
         'subpath' => null,
         'titleTranslationMethod' => 'site',
         'titleTranslationKeyFormat' => null,

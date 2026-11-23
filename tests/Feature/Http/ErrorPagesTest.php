@@ -5,13 +5,17 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 
 use function Pest\Laravel\actingAs;
 
@@ -88,6 +92,87 @@ it('renders site error templates for exceptions outside debug mode', function ()
     $this->getJson('/throws')
         ->assertInternalServerError()
         ->assertJson(['message' => 'Server Error']);
+});
+
+it('drops cache headers queued before an exception', function (bool $debug) {
+    config(['app.debug' => $debug]);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () {
+        ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-Test', 'value');
+
+        throw new RuntimeException('Boom');
+    });
+
+    $response = $this->get('/throws')
+        ->assertInternalServerError()
+        ->assertHeaderMissing('X-Test');
+
+    expect($response->headers->hasCacheControlDirective('public'))->toBeFalse();
+})->with([
+    'debug mode off' => false,
+    'debug mode on' => true,
+]);
+
+it('drops cache headers queued before Laravel renders an exception', function (Throwable $e) {
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () use ($e) {
+        ResponseHeaders::setCache(3600);
+
+        throw $e;
+    });
+
+    $response = $this->get('/throws');
+
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
+})->with([
+    'authentication' => fn () => new AuthenticationException(redirectTo: '/login'),
+    'validation' => fn () => ValidationException::withMessages(['email' => 'Invalid']),
+]);
+
+it('drops cache headers queued before an exception that renders its own response', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () {
+        ResponseHeaders::setCache(3600);
+
+        throw new class('Nope') extends RuntimeException
+        {
+            public function render(): Response
+            {
+                return response('Nope', 400);
+            }
+        };
+    });
+
+    $response = $this->get('/throws')->assertBadRequest();
+
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
+});
+
+it('applies cache headers queued by the error template', function () {
+    config(['app.debug' => false]);
+    File::ensureDirectoryExists("{$this->tempDir}/errors");
+    File::put("{$this->tempDir}/errors/404.twig", '{% expires in 1 hour %}Not found');
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () {
+        ResponseHeaders::setCache(60);
+        abort(404);
+    });
+
+    $response = $this->get('/throws')->assertNotFound();
+
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=3600, public');
+});
+
+it('drops cache headers queued by an error template that fails', function () {
+    config(['app.debug' => false]);
+    File::ensureDirectoryExists("{$this->tempDir}/errors");
+    File::put("{$this->tempDir}/errors/500.twig", '{% expires in 1 hour %}{% exit 500 %}');
+
+    Route::middleware(['web', 'craft', 'craft.web'])
+        ->get('throws', fn () => throw new RuntimeException('Boom'));
+
+    $response = $this->get('/throws')->assertInternalServerError();
+
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
 });
 
 it('shows exception details to admins who chose to see them outside debug mode', function () {

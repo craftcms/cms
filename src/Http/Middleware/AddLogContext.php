@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\RequestBodyLogProcessor;
 use CraftCms\Cms\Support\Security;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -30,9 +31,10 @@ readonly class AddLogContext
         ]));
 
         if ($request->method() === 'POST') {
-            Log::shareContext([
-                'body' => $this->security->redactIfSensitive('', $request->input()),
-            ]);
+            $request->attributes->set(
+                RequestBodyLogProcessor::REQUEST_ATTRIBUTE,
+                $this->security->redactIfSensitive('', $request->input()),
+            );
         }
 
         Log::info('Request received.');

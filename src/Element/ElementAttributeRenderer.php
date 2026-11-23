@@ -144,11 +144,10 @@ readonly class ElementAttributeRenderer
                     return $this->renderInlineUi(Ui::make([UiField::make(control: $control)]), context: $context);
                 }
             }
-
-            return $element->getAttributeHtml($attribute);
         }
 
-        return $this->render($element, $attribute);
+        // The element's own HTML, which covers attributes it defines itself, such as a plugin's table attributes
+        return $element->getAttributeHtml($attribute);
     }
 
     /**

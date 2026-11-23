@@ -2265,7 +2265,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if (! $volume->sourceHasUrls() || $volume->isTemporary() || is_null($volume->getResolvedFsTarget())) {
+        if (! $volume->sourceHasUrls() || $volume->isTemporary() || is_null($volume->getResolvedDisk())) {
             return null;
         }
 
@@ -4170,7 +4170,7 @@ CSS,
         $oldDisk = $oldVolume?->sourceDisk();
         $newDisk = $newVolume->sourceDisk();
         $sameFile = $oldDisk !== null && $oldPath !== null &&
-            $oldVolume?->getResolvedFsTarget() === $newVolume->getResolvedFsTarget() &&
+            $oldVolume?->getResolvedDisk() === $newVolume->getResolvedDisk() &&
             $oldDisk->path($oldPath) === $newDisk->path($newPath);
 
         if ($tempPath !== null && ! $this->_validateTempFilePath()) {

@@ -75,23 +75,26 @@ function buildParams(
 }
 
 /**
- * Serializes an object into a query string, nesting with brackets
- * (`a[b][]=1`). An array is read as a list of `{name, value}` form fields.
+ * Flattens an object into the key/value pairs `param()` serializes, nesting
+ * with brackets (`a[b][]=1`). An array is read as a list of `{name, value}`
+ * form fields.
  */
-export function param(a: unknown, traditional = false): string {
-  const s: string[] = [];
+export function paramPairs(
+  a: unknown,
+  traditional = false
+): Array<[string, unknown]> {
+  const pairs: Array<[string, unknown]> = [];
   const add: Add = (key, valueOrFunction) => {
-    const value =
+    pairs.push([
+      key,
       typeof valueOrFunction === 'function'
-        ? valueOrFunction()
-        : valueOrFunction;
-    s.push(
-      `${encodeURIComponent(key)}=${encodeURIComponent(value == null ? '' : String(value))}`
-    );
+        ? (valueOrFunction as () => unknown)()
+        : valueOrFunction,
+    ]);
   };
 
   if (a == null) {
-    return '';
+    return pairs;
   }
 
   if (Array.isArray(a)) {
@@ -109,5 +112,18 @@ export function param(a: unknown, traditional = false): string {
     }
   }
 
-  return s.join('&');
+  return pairs;
+}
+
+/**
+ * Serializes an object into a query string, nesting with brackets
+ * (`a[b][]=1`). An array is read as a list of `{name, value}` form fields.
+ */
+export function param(a: unknown, traditional = false): string {
+  return paramPairs(a, traditional)
+    .map(
+      ([key, value]) =>
+        `${encodeURIComponent(key)}=${encodeURIComponent(value == null ? '' : String(value as string))}`
+    )
+    .join('&');
 }

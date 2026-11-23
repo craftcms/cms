@@ -26,7 +26,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageHelper;
-use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
@@ -142,7 +141,6 @@ class AssetIndexer
     /** @param array<int|string> $volumes */
     public function startIndexingSession(
         array $volumes,
-        bool $cacheRemoteImages = true,
         bool $listEmptyFolders = false,
         bool $analyzeImages = false,
     ): AssetIndexingSession {
@@ -154,7 +152,7 @@ class AssetIndexer
             }
         }
 
-        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages, listEmptyFolders: $listEmptyFolders, analyzeImages: $analyzeImages);
+        $session = $this->createIndexingSession($volumeList, listEmptyFolders: $listEmptyFolders, analyzeImages: $analyzeImages);
         $total = 0;
 
         /** @var Volume $volume */
@@ -181,7 +179,6 @@ class AssetIndexer
     /** @param Volume[] $volumeList */
     public function createIndexingSession(
         array $volumeList,
-        bool $cacheRemoteImages = true,
         bool $isCli = false,
         bool $listEmptyFolders = false,
         bool $analyzeImages = false,
@@ -196,7 +193,6 @@ class AssetIndexer
             'totalEntries' => 0,
             'indexedVolumes' => Json::encode($indexedVolumes),
             'processedEntries' => 0,
-            'cacheRemoteImages' => $cacheRemoteImages,
             'listEmptyFolders' => $listEmptyFolders,
             'analyzeImages' => $analyzeImages,
             'actionRequired' => false,
@@ -290,7 +286,7 @@ class AssetIndexer
                 if ($indexEntry->isDir) {
                     $recordId = $this->indexFolderByEntry($indexEntry)->id;
                 } else {
-                    $recordId = $this->indexFileByEntry($indexEntry, $indexingSession->cacheRemoteImages, analyzeImages: $indexingSession->analyzeImages)->id;
+                    $recordId = $this->indexFileByEntry($indexEntry, analyzeImages: $indexingSession->analyzeImages)->id;
                 }
 
                 $indexEntry->transitionTo(AssetIndexStatus::Indexed, $recordId);
@@ -491,7 +487,6 @@ class AssetIndexer
         Volume $volume,
         string $path,
         int $sessionId,
-        bool $cacheImages = false,
         bool $createIfMissing = true,
         bool $analyzeImages = false,
     ): Asset {
@@ -508,7 +503,7 @@ class AssetIndexer
             'fileSize' => $volume->sourceDisk()->size($path),
         ]);
 
-        return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing, $analyzeImages);
+        return $this->indexFileByListing($volume, $listing, $sessionId, $createIfMissing, $analyzeImages);
     }
 
     /**
@@ -521,7 +516,6 @@ class AssetIndexer
         Volume $volume,
         FsListing $listing,
         int $sessionId,
-        bool $cacheImages = false,
         bool $createIfMissing = true,
         bool $analyzeImages = false,
     ): Asset {
@@ -536,7 +530,7 @@ class AssetIndexer
 
         return $this->indexByListing(
             $indexEntry,
-            fn () => $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing, $analyzeImages),
+            fn () => $this->indexFileByEntry($indexEntry, $createIfMissing, $analyzeImages),
         );
     }
 
@@ -606,7 +600,6 @@ class AssetIndexer
      */
     public function indexFileByEntry(
         AssetIndexData $indexEntry,
-        bool $cacheImages = false,
         bool $createIfMissing = true,
         bool $analyzeImages = false,
     ): Asset {
@@ -705,17 +698,15 @@ class AssetIndexer
                     $dimensions = ImageHelper::imageSize($transformSourcePath);
                     $localPath = $transformSourcePath;
                 } else {
-                    if (! $cacheImages) {
-                        try {
-                            $stream = $asset->getStream();
+                    try {
+                        $stream = $asset->getStream();
 
-                            if (is_resource($stream)) {
-                                $dimensions = ImageHelper::imageSizeByStream($stream);
-                                fclose($stream);
-                            }
-                        } catch (VolumeException $e) {
-                            Log::info($e->getMessage());
+                        if (is_resource($stream)) {
+                            $dimensions = ImageHelper::imageSizeByStream($stream);
+                            fclose($stream);
                         }
+                    } catch (VolumeException $e) {
+                        Log::info($e->getMessage());
                     }
 
                     // A remote image is downloaded when its dimensions couldn't be read from a stream, or
@@ -753,14 +744,6 @@ class AssetIndexer
                 if ($isNew || $fileChanged || $analyzeImages) {
                     $this->imageAnalyzer->queue($asset);
                 }
-
-                $shouldCache = ! $isLocalFs && $cacheImages && Cms::config()->images->maxCachedCloudSize > 0;
-
-                if ($shouldCache && $tempPath) {
-                    $targetPath = $asset->getImageTransformSourcePath();
-                    ImageTransformHelper::storeLocalSource($tempPath, $targetPath);
-                    File::delete($tempPath);
-                }
             } else {
                 // Like colors, preview text that's been read already, even with nothing to show, isn't read again
                 // unless the file has changed
@@ -786,7 +769,6 @@ class AssetIndexer
         } catch (Throwable $exception) {
             Log::info($exception->getMessage());
         } finally {
-            // Unless it was moved into place as the cached transform source
             if ($tempPath !== null && file_exists($tempPath)) {
                 File::delete($tempPath);
             }

@@ -26,32 +26,27 @@ if (Edition::get()->registersFrontendUserRoutes()) {
 
     /*
      * These paths can be localized per site, so a route is registered for every
-     * site's value, at the root and under each site's base path, such as `fr` for
-     * `https://example.com/fr/`. Changing them or the sites requires re-running
-     * `route:cache` on installs that cache routes.
+     * site's value. Changing them requires re-running `route:cache` on installs
+     * that cache routes.
      */
     if (Cms::isInstalled()) {
-        $basePaths = $routes->siteBasePaths();
-        $sitePaths = fn (string $getter) => $routes->localizedConfigPaths($getter)
-            ->flatMap(fn (string $path) => [$path, ...$basePaths->map(fn (string $basePath) => "$basePath/$path")]);
-
-        foreach ($sitePaths('getLoginPath') as $path) {
+        foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
             Route::allowDuringMaintenance()->get($path, [LoginController::class, 'showLogin']);
             Route::allowDuringMaintenance()->post($path, [LoginController::class, 'attemptLogin'])
                 ->middleware('throttle:'.LoginRateLimiter::NAME);
         }
 
-        foreach ($sitePaths('getVerifyEmailPath') as $path) {
+        foreach ($routes->localizedConfigPaths('getVerifyEmailPath') as $path) {
             Route::allowDuringMaintenance()->get($path, [VerifyEmailController::class, 'show']);
             Route::allowDuringMaintenance()->post($path, [VerifyEmailController::class, 'store']);
         }
 
-        foreach ($sitePaths('getSetPasswordPath') as $path) {
+        foreach ($routes->localizedConfigPaths('getSetPasswordPath') as $path) {
             Route::allowDuringMaintenance()->get($path, [SetPasswordController::class, 'show']);
             Route::allowDuringMaintenance()->post($path, [SetPasswordController::class, 'store']);
         }
 
-        foreach ($sitePaths('getLogoutPath') as $path) {
+        foreach ($routes->localizedConfigPaths('getLogoutPath') as $path) {
             Route::allowDuringMaintenance()->match(['get', 'post'], $path, [LoginController::class, 'logout']);
         }
     }
@@ -62,18 +57,6 @@ if (OAuth::isAvailable()) {
         Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
         Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
-        /*
-         * OAuth URLs are built from the current site’s base URL, so sites with a base path,
-         * such as `https://example.com/fr/`, need these routes under it. Changing the sites
-         * requires re-running `route:cache` on installs that cache routes.
-         */
-        if (Cms::isInstalled()) {
-            foreach ($routes->siteBasePaths() as $path) {
-                Route::get("$path/oauth/{provider}/redirect", [OAuthController::class, 'redirect']);
-                Route::get("$path/oauth/{provider}/callback", [OAuthController::class, 'callback']);
-            }
-        }
-
         Route::prefix($routes->cpTriggerRoutePrefix())->middleware('craft.cp')->group(function () {
             Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect']);
         });
@@ -81,7 +64,7 @@ if (OAuth::isAvailable()) {
 }
 
 if (! is_null(Cms::config()->routing->setPasswordRequestPath)) {
-    Route::allowDuringMaintenance()->get('.well-known/change-password', function (Sites $sites) {
+    Route::allowDuringMaintenance()->rootOnly()->get('.well-known/change-password', function (Sites $sites) {
         $uri = Cms::config()->routing->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
 
         abort_if(is_null($uri), 404);
@@ -91,7 +74,7 @@ if (! is_null(Cms::config()->routing->setPasswordRequestPath)) {
 }
 
 // Signals support for passkeys without leaking the CP URL, per https://www.w3.org/TR/passkey-endpoints/.
-Route::get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
+Route::rootOnly()->get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
 
 // Route::fallback() only registers GET/HEAD by default
 Route::any('{fallbackPlaceholder}', SiteRouteController::class)

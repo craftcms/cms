@@ -106,7 +106,8 @@ class AuthServiceProvider extends ServiceProvider
                 return Cms::config()->routing->cpTrigger.'/login';
             }
 
-            return Cms::config()->routing->getLoginPath();
+            // The `AuthenticationException` redirect callback resolves the current site's login URL
+            return null;
         });
 
         RedirectIfAuthenticated::redirectUsing(fn (Request $request) => URL::defaultReturnUrl());

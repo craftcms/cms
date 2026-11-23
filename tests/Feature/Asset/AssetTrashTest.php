@@ -30,7 +30,7 @@ beforeEach(function () {
     $this->trashDisk = Storage::fake('asset-trash-trash');
     Cms::config()->assets->trashDisk('asset-trash-trash');
 
-    $volume = Volume::factory()->create(['fs' => 'asset-trash-volume']);
+    $volume = Volume::factory()->create(['disk' => 'asset-trash-volume']);
     $folderModel = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'path' => '',

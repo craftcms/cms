@@ -92,14 +92,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->isSystemLive(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_IS_SYSTEM_LIVE=true
-     * ```
-     * :::
      *
      * @group System
      * @deprecated in 6.0.0. Use Laravel maintenance mode instead.
@@ -109,14 +104,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool|null Whether image transforms should be generated before page load. `null` leaves it up to the asset transformer.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->generateTransformsBeforePageLoad(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_GENERATE_TRANSFORMS_BEFORE_PAGE_LOAD=true
-     * ```
-     * :::
      *
      * @group Image Handling
      * @deprecated in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.
@@ -138,14 +128,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
      * `['me@domain.tld' => 'Name']`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->testToEmailAddress('me@domain.tld')
      * ```
-     * ```shell Environment Override
-     * CRAFT_TEST_TO_EMAIL_ADDRESS=me@domain.tld
-     * ```
-     * :::
      *
      * @group System
      * @deprecated in 6.0.0. Configure `Illuminate\Support\Facades\Mail::alwaysTo()` instead.
@@ -159,14 +144,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * If not set, the default [[\craft\web\Request::ipHeaders]] value will be used.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->ipHeaders(['X-Forwarded-For', 'CF-Connecting-IP'])
      * ```
-     * ```shell Environment Override
-     * CRAFT_IP_HEADERS=X-Forwarded-For,CF-Connecting-IP
-     * ```
-     * :::
      *
      * @group System
      * @deprecated in 6.0.0. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
@@ -241,14 +221,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether users should be allowed to create similarly-named tags.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->allowSimilarTags(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_SIMILAR_TAGS=true
-     * ```
-     * :::
      *
      * @group System
      * @deprecated in 6.0.0. Tags are deprecated. Run `php craft entrify/tags` to convert tag groups to sections.
@@ -260,14 +235,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
-     * ```shell Environment Override
-     * CRAFT_BUILD_ID=$GIT_SHA
-     * ```
-     * :::
      *
      * @group Environment
      * @deprecated in 6.0.0. It only affects asset bundles published through the Yii adapter.
@@ -279,14 +249,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * If set to `null`, the permission will be determined by the current environment.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultFileMode(0744)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_FILE_MODE=0744
-     * ```
-     * :::
      *
      * @group System
      * @deprecated in 6.0.0. It only affects files written through the Yii adapter. Set `permissions` in a local disk’s config instead.
@@ -298,14 +263,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * This requires SVG decoding support from the active image driver.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->rasterizeSvgThumbs(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_RASTERIZE_SVG_THUMBS=true
-     * ```
-     * :::
      *
      * @group Image Handling
      * @deprecated in 6.0.0. It no longer has any effect.
@@ -367,14 +327,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * This only affects template responses rendered through the Yii2 adapter.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->sendContentLengthHeader(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
-     * ```
-     * :::
      *
      * @group System
      *
@@ -417,14 +372,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
      * :::
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->useIframeResizer(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_USE_IFRAME_RESIZER=true
-     * ```
-     * :::
      *
      * @group System
      * @since 3.5.5
@@ -452,14 +402,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * which domain to use (almost always the current). If you want the cookies to work for all subdomains, for example, you could
      * set this to `'.my-project.tld'`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->defaultCookieDomain('.my-project.tld')
      * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_COOKIE_DOMAIN=.my-project.tld
-     * ```
-     * :::
      *
      * @group Environment
      * @deprecated in 6.0.0. Configure `session.domain` or set the `SESSION_DOMAIN` environment variable instead.
@@ -473,14 +418,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->rememberedUserSessionDuration(0)
      * ```
-     * ```shell Environment Override
-     * CRAFT_REMEMBERED_USER_SESSION_DURATION=0
-     * ```
-     * :::
      *
      * @group Session
      * @defaultAlt 14 days
@@ -493,16 +433,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 1 hour
      * ->verificationCodeDuration(3600)
      * ```
-     * ```shell Environment Override
-     * # 1 hour
-     * CRAFT_VERIFICATION_CODE_DURATION=3600
-     * ```
-     * :::
      *
      * @group Security
      * @defaultAlt 1 day
@@ -513,14 +447,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var string The path to the root directory that should store published control panel resources.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->resourceBasePath('@webroot/craft-resources')
      * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_PATH=@webroot/craft-resources
-     * ```
-     * :::
      *
      * @group Environment
      */
@@ -529,14 +458,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var string The URL to the root directory where control panel resources are published.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->resourceBaseUrl('@web/craft-resources')
      * ```
-     * ```shell Environment Override
-     * CRAFT_RESOURCE_BASE_URL=@web/craft-resources
-     * ```
-     * :::
      *
      * @group Environment
      */
@@ -555,14 +479,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * If this is set to `false`, then the `Access-Control-Allow-Origin` response header will never be sent.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->allowedGraphqlOrigins(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_GRAPHQL_ORIGINS=false
-     * ```
-     * :::
      *
      * @group GraphQL
      *
@@ -577,14 +496,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
-     * ::: code
-     *  ```php Static Config
-     *  ->autosaveDrafts(false)
-     *  ```
-     * ```shell Environment Override
-     * CRAFT_AUTOSAVE_DRAFTS=false
+     * ```php
+     * ->autosaveDrafts(false)
      * ```
-     * :::
      *
      * @group System
      *
@@ -605,14 +519,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * For example, if the hash takes 1 second to compute when the value is 14 then the compute time varies as
      * 2^(value - 14) seconds.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->blowfishHashCost(15)
      * ```
-     * ```shell Environment Override
-     * CRAFT_BLOWFISH_HASH_COST=15
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -623,14 +532,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether the `@transform` directive should be disabled for the GraphQL API.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->disableGraphqlTransformDirective(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_DISABLE_GRAPHQL_TRANSFORM_DIRECTIVE=true
-     * ```
-     * :::
      *
      * @group GraphQL
      *
@@ -642,14 +546,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var string|null The `Permissions-Policy` header that should be sent for site responses.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->permissionsPolicyHeader('Permissions-Policy: geolocation=(self)')
      * ```
-     * ```shell Environment Override
-     * CRAFT_PERMISSIONS_POLICY_HEADER=Permissions-Policy: geolocation=(self)
-     * ```
-     * :::
      *
      * @group System
      *
@@ -661,14 +560,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var string The name of the PHP session cookie.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->phpSessionName(null)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PHP_SESSION_NAME=
-     * ```
-     * :::
      *
      * @see https://php.net/manual/en/function.session-name.php
      *
@@ -685,16 +579,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 1 week
      * ->purgeStaleUserSessionDuration(604800)
      * ```
-     * ```shell Environment Override
-     * # 1 week
-     * CRAFT_PURGE_STALE_USER_SESSION_DURATION=604800
-     * ```
-     * :::
      *
      * @group Garbage Collection
      *
@@ -708,14 +596,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether Craft should require a matching user agent string when restoring a user session from a cookie.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->requireMatchingUserAgentForSession(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_REQUIRE_MATCHING_USER_AGENT_FOR_SESSION=false
-     * ```
-     * :::
      *
      * @group Session
      *
@@ -726,14 +609,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether Craft should require the existence of a user agent string and IP address when creating a new user session.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->requireUserAgentAndIpForSession(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_REQUIRE_USER_AGENT_AND_IP_FOR_SESSION=false
-     * ```
-     * :::
      *
      * @group Session
      *
@@ -748,16 +626,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * // 3 hours
      * ->userSessionDuration(10800)
      * ```
-     * ```shell Environment Override
-     * # 3 hours
-     * CRAFT_USER_SESSION_DURATION=10800
-     * ```
-     * :::
      *
      * @group Session
      *
@@ -772,14 +644,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * If set to `'_'` your site’s 404 template would live at `templates/_404.twig`, for example.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->errorTemplatePrefix('_')
      * ```
-     * ```shell Environment Override
-     * CRAFT_ERROR_TEMPLATE_PREFIX=_
-     * ```
-     * :::
      *
      * @group System
      *
@@ -797,14 +664,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * RewriteRule (.+) index.php [QSA,L]
      * ```
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->pathParam(null)
      * ```
-     * ```shell Environment Override
-     * CRAFT_PATH_PARAM=
-     * ```
-     * :::
      *
      * @group Routing
      *
@@ -825,14 +687,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * RewriteRule (.+) /index.php?p=$1 [QSA,L]
      * ```
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->omitScriptNameInUrls(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_OMIT_SCRIPT_NAME_IN_URLS=true
-     * ```
-     * :::
      *
      * ::: tip
      * Even when this is set to `true`, the script name could still be included in some action URLs.
@@ -851,14 +708,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * This setting only takes effect if <config5:omitScriptNameInUrls> is set to `false`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->usePathInfo(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_USE_PATH_INFO=true
-     * ```
-     * :::
      *
      * @group Routing
      *
@@ -873,14 +725,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * If `null`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->useFileLocks(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_USE_FILE_LOCKS=false
-     * ```
-     * :::
      *
      * @see https://php.net/manual/en/function.file-put-contents.php
      * @group System
@@ -889,16 +736,23 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public ?bool $useFileLocks = null;
 
     /**
+     * @var int The maximum dimension size to use when caching images from external sources to use in transforms.
+     *
+     * ```php
+     * ->maxCachedCloudImageSize(0)
+     * ```
+     *
+     * @group Image Handling
+     * @deprecated in 6.0.0. It no longer has any effect. Remote images are downloaded when needed and deleted afterward.
+     */
+    public int $maxCachedCloudImageSize = 0;
+
+    /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableBasicHttpAuth(true)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
-     * ```
-     * :::
      *
      * @group Security
      * @since 3.5.0
@@ -909,14 +763,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableCsrfProtection(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_CSRF_PROTECTION=false
-     * ```
-     * :::
      *
      * @see csrfTokenName
      * @see enableCsrfCookie
@@ -931,14 +780,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *           stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
      *           it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableCsrfCookie(false)
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_CSRF_COOKIE=false
-     * ```
-     * :::
      *
      * @see enableCsrfProtection
      *
@@ -950,14 +794,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var string The name of CSRF token used for CSRF validation if <config5:enableCsrfProtection> is set to `true`.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->csrfTokenName('MY_CSRF')
      * ```
-     * ```shell Environment Override
-     * CRAFT_CSRF_TOKEN_NAME=MY_CSRF
-     * ```
-     * :::
      *
      * @group Security
      *
@@ -969,14 +808,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether user-defined Twig templates should be sandboxed.
      *
-     * ::: code
-     * ```php Static Config
+     * ```php
      * ->enableTwigSandbox()
      * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_TWIG_SANDBOX=true
-     * ```
-     * :::
      *
      * @see enableTwigSandbox()
      *
@@ -1922,6 +1756,27 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public function useFileLocks(?bool $value): self
     {
         $this->deprecate('useFileLocks', 'It no longer has any effect.');
+
+        return $this;
+    }
+
+    /**
+     * The maximum dimension size to use when caching images from external sources to use in transforms.
+     *
+     * ```php
+     * ->maxCachedCloudImageSize(0)
+     * ```
+     *
+     * @group Image Handling
+     * @see $maxCachedCloudImageSize
+     * @deprecated in 6.0.0. It no longer has any effect. Remote images are downloaded when needed and deleted afterward.
+     */
+    #[Deprecated(message: 'in 6.0.0. It no longer has any effect. Remote images are downloaded when needed and deleted afterward.')]
+    public function maxCachedCloudImageSize(int $value): self
+    {
+        $this->deprecate('maxCachedCloudImageSize', 'It no longer has any effect. Remote images are downloaded when needed and deleted afterward.');
+
+        $this->maxCachedCloudImageSize = $value;
 
         return $this;
     }

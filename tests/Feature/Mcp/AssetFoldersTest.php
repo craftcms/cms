@@ -21,7 +21,7 @@ beforeEach(function () {
     config()->set('filesystems.disks.asset-folders', ['driver' => 'local', 'root' => storage_path('framework/testing/asset-folders')]);
     Storage::fake('asset-folders');
 
-    $volume = Volume::factory()->create(['fs' => 'asset-folders']);
+    $volume = Volume::factory()->create(['disk' => 'asset-folders']);
     $this->rootFolder = VolumeFolder::factory()->create([
         'volumeId' => $volume->id,
         'parentId' => null,
@@ -46,7 +46,7 @@ it('manages asset folders through MCP', function () {
 });
 
 it('lists root folders for a null parentId', function () {
-    $volume = Volume::factory()->create(['fs' => 'asset-folders']);
+    $volume = Volume::factory()->create(['disk' => 'asset-folders']);
     $otherRoot = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'parentId' => null, 'path' => '']);
     $subfolder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'parentId' => $otherRoot->id, 'name' => 'Sub', 'path' => 'Sub/']);
 

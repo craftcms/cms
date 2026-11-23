@@ -63,7 +63,7 @@ class VolumesController extends BaseAssetSettingsController
                 ],
                 ...($this->readOnly ? [] : [
                     '_deleteUrl' => route('craft.cp.settings.assets.volumes.destroy', ['volumeId' => $volume->id]),
-                    '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $volume->name]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}”?', ['name' => $volume->name]),
                 ]),
             ]))
             ->emptyMessage(t('No volumes exist yet.'))
@@ -107,7 +107,7 @@ class VolumesController extends BaseAssetSettingsController
             'values.volumeId' => ['nullable', 'integer'],
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
-            'values.fsHandle' => ['nullable', 'string'],
+            'values.disk' => ['nullable', 'string'],
             'values.hasUrls' => ['required', 'boolean'],
             'values.subpath' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -148,7 +148,7 @@ class VolumesController extends BaseAssetSettingsController
 
         $volume->name = $request->input('name');
         $volume->handle = $request->input('handle');
-        $volume->fsHandle = $request->input('fsHandle');
+        $volume->disk = $request->input('disk');
         $volume->hasUrls = $request->boolean('hasUrls');
         $volume->subpath = $subpath;
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);

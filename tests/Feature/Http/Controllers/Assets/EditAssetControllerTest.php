@@ -40,7 +40,7 @@ beforeEach(function () {
     $layout = FieldLayoutModel::factory()->create(['type' => Asset::class, 'config' => $config]);
 
     $this->volume = Volume::factory()->create([
-        'fs' => 'edit-asset-test',
+        'disk' => 'edit-asset-test',
         'fieldLayoutId' => $layout->id,
     ]);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);

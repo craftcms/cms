@@ -794,7 +794,7 @@ class Users
         $indexAttributesChanged = $model->haveIndexAttributesChanged();
 
         if (! $model->save()) {
-            $user->errors()->add('user', t('Couldn’t save user.'));
+            $user->errors()->add('user', mb_ucfirst(t('Couldn’t save {type}.', ['type' => User::lowerDisplayName()])));
             throw new InvalidElementException($user);
         }
 

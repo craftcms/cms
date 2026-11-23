@@ -9,6 +9,7 @@ use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
@@ -90,7 +91,18 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function regenerateYaml(): Response
     {
-        $this->projectConfig->regenerateExternalConfig();
+        try {
+            $this->projectConfig->regenerateExternalConfig();
+        } catch (ProjectConfigWriteException $exception) {
+            report($exception);
+
+            return $this->send([
+                'error' => t('Project config YAML files can’t be written in this environment.'),
+                'options' => [
+                    $this->finishedState(['label' => t('Cancel')]),
+                ],
+            ]);
+        }
 
         return $this->sendFinished();
     }

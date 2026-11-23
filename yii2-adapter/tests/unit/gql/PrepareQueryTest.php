@@ -245,7 +245,7 @@ class PrepareQueryTest extends TestCase
             'uid' => self::VOLUME_UID,
             'name' => Str::random(),
             'handle' => Str::random(),
-            'fs' => 'fake',
+            'disk' => 'fake',
         ]);
 
         $this->_volume->save();

@@ -1862,11 +1862,14 @@ describe('useElementEditor', () => {
     await nextTick();
 
     expect(titleInput().value).toBe('Edited title');
+    slideout.saved.mockClear();
 
     postSpy.mockResolvedValue({data: {}});
     await editor.discardDraft();
     await nextTick();
 
+    // The opener refreshes what it shows of the draft, like its “Edited” badge.
+    expect(slideout.saved).toHaveBeenCalledWith({draft: true, data: {}});
     // The panel reloads itself: an Inertia visit would reload the page behind.
     expect(slideout.reload).toHaveBeenCalled();
     expect(titleInput().value).toBe('Canonical title');

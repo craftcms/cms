@@ -8,7 +8,9 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -92,6 +94,23 @@ it('does not show a previewed draft to later requests', function () {
         ->and($responses[1]->getContent())->toBe('live');
 });
 
+it('does not give later requests the previous site’s CRAFT_SITE env vars', function () {
+    Site::factory()->create(['handle' => 'secondSite']);
+
+    $siteEnvVars = fn () => Env::get('CRAFT_SITE', 'none').' '.Env::get('CRAFT_SITE_UPPER', 'none');
+    $cpUrl = '/'.Cms::config()->routing->cpTrigger.'/octane-site-env';
+    Route::get('/octane-site-env', $siteEnvVars);
+    Route::get($cpUrl, $siteEnvVars);
+
+    $responses = serveFromOctaneWorker([
+        Request::create('/octane-site-env', server: ['HTTP_X_CRAFT_SITE' => 'secondSite']),
+        Request::create($cpUrl),
+    ]);
+
+    expect($responses[0]->getContent())->toBe('secondSite SECOND_SITE')
+        ->and($responses[1]->getContent())->toBe('none none');
+});
+
 it('includes the legacy asset bundles on every control panel page', function () {
     $loginUrl = '/'.Cms::config()->routing->cpTrigger.'/login';
 
@@ -103,5 +122,25 @@ it('includes the legacy asset bundles on every control panel page', function () 
     foreach ($responses as $response) {
         expect($response->getStatusCode())->toBe(200)
             ->and($response->getContent())->toContain('Craft.registeredAssetBundles');
+    }
+});
+
+it('drops cache headers queued before an exception on every request', function () {
+    Route::middleware(['web', 'craft'])->get('/octane-error', function () {
+        ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-Test', 'value');
+
+        abort(500);
+    });
+
+    $responses = serveFromOctaneWorker([
+        Request::create('/octane-error'),
+        Request::create('/octane-error'),
+    ]);
+
+    foreach ($responses as $response) {
+        expect($response->getStatusCode())->toBe(500)
+            ->and($response->headers->has('X-Test'))->toBeFalse()
+            ->and($response->headers->hasCacheControlDirective('public'))->toBeFalse();
     }
 });

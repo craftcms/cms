@@ -627,8 +627,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $elementQuery = app(CurrentElementIndex::class)->isActive()
             ? app(CurrentElementIndex::class)->query()
             : null;
-        $site = $elementQuery && $elementQuery->siteId
-            ? Sites::getSiteById($elementQuery->siteId)
+        $site = $elementQuery && is_numeric($elementQuery->siteId)
+            ? Sites::getSiteById((int) $elementQuery->siteId)
             : Sites::getCurrentSite();
 
         // Get the section we need to check permissions on

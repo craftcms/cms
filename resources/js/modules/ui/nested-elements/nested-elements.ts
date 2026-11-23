@@ -1,4 +1,4 @@
-import {isHttpError, t} from '@craftcms/ui';
+import {appendBodyHtml, appendHeadHtml, isHttpError, t} from '@craftcms/ui';
 import {normalizeClass} from 'vue';
 import type {PaginationData} from '@/common/types';
 import type {QueryParams} from '@/common/types/query';
@@ -93,6 +93,14 @@ export type NestedElementsProps = {
   cards: NestedElement[];
   index?: NestedIndexOptions | null;
 };
+
+/** Adds the scripts and styles an index payload's elements need to the page. */
+export async function appendPayloadAssets(
+  payload: Pick<NestedContentIndexData, 'headHtml' | 'bodyHtml'>
+): Promise<void> {
+  await appendHeadHtml(payload.headHtml ?? '');
+  await appendBodyHtml(payload.bodyHtml ?? '');
+}
 
 export function nestedOwnerParams(
   manager: NestedElementsManager,

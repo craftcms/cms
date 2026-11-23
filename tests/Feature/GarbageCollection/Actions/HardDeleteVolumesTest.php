@@ -26,7 +26,7 @@ function createVolume(array $overrides = [])
     $volumeId = DB::table(Table::VOLUMES)->insertGetId(array_merge([
         'name' => fake()->words(3, true),
         'handle' => fake()->slug(1),
-        'fs' => 'local',
+        'disk' => 'local',
         'dateCreated' => now(),
         'dateUpdated' => now(),
     ], $overrides));

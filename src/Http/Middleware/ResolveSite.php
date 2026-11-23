@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Update\Updates;
@@ -14,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @since 6.0.0
@@ -24,7 +27,7 @@ readonly class ResolveSite
 
     /**
      * The path the site is resolved from when a middleware rewrote the request URI,
-     * such as an `action` param or a token route on a subpath site.
+     * such as an `action` param or a token route on a subpath site. See {@see requestPath()}.
      */
     public const string REQUEST_PATH_ATTRIBUTE = 'craft.resolveSite.requestPath';
 
@@ -35,19 +38,41 @@ readonly class ResolveSite
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (
-            Cms::isInstalled() &&
-            ! $this->updates->isCraftUpdatePending() &&
-            ! $request->isCpRequest()
-        ) {
-            $this->sites->setCurrentSite($this->resolveRequestedSite($request));
+        if (($site = $this->requestedSite($request)) !== null) {
+            $this->sites->setCurrentSite($site);
+
+            // requestedSite() rejects invalid site tokens, so a token selected this site
+            if (filled($request->siteToken())) {
+                Context::addHidden(self::HAD_SITE_TOKEN_KEY, true);
+            }
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        // A site token can select a disabled site, so caches must not serve its response to visitors without the token.
+        if ($response instanceof Response && Context::getHidden(self::HAD_SITE_TOKEN_KEY) === true) {
+            ResponseHeaders::setNoCacheHeaders($response);
+        }
+
+        return $response;
     }
 
-    private function resolveRequestedSite(Request $request): Site
+    /**
+     * Returns the site a site request is for, or `null` for control panel requests and when Craft
+     * isn’t installed or has an update pending.
+     *
+     * @throws HttpException if the request has an invalid site token or `X-Craft-Site` header
+     */
+    public function requestedSite(Request $request): ?Site
     {
+        if (
+            ! Cms::isInstalled() ||
+            $this->updates->isCraftUpdatePending() ||
+            $request->isCpRequest()
+        ) {
+            return null;
+        }
+
         if (($site = $this->siteFromToken($request)) !== null) {
             return $site;
         }
@@ -62,11 +87,21 @@ readonly class ResolveSite
             return $site;
         }
 
-        return $this->siteForPath($request, (string) $request->attributes->get(self::REQUEST_PATH_ATTRIBUTE, $request->decodedPath()));
+        return $this->siteForPath($request, self::requestPath($request));
     }
 
     /**
-     * Returns the site whose base URL best matches the request host and the given path.
+     * Returns the request’s path from the root of its host, which sites’ base URLs are compared with, such as
+     * `craft/fr/news` for an app in a `craft` folder.
+     */
+    public static function requestPath(Request $request): string
+    {
+        return (string) ($request->attributes->get(self::REQUEST_PATH_ATTRIBUTE)
+            ?? trim(rawurldecode($request->getBasePath()).'/'.$request->decodedPath(), '/'));
+    }
+
+    /**
+     * Returns the site whose base URL best matches the request host and the given path from the host’s root.
      */
     public function siteForPath(Request $request, string $path): Site
     {
@@ -96,7 +131,6 @@ readonly class ResolveSite
         $site = $this->sites->getSiteById((int) $siteId, true);
 
         abort_if($site === null, 400, 'Invalid site ID: '.$siteId);
-        Context::addHidden(self::HAD_SITE_TOKEN_KEY, true);
 
         return $site;
     }
@@ -134,7 +168,7 @@ readonly class ResolveSite
             return 0;
         }
 
-        $parsedPath = trim((string) ($parsed['path'] ?? ''), '/');
+        $parsedPath = trim(rawurldecode((string) ($parsed['path'] ?? '')), '/');
         $requestPath = trim($path, '/');
 
         if ($parsedPath !== '' && ! str_starts_with($requestPath.'/', $parsedPath.'/')) {

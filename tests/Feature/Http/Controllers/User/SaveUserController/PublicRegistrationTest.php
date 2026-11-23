@@ -420,7 +420,7 @@ it('can upload a photo', function () {
     ]);
 
     $volume = Volume::factory()->create([
-        'fs' => 'test',
+        'disk' => 'test',
         'hasUrls' => true,
     ]);
 
@@ -472,7 +472,7 @@ it('can upload a photo with different image formats', function () {
         'url' => '/test',
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'test', 'hasUrls' => true]);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
 
     $this->withoutExceptionHandling();
@@ -499,7 +499,7 @@ it('can upload a photo with base64 encoded data', function () {
         'url' => '/test',
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'test', 'hasUrls' => true]);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
 
     $realImage = base64_encode(UploadedFile::fake()->image('avatar.jpg')->getContent());
@@ -577,7 +577,7 @@ it('handles base64 photo without filename extension', function () {
         'url' => '/test',
     ]);
 
-    $volume = Volume::factory()->create(['fs' => 'test', 'hasUrls' => true]);
+    $volume = Volume::factory()->create(['disk' => 'test', 'hasUrls' => true]);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
 
     $realImage = base64_encode(UploadedFile::fake()->image('avatar.jpg')->getContent());

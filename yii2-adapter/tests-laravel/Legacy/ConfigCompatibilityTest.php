@@ -89,6 +89,14 @@ it('accepts the deprecated system live setting without changing maintenance mode
     }
 });
 
+it('accepts the removed maxCachedCloudImageSize setting from fluent and array configs', function(): void {
+    $fluent = GeneralConfig::create()->maxCachedCloudImageSize(2000);
+    $array = new GeneralConfigCompatibility()->convert(['maxCachedCloudImageSize' => 2000]);
+
+    expect($fluent->getDeprecatedSettings())->toHaveKey('maxCachedCloudImageSize')
+        ->and($array->maxCachedCloudImageSize)->toBe(2000);
+});
+
 it('supports the deprecated application live status', function(): void {
     try {
         expect(Craft::$app->getIsLive())->toBeTrue();

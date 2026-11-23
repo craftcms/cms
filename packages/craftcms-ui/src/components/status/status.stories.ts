@@ -70,3 +70,26 @@ export const InContext: Story = {
     </span>
   `,
 };
+
+/**
+ * Each state brings its own shape, drawn while the user's "Use shapes to
+ * represent statuses" preference is on (`use-shapes` on `<body>` or another
+ * ancestor): `pending` is a triangle and `expired` a square.
+ */
+export const Shapes: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      class="use-shapes"
+      style="display: flex; flex-direction: column; gap: 0.5rem"
+    >
+      ${STATUSES.map(
+        (status) => html`
+          <span style="display: flex; align-items: center; gap: 0.5rem">
+            <craft-status status="${status}"></craft-status> ${status}
+          </span>
+        `
+      )}
+    </div>
+  `,
+};

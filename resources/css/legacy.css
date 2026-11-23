@@ -275,6 +275,18 @@ Legacy compat styles
     --_legacy-status-border: transparent;
   }
 
+  .status:is(.pending, .off, .suspended, .expired, .all) {
+    border-radius: var(--c-status-shape-radius, var(--c-radius-full));
+  }
+
+  .status.pending {
+    clip-path: var(--c-status-triangle-clip, none);
+  }
+
+  .status.all {
+    clip-path: var(--c-status-diamond-clip, none);
+  }
+
   .go::after {
     content: '→' / '';
     padding-inline-start: var(--c-spacing-xs);

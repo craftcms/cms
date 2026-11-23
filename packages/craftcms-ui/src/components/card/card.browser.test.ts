@@ -14,6 +14,7 @@ import {
   MANY_ATTRIBUTES,
   type CoverImage,
 } from '../../../test/cover-fixtures';
+import type CraftChip from '../chip/chip.js';
 import type CraftCard from './card.js';
 import type {Luminance} from './cover.js';
 
@@ -365,6 +366,82 @@ it('pads its body by its own width', async () => {
   expect(padding('mid')).toBe('20px');
   expect(padding('wide')).toBe('24px');
   expect(padding('custom')).toBe('40px');
+});
+
+it('spaces a card’s title, attributes and status badges', async () => {
+  // As `ElementHtml::cardContentHtml()` renders a card's content.
+  document.body.innerHTML = `
+    <div id="sm" style="block-size: var(--c-spacing-sm)"></div>
+    <div id="xs" style="block-size: var(--c-spacing-xs)"></div>
+    <craft-card style="inline-size: 300px">
+      <div class="card-content">
+        <div class="card-heading" id="heading">Title</div>
+        <div class="card-body">
+          <div class="card-attribute-preview" id="text1">First text</div>
+          <div class="card-attribute-preview" id="text2">Second text</div>
+          <div class="card-attribute-preview" id="styled">
+            <div class="inline-chips no-truncate"><craft-chip size="small">Styled</craft-chip></div>
+          </div>
+          <div class="card-attribute-preview" id="plain"><craft-chip size="small" appearance="plain">Plain</craft-chip></div>
+          <div class="card-attribute-preview" id="text3">Third text</div>
+          <ul id="badges"><li>Live</li></ul>
+        </div>
+      </div>
+    </craft-card>`;
+  const chips = [...document.querySelectorAll<CraftChip>('craft-chip')];
+  await Promise.all(chips.map((chip) => chip.updateComplete));
+  const box = (id: string) =>
+    document.getElementById(id)!.getBoundingClientRect();
+  const gap = (above: string, below: string) =>
+    box(below).top - box(above).bottom;
+  const sm = box('sm').height;
+  const xs = box('xs').height;
+
+  // The tokens resolve, so a 0 gap below is the rule, not a missing token.
+  expect(sm).toBeGreaterThan(xs);
+  expect(xs).toBeGreaterThan(0);
+
+  // The title is set off from the attributes.
+  expect(gap('heading', 'text1')).toBeCloseTo(sm, 1);
+  // Text attributes stack like lines of text.
+  expect(gap('text1', 'text2')).toBeCloseTo(0, 1);
+  // A chip with a border and fill gets room on both sides…
+  expect(gap('text2', 'styled')).toBeCloseTo(sm, 1);
+  expect(gap('styled', 'plain')).toBeCloseTo(sm, 1);
+  // …but a plain one reads as text, and is as tall as a line of it.
+  expect(gap('plain', 'text3')).toBeCloseTo(0, 1);
+  expect(box('plain').height).toBeCloseTo(box('text3').height, 1);
+  // The status badges are their own group, a little further off.
+  expect(gap('text3', 'badges')).toBeCloseTo(sm + xs, 1);
+});
+
+it('shows a chip attribute in full on a cover card, but caps text at a line', async () => {
+  // “Last edited by” and “Parent” are a bare chip, with no `no-truncate`
+  // wrapper. The card sets `data-cover="body"` on its body's children.
+  document.body.innerHTML = `
+    <craft-card style="inline-size: 300px">
+      <div class="card-content" data-cover="body">
+        <div class="card-heading">Title</div>
+        <div class="card-body">
+          <div class="card-attribute-preview" id="chip"><craft-chip size="small">Chip</craft-chip></div>
+          <div class="card-attribute-preview" id="text">${'Long text '.repeat(20)}</div>
+        </div>
+      </div>
+    </craft-card>`;
+  const chip = document.querySelector<CraftChip>('craft-chip')!;
+  await chip.updateComplete;
+  const chipBox = chip
+    .shadowRoot!.querySelector('[part~="chip"]')!
+    .getBoundingClientRect();
+  const preview = document.getElementById('chip')!.getBoundingClientRect();
+  const text = document.getElementById('text')!;
+  const lineHeight = parseFloat(getComputedStyle(text).lineHeight);
+
+  // The chip is taller than a line, so a one-line cap would cut it off.
+  expect(chipBox.height).toBeGreaterThan(lineHeight);
+  expect(preview.height).toBeGreaterThanOrEqual(chipBox.height - 0.5);
+  // Text is still capped.
+  expect(text.getBoundingClientRect().height).toBeCloseTo(lineHeight, 0);
 });
 
 it('gives a header the same height with or without actions', async () => {

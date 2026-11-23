@@ -7,6 +7,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
     $this->middleware = app(ResolveSite::class);
@@ -43,4 +44,14 @@ it('prefers a site token over the request url', function () {
     $this->middleware->handle($request, fn () => 'passed');
 
     expect(Sites::getCurrentSite()->id)->toBe($site->id);
+});
+
+it('sets no-cache headers for site token requests on routes outside Craft', function () {
+    Route::middleware('web')->get('app-route', fn () => response('page')->setPublic()->setMaxAge(3600));
+
+    $response = $this->get('/app-route', [
+        'X-Craft-Site-Token' => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+    ])->assertOk();
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
 });

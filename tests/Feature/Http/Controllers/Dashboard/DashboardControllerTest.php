@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Models\Widget;
+use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost;
 use CraftCms\Cms\Dashboard\WidgetTypes;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Tests\TestClasses\Dashboard\AdminOnlyWidget;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Inertia\Testing\AssertableInertia;
@@ -81,6 +83,39 @@ it('omits hidden widgets from the dashboard', function () {
 
     get(route('craft.cp.dashboard'))
         ->assertInertia(fn (AssertableInertia $page) => $page->has('widgets', 0));
+});
+
+it('omits widgets the user can no longer use', function () {
+    app(WidgetTypes::class)->register(AdminOnlyWidget::class);
+    $admin = User::find()->one();
+    $user = UserModel::factory()->active()->withPermissions(['accessCp'])->create(['hasDashboard' => true])->asElement();
+    UserModel::query()->whereKey($admin->id)->update(['hasDashboard' => true]);
+
+    foreach ([$admin, $user] as $owner) {
+        foreach ([AdminOnlyWidget::class, MyDrafts::class] as $i => $type) {
+            Widget::query()->create([
+                'userId' => $owner->id,
+                'type' => $type,
+                'settings' => [],
+                'sortOrder' => $i + 1,
+            ]);
+        }
+    }
+
+    actingAs($admin);
+    get(route('craft.cp.dashboard'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('widgets', 2)
+            ->where('widgets.0.type', AdminOnlyWidget::class)
+            ->where('widgets.1.type', MyDrafts::class));
+
+    // The single-instance My Drafts widget stays, even though it isn’t selectable anymore
+    actingAs($user);
+    get(route('craft.cp.dashboard'))
+        ->assertDontSee(AdminOnlyWidget::HTML)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('widgets', 1)
+            ->where('widgets.0.type', MyDrafts::class));
 });
 
 class HiddenDashboardWidget extends CraftCms\Cms\Dashboard\Widgets\Widget

@@ -75,9 +75,6 @@ class ImagesConfig extends BaseConfig
     /** Whether image transforms should upscale images smaller than the transform’s dimensions by default. */
     public bool $upscale = true;
 
-    /** The maximum dimension to use when caching images from external sources for transforms, or `0` to never cache them. */
-    public int $maxCachedCloudSize = 0;
-
     /**
      * The server path to an image file that should be sent when responding to an image request with a 404 status code.
      *
@@ -159,13 +156,6 @@ class ImagesConfig extends BaseConfig
     public function upscale(bool $value = true): self
     {
         $this->upscale = $value;
-
-        return $this;
-    }
-
-    public function maxCachedCloudSize(int $value): self
-    {
-        $this->maxCachedCloudSize = $value;
 
         return $this;
     }
