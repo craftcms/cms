@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Every GET and HEAD request may be served from the cache, cookies or not, as Symfony's `HttpCache`, Fastly,
  * and Cloudflare do by default. Personal responses are kept out when storing instead: Craft sends no-cache
- * headers for them, and responses that set cookies are never stored.
+ * headers for them, and responses that set cookies or say `no-cache` are never stored.
  *
  * Symfony adds `private` to any response that doesn't say `public` or `s-maxage`, so `Response::isCacheable()`
  * also covers RFC 9111's rule for requests with `Authorization`.
@@ -29,6 +29,11 @@ class DefaultCachePolicy implements CachePolicy
     public function isResponseCacheable(Request $request, Response $response): bool
     {
         if (! $this->isRequestCacheable($request) || ! $response->isCacheable()) {
+            return false;
+        }
+
+        // `no-cache` allows storing only if every use is revalidated, which drivers don't do.
+        if ($response->headers->hasCacheControlDirective('no-cache')) {
             return false;
         }
 

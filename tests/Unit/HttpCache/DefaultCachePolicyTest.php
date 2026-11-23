@@ -36,6 +36,11 @@ it('decides which responses may be stored', function (Closure $request, Closure 
         fn () => new Response(headers: ['Cache-Control' => 'public, max-age=60, no-store']),
         false,
     ],
+    'no-cache' => [
+        fn () => Request::create('/'),
+        fn () => new Response(headers: ['Cache-Control' => 'public, max-age=60, no-cache']),
+        false,
+    ],
     'private' => [
         fn () => Request::create('/'),
         fn () => new Response(headers: ['Cache-Control' => 'private, max-age=60']),
