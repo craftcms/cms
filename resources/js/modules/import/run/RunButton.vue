@@ -91,6 +91,11 @@
     color: var(--c-color-fill-loud);
   }
 
+  /* pressed, it fills with the outline's color */
+  .run-button:not(:disabled):active {
+    color: var(--c-color-on-loud);
+  }
+
   /* a triangle's weight sits left of its box's middle, so it's nudged right to look centered */
   .run-button::part(prefix) {
     translate: 1px 0;
