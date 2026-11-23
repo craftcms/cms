@@ -118,7 +118,7 @@ let advancedPanelIndex = 0;
  * fires `link-change` straight away, and it sits in a pane when it has a label
  * or advanced attributes.
  *
- * @fires apply - The link was applied. `detail` is the `LinkFieldValue`.
+ * @fires apply - The link was applied. `detail` is the `LinkFieldValue`, whose `value` is empty when the given link's element was removed.
  * @fires cancel - Editing was canceled.
  * @fires link-change - A `live` field was edited. `detail` is a `LinkChangeDetail`.
  */
@@ -156,6 +156,9 @@ class CraftLinkField extends LitElement {
   @state()
   private selectedElement: LinkedElement | null = null;
 
+  /** Whether the given link's element was removed, so applying it unlinks it. */
+  private elementRemoved = false;
+
   /** Numbers each chip fetch, so only the latest one's answer is drawn. */
   private elementRequest = 0;
 
@@ -192,6 +195,7 @@ class CraftLinkField extends LitElement {
   override willUpdate(changedProperties: PropertyValues<this>): void {
     if (changedProperties.has('modelValue') && !this.isEcho(this.modelValue)) {
       const value = this.modelValue ?? {};
+      this.elementRemoved = false;
       // An echo of the same link doesn't carry its chip, so the one we have is kept.
       this.selectedElement =
         value.element ??
@@ -251,6 +255,7 @@ class CraftLinkField extends LitElement {
     }
     this.typeId = event.target.value;
     this.value = '';
+    this.elementRemoved = false;
     this.defaultLabel = '';
     this.selectedElement = null;
     this.valueError = '';
@@ -343,6 +348,7 @@ class CraftLinkField extends LitElement {
         }
 
         this.value = `{${type.refHandle}:${element.id}@${element.siteId}:url}`;
+        this.elementRemoved = false;
         this.defaultLabel = String(element.label || '');
         this.selectedElement = {
           id: element.id,
@@ -410,6 +416,7 @@ class CraftLinkField extends LitElement {
     this.value = '';
     this.defaultLabel = '';
     this.selectedElement = null;
+    this.elementRemoved = Boolean(this.modelValue?.value);
     this.change('discrete');
     await this.updateComplete;
     this.querySelector<HTMLElement>(
@@ -666,7 +673,7 @@ class CraftLinkField extends LitElement {
       return;
     }
 
-    if (!linkValue.value) {
+    if (!linkValue.value && !this.elementRemoved) {
       this.valueError = t('{attribute} cannot be blank.', {
         attribute: type.label,
       });

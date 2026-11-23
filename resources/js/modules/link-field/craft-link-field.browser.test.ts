@@ -235,6 +235,50 @@ describe('a linked element', () => {
     expect(slideouts.openSlideout).not.toHaveBeenCalled();
   });
 
+  it('is unlinked by applying it once removed', async () => {
+    const applied = vi.fn();
+    linkField.addEventListener('apply', (event) =>
+      applied((event as CustomEvent<LinkFieldValue>).detail)
+    );
+
+    await openMenu();
+    await page.getByRole('button', {name: 'Remove'}).click();
+    await page.getByRole('button', {name: 'Apply'}).click();
+
+    expect(applied).toHaveBeenCalledWith(
+      expect.objectContaining({type: 'entry', value: ''})
+    );
+    await expect
+      .element(page.getByText('Entry cannot be blank.'))
+      .not.toBeInTheDocument();
+  });
+
+  it('isn’t applied empty when it was chosen and removed in a new link', async () => {
+    const applied = vi.fn();
+    linkField.addEventListener('apply', applied);
+    linkField.modelValue = {type: 'entry', value: ''};
+    await linkField.updateComplete;
+
+    await page.getByRole('button', {name: 'Choose'}).click();
+    await expect
+      .poll(() => selector.createElementSelectorModal.mock.calls.length)
+      .toBe(1);
+    const [, settings] = selector.createElementSelectorModal.mock
+      .calls[0] as unknown as [
+      string,
+      {onSelect: (elements: Array<Record<string, unknown>>) => void},
+    ];
+    settings.onSelect([{id: 12, siteId: 1, label: 'pending'}]);
+    await openMenu();
+    await page.getByRole('button', {name: 'Remove'}).click();
+    await page.getByRole('button', {name: 'Apply'}).click();
+
+    expect(applied).not.toHaveBeenCalled();
+    await expect
+      .element(page.getByText('Entry cannot be blank.'))
+      .toBeVisible();
+  });
+
   it('draws only the latest refresh when its editor saves twice', async () => {
     const respond: Array<(label: string) => void> = [];
     const post = vi.spyOn(actionClient, 'post').mockImplementation(
