@@ -937,7 +937,11 @@
   <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
     <div
       ref="content"
-      :class="hasContentTabs ? ['pb-lg', {'pt-md': !isSlideout}] : 'py-lg'"
+      :class="
+        hasContentTabs
+          ? ['pb-lg', {'pt-md': !isSlideout && !contentInPreview}]
+          : 'py-lg'
+      "
     >
       <CpContainer>
         <component
