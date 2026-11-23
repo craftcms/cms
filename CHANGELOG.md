@@ -31,6 +31,7 @@
 - Fixed a bug where sites weren’t detected when Craft is installed in a folder and their base URLs are inside it, such as `https://example.com/craft/fr/`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Fixed a bug where site-specific routes in Settings → Routes only worked on the primary site. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Fixed a bug where sites weren’t detected when their base URLs contained percent-encoded characters. ([#21015](https://github.com/craftcms/cms/pull/21015))
+- Fixed a bug where plugins’ front-end routes, such as SEOmatic’s `/robots.txt`, returned a 404 error under Laravel Octane with the Yii adapter installed. ([#21019](https://github.com/craftcms/cms/pull/21019))
 - Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 
