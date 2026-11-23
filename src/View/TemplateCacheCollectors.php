@@ -7,6 +7,7 @@ namespace CraftCms\Cms\View;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\CacheCollectors\ResourceCollector;
+use CraftCms\Cms\View\CacheCollectors\ResponseTagCollector;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use Illuminate\Container\Attributes\Singleton;
 
@@ -32,6 +33,7 @@ class TemplateCacheCollectors extends TypeRegistry
     protected const array DEFAULT_TYPES = [
         DependencyCollector::class,
         ResourceCollector::class,
+        ResponseTagCollector::class,
     ];
 
     protected const array PROTECTED_TYPES = self::DEFAULT_TYPES;

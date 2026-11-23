@@ -37,6 +37,7 @@ use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\StartLazySession;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
 use CraftCms\Cms\Http\Middleware\StripSiteBasePath;
+use CraftCms\Cms\Http\Middleware\TagResponse;
 use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
@@ -121,6 +122,8 @@ class RouteServiceProvider extends ServiceProvider
             HandleTokenRequest::class,
             StripSiteBasePath::class,
             HandleActionRequest::class,
+            // After the request is rewritten, and outside sessions and exception rendering, so it sees the final response
+            TagResponse::class,
             ...array_filter($globalMiddleware, fn (string $middleware): bool => ! $trustsProxies($middleware)),
         ]);
 
