@@ -132,3 +132,25 @@ it('enlarges its text and padding at size large, and still fits its rows', async
     0
   );
 });
+
+it('keeps a monospaced value large at size large', async () => {
+  const normal = getComputedStyle(await render({monospace: ''}));
+  const large = getComputedStyle(await render({monospace: '', size: 'large'}));
+
+  expect(parseFloat(large.fontSize)).toBeGreaterThan(
+    parseFloat(normal.fontSize)
+  );
+});
+
+it('honors a block spacing override at size large, and still fits its rows', async () => {
+  const container = document.createElement('div');
+  container.style.setProperty('--c-textarea-spacing-block', '3px');
+  document.body.append(container);
+  const textarea = await render({rows: '3', size: 'large'}, 0, container);
+
+  expect(getComputedStyle(textarea).paddingTop).toBe('3px');
+  expect(textarea.getBoundingClientRect().height).toBeCloseTo(
+    heightOfRows(textarea, 3),
+    0
+  );
+});
