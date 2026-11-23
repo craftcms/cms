@@ -7,11 +7,12 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\PreviewRequestPreparer;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @since 6.0.0
@@ -60,26 +61,28 @@ readonly class HandleTokenRequest
         if ($this->isPreviewRoute((string) $tokenRoute[0])) {
             $this->previews->prepare((array) ($tokenRoute[1] ?? []));
 
-            $previewRequest = $request->duplicateWithUri(
+            $newRequest = $request->duplicateWithUri(
                 $originalUri->value(),
                 $originalUri->query()->all(),
             );
-            app()->instance('request', $previewRequest);
-
-            $response = $next($previewRequest);
-
-            return $response instanceof Response
-                ? $response->setNoCacheHeaders()
-                : $response;
+        } else {
+            $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
+            $newRequest->attributes->set(self::ROUTE_RESOLVED_ATTRIBUTE, true);
+            $newRequest->attributes->set('isCpRequest', $request->isCpRequest());
+            $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, ResolveSite::requestPath($request));
         }
 
-        $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
-        $newRequest->attributes->set(self::ROUTE_RESOLVED_ATTRIBUTE, true);
-        $newRequest->attributes->set('isCpRequest', $request->isCpRequest());
-        $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, ResolveSite::requestPath($request));
         app()->instance('request', $newRequest);
+        $response = $next($newRequest);
 
-        return $next($newRequest);
+        // Without these, a cache could serve a token's response to requests for the same URL without the token,
+        // such as when the token came in a header. SetHeaders can't set them, as token routes can be outside the
+        // `craft` group.
+        if ($response instanceof Response) {
+            ResponseHeaders::setNoCacheHeaders($response);
+        }
+
+        return $response;
     }
 
     private function isPreviewRoute(string $route): bool

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Update\Updates;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -45,7 +47,14 @@ readonly class ResolveSite
             }
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        // A site token can select a disabled site, so caches must not serve its response to visitors without the token.
+        if ($response instanceof Response && Context::getHidden(self::HAD_SITE_TOKEN_KEY) === true) {
+            ResponseHeaders::setNoCacheHeaders($response);
+        }
+
+        return $response;
     }
 
     /**
