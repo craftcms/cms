@@ -12,6 +12,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 use Inertia\Support\Header;
 use Inertia\Testing\AssertableInertia;
@@ -47,6 +48,22 @@ it('preserves the header fragments of a Twig page in the Inertia shell', functio
             ->where('contextMenu', fn (string $html): bool => str_contains($html, 'Choose site'))
             ->where('actionMenu', fn (string $html): bool => str_contains($html, 'More actions'))
             ->where('content', fn (string $html): bool => str_contains($html, '<p>hi</p>')));
+});
+
+it('declares no form actions on a bridged Twig form that has none', function () {
+    app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 3).'/Support/templates');
+
+    Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
+        ->prefix(Cms::config()->cpTrigger)
+        ->get('bridged-form-test', fn () => pageTemplate('test-plugin/bridged-header', ['fullPageForm' => true]));
+
+    get(cp_url('bridged-form-test'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component(BridgedScreen::PAGE)
+            ->where('fullPageForm', true)
+            ->where('mainFormAttributes.data.saveshortcut', true)
+            ->where('mainFormAttributes.data.actions', false));
 });
 
 dataset('bridgedScreens', [
@@ -102,3 +119,19 @@ it('loads deferred props on a bridged screen without a hard visit', function (Cl
         ->assertJsonPath('component', BridgedScreen::PAGE)
         ->assertJsonStructure(['props' => ['navSourceBadges']]);
 })->with('bridgedScreens');
+
+it('encrypts a bridged screen’s save shortcut redirect', function () {
+    Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
+        ->prefix(Cms::config()->cpTrigger)
+        ->get('bridged-save-shortcut-test', fn () => new CpScreenResponse()
+            ->title('Bridged screen')
+            ->action('test/save')
+            ->saveShortcutRedirectUrl('test/{id}')
+            ->contentHtml('<p>Fields</p>'));
+
+    get(cp_url('bridged-save-shortcut-test'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component(BridgedScreen::PAGE)
+            ->where('saveShortcutRedirect', fn (string $value): bool => Crypt::decrypt($value) === 'test/{id}'));
+});

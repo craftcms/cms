@@ -285,7 +285,7 @@ class Cp extends Component
     {
         event($event = new FormActionsResolving($formActions ?? []));
 
-        return $event->formActions;
+        return $event->formActions ?: null;
     }
 
     /**
