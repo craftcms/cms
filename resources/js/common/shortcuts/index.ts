@@ -59,7 +59,10 @@ function resolve(label: Label | undefined): string | undefined {
 
 /**
  * Runs when the shortcut is pressed. Returning `false` leaves the press alone,
- * for a shortcut that only applies to some targets.
+ * for a shortcut that only applies to some targets. A callback that handles the
+ * press shouldn't return `false`, even if it prevents the default itself: after
+ * an unavailable `preventDefault: 'always'` shortcut has prevented it, the
+ * return value is the only thing that stops later shortcuts for the same keys.
  */
 export type ShortcutCallback = (event: KeyboardEvent) => void | false;
 
