@@ -76,6 +76,23 @@ describe('registerShortcut', () => {
     expect(later).not.toHaveBeenCalled();
   });
 
+  it('still runs later shortcuts when an available callback returns false', () => {
+    const declining = vi.fn(() => false as const);
+    const later = vi.fn();
+    cleanups.push(
+      registerShortcut('Mod+S', vi.fn(), {
+        isAvailable: () => false,
+        preventDefault: 'always',
+      }).unregister,
+      registerShortcut('Mod+S', declining).unregister,
+      registerShortcut('Mod+S', later).unregister
+    );
+
+    expect(press().defaultPrevented).toBe(true);
+    expect(declining).toHaveBeenCalledTimes(1);
+    expect(later).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves the default when the callback returns false', () => {
     cleanups.push(registerShortcut('Mod+S', () => false).unregister);
 
