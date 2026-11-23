@@ -202,7 +202,7 @@ describe('a linked element', () => {
   });
 
   it('opens its editor when double-clicked', async () => {
-    await userEvent.dblClick(linkField.querySelector('craft-chip')!);
+    await userEvent.dblClick(page.getByText('pending'));
 
     expect(slideouts.openSlideout).toHaveBeenCalledWith(
       '/admin/entries/pending',
@@ -225,7 +225,7 @@ describe('a linked element', () => {
     };
     await linkField.updateComplete;
 
-    await userEvent.dblClick(linkField.querySelector('craft-chip')!);
+    await userEvent.dblClick(page.getByText('pending'));
 
     expect(slideouts.openSlideout).not.toHaveBeenCalled();
   });
