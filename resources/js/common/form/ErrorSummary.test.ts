@@ -130,12 +130,64 @@ it('switches to the tab a linked field is on and focuses its input', async () =>
 
   const summary = await mount({title: 'Title is required.'});
   summary.querySelector('a')!.click();
-  await nextTick();
 
-  expect(document.getElementById('tab-2')!.classList.contains('hidden')).toBe(
-    false
+  await vi.waitFor(() => {
+    expect(document.getElementById('tab-2')!.classList.contains('hidden')).toBe(
+      false
+    );
+    expect(document.activeElement).toBe(
+      document.getElementById('ui-title-input')
+    );
+  });
+});
+
+it('links an error once its field reaches the page, as a tab the server held back does after a save', async () => {
+  const summary = await mount({
+    'fields.title': 'Title is required.',
+    'fields.venue': 'Venue is required.',
+  });
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<craft-field id="ui-fields-title"><input></craft-field>`
   );
-  expect(document.activeElement).toBe(
-    document.getElementById('ui-title-input')
+
+  await vi.waitFor(() =>
+    expect(
+      [...summary.querySelectorAll('a')].map((link) =>
+        link.getAttribute('href')
+      )
+    ).toEqual(['#ui-fields-title'])
   );
+
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<section><craft-field id="ui-fields-venue"><input></craft-field></section>`
+  );
+
+  await vi.waitFor(() =>
+    expect(
+      [...summary.querySelectorAll('a')].map((link) =>
+        link.getAttribute('href')
+      )
+    ).toEqual(['#ui-fields-title', '#ui-fields-venue'])
+  );
+});
+
+it('highlights the field a link goes to, as a deep link to it does', async () => {
+  document.body.innerHTML = `
+    <craft-field id="ui-fields-related">
+      <div slot="input"><button type="button">Add an entry</button></div>
+    </craft-field>`;
+  Element.prototype.scrollIntoView = vi.fn();
+  const field = document.getElementById('ui-fields-related')!;
+
+  const summary = await mount({'fields.related': 'Related is required.'});
+  expect(field.hasAttribute('data-highlighted')).toBe(false);
+
+  summary.querySelector('a')!.click();
+
+  await vi.waitFor(() => {
+    expect(field.hasAttribute('data-highlighted')).toBe(true);
+    expect(document.activeElement).toBe(field.querySelector('button'));
+  });
 });

@@ -1,7 +1,9 @@
 import '../../../css/cp.css';
 import '@craftcms/ui/components/tabs/tabs';
 import '@craftcms/ui/components/tab/tab';
+import '@craftcms/ui/components/button/button';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import {createApp, h, nextTick, type App} from 'vue';
 import ErrorSummary from './ErrorSummary.vue';
 
@@ -79,4 +81,36 @@ it('gives each linked error a target at least 24px tall that doesn’t overlap t
   expect(first!.height).toBeGreaterThanOrEqual(24);
   expect(second!.height).toBeGreaterThanOrEqual(24);
   expect(second!.top).toBeGreaterThanOrEqual(first!.bottom);
+});
+
+it('keeps the Enter that follows a link from also pressing the button it focuses', async () => {
+  document.body.innerHTML = `
+    <craft-field id="ui-fields-related">
+      <div slot="input"><craft-button type="button">Add an entry</craft-button></div>
+    </craft-field>`;
+  await customElements.whenDefined('craft-button');
+  const button = document.querySelector('craft-button')!;
+  const pressed = vi.fn();
+  button.addEventListener('click', pressed);
+
+  const container = document.createElement('div');
+  document.body.prepend(container);
+  app = createApp({
+    render: () =>
+      h(ErrorSummary, {errors: {'fields.related': 'Related is required.'}}),
+  });
+  app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+  app.mount(container);
+  await nextTick();
+  await nextTick();
+
+  container.querySelector<HTMLAnchorElement>('a')!.focus();
+  await userEvent.keyboard('{Enter}');
+
+  await vi.waitFor(() => expect(document.activeElement).toBe(button));
+  expect(pressed).not.toHaveBeenCalled();
+
+  // The button still works: the next Enter is its own.
+  await userEvent.keyboard('{Enter}');
+  expect(pressed).toHaveBeenCalledOnce();
 });

@@ -1,8 +1,19 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {computed, inject, nextTick, onMounted, ref, useId, watch} from 'vue';
+  import {swallowHeldEnterKeyup} from '@craftcms/ui/utilities/enter-keyup';
+  import {
+    computed,
+    inject,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    useId,
+    watch,
+  } from 'vue';
   import EmphasizedText from '@/common/components/EmphasizedText.vue';
-  import {firstFocusableWithin, revealElement} from '@/common/utils/dom';
+  import {highlightField} from '@/common/composables/useFieldHighlight';
+  import {firstFocusableWithin} from '@/common/utils/dom';
   import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
 
   const props = withDefaults(
@@ -70,17 +81,62 @@
   );
 
   function findLinkedKeys(): void {
-    targets.value = new Map(
+    const found = new Map(
       Object.keys(shownErrors.value).flatMap((key) => {
         const id = targetId(key);
         return id ? [[key, id] as const] : [];
       })
     );
+
+    // Unchanged, so a relink doesn't re-render the links and wake the
+    // observer below again.
+    if (
+      found.size !== targets.value.size ||
+      [...found].some(([key, id]) => targets.value.get(key) !== id)
+    ) {
+      targets.value = found;
+    }
+
+    watchForFields();
   }
 
   /**
-   * Shows the field an error belongs to, switching to its tab first if it's on
-   * a hidden one, and puts focus in it.
+   * Fields can reach the page after the summary does: a tab the server held
+   * back is filled in by a later request, after a failed save too. Until each
+   * error has its link, the summary looks again whenever the page changes.
+   */
+  let fieldObserver: MutationObserver | undefined;
+  let relinkFrame: number | undefined;
+
+  function watchForFields(): void {
+    const waiting = targets.value.size < Object.keys(shownErrors.value).length;
+
+    if (!waiting) {
+      stopWatchingForFields();
+    } else if (!fieldObserver) {
+      fieldObserver = new MutationObserver(() => {
+        relinkFrame ??= requestAnimationFrame(() => {
+          relinkFrame = undefined;
+          findLinkedKeys();
+        });
+      });
+      fieldObserver.observe(document.body, {childList: true, subtree: true});
+    }
+  }
+
+  function stopWatchingForFields(): void {
+    fieldObserver?.disconnect();
+    fieldObserver = undefined;
+
+    if (relinkFrame !== undefined) {
+      cancelAnimationFrame(relinkFrame);
+      relinkFrame = undefined;
+    }
+  }
+
+  /**
+   * Shows and highlights the field an error belongs to, switching to its tab
+   * first if it's on a hidden one, and puts focus in it.
    */
   async function goToField(event: MouseEvent, key: string): Promise<void> {
     const id = targets.value.get(key);
@@ -91,7 +147,14 @@
     }
 
     event.preventDefault();
-    await revealElement(field, {block: 'center'});
+    // Enter follows a link on keydown. Its keyup would otherwise land on the
+    // control focused below, and a `craft-button` clicks on Enter's keyup:
+    // a relation field's "Add" button would open its picker.
+    swallowHeldEnterKeyup();
+    // Highlighted as a deep link to it is, so where the link went is plain
+    // after a click too, which shows no focus ring on a control that isn't a
+    // text input.
+    await highlightField(field);
 
     // The control rather than the first thing in the field, which can be its
     // actions menu.
@@ -120,6 +183,8 @@
     () => nextTick(findLinkedKeys),
     {deep: true}
   );
+
+  onBeforeUnmount(stopWatchingForFields);
 </script>
 
 <template>
