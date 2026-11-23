@@ -15,10 +15,20 @@ use Override;
 use SensitiveParameter;
 
 /**
- * A Passport access token whose JWT has a `kid` header naming its signing key in the {@see JsonWebKeys} set, and an
- * `iss` claim with the issuer of the {@see OAuthResource} its scopes belong to. That issuer’s metadata lists the key set
- * as its `jwks_uri`.
+ * A Passport access token with two additions that let services outside Craft verify it:
  *
+ * - A `kid` header with the RFC 7638 thumbprint of its signing key, matching that key’s entry in the {@see JsonWebKeys}
+ *   set. Verifiers use it to pick the key from the set (RFC 7517 §4.5), and JWT libraries won’t verify against a key
+ *   set without it.
+ * - An `iss` claim with the issuer of the {@see OAuthResource} its scopes belong to. Verifiers fetch that issuer’s
+ *   authorization server metadata, check that its `issuer` exactly matches `iss`, and find the key set at its
+ *   `jwks_uri` (RFC 9068 §4).
+ *
+ * The rest of the token is what league/oauth2-server builds. Passport reads the client ID from `aud` and the scopes
+ * from `scopes`, so the token doesn’t follow the rest of the RFC 9068 profile, which expects `aud` to name the API.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc7517.html#section-4.5
+ * @see https://www.rfc-editor.org/rfc/rfc9068.html#section-4
  * @since 6.0.0
  */
 class AccessToken extends PassportAccessToken
