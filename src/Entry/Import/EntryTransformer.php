@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportLookups;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\ImportLog;
@@ -53,13 +54,18 @@ class EntryTransformer extends ElementTransformer
             array_map(fn (mixed $item) => is_string($item) ? trim($item) : '', $values),
             fn (string $item) => $item !== '',
         )));
-        $ids = $this->userIds($wanted, $matchBy, live: true);
-        $missing = array_values(array_filter($wanted, fn (string $item) => ! isset($ids[mb_strtolower($item)])));
+        // most items name the same few authors
+        $ids = ImportLookups::remember($importer, "authorIds|$matchBy", $wanted, function (array $wanted) use ($matchBy): array {
+            $ids = $this->userIds($wanted, $matchBy, live: true);
+            $missing = array_values(array_filter($wanted, fn (string $item) => ! isset($ids[mb_strtolower($item)])));
 
-        // as the author select offers them, users that aren't active come after those that are
-        if ($missing !== []) {
-            $ids += $this->userIds($missing, $matchBy, live: false);
-        }
+            // as the author select offers them, users that aren't active come after those that are
+            if ($missing !== []) {
+                $ids += $this->userIds($missing, $matchBy, live: false);
+            }
+
+            return $ids;
+        });
 
         $authorIds = [];
 

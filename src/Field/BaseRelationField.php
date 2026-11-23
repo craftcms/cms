@@ -42,6 +42,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportLookups;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
@@ -52,6 +53,7 @@ use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -1275,7 +1277,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
             return $value;
         }
 
-        return $this->importedElementIds(array_values(Arr::wrap($value)), $matchBy, $rootOwner);
+        return $this->importedElementIds(array_values(Arr::wrap($value)), $matchBy, $rootOwner, $importer);
     }
 
     #[Override]
@@ -1324,7 +1326,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
      * @param  list<mixed>  $values
      * @return list<int>
      */
-    private function importedElementIds(array $values, string $attribute, ?ElementInterface $rootOwner): array
+    private function importedElementIds(array $values, string $attribute, ?ElementInterface $rootOwner, BaseImporter $importer): array
     {
         $values = array_values(array_unique(array_filter(
             array_map(fn (mixed $value) => is_int($value) ? $value : (is_scalar($value) ? trim((string) $value) : ''), $values),
@@ -1336,13 +1338,29 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
             return [];
         }
 
-        $ids = $wanted === [] ? [] : $this->selectableElementIds($wanted, $attribute, $rootOwner, live: true);
-        $missing = array_values(array_filter($wanted, fn (string $value) => ! isset($ids[mb_strtolower($value)])));
+        $lookup = function (array $wanted) use ($attribute, $rootOwner): array {
+            $ids = $this->selectableElementIds($wanted, $attribute, $rootOwner, live: true);
+            $missing = array_values(array_filter($wanted, fn (string $value) => ! isset($ids[mb_strtolower($value)])));
 
-        // values without a live match fall back to elements in any status, as the element selector offers them too
-        if ($missing !== []) {
-            $ids += $this->selectableElementIds($missing, $attribute, $rootOwner, live: false);
-        }
+            // values without a live match fall back to elements in any status, as the element selector offers them too
+            if ($missing !== []) {
+                $ids += $this->selectableElementIds($missing, $attribute, $rootOwner, live: false);
+            }
+
+            return $ids;
+        };
+
+        // the same values are looked up again for each item; a selection condition can depend on the item, though
+        $ids = match (true) {
+            $wanted === [] => [],
+            $this->getSelectionCondition() !== null => $lookup($wanted),
+            default => ImportLookups::remember($importer, implode('|', [
+                $this->uid ?? spl_object_id($this),
+                $attribute,
+                Json::encode($this->importSourceKeys($rootOwner)),
+                $this->targetSiteId($rootOwner),
+            ]), $wanted, $lookup),
+        };
 
         $elementIds = [];
 
