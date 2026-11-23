@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => 'Недопустимый дескриптор «{handle}»',
     '“{name}” deleted.' => '«{name}» удалено.',
     '“{name}” value copied.' => 'Значение «{name}» скопировано.',
+    '“{name}” was saved, but it can’t be selected here.' => '«{name}» сохранено, но его нельзя выбрать здесь.',
     'Deprecated' => 'Устарело',
     '“{{entry}}” is approved' => '«{{entry}}» одобрено',
     'About Craft CMS' => 'О Craft CMS',

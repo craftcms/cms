@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}“ není platný handler.',
     '“{name}” deleted.' => '„{name}“ smazán.',
     '“{name}” value copied.' => 'Hodnota „{name}“ zkopírována.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}“ bylo uloženo, ale zde jej nelze vybrat.',
     'Deprecated' => 'Zastaralé',
     '“{{entry}}” is approved' => '„{{entry}}“ je schváleno',
     'About Craft CMS' => 'O Craft CMS',

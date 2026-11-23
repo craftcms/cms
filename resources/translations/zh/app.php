@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}”不是有效处理。',
     '“{name}” deleted.' => '“{name}”已删除。',
     '“{name}” value copied.' => '已复制“{name}”的值。',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}”已保存，但无法在此处选择。',
     'Deprecated' => '已弃用',
     '“{{entry}}” is approved' => '“{{entry}}”已获批准',
     'About Craft CMS' => '关于 Craft CMS',

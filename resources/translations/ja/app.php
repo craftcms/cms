@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '「{handle}」は利用できないハンドルです。',
     '“{name}” deleted.' => '「{name}」は削除されました。',
     '“{name}” value copied.' => '「{name}」の値をコピーしました。',
+    '“{name}” was saved, but it can’t be selected here.' => '「{name}」は保存されましたが、ここでは選択できません。',
     'Deprecated' => '非推奨',
     '“{{entry}}” is approved' => '「{{entry}}」が承認されました',
     'About Craft CMS' => 'Craft CMS について',

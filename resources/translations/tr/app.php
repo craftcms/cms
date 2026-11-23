@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” geçerli değil.',
     '“{name}” deleted.' => '“{name}” silindi.',
     '“{name}” value copied.' => '“{name}” değeri kopyalandı.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}” kaydedildi ancak burada seçilemez.',
     'Deprecated' => 'Kullanımdan kaldırıldı',
     '“{{entry}}” is approved' => '“{{entry}}” onaylandı',
     'About Craft CMS' => 'Craft CMS hakkında',

@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => 'Το «{handle}» δεν είναι έγκυρο handle.',
     '“{name}” deleted.' => 'Το «{name}» διαγράφηκε.',
     '“{name}” value copied.' => 'Η τιμή του «{name}» αντιγράφηκε.',
+    '“{name}” was saved, but it can’t be selected here.' => 'Το «{name}» αποθηκεύτηκε, αλλά δεν μπορεί να επιλεγεί εδώ.',
     'Deprecated' => 'Καταργημένο',
     '“{{entry}}” is approved' => 'Το «{{entry}}» εγκρίθηκε',
     'About Craft CMS' => 'Σχετικά με το Craft CMS',

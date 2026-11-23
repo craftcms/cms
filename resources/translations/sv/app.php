@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '”{handle}” är ej ett giltigt handle.',
     '“{name}” deleted.' => '”{name}” har raderats.',
     '“{name}” value copied.' => 'Värdet för ”{name}” kopierat.',
+    '“{name}” was saved, but it can’t be selected here.' => '”{name}” sparades, men kan inte väljas här.',
     'Deprecated' => 'Föråldrad',
     '“{{entry}}” is approved' => '”{{entry}}” har godkänts',
     'About Craft CMS' => 'Om Craft CMS',

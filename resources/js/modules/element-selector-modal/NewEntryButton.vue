@@ -16,12 +16,14 @@
   import {showError, showMessage} from '@/modules/messages/messages';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
+  import ElementSelectorModalMatchController from '@actions/Elements/ElementSelectorModalMatchController';
   import {
     useCreatableEntryTypes,
     type CreatableType,
     type CreatableSection,
   } from '@/modules/elements/composables/useCreatableEntryTypes';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
+  import {creatableUnderCondition} from './creatableUnderCondition';
 
   const props = defineProps<{
     controller: ElementSelectorController;
@@ -49,9 +51,13 @@
   const {creatableTypes, menuItems} = useCreatableEntryTypes({
     sources: () => props.sources,
     source: () => props.source,
+    // Only sections whose entries the user can save (`saveEntries`)
     creatableSections: () =>
-      (window.Craft?.creatableSections as CreatableSection[]) ?? [],
+      ((window.Craft?.creatableSections as CreatableSection[]) ?? []).filter(
+        (section) => section.canSave
+      ),
     siteId: () => props.siteId,
+    allows: () => creatableUnderCondition(props.controller.options.condition),
   });
 
   const label = computed(() => {
@@ -133,6 +139,17 @@
      */
     async function choose(info: ElementInfo): Promise<void> {
       try {
+        if (controller.options.condition && !(await meetsCondition(info))) {
+          chosen = false;
+          showError(
+            t('“{name}” was saved, but it can’t be selected here.', {
+              name: info.label,
+            })
+          );
+
+          return;
+        }
+
         await onSelect?.([info], {});
       } catch {
         chosen = false;
@@ -200,6 +217,24 @@
       },
       () => settle()
     );
+  }
+
+  /**
+   * Whether the saved entry meets the selection condition, asked of the server
+   * before it's chosen: narrowing the entry types offered doesn't stop the
+   * entry from being switched to another type while it's edited.
+   */
+  async function meetsCondition(info: ElementInfo): Promise<boolean> {
+    const {data} = await actionClient.post(
+      ElementSelectorModalMatchController.url(),
+      {
+        ...props.controller.indexParams(),
+        elementId: info.id,
+        siteId: info.siteId,
+      }
+    );
+
+    return data.matches === true;
   }
 
   const actions = computed<Array<ActionItem>>(() =>

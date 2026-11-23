@@ -3739,6 +3739,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '«{handle}» жарактуу идентификатор эмес.',
     '“{name}” deleted.' => '«{name}» өчүрүлдү.',
     '“{name}” value copied.' => '«{name}» мааниси көчүрүлдү.',
+    '“{name}” was saved, but it can’t be selected here.' => '«{name}» сакталды, бирок бул жерде тандоого болбойт.',
     'Deprecated' => 'Эскирген',
     '“{{entry}}” is approved' => '«{{entry}}» бекитилди',
     'About Craft CMS' => 'Craft CMS жөнүндө',

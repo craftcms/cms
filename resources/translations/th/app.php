@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” เป็นตัวจัดการที่ไม่ถูกต้อง',
     '“{name}” deleted.' => 'ลบ “{name}” แล้ว',
     '“{name}” value copied.' => 'คัดลอกค่าของ “{name}” แล้ว',
+    '“{name}” was saved, but it can’t be selected here.' => 'บันทึก “{name}” แล้ว แต่ไม่สามารถเลือกที่นี่ได้',
     'Deprecated' => 'เลิกใช้งานแล้ว',
     '“{{entry}}” is approved' => '“{{entry}}” ได้รับการอนุมัติแล้ว',
     'About Craft CMS' => 'เกี่ยวกับ Craft CMS',

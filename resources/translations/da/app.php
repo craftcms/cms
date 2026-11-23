@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” er ikke en gyldig handle.',
     '“{name}” deleted.' => '“{name}” slettet.',
     '“{name}” value copied.' => 'Værdien af “{name}” er kopieret.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}” blev gemt, men kan ikke vælges her.',
     'Deprecated' => 'Forældet',
     '“{{entry}}” is approved' => '“{{entry}}” er godkendt',
     'About Craft CMS' => 'Om Craft CMS',

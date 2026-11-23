@@ -3739,6 +3739,7 @@ return [
     '“{handle}” isn’t a valid handle.' => 'Nid yw “{handle}” yn ddynodwr dilys.',
     '“{name}” deleted.' => 'Wedi dileu “{name}”.',
     '“{name}” value copied.' => 'Wedi copïo gwerth “{name}”.',
+    '“{name}” was saved, but it can’t be selected here.' => 'Cafodd “{name}” ei gadw, ond does dim modd ei ddewis yma.',
     'Deprecated' => 'Anghymeradwy',
     '“{{entry}}” is approved' => 'Mae “{{entry}}” wedi’i gymeradwyo',
     'About Craft CMS' => 'Ynghylch Craft CMS',
