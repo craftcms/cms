@@ -57,20 +57,23 @@ describe('registerShortcut', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
-  it('still runs an available shortcut after an unavailable one has prevented the default', () => {
+  it('still runs the first available shortcut after an unavailable one has prevented the default', () => {
     const unavailable = vi.fn();
     const available = vi.fn();
+    const later = vi.fn();
     cleanups.push(
       registerShortcut('Mod+S', unavailable, {
         isAvailable: () => false,
         preventDefault: 'always',
       }).unregister,
-      registerShortcut('Mod+S', available).unregister
+      registerShortcut('Mod+S', available).unregister,
+      registerShortcut('Mod+S', later).unregister
     );
 
     expect(press().defaultPrevented).toBe(true);
     expect(unavailable).not.toHaveBeenCalled();
     expect(available).toHaveBeenCalledTimes(1);
+    expect(later).not.toHaveBeenCalled();
   });
 
   it('leaves the default when the callback returns false', () => {

@@ -102,6 +102,7 @@ export function registerShortcut(
 
       if (callback(event) !== false) {
         event.preventDefault();
+        blockedOnly.delete(event);
 
         if (options.stopPropagation) {
           event.stopPropagation();
