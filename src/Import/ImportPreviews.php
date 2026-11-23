@@ -41,26 +41,35 @@ readonly class ImportPreviews
 
     /**
      * How many of a step's items are previewed, from the first. Each is put through everything an import does apart
-     * from the save, in the request that asks for the preview, so a step with thousands of them would outlast it.
+     * from the save, which takes long enough that thousands of them would keep the preview from ever being useful.
      */
     public const int MAX_ITEMS = 500;
 
-    public function __construct(private Import $import) {}
+    /**
+     * How long a request for part of a preview keeps previewing items once it has a page of them, in seconds. The
+     * requests that follow pick up where it left off.
+     */
+    public const float TIME_BUDGET = 1.0;
+
+    public function __construct(private Import $import, private float $timeBudget = self::TIME_BUDGET) {}
 
     /**
      * Previews the step's first {@see MAX_ITEMS} items, returning how many have each result, and a page of those with
      * the one asked for. A page past the last one is the last one. `total` is how many were previewed, and `itemCount`
      * how many the step's data has.
      *
+     * With `$partial`, it previews only some more of them, for about {@see TIME_BUDGET}, and answers from those
+     * previewed so far; `pending` is how many are left, which the requests that follow preview.
+     *
      * Items whose elements would change, which are the ones with something to compare, are counted through the pages
      * too: `previewable` is how many of those there are, and `previewableBefore` how many come before the page. Given
      * `$previewableIndex`, the page is the one with that one of them.
      *
-     * @return array{total: int, itemCount: int, counts: array<string, int>, page: int, previewable: int, previewableBefore: int, matchKeys: list<string>, items: list<array{index: int, result: string, title: string|null, match: array<string, string>, errors: list<string>}>}
+     * @return array{total: int, itemCount: int, pending: int, counts: array<string, int>, page: int, previewable: int, previewableBefore: int, matchKeys: list<string>, items: list<array{index: int, result: string, title: string|null, match: array<string, string>, errors: list<string>}>}
      *
      * @throws Throwable when the step's data can't be read.
      */
-    public function previewStep(ElementImporter $step, int $page = 0, ?ItemPreviewResult $result = null, int $pageSize = self::PAGE_SIZE, ?int $previewableIndex = null): array
+    public function previewStep(ElementImporter $step, int $page = 0, ?ItemPreviewResult $result = null, int $pageSize = self::PAGE_SIZE, ?int $previewableIndex = null, bool $partial = false): array
     {
         // the results are only kept a short while, and for the step, the version of its local file, and the version of
         // the content they're of; and they're each user's own, as they name elements other users may not be able to see
@@ -72,18 +81,7 @@ readonly class ImportPreviews
             Cache::get(self::versionKey($step)),
         ]));
 
-        ['itemCount' => $itemCount, 'matchKeys' => $matchKeys, 'items' => $items] = Cache::remember($key, self::CACHE_DURATION, function () use ($step): array {
-            $data = $this->data($step);
-            $matchCriteria = $this->prepare($step);
-            $matchKeys = array_map(strval(...), array_keys($matchCriteria));
-            $items = [];
-
-            foreach (array_slice($data, 0, self::MAX_ITEMS) as $index => $item) {
-                $items[] = $this->summarize($index, $this->preview($step, $item, $matchCriteria), $matchKeys);
-            }
-
-            return ['itemCount' => count($data), 'matchKeys' => $matchKeys, 'items' => $items];
-        });
+        ['itemCount' => $itemCount, 'matchKeys' => $matchKeys, 'items' => $items, 'pending' => $pending] = $this->advance($step, $key, $partial ? $this->timeBudget : null);
 
         $counts = array_count_values(array_column($items, 'result'));
         $matching = $result === null ? $items : array_values(array_filter($items, fn (array $item): bool => $item['result'] === $result->value));
@@ -99,6 +97,7 @@ readonly class ImportPreviews
         return [
             'total' => count($items),
             'itemCount' => $itemCount,
+            'pending' => $pending,
             'counts' => array_map(fn (ItemPreviewResult $case): int => $counts[$case->value] ?? 0, array_column(ItemPreviewResult::cases(), null, 'value')),
             'page' => $page,
             'previewable' => count($previewable),
@@ -106,6 +105,59 @@ readonly class ImportPreviews
             'matchKeys' => $matchKeys,
             'items' => array_slice($matching, $page * $pageSize, $pageSize),
         ];
+    }
+
+    /**
+     * Previews more of the step's items, from where the last request for them left off, and returns those previewed so
+     * far. Without a budget it previews all of them; with one, a page of them and then as many more as it has time for.
+     * The items still to preview are kept with the results, so a remote source is only read once.
+     *
+     * @return array{itemCount: int, matchKeys: list<string>, items: list<array{index: int, result: string, title: string|null, match: array<string, string>, errors: list<string>}>, pending: int}
+     *
+     * @throws Throwable when the step's data can't be read.
+     */
+    private function advance(ElementImporter $step, string $key, ?float $budget): array
+    {
+        // one request at a time, so two don't preview the same items
+        return Cache::lock("{$key}:lock", 120)->block(120, function () use ($step, $key, $budget): array {
+            /** @var array{itemCount: int, matchKeys: list<string>|null, items: list<array{index: int, result: string, title: string|null, match: array<string, string>, errors: list<string>}>, data?: array<int, mixed>}|null $state */
+            $state = Cache::get($key);
+
+            if (! is_array($state)) {
+                $data = $this->data($step);
+                $state = ['itemCount' => count($data), 'matchKeys' => null, 'items' => [], 'data' => array_slice($data, 0, self::MAX_ITEMS)];
+            }
+
+            $done = count($state['items']);
+            $remaining = isset($state['data']) ? array_slice($state['data'], $done, preserve_keys: true) : [];
+
+            if ($remaining !== [] || $state['matchKeys'] === null) {
+                $matchCriteria = $this->prepare($step);
+                $state['matchKeys'] ??= array_map(strval(...), array_keys($matchCriteria));
+                $started = microtime(true);
+
+                foreach ($remaining as $index => $item) {
+                    $state['items'][] = $this->summarize($index, $this->preview($step, $item, $matchCriteria), $state['matchKeys']);
+
+                    if ($budget !== null && count($state['items']) - $done >= self::PAGE_SIZE && microtime(true) - $started >= $budget) {
+                        break;
+                    }
+                }
+
+                if (count($state['items']) === count($state['data'] ?? [])) {
+                    unset($state['data']);
+                }
+
+                Cache::put($key, $state, self::CACHE_DURATION);
+            }
+
+            return [
+                'itemCount' => $state['itemCount'],
+                'matchKeys' => $state['matchKeys'],
+                'items' => $state['items'],
+                'pending' => isset($state['data']) ? count($state['data']) - count($state['items']) : 0,
+            ];
+        });
     }
 
     /**

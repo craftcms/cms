@@ -56,6 +56,8 @@ export interface StepPreview {
   total?: number;
   /** How many items the step's data has, which can be more than were previewed. */
   itemCount?: number;
+  /** How many items are still being previewed; asking again previews more of them. */
+  pending?: number;
   /** How many items have each result. */
   counts?: Record<PreviewResult, number>;
   /** The listed page's index, of the items with the result asked for, which is the last page when one past it was asked for. */

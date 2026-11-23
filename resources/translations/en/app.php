@@ -2697,6 +2697,7 @@ return [
     'No value' => 'No value',
     'Previewing {type} device in {orientation}' => 'Previewing {type} device in {orientation}',
     'Previewing {type} device' => 'Previewing {type} device',
+    'Previewing {done, number} of {count, number} items…' => 'Previewing {done, number} of {count, number} items…',
     'Previewing the first {total, number} of {count, number} items.' => 'Previewing the first {total, number} of {count, number} items.',
     'Previous Page' => 'Previous Page',
     'Pricing' => 'Pricing',

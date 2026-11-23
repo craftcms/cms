@@ -18,8 +18,10 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Enums\ImportItemOutcome;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\Import\Events\ItemImporting;
+use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\ImportPreviews;
 use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
@@ -1276,6 +1278,18 @@ describe('previewing a step', function () {
             ->and($response->json('items.*.index'))->toBe([20, 21, 22])
             ->and($response->json('items.*.title'))->toBe(['Entry 21', 'Entry 22', 'Entry 23']);
     })->with([2, 9]);
+
+    it('fills a long preview in over several requests, each picking up where the last left off', function () {
+        // a page of items a request, however quickly they go
+        app()->instance(ImportPreviews::class, new ImportPreviews(app(Import::class), timeBudget: 0.0));
+        $step = ($this->entryStep)(['map' => ['title' => 'title']], ['source' => 'tests/Fixtures/Import/entries-many.json']);
+        $request = fn () => $this->postJson(action([ImportPlansController::class, 'previewStep']), ['step' => $step])->assertOk();
+
+        expect($request()->json())->toMatchArray(['total' => 10, 'pending' => 13, 'itemCount' => 23])
+            ->and($request()->json())->toMatchArray(['total' => 20, 'pending' => 3])
+            ->and($request()->json())->toMatchArray(['total' => 23, 'pending' => 0, 'counts' => ['new' => 23, 'update' => 0, 'unchanged' => 0, 'skip' => 0, 'problem' => 0]])
+            ->and($request()->json('total'))->toBe(23);
+    });
 
     it('lists the page with an item the preview modal moves to from another page', function () {
         $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [

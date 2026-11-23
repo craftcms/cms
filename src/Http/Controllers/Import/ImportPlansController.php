@@ -496,6 +496,8 @@ class ImportPlansController
                 (int) ($params['page'] ?? 0),
                 ItemPreviewResult::tryFrom((string) ($params['result'] ?? '')),
                 previewableIndex: isset($params['previewableIndex']) ? (int) $params['previewableIndex'] : null,
+                // a step with many items fills its preview in over several requests, rather than keeping this one waiting
+                partial: true,
             );
         } catch (Throwable $e) {
             return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
@@ -507,6 +509,7 @@ class ImportPlansController
             'error' => null,
             'total' => $preview['total'],
             'itemCount' => $preview['itemCount'],
+            'pending' => $preview['pending'],
             'counts' => $preview['counts'],
             'page' => $preview['page'],
             'pageSize' => ImportPreviews::PAGE_SIZE,

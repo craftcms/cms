@@ -90,19 +90,24 @@
   async function load(
     step: ImportStep,
     page = 0,
-    previewableIndex: number | null = null
+    previewableIndex: number | null = null,
+    {more = false}: {more?: boolean} = {}
   ): Promise<void> {
     const current = ++request;
-    const size = preview.value?.pageSize ?? 10;
-    const known =
-      filter.value === 'all'
-        ? preview.value?.total
-        : preview.value?.counts?.[filter.value];
-    placeholderRows.value =
-      known === undefined
-        ? size
-        : Math.max(1, Math.min(size, known - page * size));
-    loading.value = true;
+
+    // asking for more of the preview leaves what's shown in place while it comes
+    if (!more) {
+      const size = preview.value?.pageSize ?? 10;
+      const known =
+        filter.value === 'all'
+          ? preview.value?.total
+          : preview.value?.counts?.[filter.value];
+      placeholderRows.value =
+        known === undefined
+          ? size
+          : Math.max(1, Math.min(size, known - page * size));
+      loading.value = true;
+    }
 
     try {
       const result = filter.value === 'all' ? null : filter.value;
@@ -112,8 +117,8 @@
         return;
       }
 
-      // an edit to the step can leave nothing with the chosen result
-      if (result && !data.counts?.[result]) {
+      // an edit to the step can leave nothing with the chosen result, which is only known once every item's been previewed
+      if (result && !data.counts?.[result] && !data.pending) {
         filter.value = 'all';
         void load(step);
 
@@ -121,6 +126,12 @@
       }
 
       preview.value = data;
+      loading.value = false;
+
+      // the rest are previewed a request at a time, filling in the counts and pages as they come; a newer request stops it
+      if (data.pending) {
+        void load(step, page, null, {more: true});
+      }
 
       if (previewableIndex !== null) {
         const shown = previewableIndex - (data.previewableBefore ?? 0);
@@ -323,8 +334,16 @@
               @page="showPage"
             >
               <template #notice>
+                <p v-if="preview?.pending" class="m-0 text-sm text-quiet">
+                  {{
+                    t('Previewing {done, number} of {count, number} items…', {
+                      done: preview.total ?? 0,
+                      count: (preview.total ?? 0) + preview.pending,
+                    })
+                  }}
+                </p>
                 <p
-                  v-if="
+                  v-else-if="
                     preview?.itemCount !== undefined &&
                     preview.total !== undefined &&
                     preview.itemCount > preview.total
