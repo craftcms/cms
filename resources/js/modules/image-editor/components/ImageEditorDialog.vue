@@ -3,6 +3,7 @@
   import {commandShortcut, usesCommandKey} from '@/common/utils/keyShortcuts';
   import {useShortcut} from '@/common/shortcuts';
   import {t} from '@craftcms/ui';
+  import {elementTypeName} from '@/common/craft/element-types';
   import {
     useImageEditor,
     type SaveMode,
@@ -791,7 +792,13 @@
           .disabled="editor.isSaving.value"
           @click="onSave('copy')"
         >
-          {{ t('Save as a new asset') }}
+          {{
+            t('Save as a new {type}', {
+              type:
+                elementTypeName('CraftCms\\Cms\\Asset\\Elements\\Asset') ??
+                'asset',
+            })
+          }}
         </craft-button>
         <craft-button
           type="button"

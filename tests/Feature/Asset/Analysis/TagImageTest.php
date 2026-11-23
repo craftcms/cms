@@ -23,7 +23,7 @@ beforeEach(function (): void {
 
 function taggableImage(): Asset
 {
-    $volume = VolumeModel::factory()->create(['fs' => 'tag-image-test']);
+    $volume = VolumeModel::factory()->create(['disk' => 'tag-image-test']);
     app(Volumes::class)->reset();
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,

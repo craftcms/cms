@@ -42,11 +42,20 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        $basePath = Aliases::get($this->basePath);
+        parent::init();
+        // Yii resolves basePath with realpath(), which is false until publish() creates the directory
+        $this->basePath = $this->basePath ?: FileHelper::normalizePath($basePath);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function publish($path, $options = []): array
     {
-        if (app()->isEphemeral()) {
-            return [$path, $this->getPublishedUrl($path)];
-        }
+        FileHelper::createDirectory($this->basePath, $this->dirMode);
 
         return parent::publish($path, $options);
     }
@@ -71,7 +80,7 @@ class AssetManager extends \yii\web\AssetManager
             return $this->_addBuildIdParam(craftAsset($assetPath));
         }
 
-        if ($publish === true && !app()->isEphemeral()) {
+        if ($publish === true) {
             [, $url] = $this->publish($path);
         } else {
             $url = parent::getPublishedUrl($path);

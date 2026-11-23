@@ -10,9 +10,11 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\File;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
@@ -118,6 +120,23 @@ test('regenerate-yaml', function () {
         ->assertOk()
         ->assertSee('All done!')
         ->assertSee('dashboard'); // return url
+});
+
+test('regenerate-yaml reports when the project config files can’t be written', function () {
+    $blocker = config_path('craft/project-config-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
+    File::put($blocker, '');
+    app(ProjectConfig::class)->folderName = 'project-config-write-blocker/project';
+
+    try {
+        postJson(action([ConfigSyncController::class, 'regenerateYaml']), [
+            'data' => $this->hashedData,
+        ])
+            ->assertOk()
+            ->assertJsonPath('error', t('Project config YAML files can’t be written in this environment.'));
+    } finally {
+        File::delete($blocker);
+    }
 });
 
 test('uninstall-plugin', function () {

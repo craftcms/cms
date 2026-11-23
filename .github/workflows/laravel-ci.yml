@@ -113,14 +113,14 @@ jobs:
 
   tests:
     needs: [pint, phpstan, rector]
-    name: 'Tests / ${{ matrix.os }} / ${{ matrix.db }}'
+    name: 'Tests / ${{ matrix.os }} / PHP ${{ matrix.php }} / ${{ matrix.db }}'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
-        php: [8.5]
+        php: ['8.5', '8.6']
         db: [mysql, pgsql, sqlite]
         exclude:
           # Service containers (mysql/pgsql) are only supported on Linux runners.
@@ -212,6 +212,7 @@ jobs:
           CRAFT_REQUIRE_VIPS: ${{ matrix.os == 'ubuntu-latest' && matrix.db == 'sqlite' && '1' || '' }}
         with:
           test-command: ./vendor/bin/pest --parallel --ci --compact ${{ steps.cem.outputs.cache-hit != 'true' && github.event.pull_request.head.repo.fork && '--exclude-group=custom-elements-manifest' || '' }}
+          php-version: ${{ matrix.php }}
           tia: 'true'
           tia-environment: ${{ matrix.db }}
           coverage: pcov

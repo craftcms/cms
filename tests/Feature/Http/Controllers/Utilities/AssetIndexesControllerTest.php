@@ -104,7 +104,7 @@ test('finish indexing session deletes the reviewed folders and assets', function
     Storage::disk('asset-indexes')->put('missing/.keep', '');
     Storage::disk('asset-indexes')->put('photo.jpg', 'photo');
 
-    $volume = Volume::factory()->create(['fs' => 'asset-indexes']);
+    $volume = Volume::factory()->create(['disk' => 'asset-indexes']);
     $rootFolder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $folder = VolumeFolder::factory()->create([
         'volumeId' => $volume->id,

@@ -152,6 +152,7 @@ readonly class ElementHtml
                     'overrides' => $config['overrides'],
                     'size' => $config['size'],
                     'thumbSize' => $thumbSize?->value,
+                    'appearance' => $config['appearance'] ?? null,
                     'ui' => 'chip',
                 ] : false,
             ]),

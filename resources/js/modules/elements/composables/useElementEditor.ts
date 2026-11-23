@@ -1441,7 +1441,7 @@ export function useElementEditor({
     autosave.cancel();
 
     try {
-      await actionClient.post(props.discardDraftUrl, {
+      const {data} = await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
         elementId: draftableElementId(),
@@ -1449,6 +1449,11 @@ export function useElementEditor({
         draftId: autosave.draftId.value,
         provisional: 1,
       });
+
+      // The opener heard about each autosave, so it shows the draft's changes,
+      // such as an index row's “Edited” badge. It refreshes the same way to
+      // show the canonical element again.
+      slideout?.saved({draft: true, data: data as ScreenPageProps});
 
       // The draft is gone, so anything autosave stashed about it now describes
       // something that no longer exists — drop it before the reload rather than

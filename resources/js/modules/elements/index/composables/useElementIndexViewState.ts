@@ -9,7 +9,7 @@ interface ElementIndexViewStateContext {
 
 /**
  * The element index's persisted view configuration (per-source view mode,
- * column, sort, and thumbnail size overrides). Seeded from the
+ * column, sort, thumbnail size, and page size overrides). Seeded from the
  * server-provided view state and kept in local storage, keyed per element
  * type + context.
  *

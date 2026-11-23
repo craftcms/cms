@@ -167,7 +167,7 @@ class Api
         // Craft license
         $headers['X-Craft-License'] = match (true) {
             ! is_null($this->license->key()) => $this->license->key(),
-            defined('CRAFT_LICENSE_KEY') => '__INVALID__',
+            ! is_null($this->license->environmentKey()) => '__INVALID__',
             $user && $allowAdminChanges => '__REQUEST__',
             default => null,
         };
@@ -287,7 +287,7 @@ class Api
             }
 
             try {
-                File::put($path, chunk_split($license, 50));
+                File::writeToFile($path, chunk_split($license, 50));
             } catch (Throwable $e) {
                 // log and keep going
                 Log::error("Could not write new license key to $path: {$e->getMessage()}\nLicense key: $license", [__METHOD__]);

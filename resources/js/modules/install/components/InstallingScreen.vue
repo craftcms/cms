@@ -68,7 +68,6 @@
         <div class="flex justify-center items-center">
           <craft-icon
             name="circle-check"
-            variant="regular"
             style="color: var(--c-color-success-fill-loud); font-size: 2.5rem"
           ></craft-icon>
         </div>

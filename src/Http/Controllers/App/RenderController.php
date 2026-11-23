@@ -170,18 +170,25 @@ readonly class RenderController
             $id = $componentInfo['id'];
 
             $component = null;
-            if (is_callable([$componentType, 'get'])) {
+            if (is_a($componentType, Chippable::class, true) && is_callable([$componentType, 'get'])) {
                 $component = $componentType::get($id);
             } elseif (is_a($componentType, Volume::class, true)) {
                 $component = $this->volumes->getVolumeById((int) $id);
+            } else {
+                abort(400, 'Invalid component type');
             }
 
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     $instance = $component;
-                    if (! empty($config['overrides'])) {
+                    // Only the name, handle, and description can be overridden (e.g. for entry types in Matrix fields)
+                    $overrides = is_array($config['overrides'] ?? null) ? array_filter(
+                        array_intersect_key($config['overrides'], array_flip(['name', 'handle', 'description'])),
+                        is_string(...),
+                    ) : [];
+                    if (! empty($overrides)) {
                         $instance = clone $component;
-                        Typecast::configure($instance, $config['overrides']);
+                        Typecast::configure($instance, $overrides);
                     }
                     $componentHtml[$componentType][$id][] = $this->elementHtml->chipHtml($instance, $config);
                 }

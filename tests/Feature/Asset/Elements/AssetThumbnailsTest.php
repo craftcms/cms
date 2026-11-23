@@ -15,7 +15,7 @@ beforeEach(function () {
         'driver' => 'local',
         'root' => storage_path('framework/testing/asset-thumbnails-test/test-disk'),
     ]);
-    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $this->volume = Volume::factory()->create(['disk' => 'test-disk']);
 });
 
 it('uses square bounds and explicit modes regardless of source dimensions or divisibility by 128', function (ImageTransformMode $mode, int $size, int $doubleSize, ?int $width, ?int $height) {
