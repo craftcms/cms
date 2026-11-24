@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @since 6.0.0
  */
-readonly class TagResponse
+readonly class CollectCacheInfo
 {
     public function __construct(
         private ElementCaches $elementCaches,

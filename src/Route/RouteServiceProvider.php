@@ -13,6 +13,7 @@ use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\AuthenticateCraftSession;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
+use CraftCms\Cms\Http\Middleware\CollectCacheInfo;
 use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\EnsureInstalled;
@@ -37,7 +38,6 @@ use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\StartLazySession;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
 use CraftCms\Cms\Http\Middleware\StripSiteBasePath;
-use CraftCms\Cms\Http\Middleware\TagResponse;
 use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
@@ -123,7 +123,7 @@ class RouteServiceProvider extends ServiceProvider
             StripSiteBasePath::class,
             HandleActionRequest::class,
             // After the request is rewritten, and outside sessions and exception rendering, so it sees the final response
-            TagResponse::class,
+            CollectCacheInfo::class,
             ...array_filter($globalMiddleware, fn (string $middleware): bool => ! $trustsProxies($middleware)),
         ]);
 
