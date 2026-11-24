@@ -2030,6 +2030,26 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeSvgUploads = true;
 
     /**
+     * @var bool Whether Craft should run the `craft:update-element-statuses` command every minute, from Laravel’s scheduler.
+     *
+     * The command brings entries’ statuses up to date when their post and expiry dates pass, invalidates their caches,
+     * and dispatches {@see ElementStatusChanged}. Disable this to save the cost of running it every minute, such as on
+     * usage-billed hosting, and schedule the command yourself, or run it when you need to. Each run catches up on any
+     * dates that passed since the last one, and entries still go live and expire on time in element queries.
+     *
+     * With the deprecated {@see $staticStatuses} setting on, entries only go live and expire when the command runs.
+     *
+     * ```php
+     * ->scheduleElementStatusUpdates(false)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public bool $scheduleElementStatusUpdates = true;
+
+    /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      *           [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      *
@@ -5002,6 +5022,32 @@ class GeneralConfig extends BaseConfig
     public function sanitizeSvgUploads(bool $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether Craft should run the `craft:update-element-statuses` command every minute, from Laravel’s scheduler.
+     *
+     * The command brings entries’ statuses up to date when their post and expiry dates pass, invalidates their caches,
+     * and dispatches {@see ElementStatusChanged}. Disable this to save the cost of running it every minute, such as on
+     * usage-billed hosting, and schedule the command yourself, or run it when you need to. Each run catches up on any
+     * dates that passed since the last one, and entries still go live and expire on time in element queries.
+     *
+     * With the deprecated {@see $staticStatuses} setting on, entries only go live and expire when the command runs.
+     *
+     * ```php
+     * ->scheduleElementStatusUpdates(false)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $scheduleElementStatusUpdates
+     */
+    public function scheduleElementStatusUpdates(bool $value = true): self
+    {
+        $this->scheduleElementStatusUpdates = $value;
 
         return $this;
     }

@@ -24,10 +24,13 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Console\Scheduling\Event as ScheduledEvent;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Log;
 
 beforeEach(function () {
     Date::setTestNow('2026-10-01 12:00:00');
@@ -258,5 +261,30 @@ it('doesn’t re-save entries owned by revisions when staticStatuses is on', fun
         expect(DB::table(Table::ENTRIES)->where('id', $nested->id)->value('status'))->toBe(Entry::STATUS_PENDING);
     } finally {
         app(GeneralConfig::class)->staticStatuses = false;
+    }
+});
+
+it('schedules status updates every minute unless scheduleElementStatusUpdates is off', function () {
+    $event = collect(app(Schedule::class)->events())
+        ->firstOrFail(fn (ScheduledEvent $event) => $event->description === 'craft:update-element-statuses');
+    $config = app(GeneralConfig::class);
+
+    expect($event->expression)->toBe('* * * * *')
+        ->and($event->filtersPass(app()))->toBeTrue();
+
+    try {
+        $config->scheduleElementStatusUpdates = false;
+        Log::spy();
+
+        expect($event->filtersPass(app()))->toBeFalse();
+        Log::shouldNotHaveReceived('warning');
+
+        // Entries only go live from the command now, so warn about it
+        $config->staticStatuses = true;
+        expect($event->filtersPass(app()))->toBeFalse();
+        Log::shouldHaveReceived('warning')->once();
+    } finally {
+        $config->scheduleElementStatusUpdates = true;
+        $config->staticStatuses = false;
     }
 });

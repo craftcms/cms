@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Activity\DraftActivity;
 use CraftCms\Cms\Activity\ElementWriteActivity;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\BulkOp\BulkOpDeferrals;
 use CraftCms\Cms\Element\BulkOp\Events\BulkOpCompleted;
 use CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand;
@@ -25,6 +26,7 @@ use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -69,6 +71,15 @@ class ElementServiceProvider extends ServiceProvider
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
             $schedule
                 ->call(fn (): int => app(ElementStatuses::class)->updateScheduled())
+                ->when(function (): bool {
+                    $config = Cms::config();
+
+                    if (! $config->scheduleElementStatusUpdates && $config->staticStatuses) {
+                        Log::warning('The `scheduleElementStatusUpdates` config setting is off, so with `staticStatuses` on, entries only go live and expire when `craft:update-element-statuses` runs.');
+                    }
+
+                    return $config->scheduleElementStatusUpdates;
+                })
                 ->name('craft:update-element-statuses')
                 ->everyMinute()
                 ->withoutOverlapping();

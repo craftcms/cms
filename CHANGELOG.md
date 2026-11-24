@@ -75,6 +75,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added the `craft:update-element-statuses` command, which Craft schedules every minute. It keeps entries’ statuses up to date when their post and expiry dates pass, and invalidates their caches. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Added `CraftCms\Cms\Element\Contracts\SchedulableElementInterface`, `CraftCms\Cms\Element\ElementStatuses`, and `CraftCms\Cms\Element\Events\ElementStatusChanged`. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Entries’ `getStatus()` now considers “now” to be the end of the current minute, as entry queries do. ([#21096](https://github.com/craftcms/cms/pull/21096))
+- Added the `scheduleElementStatusUpdates` config setting, which can be disabled to stop Craft from running `craft:update-element-statuses` every minute. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Deprecated the `staticStatuses` config setting. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - `craft:update-statuses` is now a deprecated alias of `craft:update-element-statuses`. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Added `CraftCms\Cms\Validation\Concerns\LabelsAttributes`, which gives validation rules the label of the attribute they’re validating, for the `{attribute}` placeholder in their messages, and `CraftCms\Cms\Support\Str::stripEmphasis()`. ([#20935](https://github.com/craftcms/cms/pull/20935))
