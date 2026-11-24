@@ -129,6 +129,7 @@
   onMounted(() => {
     props.controller.attachIndex({
       clearSelection: () => index.value?.clearSelection(),
+      refresh: async (selectId?: number) => index.value?.refresh(selectId),
     });
   });
 

@@ -310,6 +310,30 @@ describe('ElementSelectorModal', () => {
     unmount();
   });
 
+  it('lets plugins refresh the index and select an element they created', async () => {
+    const instance = controller();
+    const {modal, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    let refreshed = false;
+    stub.refresh.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            refreshed = true;
+            resolve();
+          })
+        )
+    );
+
+    await modal().controller!.index!.refresh!(7);
+
+    expect(stub.refresh).toHaveBeenCalledWith(7);
+    expect(refreshed).toBe(true);
+    unmount();
+  });
+
   it('detaches the index on unmount', async () => {
     const instance = controller();
     const {unmount} = await mountModal(instance);
