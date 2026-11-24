@@ -37,39 +37,23 @@ export default css`
     }
   }
 
-  .input-group__input:has(> .chars-left) {
-    ${baseFormControlStyles}
-    flex-direction: column;
-    min-height: 0;
-  }
-
   .input-group__container
     > .input-group__input:has(> .chars-left)
     ::slotted([slot='input']) {
-    --c-focus-outline-width: 0px;
-    border: none;
-    border-radius: inherit;
-    background-color: transparent;
-    box-shadow: none;
+    --_chars-left-room: calc(1lh + var(--c-spacing-sm));
+    --_block-offset: calc(
+      2 * (var(--_spacing-block, 0px) + var(--_input-border-width, 0px)) +
+        var(--_chars-left-room)
+    );
+    padding-block-end: calc(var(--_spacing-block) + var(--_chars-left-room));
     padding-inline-end: var(--c-input-spacing-inline);
   }
 
-  :host([focused-visible]) .input-group__input:has(> .chars-left) {
-    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
-      var(--c-color-focus-outline);
-    outline-offset: var(--c-focus-outline-offset);
-  }
-
-  :host([invalid]) .input-group__input:has(> .chars-left) {
-    border-color: var(--c-color-danger-border-loud);
-  }
-
   .input-group__input > .chars-left {
-    position: static;
-    align-self: flex-end;
+    inset-block-end: calc(
+      var(--_spacing-block) + var(--c-form-control-border-width)
+    );
     block-size: auto;
-    padding-inline: var(--c-input-spacing-inline);
-    padding-block-end: var(--_spacing-block);
-    line-height: 1;
+    line-height: var(--leading-normal);
   }
 `;

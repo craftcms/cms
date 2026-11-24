@@ -76,22 +76,28 @@ it('keeps typed text in craft-input clear of the counter', async () => {
   expect(text.right - padding).toBeLessThanOrEqual(number.left);
 });
 
-it('puts the craft-textarea counter below the textarea, inside its border', async () => {
+it('puts the craft-textarea counter in the padding below its text', async () => {
   const {control, counter} = await render(
     'craft-textarea',
     'maxlength="1000" show-chars-left'
   );
+  control.value = 'One\nTwo';
 
   const textarea = control.getBoundingClientRect();
+  const style = getComputedStyle(control);
+  const textBottom =
+    textarea.bottom -
+    parseFloat(style.borderBottomWidth) -
+    parseFloat(style.paddingBottom);
   const number = counter()!
     .querySelector('[aria-hidden]')!
     .getBoundingClientRect();
-  const box = counter()!.parentElement!;
-  const border = box.getBoundingClientRect();
 
-  expect(getComputedStyle(box).borderBlockEndStyle).toBe('solid');
+  expect(style.borderBottomStyle).toBe('solid');
   expect(number.height).toBeGreaterThan(0);
-  expect(number.top).toBeGreaterThanOrEqual(textarea.bottom);
-  expect(number.bottom).toBeLessThanOrEqual(border.bottom);
-  expect(number.right).toBeLessThanOrEqual(border.right);
+  expect(number.top).toBeGreaterThanOrEqual(textBottom);
+  expect(number.bottom).toBeLessThanOrEqual(
+    textarea.bottom - parseFloat(style.borderBottomWidth)
+  );
+  expect(number.right).toBeLessThanOrEqual(textarea.right);
 });
