@@ -525,5 +525,35 @@
 .use-shapes {
   --c-status-shape-radius: 15%;
   --c-status-triangle-clip: polygon(50% 0, 100% 100%, 0 100%);
+  /* The triangle's 1px ring as a band: the triangle with the triangle inset by
+     1px, measured square to each edge, cut out of it. The apex moves down
+     1px ÷ sin(26.57°) and each base corner moves in along the base and its
+     side (the triangle is as tall as it is wide). */
+  --c-status-triangle-ring-clip: polygon(
+    evenodd,
+    50% 0,
+    100% 100%,
+    0 100%,
+    50% 0,
+    50% 2.24px,
+    1.62px calc(100% - 1px),
+    calc(100% - 1.62px) calc(100% - 1px),
+    50% 2.24px
+  );
   --c-status-diamond-clip: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  /* The diamond's 1px ring as a band: each inner corner moves in
+     1px ÷ sin(45°). */
+  --c-status-diamond-ring-clip: polygon(
+    evenodd,
+    50% 0,
+    100% 50%,
+    50% 100%,
+    0 50%,
+    50% 0,
+    50% 1.41px,
+    1.41px 50%,
+    50% calc(100% - 1.41px),
+    calc(100% - 1.41px) 50%,
+    50% 1.41px
+  );
 }

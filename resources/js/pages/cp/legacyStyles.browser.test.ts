@@ -1,8 +1,12 @@
-import {afterEach, expect, it} from 'vite-plus/test';
-import {page, userEvent} from 'vite-plus/test/browser/context';
+/// <reference types="vite-plus/test/browser/providers/playwright" />
+import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {cdp, page, userEvent} from 'vite-plus/test/browser/context';
 import '../../../css/cp.css';
 import '../../../css/legacy.css';
-import {renderedShape} from '../../../../packages/craftcms-ui/test/shape';
+import {
+  outlineContrast,
+  renderedShape,
+} from '../../../../packages/craftcms-ui/test/shape';
 
 afterEach(() => {
   document.body.classList.remove('cp-legacy-screen', 'use-shapes');
@@ -224,4 +228,40 @@ it('lines a legacy table up with a modern one', async () => {
   expect(firstRow.cells[2]!.getBoundingClientRect().width).toBeLessThan(
     firstRow.cells[1]!.getBoundingClientRect().width
   );
+});
+
+describe('with the use-shapes preference on', () => {
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  });
+
+  it('outlines a legacy pending triangle along every edge in a selected card header', async () => {
+    document.body.classList.add('cp-legacy-screen', 'use-shapes');
+    document.body.innerHTML = `
+      <div style="padding: 8px; background: var(--c-card-fill-selected); --c-status-ring: var(--c-card-text-selected)">
+        <span class="status pending" style="zoom: 4"></span>
+      </div>`;
+    const dot = document.querySelector('.status')!;
+
+    const edges = await outlineContrast(dot);
+
+    expect(edges.left, 'left edge').toBeGreaterThanOrEqual(3);
+    expect(edges.right, 'right edge').toBeGreaterThanOrEqual(3);
+    expect(edges.base, 'base edge').toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps a legacy pending triangle outlined in forced colors mode', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{name: 'forced-colors', value: 'active'}],
+    });
+    document.body.classList.add('cp-legacy-screen', 'use-shapes');
+    document.body.innerHTML = `<div style="padding: 8px"><span class="status pending" style="zoom: 4"></span></div>`;
+    const dot = document.querySelector('.status')!;
+
+    const edges = await outlineContrast(dot);
+
+    expect(edges.left, 'left edge').toBeGreaterThanOrEqual(3);
+    expect(edges.right, 'right edge').toBeGreaterThanOrEqual(3);
+    expect(edges.base, 'base edge').toBeGreaterThanOrEqual(3);
+  });
 });

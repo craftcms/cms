@@ -1,4 +1,5 @@
 import {afterEach, beforeAll, describe, expect, it} from 'vite-plus/test';
+import {cdp} from 'vite-plus/test/browser';
 
 import {
   backdropOf,
@@ -9,7 +10,11 @@ import {
 } from '../../../test/contrast';
 import {neutralColors, paletteColors} from '@src/constants/colors.data';
 import '../card/card.js';
-import {renderedShape} from '../../../test/shape';
+import {
+  outlineContrast,
+  renderedShape,
+  screenshotData,
+} from '../../../test/shape';
 import './status.js';
 import type CraftStatus from './status.js';
 
@@ -193,6 +198,92 @@ describe.each(['light', 'dark'])('in the %s theme', (theme) => {
       expect(await shortfalls(theme, status, selectedHeaderPlacements)).toEqual(
         []
       );
+    }
+  );
+});
+
+/**
+ * With the use-shapes preference on, a dot's shape is its meaning, so its
+ * outline has to stay visible along every edge, not just where its box's
+ * border happens to survive the shape's clip.
+ */
+describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+  it('outlines a pending triangle at 3:1 along every edge in a selected card header', async () => {
+    document.body.classList.add('use-shapes');
+    document.body.innerHTML = `<div data-theme="${theme}">${[
+      null,
+      ...tintedColors,
+    ]
+      .map(
+        (color) =>
+          `<craft-card active ${color ? `data-color="${color}"` : ''} data-case="${color ?? 'uncolored'}"><span slot="label">Block</span><span slot="actions"><craft-status status="pending" style="--size: 15px; zoom: 4"></craft-status></span></craft-card>`
+      )
+      .join('')}</div>`;
+    const elements = [
+      ...document.querySelectorAll('craft-card, craft-status'),
+    ] as (Element & {updateComplete: Promise<unknown>})[];
+    await Promise.all(elements.map((element) => element.updateComplete));
+
+    const failures: string[] = [];
+
+    for (const card of document.querySelectorAll<HTMLElement>('craft-card')) {
+      const status = card.querySelector<CraftStatus>('craft-status')!;
+      const dot = status.shadowRoot!.querySelector<HTMLElement>('.status')!;
+      // Hit-testing only sees what's on screen.
+      status.scrollIntoView({block: 'center'});
+      expect(renderedShape(dot), card.dataset.case).toBe('triangle');
+
+      const edges = await outlineContrast(status);
+
+      for (const [edge, ratio] of Object.entries(edges)) {
+        if (ratio < 3) {
+          failures.push(
+            `${card.dataset.case} ${edge} edge: ${ratio.toFixed(2)}`
+          );
+        }
+      }
+    }
+
+    expect(failures).toEqual([]);
+  });
+});
+
+describe('in forced colors mode', () => {
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  });
+
+  it('draws the pending dot exactly like the other circles with the use-shapes preference off', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{name: 'forced-colors', value: 'active'}],
+    });
+    // One dot, in one place, so both renderings fall on the same pixels.
+    document.body.innerHTML = `<div style="padding: 8px"><craft-status status="live" style="--size: 15px; zoom: 4"></craft-status></div>`;
+    const dot = document.querySelector<CraftStatus>('craft-status')!;
+    await dot.updateComplete;
+    const live = await screenshotData(dot);
+    dot.status = 'pending';
+    await dot.updateComplete;
+
+    expect(await screenshotData(dot)).toBe(live);
+  });
+
+  it.each(['pending', 'expired', 'enabled'])(
+    'keeps the %s shape outlined along every edge',
+    async (status) => {
+      await cdp().send('Emulation.setEmulatedMedia', {
+        features: [{name: 'forced-colors', value: 'active'}],
+      });
+      document.body.classList.add('use-shapes');
+      document.body.innerHTML = `<div style="padding: 8px"><craft-status status="${status}" style="--size: 15px; zoom: 4"></craft-status></div>`;
+      const element = document.querySelector<CraftStatus>('craft-status')!;
+      await element.updateComplete;
+
+      const edges = await outlineContrast(element);
+
+      for (const [edge, ratio] of Object.entries(edges)) {
+        expect(ratio, `${edge} edge`).toBeGreaterThanOrEqual(3);
+      }
     }
   );
 });

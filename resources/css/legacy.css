@@ -291,6 +291,47 @@ Legacy compat styles
     clip-path: var(--c-status-diamond-clip, none);
   }
 
+  /* A clip-path clips the border with the box, so a clipped shape would keep
+     its ring only along its base. A layer above it paints the ring as a band
+     along every edge instead, only with the use-shapes preference on (see
+     status.styles.ts). */
+  .status:is(.pending, .all) {
+    position: relative;
+  }
+
+  .status:is(.pending, .all)::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: var(
+      --c-status-ring,
+      var(--_legacy-status-border, var(--c-color-neutral-border-loud))
+    );
+  }
+
+  .status.pending::before {
+    clip-path: var(--c-status-triangle-ring-clip, inset(50%));
+  }
+
+  .status.all::before {
+    clip-path: var(--c-status-diamond-ring-clip, inset(50%));
+  }
+
+  /* Forced colors would replace the band's background with the page's, so
+     the shape would lose its outline. Every status draws as an outline
+     instead. */
+  @media (forced-colors: active) {
+    .status {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+      background: Canvas;
+    }
+
+    .status:is(.pending, .all)::before {
+      background: CanvasText;
+    }
+  }
+
   .go::after {
     content: '→' / '';
     padding-inline-start: var(--c-spacing-xs);

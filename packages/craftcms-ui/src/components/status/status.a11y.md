@@ -15,8 +15,8 @@
 - [x] With the "Use shapes to represent statuses" preference on (`use-shapes` on `<body>`), `pending` is a triangle and `expired` a square, so those states differ by more than color. With it off, every state is a circle. Per WCAG 1.4.1 (Use of Color). Verified by `draws a %s dot as a %s with the use-shapes preference on` and `draws a %s dot as a circle with the use-shapes preference off` in `status.browser.test.ts`.
 - [x] Each state's fill or border reaches 3:1 against the default, white, sunken, page and details surfaces, selected and hovered rows, and tinted card headers, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Verified by `draws the %s dot at 3:1 on every surface its colors are made for` in `status.browser.test.ts`.
 - [x] In a selected card's header, whose fill can be any mid-tone, the dot's border takes the header's text color and reaches 3:1. Per WCAG 1.4.11 (Non-text Contrast). Verified by `rings the %s dot in a selected card header so it reaches 3:1` in `status.browser.test.ts`.
-- [ ] With the "Use shapes to represent statuses" preference on, a `pending` triangle in a selected card's header reaches 3:1. Per WCAG 1.4.11 (Non-text Contrast). Known gap: the triangle's shape cuts off its border except along the bottom edge, and its fill alone doesn't reach 3:1 against the header.
-- [ ] In forced-colors mode, the dot keeps a visible edge. Not yet verified. All states would then look the same, so the name is the only cue.
+- [x] With the "Use shapes to represent statuses" preference on, a `pending` triangle in a selected card's header keeps its border along every edge, reaching 3:1. Per WCAG 1.4.11 (Non-text Contrast). Verified by `outlines a pending triangle at 3:1 along every edge in a selected card header` in `status.browser.test.ts`.
+- [x] In forced-colors mode, every shape keeps a visible outline along every edge. All states then share the same colors, so the shape and the name are the cues. Per WCAG 1.4.11 (Non-text Contrast). Verified by `keeps the %s shape outlined along every edge` in `status.browser.test.ts`.
 
 ## Depends on usage
 
