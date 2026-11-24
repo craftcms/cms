@@ -12,6 +12,7 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
 
@@ -29,6 +30,11 @@ class ElementCaches
 
     private int $deferDepth = 0;
 
+    /**
+     * The database transaction level when the outermost deferral started.
+     */
+    private int $deferTransactionLevel = 0;
+
     /** @var array<string, true> */
     private array $deferredTags = [];
 
@@ -38,8 +44,9 @@ class ElementCaches
      * Runs a callback, deferring the cache tags it invalidates until it returns, and then invalidating each tag once.
      *
      * Nested calls defer to the outermost one. Once 500 tags are pending, they're invalidated as soon as the
-     * nested operation that added them finishes. Pending tags are also invalidated on shutdown, in case the
-     * process exits or hits a fatal error before the callback returns.
+     * nested operation that added them finishes, unless a transaction opened since the outermost call is still
+     * open. Pending tags are also invalidated on shutdown, in case the process exits or hits a fatal error before
+     * the callback returns.
      *
      * @template T
      *
@@ -48,6 +55,10 @@ class ElementCaches
      */
     public function deferInvalidations(callable $callback): mixed
     {
+        if ($this->deferDepth === 0) {
+            $this->deferTransactionLevel = DB::transactionLevel();
+        }
+
         $this->deferDepth++;
 
         try {
@@ -176,12 +187,14 @@ class ElementCaches
 
     /**
      * Flushes pending tags once there are enough of them, but only between the outermost operation's
-     * nested operations, so an element's tags are never invalidated partway through its own save.
+     * nested operations, after their transactions have committed. That way an element's tags are never
+     * invalidated partway through its own save, or before another request can see its changes.
      */
     private function flushDeferredInvalidationsOverThreshold(): void
     {
         if (
             $this->deferDepth === 1 &&
+            DB::transactionLevel() <= $this->deferTransactionLevel &&
             count($this->deferredTags) >= self::FLUSH_THRESHOLD
         ) {
             $this->flushDeferredInvalidations();

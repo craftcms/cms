@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches as ElementCachesFacade;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 class TestElementCachesElement extends Element
@@ -372,4 +373,30 @@ it('flushes deferred invalidations between nested operations once 500 tags are p
             ...array_map(fn (int $id) => "element::$id", range(1, 499)),
         ])
         ->and($invalidations[1])->toBe(['element::'.TestElementCachesElement::class.'::*', 'element::500', 'element::1']);
+});
+
+it('waits for transactions opened since the outermost deferral to commit before flushing at the threshold', function () {
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = (array) $event->tags;
+    });
+
+    $this->elementCaches->deferInvalidations(function () use (&$invalidations) {
+        DB::transaction(function () use (&$invalidations) {
+            $this->elementCaches->deferInvalidations(function () {
+                foreach (range(1, 500) as $id) {
+                    $element = new TestElementCachesElement;
+                    $element->id = $id;
+                    $this->elementCaches->invalidateForElement($element);
+                }
+            });
+
+            expect($invalidations)->toBe([]);
+        });
+
+        expect($invalidations)->toBe([]);
+    });
+
+    expect($invalidations)->toHaveCount(1)
+        ->and($invalidations[0])->toHaveCount(501);
 });

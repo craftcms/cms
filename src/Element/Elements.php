@@ -847,7 +847,8 @@ class Elements
         }
 
         if ($updates !== []) {
-            Workflows::withContentChangeLock(Drafts::getDraftIdsForElement($owner), function () use ($owner, $updates): void {
+            // Defer invalidating the owners until the content change is committed
+            $this->elementCaches->deferInvalidations(fn () => Workflows::withContentChangeLock(Drafts::getDraftIdsForElement($owner), function () use ($owner, $updates): void {
                 $this->releases->lockElements($owner);
 
                 foreach ($updates as $id => $sortOrder) {
@@ -860,7 +861,7 @@ class Elements
                 }
 
                 $this->touchElementAndOwners($owner);
-            });
+            }));
         } else {
             $this->elementCaches->invalidateForElement($owner);
         }
