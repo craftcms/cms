@@ -45,11 +45,15 @@ class ElementServiceProvider extends ServiceProvider
         Event::subscribe(BroadcastElementChanges::class);
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
-        app()->terminating(fn () => app(BulkOpDeferrals::class)->persistPending());
+        app()->terminating(function () {
+            app(ElementCaches::class)->invalidatePendingTags();
+            app(BulkOpDeferrals::class)->persistPending();
+        });
 
         // A queue worker only terminates when it stops, and a bulk op can end in a job on another worker.
         Event::listen([JobProcessed::class, JobExceptionOccurred::class], function (JobProcessed|JobExceptionOccurred $event): void {
             if (! $event->job instanceof SyncJob) {
+                app(ElementCaches::class)->invalidatePendingTags();
                 app(BulkOpDeferrals::class)->persistPending();
             }
         });

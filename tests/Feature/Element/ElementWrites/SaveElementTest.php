@@ -671,15 +671,22 @@ it('invalidates each cache tag once per save, including the revisions it creates
         ]);
 });
 
-it('reads fresh cached queries from ElementSaved listeners', function () {
+it('invalidates a save’s caches before ElementSaved fires, so its listeners read fresh cached queries', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
 
     expect(Entry::find()->id($entry->id)->cache()->one()->title)->toBe('Old title');
 
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
     $titlesInListener = [];
-    Event::listen(function (ElementSaved $event) use ($entry, &$titlesInListener) {
+    $invalidatedInListener = [];
+    Event::listen(function (ElementSaved $event) use ($entry, &$titlesInListener, &$invalidated, &$invalidatedInListener) {
         if ($event->element->id === $entry->id) {
             $titlesInListener[] = Entry::find()->id($entry->id)->cache()->one()->title;
+            $invalidatedInListener[] = in_array("element::$entry->id", $invalidated, true);
         }
     });
 
@@ -687,5 +694,80 @@ it('reads fresh cached queries from ElementSaved listeners', function () {
 
     expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
         ->and($titlesInListener)->toBe(['New title'])
+        ->and($invalidatedInListener)->toBe([true])
         ->and(Entry::find()->id($entry->id)->cache()->one()->title)->toBe('New title');
+});
+
+it('invalidates a save’s caches once an enclosing transaction commits', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+    $outerLevel = DB::transactionLevel();
+
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = ['level' => DB::transactionLevel(), 'tags' => (array) $event->tags];
+    });
+
+    DB::beginTransaction();
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($invalidations)->toBe([]);
+
+    DB::commit();
+
+    expect($invalidations)->toHaveCount(1)
+        ->and($invalidations[0]['level'])->toBe($outerLevel)
+        ->and($invalidations[0]['tags'])->toContain("element::$entry->id");
+});
+
+it('keeps a save’s caches pending when an enclosing transaction rolls back', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+    $cachedTitle = fn (): string => Entry::find()->id($entry->id)->cache()->one()->title;
+
+    expect($cachedTitle())->toBe('Old title');
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    DB::beginTransaction();
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($cachedTitle())->toBe('New title')
+        ->and($invalidated)->toBe([]);
+
+    DB::rollBack();
+
+    expect($cachedTitle())->toBe('Old title')
+        ->and($invalidated)->toBe([]);
+
+    app()->terminate();
+
+    expect($invalidated)->toContain("element::$entry->id");
+});
+
+it('invalidates each element’s caches before its ElementSaved fires during bulk resaves', function () {
+    $entries = [
+        EntryModel::factory()->createElement(),
+        EntryModel::factory()->createElement(),
+    ];
+    $ids = array_map(fn (Entry $entry) => $entry->id, $entries);
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    $invalidatedInListeners = [];
+    Event::listen(function (ElementSaved $event) use ($ids, &$invalidated, &$invalidatedInListeners) {
+        if (in_array($event->element->id, $ids, true)) {
+            $invalidatedInListeners[$event->element->id] = in_array("element::{$event->element->id}", $invalidated, true);
+        }
+    });
+
+    app(ElementWrites::class)->resaveElements(Entry::find()->id($ids));
+
+    expect($invalidatedInListeners)->toEqual(array_fill_keys($ids, true));
 });

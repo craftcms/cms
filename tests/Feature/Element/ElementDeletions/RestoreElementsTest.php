@@ -219,12 +219,10 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
         });
 
     $elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
-    $elementCaches->shouldReceive('invalidateForElement')
+    $elementCaches->shouldReceive('invalidateForElementAfterCommit')
         ->once()
-        ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): array {
+        ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): void {
             $invalidated[] = [$element->id, $element->siteId];
-
-            return [];
         });
 
     $deletions = app(ElementDeletions::class, [

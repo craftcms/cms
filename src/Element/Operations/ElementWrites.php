@@ -219,7 +219,7 @@ readonly class ElementWrites
     ): void {
         event(new ElementsResaving($query));
 
-        $this->elementCaches->deferInvalidations(fn () => BulkOps::ensure(function () use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
+        BulkOps::ensure(function () use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
             $position = 0;
 
             try {
@@ -267,7 +267,7 @@ readonly class ElementWrites
             } catch (QueryAbortedException) {
                 // Fail silently
             }
-        }));
+        });
 
         event(new ElementsResaved($query));
     }
@@ -286,11 +286,11 @@ readonly class ElementWrites
             $siteIds = array_map(fn ($siteId) => $siteId, (array) $siteIds);
         }
 
-        $this->elementCaches->deferInvalidations(fn () => BulkOps::ensure(function () use ($query, $siteIds, $continueOnError) {
+        BulkOps::ensure(function () use ($query, $siteIds, $continueOnError) {
             $position = 0;
 
             try {
-                $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
+                $query->cursor()->each(fn (ElementInterface $element) => $this->elementCaches->deferInvalidations(function () use ($element, $continueOnError, $query, &$position, $siteIds) {
                     $position++;
 
                     event(new ElementPropagating($query, $element, $position));
@@ -334,11 +334,11 @@ readonly class ElementWrites
 
                     BulkOps::trackElement($element);
                     $this->elementCaches->invalidateForElement($element);
-                });
+                }));
             } catch (QueryAbortedException) {
                 // Fail silently
             }
-        }));
+        });
 
         event(new ElementsPropagated($query));
     }
@@ -828,6 +828,8 @@ readonly class ElementWrites
         } finally {
             $element->ruleset->useScenario($originalScenario);
         }
+
+        $this->elementCaches->flushBeforeFinalEvent();
 
         event(new ElementSaved($element, $isNewElement));
 

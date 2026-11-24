@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeleting;
@@ -302,6 +303,11 @@ it('bypasses a deleted element’s caches until an enclosing transaction rolls b
         }
     });
 
+    $invalidatedEvents = 0;
+    Event::listen(ElementCachesInvalidated::class, function () use (&$invalidatedEvents) {
+        $invalidatedEvents++;
+    });
+
     DB::beginTransaction();
 
     expect($this->deletions->deleteElement($entry))->toBeTrue()
@@ -310,7 +316,31 @@ it('bypasses a deleted element’s caches until an enclosing transaction rolls b
 
     DB::rollBack();
 
-    expect($cachedExists())->toBeTrue();
+    expect($cachedExists())->toBeTrue()
+        ->and($invalidatedEvents)->toBe(0);
+});
+
+it('invalidates the caches of every deleted element after the commit when an ElementCachesInvalidated listener throws', function () {
+    $first = EntryModel::factory()->createElement();
+    $second = EntryModel::factory()->createElement();
+    Event::listen(function (ElementCachesInvalidated $event) use ($first) {
+        if ($event->element?->id === $first->id) {
+            throw new RuntimeException('Listener failed');
+        }
+    });
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    DB::beginTransaction();
+
+    expect($this->deletions->deleteElement($first))->toBeTrue()
+        ->and($this->deletions->deleteElement($second))->toBeTrue()
+        ->and(fn () => DB::commit())->toThrow(RuntimeException::class, 'Listener failed')
+        ->and($invalidated)->toContain("element::$first->id", "element::$second->id")
+        ->and(app(ElementCaches::class)->hasPendingInvalidations(["element::$first->id", "element::$second->id"]))->toBeFalse();
 });
 
 it('rolls back the delete when afterDelete throws', function () {

@@ -12,9 +12,7 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Throwable;
 
@@ -25,40 +23,28 @@ use Throwable;
 class ElementCaches
 {
     /**
-     * The number of deferred tags that are invalidated early, so long-running operations such as bulk resaves
-     * don't leave other requests reading stale caches until they finish.
+     * The most tags a failed invalidation keeps pending for a retry. Larger batches are dropped, so a cache store
+     * that keeps failing doesn't make every later flush retry a growing set.
      */
-    private const int FLUSH_THRESHOLD = 500;
+    private const int MAX_RETRIED_TAGS = 1000;
 
     private int $deferDepth = 0;
 
     /**
-     * The database transaction level when the outermost deferral started.
+     * Tags waiting to be invalidated. Caches tagged with them are bypassed until then.
+     *
+     * @var array<string, true>
      */
-    private int $deferTransactionLevel = 0;
-
-    /** @var array<string, true> */
-    private array $deferredTags = [];
+    private array $pendingTags = [];
 
     private bool $registeredShutdownFlush = false;
 
     /**
-     * Tags whose caches are bypassed until an after-commit invalidation runs, with the number of invalidations
-     * waiting on each.
+     * Runs a callback, collecting the cache tags it invalidates, and invalidates each one once after it returns.
      *
-     * @var array<string, int>
-     */
-    private array $bypassedTags = [];
-
-    private bool $clearsLeakedBypasses = false;
-
-    /**
-     * Runs a callback, deferring the cache tags it invalidates until it returns, and then invalidating each tag once.
-     *
-     * Nested calls defer to the outermost one. Once 500 tags are pending, they're invalidated as soon as the
-     * nested operation that added them finishes, unless a transaction opened since the outermost call is still
-     * open. Pending tags are also invalidated on shutdown, in case the process exits or hits a fatal error before
-     * the callback returns.
+     * Nested calls defer to the outermost one. Tags are never invalidated while a database transaction is open:
+     * they stay pending until it commits. If it rolls back, they stay pending until the next flush or the end of
+     * the request or queue job.
      *
      * @template T
      *
@@ -67,27 +53,19 @@ class ElementCaches
      */
     public function deferInvalidations(callable $callback): mixed
     {
-        if ($this->deferDepth === 0) {
-            $this->deferTransactionLevel = DB::transactionLevel();
-        }
-
         $this->deferDepth++;
 
         try {
             return $callback();
         } finally {
-            $this->deferDepth--;
-
-            if ($this->deferDepth === 0) {
-                $this->flushDeferredInvalidations();
-            } else {
-                $this->flushDeferredInvalidationsOverThreshold();
+            if (--$this->deferDepth === 0) {
+                $this->flushPendingInvalidations();
             }
         }
     }
 
     /**
-     * Returns whether any of the given cache tags are waiting to be invalidated by {@see deferInvalidations()}.
+     * Returns whether any of the given cache tags are waiting to be invalidated.
      *
      * Caches tagged with them are stale, so they shouldn't be read or written until the tags are invalidated.
      *
@@ -95,11 +73,65 @@ class ElementCaches
      */
     public function hasPendingInvalidations(array $tags): bool
     {
-        if ($this->deferredTags === [] && $this->bypassedTags === []) {
-            return false;
+        return $this->pendingTags !== [] && array_any($tags, fn ($tag) => isset($this->pendingTags[$tag]));
+    }
+
+    /**
+     * Invalidates the pending tags now, or once the open database transaction commits.
+     *
+     * @internal
+     */
+    public function flushPendingInvalidations(): void
+    {
+        if ($this->pendingTags !== []) {
+            // Runs right away unless a transaction is open
+            DB::afterCommit($this->invalidatePendingTags(...));
+        }
+    }
+
+    /**
+     * Invalidates the tags collected so far before an operation tells listeners that it has finished, unless a
+     * wider {@see deferInvalidations()} call is still collecting. Like every flush, it waits for an open
+     * transaction to commit.
+     *
+     * @internal
+     */
+    public function flushBeforeFinalEvent(): void
+    {
+        if ($this->deferDepth <= 1) {
+            $this->flushPendingInvalidations();
+        }
+    }
+
+    /**
+     * Invalidates the pending tags now, whether or not a transaction is open.
+     *
+     * If the cache store fails, the error is reported and, unless there were more than 1,000 tags, they stay
+     * pending for the next flush. This often runs after a commit, where throwing would tell the caller that a saved
+     * change had failed.
+     *
+     * @internal
+     */
+    public function invalidatePendingTags(): void
+    {
+        if ($this->pendingTags === []) {
+            return;
         }
 
-        return array_any($tags, fn ($tag) => isset($this->deferredTags[$tag]) || isset($this->bypassedTags[$tag]));
+        $tags = array_keys($this->pendingTags);
+        $this->pendingTags = [];
+
+        try {
+            TagDependency::invalidate($tags);
+        } catch (Throwable $e) {
+            if (count($tags) <= self::MAX_RETRIED_TAGS) {
+                foreach ($tags as $tag) {
+                    $this->pendingTags[$tag] = true;
+                }
+            }
+
+            report($e);
+        }
     }
 
     public function isCollectingCacheInfo(): bool
@@ -164,50 +196,24 @@ class ElementCaches
     }
 
     /**
-     * Invalidates an element’s caches once the current transaction commits, and bypasses them until then, so code
-     * that runs before the commit, such as event listeners, reads the element’s new state. If the transaction rolls
-     * back, the caches are left alone.
+     * Invalidates an element’s caches like {@see invalidateForElement()}, but fires {@see ElementCachesInvalidated}
+     * once the open transaction commits rather than right away. If the transaction rolls back, it never fires.
      *
      * @internal
      */
     public function invalidateForElementAfterCommit(ElementInterface $element): void
     {
-        // Bypasses only last as long as the transaction they were added in, so any left when a new outermost
-        // transaction begins were leaked, such as by an earlier after-commit callback throwing
-        if (! $this->clearsLeakedBypasses) {
-            Event::listen(function (TransactionBeginning $event): void {
-                if (
-                    $event->connectionName === DB::getDefaultConnection() &&
-                    $event->connection->transactionLevel() === 1
-                ) {
-                    $this->bypassedTags = [];
-                }
-            });
-            $this->clearsLeakedBypasses = true;
-        }
+        $tags = $this->invalidateTags($this->tagsForElement($element));
 
-        $tags = $this->tagsForElement($element);
-
-        foreach ($tags as $tag) {
-            $this->bypassedTags[$tag] = ($this->bypassedTags[$tag] ?? 0) + 1;
-        }
-
-        $stopBypassing = function () use ($tags): void {
-            foreach ($tags as $tag) {
-                if (--$this->bypassedTags[$tag] === 0) {
-                    unset($this->bypassedTags[$tag]);
-                }
+        DB::afterCommit(function () use ($tags, $element): void {
+            // Flush before the event, because a listener that throws makes Laravel skip the flush queued after this
+            // callback. A deferInvalidations() call that's still collecting flushes once it returns.
+            if ($this->deferDepth === 0) {
+                $this->invalidatePendingTags();
             }
-        };
 
-        DB::afterCommit(function () use ($element, $stopBypassing): void {
-            try {
-                $this->invalidateForElement($element);
-            } finally {
-                $stopBypassing();
-            }
+            event(new ElementCachesInvalidated($tags, $element));
         });
-        DB::afterRollBack($stopBypassing);
     }
 
     /**
@@ -229,51 +235,27 @@ class ElementCaches
      */
     private function invalidateTags(array $tags): array
     {
-        if ($this->deferDepth > 0) {
-            foreach ($tags as $tag) {
-                $this->deferredTags[$tag] = true;
-            }
-
-            if (! $this->registeredShutdownFlush) {
-                register_shutdown_function($this->flushDeferredInvalidations(...));
-                $this->registeredShutdownFlush = true;
-            }
-
-            $this->flushDeferredInvalidationsOverThreshold();
-
-            return $tags;
+        foreach ($tags as $tag) {
+            $this->pendingTags[$tag] = true;
         }
 
-        TagDependency::invalidate($tags);
+        if (! $this->registeredShutdownFlush) {
+            // In case the process exits or hits a fatal error before the tags are invalidated
+            register_shutdown_function(function (): void {
+                try {
+                    $this->invalidatePendingTags();
+                } catch (Throwable) {
+                    // The app may already be gone
+                }
+            });
+            $this->registeredShutdownFlush = true;
+        }
+
+        if ($this->deferDepth === 0) {
+            $this->flushPendingInvalidations();
+        }
 
         return $tags;
-    }
-
-    private function flushDeferredInvalidations(): void
-    {
-        if ($this->deferredTags === []) {
-            return;
-        }
-
-        $tags = array_keys($this->deferredTags);
-        $this->deferredTags = [];
-        TagDependency::invalidate($tags);
-    }
-
-    /**
-     * Flushes pending tags once there are enough of them, but only between the outermost operation's
-     * nested operations, after their transactions have committed. That way an element's tags are never
-     * invalidated partway through its own save, or before another request can see its changes.
-     */
-    private function flushDeferredInvalidationsOverThreshold(): void
-    {
-        if (
-            $this->deferDepth === 1 &&
-            DB::transactionLevel() <= $this->deferTransactionLevel &&
-            count($this->deferredTags) >= self::FLUSH_THRESHOLD
-        ) {
-            $this->flushDeferredInvalidations();
-        }
     }
 
     /** @return list<string> */
