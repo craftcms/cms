@@ -400,3 +400,13 @@ it('waits for transactions opened since the outermost deferral to commit before 
     expect($invalidations)->toHaveCount(1)
         ->and($invalidations[0])->toHaveCount(501);
 });
+
+it('stops bypassing an element’s caches when invalidating them after the commit throws', function () {
+    $element = new TestElementCachesElement;
+    $element->id = 123;
+    Event::listen(ElementCachesInvalidated::class, fn () => throw new RuntimeException('Listener failed'));
+
+    expect(fn () => $this->elementCaches->invalidateForElementAfterCommit($element))
+        ->toThrow(RuntimeException::class, 'Listener failed')
+        ->and($this->elementCaches->hasPendingInvalidations(['element::123']))->toBeFalse();
+});

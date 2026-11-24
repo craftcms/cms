@@ -183,8 +183,11 @@ class ElementCaches
         };
 
         DB::afterCommit(function () use ($element, $stopBypassing): void {
-            $this->invalidateForElement($element);
-            $stopBypassing();
+            try {
+                $this->invalidateForElement($element);
+            } finally {
+                $stopBypassing();
+            }
         });
         DB::afterRollBack($stopBypassing);
     }
