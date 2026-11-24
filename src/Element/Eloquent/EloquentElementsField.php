@@ -6,7 +6,14 @@ namespace CraftCms\Cms\Element\Eloquent;
 
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Gql\Arguments\Elements\EloquentElement as EloquentElementArguments;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql as GqlService;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Resolvers\Elements\EloquentElement as EloquentElementResolver;
+use CraftCms\Cms\Gql\Types\Generators\EloquentElementType;
+use GraphQL\Type\Definition\Argument;
+use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Model;
 use Override;
 
@@ -25,6 +32,8 @@ use Override;
  *     }
  * }
  * ```
+ *
+ * @phpstan-import-type ArgumentConfig from Argument
  *
  * @since 6.0.0
  */
@@ -55,11 +64,32 @@ abstract class EloquentElementsField extends BaseRelationField
     }
 
     /**
-     * Eloquent element types have no GraphQL types to return.
+     * Included in schemas that can query the element type.
      */
     #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
-        return false;
+        return GqlHelper::canSchema(static::elementType()::gqlScope(), schema: $schema);
+    }
+
+    /**
+     * @return array{
+     *     name: string,
+     *     type: Type,
+     *     args: array<string, ArgumentConfig>,
+     *     resolve: string,
+     *     complexity: callable,
+     * }
+     */
+    #[Override]
+    public function getContentGqlType(): array
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::nonNull(Type::listOf(EloquentElementType::generateType(static::elementType()))),
+            'args' => EloquentElementArguments::forElementType(static::elementType()),
+            'resolve' => EloquentElementResolver::class.'::resolve',
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
+        ];
     }
 }

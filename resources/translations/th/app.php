@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'การค้นหาผู้ใช้ในกลุ่มผู้ใช้ “{name}”',
     'Query for users' => 'การค้นหาสำหรับผู้ใช้',
     'Query for volumes' => 'การค้นหาสำหรับไดรฟ์ข้อมูล',
+    'Query for {type}' => 'การค้นหาสำหรับ {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'พารามิเตอร์การค้นหา (เช่น {ex1}) หรือแฟรกเมนต์ URI (เช่น {ex2}) ที่ควรจะผนวกเข้ากับ URL',
     'Queue Manager' => 'ผู้จัดการคิว',
     'Quick Post' => 'โพสต์ด่วน',
