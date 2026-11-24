@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\View\TemplateMode;
 use Error;
 use Exception;
 use ReflectionProperty;
@@ -100,8 +101,7 @@ readonly class TwigExceptionMapper
         }
 
         $template = new $class(Twig::get());
-        $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: $src->getName();
+        $templatePath = $this->resolveSourcePath($class) ?: $template->getSourceContext()->getName();
         $templateLine = null;
 
         if ($line !== null) {
@@ -114,5 +114,30 @@ readonly class TwigExceptionMapper
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Returns the source path of a compiled template.
+     *
+     * When debug mode is off, compiled templates don't store their source path, and Twig asks the loader for it, which
+     * resolves the template name for the current template mode. The template may have been rendered in another mode,
+     * so this tries the current mode first, then the others.
+     *
+     * @param  class-string<Template>  $class
+     */
+    private function resolveSourcePath(string $class): string
+    {
+        $currentMode = TemplateMode::get();
+        $modes = [$currentMode, ...array_filter(TemplateMode::cases(), fn (TemplateMode $mode) => $mode !== $currentMode)];
+
+        foreach ($modes as $mode) {
+            $path = TemplateMode::with($mode, fn () => new $class(Twig::get($mode))->getSourceContext()->getPath());
+
+            if ($path !== '') {
+                return $path;
+            }
+        }
+
+        return '';
     }
 }
