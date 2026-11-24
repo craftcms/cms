@@ -413,6 +413,25 @@ async function externalStrip(): Promise<{
   return {element, tabs, sections};
 }
 
+it('leaves no gap below the strip when its panels are elsewhere', async () => {
+  const {element} = await externalStrip();
+  const strip = element.shadowRoot!.querySelector('[part="strip"]')!;
+
+  expect(element.getBoundingClientRect().height).toBe(
+    strip.getBoundingClientRect().height
+  );
+});
+
+it('keeps the gap between the strip and panels it holds', async () => {
+  const tabs = await fixture('display: block;');
+  const strip = tabs.shadowRoot!.querySelector('[part="strip"]')!;
+
+  expect(
+    panels(tabs).getBoundingClientRect().top -
+      strip.getBoundingClientRect().bottom
+  ).toBeGreaterThan(0);
+});
+
 it('moves the selection to the first tab when the selected slotted tab is removed', async () => {
   const {element, tabs, slottedPanels} = await strip();
 

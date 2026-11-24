@@ -246,9 +246,7 @@
     gap: var(--c-spacing-md);
   }
 
-  /* Its panels are the editions below, so it needs no gap before its own. */
   .plugin-hero__editions {
-    --c-tabs-gap: 0;
     margin-block-end: var(--c-spacing-sm);
   }
 

@@ -1280,10 +1280,6 @@
     padding-inline: var(--compare-cell-padding-inline);
   }
 
-  .compare__tabs-cell craft-tabs {
-    --c-tabs-gap: 0;
-  }
-
   .compare__tabs-cell--from {
     display: none;
   }

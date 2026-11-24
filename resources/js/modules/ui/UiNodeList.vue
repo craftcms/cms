@@ -361,9 +361,11 @@
     margin-inline-start: auto;
   }
 
-  /* The labels start where a first field would, as if there were no tabs. */
+  /* The labels start where a first field would, as if there were no tabs. The
+     panels follow the strip rather than sit in it, so it spaces them itself. */
   .ui-node-list__tabs {
     margin-block-start: calc(-1 * var(--c-tab-padding-block, 0.5em));
+    margin-block-end: var(--c-tabs-gap, var(--c-spacing-lg));
   }
 
   .ui-node-list__tabs::part(strip) {

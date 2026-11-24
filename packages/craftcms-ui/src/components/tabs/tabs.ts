@@ -182,7 +182,8 @@ const FIT_TOLERANCE = 1;
  *   does nothing on the inline placements.
  *
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
- *   Defaults to `--c-spacing-lg`.
+ *   Defaults to `--c-spacing-lg`. Unused when the tabs control panels
+ *   elsewhere, which whatever holds them spaces instead.
  * @cssproperty --c-tabs-tab-gap - Space between adjacent tabs. Defaults to
  *   `--c-spacing-sm`, or `--c-spacing-md` on the inline placements.
  * @cssproperty --c-tabs-strip-min-inline-size - Minimum width of the tab
@@ -393,6 +394,9 @@ export default class CraftTabs extends LitElement {
     // count, so a strip that simply hasn't been filled in yet doesn't quietly
     // land in the wrong mode.
     this.#external = this.#tabs.some((tab) => tab.controls);
+    this.shadowRoot
+      ?.querySelector('.tabs')
+      ?.classList.toggle('tabs--external', this.#external);
 
     const tabSlot = this.shadowRoot?.querySelector('slot[name="tab"]');
     tabSlot?.addEventListener('slotchange', this.#setup);

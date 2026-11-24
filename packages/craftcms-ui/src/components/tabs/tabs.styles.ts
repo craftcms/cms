@@ -22,6 +22,11 @@ export default css`
     min-block-size: 0;
   }
 
+  /* With its panels elsewhere, the panels region is empty. */
+  .tabs--external {
+    gap: 0;
+  }
+
   /*
    * Room beside each label for its hover fill. The gap between tabs is small
    * to make up for it, just enough to keep neighbouring fills apart.
