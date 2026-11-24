@@ -143,6 +143,23 @@ it('gives listener-provided transform URLs the transform’s dimensions and form
         ->and($result->mimeType)->toBe('image/webp');
 });
 
+it('doesn’t let transform event listeners change named transforms', function () {
+    registerDriver('disk-driver');
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'Card',
+        'handle' => 'card',
+        'width' => 400,
+    ]));
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver']);
+    Event::listen(TransformGenerating::class, function (TransformGenerating $event) {
+        $event->transform->width = 50;
+    });
+
+    app(AssetTransformers::class)->transform($asset, ['transform' => 'card']);
+
+    expect(app(ImageTransforms::class)->getTransformByHandle('card')->width)->toBe(400);
+});
+
 it('still dispatches the deprecated AfterGenerateTransform event to its listeners', function () {
     registerDriver('disk-driver');
     $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver']);

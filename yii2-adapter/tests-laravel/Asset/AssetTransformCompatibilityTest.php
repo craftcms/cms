@@ -27,6 +27,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -462,6 +463,36 @@ it('only triggers legacy generate transform events for image files', function():
     }
 });
 
+it('only triggers legacy generate transform events for GIFs on site requests when transformGifs allows it', function(): void {
+    Cms::config()->transformGifs = false;
+    $asset = ($this->asset)([
+        'filename' => 'animation.gif',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $legacy = 0;
+    $before = function() use (&$legacy): void {
+        $legacy++;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+
+    try {
+        request()->attributes->set('isCpRequest', false);
+        $asset->transform(['width' => 320]);
+        $siteRequestCount = $legacy;
+
+        request()->attributes->set('isCpRequest', true);
+        $asset->transform(['width' => 320]);
+
+        expect($siteRequestCount)->toBe(0)
+            ->and($legacy)->toBe(1);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+        Cms::config()->transformGifs = true;
+        request()->attributes->remove('isCpRequest');
+    }
+});
+
 it('honors before-generate URLs before invoking a legacy transformer', function(): void {
     $asset = ($this->asset)();
     $transform = new LegacyImageTransform(['width' => 320]);
@@ -477,6 +508,28 @@ it('honors before-generate URLs before invoking a legacy transformer', function(
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
     }
+});
+
+it('resolves listener URLs for assets with an applied transform', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $calls = 0;
+    EventFacade::listen(TransformGenerating::class, function(TransformGenerating $event) use (&$calls): void {
+        if (++$calls > 10) {
+            throw new RuntimeException('The listener was called recursively.');
+        }
+
+        $event->url = 'https://cdn.test/source.jpg?w=100';
+    });
+
+    $asset->setTransform(['width' => 100]);
+
+    expect($asset->getUrl())->toBe('https://cdn.test/source.jpg?w=100')
+        ->and($asset->getWidth())->toBe(100)
+        ->and($asset->getHeight())->toBe(50);
 });
 
 it('keeps unexpected legacy transformer exceptions observable', function(): void {

@@ -109,26 +109,26 @@ abstract class BaseElementLinkType extends BaseLinkType
     #[Override]
     public function settingsNodes(string $prefix): array
     {
-        $sources = Collection::make($this->availableSources())
+        // Some element types expose an “All …” source of their own (entries);
+        // it becomes the group's All checkbox rather than rendering beside it.
+        [$allSources, $sources] = Collection::make($this->availableSources())
             ->map(fn (array $source): array => [
                 'label' => (string) $source['label'],
                 'value' => $source['key'],
             ])
-            ->values()
-            ->all();
+            ->partition(fn (array $source): bool => $source['value'] === Choice::ALL_VALUE);
 
-        if ($sources === []) {
+        if ($sources->isEmpty() && $allSources->isEmpty()) {
             return [];
         }
-
-        array_unshift($sources, ['label' => t('All'), 'value' => '*']);
 
         return [
             UiField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
                 ->control(Choice::make($this->settingPath($prefix, 'sources'))
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)
-                    ->options($sources)
+                    ->options($sources->values()->all())
+                    ->allOption($allSources->pluck('label')->first())
                     ->value($this->sources ?? ['*'])),
             $this->selectionConditionField($prefix),
         ];

@@ -5,6 +5,7 @@
 > [!WARNING]
 > Sites that set `CRAFT_EPHEMERAL` on a read-only filesystem should now turn off automatic project config YAML writes by calling `writeYamlAutomatically(false)` on `CraftCms\Cms\ProjectConfig\ProjectConfig` from a service provider, and make sure Laravel’s storage path is writable. With the Yii adapter installed, `resourceBasePath` should also point to a writable directory, or the `assetManager` component should serve resources published at build time.
 
+- Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
@@ -29,7 +30,9 @@
 - Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\FolderCreating`, `FolderCreated`, `FolderRenaming`, `FolderRenamed`, and `FoldersDeleted` were never dispatched. ([#21050](https://github.com/craftcms/cms/pull/21050))
-- Fixed a bug where `CraftCms\Cms\Asset\Events\TransformGenerating` and `AfterGenerateTransform` only fired for legacy image transformers. ([#21050](https://github.com/craftcms/cms/pull/21050))
+- Fixed a bug where `CraftCms\Cms\Asset\Events\TransformGenerating` and `AfterGenerateTransform`, and the legacy `craft\elements\Asset::EVENT_BEFORE_GENERATE_TRANSFORM` and `EVENT_AFTER_GENERATE_TRANSFORM` events, only fired for legacy image transformers. ([#21050](https://github.com/craftcms/cms/pull/21050))
+- Fixed a bug where Number and Money fields’ Size setting didn’t change their inputs’ width. ([#21054](https://github.com/craftcms/cms/issues/21054), [#21068](https://github.com/craftcms/cms/pull/21068))
+- Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060), [#21063](https://github.com/craftcms/cms/pull/21063))
 - Fixed a bug where the `configuration_*` MCP tools couldn’t assign a workflow to a section. ([#21042](https://github.com/craftcms/cms/issues/21042), [#21051](https://github.com/craftcms/cms/pull/21051))
 - Fixed a bug where `craft:users:create` could create users with a username or email that was already taken. ([#21040](https://github.com/craftcms/cms/issues/21040), [#21052](https://github.com/craftcms/cms/pull/21052))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
@@ -47,6 +50,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - URLs generated with `route()` and `action()` for routes in the `craft` middleware group now use the current site’s base URL, and a `site` parameter generates them for another site. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added the `rootOnly()` route macro, for routes in the `craft` middleware group that should only match at the app’s root URL and keep it in their URLs. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
+- Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
@@ -71,6 +75,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where plugins’ front-end routes returned a 404 error under Laravel Octane with the Yii adapter installed. ([#21019](https://github.com/craftcms/cms/pull/21019))
 - Fixed a bug where `CRAFT_SITE` and `CRAFT_SITE_UPPER` kept the previous site request’s values under Laravel Octane. ([#20998](https://github.com/craftcms/cms/issues/20998), [#21022](https://github.com/craftcms/cms/pull/21022))
 - Fixed a bug where the GraphQL API’s OAuth discovery metadata had the wrong URLs in headless mode and on control panel requests. ([#21029](https://github.com/craftcms/cms/pull/21029))
+- Fixed a bug where relation field cards didn’t show their elements’ statuses. ([#21028](https://github.com/craftcms/cms/issues/21028), [#21046](https://github.com/craftcms/cms/pull/21046))
 - Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Element\Drafts::saveDraftForApplying()`. ([#21053](https://github.com/craftcms/cms/pull/21053))
@@ -78,6 +83,8 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where the `drafts_apply` MCP tool returned “Draft not found.” when the user wasn’t permitted to apply the draft. ([#21043](https://github.com/craftcms/cms/issues/21043), [#21053](https://github.com/craftcms/cms/pull/21053))
 - Fixed a bug where the `drafts_apply` MCP tool didn’t validate drafts before applying them. ([#21053](https://github.com/craftcms/cms/pull/21053))
 - Fixed a bug where comboboxes limited to their options couldn’t be cleared by deleting their text. ([#21057](https://github.com/craftcms/cms/pull/21057))
+- Fixed a bug where Link fields’ Entry settings listed two “All” sources. ([#21059](https://github.com/craftcms/cms/pull/21059))
+- Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
@@ -431,6 +438,8 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where asset indexes didn’t preload thumbnails when a thumbnail URL listener was registered. ([#20831](https://github.com/craftcms/cms/discussions/20831), [#20927](https://github.com/craftcms/cms/pull/20927))
 - Fixed a bug where the “globe” icon was blank in some places. ([#20931](https://github.com/craftcms/cms/issues/20931), [#20939](https://github.com/craftcms/cms/pull/20939))
 - Fixed a bug where element cards’ titles, chip attributes, and status badges had no space between them, and chip attributes were cut off on cover cards. ([#20947](https://github.com/craftcms/cms/pull/20947))
+- Fixed a bug where entry cards in element indexes didn’t show entries’ statuses. ([#20932](https://github.com/craftcms/cms/issues/20932), [#20942](https://github.com/craftcms/cms/pull/20942))
+- Fixed a bug where the card layout preview showed a status when the entry type’s “Show the Status field” setting was off. ([#20932](https://github.com/craftcms/cms/issues/20932), [#20945](https://github.com/craftcms/cms/pull/20945))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2xwp-6jjc-hfmm)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-r4pw-6wr6-6rm8)

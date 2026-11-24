@@ -44,6 +44,7 @@ class Money extends Control implements ReadableValueControl, WritableValueContro
             ->locale((string) ($value['locale'] ?? $control->props['locale']))
             ->showCurrency((bool) ($control->props['showCurrency'] ?? true))
             ->inputSize($control->props['size'] ?? null)
+            ->width(isset($control->props['size']) ? 'auto' : null)
             ->min($control->props['min'] ?? null)
             ->max($control->props['max'] ?? null)
             ->step($control->props['step'] ?? null)
