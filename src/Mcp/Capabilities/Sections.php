@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Mcp\Capabilities;
 
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Section\Sections as SectionService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Workflow\Models\Workflow;
 use Mcp\Capability\Attribute\McpResource;
 use Mcp\Capability\Attribute\McpResourceTemplate;
 use Mcp\Capability\Attribute\Schema;
@@ -58,6 +60,15 @@ readonly class Sections
         ],
         'required' => ['label', 'urlFormat'],
         'additionalProperties' => false,
+    ];
+
+    private const array WorkflowSchema = [
+        'anyOf' => [
+            ['type' => 'integer'],
+            ['type' => 'string', 'format' => 'uuid'],
+            ['type' => 'null'],
+        ],
+        'description' => 'ID or UID of the workflow that reviews the section’s drafts, or null for none. Requires Craft Pro.',
     ];
 
     public function __construct(private SectionService $sections) {}
@@ -124,6 +135,8 @@ readonly class Sections
         DefaultPlacement $defaultPlacement = DefaultPlacement::End,
         #[Schema(items: self::PreviewTargetsSchema)]
         ?array $previewTargets = null,
+        #[Schema(definition: self::WorkflowSchema)]
+        int|string|null $workflow = null,
     ): array {
         $section = new Section([
             'name' => $name,
@@ -138,6 +151,7 @@ readonly class Sections
             'propagationMethod' => $propagationMethod,
             'defaultPlacement' => $defaultPlacement,
             'previewTargets' => $previewTargets,
+            'workflowId' => $this->workflowId($workflow),
         ]);
 
         if (! $this->sections->saveSection($section)) {
@@ -179,6 +193,8 @@ readonly class Sections
         DefaultPlacement $defaultPlacement = DefaultPlacement::End,
         #[Schema(items: self::PreviewTargetsSchema)]
         ?array $previewTargets = null,
+        #[Schema(definition: self::WorkflowSchema)]
+        int|string|null $workflow = null,
     ): array {
         $section = $this->find($id, $uid, $currentHandle);
 
@@ -203,6 +219,10 @@ readonly class Sections
             'defaultPlacement' => $defaultPlacement,
             'previewTargets' => $previewTargets,
         ], $request->arguments));
+
+        if (array_key_exists('workflow', $request->arguments)) {
+            $section->workflowId = $this->workflowId($workflow);
+        }
 
         if (! $this->sections->saveSection($section)) {
             throw new ToolCallException($this->validationErrors($section));
@@ -278,6 +298,20 @@ readonly class Sections
             $handle !== null => $this->sections->getSectionByHandle($handle),
             default => null,
         };
+    }
+
+    private function workflowId(int|string|null $workflow): ?int
+    {
+        if ($workflow === null) {
+            return null;
+        }
+
+        if (! Edition::isAtLeast(Edition::Pro)) {
+            throw new ToolCallException('Workflows require Craft Pro.');
+        }
+
+        return Workflow::query()->where(is_int($workflow) ? 'id' : 'uid', $workflow)->value('id')
+            ?? throw new ToolCallException('Workflow not found.');
     }
 
     /**

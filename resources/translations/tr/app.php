@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => '“{name}” kullanıcı grubundaki kullanıcılar için sorgu',
     'Query for users' => 'Kullanıcılar için sorgu',
     'Query for volumes' => 'Birimler için sorgu',
+    'Query for {type}' => '{type} için sorgu',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Sorgu parametreleri (ör. {ex1}) veya URL’ye eklenmesi gereken URI parçası (ör. {ex2}).',
     'Queue Manager' => 'Kuyruk Yöneticisi',
     'Quick Post' => 'Hızlı Yayınla',

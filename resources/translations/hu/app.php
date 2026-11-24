@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Lekérdezés a „{name}” felhasználócsoportban lévő felhasználókra',
     'Query for users' => 'Lekérdezés felhasználókra',
     'Query for volumes' => 'Lekérdezés kötetekre',
+    'Query for {type}' => 'Lekérdezés: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Az URL-hez csatolandó lekérdezési paraméterek (pl. {ex1}) vagy URI-töredék (pl. {ex2}).',
     'Queue Manager' => 'Várakozási sor kezelő',
     'Quick Post' => 'Gyors hozzáadás',

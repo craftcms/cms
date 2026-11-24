@@ -30,9 +30,14 @@
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\FolderCreating`, `FolderCreated`, `FolderRenaming`, `FolderRenamed`, and `FoldersDeleted` were never dispatched. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\TransformGenerating` and `AfterGenerateTransform` only fired for legacy image transformers. ([#21050](https://github.com/craftcms/cms/pull/21050))
+- Fixed a bug where the `configuration_*` MCP tools couldn’t assign a workflow to a section. ([#21042](https://github.com/craftcms/cms/issues/21042), [#21051](https://github.com/craftcms/cms/pull/21051))
+- Fixed a bug where `craft:users:create` could create users with a username or email that was already taken. ([#21040](https://github.com/craftcms/cms/issues/21040), [#21052](https://github.com/craftcms/cms/pull/21052))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
 Error summaries shown when a save fails now show field names in bold, and each error links to its field, including custom fields and fields within settings screens’ scoped or sidebar layouts. Errors within Table fields’ cells, and within Matrix and Addresses fields shown as cards or an index, are no longer listed separately from their field’s own error, and the links are now at least 24px tall. ([#20935](https://github.com/craftcms/cms/pull/20935))
+- The Yii2 Loose Ends utility now lists sites whose base URL uses the `@web` alias, which is only defined when the Yii adapter is installed. ([#20989](https://github.com/craftcms/cms/issues/20989))
+- Eloquent element types and their relation fields are now available in GraphQL. ([#21014](https://github.com/craftcms/cms/pull/21014))
+- Added `CraftCms\Cms\Element\Eloquent\EloquentElement::gqlScope()` and `gqlTypeName()`. ([#21014](https://github.com/craftcms/cms/pull/21014))
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Added `CraftCms\Cms\Validation\Concerns\LabelsAttributes`, which gives validation rules the label of the attribute they’re validating, for the `{attribute}` placeholder in their messages, and `CraftCms\Cms\Support\Str::stripEmphasis()`. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - URLs generated with `route()` and `action()` for routes in the `craft` middleware group now use the current site’s base URL, and a `site` parameter generates them for another site. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
@@ -64,6 +69,11 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where the GraphQL API’s OAuth discovery metadata had the wrong URLs in headless mode and on control panel requests. ([#21029](https://github.com/craftcms/cms/pull/21029))
 - Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
+- Added `CraftCms\Cms\Element\Drafts::saveDraftForApplying()`. ([#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where entries created by applying an unpublished draft via MCP didn’t get a post date. ([#21041](https://github.com/craftcms/cms/issues/21041), [#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where the `drafts_apply` MCP tool returned “Draft not found.” when the user wasn’t permitted to apply the draft. ([#21043](https://github.com/craftcms/cms/issues/21043), [#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where the `drafts_apply` MCP tool didn’t validate drafts before applying them. ([#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where comboboxes limited to their options couldn’t be cleared by deleting their text. ([#21057](https://github.com/craftcms/cms/pull/21057))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
