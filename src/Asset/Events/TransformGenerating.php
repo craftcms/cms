@@ -21,6 +21,9 @@ use CraftCms\Cms\Image\ImageHelper;
  *
  * Changes to {@see $transform} have no effect.
  *
+ * Craft guesses the MIME type of the file at {@see $url} from the transform’s format and the URL, and reports
+ * `image/jpeg` when the guess isn’t an image. Set {@see $mimeType} to give the type instead.
+ *
  * {@see $transform} holds the transform’s parameters as an array when the driver gives a core parameter a type that
  * {@see ImageTransform} doesn’t support.
  *
@@ -33,5 +36,6 @@ class TransformGenerating
         public Asset $asset,
         public ImageTransform|string|array|null $transform,
         public ?string $url = null,
+        public ?string $mimeType = null,
     ) {}
 }

@@ -43,10 +43,10 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
         $asset = $this->legacyAsset($request->asset);
         $transform = new ImageTransform()->setInlineParameters($request->parameters);
 
-        event($event = new TransformGenerating($asset, $transform));
+        event($event = new TransformGenerating($asset, clone $transform));
 
         if ($event->url !== null) {
-            return self::result($asset, $transform, Html::encodeSpaces($event->url));
+            return self::result($asset, $transform, Html::encodeSpaces($event->url), $event->mimeType);
         }
 
         $url = Craft::$app->getImageTransforms()
@@ -87,8 +87,12 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
             ->invalidateAssetTransforms($this->legacyAsset($asset));
     }
 
-    public static function result(Asset $asset, ImageTransform $transform, string $url): AssetTransformResult
+    public static function result(Asset $asset, ImageTransform $transform, string $url, ?string $mimeType = null): AssetTransformResult
     {
+        if ($mimeType !== null) {
+            return new AssetTransformResult($url, $mimeType);
+        }
+
         $path = parse_url($url, PHP_URL_PATH);
         $mimeType = is_string($path) ? File::getMimeTypeByExtension($path) : null;
         $format = $transform->format ?? $asset->getExtension();
