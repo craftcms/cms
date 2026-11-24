@@ -98,6 +98,10 @@ that was never released, say why in the PR body.
 When explicitly instructed to merge a PR, follow the `merging-pull-requests`
 skill. Translation files are in `src/translations/`.
 
+Never close or comment on GitHub issues or discussions on your own, including
+after merging the pull request that fixes them. Do either only when asked to
+for that issue or discussion.
+
 ### Copilot reviews
 
 When waiting for, watching for, or checking a Copilot review, follow the
