@@ -5,6 +5,7 @@
 > [!WARNING]
 > Sites that set `CRAFT_EPHEMERAL` on a read-only filesystem should now turn off automatic project config YAML writes by calling `writeYamlAutomatically(false)` on `CraftCms\Cms\ProjectConfig\ProjectConfig` from a service provider, and make sure Laravel’s storage path is writable. With the Yii adapter installed, `resourceBasePath` should also point to a writable directory, or the `assetManager` component should serve resources published at build time.
 
+- Updated Twig to 3.31.1. ([#21082](https://github.com/craftcms/cms/pull/21082))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
@@ -84,6 +85,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where Link fields’ Entry settings listed two “All” sources. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where option and Color field values didn’t show their colors in element indexes and cards. ([#21055](https://github.com/craftcms/cms/issues/21055), [#21070](https://github.com/craftcms/cms/pull/21070))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21082](https://github.com/craftcms/cms/pull/21082))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
