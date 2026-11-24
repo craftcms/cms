@@ -41,6 +41,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 ## Pull requests
 
 - Run `composer ci` before creating a pull request.
+- Load the `changelog-entries` skill for every bug fix or feature PR, and commit the release notes it calls for with the change, linking the GitHub issue it fixes. If the skill says the change gets no entry, such as a fix for behavior that was never released, say why in the PR body.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use the `pr` skill to write the pull request body.
 - Use the `requesting-accessibility-reviews` skill to request an accessibility review.
