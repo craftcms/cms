@@ -108,6 +108,29 @@ describe('when focus moves', () => {
       .toHaveFocus();
   });
 
+  it('stays open, and the click lands, when a label in it is pressed inside a focusable container', async () => {
+    const popover = await openWith(`
+      <div tabindex="0">
+        <craft-popover>
+          <craft-button slot="invoker" type="button">Open</craft-button>
+          <div slot="content">
+            <input id="choice" type="radio" />
+            <label for="choice">Choice</label>
+          </div>
+        </craft-popover>
+      </div>
+    `);
+
+    page.getByRole('button', {name: 'Open'}).element().focus();
+    await userEvent.click(page.getByText('Choice'));
+    await popover.updateComplete;
+
+    expect(popover.open).toBe(true);
+    await expect
+      .element(page.getByRole('radio', {name: 'Choice'}))
+      .toBeChecked();
+  });
+
   it('stays open when focus moves to an invoker linked with for', async () => {
     const popover = await openWith(`
       <button type="button" id="trigger">Open</button>
