@@ -37,6 +37,7 @@ use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementStatusChanged;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -102,8 +103,10 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -1595,6 +1598,29 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
+     * Returns SQL that evaluates to an `entries` row’s date-based status, as {@see statusForDates()} does.
+     *
+     * @param  string  $table  The table name or alias to qualify the `entries` columns with
+     */
+    private static function statusForDatesSql(string $table): Expression
+    {
+        $grammar = DB::getQueryGrammar();
+        $now = DB::escape(Query::prepareDateForDb(now()->endOfMinute()));
+        $postDate = $grammar->wrap("$table.postDate");
+        $expiryDate = $grammar->wrap("$table.expiryDate");
+
+        return DB::raw(sprintf(
+            "(CASE WHEN %1\$s IS NULL OR %1\$s > %3\$s THEN '%4\$s' WHEN %2\$s IS NOT NULL AND %2\$s <= %3\$s THEN '%5\$s' ELSE '%6\$s' END)",
+            $postDate,
+            $expiryDate,
+            $now,
+            self::STATUS_PENDING,
+            self::STATUS_EXPIRED,
+            self::STATUS_LIVE,
+        ));
+    }
+
+    /**
      * @return Builder A query for canonical entries’ `entries` rows
      */
     private static function canonicalEntryRows(): Builder
@@ -1608,30 +1634,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public static function findIdsWithOutdatedStatus(): array
     {
-        if (Cms::config()->staticStatuses) {
+        // Once a day, since this runs every minute
+        if (Cms::config()->staticStatuses && Cache::add('craft:staticStatuses-deprecation-logged', true, now()->plus(days: 1))) {
             Deprecator::log('staticStatuses', 'The `staticStatuses` config setting is deprecated. Listen for `'.ElementStatusChanged::class.'` to act on entries going live or expiring.');
         }
 
-        $now = Query::prepareDateForDb(now()->endOfMinute());
-
         return self::canonicalEntryRows()
-            ->where(fn (Builder $query) => $query
-                ->where(fn (Builder $query) => $query
-                    ->where(fn (Builder $query) => $query
-                        ->whereNull('entries.postDate')
-                        ->orWhere('entries.postDate', '>', $now))
-                    ->where('entries.status', '!=', self::STATUS_PENDING))
-                ->orWhere(fn (Builder $query) => $query
-                    ->where('entries.postDate', '<=', $now)
-                    ->whereNotNull('entries.expiryDate')
-                    ->where('entries.expiryDate', '<=', $now)
-                    ->where('entries.status', '!=', self::STATUS_EXPIRED))
-                ->orWhere(fn (Builder $query) => $query
-                    ->where('entries.postDate', '<=', $now)
-                    ->where(fn (Builder $query) => $query
-                        ->whereNull('entries.expiryDate')
-                        ->orWhere('entries.expiryDate', '>', $now))
-                    ->where('entries.status', '!=', self::STATUS_LIVE)))
+            ->where('entries.status', '!=', self::statusForDatesSql('entries'))
             ->orderBy('entries.id')
             ->pluck('entries.id')
             ->map(fn (mixed $id): int => (int) $id)
@@ -1640,42 +1649,33 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     /**
      * With the deprecated `staticStatuses` config setting on, it re-saves the entry instead, as `craft:update-statuses`
-     * did, so `ElementSaved` listeners that compare {@see $oldStatus} keep working. Entries owned by revisions are
-     * skipped, since revisions can’t be re-saved.
+     * did, so `ElementSaved` listeners that compare {@see $oldStatus} keep working. Entries nested in drafts and
+     * revisions are updated without re-saving them. A re-save that fails throws, so the failure is reported.
      */
     public static function updateStoredStatus(int $elementId): bool
     {
         if (Cms::config()->staticStatuses) {
             $entry = self::find()->id($elementId)->status(null)->one();
 
-            if ($entry instanceof self && ! ElementHelper::isRevision($entry)) {
+            // Nested entries in drafts and revisions are updated below, since revisions can’t be re-saved
+            if ($entry instanceof self && ! ElementHelper::isDraftOrRevision($entry)) {
                 $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 $entry->resaving = true;
-                Elements::saveElement($entry, updateSearchIndex: false);
+
+                if (! Elements::saveElement($entry, updateSearchIndex: false)) {
+                    throw new InvalidElementException($entry, "Couldn’t re-save entry $elementId to update its status: ".implode(', ', $entry->errors()->all()));
+                }
+
+                return false;
             }
-
-            return false;
         }
 
-        $row = DB::table(Table::ENTRIES)->where('id', $elementId)->first(['postDate', 'expiryDate', 'status']);
+        // Only if it’s still outdated, so a save or another run that updated it first dispatches the change once
+        $status = self::statusForDatesSql(Table::ENTRIES);
 
-        if ($row === null) {
-            return false;
-        }
-
-        $status = self::statusForDates(
-            $row->postDate ? Date::parse($row->postDate, 'UTC') : null,
-            $row->expiryDate ? Date::parse($row->expiryDate, 'UTC') : null,
-        );
-
-        if ($status === $row->status) {
-            return false;
-        }
-
-        // Only if nothing else changed it since it was read, so the change is dispatched once
         return DB::table(Table::ENTRIES)
             ->where('id', $elementId)
-            ->where('status', $row->status)
+            ->where('status', '!=', $status)
             ->update(['status' => $status]) > 0;
     }
 

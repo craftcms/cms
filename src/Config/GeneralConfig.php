@@ -2030,7 +2030,7 @@ class GeneralConfig extends BaseConfig
     public bool $sanitizeSvgUploads = true;
 
     /**
-     * @var bool Whether Craft should run the `craft:update-element-statuses` command every minute, from Laravel’s scheduler.
+     * @var bool Whether Craft should run the update the `craft:update-element-statuses` command runs every minute, from Laravel’s scheduler.
      *
      * The command brings entries’ statuses up to date when their post and expiry dates pass, invalidates their caches,
      * and dispatches {@see ElementStatusChanged}. Disable this to save the cost of running it every minute, such as on
@@ -5027,7 +5027,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether Craft should run the `craft:update-element-statuses` command every minute, from Laravel’s scheduler.
+     * Whether Craft should run the update the `craft:update-element-statuses` command runs every minute, from Laravel’s scheduler.
      *
      * The command brings entries’ statuses up to date when their post and expiry dates pass, invalidates their caches,
      * and dispatches {@see ElementStatusChanged}. Disable this to save the cost of running it every minute, such as on

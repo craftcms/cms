@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry;
 
 use CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand;
+use CraftCms\Cms\Entry\Commands\UpdateStatusesCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -16,6 +17,7 @@ class EntryServiceProvider extends ServiceProvider
     {
         $this->commands([
             MergeEntryTypesCommand::class,
+            UpdateStatusesCommand::class,
         ]);
     }
 }

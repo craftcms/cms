@@ -5,7 +5,6 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,25 +15,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $now = Query::prepareDateForDb(now()->endOfMinute());
+        $now = DB::escape(Query::prepareDateForDb(now()->endOfMinute()));
+        $postDate = DB::getQueryGrammar()->wrap('postDate');
+        $expiryDate = DB::getQueryGrammar()->wrap('expiryDate');
+        $status = DB::raw("(CASE WHEN $postDate IS NULL OR $postDate > $now THEN 'pending' WHEN $expiryDate IS NOT NULL AND $expiryDate <= $now THEN 'expired' ELSE 'live' END)");
 
         DB::table(Table::ENTRIES)
-            ->where(fn (Builder $query) => $query->whereNull('postDate')->orWhere('postDate', '>', $now))
-            ->where('status', '!=', 'pending')
-            ->update(['status' => 'pending']);
-
-        DB::table(Table::ENTRIES)
-            ->where('postDate', '<=', $now)
-            ->whereNotNull('expiryDate')
-            ->where('expiryDate', '<=', $now)
-            ->where('status', '!=', 'expired')
-            ->update(['status' => 'expired']);
-
-        DB::table(Table::ENTRIES)
-            ->where('postDate', '<=', $now)
-            ->where(fn (Builder $query) => $query->whereNull('expiryDate')->orWhere('expiryDate', '>', $now))
-            ->where('status', '!=', 'live')
-            ->update(['status' => 'live']);
+            ->where('status', '!=', $status)
+            ->update(['status' => $status]);
     }
 
     public function down(): void {}

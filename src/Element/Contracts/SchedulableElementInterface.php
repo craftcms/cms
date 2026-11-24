@@ -14,6 +14,8 @@ use CraftCms\Cms\Element\Events\ElementStatusChanged;
  * Craft schedules every minute, brings the stored statuses up to date. Craft dispatches {@see ElementStatusChanged}
  * whenever an element’s status changes in a site, from a save or from that command.
  *
+ * @internal This may change before Craft 7, as more element types adopt it.
+ *
  * @since 6.0.0
  */
 interface SchedulableElementInterface extends ElementInterface

@@ -21,12 +21,12 @@ use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
 use CraftCms\Cms\Element\Commands\UpdateElementStatusesCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
+use CraftCms\Cms\Support\Facades\Updates;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -72,13 +72,12 @@ class ElementServiceProvider extends ServiceProvider
             $schedule
                 ->call(fn (): int => app(ElementStatuses::class)->updateScheduled())
                 ->when(function (): bool {
-                    $config = Cms::config();
-
-                    if (! $config->scheduleElementStatusUpdates && $config->staticStatuses) {
-                        Log::warning('The `scheduleElementStatusUpdates` config setting is off, so with `staticStatuses` on, entries only go live and expire when `craft:update-element-statuses` runs.');
+                    // Until the migration has brought stored statuses up to date, every outdated one would look like a change
+                    if (! Cms::isInstalled() || Updates::isCraftUpdatePending()) {
+                        return false;
                     }
 
-                    return $config->scheduleElementStatusUpdates;
+                    return Cms::config()->scheduleElementStatusUpdates;
                 })
                 ->name('craft:update-element-statuses')
                 ->everyMinute()

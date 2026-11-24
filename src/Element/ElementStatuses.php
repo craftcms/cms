@@ -69,6 +69,11 @@ readonly class ElementStatuses
                     $before = $elementType::storedStatuses([$elementId])[$elementId] ?? [];
 
                     if (! $elementType::updateStoredStatus($elementId)) {
+                        // The element type may have saved the element instead, and the save dispatched the changes
+                        if (($elementType::storedStatuses([$elementId])[$elementId] ?? []) !== $before) {
+                            $count++;
+                        }
+
                         continue;
                     }
 
@@ -89,8 +94,8 @@ readonly class ElementStatuses
 
         if (
             ! $element instanceof SchedulableElementInterface ||
-            $element->getIsDraft() ||
-            $element->getIsRevision()
+            // Including nested elements added or edited in drafts, which don’t have draft IDs themselves
+            ElementHelper::isDraftOrRevision($element)
         ) {
             return;
         }
@@ -187,13 +192,20 @@ readonly class ElementStatuses
         if ($after === []) {
             return;
         }
+
         $find = fn (int $siteId): ?ElementInterface => $element?->siteId === $siteId
             ? $element
             : $elementType::find()->id($elementId)->siteId($siteId)->status(null)->one();
+        $firstSiteElement = $find(array_key_first($after));
 
-        if ($invalidateCaches && ($siteElement = $find(array_key_first($after))) !== null) {
+        // Nested elements added or edited in drafts are found by scheduled runs, since their own rows look canonical
+        if ($firstSiteElement === null || ElementHelper::isDraftOrRevision($firstSiteElement)) {
+            return;
+        }
+
+        if ($invalidateCaches) {
             // The element’s tags cover all of its sites
-            ElementCaches::invalidateForElement($siteElement);
+            ElementCaches::invalidateForElement($firstSiteElement);
         }
 
         foreach ($after as $siteId => $status) {

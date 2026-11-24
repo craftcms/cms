@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Console\Application as ConsoleApplication;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Commands\UpdateElementStatusesCommand;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementStatuses;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Element\Events\ElementStatusChanged;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Entry\Commands\UpdateStatusesCommand;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -19,18 +23,22 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Scheduling\Event as ScheduledEvent;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
-use Illuminate\Support\Facades\Log;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 beforeEach(function () {
     Date::setTestNow('2026-10-01 12:00:00');
@@ -123,9 +131,9 @@ it('re-saves entries whose statuses changed when staticStatuses is on', function
         });
 
         Date::setTestNow('2026-10-01 12:06:00');
-        app(ElementStatuses::class)->updateScheduled();
 
-        expect($saved)->toBe([[$entry->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]])
+        expect(app(ElementStatuses::class)->updateScheduled())->toBe(1)
+            ->and($saved)->toBe([[$entry->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]])
             ->and($this->changes)->toBe([[$entry->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]])
             ->and(Entry::find()->id($entry->id)->status(Entry::STATUS_LIVE)->exists())->toBeTrue();
     } finally {
@@ -162,6 +170,44 @@ it('doesn’t announce or track drafts and revisions, or the nested entries copi
     expect($copyIds)->not->toBeEmpty()
         ->and($this->changes)->toBe([])
         ->and(app(ElementStatuses::class)->updateScheduled())->toBe(0);
+});
+
+it('doesn’t announce nested entries added or edited in a draft', function () {
+    $matrixEntryType = EntryType::factory()->create(['hasTitleField' => true]);
+    $matrixField = Field::factory()->create([
+        'handle' => 'matrixField',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$matrixEntryType->id]],
+    ]);
+    $ownerModel = EntryModel::factory()
+        ->withFieldLayout(FieldLayout::factory()->forField($matrixField))
+        ->create();
+    $owner = Entry::find()->id($ownerModel->id)->status(null)->one();
+    $owner->setFieldValueFromRequest('matrixField', [
+        'entries' => ['new1' => ['type' => $matrixEntryType->handle, 'title' => 'Block', 'enabled' => true]],
+        'sortOrder' => ['new1'],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    $blockId = $owner->getFieldValue('matrixField')->status(null)->one()->id;
+    $this->changes = [];
+
+    $draft = app(Drafts::class)->createDraft($owner, User::findOne()->id, provisional: true);
+    $draft->setFieldValueFromRequest('matrixField', [
+        'entries' => [
+            $blockId => ['type' => $matrixEntryType->handle, 'title' => 'Edited', 'enabled' => true],
+            'new1' => ['type' => $matrixEntryType->handle, 'title' => 'New', 'enabled' => true],
+        ],
+        'sortOrder' => [$blockId, 'new1'],
+    ]);
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    $draftBlockIds = DB::table(Table::ENTRIES)->where('primaryOwnerId', $draft->id)->pluck('id')->all();
+    DB::table(Table::ENTRIES)->whereIn('id', $draftBlockIds)->update(['status' => Entry::STATUS_PENDING]);
+    app(ElementStatuses::class)->updateScheduled();
+
+    expect($draftBlockIds)->toHaveCount(2)
+        ->and($this->changes)->toBe([])
+        ->and(DB::table(Table::ENTRIES)->whereIn('id', $draftBlockIds)->pluck('status')->unique()->all())->toBe([Entry::STATUS_LIVE]);
 });
 
 it('announces status changes in every site when a draft is applied', function () {
@@ -226,7 +272,7 @@ it('keeps updating other entries when one entry’s re-save fails', function () 
     }
 });
 
-it('updates statuses from the craft:update-element-statuses command and its deprecated aliases', function (string $command) {
+it('updates statuses from the craft:update-element-statuses command and the deprecated craft:update-statuses command', function (string $command) {
     $entry = ($this->scheduledEntry)('2026-10-01 12:05:00');
     Date::setTestNow('2026-10-01 12:06:00');
 
@@ -239,9 +285,26 @@ it('updates statuses from the craft:update-element-statuses command and its depr
     'craft:update-element-statuses',
     'craft:update-statuses',
     'craft:update-statuses/index',
+    'craft:update-statuses --isolated',
 ]);
 
-it('doesn’t re-save entries owned by revisions when staticStatuses is on', function () {
+it('logs a deprecation when the command runs by a deprecated name, with or without the craft: prefix', function (string $name, bool $deprecated) {
+    Deprecator::shouldReceive('log')->times($deprecated ? 1 : 0);
+    $console = new ConsoleApplication(app(), app(Dispatcher::class), 'test');
+    $console->setAutoExit(false);
+    $console->add(app(UpdateElementStatusesCommand::class));
+    $console->add(app(UpdateStatusesCommand::class));
+
+    expect($console->run(new ArrayInput(['command' => $name]), new BufferedOutput))->toBe(0);
+})->with([
+    ['update-element-statuses', false],
+    ['craft:update-element-statuses', false],
+    ['update-statuses', true],
+    ['update-statuses/index', true],
+    ['craft:update-statuses', true],
+]);
+
+it('updates entries owned by revisions without re-saving or announcing them when staticStatuses is on', function () {
     app(GeneralConfig::class)->staticStatuses = true;
 
     try {
@@ -258,7 +321,8 @@ it('doesn’t re-save entries owned by revisions when staticStatuses is on', fun
         app(ElementStatuses::class)->updateScheduled();
 
         Exceptions::assertNothingReported();
-        expect(DB::table(Table::ENTRIES)->where('id', $nested->id)->value('status'))->toBe(Entry::STATUS_PENDING);
+        expect(DB::table(Table::ENTRIES)->where('id', $nested->id)->value('status'))->toBe(Entry::STATUS_LIVE)
+            ->and($this->changes)->toBe([]);
     } finally {
         app(GeneralConfig::class)->staticStatuses = false;
     }
@@ -272,19 +336,47 @@ it('schedules status updates every minute unless scheduleElementStatusUpdates is
     expect($event->expression)->toBe('* * * * *')
         ->and($event->filtersPass(app()))->toBeTrue();
 
-    try {
-        $config->scheduleElementStatusUpdates = false;
-        Log::spy();
+    $config->scheduleElementStatusUpdates = false;
 
-        expect($event->filtersPass(app()))->toBeFalse();
-        Log::shouldNotHaveReceived('warning');
+    expect($event->filtersPass(app()))->toBeFalse();
+});
 
-        // Entries only go live from the command now, so warn about it
-        $config->staticStatuses = true;
-        expect($event->filtersPass(app()))->toBeFalse();
-        Log::shouldHaveReceived('warning')->once();
-    } finally {
-        $config->scheduleElementStatusUpdates = true;
-        $config->staticStatuses = false;
-    }
+it('doesn’t schedule status updates while a Craft update is pending', function () {
+    $event = collect(app(Schedule::class)->events())
+        ->firstOrFail(fn (ScheduledEvent $event) => $event->description === 'craft:update-element-statuses');
+    Updates::partialMock()->shouldReceive('isCraftUpdatePending')->andReturnTrue();
+
+    expect($event->filtersPass(app()))->toBeFalse();
+});
+
+it('announces an entry expiring once, from the first run in its expiry date’s minute', function () {
+    $entry = ($this->scheduledEntry)('2026-10-01 11:00:00');
+    $entry->expiryDate = Date::parse('2026-10-01 12:10:30');
+    expect(Elements::saveElement($entry))->toBeTrue();
+    $this->changes = [];
+
+    Date::setTestNow('2026-10-01 12:09:59');
+    expect(app(ElementStatuses::class)->updateScheduled())->toBe(0);
+
+    Date::setTestNow('2026-10-01 12:10:00');
+    expect(app(ElementStatuses::class)->updateScheduled())->toBe(1)
+        ->and($this->changes)->toBe([[$entry->id, Entry::STATUS_LIVE, Entry::STATUS_EXPIRED]])
+        ->and(DB::table(Table::ENTRIES)->where('id', $entry->id)->value('status'))->toBe(Entry::STATUS_EXPIRED)
+        ->and(Entry::find()->id($entry->id)->status(Entry::STATUS_EXPIRED)->exists())->toBeTrue()
+        ->and(app(ElementStatuses::class)->updateScheduled())->toBe(0);
+});
+
+it('reports re-saves that fail validation when staticStatuses is on', function () {
+    app(GeneralConfig::class)->staticStatuses = true;
+    $entry = ($this->scheduledEntry)('2026-10-01 12:05:00');
+    Event::listen(ElementSaving::class, function (ElementSaving $event) {
+        $event->element->errors()->add('title', 'Simulated validation failure.');
+        $event->isValid = false;
+    });
+    Exceptions::fake();
+
+    Date::setTestNow('2026-10-01 12:06:00');
+
+    expect(app(ElementStatuses::class)->updateScheduled())->toBe(0);
+    Exceptions::assertReported(fn (InvalidElementException $e) => str_contains($e->getMessage(), (string) $entry->id));
 });
