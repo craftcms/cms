@@ -8,9 +8,11 @@ use Closure;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Validation\Concerns\LabelsAttributes;
 use DateTimeInterface;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
@@ -18,7 +20,7 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class TimeRule implements DataAwareRule, ValidationRule
+class TimeRule implements DataAwareRule, ValidationRule, ValidatorAwareRule
 {
     /**
      * All of the data under validation.
@@ -26,6 +28,8 @@ class TimeRule implements DataAwareRule, ValidationRule
      * @var array<string, mixed>
      */
     private array $data = [];
+
+    use LabelsAttributes;
 
     public function __construct(
         /**
@@ -70,12 +74,14 @@ class TimeRule implements DataAwareRule, ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
+        $label = $this->attributeLabel($attribute);
+
         if (! $value instanceof DateTimeInterface) {
             $value = DateTimeHelper::toDateTime(['time' => $value], true);
         }
 
         if (! $value) {
-            $fail($this->message);
+            $fail(t($this->message, ['attribute' => $label]));
 
             return;
         }
@@ -105,6 +111,7 @@ class TimeRule implements DataAwareRule, ValidationRule
         if ($min !== null && $max !== null && $min > $max) {
             if ($value < $min && $value > $max) {
                 $fail(t($this->outOfRange, [
+                    'attribute' => $label,
                     'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
                     'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
                 ]));
@@ -115,12 +122,14 @@ class TimeRule implements DataAwareRule, ValidationRule
 
         if ($min !== null && $value < $min) {
             $fail(t($this->tooEarly, [
+                'attribute' => $label,
                 'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
             ]));
         }
 
         if ($max !== null && $value > $max) {
             $fail(t($this->tooLate, [
+                'attribute' => $label,
                 'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
             ]));
         }

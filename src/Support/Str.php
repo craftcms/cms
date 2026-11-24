@@ -112,6 +112,18 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Removes the `*Name*` emphasis markers that validation messages put around a field's name.
+     *
+     * Only paired markers on one line are removed; a lone asterisk is kept.
+     *
+     * @since 6.0.0
+     */
+    public static function stripEmphasis(string $str): string
+    {
+        return preg_replace('/(\*+)([^*\n]+)\1/', '$2', $str) ?? $str;
+    }
+
+    /**
      * Detects whether the given string has any 4-byte UTF-8 characters.
      *
      * @param  string  $str  The string to process.

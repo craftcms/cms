@@ -25,14 +25,17 @@
 - Fixed a bug where error pages got the cache headers that the failed page queued. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where `ResponseHeaders::noCache()` overrode cache headers set after it, such as by a later `{% expires %}` tag. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
+- Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
+Error summaries shown when a save fails now show field names in bold, and each error links to its field, including custom fields and fields within settings screens’ scoped or sidebar layouts. Errors within Table fields’ cells, and within Matrix and Addresses fields shown as cards or an index, are no longer listed separately from their field’s own error, and the links are now at least 24px tall. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Element caches are now invalidated when an element’s scheduled date passes, such as an entry’s post or expiry date, from the `craft:invalidate-scheduled-element-caches` scheduled task. ([#21048](https://github.com/craftcms/cms/pull/21048))
 - Added `CraftCms\Cms\Asset\Events\AssetFileChanged`, `CraftCms\Cms\Image\Events\AssetTransformsInvalidated`, `CraftCms\Cms\Release\Events\ReleaseScheduled`, and `CraftCms\Cms\Release\Events\ReleaseUnscheduled`. ([#21048](https://github.com/craftcms/cms/pull/21048))
 - Added `CraftCms\Cms\Element\Contracts\SchedulableElementInterface` and `CraftCms\Cms\Element\ElementCaches::invalidateScheduled()`. ([#21048](https://github.com/craftcms/cms/pull/21048))
 - Added `CraftCms\Cms\Asset\Events\FolderRenamed::$oldPath` and `prefixes()`, `CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated::$oldUri` and `urls()`, and `CraftCms\Cms\Asset\Events\VolumeSaved::$oldVolume`. ([#21048](https://github.com/craftcms/cms/pull/21048))
 - `CraftCms\Cms\Asset\Events\FolderRenamed` is now dispatched when a folder is renamed. ([#21048](https://github.com/craftcms/cms/pull/21048))
+- Added `CraftCms\Cms\Validation\Concerns\LabelsAttributes`, which gives validation rules the label of the attribute they’re validating, for the `{attribute}` placeholder in their messages, and `CraftCms\Cms\Support\Str::stripEmphasis()`. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - URLs generated with `route()` and `action()` for routes in the `craft` middleware group now use the current site’s base URL, and a `site` parameter generates them for another site. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added the `rootOnly()` route macro, for routes in the `craft` middleware group that should only match at the app’s root URL and keep it in their URLs. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
@@ -45,16 +48,21 @@
 - Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Fixed an error that occurred when resolving users for a GraphQL schema without any user groups. ([#21004](https://github.com/craftcms/cms/pull/21004))
 - Fixed an error that occurred when project config changes were saved, and on control panel pages for admins, if the project config folder couldn’t be written. The changes are still saved, and admins now see the “folder isn’t writable” alert. ([#20547](https://github.com/craftcms/cms/pull/20547))
+- Fixed an error that occurred when saving an entry with an empty required Color or Link field. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - Fixed a bug where the `auth` middleware redirected front-end guests to the primary site’s login path rather than the current site’s. ([#21007](https://github.com/craftcms/cms/pull/21007))
 - Fixed a bug where updating a field layout with the MCP tools could orphan custom fields’ content. ([#21006](https://github.com/craftcms/cms/pull/21006))
 - Fixed a bug where existing entries weren’t updated when a section’s sites or propagation method were changed through project config while using the `sync` queue connection. ([#21005](https://github.com/craftcms/cms/pull/21005))
 - Fixed a bug where element indexes didn’t remember the chosen number of elements per page. ([#20979](https://github.com/craftcms/cms/issues/20979))
 - Fixed a bug where routes defined in Settings → Routes, plugins’ `routes/web.php` files, and other routes in the `craft` middleware group returned a 404 error on sites whose base URL has a path. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
+- Fixed a bug where editing an element activity comment replaced its whole timeline item. Comments are now edited in place, with pill-shaped Cancel and Save buttons, and comment fields use the standard focus ring. ([#20955](https://github.com/craftcms/cms/issues/20955))
 - Fixed a bug where sites weren’t detected when Craft is installed in a folder and their base URLs are inside it, such as `https://example.com/craft/fr/`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Fixed a bug where site-specific routes in Settings → Routes only worked on the primary site. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Fixed a bug where sites weren’t detected when their base URLs contained percent-encoded characters. ([#21015](https://github.com/craftcms/cms/pull/21015))
+- Fixed a bug where some validation errors, such as Time fields’ minimum and maximum time errors, and Color, “Entry URI Format”, and 4-byte character errors, showed “{attribute}” rather than the field’s name. ([#20935](https://github.com/craftcms/cms/pull/20935))
+- Fixed a bug where validation errors showed asterisks around field names, such as “The \*Title\* field is required.” ([#20935](https://github.com/craftcms/cms/pull/20935))
 - Fixed a bug where plugins’ front-end routes returned a 404 error under Laravel Octane with the Yii adapter installed. ([#21019](https://github.com/craftcms/cms/pull/21019))
 - Fixed a bug where `CRAFT_SITE` and `CRAFT_SITE_UPPER` kept the previous site request’s values under Laravel Octane. ([#20998](https://github.com/craftcms/cms/issues/20998), [#21022](https://github.com/craftcms/cms/pull/21022))
+- Fixed a bug where the GraphQL API’s OAuth discovery metadata had the wrong URLs in headless mode and on control panel requests. ([#21029](https://github.com/craftcms/cms/pull/21029))
 - Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 
@@ -172,6 +180,7 @@
 - `csrfInput()` now outputs nothing when origin-only request forgery checks are enabled. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - `csrfInput()` no longer accepts an `async` option or tag attributes. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - Removed the `asyncCsrfInputs` config setting. ([#20429](https://github.com/craftcms/cms/pull/20429))
+- Added the `fonts()` Twig function. ([#20666](https://github.com/craftcms/cms/issues/20666), [#20667](https://github.com/craftcms/cms/pull/20667))
 - The `craftCommand()` Twig function is now only available to control panel templates.
 - Plugins can now build control panel pages from the components, composables, and helpers in the `@craftcms/cp` import-map module. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - The control panel’s import map now includes `@inertiajs/vue3`. ([#20608](https://github.com/craftcms/cms/pull/20608))
@@ -661,7 +670,6 @@
 - Craft no longer supports routes defined in a `routes.php` config file. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead. With the Yii adapter installed, site routes in `config/craft/routes.php` still work, but are deprecated.
 - Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Requests to Craft’s site routes no longer start a session or send `laravel_session` and `XSRF-TOKEN` cookies for visitors without one, unless something writes to the session or puts its CSRF token in the response. Responses that don't need a session can then be stored by shared caches, such as CDNs. Requests that arrive with a session cookie are unaffected. For visitors without a session, `back()` and `url()->previous()` rely on the `Referer` header, so sites should send a `Referrer-Policy` such as `same-origin` or `strict-origin-when-cross-origin` (the browser default), not `no-referrer`.
-- Added the `fonts()` Twig function, which outputs the preload tags and `@font-face` styles for fonts bundled by Vite, like Blade’s `@fonts` directive. ([#20666](https://github.com/craftcms/cms/issues/20666), [#20667](https://github.com/craftcms/cms/pull/20667))
 - Added `Route::withLazySession()`, which gives any route, such as a plugin’s or the host app’s own, the same lazy session as Craft’s site routes. Middleware that reads the session must come after `StartSession` in the middleware priority list, as lazy routes run their session middleware at that position rather than at its place in the `web` group. A `StartSession` subclass in the `web` group is still used.
 
 #### Templates

@@ -1,10 +1,12 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeAll, beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInput from './input.js';
-import {contrast} from '../../../test/contrast';
+import {contrast, loadTokens} from '../../../test/contrast';
 import type CraftInputDateTime from '../input-date-time/input-date-time.js';
 import './input.js';
 import '../button/button.js';
 import '../input-date-time/input-date-time.js';
+
+beforeAll(loadTokens);
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -249,5 +251,32 @@ describe('craft-input suffix buttons', () => {
         element.shadowRoot!.querySelector('.input-group__container')!
       ).outlineStyle
     ).toBe('none');
+  });
+});
+
+describe('craft-input size', () => {
+  it('enlarges its text and padding at size large', async () => {
+    const render = async (size?: string) => {
+      const element = document.createElement('craft-input') as CraftInput;
+      if (size) {
+        element.setAttribute('size', size);
+      }
+      document.body.append(element);
+      await element.updateComplete;
+
+      return element.querySelector('input')!;
+    };
+    const normal = await render();
+    const large = await render('large');
+
+    expect(parseFloat(getComputedStyle(large).fontSize)).toBeGreaterThan(
+      parseFloat(getComputedStyle(normal).fontSize)
+    );
+    expect(parseFloat(getComputedStyle(large).paddingLeft)).toBeGreaterThan(
+      parseFloat(getComputedStyle(normal).paddingLeft)
+    );
+    expect(large.getBoundingClientRect().height).toBeGreaterThan(
+      normal.getBoundingClientRect().height
+    );
   });
 });
