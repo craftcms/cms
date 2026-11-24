@@ -228,6 +228,22 @@ describe('craft-input references', () => {
     ).toEqual([prefix.id, suffix.id].sort());
   });
 
+  it('stops being described by an affix moved out of its slot in place', async () => {
+    const element = await createInput();
+    const suffix = document.createElement('span');
+    suffix.slot = 'suffix';
+    suffix.dataset.description = '';
+    suffix.textContent = 'kg';
+    element.append(suffix);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(native(element).getAttribute('aria-describedby')).toBe(suffix.id);
+
+    suffix.slot = 'unused';
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(native(element).hasAttribute('aria-describedby')).toBe(false);
+  });
+
   it('drops aria-describedby once nothing describes the input', async () => {
     const element = await createInput(
       {},

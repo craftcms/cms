@@ -341,7 +341,7 @@ class Input extends ViewComponent
         return $this;
     }
 
-    /** Id of the prefix and suffix description element; defaults to `{id}-desc`. */
+    /** Id of the prefix and suffix description element; defaults to `{id}-desc`, or a generated id without an `id`. */
     public function descriptionId(?string $descriptionId): static
     {
         $this->descriptionId = $descriptionId;
@@ -506,9 +506,7 @@ class Input extends ViewComponent
      */
     protected function descriptionHtml(): string
     {
-        $descriptionId = $this->getDescriptionId();
-
-        if ($descriptionId === null || (! $this->hasPrefix() && ! $this->hasSuffix())) {
+        if (! $this->hasPrefix() && ! $this->hasSuffix()) {
             return '';
         }
 
@@ -518,7 +516,7 @@ class Input extends ViewComponent
         ]));
 
         return Html::tag('span', Html::encode($text), [
-            'id' => $descriptionId,
+            'id' => $this->getDescriptionId(),
             'hidden' => true,
         ]);
     }
@@ -569,7 +567,7 @@ class Input extends ViewComponent
 
         $id = $this->getId();
 
-        return $id !== null ? "$id-desc" : null;
+        return $id !== null ? "$id-desc" : $this->descriptionId = sprintf('input-desc-%s', mt_rand());
     }
 
     protected function getOrientation(): string

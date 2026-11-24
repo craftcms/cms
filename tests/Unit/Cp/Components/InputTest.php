@@ -193,6 +193,13 @@ describe('suffix', function () {
             ->and($html)->toContain('aria-describedby="i-desc"');
     });
 
+    it('describes the input with its prefix without an id', function () {
+        $html = Input::make()->prefix('€')->toHtml();
+
+        expect(preg_match('/<span id="([^"]+)" hidden>Value prefixed by “€”\.<\/span>/u', $html, $matches))->toBe(1)
+            ->and($html)->toContain(sprintf('aria-describedby="%s"', $matches[1]));
+    });
+
     it('encodes the suffix text', function () {
         expect(Input::make()->id('i')->suffix('<b>MB</b>')->toHtml())
             ->toContain('&lt;b&gt;MB&lt;/b&gt;');

@@ -224,11 +224,19 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     /**
      * Feedback and affixes can come and go after connection, such as errors
-     * shown later or a suffix a control adds once it has one.
+     * shown later or a suffix a control adds once it has one, including by a
+     * child changing its `slot`.
      */
-    #childObserver = new MutationObserver(() => {
-      this.#describeFeedback();
-      this.#referenceAffixes();
+    #childObserver = new MutationObserver((records) => {
+      if (
+        records.some(
+          (record) =>
+            record.target === this || record.target.parentNode === this
+        )
+      ) {
+        this.#describeFeedback();
+        this.#referenceAffixes();
+      }
     });
 
     /** The ids this control last wrote to each reference attribute. */
@@ -316,7 +324,11 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       super.connectedCallback();
       this.#createSlots();
       this._enhanceLightDomA11y();
-      this.#childObserver.observe(this, {childList: true});
+      this.#childObserver.observe(this, {
+        childList: true,
+        subtree: true,
+        attributeFilter: ['slot'],
+      });
       this._labelNode?.addEventListener('click', this.#onLabelClick);
       this.addEventListener('focusin', this.#onFocusChange);
       this.addEventListener('focusout', this.#onFocusChange);
