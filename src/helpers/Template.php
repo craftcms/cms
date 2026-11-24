@@ -388,8 +388,10 @@ class Template
      *
      * When Dev Mode is disabled, compiled templates don't store their source path, and Twig asks the loader for it,
      * which resolves the template name for the current template mode. The template may have been rendered in another
-     * mode, where the same name can resolve to a different template, so this uses the mode whose environment compiles
-     * the template name to the same class.
+     * mode, where the same name can resolve to a different template, so this prefers the mode whose environment
+     * compiles the template name to the same class. That class also depends on settings that can change while
+     * rendering, such as the escaping strategy, so when no mode matches it, the path is used if only one mode resolves
+     * the name.
      *
      * @param TwigTemplate $template
      * @param string $compiledCode
@@ -403,30 +405,39 @@ class Template
 
         $view = Craft::$app->getView();
         $oldTemplateMode = $view->getTemplateMode();
+        // Changing the template mode resets the templates path, which could be a custom one
+        $oldTemplatesPath = $view->getTemplatesPath();
         $class = get_class($template);
+        $templateModes = array_unique([$oldTemplateMode, View::TEMPLATE_MODE_SITE, View::TEMPLATE_MODE_CP]);
+        $paths = [];
 
         try {
-            foreach ([View::TEMPLATE_MODE_SITE, View::TEMPLATE_MODE_CP] as $templateMode) {
+            foreach ($templateModes as $templateMode) {
                 $view->setTemplateMode($templateMode);
                 $twig = $view->getTwig();
+                /** @var TwigTemplate $modeTemplate */
+                $modeTemplate = new $class($twig);
+                $path = $modeTemplate->getSourceContext()->getPath();
 
-                try {
-                    if ($twig->getTemplateClass($template->getTemplateName()) !== $class) {
-                        continue;
-                    }
-                } catch (LoaderError) {
+                if ($path === '') {
                     continue;
                 }
 
-                /** @var TwigTemplate $modeTemplate */
-                $modeTemplate = new $class($twig);
-                return $modeTemplate->getSourceContext()->getPath() ?: null;
+                try {
+                    if ($twig->getTemplateClass($template->getTemplateName()) === $class) {
+                        return $path;
+                    }
+                } catch (LoaderError) {
+                }
+
+                $paths[] = $path;
             }
         } finally {
             $view->setTemplateMode($oldTemplateMode);
+            $view->setTemplatesPath($oldTemplatesPath);
         }
 
-        return null;
+        return count($paths) === 1 ? $paths[0] : null;
     }
 
     /**
