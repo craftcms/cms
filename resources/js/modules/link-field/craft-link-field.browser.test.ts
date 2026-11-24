@@ -397,7 +397,7 @@ describe('a linked element', () => {
     });
   });
 
-  it('is redrawn when its element is saved', async () => {
+  it('is redrawn when its element is saved, and applied with its new title', async () => {
     const post = respondWithElement({
       id: 12,
       label: 'live',
@@ -421,6 +421,212 @@ describe('a linked element', () => {
         siteId: 1,
       })
     );
+    post.mockRestore();
+
+    const applied = new Promise<LinkFieldValue>((resolve) => {
+      linkField.addEventListener(
+        'apply',
+        (event) => resolve((event as CustomEvent<LinkFieldValue>).detail),
+        {once: true}
+      );
+    });
+    await page.getByRole('button', {name: 'Apply'}).click();
+    expect((await applied).defaultLabel).toBe('live');
+  });
+
+  it('draws a newer chip the server gives it, in every field linking its element', async () => {
+    const other = document.createElement('craft-link-field');
+    other.types = linkField.types;
+    other.modelValue = {...linkField.modelValue};
+    document.body.append(other);
+    await other.updateComplete;
+
+    try {
+      linkField.modelValue = {
+        ...linkField.modelValue,
+        element: {...linkField.modelValue!.element!, label: 'renamed'},
+      };
+
+      await expect
+        .element(other.querySelector('craft-chip')!)
+        .toHaveTextContent('renamed');
+      await expect
+        .element(linkField.querySelector('craft-chip')!)
+        .toHaveTextContent('renamed');
+    } finally {
+      other.remove();
+    }
+  });
+
+  it('shares one request with other fields linking its element when it’s saved', async () => {
+    const other = document.createElement('craft-link-field');
+    other.types = linkField.types;
+    other.modelValue = {...linkField.modelValue};
+    document.body.append(other);
+    await other.updateComplete;
+    let resolve!: (response: unknown) => void;
+    const promise = new Promise((settle) => (resolve = settle));
+    const post = vi
+      .spyOn(actionClient, 'post')
+      .mockReturnValue(promise as never);
+
+    try {
+      broadcast({event: 'saveElement', id: 12});
+      await new Promise((settle) => setTimeout(settle, 100));
+      resolve({
+        data: {
+          elements: [
+            {
+              id: 12,
+              label: 'live',
+              siteId: 1,
+              status: {fill: 'green', label: 'Live', draft: false},
+            },
+          ],
+        },
+      });
+
+      await expect
+        .poll(() =>
+          document.querySelectorAll('craft-chip [label="Status: Live"]')
+        )
+        .toHaveLength(2);
+      expect(post).toHaveBeenCalledTimes(1);
+    } finally {
+      post.mockRestore();
+      other.remove();
+    }
+  });
+
+  it('doesn’t take back other fields’ newer chip when given its old one again', async () => {
+    const original = {...linkField.modelValue};
+    const other = document.createElement('craft-link-field');
+    other.types = linkField.types;
+    other.modelValue = {...original};
+    document.body.append(other);
+    await other.updateComplete;
+    const post = respondWithElement({
+      id: 12,
+      label: 'live',
+      siteId: 1,
+      status: {fill: 'green', label: 'Live', draft: false},
+    });
+
+    try {
+      broadcast({event: 'saveElement', id: 12});
+      await expect
+        .poll(() =>
+          document.querySelectorAll('craft-chip [label="Status: Live"]')
+        )
+        .toHaveLength(2);
+
+      linkField.modelValue = {type: 'entry', value: ''};
+      await linkField.updateComplete;
+      linkField.modelValue = {...original};
+      await new Promise((settle) => setTimeout(settle));
+
+      expect(other.querySelector('craft-chip')).toHaveTextContent('live');
+    } finally {
+      post.mockRestore();
+      other.remove();
+    }
+  });
+
+  it('fetches afresh when it’s saved again while an earlier fetch is waiting', async () => {
+    const responses: Array<(response: unknown) => void> = [];
+    const post = vi.spyOn(actionClient, 'post').mockImplementation(
+      () =>
+        new Promise((settle) => {
+          responses.push(settle);
+        }) as never
+    );
+    const respond = (label: string, fill: string) =>
+      responses.shift()!({
+        data: {
+          elements: [
+            {
+              id: 12,
+              label,
+              siteId: 1,
+              status: {fill, label, draft: false},
+            },
+          ],
+        },
+      });
+
+    try {
+      broadcast({event: 'saveElement', id: 12});
+      await expect.poll(() => post.mock.calls.length).toBe(1);
+      broadcast({event: 'saveElement', id: 12});
+      await expect.poll(() => post.mock.calls.length).toBe(2);
+
+      respond('Pending', 'blue');
+      respond('Live', 'green');
+
+      await expect
+        .element(page.getByRole('img', {name: 'Status: Live'}))
+        .toBeVisible();
+    } finally {
+      post.mockRestore();
+    }
+  });
+
+  it('draws a fetch that was waiting while it was moved', async () => {
+    let resolve!: (response: unknown) => void;
+    const post = vi
+      .spyOn(actionClient, 'post')
+      .mockReturnValue(new Promise((settle) => (resolve = settle)) as never);
+    const parent = linkField.parentElement!;
+    const host = document.createElement('div');
+    document.body.append(host);
+
+    try {
+      broadcast({event: 'saveElement', id: 12});
+      await expect.poll(() => post.mock.calls.length).toBe(1);
+      host.append(linkField);
+      resolve({
+        data: {
+          elements: [
+            {
+              id: 12,
+              label: 'live',
+              siteId: 1,
+              status: {fill: 'green', label: 'Live', draft: false},
+            },
+          ],
+        },
+      });
+
+      await expect
+        .element(page.getByRole('img', {name: 'Status: Live'}))
+        .toBeVisible();
+    } finally {
+      post.mockRestore();
+      parent.append(linkField);
+      host.remove();
+    }
+  });
+
+  it('keeps focus in its open menu when its element is saved', async () => {
+    await openMenu();
+    const button = page.getByRole('button', {name: 'Remove'}).element();
+    const remove = (button.getRootNode() as ShadowRoot).host as HTMLElement;
+    (button as HTMLElement).focus();
+    await expect.element(remove).toHaveFocus();
+    const post = respondWithElement({
+      id: 12,
+      label: 'live',
+      siteId: 1,
+      status: {fill: 'green', label: 'Live', draft: false},
+    });
+
+    broadcast({event: 'saveElement', id: 12});
+
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Live'}))
+      .toBeInTheDocument();
+    await linkField.updateComplete;
+    await expect.element(remove).toHaveFocus();
     post.mockRestore();
   });
 
@@ -448,6 +654,20 @@ describe('a linked element', () => {
       .element(linkField.querySelector('craft-chip')!)
       .toHaveTextContent('renamed');
     post.mockRestore();
+  });
+
+  it('gives way to the Choose button when the link comes back without its element', async () => {
+    linkField.modelValue = {
+      type: 'entry',
+      value: '{entry:12@1:url}',
+      defaultLabel: '',
+    };
+    await linkField.updateComplete;
+
+    await expect
+      .element(page.getByRole('button', {name: 'Choose'}))
+      .toBeVisible();
+    expect(linkField.querySelector('craft-chip')).toBeNull();
   });
 
   it('fetches the rest of a chip it was only given a label for', async () => {

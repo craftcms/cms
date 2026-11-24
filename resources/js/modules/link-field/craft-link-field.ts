@@ -1,8 +1,8 @@
-import {actionClient, t, type ElementInfo} from '@craftcms/ui';
+import {t, type ElementInfo} from '@craftcms/ui';
 import {createElementSelectorModal} from '@/modules/element-selector-modal/create-element-selector-modal';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
-import {onElementChanged} from '@/modules/elements/element-instances';
+import {ElementPresentationsController} from '@/modules/elements/element-presentations-controller';
 import {openElementEditor} from '@/modules/elements/open-element-editor';
 import type {ChipElement} from '@/modules/elements/types/element-data';
 import {chipMenu} from '@/modules/ui/element-select/chipMenu';
@@ -109,12 +109,9 @@ const formValueKeys = [
 
 let advancedPanelIndex = 0;
 
-/** Whether two chips hold the same data. */
-function sameElement(
-  a: LinkedElement | null | undefined,
-  b: LinkedElement | null | undefined
-): boolean {
-  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+/** A chip's data, to tell chips apart: links are copied on their way back to a field. */
+function chipData(element: LinkedElement): string {
+  return JSON.stringify(element);
 }
 
 /** Whether a chip is the one drawn from the selector's label, before the rest of it is fetched. */
@@ -175,7 +172,7 @@ class CraftLinkField extends LitElement {
   @state()
   private label = '';
 
-  /** The linked element, drawn as a chip. */
+  /** The linked element, as the field was given or chose it. */
   @state()
   private selectedElement: LinkedElement | null = null;
 
@@ -186,14 +183,33 @@ class CraftLinkField extends LitElement {
    */
   private elementRemoved = false;
 
-  /** Numbers each chip fetch, so only the latest one's answer is drawn. */
-  private elementRequest = 0;
+  /** The placeholder chip whose rest is being fetched, so it's fetched once. */
+  private requestedChip: string | null = null;
 
-  /** The placeholder chip whose rest was last fetched, so it's fetched once. */
-  private requestedElement: LinkedElement | null = null;
+  /**
+   * The chips the field was given or sent out. A link given back, as a
+   * popover does each time it opens, brings one of them, which may be older
+   * than what's cached. Any other comes from the server.
+   */
+  private readonly knownChips = new Set<string>();
 
-  /** Stops refetching the chip when its element changes. */
-  private stopElementChanges: (() => void) | null = null;
+  /**
+   * The linked element's chip, cached with relation fields' chips, so it's
+   * refetched when the element is saved, in this tab or another one.
+   */
+  private readonly presentations = new ElementPresentationsController(
+    this,
+    () => ({
+      elementType: this.selectedType?.elementType ?? '',
+      viewMode: 'list',
+    }),
+    () => {
+      const element = this.linkedElement();
+      return element
+        ? [{id: element.id, siteId: Number(element.siteId) || null}]
+        : [];
+    }
+  );
 
   /** One dispatcher for the actions the server describes for the chip's element. */
   private readonly toActionItems = createElementActionMenu();
@@ -223,38 +239,19 @@ class CraftLinkField extends LitElement {
     if (!this.typeId) {
       this.typeId = this.types[0]?.id ?? '';
     }
-
-    // Chips drawn from data refetch when their element is saved, in this tab
-    // or another one, as relation fields' do.
-    this.stopElementChanges = onElementChanged(
-      (id) => this.refreshElement(id),
-      {includeSelf: true}
-    );
-  }
-
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.stopElementChanges?.();
-    this.stopElementChanges = null;
   }
 
   override willUpdate(changedProperties: PropertyValues<this>): void {
     const modelChanged = changedProperties.has('modelValue');
     const echo = modelChanged && this.isEcho(this.modelValue);
+    const given = modelChanged ? this.modelValue?.element : null;
+    const fromServer = Boolean(given && !this.knownChips.has(chipData(given)));
 
     if (modelChanged && !echo) {
       const value = this.modelValue ?? {};
       this.elementRemoved = false;
-      // An echo of the same link doesn't carry its chip, so the one we have is kept.
-      this.selectedElement = this.keepsCurrentElement(
-        value,
-        changedProperties.get('modelValue')
-      )
-        ? this.selectedElement
-        : (value.element ??
-          (value.value && value.value === this.value
-            ? this.selectedElement
-            : null));
+      // A link without a chip is one whose element no longer exists.
+      this.selectedElement = value.element ?? null;
       this.defaultLabel = value.defaultLabel ?? '';
       this.label = value.label ?? '';
       this.linkAttributes = {
@@ -270,113 +267,62 @@ class CraftLinkField extends LitElement {
       };
       this.typeId = value.type ?? '';
       this.value = value.value ?? '';
-    } else if (echo && this.hasNewElement(this.modelValue)) {
-      // An echo can still bring the chip's latest status, color or permissions.
-      this.selectedElement = this.modelValue!.element!;
     }
 
     if (!this.typeId || !this.types.some((type) => type.id === this.typeId)) {
       this.typeId = this.types[0]?.id ?? '';
     }
 
+    if (given) {
+      // As relation fields' renders: the one the field first draws only fills
+      // a gap, since it may be older than what's cached. Later ones replace it.
+      if (fromServer && !isPlaceholder(given)) {
+        this.presentations.seed([given], given.siteId, {
+          replace: this.hasUpdated,
+        });
+      }
+      this.knownChips.add(chipData(given));
+    }
+
     this.loadPlaceholderElement();
   }
 
-  /**
-   * Whether the given value restores the current link with the chip it was
-   * last given, so the one the field has since loaded or refreshed is newer:
-   * a link applied before its details loaded, or given back as it was, as a
-   * popover does each time it opens.
-   */
-  private keepsCurrentElement(
-    value: Partial<LinkFieldValue>,
-    previous: Partial<LinkFieldValue> | null | undefined
-  ): boolean {
-    const incoming = value.element;
-    const current = this.selectedElement;
+  /** The element the link points to, if it's an element link. */
+  private linkedElement(): LinkedElement | null {
+    const type = this.selectedType;
 
-    return Boolean(
-      incoming &&
-      current &&
-      value.value &&
-      value.value === this.value &&
-      incoming.id === current.id &&
-      Number(incoming.siteId) === Number(current.siteId) &&
-      sameElement(incoming, previous?.element)
-    );
+    return this.value && type?.kind === 'element' && type.elementType
+      ? this.selectedElement
+      : null;
+  }
+
+  /** The linked element's chip: the cached one, as relation fields draw it, or the one the field has. */
+  private get chip(): LinkedElement | null {
+    const element = this.linkedElement();
+
+    return element
+      ? (this.presentations.get(element.id, element.siteId) ?? element)
+      : null;
   }
 
   /** Fetches the rest of a chip the selector or a copied link only gave a label for. */
   private loadPlaceholderElement(): void {
-    const element = this.value ? this.selectedElement : null;
-    const type = this.selectedType;
+    const element = this.chip;
+    const key = element && `${element.id}@${element.siteId}`;
 
-    if (
-      !element ||
-      element === this.requestedElement ||
-      !isPlaceholder(element) ||
-      type?.kind !== 'element' ||
-      !type.elementType
-    ) {
+    if (!element || !isPlaceholder(element)) {
+      this.requestedChip = null;
       return;
     }
 
-    this.requestedElement = element;
-    void this.loadSelectedElement(
-      type.elementType,
-      element.id,
-      Number(element.siteId) || null
-    );
-  }
-
-  /** Refetches the chip when its element, or any element, changed. */
-  private refreshElement(id: number | null): void {
-    const element = this.value ? this.selectedElement : null;
-    const type = this.selectedType;
-
-    if (
-      !element ||
-      (id !== null && id !== element.id) ||
-      type?.kind !== 'element' ||
-      !type.elementType
-    ) {
+    if (key === this.requestedChip) {
       return;
     }
 
-    void this.loadSelectedElement(
-      type.elementType,
-      element.id,
-      Number(element.siteId) || null
-    );
-  }
-
-  /** Fetches the linked element's chip. */
-  private async loadSelectedElement(
-    elementType: string,
-    id: number,
-    siteId: number | null
-  ): Promise<void> {
-    const value = this.value;
-    const request = ++this.elementRequest;
-    let elements: LinkedElement[] | undefined;
-
-    try {
-      ({
-        data: {elements},
-      } = await actionClient.post<{elements?: LinkedElement[]}>(
-        'relational-fields/structured-elements',
-        {elementType, elementIds: [id], siteId}
-      ));
-    } catch {
-      return;
-    }
-
-    const element = elements?.find((candidate) => candidate.id === id);
-
-    if (element && this.value === value && request === this.elementRequest) {
-      this.selectedElement = element;
-      this.defaultLabel = element.label;
-    }
+    this.requestedChip = key;
+    this.presentations
+      .load([{id: element.id, siteId: Number(element.siteId) || null}])
+      .catch(() => {});
   }
 
   private isEcho(value: Partial<LinkFieldValue> | null): boolean {
@@ -389,15 +335,6 @@ class CraftLinkField extends LitElement {
         (key) =>
           key === 'href' || key === 'element' || value[key] === emitted[key]
       )
-    );
-  }
-
-  /** Whether an echo supplies chip data for the current link that differs from what was sent. */
-  private hasNewElement(value: Partial<LinkFieldValue> | null): boolean {
-    return Boolean(
-      value?.element &&
-      value.value === this.value &&
-      !sameElement(value.element, this.emittedValue?.element)
     );
   }
 
@@ -613,7 +550,7 @@ class CraftLinkField extends LitElement {
 
   /** Opens the editor on a double-click, unless it landed on one of the chip's own controls. */
   private handleChipDoubleClick(type: LinkTypeConfig, event: MouseEvent): void {
-    const element = this.selectedElement;
+    const element = this.chip;
 
     if (
       element?.canEdit !== true ||
@@ -631,6 +568,18 @@ class CraftLinkField extends LitElement {
       '.craft-link-field__chip craft-action-menu > [slot="invoker"]'
     );
   }
+
+  /**
+   * The chip's menu, built from the current chip each time it opens. The menu
+   * keeps this one function, so a chip that's refreshed while the menu is open
+   * doesn't rebuild its items and lose their focus.
+   */
+  private readonly chipMenuProvider = () => {
+    const type = this.selectedType;
+    const element = this.chip;
+
+    return type && element ? this.chipActions(type, element) : [];
+  };
 
   /** The chip's menu: the element's own actions, then Edit and Replace, then Remove. */
   private chipActions(type: LinkTypeConfig, element: LinkedElement) {
@@ -753,7 +702,7 @@ class CraftLinkField extends LitElement {
     const type = this.selectedType;
 
     if (!value || type?.kind !== 'text') {
-      return this.defaultLabel;
+      return this.chip?.label || this.defaultLabel;
     }
 
     let label = value;
@@ -780,10 +729,16 @@ class CraftLinkField extends LitElement {
     const destination =
       type.kind === 'text' ? this.renderTextDestination(type.id, value) : value;
 
+    const element = type.kind === 'element' ? this.chip : null;
+
+    if (element) {
+      this.knownChips.add(chipData(element));
+    }
+
     return {
       ...this.linkAttributes,
       defaultLabel: this.defaultLabelFor(value),
-      element: type.kind === 'element' ? this.selectedElement : null,
+      element,
       href: value ? `${destination}${urlSuffix}` : '',
       label: this.label.trim(),
       title: this.linkAttributes.title.trim(),
@@ -902,7 +857,7 @@ class CraftLinkField extends LitElement {
   ): TemplateResult {
     const label = element.label || this.defaultLabel;
     const status = element.status;
-    const actions = this.chipActions(type, element);
+    const hasActions = this.chipActions(type, element).length > 0;
 
     return html`
       <craft-chip
@@ -934,9 +889,11 @@ class CraftLinkField extends LitElement {
             </div>`
           : nothing}
         ${label}
-        ${actions.length
+        ${hasActions
           ? html`<div slot="suffix" class="flex items-center">
-              <craft-action-menu .actions=${actions}></craft-action-menu>
+              <craft-action-menu
+                .actions=${this.chipMenuProvider}
+              ></craft-action-menu>
             </div>`
           : nothing}
       </craft-chip>
@@ -955,8 +912,8 @@ class CraftLinkField extends LitElement {
         <craft-field>
           ${this.renderLabel(type.label)}
           <div slot="input" class="craft-link-field__element">
-            ${this.value && this.selectedElement
-              ? this.renderSelectedElement(type, this.selectedElement)
+            ${this.chip
+              ? this.renderSelectedElement(type, this.chip)
               : html`<craft-button
                   type="button"
                   variant="dashed"
@@ -1128,7 +1085,9 @@ class CraftLinkField extends LitElement {
                 <craft-input
                   label=${t('Label')}
                   type="text"
-                  placeholder=${this.defaultLabel || nothing}
+                  placeholder=${this.chip?.label ||
+                  this.defaultLabel ||
+                  nothing}
                   .value=${this.label}
                   .disabled=${this.disabled}
                   @input=${this.handleLabelChange}
