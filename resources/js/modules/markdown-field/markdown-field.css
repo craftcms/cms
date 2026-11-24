@@ -200,14 +200,15 @@ craft-markdown-field:defined .markdown-field-footer-controls {
 }
 
 craft-markdown-field:defined .markdown-field-char-counter {
-  color: var(--c-text-quiet) !important;
+  color: var(--c-form-control-placeholder) !important;
+  font-variant-numeric: tabular-nums !important;
   font-family: var(--c-font-body) !important;
   font-size: var(--c-text-base) !important;
   line-height: 1 !important;
 }
 
 craft-markdown-field:defined .markdown-field-char-counter.negative-chars-left {
-  color: var(--c-color-danger-on-quiet) !important;
+  color: var(--c-color-danger-on-normal) !important;
 }
 
 craft-markdown-field:defined .markdown-field-type-indicator {

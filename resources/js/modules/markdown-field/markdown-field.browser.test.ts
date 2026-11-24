@@ -126,7 +126,14 @@ it('keeps its character counter below the text', async () => {
   for (const value of ['A line', lines(30)]) {
     type(textarea, value);
 
-    expect(counter.textContent).toBe(String(2000 - value.length));
+    const charsLeft = 2000 - value.length;
+    expect(counter.getAttribute('role')).toBe('status');
+    expect(counter.querySelector('.sr-only')!.textContent).toBe(
+      `Characters left: ${charsLeft.toLocaleString()}`
+    );
+    expect(counter.querySelector('[aria-hidden="true"]')!.textContent).toBe(
+      charsLeft.toLocaleString()
+    );
     expect(counter.getBoundingClientRect().top).toBeGreaterThanOrEqual(
       textarea.getBoundingClientRect().bottom
     );
