@@ -32,6 +32,8 @@
 - Fixed a bug where error pages got the cache headers that the failed page queued. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where `ResponseHeaders::noCache()` overrode cache headers set after it, such as by a later `{% expires %}` tag. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
+- Fixed a bug where renaming an asset folder left its assets’ image transforms behind, and transform URLs on non-local disks pointed to files that didn’t exist. ([#21049](https://github.com/craftcms/cms/pull/21049))
+- Fixed a bug where renaming an asset folder didn’t clear element caches, such as `{% cache %}` tags, that held its assets’ old URLs. ([#21049](https://github.com/craftcms/cms/pull/21049))
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
 - Fixed a bug where Number and Money fields’ Size setting didn’t change their inputs’ width. ([#21054](https://github.com/craftcms/cms/issues/21054), [#21068](https://github.com/craftcms/cms/pull/21068))
 - Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060), [#21063](https://github.com/craftcms/cms/pull/21063))
@@ -85,6 +87,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where Link fields’ Entry settings listed two “All” sources. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where option and Color field values didn’t show their colors in element indexes and cards. ([#21055](https://github.com/craftcms/cms/issues/21055), [#21070](https://github.com/craftcms/cms/pull/21070))
+- Fixed a bug where generated fields couldn’t be shown as element index columns. ([#21079](https://github.com/craftcms/cms/issues/21079), [#21087](https://github.com/craftcms/cms/pull/21087))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21082](https://github.com/craftcms/cms/pull/21082))
 
 ## 6.0.0-beta.2 - 2026-11-20
