@@ -19,7 +19,6 @@ use CraftCms\Cms\Element\Commands\RestoreCommand;
 use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Jobs\SyncJob;
@@ -53,14 +52,6 @@ class ElementServiceProvider extends ServiceProvider
             if (! $event->job instanceof SyncJob) {
                 app(BulkOpDeferrals::class)->persistPending();
             }
-        });
-
-        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
-            $schedule
-                ->call(fn (): int => app(ElementCaches::class)->invalidateScheduled())
-                ->name('craft:invalidate-scheduled-element-caches')
-                ->everyMinute()
-                ->withoutOverlapping();
         });
 
         if (! $this->app->runningInConsole()) {

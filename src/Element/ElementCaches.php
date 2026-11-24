@@ -6,16 +6,12 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\Contracts\SchedulableElementInterface;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 use RuntimeException;
 use Throwable;
 
@@ -25,9 +21,6 @@ use Throwable;
 #[Singleton]
 readonly class ElementCaches
 {
-    /** The cache key that stores when {@see invalidateScheduled()} last ran, as a Unix timestamp. */
-    public const string SCHEDULED_LAST_RUN_CACHE_KEY = 'craft:invalidate-scheduled-element-caches:last-run';
-
     public function isCollectingCacheInfo(): bool
     {
         return $this->dependencyCollector()->isCollecting();
@@ -99,38 +92,6 @@ readonly class ElementCaches
         event(new ElementCachesInvalidated($tags, $element));
 
         return $tags;
-    }
-
-    /**
-     * Invalidates the caches of elements whose scheduled dates, such as entries’ post and expiry dates, passed since
-     * the last run, and returns how many were invalidated.
-     *
-     * Each run covers the time since the previous one, so a late or missed run is caught up by the next. The first
-     * run, or one after the cache is cleared, looks back one day.
-     */
-    public function invalidateScheduled(): int
-    {
-        $until = now();
-        $lastRun = Cache::get(self::SCHEDULED_LAST_RUN_CACHE_KEY);
-        $after = is_int($lastRun) ? Date::createFromTimestamp($lastRun) : $until->copy()->subDay();
-        $count = 0;
-
-        foreach (Elements::getAllElementTypes() as $elementType) {
-            if (! is_subclass_of($elementType, SchedulableElementInterface::class)) {
-                continue;
-            }
-
-            $elementType::findWithScheduledDatesBetween($after, $until)
-                ->cursor()
-                ->each(function (ElementInterface $element) use (&$count): void {
-                    $this->invalidateForElement($element);
-                    $count++;
-                });
-        }
-
-        Cache::forever(self::SCHEDULED_LAST_RUN_CACHE_KEY, $until->getTimestamp());
-
-        return $count;
     }
 
     /** @return list<string> */

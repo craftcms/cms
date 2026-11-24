@@ -13,11 +13,6 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches as ElementCachesFacade;
-use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\EntryTypes;
-use CraftCms\Cms\Support\Facades\Sections;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 
 class TestElementCachesElement extends Element
@@ -343,39 +338,3 @@ it('uses draft and revision invalidation tags instead of custom tags', function 
         'element::'.TestNestedElementCachesElement::class.'::revisions',
     ],
 ]);
-
-it('invalidates the caches of entries whose post dates passed since the last run', function () {
-    Date::setTestNow('2026-10-01 12:00:00');
-    $scheduled = function (string $postDate): Entry {
-        $entry = EntryModel::factory()->createElement();
-        Sections::refreshSections();
-        EntryTypes::refreshEntryTypes();
-        $entry->postDate = Date::parse($postDate);
-        expect(Elements::saveElement($entry))->toBeTrue();
-
-        return $entry;
-    };
-    $due = $scheduled('2026-10-01 12:05:00');
-    $later = $scheduled('2026-10-01 12:30:00');
-    Cache::forget(ElementCaches::SCHEDULED_LAST_RUN_CACHE_KEY);
-    app(ElementCaches::class)->invalidateScheduled();
-
-    $invalidatedIds = [];
-    Event::listen(ElementCachesInvalidated::class, function (ElementCachesInvalidated $event) use (&$invalidatedIds) {
-        $invalidatedIds[] = $event->element?->id;
-        expect($event->tags)->toContain("element::{$event->element?->id}");
-    });
-
-    try {
-        // The scheduler missed five minutes, so this run catches up on them
-        Date::setTestNow('2026-10-01 12:06:00');
-        expect(app(ElementCaches::class)->invalidateScheduled())->toBe(1)
-            ->and($invalidatedIds)->toBe([$due->id]);
-
-        Date::setTestNow('2026-10-01 12:07:00');
-        expect(app(ElementCaches::class)->invalidateScheduled())->toBe(0)
-            ->and($invalidatedIds)->not->toContain($later->id);
-    } finally {
-        Date::setTestNow();
-    }
-});
