@@ -12,7 +12,9 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Throwable;
 
@@ -47,6 +49,8 @@ class ElementCaches
      * @var array<string, int>
      */
     private array $bypassedTags = [];
+
+    private bool $clearsLeakedBypasses = false;
 
     /**
      * Runs a callback, deferring the cache tags it invalidates until it returns, and then invalidating each tag once.
@@ -168,6 +172,20 @@ class ElementCaches
      */
     public function invalidateForElementAfterCommit(ElementInterface $element): void
     {
+        // Bypasses only last as long as the transaction they were added in, so any left when a new outermost
+        // transaction begins were leaked, such as by an earlier after-commit callback throwing
+        if (! $this->clearsLeakedBypasses) {
+            Event::listen(function (TransactionBeginning $event): void {
+                if (
+                    $event->connectionName === DB::getDefaultConnection() &&
+                    $event->connection->transactionLevel() === 1
+                ) {
+                    $this->bypassedTags = [];
+                }
+            });
+            $this->clearsLeakedBypasses = true;
+        }
+
         $tags = $this->tagsForElement($element);
 
         foreach ($tags as $tag) {

@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches as ElementCachesFacade;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
+use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -409,4 +410,29 @@ it('stops bypassing an element’s caches when invalidating them after the commi
     expect(fn () => $this->elementCaches->invalidateForElementAfterCommit($element))
         ->toThrow(RuntimeException::class, 'Listener failed')
         ->and($this->elementCaches->hasPendingInvalidations(['element::123']))->toBeFalse();
+});
+
+it('clears bypasses that an earlier after-commit callback leaked when a new transaction begins', function () {
+    $first = new TestElementCachesElement;
+    $first->id = 123;
+    $second = new TestElementCachesElement;
+    $second->id = 456;
+    Event::listen(function (ElementCachesInvalidated $event) {
+        if ($event->element?->id === 123) {
+            throw new RuntimeException('Listener failed');
+        }
+    });
+
+    DB::beginTransaction();
+    $this->elementCaches->invalidateForElementAfterCommit($first);
+    $this->elementCaches->invalidateForElementAfterCommit($second);
+    event(new TransactionBeginning(DB::connection()));
+
+    expect($this->elementCaches->hasPendingInvalidations(['element::456']))->toBeTrue()
+        ->and(fn () => DB::commit())->toThrow(RuntimeException::class, 'Listener failed')
+        ->and($this->elementCaches->hasPendingInvalidations(['element::456']))->toBeTrue();
+
+    event(new TransactionBeginning(DB::connection()));
+
+    expect($this->elementCaches->hasPendingInvalidations(['element::456']))->toBeFalse();
 });
