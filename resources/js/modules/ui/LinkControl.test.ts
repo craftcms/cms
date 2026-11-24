@@ -7,6 +7,7 @@ import type {
 } from '../link-field/craft-link-field';
 import LinkControl from './LinkControl.vue';
 import type {UiControlPayload} from './types';
+import {provideUiPreview} from './uiPreview';
 
 describe('LinkControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -19,7 +20,8 @@ describe('LinkControl', () => {
 
   async function mountLinkControl(
     value: Partial<LinkFieldValue> & Pick<LinkFieldValue, 'type' | 'value'>,
-    registeredTypes: string[] | null = null
+    registeredTypes: string[] | null = null,
+    preview = false
   ) {
     const updates: Array<Record<string, unknown>> = [];
     const kinds: string[] = [];
@@ -46,6 +48,11 @@ describe('LinkControl', () => {
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
+      setup: () => {
+        if (preview) {
+          provideUiPreview();
+        }
+      },
       render: () =>
         h(LinkControl, {
           control,
@@ -68,6 +75,16 @@ describe('LinkControl', () => {
 
     return {linkField, updates, kinds};
   }
+
+  it('marks its link field as a preview in a preview', async () => {
+    const {linkField} = await mountLinkControl(
+      {type: 'url', value: 'https://craftcms.com/docs'},
+      null,
+      true
+    );
+
+    expect(linkField.previewing).toBe(true);
+  });
 
   it('summarizes compact links and applies edits from the popover', async () => {
     const {linkField, updates, kinds} = await mountLinkControl({

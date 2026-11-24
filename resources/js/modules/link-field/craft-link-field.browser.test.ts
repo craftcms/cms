@@ -196,6 +196,23 @@ describe('a linked element', () => {
       .not.toBeInTheDocument();
   });
 
+  it('can’t be edited in a preview', async () => {
+    linkField.previewing = true;
+    linkField.disabled = true;
+    await linkField.updateComplete;
+
+    await userEvent.dblClick(page.getByText('pending'));
+    await page.getByRole('button', {name: 'Actions'}).click();
+
+    await expect
+      .element(page.getByRole('button', {name: 'View in a new tab'}))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', {name: 'Edit Entry'}))
+      .not.toBeInTheDocument();
+    expect(slideouts.openSlideout).not.toHaveBeenCalled();
+  });
+
   it('is removed, with focus moving to the Choose button', async () => {
     await openMenu();
     await page.getByRole('button', {name: 'Remove'}).click();

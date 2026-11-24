@@ -11,6 +11,7 @@
   } from '../link-field/craft-link-field';
   import type {UiControlPayload} from './types';
   import {inputName} from './runtime';
+  import {useUiPreview} from './uiPreview';
 
   type LinkControlProps = {
     types: LinkTypeConfig[];
@@ -50,6 +51,7 @@
   const linkField = ref<HTMLElement>();
   const draft = ref<LinkValue | null>(null);
   let restoreFocusTo: HTMLElement | null = null;
+  const previewing = useUiPreview();
   let resuming = false;
 
   const hasValue = computed(() => Boolean(props.value?.value));
@@ -227,6 +229,7 @@
             .showLabelField="control.props.showLabelField"
             .advancedFields="control.props.advancedFields"
             .disabled="!editable"
+            .previewing="previewing"
             @apply="apply"
             @cancel="close"
             @element-select-start="suspend"
@@ -245,6 +248,7 @@
       .showLabelField="control.props.showLabelField"
       .advancedFields="control.props.advancedFields"
       .disabled="!editable"
+      .previewing="previewing"
       @link-change="change"
     />
   </div>

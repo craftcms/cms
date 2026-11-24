@@ -145,6 +145,14 @@ class CraftLinkField extends LitElement {
   @property({reflect: true, type: Boolean})
   live = false;
 
+  /**
+   * Whether the field previews a value, such as in “Compare changes”. Previews
+   * show in modals, which slideouts can't open over, so the linked element
+   * can't be edited.
+   */
+  @property({type: Boolean})
+  previewing = false;
+
   @state()
   private defaultLabel = '';
 
@@ -432,6 +440,10 @@ class CraftLinkField extends LitElement {
     type: LinkTypeConfig,
     element: LinkedElement
   ): Promise<void> {
+    if (this.previewing) {
+      return;
+    }
+
     const opener = this.actionMenuInvoker();
 
     // A popover this field is in would otherwise be dismissed by focus moving
@@ -516,10 +528,12 @@ class CraftLinkField extends LitElement {
         toActionItems: this.toActionItems,
       },
       {
-        edit: {
-          label: t('Edit {type}', {type: type.label}),
-          open: () => void this.editElement(type, element),
-        },
+        edit: this.previewing
+          ? undefined
+          : {
+              label: t('Edit {type}', {type: type.label}),
+              open: () => void this.editElement(type, element),
+            },
         replace: () => void this.chooseElement(this.actionMenuInvoker()),
         remove: () => void this.removeElement(),
       }
