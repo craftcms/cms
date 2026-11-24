@@ -28,6 +28,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
@@ -256,6 +257,39 @@ it('returns the source URL for assets the transformer can’t transform', functi
 
     expect($html)->toBe('https://example.test/uploads/clip.mp4 https://example.test/uploads/clip.mp4');
     Exceptions::assertNothingReported();
+});
+
+it('transforms legacy assets with an applied transform through the craft driver', function(): void {
+    app(AssetTransformers::class)->forgetDrivers()->extend('craft', fn() => app(CraftAssetTransformDriver::class));
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-transform-compatibility'),
+    ]);
+    $volume = Volume::factory()->create(['disk' => 'uploads']);
+    $asset = ($this->asset)([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'source.jpg',
+        'kind' => 'image',
+        'width' => 960,
+        'height' => 640,
+    ]);
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 3) . '/tests/_data/assets/files/background.jpg'),
+    );
+
+    $asset->setTransform(['width' => 100]);
+
+    expect($asset->getUrl())->toBeString()
+        ->and($asset->getWidth())->toBe(100)
+        ->and($asset->getHeight())->toBe(67);
+
+    $asset->setTransform(['width' => 200]);
+
+    expect($asset->getWidth())->toBe(200);
+
+    Storage::disk('uploads')->deleteDirectory('');
 });
 
 it('routes registered legacy image transformers through adapter drivers', function(): void {
