@@ -73,6 +73,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where comboboxes limited to their options couldn’t be cleared by deleting their text. ([#21057](https://github.com/craftcms/cms/pull/21057))
 - Fixed a bug where Link fields’ Entry settings listed two “All” sources. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
+- Fixed a bug where option and Color field values didn’t show their colors in element indexes and cards. ([#21055](https://github.com/craftcms/cms/issues/21055), [#21070](https://github.com/craftcms/cms/pull/21070))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
