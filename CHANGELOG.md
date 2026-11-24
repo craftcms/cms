@@ -69,6 +69,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where entries created by applying an unpublished draft via MCP didn’t get a post date. ([#21041](https://github.com/craftcms/cms/issues/21041), [#21053](https://github.com/craftcms/cms/pull/21053))
 - Fixed a bug where the `drafts_apply` MCP tool returned “Draft not found.” when the user wasn’t permitted to apply the draft. ([#21043](https://github.com/craftcms/cms/issues/21043), [#21053](https://github.com/craftcms/cms/pull/21053))
 - Fixed a bug where the `drafts_apply` MCP tool didn’t validate drafts before applying them. ([#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where comboboxes limited to their options couldn’t be cleared by deleting their text. ([#21057](https://github.com/craftcms/cms/pull/21057))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
