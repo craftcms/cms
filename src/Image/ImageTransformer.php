@@ -17,7 +17,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
-use CraftCms\Cms\Image\Events\AssetTransformsInvalidated;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\ImageTransforming;
@@ -217,35 +216,8 @@ class ImageTransformer
         $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        if ($transformIndexes === []) {
-            return;
-        }
-
-        $transformer = $this->currentTransformer($asset->getVolume());
-        $diskName = $this->outputDisk($asset->getVolume(), $transformer);
-        $disk = $this->transformDisk($asset, $transformer);
-        $hasUrls = $this->transformHasUrls($asset->getVolume(), $transformer);
-        $files = [];
-
         foreach ($transformIndexes as $transformIndex) {
-            $this->deleteImageTransformFile($asset, $transformIndex, $transformer);
-
-            // Only generated transforms were served from their own URL
-            if (! $transformIndex->fileExists) {
-                continue;
-            }
-
-            $path = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformUri($asset, $transformIndex);
-            $files[] = [
-                'disk' => $diskName,
-                'path' => $path,
-                // As getTransformUrl() served it, revved with when the transform was generated
-                'url' => $hasUrls ? Html::encodeSpaces(AssetsHelper::revUrl($disk->url($path), $asset, $transformIndex->dateIndexed)) : null,
-            ];
-        }
-
-        if ($files !== []) {
-            event(new AssetTransformsInvalidated($asset, $files));
+            $this->deleteImageTransformFile($asset, $transformIndex);
         }
     }
 
@@ -264,13 +236,26 @@ class ImageTransformer
         ?AssetTransformer $transformer = null,
     ): void {
         $transformer ??= $this->currentTransformer($asset->getVolume());
-        $diskPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $transformIndex);
+        $folderPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath);
+        $diskPath = $folderPath.$this->getTransformSubpath($asset, $transformIndex);
 
         try {
+            // Only a generated transform was served from its own URL. It’s built as getTransformUrl() served it,
+            // revved with when the transform was generated.
+            $url = $transformIndex->fileExists && $this->transformHasUrls($asset->getVolume(), $transformer)
+                ? Html::encodeSpaces(AssetsHelper::revUrl(
+                    $this->transformDisk($asset, $transformer)->url($folderPath.$this->getTransformUri($asset, $transformIndex)),
+                    $asset,
+                    $transformIndex->dateIndexed,
+                ))
+                : null;
+
             event(new DeletingTransformedImage(
                 asset: $asset,
                 imageTransformIndex: $transformIndex,
                 path: $diskPath,
+                disk: $this->outputDisk($asset->getVolume(), $transformer),
+                url: $url,
             ));
             $this->transformDisk($asset, $transformer)->delete($diskPath);
         } catch (Throwable) {

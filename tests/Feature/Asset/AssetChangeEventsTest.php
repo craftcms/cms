@@ -16,7 +16,9 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Image\Events\AssetTransformsInvalidated;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Events\DeletingTransformedImage;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -57,7 +59,7 @@ beforeEach(function () {
     ));
 
     $this->events = [];
-    Event::listen([AssetFileChanged::class, AssetTransformsInvalidated::class, FolderRenamed::class], function (object $e) {
+    Event::listen([AssetFileChanged::class, DeletingTransformedImage::class, FolderRenamed::class], function (object $e) {
         $this->events[] = $e;
     });
     $this->of = fn (string $class) => array_values(array_filter($this->events, fn ($e) => $e instanceof $class));
@@ -192,26 +194,38 @@ it('reports deleted transform files with the URLs they were served from', functi
     // The URL as Craft serves it, with spaces in the folder and filename encoded
     $url = app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->getUrl(['width' => 100]));
     $transformFiles = $this->disk->allFiles('_'.$this->volume->uid);
-    // A transform that was never generated has no file
+    // A transform that was never generated has no file, so it has no URL
     Queue::fake();
     app(AssetTransformers::class)->transform($asset, ['width' => 50]);
     $this->events = [];
 
     app(AssetTransformers::class)->invalidate($asset);
 
-    $invalidated = ($this->of)(AssetTransformsInvalidated::class);
-    expect($invalidated)->toHaveCount(1)
+    $deleted = ($this->of)(DeletingTransformedImage::class);
+    $generated = array_values(array_filter($deleted, fn (DeletingTransformedImage $e) => $e->url !== null));
+    expect($deleted)->toHaveCount(2)
         ->and($url)->toContain('My%20Photos/')
         ->and($url)->toContain('?v=')
-        ->and($invalidated[0]->urls())->toBe([$url, strtok($url, '?')])
-        ->and($transformFiles)->toBe([$invalidated[0]->files[0]['path']])
-        ->and($this->disk->exists($invalidated[0]->files[0]['path']))->toBeFalse()
-        ->and($invalidated[0]->files[0]['disk'])->toBe('change-events-disk');
+        ->and($generated)->toHaveCount(1)
+        ->and($generated[0]->urls())->toBe([$url, strtok($url, '?')])
+        ->and($transformFiles)->toBe([$generated[0]->path])
+        ->and($this->disk->exists($generated[0]->path))->toBeFalse()
+        ->and($generated[0]->disk)->toBe('change-events-disk');
+});
 
-    // Nothing left to invalidate
+it('reports a transform file deleted because its transform’s settings changed', function () {
+    $asset = ($this->image)();
+    $transform = new ImageTransform(['id' => 999, 'handle' => 'thumb', 'width' => 100]);
+    $url = app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->getUrl($transform));
     $this->events = [];
-    app(AssetTransformers::class)->invalidate($asset);
-    expect(($this->of)(AssetTransformsInvalidated::class))->toHaveCount(0);
+
+    // The named transform changed after its file was generated, so the file is out of date
+    $transform->parameterChangeTime = now()->addMinute();
+    app(ImageTransformer::class)->getTransformIndex($asset, $transform);
+
+    $deleted = ($this->of)(DeletingTransformedImage::class);
+    expect($deleted)->toHaveCount(1)
+        ->and($deleted[0]->urls())->toBe([$url, strtok($url, '?')]);
 });
 
 it('reports a renamed folder’s old URL prefixes, including its transforms’', function () {
