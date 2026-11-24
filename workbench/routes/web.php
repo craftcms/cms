@@ -51,6 +51,7 @@ Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->whereNumber('step');
         Route::get('workbench/headings', HeadingsController::class)
             ->name('workbench.headings');
-        Route::get('workbench/tab-spacing', TabSpacingController::class)
+        Route::get('workbench/tab-spacing', [TabSpacingController::class, 'index'])
             ->name('workbench.tab-spacing');
+        Route::get('workbench/tab-spacing/legacy', [TabSpacingController::class, 'legacy']);
     });
