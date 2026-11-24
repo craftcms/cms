@@ -1,4 +1,9 @@
-import {Theme, Color, BackgroundColor} from '@adobe/leonardo-contrast-colors';
+import {
+  Theme,
+  Color,
+  BackgroundColor,
+  contrast,
+} from '@adobe/leonardo-contrast-colors';
 
 const contrastRatios = {
   static: [1.45, 1.78, 2.22, 2.78, 3.54, 4.61, 5.92, 7.81, 10.21, 13.01, 15.91],
@@ -177,6 +182,72 @@ export const darkTheme = new Theme({
   backgroundColor: backgroundColor,
   lightness: 26,
 });
+
+/*
+  Status colors (enabled, pending, expired) are more vivid than the palette, so
+  each one has its own key colors rather than a palette stop. A status dot has
+  no darker ring, so its fill alone must reach 3:1 (WCAG 1.4.11) against every
+  surface it sits on, and the text color must reach 4.5:1.
+
+  Leonardo measures against one background per theme, so each theme targets the
+  surface a status color contrasts least with:
+  - light: the page surface (`--c-surface-page`, base-200), the darkest one;
+  - dark: the lime card header (lime's `--c-color-fill-quiet`), the lightest
+    surface or tint a dot sits on.
+  Selected card headers are left out. No fill can contrast with both them and
+  the page, so a dot there needs a ring instead.
+
+  A key that already passes keeps its contrast, so the output stays the key
+  itself. A key that falls short is moved to the target in OKLCH, which keeps
+  its hue. If a surface changes, these backgrounds have to change with it;
+  status.browser.test.ts measures the dots on the real surfaces.
+*/
+const statusSurfaces = {light: '#e6ecf4', dark: '#324912'};
+
+// Targets sit above 3 and 4.5. Leonardo can land up to 0.01 under its target,
+// and browsers mix and round the surface colors slightly differently.
+const statusRatios = {fill: 3.2, text: 4.55};
+
+const statusKeys = {
+  light: {
+    enabled: {fill: '#009a5f', text: '#007a4a'},
+    pending: {fill: '#008ae2', text: '#006db4'},
+    expired: {fill: '#ff002f', text: '#d50026'},
+  },
+  dark: {
+    enabled: {fill: '#00ffa1', text: '#00ffa1'},
+    pending: {fill: '#009dff', text: '#5eb4ff'},
+    expired: {fill: '#ff4a4d', text: '#ff8e87'},
+  },
+};
+
+const hexToRgb = (hex) =>
+  [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+function makeStatusColors(theme) {
+  const background = statusSurfaces[theme];
+  const colors = Object.entries(statusKeys[theme]).flatMap(([status, keys]) =>
+    Object.entries(keys).map(([part, key]) => {
+      const keyRatio = Math.abs(contrast(hexToRgb(key), hexToRgb(background)));
+      return new Color({
+        name: `status-${status}-${part}`,
+        colorKeys: [key],
+        colorSpace: 'OKLCH',
+        ratios: [Math.max(statusRatios[part], keyRatio)],
+      });
+    })
+  );
+
+  // A string background makes the theme measure against that exact color.
+  return new Theme({colors, backgroundColor: background}).contrastColors
+    .slice(1)
+    .map(({name, values: [{value}]}) => ({name, value}));
+}
+
+export const statusColors = {
+  light: makeStatusColors('light'),
+  dark: makeStatusColors('dark'),
+};
 
 export const stops = [
   '50',

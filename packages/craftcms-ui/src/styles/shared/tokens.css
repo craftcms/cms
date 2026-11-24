@@ -216,12 +216,11 @@
   /**
   Status
 
-  Not palette stops: each is the most saturated color of its hue (by OKLCH
-  chroma, within sRGB) that keeps 3:1 (fills) or 4.5:1 (text) against every
-  surface a status sits on: the default, sunken, page, and details surfaces,
-  and selected and hovered rows. The fill reaches 3:1 by itself, so the border
-  matches it rather than darkening the dot's edge. The dark theme sets its own
-  below.
+  Enabled, pending and expired are more vivid than the palette, so they get
+  their own generated colors (`--color-status-*`, see color-definitions.js).
+  Each fill keeps 3:1 and each text color 4.5:1 against every surface a status
+  sits on, in both themes. The fill reaches 3:1 by itself, so the border
+  matches it rather than darkening the dot's edge.
    */
 
   /* Live */
@@ -230,9 +229,9 @@
   --c-status-live-text: var(--c-status-enabled-text);
 
   /* Enabled */
-  --c-status-enabled-fill: #009a5f;
+  --c-status-enabled-fill: var(--color-status-enabled-fill);
   --c-status-enabled-border: var(--c-status-enabled-fill);
-  --c-status-enabled-text: #007a4a;
+  --c-status-enabled-text: var(--color-status-enabled-text);
 
   /* A field whose value differs from the canonical element's */
   --c-field-modified-indicator: var(--color-violet-600);
@@ -241,13 +240,13 @@
   --c-callout-fill-mute: 0%;
 
   /* Pending */
-  --c-status-pending-fill: #008ae2;
-  --c-status-pending-text: #006db4;
+  --c-status-pending-fill: var(--color-status-pending-fill);
+  --c-status-pending-text: var(--color-status-pending-text);
   --c-status-pending-border: var(--c-status-pending-fill);
 
   /* Expired */
-  --c-status-expired-fill: #ff002f;
-  --c-status-expired-text: #d50026;
+  --c-status-expired-fill: var(--color-status-expired-fill);
+  --c-status-expired-text: var(--color-status-expired-text);
   --c-status-expired-border: var(--c-status-expired-fill);
 
   /* Disabled */
@@ -431,14 +430,6 @@
   color-scheme: dark;
   /* Icons in neutral badges stand out from their pale label text. */
   --c-badge-icon-color: var(--c-text-white);
-  /* Statuses: see the light theme's. Lighter here, to stand off the dark
-     surfaces; emerald's fill already reaches 4.5:1. */
-  --c-status-enabled-fill: #00ffa1;
-  --c-status-enabled-text: #00ffa1;
-  --c-status-pending-fill: #009dff;
-  --c-status-pending-text: #5eb4ff;
-  --c-status-expired-fill: #ff4a4d;
-  --c-status-expired-text: #ff8e87;
   /* The dark palette's 600 is pale; its 400 keeps the bar vivid. */
   --c-field-modified-indicator: var(--color-violet-400);
   /* Filled callouts read loud against a dark surface. */

@@ -51,8 +51,8 @@ const surfaces = [
 ];
 
 /**
- * The colored states' fills are as saturated as their hue allows while still
- * reaching 3:1 by themselves, since their border matches the fill. Disabled
+ * The colored states' fills are generated to reach 3:1 by themselves (see
+ * color-definitions.js), since their border matches the fill. Disabled
  * keeps a pale fill and relies on its darker border.
  */
 describe.each(['light', 'dark'])('in the %s theme', (theme) => {
