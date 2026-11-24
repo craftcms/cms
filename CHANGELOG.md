@@ -63,6 +63,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where plugins’ front-end routes returned a 404 error under Laravel Octane with the Yii adapter installed. ([#21019](https://github.com/craftcms/cms/pull/21019))
 - Fixed a bug where `CRAFT_SITE` and `CRAFT_SITE_UPPER` kept the previous site request’s values under Laravel Octane. ([#20998](https://github.com/craftcms/cms/issues/20998), [#21022](https://github.com/craftcms/cms/pull/21022))
 - Fixed a bug where the GraphQL API’s OAuth discovery metadata had the wrong URLs in headless mode and on control panel requests. ([#21029](https://github.com/craftcms/cms/pull/21029))
+- Fixed a bug where relation field cards didn’t show their elements’ statuses. ([#21028](https://github.com/craftcms/cms/issues/21028), [#21046](https://github.com/craftcms/cms/pull/21046))
 - Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Element\Drafts::saveDraftForApplying()`. ([#21053](https://github.com/craftcms/cms/pull/21053))
