@@ -22,6 +22,7 @@
       :label="t('Stack Trace')"
       width="5xl"
       resizable
+      storage-key="StackTraceModal.size"
       @close="isActive = false"
     >
       <StackTrace :log-id="logId" @close="isActive = false" />

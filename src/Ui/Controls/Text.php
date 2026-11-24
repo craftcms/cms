@@ -49,6 +49,10 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
 
     private bool $monospace = false;
 
+    private bool $enlarged = false;
+
+    private ?string $prefix = null;
+
     private ?string $suffix = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
@@ -69,8 +73,11 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
             ->autocorrect((bool) ($control->props['autocorrect'] ?? true))
             ->autocapitalize((bool) ($control->props['autocapitalize'] ?? true))
             ->inputSize($control->props['size'] ?? null)
+            ->width(isset($control->props['size']) ? 'auto' : null)
             ->orientation($control->props['dir'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
+            ->size(($control->props['enlarged'] ?? false) ? 'large' : null)
+            ->prefix($control->props['prefix'] ?? null)
             ->suffix($control->props['suffix'] ?? null)
             ->disabled($attributes['disabled'] || ($attributes['readonly'] && ($control->props['inputType'] ?? 'text') === 'range'))
             ->readOnly($attributes['readonly'])
@@ -203,6 +210,21 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
         return $this;
     }
 
+    /** Renders the control larger, for values worth reading at a glance. */
+    public function enlarged(bool $enlarged = true): static
+    {
+        $this->enlarged = $enlarged;
+
+        return $this;
+    }
+
+    public function prefix(?string $prefix): static
+    {
+        $this->prefix = $prefix;
+
+        return $this;
+    }
+
     public function suffix(?string $suffix): static
     {
         $this->suffix = $suffix;
@@ -244,6 +266,8 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
             'size' => $this->size,
             'dir' => $this->dir,
             'monospace' => $this->monospace ?: null,
+            'enlarged' => $this->enlarged ?: null,
+            'prefix' => $this->prefix,
             'suffix' => $this->suffix,
             ...$this->textExpanderProps(),
         ]);

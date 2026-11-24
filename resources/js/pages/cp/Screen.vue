@@ -15,6 +15,10 @@
   import {useScreenContentReady} from '@/common/composables/screen';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {Tabs} from '@/modules/tabs';
+  import {
+    type LegacySaveShortcutProps,
+    useLegacySaveShortcut,
+  } from './legacySaveShortcut';
 
   const props = defineProps<{
     content?: string | null;
@@ -27,6 +31,9 @@
     actionButton?: string | null;
     actionMenu?: string | null;
     fullPageForm?: boolean;
+    mainFormAttributes?: LegacySaveShortcutProps['mainFormAttributes'];
+    formActions?: LegacySaveShortcutProps['formActions'];
+    saveShortcutRedirect?: string | null;
     additionalButtons?: string | null;
     sidebar?: string | null;
     bodyClass?: Array<string> | string | null;
@@ -129,6 +136,8 @@
       craft.cp.$primaryForm = jquery('#main-form');
     }
   }
+
+  useLegacySaveShortcut(() => props);
 
   function releaseLegacyReadyJs(): void {
     resyncLegacyCp();

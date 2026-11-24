@@ -717,6 +717,20 @@ describe('craft-field control width mirroring', () => {
     expect(element.getAttribute('width')).toBe('full');
   });
 
+  it('mirrors a control width property set after the control is slotted', async () => {
+    const element = await createField(
+      {},
+      '<craft-input slot="input"><input slot="input"></craft-input>'
+    );
+    const control = element.querySelector('craft-input')!;
+
+    control.width = 'auto';
+    await control.updateComplete;
+    await element.updateComplete;
+
+    expect(element.getAttribute('width')).toBe('auto');
+  });
+
   it('keeps an explicit host width over the control width', async () => {
     const element = await createField(
       {width: 'auto'},

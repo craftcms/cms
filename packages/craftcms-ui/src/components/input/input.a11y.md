@@ -15,6 +15,7 @@ The `FormControl` mixin does the label, help text and feedback wiring. It render
 
 - [x] The control is a native `<input>` in the light DOM, and the `label` attribute or a slotted `label` is a `<label>` whose `for` points at it, so the input's accessible name is the visible label. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `renders a native input with the label wired to it` in `input.test.ts`.
 - [ ] The label is also added to the native input's `aria-labelledby`, and text in a `prefix`, `suffix`, `before` or `after` element marked `data-label` joins it. Per WCAG 1.3.1 (Info and Relationships). Not yet verified.
+- [x] Text in a `prefix` or `suffix` element marked `data-description` is referenced by the native input's `aria-describedby`, including elements added, replaced or removed after it renders. Per WCAG 1.3.1 (Info and Relationships). Verified by `is described by a %s marked data-description added, replaced or removed after it renders` in `input.test.ts`.
 - [x] `type` is passed to the native input, so `email`, `number`, `url` and the rest keep their native role, keyboard and validation. Per WCAG 4.1.2 (Name, Role, Value). Verified by `passes a type through to the native input` in `input.test.ts`.
 - [ ] `autocomplete` is passed to the native input. Per WCAG 1.3.5 (Identify Input Purpose). Not yet verified.
 - [x] `disabled` disables the native input, so it leaves the Tab order and is announced as unavailable. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables the native input` in `input.test.ts`.

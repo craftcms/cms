@@ -26,6 +26,8 @@
   import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useIsSlideout} from '@/common/composables/screen';
 
   const props = withDefaults(
@@ -67,16 +69,20 @@
   const shownUi = shownPayload(() => props.ui);
   const shownSidebarUi = shownPayload(() => props.sidebarUi);
   const inertiaForm = useForm({});
-  const {advanceBaseline, errors, onMutation, renderer} = useInertiaUiRenderer(
-    inertiaForm,
-    () => shownUi.value
-  );
+  const {advanceBaseline, errorPath, errors, onMutation, renderer} =
+    useInertiaUiRenderer(inertiaForm, () => shownUi.value);
   const {
     advanceBaseline: advanceSidebarBaseline,
+    errorPath: sidebarErrorPath,
     errors: sidebarErrors,
     onMutation: onSidebarMutation,
     renderer: sidebarRenderer,
   } = useInertiaUiRenderer(inertiaForm, () => shownSidebarUi.value ?? null);
+
+  /** Where an error's field can be, for the summary to link to it. */
+  function errorPaths(key: string): (string[] | null)[] {
+    return [errorPath(key), sidebarErrorPath(key)];
+  }
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
 
   const save = props.submit
@@ -306,6 +312,10 @@
 
 <template>
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
+    <!-- The shell's own summary can't tell where a key's field is rendered. -->
+    <LayoutSlot v-if="submit && inertiaForm.hasErrors" name="error-summary">
+      <ErrorSummary :errors="inertiaForm.errors" :error-paths="errorPaths" />
+    </LayoutSlot>
     <CpContainer>
       <template #[contentSlot]>
         <component

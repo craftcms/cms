@@ -7,6 +7,7 @@ use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\File;
 
@@ -42,6 +43,101 @@ it('maps errors thrown in templates to their source template', function () {
 
         return;
     } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
+it('maps errors to the template mode’s source template when another mode has a template with the same name', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    // The control panel has a set-password template too
+    File::put("$tempDir/set-password.twig", "Line one\n{{ 1 // 0 }}");
+    Aliases::set('@templates', $tempDir);
+
+    try {
+        app(TemplateManager::class)->renderTemplate('set-password', templateMode: TemplateMode::Site);
+    } catch (Throwable $exception) {
+        $mapped = TemplateMode::with(TemplateMode::Cp, fn () => app(TwigExceptionMapper::class)->map($exception));
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/set-password.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
+it('maps errors in templates that use traits only their own template mode has', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    File::put("$tempDir/site-trait.twig", '{% block trait %}{% endblock %}');
+    File::put("$tempDir/broken.twig", "{% use 'site-trait' %}\n{{ 1 // 0 }}");
+    Aliases::set('@templates', $tempDir);
+
+    try {
+        app(TemplateManager::class)->renderTemplate('broken', templateMode: TemplateMode::Site);
+    } catch (Throwable $exception) {
+        $mapped = TemplateMode::with(TemplateMode::Cp, fn () => app(TwigExceptionMapper::class)->map($exception));
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/broken.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
+it('maps errors to the source of templates included by unescaped string templates', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    File::put("$tempDir/broken-partial.twig", "Line one\n{{ 1 // 0 }}");
+    Aliases::set('@templates', $tempDir);
+
+    try {
+        app(TemplateManager::class)->renderTwigString('{% include "broken-partial" %}');
+    } catch (Throwable $exception) {
+        $mapped = app(TwigExceptionMapper::class)->map($exception);
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/broken-partial.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
+it('maps errors to templates that both template modes resolve to the same file', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    File::put("$tempDir/broken.twig", "Line one\n{{ 1 // 0 }}");
+    $templateRoots = app(TemplateRoots::class);
+    $templateRoots->register(TemplateMode::Cp, 'shared-root', $tempDir);
+    $templateRoots->register(TemplateMode::Site, 'shared-root', $tempDir);
+
+    try {
+        // Unescaped string templates compile the templates they include under another class
+        app(TemplateManager::class)->renderTwigString('{% include "shared-root/broken" %}');
+    } catch (Throwable $exception) {
+        $mapped = app(TwigExceptionMapper::class)->map($exception);
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/broken.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        $templateRoots->remove(TemplateMode::Cp, 'shared-root');
+        $templateRoots->remove(TemplateMode::Site, 'shared-root');
         File::deleteDirectory($tempDir);
     }
 

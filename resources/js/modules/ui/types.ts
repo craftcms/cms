@@ -49,6 +49,8 @@ export type TextControlProps = {
   size?: number;
   dir?: string;
   monospace?: boolean;
+  enlarged?: boolean;
+  prefix?: string;
   suffix?: string;
   textExpanderTriggers?: TextExpanderTriggers;
 };

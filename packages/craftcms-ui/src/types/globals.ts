@@ -59,6 +59,8 @@ export interface CraftGlobal {
   setCookie(name: string, value: string): void;
   /** The user's formatting locale, as a BCP 47 language tag. */
   formattingLocale?: string;
+  /** Scopes local storage keys to this install. */
+  systemUid?: string;
 }
 
 /**

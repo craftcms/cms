@@ -1,7 +1,19 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {inject, nextTick, onMounted, ref, useId, watch} from 'vue';
-  import {firstFocusableWithin, revealElement} from '@/common/utils/dom';
+  import {swallowHeldEnterKeyup} from '@craftcms/ui/utilities/enter-keyup';
+  import {
+    computed,
+    inject,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    useId,
+    watch,
+  } from 'vue';
+  import EmphasizedText from '@/common/components/EmphasizedText.vue';
+  import {highlightField} from '@/common/composables/useFieldHighlight';
+  import {firstFocusableWithin} from '@/common/utils/dom';
   import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
 
   const props = withDefaults(
@@ -12,44 +24,137 @@
        * because they were the first caller; an element editor says its own.
        */
       title?: string;
+      /**
+       * The control paths an error key could belong to, in order. The first
+       * one whose field is on the page gets the link. Screens that render a UI
+       * payload pass the renderer's own resolution, since a validator key (a
+       * field handle, say) can sit deeper in the form than it says.
+       */
+      errorPaths?: (key: string) => (string[] | null)[];
     }>(),
-    {title: () => t('Could not save settings')}
+    {
+      title: () => t('Could not save settings'),
+      errorPaths: (key: string) => [key.split('.')],
+    }
   );
 
   const root = ref<HTMLElement | null>(null);
   const titleId = `error-summary-${useId()}`;
 
-  /** The error keys whose field is on the page, which get a link to it. */
-  const linkedKeys = ref(new Set<string>());
-
   const fieldIdScope = inject(UiFieldIdScope, undefined);
 
-  /** An error's key is its control's path, which names the field wrapping it. */
-  function targetId(key: string): string {
-    return scopedId(fieldIdScope, fieldId(key.split('.')));
+  /** The id of the first field on the page that an error's key resolves to. */
+  function targetId(key: string): string | null {
+    for (const path of props.errorPaths(key)) {
+      const id = path && scopedId(fieldIdScope, fieldId(path));
+      if (id && document.getElementById(id)) {
+        return id;
+      }
+    }
+
+    return null;
   }
 
-  function findLinkedKeys(): void {
-    linkedKeys.value = new Set(
-      Object.keys(props.errors).filter((key) =>
-        document.getElementById(targetId(key))
-      )
-    );
+  /** Each linked error's key, with the id of the field it links to. */
+  const targets = ref(new Map<string, string>());
+
+  /**
+   * The keys before each `.` or `[` in an error key: `blocks[abc].title` has
+   * `blocks` and `blocks[abc]`.
+   */
+  function ancestorKeys(key: string): string[] {
+    return [...key.matchAll(/[.[]/g)].map((match) => key.slice(0, match.index));
   }
 
   /**
-   * Shows the field an error belongs to, switching to its tab first if it's on
-   * a hidden one, and puts focus in it.
+   * Only the top-level errors, as in Craft 5: an error whose field already has
+   * one of its own, such as a table cell's under its table, is left to show
+   * beside its control instead.
+   */
+  const shownErrors = computed(() =>
+    Object.fromEntries(
+      Object.entries(props.errors).filter(
+        ([key]) =>
+          !ancestorKeys(key).some((ancestor) => ancestor in props.errors)
+      )
+    )
+  );
+
+  function findLinkedKeys(): void {
+    const found = new Map(
+      Object.keys(shownErrors.value).flatMap((key) => {
+        const id = targetId(key);
+        return id ? [[key, id] as const] : [];
+      })
+    );
+
+    // Unchanged, so a relink doesn't re-render the links and wake the
+    // observer below again.
+    if (
+      found.size !== targets.value.size ||
+      [...found].some(([key, id]) => targets.value.get(key) !== id)
+    ) {
+      targets.value = found;
+    }
+
+    watchForFields();
+  }
+
+  /**
+   * Fields can reach the page after the summary does: a tab the server held
+   * back is filled in by a later request, after a failed save too. Until each
+   * error has its link, the summary looks again whenever the page changes.
+   */
+  let fieldObserver: MutationObserver | undefined;
+  let relinkFrame: number | undefined;
+
+  function watchForFields(): void {
+    const waiting = targets.value.size < Object.keys(shownErrors.value).length;
+
+    if (!waiting) {
+      stopWatchingForFields();
+    } else if (!fieldObserver) {
+      fieldObserver = new MutationObserver(() => {
+        relinkFrame ??= requestAnimationFrame(() => {
+          relinkFrame = undefined;
+          findLinkedKeys();
+        });
+      });
+      fieldObserver.observe(document.body, {childList: true, subtree: true});
+    }
+  }
+
+  function stopWatchingForFields(): void {
+    fieldObserver?.disconnect();
+    fieldObserver = undefined;
+
+    if (relinkFrame !== undefined) {
+      cancelAnimationFrame(relinkFrame);
+      relinkFrame = undefined;
+    }
+  }
+
+  /**
+   * Shows and highlights the field an error belongs to, switching to its tab
+   * first if it's on a hidden one, and puts focus in it.
    */
   async function goToField(event: MouseEvent, key: string): Promise<void> {
-    const field = document.getElementById(targetId(key));
+    const id = targets.value.get(key);
+    const field = id ? document.getElementById(id) : null;
 
     if (!field) {
       return;
     }
 
     event.preventDefault();
-    await revealElement(field, {block: 'center'});
+    // Enter follows a link on keydown. Its keyup would otherwise land on the
+    // control focused below, and a `craft-button` clicks on Enter's keyup:
+    // a relation field's "Add" button would open its picker.
+    swallowHeldEnterKeyup();
+    // Highlighted as a deep link to it is, so where the link went is plain
+    // after a click too, which shows no focus ring on a control that isn't a
+    // text input.
+    await highlightField(field);
 
     // The control rather than the first thing in the field, which can be its
     // actions menu.
@@ -78,6 +183,8 @@
     () => nextTick(findLinkedKeys),
     {deep: true}
   );
+
+  onBeforeUnmount(stopWatchingForFields);
 </script>
 
 <template>
@@ -99,21 +206,22 @@
         {{ title }}
       </div>
       <ul>
-        <!-- Deliberately text, not markup. A message can carry HTML the server
+        <!-- Deliberately text, not markup: only the `*Name*` emphasis markers
+           become elements, as text nodes. A message can carry HTML the server
            composed — the link to another site's validation errors is one — but
            it can also carry content, and Craft encodes before it lets markup
            through (`Html::encodeInvalidTags()`, then Markdown). Rendering these
            raw would put a field's own value into the DOM as HTML.
            `ElementResponse::errorSummary()` already does that work server-side;
            this component should be fed its output rather than re-deriving it. -->
-        <li v-for="(error, key) in errors" :key="key">
+        <li v-for="(error, key) in shownErrors" :key="key">
           <a
-            v-if="linkedKeys.has(String(key))"
-            :href="`#${targetId(String(key))}`"
+            v-if="targets.has(String(key))"
+            :href="`#${targets.get(String(key))}`"
             @click="goToField($event, String(key))"
-            >{{ error }}</a
-          >
-          <template v-else>{{ error }}</template>
+            ><EmphasizedText :text="error"
+          /></a>
+          <EmphasizedText v-else :text="error" />
         </li>
       </ul>
     </craft-callout>
@@ -129,5 +237,17 @@
   a {
     color: inherit;
     text-decoration: underline;
+  }
+
+  li {
+    line-height: 1.5rem;
+  }
+
+  li > a {
+    display: inline-block;
+  }
+
+  li :deep(strong) {
+    font-weight: 600;
   }
 </style>

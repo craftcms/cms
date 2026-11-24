@@ -13,6 +13,8 @@ Place it inside the box, which needs to be positioned. It fills the box and draw
 
 The grips don't size the box. They report each new size with a `craft-resize` event, and the box's owner applies it. Both values are `null` once the size is reset. Sizes stay within the box's computed `max-width` and `max-height`, and `min-size`.
 
+Set `storage-key` to remember the size a person picks in local storage. Grips with the same key report it again when they connect, and resetting forgets it. A remembered size isn't clamped when it's restored, so the box's max size caps it until the window has room for it again.
+
 `craft-dialog` uses it for its `resizable` option.
 
 ## Accessibility

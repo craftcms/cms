@@ -79,6 +79,7 @@ it.each([
     document.body.innerHTML = markup;
     const callout = document.querySelector<CraftCallout>('craft-callout')!;
     await callout.updateComplete;
+    await new Promise((resolve) => requestAnimationFrame(resolve));
 
     const icon = callout
       .shadowRoot!.querySelector('craft-icon')!

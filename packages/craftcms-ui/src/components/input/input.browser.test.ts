@@ -1,10 +1,12 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeAll, beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInput from './input.js';
-import {contrast} from '../../../test/contrast';
+import {contrast, loadTokens} from '../../../test/contrast';
 import type CraftInputDateTime from '../input-date-time/input-date-time.js';
 import './input.js';
 import '../button/button.js';
 import '../input-date-time/input-date-time.js';
+
+beforeAll(loadTokens);
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -88,6 +90,39 @@ describe('craft-input maxlength sizing', () => {
     const input = await inputIn(300, 255);
 
     expect(input.getBoundingClientRect().width).toBe(300);
+  });
+});
+
+describe('craft-input number character width', () => {
+  async function numberInput(
+    inputSize: number,
+    value: string
+  ): Promise<HTMLInputElement> {
+    document.body.innerHTML = `
+      <style>* { box-sizing: border-box; }</style>
+      <div style="width: 300px">
+        <craft-input label="Amount" type="number" width="auto" value="${value}"></craft-input>
+      </div>`;
+    const element = document.querySelector('craft-input') as CraftInput;
+    element.inputSize = inputSize;
+    await element.updateComplete;
+
+    return element.querySelector('input')!;
+  }
+
+  it('shrinks to fit its input size, which the browser ignores', async () => {
+    const input = await numberInput(4, '9999');
+
+    expect(input.getBoundingClientRect().width).toBeLessThan(100);
+    expect(input.scrollWidth).toBeLessThanOrEqual(input.clientWidth);
+  });
+
+  it('grows with its input size', async () => {
+    const narrow = (await numberInput(4, '')).getBoundingClientRect().width;
+    const wide = (await numberInput(12, '')).getBoundingClientRect().width;
+
+    expect(wide).toBeGreaterThan(narrow * 1.5);
+    expect(wide).toBeLessThan(300);
   });
 });
 
@@ -249,5 +284,32 @@ describe('craft-input suffix buttons', () => {
         element.shadowRoot!.querySelector('.input-group__container')!
       ).outlineStyle
     ).toBe('none');
+  });
+});
+
+describe('craft-input size', () => {
+  it('enlarges its text and padding at size large', async () => {
+    const render = async (size?: string) => {
+      const element = document.createElement('craft-input') as CraftInput;
+      if (size) {
+        element.setAttribute('size', size);
+      }
+      document.body.append(element);
+      await element.updateComplete;
+
+      return element.querySelector('input')!;
+    };
+    const normal = await render();
+    const large = await render('large');
+
+    expect(parseFloat(getComputedStyle(large).fontSize)).toBeGreaterThan(
+      parseFloat(getComputedStyle(normal).fontSize)
+    );
+    expect(parseFloat(getComputedStyle(large).paddingLeft)).toBeGreaterThan(
+      parseFloat(getComputedStyle(normal).paddingLeft)
+    );
+    expect(large.getBoundingClientRect().height).toBeGreaterThan(
+      normal.getBoundingClientRect().height
+    );
   });
 });

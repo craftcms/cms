@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Validation\Rules\TimeRule;
 use Illuminate\Support\Facades\Validator;
 
@@ -164,3 +165,28 @@ it('throws when configured with an invalid maximum time', function () {
 
     $validator->passes();
 })->throws(RuntimeException::class, 'Invalid maximum time:');
+
+it('names the attribute in its default messages', function (string $value, array $options, string $expected) {
+    $validator = Validator::make(
+        ['time' => $value],
+        ['time' => [new TimeRule(...$options)]],
+        attributes: ['time' => 'Start time'],
+    );
+
+    expect($validator->errors()->first('time'))->toBe($expected);
+})->with([
+    'not a time' => ['not-a-time', [], 'Start time must be a time.'],
+    'too early' => ['08:00', ['min' => '09:00'], "Start time must be no earlier than 9:00\u{202F}AM."],
+    'too late' => ['18:00', ['max' => '17:00'], "Start time must be no later than 5:00\u{202F}PM."],
+    'outside overnight range' => ['12:00', ['min' => '22:00', 'max' => '02:00'], "Start time must be between 10:00\u{202F}PM and 2:00\u{202F}AM."],
+]);
+
+it('formats times in the formatting locale', function () {
+    $message = I18N::withLocale('en', 'en-GB', fn () => Validator::make(
+        ['time' => '18:00'],
+        ['time' => [new TimeRule(max: '17:00')]],
+        attributes: ['time' => 'Start time'],
+    )->errors()->first('time'));
+
+    expect($message)->toBe('Start time must be no later than 17:00.');
+});

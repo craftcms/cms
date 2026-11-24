@@ -16,6 +16,7 @@
     provide,
     ref,
     shallowReactive,
+    useId,
     useTemplateRef,
     watch,
     type Component,
@@ -71,6 +72,7 @@
   import {registerActions} from '@/modules/command-palette/registry';
   import type {CommandPaletteItem} from '@/modules/command-palette/types';
   import {firstFocusableWithin} from '@/common/utils/dom';
+  import {UiFieldIdScope} from '@/modules/ui/runtime';
 
   interface CreatedReleaseResponse {
     release?: {
@@ -101,12 +103,15 @@
     root: () => contentEl.value,
   });
 
+  provide(UiFieldIdScope, `element-editor-${useId()}`);
+
   const {
     activity,
     activityTimelineVersion,
     autosave,
     addToRelease,
     discardDraft,
+    errorPaths,
     errors,
     form,
     uiPayload,
@@ -606,7 +611,11 @@
 <template>
   <!-- The shell's own summary is worded for settings screens. -->
   <LayoutSlot v-if="form.hasErrors" name="error-summary">
-    <ErrorSummary :errors="form.errors" :title="t('Couldn’t save changes')" />
+    <ErrorSummary
+      :errors="form.errors"
+      :error-paths="errorPaths"
+      :title="t('Couldn’t save changes')"
+    />
   </LayoutSlot>
 
   <LayoutSlot

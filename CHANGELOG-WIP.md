@@ -28,6 +28,7 @@
 - Double-clicking an admin table row now opens its link's slideout, if it has one.
 - Sortable checkbox selects, such as “Card Attributes”, “Table Columns”, and “Default Table Columns”, now list only the selected options, with an “Add item” menu for the rest. ([#20001](https://github.com/craftcms/cms/pull/20001), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
 - Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
 - Card view designers now preview users with a sample user’s name, default avatar, and active status.
 - Control panel error pages are now standalone pages with their own styles, so they still draw when the control panel’s assets can’t load. Front-end errors use them too when the site has no error template of its own, without the link to the control panel’s Dashboard. ([#19931](https://github.com/craftcms/cms/pull/19931))
@@ -216,6 +217,7 @@
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
 - Removed the `allowedGraphqlOrigins`, `disableGraphqlTransformDirective`, `enableBasicHttpAuth`, `enableTwigSandbox`, `maxCachedCloudImageSize`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `previewIframeResizerOptions`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, `useIframeResizer`, and `usePathInfo` config settings, which no longer have any effect.
 - Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and are listed in the Yii2 Loose Ends utility when they’re set.
+- Removed the `@web` alias. It’s still defined when the Yii adapter is installed, and the Yii2 Loose Ends utility lists sites whose base URL uses it. ([#20989](https://github.com/craftcms/cms/issues/20989))
 
 ### Development
 
@@ -225,8 +227,9 @@
 - Updated paginated requests to resolve the current page from the configured `pageTrigger` query parameter rather than path-style pagination segments.
 - Craft no longer supports routes defined in a `routes.php` config file. Register routes using [Laravel's routing](https://laravel.com/docs/12.x/routing) instead. With the Yii adapter installed, site routes in `config/craft/routes.php` still work, but are deprecated.
 - Routes outside the `craft` middleware group can now use `Route::allowDuringMaintenance()` to stay reachable during maintenance mode. ([#20095](https://github.com/craftcms/cms/pull/20095))
-- Requests to Craft’s site routes no longer start a session or send `laravel_session` and `XSRF-TOKEN` cookies for visitors without one, unless something writes to the session or puts its CSRF token in the response. Responses that don't need a session can then be stored by shared caches, such as CDNs. Requests that arrive with a session cookie are unaffected. For visitors without a session, `back()` and `url()->previous()` rely on the `Referer` header, so sites should send a `Referrer-Policy` such as `same-origin` or `strict-origin-when-cross-origin` (the browser default), not `no-referrer`.
+- Requests to Craft’s site routes no longer start a session or send `laravel_session` and `XSRF-TOKEN` cookies for visitors without one, unless something writes to the session or puts its CSRF token in the response. Responses that don't need a session can then be stored by shared caches, such as CDNs. Requests that arrive with a session cookie start the session as before. For visitors without a session, `back()` and `url()->previous()` rely on the `Referer` header, so sites should send a `Referrer-Policy` such as `same-origin` or `strict-origin-when-cross-origin` (the browser default), not `no-referrer`. Responses that save or refresh a session get no-cache headers, and the `CraftCms\Cms\Http\Events\LazySessionSaved` event reports why. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `Route::withLazySession()`, which gives any route, such as a plugin’s or the host app’s own, the same lazy session as Craft’s site routes. Middleware that reads the session must come after `StartSession` in the middleware priority list, as lazy routes run their session middleware at that position rather than at its place in the `web` group. A `StartSession` subclass in the `web` group is still used.
+- Responses to token and site token requests now have no-cache headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 
 #### Templates
 - It’s now possible to load Blade views within Twig templates. ([#19148](https://github.com/craftcms/cms/pull/19148))
@@ -244,6 +247,9 @@
 - Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Dates can now be output and passed to filters such as `|date` within the Twig sandbox.
 - Templates can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()`, which also gives the text’s contrast ratio. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Added `ResponseHeaders.cacheControl`, which sets the response’s cache directives with Symfony’s `Response` method names, such as `setSharedMaxAge()` and `setStaleWhileRevalidate()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- Responses containing the session’s CSRF token now have no-cache headers, and `csrfInput()` no longer sets them itself. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Front-end forms no longer need CSRF tokens. POST requests that browsers mark with a `Sec-Fetch-Site: same-origin` header are accepted without one, as are requests without `Sec-Fetch-Site` whose `Origin` header matches the site’s scheme and host, such as from plain-HTTP local dev sites like `http://my-site.test`. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - Pages that print a CSRF token save the visitor’s session and are marked `no-cache`, so shared caches can’t store them. To make them cacheable, enable origin-only request forgery checks with `$middleware->preventRequestForgery(originOnly: true)`, and `csrfInput()` prints nothing. Requests from clients that send neither `Sec-Fetch-Site` nor `Origin` then get a 403 response. Sites can also remove `csrfInput()` from their own templates. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - Plugins that render forms should keep using `csrfInput()` rather than `csrf_field()`, so their forms follow the site’s request forgery settings. ([#20429](https://github.com/craftcms/cms/pull/20429))
@@ -268,6 +274,7 @@
 
 #### Deprecations
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
+- Deprecated setting general config settings with `CRAFT_` environment variables. They should be set in `config/craft/general.php` instead, with `env()`. ([#21018](https://github.com/craftcms/cms/pull/21018))
 - Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
   - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
 - Deprecated the `errorTemplatePrefix` general config setting. Error templates now go in an `errors/` folder within the site templates, such as `errors/404.twig`, `errors/_404.twig`, or `errors/404.blade.php`, with `errors/offline` and `errors/error` as fallbacks, and a site’s own template folder takes precedence, such as `resources/views/siteHandle/errors/404.twig`. ([#20448](https://github.com/craftcms/cms/pull/20448))
