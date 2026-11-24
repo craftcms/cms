@@ -65,7 +65,7 @@ export class Tab extends Base {
     );
 
     this.addListener($tabContent, 'resize', () => {
-      this.designer.tabGrid?.refreshCols(true);
+      this.designer.tabGrid?.queueRefreshCols(true);
     });
 
     this.$addBtn = $tabContent.querySelector('[command="--add-field"]');

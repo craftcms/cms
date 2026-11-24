@@ -8,6 +8,7 @@ import {Paddable} from '@src/mixins/Paddable.js';
 import variantsStyles from '@src/styles/variants.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
+import {scheduleMeasure} from '@src/utilities/frame';
 import {
   hasSlotted,
   LightDomController,
@@ -147,7 +148,9 @@ export default class CraftCallout extends Paddable(LitElement, {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this._textObserver = new ResizeObserver(() => this.syncFirstLineFont());
+    this._textObserver = new ResizeObserver(() =>
+      scheduleMeasure(this.syncFirstLineFont)
+    );
     this.updateComplete.then(() => {
       const text = this.renderRoot.querySelector('.callout__text');
       if (text) {
@@ -163,7 +166,7 @@ export default class CraftCallout extends Paddable(LitElement, {
   }
 
   protected override updated(): void {
-    this.syncFirstLineFont();
+    scheduleMeasure(this.syncFirstLineFont);
   }
 
   /**
@@ -171,7 +174,7 @@ export default class CraftCallout extends Paddable(LitElement, {
    * icon centers on that line even when it's a slotted heading set larger
    * than the callout's own text.
    */
-  private syncFirstLineFont(): void {
+  private syncFirstLineFont = () => {
     const strut = this.renderRoot.querySelector<HTMLElement>('.callout__strut');
     if (!strut) {
       return;
@@ -187,11 +190,16 @@ export default class CraftCallout extends Paddable(LitElement, {
     const parent =
       text?.parentElement === this ? text.assignedSlot : text?.parentElement;
     const style = parent ? getComputedStyle(parent) : null;
+    const fontFamily = style?.fontFamily ?? '';
+    const fontSize = style?.fontSize ?? '';
+    const lineHeight = style?.lineHeight ?? '';
 
-    strut.style.fontFamily = style?.fontFamily ?? '';
-    strut.style.fontSize = style?.fontSize ?? '';
-    strut.style.lineHeight = style?.lineHeight ?? '';
-  }
+    return () => {
+      strut.style.fontFamily = fontFamily;
+      strut.style.fontSize = fontSize;
+      strut.style.lineHeight = lineHeight;
+    };
+  };
 
   protected override willUpdate(): void {
     this.resolvedIcon = this.icon ?? this.getDefaultIcon();

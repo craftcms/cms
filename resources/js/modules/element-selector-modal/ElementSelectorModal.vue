@@ -9,6 +9,7 @@
   import ElementPicker from './ElementPicker.vue';
   import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
   import NewEntryButton from './NewEntryButton.vue';
+  import {creatableUnderCondition} from './creatableUnderCondition';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import type {SelectedElement} from './useModalElementIndex';
   import {useElementSelectorController} from './useElementSelectorController';
@@ -102,15 +103,14 @@
   /**
    * Entries can be created from their selector, as Craft 5's `EntryIndex`
    * offered — in the sections the index shows that the user can publish in.
-   * Not with a selection condition: the modal closes while the entry is
-   * edited, so nothing could check the saved entry against the condition
-   * before choosing it.
+   * With a selection condition, only when its rules depend on nothing more
+   * than the entry's section and type, which the button then narrows to.
    */
   const createsEntries = computed(
     () =>
       props.controller.elementType ===
         'CraftCms\\Cms\\Entry\\Elements\\Entry' &&
-      !props.controller.options.condition
+      creatableUnderCondition(props.controller.options.condition) !== null
   );
 
   const uploadTarget = computed(() => {

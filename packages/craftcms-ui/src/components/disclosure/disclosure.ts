@@ -282,12 +282,12 @@ export default class CraftDisclosure extends LitElement {
       return;
     }
 
-    const rtl = getComputedStyle(this).direction === 'rtl';
-
     invoker.iconPosition = 'suffix';
     invoker.icon = this.open
       ? 'chevron-down'
-      : rtl
+      : // `:dir()` follows the `dir` attributes, so unlike the computed
+        // `direction` it doesn't make the browser recalculate styles.
+        this.matches(':dir(rtl)')
         ? 'chevron-left'
         : 'chevron-right';
   }

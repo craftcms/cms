@@ -567,7 +567,15 @@ describe('the new entry button', () => {
           type: 'channel',
           sites: [2],
           canSave: true,
-          entryTypes: [{id: 8, handle: 'author', name: 'Author', icon: null}],
+          entryTypes: [
+            {
+              uid: 'type-a',
+              id: 8,
+              handle: 'author',
+              name: 'Author',
+              icon: null,
+            },
+          ],
           entryTypeIdsBySite: {2: [8]},
         },
       ],
@@ -632,9 +640,16 @@ describe('the new entry button', () => {
     unmount();
   });
 
-  it('stays away when the field has a selection condition', async () => {
-    const instance = controller({condition: {class: 'EntryCondition'}});
-    const {host, unmount} = await mountModal(instance);
+  const rules = 'CraftCms\\Cms\\Entry\\Conditions\\';
+  const viewableRule = {class: `${rules}ViewableConditionRule`, value: true};
+  const condition = (rulesInGroup: object[], operator = 'and') => ({
+    class: `${rules}EntryCondition`,
+    conditionRules: {operator, rules: rulesInGroup},
+  });
+
+  async function openWith(options: object) {
+    const instance = controller(options);
+    const mounted = await mountModal(instance);
     await instance.open();
     await nextTick();
 
@@ -643,9 +658,253 @@ describe('the new entry button', () => {
     stub.emit!('site-change', 2);
     await nextTick();
 
+    return {instance, ...mounted};
+  }
+
+  it.each([
+    ['shows', 'only asks that entries be viewable', [viewableRule], true],
+    [
+      'stays away',
+      'has a rule that depends on more than the section and entry type',
+      [viewableRule, {class: `${rules}SlugConditionRule`, value: 'x'}],
+      false,
+    ],
+    [
+      'stays away',
+      'asks for entries that aren’t viewable',
+      [{...viewableRule, value: false}],
+      false,
+    ],
+    [
+      'shows',
+      'only asks that entries be savable',
+      [{class: `${rules}SavableConditionRule`, value: true}],
+      true,
+    ],
+    [
+      'stays away',
+      'asks for entries that aren’t savable',
+      [{class: `${rules}SavableConditionRule`, value: false}],
+      false,
+    ],
+    [
+      'shows',
+      'allows the section’s type',
+      [
+        {
+          class: `${rules}SectionTypeConditionRule`,
+          operator: 'in',
+          values: ['channel'],
+        },
+      ],
+      true,
+    ],
+    [
+      'stays away',
+      'excludes the section',
+      [
+        {
+          class: `${rules}SectionConditionRule`,
+          operator: 'ni',
+          values: ['abc'],
+        },
+      ],
+      false,
+    ],
+  ])(
+    '%s when the field’s selection condition %s',
+    async (_verb, _case, conditionRules, shown) => {
+      const {host, unmount} = await openWith({
+        condition: condition(conditionRules),
+      });
+
+      expect(
+        host.querySelector('[slot="secondary-actions"] craft-button') !== null
+      ).toBe(shown);
+
+      unmount();
+    }
+  );
+
+  it.each([
+    [
+      'shows for',
+      'an “or” group where one branch allows the section',
+      condition(
+        [
+          {
+            class: `${rules}SectionConditionRule`,
+            operator: 'in',
+            values: ['x'],
+          },
+          {
+            class: `${rules}SectionTypeConditionRule`,
+            operator: 'in',
+            values: ['channel'],
+          },
+        ],
+        'or'
+      ),
+      true,
+    ],
+    [
+      'stays away for',
+      'a nested group with a rule that depends on more',
+      condition([
+        viewableRule,
+        {
+          operator: 'or',
+          rules: [{class: `${rules}SlugConditionRule`, value: 'x'}],
+        },
+      ]),
+      false,
+    ],
+    [
+      'shows for',
+      'a condition given as a plain list of rules',
+      {class: `${rules}EntryCondition`, conditionRules: [viewableRule]},
+      true,
+    ],
+  ])('%s %s', async (_verb, _case, selectionCondition, shown) => {
+    const {host, unmount} = await openWith({condition: selectionCondition});
+
+    expect(
+      host.querySelector('[slot="secondary-actions"] craft-button') !== null
+    ).toBe(shown);
+
+    unmount();
+  });
+
+  it('stays away when the user can’t save the section’s entries', async () => {
+    window.Craft!.creatableSections[0].canSave = false;
+
+    const {host, unmount} = await openWith({});
+
     expect(
       host.querySelector('[slot="secondary-actions"] craft-button')
     ).toBeNull();
+
+    unmount();
+  });
+
+  it('stays away on a section the user can’t save entries in, even when another one can', async () => {
+    const authors = window.Craft!.creatableSections[0];
+    authors.canSave = false;
+    window.Craft!.creatableSections.push({
+      ...authors,
+      id: 5,
+      uid: 'def',
+      handle: 'books',
+      name: 'Books',
+      canSave: true,
+    });
+    const books = {
+      type: 'native',
+      key: 'section:def',
+      label: 'Books',
+      data: {handle: 'books'},
+    };
+
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source, books]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    expect(
+      host.querySelector('[slot="secondary-actions"] craft-button')
+    ).toBeNull();
+
+    stub.emit!('source-change', books);
+    await nextTick();
+
+    expect(
+      host
+        .querySelector('[slot="secondary-actions"] craft-button')
+        ?.textContent?.trim()
+    ).toBe('New Books entry');
+
+    unmount();
+  });
+
+  it('offers only the entry types the selection condition allows', async () => {
+    window.Craft!.creatableSections[0].entryTypes.push({
+      uid: 'type-b',
+      id: 9,
+      handle: 'editor',
+      name: 'Editor',
+      icon: null,
+    });
+    window.Craft!.creatableSections[0].entryTypeIdsBySite[2].push(9);
+
+    const {host, unmount} = await openWith({
+      condition: condition([
+        {
+          class: `${rules}TypeConditionRule`,
+          operator: 'in',
+          values: ['type-b'],
+        },
+      ]),
+    });
+
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    expect(creation.post.mock.calls[0]![1]).toMatchObject({type: 'editor'});
+
+    unmount();
+  });
+
+  it('chooses the saved entry only once it meets the selection condition', async () => {
+    const onSelect = vi.fn();
+    const selectionCondition = condition([
+      {class: `${rules}TypeConditionRule`, operator: 'in', values: ['type-a']},
+    ]);
+    const {host, unmount} = await openWith({
+      onSelect,
+      condition: selectionCondition,
+      referenceElementId: 7,
+    });
+
+    creation.post.mockResolvedValueOnce({
+      data: {entry: {id: 21, draftId: 5}},
+    });
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+
+    creation.post.mockResolvedValueOnce({data: {matches: false}});
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    await vi.waitFor(() => expect(creation.showError).toHaveBeenCalled());
+
+    expect(creation.post.mock.calls[1]![1]).toMatchObject({
+      elementId: 21,
+      siteId: 2,
+      selectionCondition,
+      referenceElementId: 7,
+    });
+    expect(creation.showError).toHaveBeenCalledWith(
+      '“Jane Austen” was saved, but it can’t be selected here.'
+    );
+    expect(onSelect).not.toHaveBeenCalled();
+
+    creation.post.mockResolvedValueOnce({data: {matches: true}});
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    await vi.waitFor(() => expect(onSelect).toHaveBeenCalled());
+
+    expect(onSelect).toHaveBeenCalledWith(
+      [expect.objectContaining({id: 21, siteId: 2})],
+      {}
+    );
 
     unmount();
   });

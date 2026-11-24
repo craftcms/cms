@@ -181,6 +181,13 @@ export default class CraftDialog extends LitElement {
    */
   @property({type: Boolean, reflect: true}) resizable = false;
 
+  /**
+   * Remembers a `resizable` dialog's size in local storage under this key, so
+   * the next dialog with the same key opens at it. Give each kind of dialog
+   * its own key.
+   */
+  @property({attribute: 'storage-key'}) storageKey = '';
+
   /** The size the grips last reported, or `null`s for the surface's own. */
   @state() private resizedSize: ResizeGripsSize = {width: null, height: null};
 
@@ -265,6 +272,7 @@ export default class CraftDialog extends LitElement {
           ? html`<div class="frame">
               ${this.#renderSurface()}
               <craft-resize-grips
+                storage-key=${this.storageKey}
                 @craft-resize=${this.#onResize}
               ></craft-resize-grips>
             </div>`
