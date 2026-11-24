@@ -76,7 +76,7 @@ Craft builds one driver instance per transformer.
 
 6.0.0-beta.1 and beta.2 set transformers with an `asset_transformer` key on disks in `config/filesystems.php`. Craft still reads
 it, after a volume's Asset Transformer setting and before the `defaultTransformer`, and logs a deprecation warning. Its `has_urls`
-setting is ignored. Move the value to the volume's setting or to the `assetTransformers` setting, then remove the key.
+setting still applies, and still defaults to `false` when `output_disk` is set. Move the value to the volume's setting or to the `assetTransformers` setting, then remove the key.
 
 ### Invalid configuration
 

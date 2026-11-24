@@ -29,11 +29,14 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
     /**
      * @param  string|null  $outputDisk  The disk to store transforms on, or `null` for the volume’s own disk.
      * @param  bool  $generateBeforePageLoad  Whether to generate transforms before returning their URLs by default.
+     * @param  bool|null  $hasUrls  Whether transforms get direct URLs, set only by a disk’s deprecated
+     *                              `asset_transformer` key, or `null` to follow the volume.
      */
     public function __construct(
         private readonly ImageTransformer $imageTransformer,
         public readonly ?string $outputDisk = null,
         public readonly bool $generateBeforePageLoad = false,
+        public readonly ?bool $hasUrls = null,
     ) {}
 
     public function definition(): AssetTransformDriverDefinition

@@ -182,10 +182,17 @@ it('still reads a disk’s deprecated asset_transformer key, with a deprecation 
         ->and($craftDriver)->toBeInstanceOf(CraftAssetTransformDriver::class)
         ->and($craftDriver->outputDisk)->toBe('transforms')
         ->and($craftDriver->generateBeforePageLoad)->toBeTrue()
+        ->and($craftDriver->hasUrls)->toBeTrue()
         ->and($transformers->forVolume(Asset::factory()->createElement(['volumeId' => $chosen->id])->getVolume())->name)->toBe('craft')
+        // beta's driver-name APIs still work
+        ->and($scopedTransformer->driver)->toBe('imgix')
+        ->and($transformers->driver('imgix'))->toBe($imgix)
+        ->and($transformers->driver())->toBeInstanceOf(CraftAssetTransformDriver::class)
         ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain(
             'filesystems.disks.legacy-child.asset_transformer',
             'filesystems.disks.legacy-craft.asset_transformer',
+            AssetTransformer::class.'::$driver',
+            AssetTransformers::class.'::driver',
         );
 });
 
