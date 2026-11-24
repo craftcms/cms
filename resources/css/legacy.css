@@ -140,8 +140,12 @@ Legacy compat styles
     width: var(--c-size-icon-xs);
     aspect-ratio: 1;
     vertical-align: middle;
+    /* A selected card's header sets --c-status-ring (see card.styles.ts). */
     border: 1px solid
-      var(--_legacy-status-border, var(--c-color-neutral-border-loud));
+      var(
+        --c-status-ring,
+        var(--_legacy-status-border, var(--c-color-neutral-border-loud))
+      );
     border-radius: var(--c-radius-full);
     background: var(--_legacy-status-fill, transparent);
   }

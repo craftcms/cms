@@ -183,6 +183,20 @@ export const darkTheme = new Theme({
   lightness: 26,
 });
 
+export const stops = [
+  '50',
+  '100',
+  '200',
+  '300',
+  '400',
+  '500',
+  '600',
+  '700',
+  '800',
+  '900',
+  '950',
+];
+
 /*
   Status colors (enabled, pending, expired) are more vivid than the palette, so
   each one has its own key colors rather than a palette stop. A status dot has
@@ -224,19 +238,22 @@ const statusKeys = {
 const hexToRgb = (hex) =>
   [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
 
-function makeStatusColors(theme) {
-  const background = statusSurfaces[theme];
-  const colors = Object.entries(statusKeys[theme]).flatMap(([status, keys]) =>
-    Object.entries(keys).map(([part, key]) => {
-      const keyRatio = Math.abs(contrast(hexToRgb(key), hexToRgb(background)));
-      return new Color({
-        name: `status-${status}-${part}`,
-        colorKeys: [key],
-        colorSpace: 'OKLCH',
-        ratios: [Math.max(statusRatios[part], keyRatio)],
-      });
-    })
-  );
+/**
+ * Runs each `{name, key, ratio}` through Leonardo against one exact
+ * background. A key that already reaches its ratio is kept as it is; one that
+ * falls short is moved to the ratio in OKLCH, which keeps its hue.
+ */
+function keyedColors(background, specs) {
+  const colors = specs.map(({name, key, ratio}) => {
+    const keyRatio = Math.abs(contrast(hexToRgb(key), hexToRgb(background)));
+
+    return new Color({
+      name,
+      colorKeys: [key],
+      colorSpace: 'OKLCH',
+      ratios: [Math.max(ratio, keyRatio)],
+    });
+  });
 
   // A string background makes the theme measure against that exact color.
   return new Theme({colors, backgroundColor: background}).contrastColors
@@ -244,21 +261,46 @@ function makeStatusColors(theme) {
     .map(({name, values: [{value}]}) => ({name, value}));
 }
 
+function makeStatusColors(theme) {
+  return keyedColors(
+    statusSurfaces[theme],
+    Object.entries(statusKeys[theme]).flatMap(([status, keys]) =>
+      Object.entries(keys).map(([part, key]) => ({
+        name: `status-${status}-${part}`,
+        key,
+        ratio: statusRatios[part],
+      }))
+    )
+  );
+}
+
 export const statusColors = {
   light: makeStatusColors('light'),
   dark: makeStatusColors('dark'),
 };
 
-export const stops = [
-  '50',
-  '100',
-  '200',
-  '300',
-  '400',
-  '500',
-  '600',
-  '700',
-  '800',
-  '900',
-  '950',
-];
+/*
+  A form control's border (inputs, checkboxes, radios) is its only boundary, so
+  it needs 3:1 against what's behind it (WCAG 1.4.11). It starts from the
+  palette's slate-400 and is darkened (light) or lightened (dark) only as far as
+  it takes to reach that on the darkest or lightest backdrop a control sits on:
+  the body of a selected white card, tinted with the accent's quiet fill. A
+  selected neutral card's body is lighter in the light theme and darker in the
+  dark one, so it passes too. Tinted cards recolor their controls' borders.
+  card.browser.test.ts measures real controls in every card.
+*/
+const formControlBackdrops = {light: '#e7eefd', dark: '#1e3e83'};
+
+const slate400 = (theme) =>
+  theme.contrastColors.find(({name}) => name === 'slate').values[
+    stops.indexOf('400')
+  ].value;
+
+export const formControlColors = {
+  light: keyedColors(formControlBackdrops.light, [
+    {name: 'form-control-border', key: slate400(lightTheme), ratio: 3.2},
+  ]),
+  dark: keyedColors(formControlBackdrops.dark, [
+    {name: 'form-control-border', key: slate400(darkTheme), ratio: 3.2},
+  ]),
+};

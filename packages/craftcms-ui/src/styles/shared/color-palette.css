@@ -256,13 +256,14 @@
   --color-base-800: #313e49;
   --color-base-900: #1f2934;
   --color-base-950: #10151b;
-  /* Status colors */
+  /* Status and form control colors */
   --color-status-enabled-fill: #00965c;
   --color-status-enabled-text: #007a4a;
   --color-status-pending-fill: #0087de;
   --color-status-pending-text: #016db4;
   --color-status-expired-fill: #ff002f;
   --color-status-expired-text: #d50026;
+  --color-form-control-border: #7a8592;
   /* Static colors */
 
   --color-static-gray-50: #d3d6dc;
@@ -784,11 +785,12 @@
   --color-base-800: #f4f7fc;
   --color-base-900: #ffffff;
   --color-base-950: #ffffff;
-  /* Status colors */
+  /* Status and form control colors */
   --color-status-enabled-fill: #00ffa1;
   --color-status-enabled-text: #00ffa1;
   --color-status-pending-fill: #009dff;
   --color-status-pending-text: #61b5ff;
   --color-status-expired-fill: #ff5656;
   --color-status-expired-text: #ff8f88;
+  --color-form-control-border: #87929f;
 }
