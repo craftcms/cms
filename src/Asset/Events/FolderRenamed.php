@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -39,6 +40,6 @@ class FolderRenamed implements ShouldDispatchAfterCommit
 
         $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
 
-        return [$volume->sourceDisk()->url($path)];
+        return [Html::encodeSpaces($volume->sourceDisk()->url($path))];
     }
 }

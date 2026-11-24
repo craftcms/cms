@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Events;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\AssetFileChange;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -47,6 +48,6 @@ class AssetFileChanged implements ShouldDispatchAfterCommit
 
         $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
 
-        return [$this->oldVolume->sourceDisk()->url($path)];
+        return [Html::encodeSpaces($this->oldVolume->sourceDisk()->url($path))];
     }
 }

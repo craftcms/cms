@@ -438,7 +438,11 @@ class Releases
         try {
             [$publishedRelease, $failedRelease, $publicationFailure] = $this->publishReleaseInTransaction($release, $scheduledExecution, $actor);
         } catch (Throwable $exception) {
-            $this->failStrandedPublication($release->id, $exception);
+            $this->failStrandedPublication(
+                $release->id,
+                $exception,
+                $release->status === ReleaseStatus::Scheduled ? $release->publishedAt : null,
+            );
 
             throw $exception;
         }
@@ -526,7 +530,7 @@ class Releases
      * the transaction early, such as a MySQL statement with an implicit commit, the release would otherwise stay
      * Publishing, and nothing can publish, schedule or delete a release in that status.
      */
-    private function failStrandedPublication(int $releaseId, Throwable $exception): void
+    private function failStrandedPublication(int $releaseId, Throwable $exception, ?DateTimeInterface $scheduledFor): void
     {
         $release = Release::query()->find($releaseId);
 
@@ -540,6 +544,11 @@ class Releases
             report($transitionException);
 
             return;
+        }
+
+        // A scheduled release that fails stops being scheduled
+        if ($scheduledFor !== null) {
+            event(new ReleaseUnscheduled($release, $scheduledFor));
         }
 
         $this->notifyPublicationFailure($release, $exception);

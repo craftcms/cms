@@ -25,7 +25,7 @@ beforeEach(function () {
     config()->set('filesystems.disks.change-events-disk', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/asset-change-events'),
-        'url' => 'https://cdn.example.test/media',
+        'url' => 'https://cdn.example.test/media files',
     ]);
     $this->disk = Storage::disk('change-events-disk');
     $this->disk->deleteDirectory('');
@@ -72,7 +72,7 @@ it('reports a replaced file with its old URL', function () {
     expect($changed)->toHaveCount(1)
         ->and($changed[0]->change)->toBe(AssetFileChange::Replaced)
         ->and($changed[0]->oldPath)->toBe('My Photos/a b.jpg')
-        ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media/My%20Photos/a%20b.jpg'])
+        ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg'])
         ->and($changed[0]->asset->getFilename())->toBe('new-name.jpg');
 });
 
@@ -86,7 +86,7 @@ it('reports a moved file with its old URL, and nothing for new assets', function
     $changed = ($this->of)(AssetFileChanged::class);
     expect($changed)->toHaveCount(1)
         ->and($changed[0]->change)->toBe(AssetFileChange::Moved)
-        ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media/My%20Photos/a%20b.jpg'])
+        ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg'])
         ->and($changed[0]->asset->getPath())->toBe('a-b.jpg');
 });
 
@@ -112,7 +112,7 @@ it('reports deleted files unless the file is kept', function () {
     $changed = ($this->of)(AssetFileChanged::class);
     expect($changed)->toHaveCount(1)
         ->and($changed[0]->change)->toBe(AssetFileChange::Deleted)
-        ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media/My%20Photos/a%20b.jpg']);
+        ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg']);
 });
 
 it('reports a file restored from the trash at the URL it was deleted from', function () {
@@ -133,7 +133,7 @@ it('reports a file restored from the trash at the URL it was deleted from', func
         $changed = ($this->of)(AssetFileChanged::class);
         expect($changed)->toHaveCount(1)
             ->and($changed[0]->change)->toBe(AssetFileChange::Restored)
-            ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media/My%20Photos/a%20b.jpg'])
+            ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg'])
             ->and($this->disk->exists('My Photos/a b.jpg'))->toBeTrue();
     } finally {
         Cms::config()->trashedAssetDisk(null);
@@ -174,5 +174,5 @@ it('reports a renamed folder’s old URL prefix', function () {
     expect($renamed)->toHaveCount(1)
         ->and($renamed[0]->oldPath)->toBe('My Photos/')
         ->and($renamed[0]->folder->path)->toBe('Trips/')
-        ->and($renamed[0]->prefixes())->toBe(['https://cdn.example.test/media/My%20Photos/']);
+        ->and($renamed[0]->prefixes())->toBe(['https://cdn.example.test/media%20files/My%20Photos/']);
 });
