@@ -35,6 +35,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -638,3 +639,34 @@ it('keeps missing field values on every site when the element is saved', functio
         $secondSite->id => '<p>Corps français</p>',
     ]);
 })->with(['changed content only' => false, 'all content' => true]);
+
+it('invalidates each cache tag once per save, including the revisions it creates', function () {
+    actingAs(User::findOne());
+
+    $section = Section::factory()->create(['enableVersioning' => true]);
+    $entry = Entry::find()->id(EntryModel::factory()->forSection($section)->create()->id)->status(null)->one();
+
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = (array) $event->tags;
+    });
+
+    $this->travel(1)->minutes();
+    $entry->title = 'Changed';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue();
+
+    $revisionIds = Entry::find()->revisionOf($entry)->status(null)->ids();
+
+    expect($revisionIds)->toHaveCount(2)
+        ->and($invalidations)->toHaveCount(1)
+        ->and($invalidations[0])->toEqualCanonicalizing([
+            'element::'.Entry::class.'::*',
+            "element::$entry->id",
+            "element::$revisionIds[0]",
+            "element::$revisionIds[1]",
+            'element::'.Entry::class.'::revisions',
+            'element::'.Entry::class."::entryType:$entry->typeId",
+            'element::'.Entry::class."::section:$section->id",
+        ]);
+});

@@ -252,6 +252,21 @@ readonly class ElementDeletions
         bool $hardDelete = false,
         bool $recordActivity = true,
     ): bool {
+        return $this->elementCaches->deferInvalidations(
+            fn () => $this->deleteElementInScope($element, $hardDelete, $recordActivity),
+        );
+    }
+
+    /**
+     * Deletes an element while cache invalidations are deferred.
+     *
+     * @see deleteElement()
+     */
+    private function deleteElementInScope(
+        ElementInterface $element,
+        bool $hardDelete,
+        bool $recordActivity,
+    ): bool {
         event($event = new ElementDeleting($element, $hardDelete));
 
         $element->hardDelete = $hardDelete || $event->hardDelete;
@@ -508,6 +523,18 @@ readonly class ElementDeletions
      * @param  ElementInterface[]  $elements
      */
     public function restoreElements(array $elements): bool
+    {
+        return $this->elementCaches->deferInvalidations(fn () => $this->restoreElementsInScope($elements));
+    }
+
+    /**
+     * Restores elements while cache invalidations are deferred.
+     *
+     * @param  ElementInterface[]  $elements
+     *
+     * @see restoreElements()
+     */
+    private function restoreElementsInScope(array $elements): bool
     {
         foreach ($elements as $element) {
             event(new ElementRestoring($element));

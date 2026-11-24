@@ -180,7 +180,7 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
             return true;
         });
 
-    $elementCaches = Mockery::mock(ElementCaches::class);
+    $elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
     $elementCaches->shouldReceive('invalidateForElement')
         ->once()
         ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): array {
@@ -223,7 +223,7 @@ function restoreElementsService(): ElementDeletions
     $search = Mockery::mock(Search::class);
     $search->shouldReceive('indexElementAttributes')->andReturn(true);
 
-    $elementCaches = Mockery::mock(ElementCaches::class);
+    $elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
     $elementCaches->shouldReceive('invalidateForElement')->andReturn([]);
 
     return app(ElementDeletions::class, [

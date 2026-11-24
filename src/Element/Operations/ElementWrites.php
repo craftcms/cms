@@ -219,7 +219,7 @@ readonly class ElementWrites
     ): void {
         event(new ElementsResaving($query));
 
-        BulkOps::ensure(function () use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
+        $this->elementCaches->deferInvalidations(fn () => BulkOps::ensure(function () use ($query, $skipRevisions, $touch, $updateSearchIndex, $continueOnError) {
             $position = 0;
 
             try {
@@ -267,7 +267,7 @@ readonly class ElementWrites
             } catch (QueryAbortedException) {
                 // Fail silently
             }
-        });
+        }));
 
         event(new ElementsResaved($query));
     }
@@ -286,7 +286,7 @@ readonly class ElementWrites
             $siteIds = array_map(fn ($siteId) => $siteId, (array) $siteIds);
         }
 
-        BulkOps::ensure(function () use ($query, $siteIds, $continueOnError) {
+        $this->elementCaches->deferInvalidations(fn () => BulkOps::ensure(function () use ($query, $siteIds, $continueOnError) {
             $position = 0;
 
             try {
@@ -338,7 +338,7 @@ readonly class ElementWrites
             } catch (QueryAbortedException) {
                 // Fail silently
             }
-        });
+        }));
 
         event(new ElementsPropagated($query));
     }

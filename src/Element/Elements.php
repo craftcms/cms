@@ -135,7 +135,7 @@ class Elements
 
     /**
      * Executes the given callback within an element save scope, which lasts until the outermost
-     * element save completes.
+     * element save completes. Cache invalidations are deferred until then.
      *
      * @internal
      *
@@ -149,7 +149,7 @@ class Elements
         $this->saveDepth++;
 
         try {
-            return $callback();
+            return $this->elementCaches->deferInvalidations($callback);
         } finally {
             if (--$this->saveDepth === 0) {
                 $this->elementTypesById = [];
@@ -861,9 +861,9 @@ class Elements
 
                 $this->touchElementAndOwners($owner);
             });
+        } else {
+            $this->elementCaches->invalidateForElement($owner);
         }
-
-        $this->elementCaches->invalidateForElement($owner);
     }
 
     /**
@@ -902,9 +902,11 @@ class Elements
             ->whereIn('id', array_keys($elements))
             ->update(['dateUpdated' => $timestamp]);
 
-        foreach ($elements as $element) {
-            $this->elementCaches->invalidateForElement($element);
-        }
+        $this->elementCaches->deferInvalidations(function () use ($elements): void {
+            foreach ($elements as $element) {
+                $this->elementCaches->invalidateForElement($element);
+            }
+        });
     }
 
     // Misc

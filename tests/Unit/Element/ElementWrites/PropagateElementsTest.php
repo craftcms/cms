@@ -115,7 +115,7 @@ beforeEach(function () {
     Facade::clearResolvedInstance(SitesService::class);
     Sites::setCurrentSite($primarySite);
 
-    $this->elementCaches = Mockery::mock(ElementCaches::class);
+    $this->elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
     $this->elements = Mockery::mock(Elements::class);
 
     $this->action = app(TestPropagateElementsWrites::class, [

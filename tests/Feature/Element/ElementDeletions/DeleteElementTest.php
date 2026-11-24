@@ -14,9 +14,14 @@ use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -252,6 +257,36 @@ it('invalidates element caches only after the delete is committed', function () 
 
     expect($this->deletions->deleteElement($entry))->toBeTrue()
         ->and($invalidationLevels)->toBe([$outerLevel]);
+});
+
+it('invalidates the caches of an element and its nested elements once', function () {
+    $blockType = EntryType::factory()->create(['hasTitleField' => true]);
+    $matrixField = Field::factory()->create([
+        'handle' => 'blocks',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $owner = EntryModel::factory()->withFieldLayout(FieldLayout::factory()->forField($matrixField))->createElement();
+    $owner->setFieldValueFromRequest('blocks', [
+        'entries' => [
+            'new1' => ['type' => $blockType->handle, 'title' => 'A'],
+            'new2' => ['type' => $blockType->handle, 'title' => 'B'],
+        ],
+        'sortOrder' => ['new1', 'new2'],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    $blockIds = $owner->getFieldValue('blocks')->status(null)->ids();
+
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = (array) $event->tags;
+    });
+
+    expect($blockIds)->toHaveCount(2)
+        ->and($this->deletions->deleteElement($owner))->toBeTrue()
+        ->and($invalidations)->toHaveCount(1)
+        ->and($invalidations[0])->toContain("element::$owner->id", "element::$blockIds[0]", "element::$blockIds[1]")
+        ->and($invalidations[0])->toBe(array_values(array_unique($invalidations[0])));
 });
 
 it('rolls back the delete when afterDelete throws', function () {

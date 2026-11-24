@@ -13,6 +13,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Support\Facades\ElementCaches as ElementCachesFacade;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\Event;
 
 class TestElementCachesElement extends Element
@@ -338,3 +339,37 @@ it('uses draft and revision invalidation tags instead of custom tags', function 
         'element::'.TestNestedElementCachesElement::class.'::revisions',
     ],
 ]);
+
+it('flushes deferred invalidations between nested operations once 500 tags are pending', function () {
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = (array) $event->tags;
+    });
+
+    $element = function (int $id): TestElementCachesElement {
+        $element = new TestElementCachesElement;
+        $element->id = $id;
+
+        return $element;
+    };
+
+    $this->elementCaches->deferInvalidations(function () use ($element, &$invalidations) {
+        $this->elementCaches->deferInvalidations(function () use ($element, &$invalidations) {
+            foreach (range(1, 499) as $id) {
+                $this->elementCaches->invalidateForElement($element($id));
+            }
+
+            expect($invalidations)->toBe([]);
+        });
+
+        $this->elementCaches->deferInvalidations(fn () => $this->elementCaches->invalidateForElement($element(500)));
+        $this->elementCaches->deferInvalidations(fn () => $this->elementCaches->invalidateForElement($element(1)));
+    });
+
+    expect($invalidations)->toHaveCount(2)
+        ->and($invalidations[0])->toBe([
+            'element::'.TestElementCachesElement::class.'::*',
+            ...array_map(fn (int $id) => "element::$id", range(1, 499)),
+        ])
+        ->and($invalidations[1])->toBe(['element::'.TestElementCachesElement::class.'::*', 'element::500', 'element::1']);
+});
