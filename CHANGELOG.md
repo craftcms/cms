@@ -70,8 +70,8 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where the `drafts_apply` MCP tool returned “Draft not found.” when the user wasn’t permitted to apply the draft. ([#21043](https://github.com/craftcms/cms/issues/21043), [#21053](https://github.com/craftcms/cms/pull/21053))
 - Fixed a bug where the `drafts_apply` MCP tool didn’t validate drafts before applying them. ([#21053](https://github.com/craftcms/cms/pull/21053))
 - Fixed a bug where comboboxes limited to their options couldn’t be cleared by deleting their text. ([#21057](https://github.com/craftcms/cms/pull/21057))
-- Fixed a bug where Link fields’ Entry settings listed two “All” sources.
-- Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options.
+- Fixed a bug where Link fields’ Entry settings listed two “All” sources. ([#21059](https://github.com/craftcms/cms/pull/21059))
+- Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
