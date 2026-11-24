@@ -10,13 +10,17 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
@@ -553,6 +557,67 @@ it('regenerates transforms of assets in a renamed folder on remote storage, whic
             ->and($disk->allFiles('_'.$volume->uid))->toBe([$newPath]);
     } finally {
         $disk->deleteDirectory('');
+    }
+});
+
+it('clears caches that depend on a renamed folder’s assets, including ones rebuilt during the rename', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Photos',
+        'path' => 'Photos/',
+    ]);
+    $subfolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $folder->id,
+        'name' => 'Trips',
+        'path' => 'Photos/Trips/',
+    ]);
+    $otherFolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Other',
+        'path' => 'Other/',
+    ]);
+    $assetIds = [
+        AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $folder->id])->id,
+        AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $subfolder->id])->id,
+    ];
+    $otherAssetId = AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $otherFolder->id])->id;
+    Storage::disk('test-disk')->makeDirectory('Photos/Trips');
+
+    // Caches the asset’s folder path the way a `{% cache %}` tag would
+    $elementCaches = app(ElementCaches::class);
+    $cache = function (int $assetId) use ($elementCaches): void {
+        $elementCaches->startCollectingCacheInfo();
+        $folderPath = Asset::find()->id($assetId)->status(null)->one()->folderPath;
+        [$dependency] = $elementCaches->stopCollectingCacheInfo();
+        DependencyCache::forever("asset-$assetId", $folderPath, $dependency);
+    };
+    array_map($cache, [...$assetIds, $otherAssetId]);
+
+    // A request made while the folder records still have their old paths caches the first asset again
+    $invalidatedIds = [];
+    Event::listen(AssetTransformsInvalidating::class, function (AssetTransformsInvalidating $event) use (&$invalidatedIds, $cache) {
+        $invalidatedIds[] = $event->asset->id;
+        if (count($invalidatedIds) === 2) {
+            $cache($invalidatedIds[0]);
+        }
+    });
+
+    try {
+        expect(DependencyCache::get("asset-{$assetIds[1]}"))->toBe('Photos/Trips/');
+
+        $this->folders->renameFolderById($folder->id, 'Albums');
+
+        expect($invalidatedIds)->toHaveCount(2)
+            ->and(DependencyCache::get("asset-{$assetIds[0]}"))->toBeNull()
+            ->and(DependencyCache::get("asset-{$assetIds[1]}"))->toBeNull()
+            ->and(DependencyCache::get("asset-$otherAssetId"))->toBe('Other/');
+    } finally {
+        Storage::disk('test-disk')->deleteDirectory('');
     }
 });
 

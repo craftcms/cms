@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
@@ -309,16 +310,17 @@ class Folders
         $oldFolderPath = (string) $folder->path;
         $this->renameDirectoryOnDisk($volume, rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
-        // Transforms are stored by folder path, so they go stale as moved assets’ do. This runs while the
-        // folder records still have their old paths.
-        Asset::find()
+        $assets = fn () => Asset::find()
             ->folderId($folder->id)
             ->includeSubfolders()
             ->site('*')
             ->unique()
             ->status(null)
-            ->cursor()
-            ->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));
+            ->cursor();
+
+        // Transforms are stored by folder path, so they go stale as moved assets’ do. This runs while the
+        // folder records still have their old paths.
+        $assets()->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));
 
         $folder->name = $newName;
         $folder->path = $newFolderPath;
@@ -354,6 +356,9 @@ class Folders
                 $this->storeFolderModel($childFolder);
             }
         }
+
+        // Clear caches holding the assets’ old URLs only now, so ones rebuilt during the rename are cleared too
+        $assets()->each(fn (Asset $asset) => app(ElementCaches::class)->invalidateForElement($asset));
 
         return $newName;
     }
