@@ -60,10 +60,10 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where the GraphQL API’s OAuth discovery metadata had the wrong URLs in headless mode and on control panel requests. ([#21029](https://github.com/craftcms/cms/pull/21029))
 - Deprecated the `$site` argument of `CraftCms\Cms\Site\Sites::getRequestPath()`. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Removed `CraftCms\Cms\Route\Routes::siteBasePaths()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
-- Added `CraftCms\Cms\Element\Drafts::saveDraftForApplying()`.
-- Fixed a bug where entries created by applying an unpublished draft via MCP didn’t get a post date. ([#21041](https://github.com/craftcms/cms/issues/21041))
-- Fixed a bug where the `drafts_apply` MCP tool returned “Draft not found.” when the user wasn’t permitted to apply the draft. ([#21043](https://github.com/craftcms/cms/issues/21043))
-- Fixed a bug where the `drafts_apply` MCP tool didn’t validate drafts before applying them.
+- Added `CraftCms\Cms\Element\Drafts::saveDraftForApplying()`. ([#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where entries created by applying an unpublished draft via MCP didn’t get a post date. ([#21041](https://github.com/craftcms/cms/issues/21041), [#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where the `drafts_apply` MCP tool returned “Draft not found.” when the user wasn’t permitted to apply the draft. ([#21043](https://github.com/craftcms/cms/issues/21043), [#21053](https://github.com/craftcms/cms/pull/21053))
+- Fixed a bug where the `drafts_apply` MCP tool didn’t validate drafts before applying them. ([#21053](https://github.com/craftcms/cms/pull/21053))
 
 ## 6.0.0-beta.2 - 2026-11-20
 
