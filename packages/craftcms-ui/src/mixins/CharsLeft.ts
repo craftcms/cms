@@ -44,7 +44,8 @@ export const charsLeftStyles = css`
 
 /**
  * Adds `show-chars-left`, which shows how many characters are left before the
- * control's `maxlength`, at the end of the control.
+ * control's `maxlength`, at the end of the control. `craft-textarea` lays it
+ * out in a row below the text instead.
  */
 export const CharsLeft = <T extends CharsLeftBase>(Base: T) => {
   class CharsLeftElement extends Base {

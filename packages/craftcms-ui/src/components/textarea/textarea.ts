@@ -47,8 +47,8 @@ export default class CraftTextarea extends CharsLeft(NativeField(LitElement)) {
       }
     `,
     inputStyles,
-    styles,
     charsLeftStyles,
+    styles,
   ];
 
   /** Maximum number of characters, applied to the native textarea's `maxLength`. */

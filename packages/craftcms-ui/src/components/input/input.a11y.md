@@ -46,7 +46,7 @@ The `FormControl` mixin does the label, help text and feedback wiring. It render
 
 ### Reflow and zoom
 
-- [x] The characters-left count never covers the text being typed. Per WCAG 1.4.10 (Reflow). Verified by `keeps typed text clear of the counter` in `show-chars-left.browser.test.ts`.
+- [x] The characters-left count never covers the text being typed. Per WCAG 1.4.10 (Reflow). Verified by `keeps typed text in craft-input clear of the counter` in `show-chars-left.browser.test.ts`.
 - [x] A `maxlength` shrinks the control to its expected width but never past its container, so a long limit doesn't push the page sideways. Per WCAG 1.4.10 (Reflow). Verified by `shrinks to fit a short maxlength` and `doesn’t outgrow its container for a long maxlength` in `input.browser.test.ts`.
 - [ ] The control's text and height scale with the text size, so the value isn't clipped at 200% zoom. Per WCAG 1.4.4 (Resize Text). Not yet verified.
 - [ ] Wide content in `prefix` or `suffix` doesn't push the control past its container at a 320px viewport. Per WCAG 1.4.10 (Reflow). Not yet verified.

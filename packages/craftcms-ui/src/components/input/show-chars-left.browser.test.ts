@@ -44,24 +44,6 @@ describe.each(['craft-input', 'craft-textarea'] as const)(
       expect(counter()!.textContent).toContain('Characters left: 7');
     });
 
-    it('keeps typed text clear of the counter', async () => {
-      const {element, control, counter} = await render(
-        tag,
-        'maxlength="1000" show-chars-left'
-      );
-      element.style.width = '300px';
-      await element.updateComplete;
-
-      const text = control.getBoundingClientRect();
-      const padding = parseFloat(getComputedStyle(control).paddingInlineEnd);
-      const number = counter()!
-        .querySelector('[aria-hidden]')!
-        .getBoundingClientRect();
-
-      expect(number.width).toBeGreaterThan(0);
-      expect(text.right - padding).toBeLessThanOrEqual(number.left);
-    });
-
     it('shows no counter without a maxlength', async () => {
       const {counter} = await render(tag, 'show-chars-left');
 
@@ -75,3 +57,41 @@ describe.each(['craft-input', 'craft-textarea'] as const)(
     });
   }
 );
+
+it('keeps typed text in craft-input clear of the counter', async () => {
+  const {element, control, counter} = await render(
+    'craft-input',
+    'maxlength="1000" show-chars-left'
+  );
+  element.style.width = '300px';
+  await element.updateComplete;
+
+  const text = control.getBoundingClientRect();
+  const padding = parseFloat(getComputedStyle(control).paddingInlineEnd);
+  const number = counter()!
+    .querySelector('[aria-hidden]')!
+    .getBoundingClientRect();
+
+  expect(number.width).toBeGreaterThan(0);
+  expect(text.right - padding).toBeLessThanOrEqual(number.left);
+});
+
+it('puts the craft-textarea counter below the textarea, inside its border', async () => {
+  const {control, counter} = await render(
+    'craft-textarea',
+    'maxlength="1000" show-chars-left'
+  );
+
+  const textarea = control.getBoundingClientRect();
+  const number = counter()!
+    .querySelector('[aria-hidden]')!
+    .getBoundingClientRect();
+  const box = counter()!.parentElement!;
+  const border = box.getBoundingClientRect();
+
+  expect(getComputedStyle(box).borderBlockEndStyle).toBe('solid');
+  expect(number.height).toBeGreaterThan(0);
+  expect(number.top).toBeGreaterThanOrEqual(textarea.bottom);
+  expect(number.bottom).toBeLessThanOrEqual(border.bottom);
+  expect(number.right).toBeLessThanOrEqual(border.right);
+});
