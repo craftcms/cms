@@ -150,6 +150,29 @@ describe('TextControl', () => {
     expect(nativeInput.autofocus).toBe(false);
   });
 
+  it('shows its prefix and suffix, and describes the input with them', async () => {
+    const nativeInput = await mountText({prefix: '€', suffix: 'kg'});
+    const input = nativeInput.closest('craft-input')!;
+    const description = (nativeInput.getAttribute('aria-describedby') ?? '')
+      .split(' ')
+      .map((id) =>
+        [...document.getElementById(id)!.querySelectorAll('*')]
+          .filter(
+            (node) =>
+              node.children.length === 0 && !node.closest('[aria-hidden]')
+          )
+          .map((node) => node.textContent?.trim())
+          .join(' ')
+      );
+
+    expect(input.querySelector('[slot="prefix"]')?.textContent).toContain('€');
+    expect(input.querySelector('[slot="suffix"]')?.textContent).toContain('kg');
+    expect(description).toEqual([
+      'Value prefixed by “€”.',
+      'Value suffixed by “kg”.',
+    ]);
+  });
+
   it("doesn't select the value when a suffix button is focused", async () => {
     const nativeInput = await mountText({selectOnFocus: true}, () =>
       h('button', {slot: 'suffix', type: 'button'}, 'Regenerate')

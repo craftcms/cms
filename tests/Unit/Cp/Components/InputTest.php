@@ -184,6 +184,15 @@ describe('suffix', function () {
         expect($html)->toContain('aria-describedby="help i-desc"');
     });
 
+    it('renders the prefix slot, described together with the suffix', function () {
+        $html = Input::make()->id('i')->prefix('€')->suffix('kg')->toHtml();
+
+        expect($html)->toContainTag('div', ['slot' => 'prefix', 'class' => 'label light', 'aria-hidden' => 'true'])
+            ->and($html)->toContain('>€</div>')
+            ->and($html)->toContain('>Value prefixed by “€”. Value suffixed by “kg”.</span>')
+            ->and($html)->toContain('aria-describedby="i-desc"');
+    });
+
     it('encodes the suffix text', function () {
         expect(Input::make()->id('i')->suffix('<b>MB</b>')->toHtml())
             ->toContain('&lt;b&gt;MB&lt;/b&gt;');
