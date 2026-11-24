@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderRenamed;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -309,6 +310,15 @@ class Folders
         $oldFolderPath = (string) $folder->path;
         $this->renameDirectoryOnDisk($volume, rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
+        // Transforms are stored by folder path, so they go stale as moved assets’ do. This runs while the
+        // folder records still have their old paths.
+        Asset::find()
+            ->folderId($folder->id)
+            ->includeSubfolders()
+            ->status(null)
+            ->cursor()
+            ->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));
+
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderModel($folder);
@@ -343,6 +353,8 @@ class Folders
                 $this->storeFolderModel($childFolder);
             }
         }
+
+        event(new FolderRenamed($folder, $oldFolderPath));
 
         return $newName;
     }

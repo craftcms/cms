@@ -304,3 +304,22 @@ it('applies volume project config that still uses the fs key', function () {
     expect(Volume::query()->where('uid', $uid)->value('disk'))->toBe('test-disk')
         ->and(collect(Deprecator::getRequestLogs())->pluck('key'))->toContain("volumes.$uid.fs");
 });
+
+it('passes the volume as it was before the save', function () {
+    $saved = [];
+    Event::listen(VolumeSaved::class, function (VolumeSaved $event) use (&$saved) {
+        $saved[] = $event;
+    });
+
+    $this->volumes->saveVolume(new VolumeData(['name' => 'Media', 'handle' => 'media', 'disk' => 'test-disk', 'subpath' => 'old']));
+    app()->forgetInstance(Volumes::class);
+    $volume = app(Volumes::class)->getVolumeByHandle('media');
+    $volume->hasUrls = true;
+    $volume->setSubpath('new');
+    app(Volumes::class)->saveVolume($volume);
+
+    expect($saved[0]->oldVolume)->toBeNull()
+        ->and($saved[1]->oldVolume->hasUrls)->toBeFalse()
+        ->and($saved[1]->oldVolume->getSubpath())->toBe('old/')
+        ->and($saved[1]->volume->getSubpath())->toBe('new/');
+});

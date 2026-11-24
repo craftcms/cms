@@ -18,9 +18,11 @@ use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Enums\AssetFileChange;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Enums\ImageOrientation;
 use CraftCms\Cms\Asset\Enums\ImageType;
+use CraftCms\Cms\Asset\Events\AssetFileChanged;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
@@ -3860,6 +3862,13 @@ CSS,
                     // NBD
                 }
             }
+
+            event(new AssetFileChanged(
+                asset: $this,
+                change: AssetFileChange::Deleted,
+                oldVolume: $this->getVolume(),
+                oldPath: $this->getPath(),
+            ));
         }
 
         if ($this->hardDelete && $this->trashedFileExists) {
@@ -4230,6 +4239,16 @@ CSS,
         if ($this->folderId) {
             // Nuke the transforms
             $this->deleteTransformData();
+        }
+
+        $hasNewFile = $this->uploadSource !== null || $tempPath !== null;
+        if ($oldVolume !== null && $oldPath !== null && ($hasNewFile || ! $sameFile)) {
+            event(new AssetFileChanged(
+                asset: $this,
+                change: $hasNewFile ? AssetFileChange::Replaced : AssetFileChange::Moved,
+                oldVolume: $oldVolume,
+                oldPath: $oldPath,
+            ));
         }
 
         // Update file properties

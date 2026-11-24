@@ -18,6 +18,8 @@ use CraftCms\Cms\Release\Activity\ReleaseOperation;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
+use CraftCms\Cms\Release\Events\ReleaseScheduled;
+use CraftCms\Cms\Release\Events\ReleaseUnscheduled;
 use CraftCms\Cms\Release\Exceptions\EarlyPublicationFailed;
 use CraftCms\Cms\Release\Exceptions\ReleaseDeletionRetry;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
@@ -330,6 +332,8 @@ class Releases
                 'lastError' => null,
             ]);
 
+            event(new ReleaseScheduled($release, $release->publishedAt));
+
             return $release->refresh();
         });
     }
@@ -344,11 +348,7 @@ class Releases
                 throw new ReleaseException(t('Only scheduled releases can be unscheduled.'));
             }
 
-            $release->transitionTo(ReleaseStatus::Draft, [
-                'publishedAt' => null,
-                'scheduledById' => null,
-                'lastError' => null,
-            ]);
+            $this->returnToDraft($release);
 
             return $release->refresh();
         });
@@ -869,11 +869,23 @@ class Releases
         $release->refresh();
 
         if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
-            $release->transitionTo(ReleaseStatus::Draft, [
-                'publishedAt' => null,
-                'scheduledById' => null,
-                'lastError' => null,
-            ]);
+            $this->returnToDraft($release);
+        }
+    }
+
+    /** Moves a scheduled release back to a draft, dispatched as unscheduled once the transaction commits. */
+    private function returnToDraft(Release $release): void
+    {
+        $publishedAt = $release->publishedAt;
+
+        $release->transitionTo(ReleaseStatus::Draft, [
+            'publishedAt' => null,
+            'scheduledById' => null,
+            'lastError' => null,
+        ]);
+
+        if ($publishedAt !== null) {
+            event(new ReleaseUnscheduled($release, $publishedAt));
         }
     }
 

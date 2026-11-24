@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\SchedulableElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
@@ -35,6 +36,7 @@ use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\ElementScheduleChanged;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -99,6 +101,7 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -123,7 +126,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(EntryRules::class)]
-class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface
+class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, SchedulableElementInterface, WorkflowableInterface
 {
     use LegacyConstants;
     use NestedElement {
@@ -1569,6 +1572,38 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
+     * @return array{postDate: DateTimeInterface|null, expiryDate: DateTimeInterface|null}
+     */
+    public function getScheduledDates(): array
+    {
+        return [
+            'postDate' => $this->postDate,
+            'expiryDate' => $this->expiryDate,
+        ];
+    }
+
+    /**
+     * @return EntryQuery<self>
+     */
+    public static function findWithScheduledDatesBetween(DateTimeInterface $after, DateTimeInterface $until): EntryQuery
+    {
+        $after = Query::prepareDateForDb($after);
+        $until = Query::prepareDateForDb($until);
+
+        return self::find()
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->where(fn (Builder $query) => $query
+                ->where(fn (Builder $query) => $query
+                    ->where('entries.postDate', '>', $after)
+                    ->where('entries.postDate', '<=', $until))
+                ->orWhere(fn (Builder $query) => $query
+                    ->where('entries.expiryDate', '>', $after)
+                    ->where('entries.expiryDate', '<=', $until)));
+    }
+
+    /**
      * Returns the entry’s section.
      *
      * ---
@@ -2817,7 +2852,15 @@ JS;
 
             // Capture the dirty attributes from the record
             $dirtyAttributes = array_keys($model->getDirty());
+            $oldScheduledDates = $isNew ? [] : [
+                'postDate' => $model->getOriginal('postDate'),
+                'expiryDate' => $model->getOriginal('expiryDate'),
+            ];
             $model->save();
+
+            if (! ElementHelper::isDraftOrRevision($this)) {
+                ElementScheduleChanged::dispatchIfChanged($this, $oldScheduledDates);
+            }
 
             // save authors
             if (isset($this->sectionId) && isset($this->_authorIds)) {

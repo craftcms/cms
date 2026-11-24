@@ -16,6 +16,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\Events\AssetTransformsInvalidated;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\ImageTransforming;
@@ -214,8 +215,34 @@ class ImageTransformer
         $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
+        if ($transformIndexes === []) {
+            return;
+        }
+
+        $transformer = $this->currentTransformer($asset);
+        $diskName = $this->outputDisk($asset, $transformer);
+        $disk = $this->transformDisk($asset, $transformer);
+        $hasUrls = $this->transformHasUrls($asset, $transformer);
+        $files = [];
+
         foreach ($transformIndexes as $transformIndex) {
-            $this->deleteImageTransformFile($asset, $transformIndex);
+            $this->deleteImageTransformFile($asset, $transformIndex, $transformer);
+
+            // Only generated transforms were served from their own URL
+            if (! $transformIndex->fileExists) {
+                continue;
+            }
+
+            $path = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $transformIndex);
+            $files[] = [
+                'disk' => $diskName,
+                'path' => $path,
+                'url' => $hasUrls ? $disk->url($path) : null,
+            ];
+        }
+
+        if ($files !== []) {
+            event(new AssetTransformsInvalidated($asset, $files));
         }
     }
 
