@@ -10,6 +10,7 @@ use Error;
 use Exception;
 use ReflectionProperty;
 use Throwable;
+use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Template;
 
@@ -101,7 +102,7 @@ readonly class TwigExceptionMapper
         }
 
         $template = new $class(Twig::get());
-        $templatePath = $this->resolveSourcePath($class) ?: $template->getSourceContext()->getName();
+        $templatePath = $this->resolveSourcePath($template, $contents) ?: $template->getSourceContext()->getName();
         $templateLine = null;
 
         if ($line !== null) {
@@ -121,17 +122,29 @@ readonly class TwigExceptionMapper
      *
      * When debug mode is off, compiled templates don't store their source path, and Twig asks the loader for it, which
      * resolves the template name for the current template mode. The template may have been rendered in another mode,
-     * so this tries the current mode first, then the others.
-     *
-     * @param  class-string<Template>  $class
+     * where the same name can resolve to a different template, so this uses the mode whose environment compiles the
+     * template name to the same class.
      */
-    private function resolveSourcePath(string $class): string
+    private function resolveSourcePath(Template $template, string $compiledCode): string
     {
-        $currentMode = TemplateMode::get();
-        $modes = [$currentMode, ...array_filter(TemplateMode::cases(), fn (TemplateMode $mode) => $mode !== $currentMode)];
+        if (! str_contains($compiledCode, 'Source::createWithLazyPath(')) {
+            return $template->getSourceContext()->getPath();
+        }
 
-        foreach ($modes as $mode) {
-            $path = TemplateMode::with($mode, fn () => new $class(Twig::get($mode))->getSourceContext()->getPath());
+        foreach (TemplateMode::cases() as $mode) {
+            $path = TemplateMode::with($mode, function () use ($mode, $template) {
+                $twig = Twig::get($mode);
+
+                try {
+                    if ($twig->getTemplateClass($template->getTemplateName()) !== $template::class) {
+                        return '';
+                    }
+                } catch (LoaderError) {
+                    return '';
+                }
+
+                return new ($template::class)($twig)->getSourceContext()->getPath();
+            });
 
             if ($path !== '') {
                 return $path;

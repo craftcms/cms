@@ -48,6 +48,29 @@ it('maps errors thrown in templates to their source template', function () {
     $this->fail('Expected the template to throw.');
 });
 
+it('maps errors to the template mode’s source template when another mode has a template with the same name', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    // The control panel has a set-password template too
+    File::put("$tempDir/set-password.twig", "Line one\n{{ 1 // 0 }}");
+    Aliases::set('@templates', $tempDir);
+
+    try {
+        app(TemplateManager::class)->renderTemplate('set-password', templateMode: TemplateMode::Site);
+    } catch (Throwable $exception) {
+        $mapped = TemplateMode::with(TemplateMode::Cp, fn () => app(TwigExceptionMapper::class)->map($exception));
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/set-password.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
 it('keeps string template filenames reportable', function () {
     app(Twig::class)->get(TemplateMode::Site)->enableStrictVariables();
 
