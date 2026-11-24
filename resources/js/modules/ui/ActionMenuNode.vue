@@ -52,5 +52,6 @@
     :label="props.node.props.label"
     :data-ui-node="props.node.uid"
     :data-focus-key="focusKey"
+    lazy
   />
 </template>
