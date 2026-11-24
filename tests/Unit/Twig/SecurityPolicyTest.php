@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\SecurityPolicy;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Macroable;
 use Ramsey\Uuid\UuidInterface;
 use Twig\Extension\SandboxExtension;
@@ -134,6 +136,15 @@ describe('AllowedInSandbox attribute', function () {
 it('rejects historically allowed functions', function (string $function) {
     $this->policy->checkSecurity([], [], [$function]);
 })->throws(SecurityNotAllowedFunctionError::class)->with(['parent', 'block', 'attribute']);
+
+it('doesn’t let sandboxed templates replace the content of safe strings', function (object $safe, string $template) {
+    expect(fn () => Template::renderSandboxedString($template, ['safe' => $safe]))
+        ->toThrow(SecurityNotAllowedMethodError::class);
+})->with([
+    'Markup constructor' => [new Markup('original', 'UTF-8'), '{% set x = safe.__construct("<script>", "UTF-8") %}{{ safe }}'],
+    'Markup::withContent()' => [new Markup('original', 'UTF-8'), '{{ safe.withContent("<script>") }}'],
+    'HtmlString constructor' => [new HtmlString('original'), '{% set x = safe.__construct("<script>") %}{{ safe }}'],
+]);
 
 /**
  * Calls every filter and function allowed in the sandbox with an object whose properties and methods the sandbox doesn’t
