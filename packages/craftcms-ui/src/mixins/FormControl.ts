@@ -219,8 +219,17 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     /** The feedback in the description, swapped when it's replaced. */
     #describedFeedback?: HTMLElement;
 
-    /** Feedback can come and go after connection, such as errors shown later. */
-    #feedbackObserver = new MutationObserver(() => this.#describeFeedback());
+    /** The `data-label` or `data-description` affix in each slot. */
+    #referencedAffixes = new Map<string, HTMLElement>();
+
+    /**
+     * Feedback and affixes can come and go after connection, such as errors
+     * shown later or a suffix a control adds once it has one.
+     */
+    #childObserver = new MutationObserver(() => {
+      this.#describeFeedback();
+      this.#referenceAffixes();
+    });
 
     /** The ids this control last wrote to each reference attribute. */
     #writtenReferences = new Map<string, string[]>();
@@ -307,7 +316,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       super.connectedCallback();
       this.#createSlots();
       this._enhanceLightDomA11y();
-      this.#feedbackObserver.observe(this, {childList: true});
+      this.#childObserver.observe(this, {childList: true});
       this._labelNode?.addEventListener('click', this.#onLabelClick);
       this.addEventListener('focusin', this.#onFocusChange);
       this.addEventListener('focusout', this.#onFocusChange);
@@ -321,7 +330,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       super.disconnectedCallback();
       this.#observer.disconnect();
       this.#observing = false;
-      this.#feedbackObserver.disconnect();
+      this.#childObserver.disconnect();
       this._labelNode?.removeEventListener('click', this.#onLabelClick);
       this.removeEventListener('focusin', this.#onFocusChange);
       this.removeEventListener('focusout', this.#onFocusChange);
@@ -534,17 +543,42 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       }
 
       this.#describeFeedback();
+      this.#referenceAffixes();
+    }
 
+    /**
+     * Adds the affixes marked `data-label` or `data-description` to the
+     * control's name or description, swapping out ones that were replaced or
+     * removed.
+     */
+    #referenceAffixes(): void {
       for (const name of ADDITIONAL_SLOTS) {
         const node = this.#slotted(name);
+        const previous = this.#referencedAffixes.get(name);
 
-        if (node?.hasAttribute('data-label')) {
+        if (node === previous) {
+          continue;
+        }
+
+        if (previous) {
+          this.removeFromAriaLabelledBy(previous);
+          this.removeFromAriaDescribedBy(previous);
+          this.#referencedAffixes.delete(name);
+        }
+
+        if (!node) {
+          continue;
+        }
+
+        if (node.hasAttribute('data-label')) {
           this.addToAriaLabelledBy(node, {idPrefix: name});
         }
 
-        if (node?.hasAttribute('data-description')) {
+        if (node.hasAttribute('data-description')) {
           this.addToAriaDescribedBy(node, {idPrefix: name});
         }
+
+        this.#referencedAffixes.set(name, node);
       }
     }
 

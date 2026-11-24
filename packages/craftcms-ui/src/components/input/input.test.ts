@@ -169,6 +169,39 @@ describe('craft-input references', () => {
     expect(described()).toBeNull();
   });
 
+  it.each(['prefix', 'suffix'])(
+    'is described by a %s marked data-description added, replaced or removed after it renders',
+    async (slot) => {
+      const element = await createInput();
+      const described = () => native(element).getAttribute('aria-describedby');
+      const affix = (text: string) => {
+        const node = document.createElement('span');
+        node.slot = slot;
+        node.dataset.description = '';
+        node.textContent = text;
+        return node;
+      };
+
+      const first = affix('kg');
+      element.append(first);
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(described()).toBe(first.id);
+
+      const second = affix('lb');
+      first.replaceWith(second);
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(described()).toBe(second.id);
+
+      second.remove();
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(described()).toBeNull();
+
+      element.append(second);
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(described()).toBe(second.id);
+    }
+  );
+
   it('drops aria-describedby once nothing describes the input', async () => {
     const element = await createInput(
       {},
