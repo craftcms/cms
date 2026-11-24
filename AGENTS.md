@@ -88,12 +88,19 @@ Follow the `releasing` skill.
 
 ### Changelog entries
 
-Follow the `changelog-entries` skill.
+Load the `changelog-entries` skill for every bug fix or feature PR, and commit
+the release notes it calls for with the change, linking the GitHub issue it
+fixes. If the skill says the change gets no entry, such as a fix for behavior
+that was never released, say why in the PR body.
 
 ### Merging pull requests
 
 When explicitly instructed to merge a PR, follow the `merging-pull-requests`
 skill. Translation files are in `src/translations/`.
+
+Never close or comment on GitHub issues or discussions on your own, including
+after merging the pull request that fixes them. Do either only when asked to
+for that issue or discussion.
 
 ### Copilot reviews
 

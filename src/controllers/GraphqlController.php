@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\elements\User;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
@@ -58,6 +57,11 @@ class GraphqlController extends Controller
     public $defaultAction = 'api';
 
     /**
+     * @var string[] The scopes of the request’s OAuth access token, once it’s authenticated
+     */
+    private array $_oauthScopes;
+
+    /**
      * @inheritdoc
      * @throws NotFoundHttpException
      */
@@ -69,6 +73,22 @@ class GraphqlController extends Controller
 
         if ($action->id === 'api') {
             $this->enableCsrfValidation = false;
+
+            // Authenticate OAuth access tokens before the base controller's checks, so their users go through the
+            // same checks as any other signed-in request, including control panel access for control panel requests.
+            // Preflight requests stay anonymous, and admins' X-Craft-Gql-Schema requests are handled by _schema().
+            // OAuth access tokens are JWTs, whereas GraphQL tokens never contain dots.
+            $bearerToken = $this->request->getBearerToken();
+            if (
+                !$this->request->getIsOptions() &&
+                !$this->request->getHeaders()->has('x-craft-gql-schema') &&
+                $bearerToken &&
+                substr_count($bearerToken, '.') === 2
+            ) {
+                $this->response->format = YiiResponse::FORMAT_JSON;
+                $this->_authenticateOAuth();
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+            }
         }
 
         if (!parent::beforeAction($action)) {
@@ -269,15 +289,10 @@ class GraphqlController extends Controller
             return $schema;
         }
 
-        // OAuth access tokens are JWTs, whereas GraphQL tokens never contain dots
-        $bearerToken = $this->request->getBearerToken();
-        if ($bearerToken && substr_count($bearerToken, '.') === 2) {
-            if (!$requestHeaders->has('x-craft-gql-token')) {
-                return $this->_oauthSchema($gqlService);
-            }
-
-            // The X-Craft-Gql-Token header’s token determines the schema, so the access token only logs the user in
-            $this->_oauthLogin();
+        // OAuth requests were authenticated by beforeAction(). When an X-Craft-Gql-Token header is present, its token
+        // determines the schema, so the access token only logs the user in.
+        if (isset($this->_oauthScopes) && !$requestHeaders->has('x-craft-gql-token')) {
+            return $gqlService->getSchemaForUser(static::currentUser(), in_array(GqlService::SCOPE_WRITE, $this->_oauthScopes, true));
         }
 
         $token = $this->_token($gqlService);
@@ -305,26 +320,11 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Authenticates the request’s OAuth access token, and returns a schema for the authenticated user.
+     * Authenticates the request’s OAuth access token, and sets its user as the identity for the request.
      *
-     * @param GqlService $gqlService
-     * @return GqlSchema
      * @throws UnauthorizedHttpException
      */
-    private function _oauthSchema(GqlService $gqlService): GqlSchema
-    {
-        $user = $this->_oauthLogin($scopes);
-        return $gqlService->getSchemaForUser($user, in_array(GqlService::SCOPE_WRITE, $scopes, true));
-    }
-
-    /**
-     * Authenticates the request’s OAuth access token, and logs its user in for the request.
-     *
-     * @param array|null $scopes The GraphQL scopes the token grants
-     * @return User
-     * @throws UnauthorizedHttpException
-     */
-    private function _oauthLogin(?array &$scopes = null): User
+    private function _authenticateOAuth(): void
     {
         $oauth = Craft::$app->getOAuth();
         $session = Craft::$app->getUser();
@@ -342,10 +342,9 @@ class GraphqlController extends Controller
             throw new UnauthorizedHttpException($e->getMessage(), previous: $e);
         }
 
-        // Log the user in for the request, so element queries and services act as them
+        // Set the user as the identity for the request, so permission checks and element queries apply to them
         $session->setIdentity($user);
-
-        return $user;
+        $this->_oauthScopes = $scopes;
     }
 
     private function _token(GqlService $gqlService): ?GqlToken

@@ -333,6 +333,45 @@ class GraphqlOAuthCest
         $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken, 'Authorization' => 'Bearer aaa.bbb.ccc'], 401);
     }
 
+    public function testControlPanelRequestsRequireControlPanelAccess(FunctionalTester $I): void
+    {
+        $cpPath = '/' . Craft::$app->getConfig()->getGeneral()->cpTrigger . '/actions/graphql/api';
+
+        $this->graphql($I, '{ ping }', $this->token($this->user([])), $cpPath, 403);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user(['accessCp'])), $cpPath)['data']);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user([])))['data']);
+
+        // GraphQL tokens don't sign anyone in, so they still work on control panel URLs
+        $gql = Craft::$app->getGql();
+        $schema = new GqlSchema(['name' => 'Test schema', 'scope' => ['sites.' . Craft::$app->getSites()->getPrimarySite()->uid . ':read']]);
+        $gql->saveSchema($schema);
+        $gqlToken = new GqlToken(['name' => 'Test token', 'schemaId' => $schema->id, 'accessToken' => StringHelper::randomString(32)]);
+        $gql->saveToken($gqlToken);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $gqlToken->accessToken, $cpPath)['data']);
+
+        // Preflight requests aren't authenticated
+        $I->haveHttpHeader('Authorization', 'Bearer aaa.bbb.ccc');
+        $I->sendAjaxRequest('OPTIONS', $cpPath);
+        $I->seeResponseCodeIs(200);
+    }
+
+    public function testOfflineRequestsRequireOfflineAccess(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $cpPath = "/$general->cpTrigger/actions/graphql/api";
+        $original = $general->isSystemLive;
+        $general->isSystemLive = false;
+
+        try {
+            $this->graphql($I, '{ ping }', $this->token($this->user([])), status: 503);
+            $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user(['accessSiteWhenSystemIsOff'])))['data']);
+            $this->graphql($I, '{ ping }', $this->token($this->user(['accessCp'])), $cpPath, 503);
+            $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user(['accessCp', 'accessCpWhenSystemIsOff'])), $cpPath)['data']);
+        } finally {
+            $general->isSystemLive = $original;
+        }
+    }
+
     public function testInvalidTokensAreRejected(FunctionalTester $I): void
     {
         $I->haveHttpHeader('Authorization', 'Bearer aaa.bbb.ccc');
@@ -358,12 +397,12 @@ class GraphqlOAuthCest
         return $user;
     }
 
-    private function graphql(FunctionalTester $I, string $query, string $token): array
+    private function graphql(FunctionalTester $I, string $query, string $token, string $path = '/actions/graphql/api', int $status = 200): array
     {
         Craft::$app->getGql()->flushCaches();
         $I->haveHttpHeader('Authorization', "Bearer $token");
-        $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => $query]));
-        $I->seeResponseCodeIs(200);
+        $I->amOnPage("$path?" . http_build_query(['query' => $query]));
+        $I->seeResponseCodeIs($status);
 
         return Json::decode($I->grabPageSource());
     }
