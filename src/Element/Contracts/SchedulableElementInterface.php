@@ -10,9 +10,9 @@ use CraftCms\Cms\Element\Events\ElementStatusChanged;
  * An element whose status changes on its own at set dates, without being saved, such as an entry going live at its
  * post date or expiring at its expiry date.
  *
- * Its element type stores each element’s date-based status, and the `craft:update-element-statuses` scheduled task
- * brings the stored statuses up to date every minute. Craft dispatches {@see ElementStatusChanged} whenever an
- * element’s status changes in a site, from a save or from that task.
+ * Its element type stores each element’s date-based status, and the `craft:update-element-statuses` command, which
+ * Craft schedules every minute, brings the stored statuses up to date. Craft dispatches {@see ElementStatusChanged}
+ * whenever an element’s status changes in a site, from a save or from that command.
  *
  * @since 6.0.0
  */
@@ -48,7 +48,7 @@ interface SchedulableElementInterface extends ElementInterface
      * didn’t replace one, such as when the element is new.
      *
      * Craft compares it with the stored status after the save, rather than one read before the save started, so a
-     * status the scheduled task updated during the save isn’t dispatched twice.
+     * status the `craft:update-element-statuses` command updated during the save isn’t dispatched twice.
      */
     public function getReplacedStoredStatus(): ?string;
 }

@@ -2149,8 +2149,9 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool Whether entry queries should filter by entries’ stored statuses rather than their dates. Stored
-     *           statuses are updated when entries are saved, and by the `craft:update-element-statuses` scheduled
-     *           task, which re-saves entries whose statuses changed while this is on.
+     *           statuses are updated when entries are saved, and by the `craft:update-element-statuses`
+     *           command, which Craft schedules every minute and which re-saves entries whose statuses changed while
+     *           this is on.
      *
      * ```php
      * ->staticStatuses()
@@ -5175,8 +5176,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Whether entry queries should filter by entries’ stored statuses rather than their dates. Stored statuses are
-     * updated when entries are saved, and by the `craft:update-element-statuses` scheduled task, which re-saves
-     * entries whose statuses changed while this is on.
+     * updated when entries are saved, and by the `craft:update-element-statuses` command, which Craft schedules
+     * every minute and which re-saves entries whose statuses changed while this is on.
      *
      * ```php
      * ->staticStatuses()

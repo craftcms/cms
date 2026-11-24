@@ -51,8 +51,8 @@ readonly class ElementStatuses
      * {@see ElementStatusChanged} for each site whose status changed. Returns how many elements’ stored statuses it
      * updated.
      *
-     * Run every minute by the `craft:update-element-statuses` scheduled task. A late or missed run is caught up by the
-     * next one, since it compares each element’s stored status with its dates.
+     * Run by the `craft:update-element-statuses` command, and every minute by the scheduler. A late or missed run
+     * is caught up by the next one, since it compares each element’s stored status with its dates.
      */
     public function updateScheduled(): int
     {
@@ -124,7 +124,7 @@ readonly class ElementStatuses
         ['statuses' => $before, 'siteId' => $siteId] = $this->statusesBeforeSave[$element];
         unset($this->statusesBeforeSave[$element]);
 
-        // The stored status may have been updated by the scheduled task after it was read above. The one the save
+        // The stored status may have been updated by a scheduled run after it was read above. The one the save
         // replaced was read under a lock, so it’s the one to compare.
         $replacedStatus = $element->getReplacedStoredStatus();
 

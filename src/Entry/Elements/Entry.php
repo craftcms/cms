@@ -1639,15 +1639,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * With the deprecated `staticStatuses` config setting on, it re-saves the entry instead, as
-     * `craft:update-statuses` does, so `ElementSaved` listeners that compare {@see $oldStatus} keep working.
+     * With the deprecated `staticStatuses` config setting on, it re-saves the entry instead, as `craft:update-statuses`
+     * did, so `ElementSaved` listeners that compare {@see $oldStatus} keep working. Entries owned by revisions are
+     * skipped, since revisions can’t be re-saved.
      */
     public static function updateStoredStatus(int $elementId): bool
     {
         if (Cms::config()->staticStatuses) {
             $entry = self::find()->id($elementId)->status(null)->one();
 
-            if ($entry instanceof self) {
+            if ($entry instanceof self && ! ElementHelper::isRevision($entry)) {
                 $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
                 $entry->resaving = true;
                 Elements::saveElement($entry, updateSearchIndex: false);

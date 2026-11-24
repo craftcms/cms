@@ -13,12 +13,12 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * live or expires, or is enabled, disabled or archived.
  *
  * It’s dispatched once for each site whose status changed, whether a save changed it or a date passed. Craft notices
- * passed dates from the `craft:update-element-statuses` scheduled task, so a status that changes because a date
- * passed is dispatched by that task’s next run.
+ * passed dates from the `craft:update-element-statuses` command, which it schedules every minute, so a status that
+ * changes because a date passed is dispatched by that command’s next run.
  *
  * Only {@see SchedulableElementInterface} element types dispatch it, and only for canonical elements, not drafts or
  * revisions. Applying a draft and propagating an element to new sites dispatch it too. Deleting and restoring an
- * element don’t; a date that passed while an element was deleted is dispatched by the task’s first run after it’s
+ * element don’t; a date that passed while an element was deleted is dispatched by the command’s first run after it’s
  * restored.
  *
  * ```php

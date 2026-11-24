@@ -9,7 +9,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Brings entries’ stored statuses up to date, so the `craft:update-element-statuses` task’s first run doesn’t
+ * Brings entries’ stored statuses up to date, so the `craft:update-element-statuses` command’s first run doesn’t
  * dispatch `ElementStatusChanged` for entries that went live or expired before the upgrade.
  */
 return new class extends Migration

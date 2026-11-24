@@ -17,6 +17,7 @@ use CraftCms\Cms\Element\Commands\Resave\ResaveEntriesCommand;
 use CraftCms\Cms\Element\Commands\Resave\ResaveUsersCommand;
 use CraftCms\Cms\Element\Commands\RestoreCommand;
 use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
+use CraftCms\Cms\Element\Commands\UpdateElementStatusesCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
 use Illuminate\Console\Scheduling\Schedule;
@@ -64,6 +65,7 @@ class ElementServiceProvider extends ServiceProvider
             }
         });
 
+        // Runs what the craft:update-element-statuses command runs, in the scheduler's process
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
             $schedule
                 ->call(fn (): int => app(ElementStatuses::class)->updateScheduled())
@@ -81,6 +83,7 @@ class ElementServiceProvider extends ServiceProvider
             DeleteAllOfTypeCommand::class,
             RestoreCommand::class,
             SyncEloquentElementsCommand::class,
+            UpdateElementStatusesCommand::class,
             ResaveAllCommand::class,
             ResaveEntriesCommand::class,
             ResaveAssetsCommand::class,

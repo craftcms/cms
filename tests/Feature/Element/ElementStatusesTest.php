@@ -27,6 +27,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 
 beforeEach(function () {
     Date::setTestNow('2026-10-01 12:00:00');
@@ -217,6 +218,44 @@ it('keeps updating other entries when one entry’s re-save fails', function () 
         expect(DB::table(Table::ENTRIES)->where('id', $failing->id)->value('status'))->toBe(Entry::STATUS_PENDING)
             ->and(DB::table(Table::ENTRIES)->where('id', $healthy->id)->value('status'))->toBe(Entry::STATUS_LIVE)
             ->and($this->changes)->toBe([[$healthy->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]]);
+    } finally {
+        app(GeneralConfig::class)->staticStatuses = false;
+    }
+});
+
+it('updates statuses from the craft:update-element-statuses command and its deprecated aliases', function (string $command) {
+    $entry = ($this->scheduledEntry)('2026-10-01 12:05:00');
+    Date::setTestNow('2026-10-01 12:06:00');
+
+    $this->artisan($command)
+        ->expectsOutputToContain('Updated 1 status.')
+        ->assertSuccessful();
+
+    expect($this->changes)->toBe([[$entry->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]]);
+})->with([
+    'craft:update-element-statuses',
+    'craft:update-statuses',
+    'craft:update-statuses/index',
+]);
+
+it('doesn’t re-save entries owned by revisions when staticStatuses is on', function () {
+    app(GeneralConfig::class)->staticStatuses = true;
+
+    try {
+        $owner = ($this->scheduledEntry)('2026-10-01 11:00:00');
+        $revisionId = app(Revisions::class)->createRevision($owner, force: true);
+        $nested = EntryModel::factory()->create([
+            'primaryOwnerId' => $revisionId,
+            'fieldId' => Field::factory()->create(['type' => Matrix::class])->id,
+            'status' => Entry::STATUS_PENDING,
+            'postDate' => '2026-10-01 11:00:00',
+        ]);
+        Exceptions::fake();
+
+        app(ElementStatuses::class)->updateScheduled();
+
+        Exceptions::assertNothingReported();
+        expect(DB::table(Table::ENTRIES)->where('id', $nested->id)->value('status'))->toBe(Entry::STATUS_PENDING);
     } finally {
         app(GeneralConfig::class)->staticStatuses = false;
     }
