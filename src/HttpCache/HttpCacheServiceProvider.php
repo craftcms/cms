@@ -18,11 +18,9 @@ class HttpCacheServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singletonIf(CachePolicy::class, DefaultCachePolicy::class);
-        $this->app->singletonIf(TagEncoder::class, DefaultTagEncoder::class);
         $this->app->singleton(HttpCacheManager::class, fn (Application $app) => new HttpCacheManager($app));
 
         $this->app->scoped(ResponseTagger::class, fn (Application $app) => new ResponseTagger(
-            $app->make(TagEncoder::class),
             $this->tagHeaderFormatter($app),
         ));
     }

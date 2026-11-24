@@ -19,7 +19,8 @@ use Symfony\Component\HttpFoundation\Response;
  * {% do ResponseTagger.addTags(['nav']) %}
  * ```
  *
- * The tags reach the response only when a tag header formatter is configured. Cache drivers read them with
+ * The tags reach the response only when a tag header formatter is configured. A driver whose cache needs other
+ * strings, such as hashed tags, converts them in its formatter and its invalidation client. Cache drivers read them with
  * {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`, at
  * {@see getExpiryDate()}.
  *
@@ -44,7 +45,6 @@ class ResponseTagger
     private ?int $expiryTimestamp = null;
 
     public function __construct(
-        private readonly TagEncoder $encoder,
         private readonly ?TagHeaderFormatter $formatter = null,
     ) {}
 
@@ -115,7 +115,7 @@ class ResponseTagger
     }
 
     /**
-     * Adds the encoded tags to the response's tag header, if a formatter is configured.
+     * Adds the tags to the response's tag header, if a formatter is configured.
      */
     public function tagResponse(Response $response): void
     {
@@ -125,7 +125,7 @@ class ResponseTagger
 
         $response->headers->set(
             $this->formatter->getTagsHeaderName(),
-            $this->formatter->getTagsHeaderValue($this->encoder->encode($this->getTags())),
+            $this->formatter->getTagsHeaderValue($this->getTags()),
             false,
         );
     }

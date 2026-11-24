@@ -369,7 +369,7 @@
 
 ##### Added
 - Added `CraftCms\Cms\HttpCache\HttpCacheManager` and `CraftCms\Cms\Support\Facades\HttpCache`, which build the FOSHttpCache invalidation clients named in `config/craft/http-cache.php`. Invalidation requests are sent through Laravel’s HTTP client, so `Http::fake()` works. ([#21032](https://github.com/craftcms/cms/pull/21032))
-- Added `CraftCms\Cms\HttpCache\ResponseTagger`, `CraftCms\Cms\Support\Facades\ResponseTagger` and `CraftCms\Cms\HttpCache\TagEncoder`. ([#21032](https://github.com/craftcms/cms/pull/21032))
+- Added `CraftCms\Cms\HttpCache\ResponseTagger` and `CraftCms\Cms\Support\Facades\ResponseTagger`. ([#21032](https://github.com/craftcms/cms/pull/21032))
 - Added `CraftCms\Cms\HttpCache\CachePolicy`, which decides what a cache may serve and store. ([#21032](https://github.com/craftcms/cms/pull/21032))
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
 
