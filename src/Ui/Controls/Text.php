@@ -29,6 +29,8 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
 
     private ?int $maxLength = null;
 
+    private bool $showCharsLeft = false;
+
     private ?string $placeholder = null;
 
     private ?string $inputMode = null;
@@ -66,6 +68,7 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
             ->max($control->props['max'] ?? null)
             ->step($control->props['step'] ?? null)
             ->maxlength($control->props['maxLength'] ?? null)
+            ->showCharsLeft((bool) ($control->props['showCharsLeft'] ?? false))
             ->placeholder($control->props['placeholder'] ?? null)
             ->inputmode($control->props['inputMode'] ?? null)
             ->autofocus((bool) ($control->props['autofocus'] ?? false))
@@ -128,6 +131,16 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
     public function maxLength(?int $maxLength): static
     {
         $this->maxLength = $maxLength;
+
+        return $this;
+    }
+
+    /**
+     * Shows how many characters are left before the `maxLength()` limit, as the value is typed.
+     */
+    public function showCharsLeft(bool $showCharsLeft = true): static
+    {
+        $this->showCharsLeft = $showCharsLeft;
 
         return $this;
     }
@@ -256,6 +269,7 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
             'max' => $this->max,
             'step' => $this->step,
             'maxLength' => $this->maxLength,
+            'showCharsLeft' => $this->showCharsLeft ?: null,
             'placeholder' => $this->placeholder,
             'inputMode' => $this->inputMode,
             'autofocus' => $this->autofocus ?: null,

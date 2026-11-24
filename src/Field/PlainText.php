@@ -192,6 +192,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, InputSche
         return $control
             ->value($context->value)
             ->maxLength($this->charLimit)
+            ->showCharsLeft($this->charLimit !== null)
             ->placeholder($this->placeholder === null ? null : t($this->placeholder, category: 'site'))
             ->monospace($this->code)
             ->enlarged($this->uiMode === 'enlarged');

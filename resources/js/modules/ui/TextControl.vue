@@ -100,6 +100,7 @@
     :max="control.props.max"
     :step="control.props.step"
     :maxlength="control.props.maxLength"
+    .showCharsLeft="control.props.showCharsLeft === true"
     :placeholder="control.props.placeholder"
     .inputMode="control.props.inputMode"
     .autofocus="autofocus"

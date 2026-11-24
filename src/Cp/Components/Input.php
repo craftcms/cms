@@ -350,8 +350,8 @@ class Input extends ViewComponent
     }
 
     /**
-     * Marks the input for the legacy chars-left counter JS, padding the input
-     * on the counter's side to make room for it.
+     * Shows how many characters are left before the `maxlength`, at the end of
+     * the input.
      */
     public function showCharsLeft(bool $showCharsLeft = true): static
     {
@@ -426,6 +426,7 @@ class Input extends ViewComponent
             'monospace' => $this->monospace,
             'inline-suffix' => $this->inlineSuffix,
             'hidden-input' => $this->hiddenInput,
+            'show-chars-left' => $this->showCharsLeft,
             // The component pushes the host properties it's given onto the
             // slotted input, and styles itself from them. The native input
             // keeps them too, for pre-upgrade correctness (form posts,
@@ -491,9 +492,6 @@ class Input extends ViewComponent
             'data' => [
                 'show-chars-left' => $this->showCharsLeft ?: null,
             ],
-            'style' => $this->showCharsLeft && $this->maxlength !== null ? [
-                'padding-'.($orientation === 'ltr' ? 'right' : 'left') => round(7.2 * strlen((string) $this->maxlength) + 14, 1).'px',
-            ] : [],
         ], $this->inputAttributes);
 
         return Html::tag('input', '', $attributes);
