@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Support\Facades\ElementCaches as ElementCachesFacade;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Contracts\Queue\Job;
@@ -512,4 +513,25 @@ it('drops a failed invalidation’s tags instead of retrying them when there are
 
     Exceptions::assertReported(fn (RuntimeException $e) => $e->getMessage() === 'Cache store failed');
     expect($this->elementCaches->hasPendingInvalidations(['element::1']))->toBeFalse();
+});
+
+it('invalidates leftover tags before a long-running process handles its next operation', function () {
+    $invalidations = recordElementCachesTagInvalidations();
+
+    try {
+        DB::transaction(function () {
+            $this->elementCaches->invalidateForElement(elementCachesTestElement(123));
+
+            throw new RuntimeException('Rolled back');
+        });
+    } catch (RuntimeException) {
+    }
+
+    expect($invalidations)->toHaveCount(0);
+
+    app(PrepareCraftForNextOperation::class)->prepare(app());
+
+    expect($invalidations)->toHaveCount(1)
+        ->and($invalidations[0])->toContain('element::123')
+        ->and($this->elementCaches->hasPendingInvalidations(['element::123']))->toBeFalse();
 });
