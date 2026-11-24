@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` objects. ([#21081](https://github.com/craftcms/cms/pull/21081))
+
 ## 5.12.2 - 2026-11-20
 
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails. ([#20742](https://github.com/craftcms/cms/pull/20742))
