@@ -88,7 +88,10 @@ Follow the `releasing` skill.
 
 ### Changelog entries
 
-Follow the `changelog-entries` skill.
+Load the `changelog-entries` skill for every bug fix or feature PR, and commit
+the release notes it calls for with the change, linking the GitHub issue it
+fixes. If the skill says the change gets no entry, such as a fix for behavior
+that was never released, say why in the PR body.
 
 ### Merging pull requests
 
