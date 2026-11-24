@@ -12,8 +12,8 @@ use Illuminate\Foundation\Events\Dispatchable;
 /**
  * Dispatched after a release is scheduled to publish at `$publishedAt`.
  *
- * A scheduled release can’t be rescheduled directly: it’s unscheduled first, which dispatches
- * {@see ReleaseUnscheduled}.
+ * Rescheduling a scheduled release unschedules it first, which dispatches {@see ReleaseUnscheduled}. A release
+ * whose publication failed can be scheduled again directly, which dispatches this event again.
  *
  * @since 6.0.0
  */

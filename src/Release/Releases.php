@@ -480,6 +480,7 @@ class Releases
             }
 
             $items = $this->lockReleaseDrafts($release);
+            $scheduledFor = $release->status === ReleaseStatus::Scheduled ? $release->publishedAt : null;
 
             if ($actor !== null && ! $actor->can('publishReleases')) {
                 throw new ReleaseException(t('You are not allowed to publish releases.'), Response::HTTP_FORBIDDEN);
@@ -507,6 +508,11 @@ class Releases
                     'lastError' => $exception->getMessage(),
                     'publishAttempts' => $release->publishAttempts + 1,
                 ]);
+
+                // A scheduled release that fails stops being scheduled
+                if ($scheduledFor !== null) {
+                    event(new ReleaseUnscheduled($release, $scheduledFor));
+                }
 
                 return [null, $release->refresh(), $exception];
             }

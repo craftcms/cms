@@ -21,7 +21,7 @@ class FolderRenamed implements ShouldDispatchAfterCommit
         /** The folder, with its new name and path */
         public VolumeFolder $folder,
         /** The folder’s path before the rename, with a trailing slash */
-        public string $oldPath,
+        public ?string $oldPath = null,
     ) {}
 
     /**
@@ -33,7 +33,7 @@ class FolderRenamed implements ShouldDispatchAfterCommit
     {
         $volume = $this->folder->getVolume();
 
-        if (! $volume->sourceHasUrls()) {
+        if ($this->oldPath === null || ! $volume->sourceHasUrls()) {
             return [];
         }
 

@@ -11,19 +11,13 @@ use DateTimeInterface;
  * An element whose status changes on its own at set dates, without being saved, such as an entry
  * going live at its post date or expiring at its expiry date.
  *
+ * Craft invalidates these elements’ caches when their dates pass, from the `craft:invalidate-scheduled-element-caches`
+ * scheduled task.
+ *
  * @since 6.0.0
  */
 interface SchedulableElementInterface
 {
-    /**
-     * Returns the dates when the element’s status changes on its own, keyed by attribute name.
-     *
-     * Past dates are included, so callers can compare a previous set with a new one.
-     *
-     * @return array<string, DateTimeInterface|null>
-     */
-    public function getScheduledDates(): array;
-
     /**
      * Returns a query for live elements with a scheduled date after `$after`, up to and including `$until`.
      */

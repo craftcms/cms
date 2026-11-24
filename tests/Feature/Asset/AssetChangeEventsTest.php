@@ -116,9 +116,9 @@ it('reports deleted files unless the file is kept', function () {
 
 it('reports deleted transform files with the URLs they were served from', function () {
     $asset = ($this->image)();
-    $url = app(AssetTransformers::class)->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
-    )->url;
+    // The URL as Craft serves it, with spaces in the folder and filename encoded
+    $url = app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->getUrl(['width' => 100]));
+    $transformFiles = $this->disk->allFiles('_'.$this->volume->uid);
     // A transform that was never generated has no file
     Queue::fake();
     app(AssetTransformers::class)->transform($asset, ['width' => 50]);
@@ -128,7 +128,9 @@ it('reports deleted transform files with the URLs they were served from', functi
 
     $invalidated = ($this->of)(AssetTransformsInvalidated::class);
     expect($invalidated)->toHaveCount(1)
+        ->and($url)->toContain('My%20Photos/')
         ->and($invalidated[0]->urls())->toBe([strtok($url, '?')])
+        ->and($transformFiles)->toBe([$invalidated[0]->files[0]['path']])
         ->and($this->disk->exists($invalidated[0]->files[0]['path']))->toBeFalse()
         ->and($invalidated[0]->files[0]['disk'])->toBe('change-events-disk');
 

@@ -36,7 +36,6 @@ use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\ElementScheduleChanged;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -1572,17 +1571,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * @return array{postDate: DateTimeInterface|null, expiryDate: DateTimeInterface|null}
-     */
-    public function getScheduledDates(): array
-    {
-        return [
-            'postDate' => $this->postDate,
-            'expiryDate' => $this->expiryDate,
-        ];
-    }
-
-    /**
      * @return EntryQuery<self>
      */
     public static function findWithScheduledDatesBetween(DateTimeInterface $after, DateTimeInterface $until): EntryQuery
@@ -2852,15 +2840,7 @@ JS;
 
             // Capture the dirty attributes from the record
             $dirtyAttributes = array_keys($model->getDirty());
-            $oldScheduledDates = $isNew ? [] : [
-                'postDate' => $model->getOriginal('postDate'),
-                'expiryDate' => $model->getOriginal('expiryDate'),
-            ];
             $model->save();
-
-            if (! ElementHelper::isDraftOrRevision($this)) {
-                ElementScheduleChanged::dispatchIfChanged($this, $oldScheduledDates);
-            }
 
             // save authors
             if (isset($this->sectionId) && isset($this->_authorIds)) {

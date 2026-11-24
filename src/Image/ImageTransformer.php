@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -237,7 +238,7 @@ class ImageTransformer
             $files[] = [
                 'disk' => $diskName,
                 'path' => $path,
-                'url' => $hasUrls ? $disk->url($path) : null,
+                'url' => $hasUrls ? Html::encodeSpaces($disk->url($path)) : null,
             ];
         }
 
