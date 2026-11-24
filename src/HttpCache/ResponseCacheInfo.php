@@ -8,14 +8,14 @@ use DateTimeImmutable;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
- * Collects the tags the current response depends on.
+ * Collects the tags the current response depends on and the earliest expiry date of its elements.
  *
  * Tags are opaque strings. Craft adds the tags of elements the request queries as they're collected, along with
  * the earliest expiry date among those elements ({@see getExpiryDate()}). Templates, controllers and plugins add
- * their own tags through the `ResponseTagger` facade, which is also a Twig global:
+ * their own tags through the `ResponseCacheInfo` facade, which is also a Twig global:
  *
  * ```twig
- * {% do ResponseTagger.addTags(['nav']) %}
+ * {% do ResponseCacheInfo.addTags(['nav']) %}
  * ```
  *
  * Craft doesn't send the tags anywhere itself. Cache integrations, such as `craftcms/http-cache` or a plugin, read
@@ -25,7 +25,7 @@ use Illuminate\Container\Attributes\Scoped;
  * @since 6.0.0
  */
 #[Scoped]
-class ResponseTagger
+class ResponseCacheInfo
 {
     /**
      * @var array<string, true>

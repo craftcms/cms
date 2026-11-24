@@ -8,17 +8,17 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \CraftCms\Cms\HttpCache\ResponseTagger addTags(string|list<string> $tags)
+ * @method static \CraftCms\Cms\HttpCache\ResponseCacheInfo addTags(string|list<string> $tags)
  * @method static list<string> getTags()
  * @method static \DateTimeImmutable|null getExpiryDate()
  *
- * @see \CraftCms\Cms\HttpCache\ResponseTagger
+ * @see \CraftCms\Cms\HttpCache\ResponseCacheInfo
  * @since 6.0.0
  */
-class ResponseTagger extends Facade
+class ResponseCacheInfo extends Facade
 {
     /**
-     * The tagger is scoped to the request, so the facade mustn't keep the first one it resolves.
+     * The instance is scoped to the request, so the facade mustn't keep the first one it resolves.
      */
     #[Override]
     protected static $cached = false;
@@ -26,6 +26,6 @@ class ResponseTagger extends Facade
     #[Override]
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\HttpCache\ResponseTagger::class;
+        return \CraftCms\Cms\HttpCache\ResponseCacheInfo::class;
     }
 }

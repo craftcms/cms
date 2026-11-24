@@ -233,7 +233,7 @@
         "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
         "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
         "ResponseHeaders": "CraftCms\\Cms\\Support\\Facades\\ResponseHeaders",
-        "ResponseTagger": "CraftCms\\Cms\\Support\\Facades\\ResponseTagger",
+        "ResponseCacheInfo": "CraftCms\\Cms\\Support\\Facades\\ResponseCacheInfo",
         "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
         "Search": "CraftCms\\Cms\\Support\\Facades\\Search",
         "Sections": "CraftCms\\Cms\\Support\\Facades\\Sections",

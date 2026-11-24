@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Collects the elements eligible responses depend on, and caps their lifetimes at the earliest element expiry.
  *
  * Global middleware, so it sees the final response. For a GET or HEAD request outside the control panel and actions,
- * it collects element tags and the earliest element expiry for the whole request. They reach the {@see ResponseTagger}
+ * it collects element tags and the earliest element expiry for the whole request. They reach the {@see ResponseCacheInfo}
  * as they're collected, so cache integrations can read them from route middleware too. If the response succeeds, it
  * caps the response's `max-age`, `s-maxage` and `Expires` at that expiry. Whether the response is stored is still up
  * to the cache, from its headers.

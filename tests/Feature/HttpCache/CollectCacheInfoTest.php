@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\EntryFactory;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Support\Facades\ResponseTagger;
+use CraftCms\Cms\Support\Facades\ResponseCacheInfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +23,7 @@ it('tags a page with the elements it queried and caps its lifetimes at the earli
 
     $response = $this->get('/page');
 
-    expect(ResponseTagger::getTags())->toContain('element', 'element::'.Entry::class)
+    expect(ResponseCacheInfo::getTags())->toContain('element', 'element::'.Entry::class)
         ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600')
         ->and($response->headers->getCacheControlDirective('s-maxage'))->toBe('600')
         ->and($response->getExpires()->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
@@ -55,7 +55,7 @@ class RecordCacheInfo
     {
         $response = $next($request);
 
-        app('test.seen')([ResponseTagger::getTags(), ResponseTagger::getExpiryDate()?->getTimestamp()]);
+        app('test.seen')([ResponseCacheInfo::getTags(), ResponseCacheInfo::getExpiryDate()?->getTimestamp()]);
 
         return $response;
     }
@@ -93,27 +93,27 @@ it('leaves lifetimes shorter than the earliest expiry alone', function () {
 
 it('collects tags added through the facade and the Twig global', function () {
     Route::get('/page', function () {
-        ResponseTagger::addTags(['from-php']);
+        ResponseCacheInfo::addTags(['from-php']);
 
-        return response(renderString("{% do ResponseTagger.addTags(['from-twig']) %}ok"));
+        return response(renderString("{% do ResponseCacheInfo.addTags(['from-twig']) %}ok"));
     });
 
     $this->get('/page');
 
-    expect(ResponseTagger::getTags())->toBe(['from-php', 'from-twig']);
+    expect(ResponseCacheInfo::getTags())->toBe(['from-php', 'from-twig']);
 });
 
 it('keeps tags added inside a cached block on a cache hit', function () {
     Route::get('/page', fn () => response(renderString(
-        "{% cache globally using key 'nav' %}{% do ResponseTagger.addTags(['nav']) %}nav{% endcache %}",
+        "{% cache globally using key 'nav' %}{% do ResponseCacheInfo.addTags(['nav']) %}nav{% endcache %}",
     )));
 
     $this->get('/page');
-    expect(ResponseTagger::getTags())->toBe(['nav']);
+    expect(ResponseCacheInfo::getTags())->toBe(['nav']);
 
     app()->forgetScopedInstances();
     $this->get('/page');
-    expect(ResponseTagger::getTags())->toContain('nav');
+    expect(ResponseCacheInfo::getTags())->toContain('nav');
 });
 
 it('only collects element tags for eligible requests', function (string $method, string $uri) {
@@ -128,7 +128,7 @@ it('only collects element tags for eligible requests', function (string $method,
 
     $this->call($method, $uri);
 
-    expect(ResponseTagger::getTags())->toBe([]);
+    expect(ResponseCacheInfo::getTags())->toBe([]);
 })->with([
     'POST' => ['POST', '/page'],
     'control panel' => ['GET', 'cp'],
