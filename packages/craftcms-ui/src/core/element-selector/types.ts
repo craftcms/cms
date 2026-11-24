@@ -49,6 +49,8 @@ export type LoadIndexBody = (
 export interface ElementIndexAdapter {
   clearSelection(): void;
   destroy?(): void;
+  refresh?(): Promise<void>;
+  selectElements?(ids: number[]): void;
 }
 
 /** Extra information about a selection, beyond the elements themselves. */

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
 use CraftCms\Cms\Asset\Events\VolumeDeleting;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
-use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
@@ -228,7 +228,7 @@ class Volumes
             ]);
 
             if ($rootFolder === null) {
-                VolumeFolderModel::create([
+                $rootFolder = new VolumeFolder([
                     'volumeId' => $volumeModel->id,
                     'parentId' => null,
                     'path' => '',
@@ -236,17 +236,19 @@ class Volumes
                 ]);
             } else {
                 $rootFolder->name = $volumeModel->name;
-                $this->folders->storeFolderModel($rootFolder);
             }
 
+            $this->folders->storeFolderModel($rootFolder);
+
+            // Clear the volume cache before committing, so listeners to after-commit events like FolderCreated can find the volume
+            $this->volumes = null;
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
+            $this->volumes = null;
             throw $e;
         }
 
-        // Clear caches
-        $this->volumes = null;
         $this->folders->reset();
 
         if ($wasTrashed) {

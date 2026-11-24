@@ -129,8 +129,15 @@
   onMounted(() => {
     props.controller.attachIndex({
       clearSelection: () => index.value?.clearSelection(),
+      refresh: async () => index.value?.refresh(),
+      selectElements: (ids: number[]) => index.value?.selectElements(ids),
     });
   });
+
+  async function showUpload({id}: {id: number}) {
+    await index.value?.refresh();
+    index.value?.selectElements([id]);
+  }
 
   onUnmounted(() => props.controller.detachIndex());
 </script>
@@ -185,7 +192,7 @@
         :folder-id="uploadTarget.folderId"
         :allowed-kinds="uploadKinds"
         :reload-on-complete="false"
-        @uploaded="({id}) => index?.refresh(id)"
+        @uploaded="showUpload"
       />
     </div>
 
