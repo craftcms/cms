@@ -946,6 +946,8 @@ class ImportPlansController
                 default => t('Edit {name} import plan', ['name' => $importPlan->name]),
             })
             ->addCrumb(t('Import'), route('craft.cp.import.index'))
+            // lets a slideout of the plan open it in a tab of its own
+            ->editUrl($importPlan->uid !== null || ! $importPlan->isEditable() ? "import/$importPlan->handle" : null)
             ->subnav($this->planNav($importPlan))
             ->formAttributes(['action' => action([self::class, 'store'])])
             ->inertiaPage('import/Edit', new ImportPlanEditViewModel(

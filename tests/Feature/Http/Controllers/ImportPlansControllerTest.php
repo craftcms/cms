@@ -806,6 +806,18 @@ it('shows a plan registered in code on a read-only page, with its runs and nothi
             ->where('runs.count', 1));
 });
 
+it('links a plan’s slideout to the plan’s own page, once the plan exists', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+
+    $this->withHeaders(['X-Craft-Container-Id' => 'slideout-1'])
+        ->getJson(route('craft.cp.import.edit', ['handle' => 'alpha']))
+        ->assertJsonPath('editUrl', Url::cpUrl('import/alpha'));
+
+    $this->withHeaders(['X-Craft-Container-Id' => 'slideout-1'])
+        ->getJson(route('craft.cp.import.create'))
+        ->assertJsonPath('editUrl', null);
+});
+
 it('opens a new plan for editing', function () {
     get(route('craft.cp.import.create'))
         ->assertOk()
