@@ -122,8 +122,9 @@ readonly class TwigExceptionMapper
      *
      * When debug mode is off, compiled templates don't store their source path, and Twig asks the loader for it, which
      * resolves the template name for the current template mode. The template may have been rendered in another mode,
-     * where the same name can resolve to a different template, so this uses the mode whose environment compiles the
-     * template name to the same class.
+     * where the same name can resolve to a different template, so this prefers the mode whose environment compiles the
+     * template name to the same class. That class also depends on settings that can change while rendering, such as
+     * the escaping strategy, so when no mode matches it, the path is used if only one mode resolves the name.
      */
     private function resolveSourcePath(Template $template, string $compiledCode): string
     {
@@ -131,26 +132,31 @@ readonly class TwigExceptionMapper
             return $template->getSourceContext()->getPath();
         }
 
+        $paths = [];
+
         foreach (TemplateMode::cases() as $mode) {
-            $path = TemplateMode::with($mode, function () use ($mode, $template) {
+            [$path, $compiledHere] = TemplateMode::with($mode, function () use ($mode, $template) {
                 $twig = Twig::get($mode);
+                $path = new ($template::class)($twig)->getSourceContext()->getPath();
 
                 try {
-                    if ($twig->getTemplateClass($template->getTemplateName()) !== $template::class) {
-                        return '';
-                    }
+                    return [$path, $twig->getTemplateClass($template->getTemplateName()) === $template::class];
                 } catch (LoaderError) {
-                    return '';
+                    return [$path, false];
                 }
-
-                return new ($template::class)($twig)->getSourceContext()->getPath();
             });
 
-            if ($path !== '') {
+            if ($path === '') {
+                continue;
+            }
+
+            if ($compiledHere) {
                 return $path;
             }
+
+            $paths[] = $path;
         }
 
-        return '';
+        return count($paths) === 1 ? $paths[0] : '';
     }
 }

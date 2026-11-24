@@ -71,6 +71,28 @@ it('maps errors to the template mode’s source template when another mode has a
     $this->fail('Expected the template to throw.');
 });
 
+it('maps errors to the source of templates included by unescaped string templates', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    File::put("$tempDir/broken-partial.twig", "Line one\n{{ 1 // 0 }}");
+    Aliases::set('@templates', $tempDir);
+
+    try {
+        app(TemplateManager::class)->renderTwigString('{% include "broken-partial" %}');
+    } catch (Throwable $exception) {
+        $mapped = app(TwigExceptionMapper::class)->map($exception);
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/broken-partial.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
 it('keeps string template filenames reportable', function () {
     app(Twig::class)->get(TemplateMode::Site)->enableStrictVariables();
 
