@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Closure;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
+use Countable;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
@@ -37,6 +38,7 @@ use craft\i18n\Locale;
 use craft\models\EntryType;
 use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
 use craft\web\twig\nodes\expressions\binaries\HasSomeBinary;
+use craft\web\twig\nodes\expressions\NonStringCoercingInputTest;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -83,6 +85,7 @@ use Reflector;
 use SimpleXMLElement;
 use SoapClient;
 use SQLite3;
+use Stringable;
 use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
@@ -323,28 +326,36 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getTests(): array
     {
+        // These tests never convert the value they test to a string, so the sandbox shouldn’t check its __toString()
+        $typeTest = ['node_class' => NonStringCoercingInputTest::class];
+
         return [
-            new TwigTest('array', fn($obj): bool => is_array($obj)),
-            new TwigTest('boolean', fn($obj): bool => is_bool($obj)),
-            new TwigTest('callable', fn($obj): bool => is_callable($obj)),
-            new TwigTest('countable', fn($obj): bool => is_countable($obj)),
-            new TwigTest('empty', function($obj): bool {
+            new TwigTest('array', fn($obj): bool => is_array($obj), $typeTest),
+            new TwigTest('boolean', fn($obj): bool => is_bool($obj), $typeTest),
+            new TwigTest('callable', fn($obj): bool => is_callable($obj), $typeTest),
+            new TwigTest('countable', fn($obj): bool => is_countable($obj), $typeTest),
+            new TwigTest('empty', function(bool $isSandboxed, $obj): bool {
                 if ($obj instanceof Model) {
                     // assume the IteratorAggregate implementation was not intentional
                     return false;
                 }
 
+                // testEmpty() only converts Stringable values to strings when they aren't countable or traversable
+                if ($isSandboxed && $obj instanceof Stringable && !$obj instanceof Countable && !$obj instanceof Traversable) {
+                    $this->environment->getExtension(SandboxExtension::class)->ensureToStringAllowed($obj);
+                }
+
                 return CoreExtension::testEmpty($obj);
-            }),
-            new TwigTest('float', fn($obj): bool => is_float($obj)),
-            new TwigTest('instance of', fn($obj, $class) => $obj instanceof $class),
-            new TwigTest('integer', fn($obj): bool => is_int($obj)),
-            new TwigTest('missing', fn($obj) => $obj instanceof MissingComponentInterface),
-            new TwigTest('numeric', fn($obj): bool => is_numeric($obj)),
-            new TwigTest('object', fn($obj): bool => is_object($obj)),
-            new TwigTest('resource', fn($obj): bool => is_resource($obj)),
-            new TwigTest('scalar', fn($obj): bool => is_scalar($obj)),
-            new TwigTest('string', fn($obj): bool => is_string($obj)),
+            }, [...$typeTest, 'needs_is_sandboxed' => true]),
+            new TwigTest('float', fn($obj): bool => is_float($obj), $typeTest),
+            new TwigTest('instance of', fn($obj, $class) => $obj instanceof $class, $typeTest),
+            new TwigTest('integer', fn($obj): bool => is_int($obj), $typeTest),
+            new TwigTest('missing', fn($obj) => $obj instanceof MissingComponentInterface, $typeTest),
+            new TwigTest('numeric', fn($obj): bool => is_numeric($obj), $typeTest),
+            new TwigTest('object', fn($obj): bool => is_object($obj), $typeTest),
+            new TwigTest('resource', fn($obj): bool => is_resource($obj), $typeTest),
+            new TwigTest('scalar', fn($obj): bool => is_scalar($obj), $typeTest),
+            new TwigTest('string', fn($obj): bool => is_string($obj), $typeTest),
         ];
     }
 
