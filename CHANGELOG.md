@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.3 - 2026-11-24
 
 - Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
 - GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
