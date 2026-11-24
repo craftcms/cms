@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '«{handle}» یک شناسه صحیح نیست.',
     '“{name}” deleted.' => '«{name}» حذف گردید.',
     '“{name}” value copied.' => 'مقدار «{name}» کپی شد.',
+    '“{name}” was saved, but it can’t be selected here.' => '«{name}» ذخیره شد، اما اینجا قابل انتخاب نیست.',
     'Deprecated' => 'منسوخ‌شده',
     '“{{entry}}” is approved' => '«{{entry}}» تأیید شد',
     'About Craft CMS' => 'درباره Craft CMS',

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\FieldContext;
 
@@ -34,6 +35,23 @@ it('offers options with icons or colors in a combobox, grouped as in its setting
         ])
         ->and($control->getValue())->toBeNull();
 });
+
+it('shows the selected option’s color or tinted icon in its preview', function (string $value, string $marker) {
+    $field = new Dropdown([
+        'options' => [
+            ['label' => 'Icon', 'value' => 'icon', 'icon' => 'star', 'color' => 'ff0000', 'default' => false],
+            ['label' => 'Color', 'value' => 'color', 'color' => '00ff00', 'default' => false],
+        ],
+    ]);
+
+    $html = $field->getPreviewHtml($field->normalizeValue($value, null), new Entry);
+
+    expect($html)->toContain($marker)
+        ->and($html)->not->toContain('color-preview');
+})->with([
+    'color' => ['color', '<craft-indicator fill="#00ff00">'],
+    'icon' => ['icon', 'style="color: #ff0000;"'],
+]);
 
 it('keeps a combobox’s own blank option selectable instead of clearable', function () {
     $field = new Dropdown([

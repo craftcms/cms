@@ -416,6 +416,8 @@ readonly class ElementHtml
      *   nested actions with `craft:nested-element-action` events for a Vue
      *   host that prepares the owner draft before handling them
      * - `showEditButton` – Whether the card should include an edit button
+     * - `showStatus` – Whether the card should show the element’s status, if it
+     *   has one to show (defaults to `true`)
      * - `sortable` – Whether the card should include a drag handle
      */
     /** @param array<string, mixed> $config */
@@ -743,7 +745,7 @@ readonly class ElementHtml
         $bodyContent = $element->getCardBodyHtml() ?? '';
 
         $labels = array_filter([
-            ($config['showStatus'] ?? false) && $config['showStatus'] && $element->showStatusIndicator() ? $this->statusHtml->componentStatusLabelHtml($element) : null,
+            $config['showStatus'] && $element->showStatusIndicator() ? $this->statusHtml->componentStatusLabelHtml($element) : null,
             $element->isProvisionalDraft || $element->hasProvisionalChanges ? $this->statusHtml->editedStatusLabelHtml() : null,
         ]);
 
@@ -855,6 +857,7 @@ readonly class ElementHtml
             'showActionMenu' => false,
             'showNestedActions' => false,
             'showEditButton' => true,
+            'showStatus' => true,
             'withThumb' => true,
             'sortable' => false,
         ];
