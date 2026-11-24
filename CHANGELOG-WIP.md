@@ -28,6 +28,7 @@
 - Double-clicking an admin table row now opens its link's slideout, if it has one.
 - Sortable checkbox selects, such as “Card Attributes”, “Table Columns”, and “Default Table Columns”, now list only the selected options, with an “Add item” menu for the rest. ([#20001](https://github.com/craftcms/cms/pull/20001), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
 - Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
 - Card view designers now preview users with a sample user’s name, default avatar, and active status.
 - Control panel error pages are now standalone pages with their own styles, so they still draw when the control panel’s assets can’t load. Front-end errors use them too when the site has no error template of its own, without the link to the control panel’s Dashboard. ([#19931](https://github.com/craftcms/cms/pull/19931))
@@ -327,7 +328,7 @@
   - `CraftCms\Cms\Asset\Events\AssetFileChanged` is dispatched after commit when an existing asset’s file is replaced, moved, deleted, or restored from the trash, with its previous volume and path. Its `urls()` method returns the URL the file was served from, or is served from again once restored.
   - `CraftCms\Cms\Image\Events\AssetTransformsInvalidated` is dispatched after commit when an asset’s generated transforms are deleted, with each file’s disk, path and URL.
   - `CraftCms\Cms\Release\Events\ReleaseScheduled` and `ReleaseUnscheduled` are dispatched after commit when a release is scheduled, or stops being scheduled without being published.
-  - `CraftCms\Cms\Asset\Events\FolderRenamed` is dispatched after commit with the folder’s previous path, and its `prefixes()` method returns the URL its files were served under.
+  - `CraftCms\Cms\Asset\Events\FolderRenamed` is dispatched after commit with the folder’s previous path, and its `prefixes()` method returns the URLs its files and their transforms were served under.
   - `CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated` has the element’s previous URI and a `urls()` method, and `CraftCms\Cms\Asset\Events\VolumeSaved` has the volume’s previous settings.
 - Plugins and applications can add tasks to `php artisan craft:up` with `CraftCms\Cms\Console\Commands\UpCommand::add()`, passing a label and an Artisan command name or a closure. Tasks run after Craft’s own, in the order they were added, and a failing task fails the command without stopping the tasks after it. Tasks’ output is shown below their task line, and closures can type-hint `Illuminate\Console\View\Components\Factory` to show warnings and other messages.
 - Added support for custom publishing workflow stage types. ([#19667](https://github.com/craftcms/cms/pull/19667))

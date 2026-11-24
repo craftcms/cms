@@ -183,12 +183,12 @@ class AssetTransformers extends Manager
         #[\SensitiveParameter] mixed $definition,
     ): AssetTransformResult {
         $request = $this->request($asset, $definition, $this->forAsset($asset));
-        $transform = $request->namedTransform !== null ? clone $request->namedTransform : $this->eventTransform($request->parameters);
+        $transform = $this->eventTransform($request->parameters, $request->namedTransform);
 
-        event($event = new TransformGenerating($asset, $transform));
+        event($event = new TransformGenerating($asset, is_array($transform) ? $transform : clone $transform));
 
         if ($event->url !== null) {
-            return $this->resultForUrl($asset, $transform, Html::encodeSpaces($event->url));
+            return $this->resultForUrl($asset, $transform, Html::encodeSpaces($event->url), $event->mimeType);
         }
 
         $result = $this->driver($request->transformer->driver)->transform($request);
@@ -199,16 +199,17 @@ class AssetTransformers extends Manager
     }
 
     /**
-     * Returns the transform that transform events get: an image transform, or the parameters when the driver gives
-     * a core parameter a type that image transforms don’t support.
+     * Returns the transform that transform events get: an image transform with the request’s parameters, keeping the
+     * named transform’s identity if there is one, or the parameters when the driver gives a core parameter a type that
+     * image transforms don’t support.
      *
      * @param  array<string, mixed>  $parameters
      * @return ImageTransform|array<string, mixed>
      */
-    private function eventTransform(array $parameters): ImageTransform|array
+    private function eventTransform(array $parameters, ?ImageTransform $namedTransform): ImageTransform|array
     {
         try {
-            return ImageTransform::fromParameters($parameters);
+            return ($namedTransform !== null ? clone $namedTransform : new ImageTransform)->setInlineParameters($parameters);
         } catch (TypeError) {
             return $parameters;
         }
@@ -219,20 +220,24 @@ class AssetTransformers extends Manager
      *
      * @param  ImageTransform|array<string, mixed>  $transform
      */
-    private function resultForUrl(Asset $asset, ImageTransform|array $transform, string $url): AssetTransformResult
+    private function resultForUrl(Asset $asset, ImageTransform|array $transform, string $url, ?string $mimeType): AssetTransformResult
     {
-        $format = $transform instanceof ImageTransform ? $transform->format : ($transform['format'] ?? null);
-        $path = parse_url($url, PHP_URL_PATH);
-        $mimeType = (is_string($format) && $format !== '' ? File::getMimeTypeByExtension("file.$format") : null)
-            ?? (is_string($path) ? File::getMimeTypeByExtension($path) : null)
-            ?? File::getMimeTypeByExtension('file.'.$asset->getExtension());
+        if ($mimeType === null) {
+            $format = $transform instanceof ImageTransform ? $transform->format : ($transform['format'] ?? null);
+            $path = parse_url($url, PHP_URL_PATH);
+            $mimeType = (is_string($format) && $format !== '' ? File::getMimeTypeByExtension("file.$format") : null)
+                ?? (is_string($path) ? File::getMimeTypeByExtension($path) : null)
+                ?? File::getMimeTypeByExtension('file.'.$asset->getExtension());
+            $mimeType = str_starts_with($mimeType ?? '', 'image/') ? $mimeType : 'image/jpeg';
+        }
+
         [$width, $height] = $transform instanceof ImageTransform
             ? ImageTransformHelper::transformedDimensions($asset, $transform)
             : [null, null];
 
         return new AssetTransformResult(
             url: $url,
-            mimeType: str_starts_with($mimeType ?? '', 'image/') ? $mimeType : 'image/jpeg',
+            mimeType: $mimeType,
             width: $width,
             height: $height,
         );

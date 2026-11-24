@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\FolderCreated;
 use CraftCms\Cms\Asset\Events\FolderCreating;
 use CraftCms\Cms\Asset\Events\FolderRenamed;
@@ -10,14 +12,25 @@ use CraftCms\Cms\Asset\Events\FolderRenaming;
 use CraftCms\Cms\Asset\Events\FoldersDeleted;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
 
 beforeEach(function () {
     $this->folders = app(Folders::class);
@@ -483,6 +496,153 @@ it('renames subfolders whose paths differ in case from the renamed folder', func
         ]);
     } finally {
         $disk->deleteDirectory('');
+    }
+});
+
+it('moves transforms of assets in a renamed folder and its subfolders on remote storage, whichever site it’s renamed from', function () {
+    // Only Laravel’s local adapter gets its transforms’ `fileExists` checked against the disk
+    Storage::extend('folders-test-remote', function ($app, array $config) {
+        $adapter = new LocalFlysystemAdapter($config['root']);
+
+        return new FilesystemAdapter(new Flysystem($adapter), $adapter, $config);
+    });
+    config()->set('filesystems.disks.remote-disk', [
+        'driver' => 'folders-test-remote',
+        'root' => storage_path('framework/testing/folders-test/remote-disk'),
+        'url' => 'https://remote.test/media',
+    ]);
+    $disk = Storage::disk('remote-disk');
+    $disk->deleteDirectory('');
+
+    $volume = Volume::factory()->create([
+        'disk' => 'remote-disk',
+        'hasUrls' => true,
+        'propagationMethod' => PropagationMethod::Custom->value,
+    ]);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Été',
+        'path' => 'Été/',
+    ]);
+    $createImage = function (string $subfolderPath) use ($volume, $folder, $disk): int {
+        $subfolder = VolumeFolderModel::factory()->create([
+            'volumeId' => $volume->id,
+            'parentId' => $folder->id,
+            'name' => basename($subfolderPath),
+            'path' => $subfolderPath,
+        ]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $subfolder->id,
+            'filename' => 'beach.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+            'dateModified' => now()->subMinute(),
+        ]);
+        $disk->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+        return $asset->id;
+    };
+    $assetIds = [$createImage('Été/Trips/'), $createImage('été/Beaches/')];
+    $transformers = app(AssetTransformers::class);
+    $transformPath = fn (int $assetId) => rawurldecode(Str::after(strtok($transformers->withImmediateTransforms(
+        fn () => $transformers->transform(Asset::find()->id($assetId)->one(), ['width' => 100])->url,
+    ), '?'), 'https://remote.test/media/'));
+
+    $indexIds = fn () => DB::table(Table::IMAGETRANSFORMINDEX)->whereIn('assetId', $assetIds)->orderBy('id')->pluck('id')->all();
+
+    try {
+        $oldPaths = array_map($transformPath, $assetIds);
+        $oldIndexIds = $indexIds();
+        expect($oldPaths[0])->toStartWith('_'.$volume->uid.'/Été/Trips/')
+            ->and($oldPaths[1])->toStartWith('_'.$volume->uid.'/été/Beaches/');
+
+        // On case-insensitive storage, `été/Beaches` is inside `Été`
+        if (! $disk->fileExists('Été/Beaches/beach.jpg')) {
+            $disk->move('été/Beaches/beach.jpg', 'Été/Beaches/beach.jpg');
+            $disk->deleteDirectory('été');
+        }
+
+        // The assets only exist in the primary site
+        $primarySite = Sites::getPrimarySite();
+        Sites::setCurrentSite(Site::factory()->create()->id);
+        $this->folders->renameFolderById($folder->id, 'Summer');
+        Sites::setCurrentSite($primarySite);
+
+        $newPaths = array_map($transformPath, $assetIds);
+
+        expect($newPaths)->toBe([
+            str_replace('/Été/', '/Summer/', $oldPaths[0]),
+            str_replace('/été/', '/Summer/', $oldPaths[1]),
+        ])
+            ->and($disk->allFiles('_'.$volume->uid))->toEqualCanonicalizing($newPaths)
+            ->and($indexIds())->toBe($oldIndexIds);
+    } finally {
+        $disk->deleteDirectory('');
+    }
+});
+
+it('clears caches that depend on a renamed folder’s assets, including ones rebuilt during the rename', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Photos',
+        'path' => 'Photos/',
+    ]);
+    $subfolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $folder->id,
+        'name' => 'Trips',
+        'path' => 'Photos/Trips/',
+    ]);
+    $otherFolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Other',
+        'path' => 'Other/',
+    ]);
+    $assetIds = [
+        AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $folder->id])->id,
+        AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $subfolder->id])->id,
+    ];
+    $otherAssetId = AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $otherFolder->id])->id;
+    Storage::disk('test-disk')->makeDirectory('Photos/Trips');
+
+    // Caches the asset’s folder path the way a `{% cache %}` tag would
+    $elementCaches = app(ElementCaches::class);
+    $cache = function (int $assetId) use ($elementCaches): void {
+        $elementCaches->startCollectingCacheInfo();
+        $folderPath = Asset::find()->id($assetId)->status(null)->one()->folderPath;
+        [$dependency] = $elementCaches->stopCollectingCacheInfo();
+        DependencyCache::forever("asset-$assetId", $folderPath, $dependency);
+    };
+    array_map($cache, [...$assetIds, $otherAssetId]);
+
+    // A request made after the files moved but before the folder records change caches the first asset again
+    $recached = false;
+    VolumeFolderModel::saving(function () use (&$recached, $cache, $assetIds) {
+        if (! $recached) {
+            $recached = true;
+            $cache($assetIds[0]);
+        }
+    });
+
+    try {
+        expect(DependencyCache::get("asset-{$assetIds[1]}"))->toBe('Photos/Trips/');
+
+        $this->folders->renameFolderById($folder->id, 'Albums');
+
+        expect($recached)->toBeTrue()
+            ->and(DependencyCache::get("asset-{$assetIds[0]}"))->toBeNull()
+            ->and(DependencyCache::get("asset-{$assetIds[1]}"))->toBeNull()
+            ->and(DependencyCache::get("asset-$otherAssetId"))->toBe('Other/');
+    } finally {
+        Storage::disk('test-disk')->deleteDirectory('');
     }
 });
 

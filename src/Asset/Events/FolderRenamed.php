@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * Dispatched after a folder is renamed, along with its subfolders and files.
  *
- * Asset events don’t fire for the files that moved with the folder. Caches can use {@see prefixes()} to purge
- * everything under the old folder’s URL.
+ * Asset events don’t fire for the files that moved with the folder, or for their transforms, which move along with
+ * it. Caches can use {@see prefixes()} to purge everything under the old folder’s URL and its transforms’ URL.
  *
  * @since 6.0.0
  */
@@ -26,20 +27,29 @@ class FolderRenamed implements ShouldDispatchAfterCommit
     ) {}
 
     /**
-     * Returns the URL prefixes the folder’s files were served from before the rename.
+     * Returns the URL prefixes the folder’s files and their transforms were served from before the rename.
      *
      * @return list<string>
      */
     public function prefixes(): array
     {
-        $volume = $this->folder->getVolume();
-
-        if ($this->oldPath === null || ! $volume->sourceHasUrls()) {
+        if ($this->oldPath === null) {
             return [];
         }
 
-        $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
+        $volume = $this->folder->getVolume();
+        $prefixes = [];
 
-        return [Html::encodeSpaces($volume->sourceDisk()->url($path))];
+        if ($volume->sourceHasUrls()) {
+            $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
+            $prefixes[] = Html::encodeSpaces($volume->sourceDisk()->url($path));
+        }
+
+        $transformPrefix = app(ImageTransformer::class)->getTransformFolderUrl($volume, $this->oldPath);
+        if ($transformPrefix !== null) {
+            $prefixes[] = $transformPrefix;
+        }
+
+        return $prefixes;
     }
 }

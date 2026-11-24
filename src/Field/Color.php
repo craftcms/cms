@@ -345,14 +345,7 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
             return '';
         }
 
-        $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-            Html::tag('div', attributes: [
-                'class' => 'color-preview',
-                'style' => [
-                    'background-color' => $value->getHex(),
-                ],
-            ]).
-            Html::endTag('div');
+        $html = Html::tag('craft-indicator', '', ['fill' => $value->getHex()]);
 
         if (isset($value->label)) {
             $html .= Html::tag('span', Html::encode($value->label), ['class' => 'colorhex']);
@@ -360,7 +353,7 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
             $html .= Html::tag('div', $value->getHex(), ['class' => ['colorhex', 'code']]);
         }
 
-        return $html;
+        return Html::tag('div', $html, ['class' => ['flex', 'flex-inline', 'items-center', 'gap-sm']]);
     }
 
     #[Override]

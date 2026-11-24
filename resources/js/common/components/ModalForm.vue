@@ -52,6 +52,7 @@
     :height="height"
     :max-height="maxHeight"
     :resizable="resizable"
+    :storage-key="storageKey"
     :hold-height="holdHeight"
     :dismissible="dismissible"
     :restore-focus="restoreFocus"

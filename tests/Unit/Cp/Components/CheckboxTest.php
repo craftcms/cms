@@ -104,15 +104,14 @@ describe('label', function () {
         $html = Checkbox::make()->id('cb')->label('Red')->icon('circle')->color('red')->toHtml();
 
         expect($html)->toContain('cp-icon puny')
-            ->and($html)->toContain('--icon-color: red;')
+            ->and($html)->toContain('style="color: red;"')
             ->and($html)->toContain('<span>Red</span>');
     });
 
     it('renders a color swatch without an icon', function () {
         $html = Checkbox::make()->id('cb')->label('Red')->color('red')->toHtml();
 
-        expect($html)->toContain('color-preview')
-            ->and($html)->toContain('background-color: red');
+        expect($html)->toContainTag('craft-indicator', ['fill' => 'red']);
     });
 
     it('renders markdown info beside the label', function () {

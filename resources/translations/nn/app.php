@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '«{handle}» er ikkje ein gyldig handle.',
     '“{name}” deleted.' => '«{name}» sletta.',
     '“{name}” value copied.' => 'Verdien for «{name}» er kopiert.',
+    '“{name}” was saved, but it can’t be selected here.' => '«{name}» vart lagra, men kan ikkje veljast her.',
     'Deprecated' => 'Utfasa',
     '“{{entry}}” is approved' => '«{{entry}}» er godkjend',
     'About Craft CMS' => 'Om Craft CMS',

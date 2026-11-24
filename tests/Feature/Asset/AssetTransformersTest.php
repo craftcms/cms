@@ -143,6 +143,46 @@ it('gives listener-provided transform URLs the transform’s dimensions and form
         ->and($result->mimeType)->toBe('image/webp');
 });
 
+it('gives transform event listeners the driver’s named transform parameters without letting them change the result', function () {
+    registerDriver('disk-driver', parameterRules: ['width' => ['integer']]);
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'Card',
+        'handle' => 'card',
+        'width' => 400,
+        'parameters' => ['disk-driver' => ['width' => 100]],
+    ]));
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver'], [
+        'filename' => 'photo.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $seen = [];
+    Event::listen(TransformGenerating::class, function (TransformGenerating $event) use (&$seen) {
+        $seen = [$event->transform->handle, $event->transform->width];
+        $event->transform->width = 50;
+        $event->transform->format = 'png';
+        $event->url = 'https://cdn.example.com/photo.jpg?w=100';
+    });
+
+    $result = app(AssetTransformers::class)->transform($asset, ['transform' => 'card']);
+
+    expect($seen)->toBe(['card', 100])
+        ->and($result->width)->toBe(100)
+        ->and($result->height)->toBe(50)
+        ->and($result->mimeType)->toBe('image/jpeg');
+});
+
+it('uses the MIME type a transform event listener gives with its URL', function () {
+    registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver'], ['filename' => 'brochure.pdf']);
+    Event::listen(TransformGenerating::class, function (TransformGenerating $event) {
+        $event->url = 'https://cdn.example.com/brochure.pdf?page=1';
+        $event->mimeType = 'image/avif';
+    });
+
+    expect(app(AssetTransformers::class)->transform($asset, ['width' => 100])->mimeType)->toBe('image/avif');
+});
+
 it('doesn’t let transform event listeners change named transforms', function () {
     registerDriver('disk-driver');
     app(ImageTransforms::class)->saveTransform(new ImageTransform([

@@ -167,12 +167,20 @@ it('reports deleted transform files with the URLs they were served from', functi
     expect(($this->of)(AssetTransformsInvalidated::class))->toHaveCount(0);
 });
 
-it('reports a renamed folder’s old URL prefix', function () {
+it('reports a renamed folder’s old URL prefixes, including its transforms’', function () {
+    $asset = ($this->image)();
+    // The transform URL as Craft served it before the rename
+    $transformUrl = strtok(app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->getUrl(['width' => 100])), '?');
+
     app(Folders::class)->renameFolderById($this->folderModel->id, 'Trips');
 
     $renamed = ($this->of)(FolderRenamed::class);
+    $prefixes = $renamed[0]->prefixes();
     expect($renamed)->toHaveCount(1)
         ->and($renamed[0]->oldPath)->toBe('My Photos/')
         ->and($renamed[0]->folder->path)->toBe('Trips/')
-        ->and($renamed[0]->prefixes())->toBe(['https://cdn.example.test/media%20files/My%20Photos/']);
+        ->and($prefixes)->toHaveCount(2)
+        ->and($prefixes[0])->toBe('https://cdn.example.test/media%20files/My%20Photos/')
+        ->and($transformUrl)->toStartWith($prefixes[1])
+        ->and($prefixes[1])->toEndWith('/My%20Photos/');
 });
