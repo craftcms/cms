@@ -3903,6 +3903,13 @@ CSS,
     {
         if ($this->trashedFileExists) {
             $this->restoreFileFromTrash();
+
+            event(new AssetFileChanged(
+                asset: $this,
+                change: AssetFileChange::Restored,
+                oldVolume: $this->getVolume(),
+                oldPath: $this->getPath(),
+            ));
         }
 
         parent::afterRestore();

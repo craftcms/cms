@@ -324,7 +324,7 @@
 - Added support for defining standard plugin settings pages with the control panel UI system, via `CraftCms\Cms\Plugin\Plugin::settingsUi()`. ([#19439](https://github.com/craftcms/cms/pull/19439))
 - Added support for plugins to register Laravel scheduled tasks that run via `php artisan schedule:run`.
 - Added events that caches and CDN integrations can use to purge stale content. Events dispatched after commit aren’t dispatched at all for rolled-back changes.
-  - `CraftCms\Cms\Asset\Events\AssetFileChanged` is dispatched after commit when an existing asset’s file is replaced, moved or deleted, with its previous volume and path. Its `urls()` method returns the URL the file was served from.
+  - `CraftCms\Cms\Asset\Events\AssetFileChanged` is dispatched after commit when an existing asset’s file is replaced, moved, deleted, or restored from the trash, with its previous volume and path. Its `urls()` method returns the URL the file was served from, or is served from again once restored.
   - `CraftCms\Cms\Image\Events\AssetTransformsInvalidated` is dispatched after commit when an asset’s generated transforms are deleted, with each file’s disk, path and URL.
   - `CraftCms\Cms\Release\Events\ReleaseScheduled` and `ReleaseUnscheduled` are dispatched after commit when a release is scheduled, or stops being scheduled without being published.
   - `CraftCms\Cms\Asset\Events\FolderRenamed` is dispatched after commit with the folder’s previous path, and its `prefixes()` method returns the URL its files were served under.

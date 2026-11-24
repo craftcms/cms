@@ -13,6 +13,9 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * It fires once per asset, and only when the asset had generated transform files. Caches can use {@see urls()} to
  * purge the URLs the deleted transforms were served from.
  *
+ * The files are deleted before the change is committed. If it’s rolled back after that, this isn’t dispatched, even
+ * though the files are already gone.
+ *
  * @since 6.0.0
  */
 class AssetTransformsInvalidated implements ShouldDispatchAfterCommit

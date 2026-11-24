@@ -22,4 +22,7 @@ enum AssetFileChange: string
 
     /** The file was deleted or moved to the trash. */
     case Deleted = 'deleted';
+
+    /** The file was moved back from the trash when its asset was restored, to the location it was deleted from. */
+    case Restored = 'restored';
 }

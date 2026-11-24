@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidated;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Support\Facades\DB;
@@ -112,6 +113,32 @@ it('reports deleted files unless the file is kept', function () {
     expect($changed)->toHaveCount(1)
         ->and($changed[0]->change)->toBe(AssetFileChange::Deleted)
         ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media/My%20Photos/a%20b.jpg']);
+});
+
+it('reports a file restored from the trash at the URL it was deleted from', function () {
+    config()->set('filesystems.disks.change-events-trash', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-change-events-trash'),
+    ]);
+    Cms::config()->trashedAssetDisk('change-events-trash');
+
+    try {
+        $asset = ($this->image)();
+        Elements::deleteElement($asset);
+        expect($this->disk->exists('My Photos/a b.jpg'))->toBeFalse();
+        $this->events = [];
+
+        expect(Elements::restoreElement(Asset::find()->id($asset->id)->trashed()->one()))->toBeTrue();
+
+        $changed = ($this->of)(AssetFileChanged::class);
+        expect($changed)->toHaveCount(1)
+            ->and($changed[0]->change)->toBe(AssetFileChange::Restored)
+            ->and($changed[0]->urls())->toBe(['https://cdn.example.test/media/My%20Photos/a%20b.jpg'])
+            ->and($this->disk->exists('My Photos/a b.jpg'))->toBeTrue();
+    } finally {
+        Cms::config()->trashedAssetDisk(null);
+        Storage::disk('change-events-trash')->deleteDirectory('');
+    }
 });
 
 it('reports deleted transform files with the URLs they were served from', function () {
