@@ -25,6 +25,7 @@
 - Fixed a bug where error pages got the cache headers that the failed page queued. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where `ResponseHeaders::noCache()` overrode cache headers set after it, such as by a later `{% expires %}` tag. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
+- Fixed a bug where renaming an asset folder left its assets’ image transforms behind, and transform URLs on non-local disks pointed to files that didn’t exist. ([#21049](https://github.com/craftcms/cms/pull/21049))
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
