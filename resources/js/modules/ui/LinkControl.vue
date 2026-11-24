@@ -216,8 +216,8 @@
         class="craft-link-popover"
         :for="buttonId"
         placement="bottom-start"
-        @craft-show="onShow"
-        @craft-after-show="onAfterShow"
+        @craft-show.self="onShow"
+        @craft-after-show.self="onAfterShow"
       >
         <div slot="content" class="p-2">
           <craft-link-field
