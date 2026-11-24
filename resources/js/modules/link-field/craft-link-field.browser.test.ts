@@ -538,7 +538,7 @@ describe('a linked element', () => {
     }
   });
 
-  it('fetches afresh when it’s saved again while an earlier fetch is waiting', async () => {
+  it('draws only the latest fetch when it’s saved again while an earlier one is waiting', async () => {
     const responses: Array<(response: unknown) => void> = [];
     const post = vi.spyOn(actionClient, 'post').mockImplementation(
       () =>
@@ -546,8 +546,8 @@ describe('a linked element', () => {
           responses.push(settle);
         }) as never
     );
-    const respond = (label: string, fill: string) =>
-      responses.shift()!({
+    const respond = (request: number, label: string, fill: string) =>
+      responses[request]!({
         data: {
           elements: [
             {
@@ -566,8 +566,12 @@ describe('a linked element', () => {
       broadcast({event: 'saveElement', id: 12});
       await expect.poll(() => post.mock.calls.length).toBe(2);
 
-      respond('Pending', 'blue');
-      respond('Live', 'green');
+      respond(1, 'Live', 'green');
+      await expect
+        .element(page.getByRole('img', {name: 'Status: Live'}))
+        .toBeVisible();
+      respond(0, 'Pending', 'blue');
+      await new Promise((settle) => setTimeout(settle));
 
       await expect
         .element(page.getByRole('img', {name: 'Status: Live'}))
@@ -699,6 +703,41 @@ describe('a linked element', () => {
       expect.objectContaining({elementIds: [13], siteId: 1})
     );
     post.mockRestore();
+  });
+
+  it('fetches a chip again when its element is chosen again after the fetch failed', async () => {
+    const post = vi
+      .spyOn(actionClient, 'post')
+      .mockRejectedValueOnce(new Error('Network Error'))
+      .mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 13,
+              label: 'later',
+              siteId: 1,
+              status: {fill: 'green', label: 'Live', draft: false},
+            },
+          ],
+        },
+      } as never);
+
+    try {
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        selector.createElementSelectorModal.mockClear();
+        await openMenu();
+        await page.getByRole('button', {name: 'Replace'}).click();
+        const settings = await selectorSettings();
+        settings.onSelect([{id: 13, siteId: 1, label: 'later'}]);
+        await expect.poll(() => post.mock.calls.length).toBe(attempt);
+      }
+
+      await expect
+        .element(page.getByRole('img', {name: 'Status: Live'}))
+        .toBeVisible();
+    } finally {
+      post.mockRestore();
+    }
   });
 
   it('doesn’t fetch a chip it was given in full', async () => {

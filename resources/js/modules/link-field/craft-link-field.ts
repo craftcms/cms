@@ -201,8 +201,11 @@ class CraftLinkField extends LitElement {
    */
   private elementRemoved = false;
 
-  /** The placeholder chip whose rest is being fetched, so it's fetched once. */
-  private requestedChip: string | null = null;
+  /**
+   * The placeholder chip whose rest was last fetched, so it's fetched once.
+   * Choosing the element again gives a new one, which is fetched again.
+   */
+  private requestedChip: LinkedElement | null = null;
 
   /**
    * The chips the field was given or sent out. A link given back, as a
@@ -357,18 +360,17 @@ class CraftLinkField extends LitElement {
   /** Fetches the rest of a chip the selector or a copied link only gave a label for. */
   private loadPlaceholderElement(): void {
     const element = this.chip;
-    const key = element && `${element.id}@${element.siteId}`;
 
     if (!element || !isPlaceholder(element)) {
       this.requestedChip = null;
       return;
     }
 
-    if (key === this.requestedChip) {
+    if (element === this.requestedChip) {
       return;
     }
 
-    this.requestedChip = key;
+    this.requestedChip = element;
     this.presentations.load([presentedElement(element)]).catch(() => {});
   }
 
