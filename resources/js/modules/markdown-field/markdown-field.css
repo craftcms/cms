@@ -155,6 +155,8 @@ craft-markdown-field:defined .overtype-wrapper {
  * preview that renders each line as a line of its own, so the two are stacked
  * in one grid cell and the taller sets the height: the preview's text, or the
  * textarea's `rows`, which sets the minimum in place of OverType's 60px floor.
+ * The footer controls get a row of their own below the text, and the cap
+ * covers both rows, so the text row shrinks to make room for the footer.
  */
 craft-markdown-field:defined .overtype-container {
   height: auto !important;
@@ -163,8 +165,10 @@ craft-markdown-field:defined .overtype-container {
 craft-markdown-field:defined .overtype-wrapper {
   display: grid !important;
   flex: 0 0 auto !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
   height: auto !important;
   min-height: 0 !important;
+  max-height: var(--markdown-field-max-height, none) !important;
 }
 
 craft-markdown-field:defined
@@ -173,7 +177,6 @@ craft-markdown-field:defined
   grid-area: 1 / 1 !important;
   position: relative !important;
   height: auto !important;
-  max-height: var(--markdown-field-max-height, none) !important;
   /* Their text is the same height; only a cap leaves either any to scroll. */
   overflow-y: hidden !important;
 }
@@ -184,11 +187,12 @@ craft-markdown-field[capped]:defined
   overflow-y: auto !important;
 }
 
+/* A row of its own below the text, so the text never runs underneath it. */
 craft-markdown-field:defined .markdown-field-footer-controls {
-  position: absolute !important;
-  inset-block-end: var(--c-spacing-md) !important;
-  inset-inline-end: var(--c-input-spacing-inline) !important;
-  z-index: 2 !important;
+  grid-area: 2 / 1 !important;
+  justify-self: end !important;
+  padding-block-end: var(--c-spacing-md) !important;
+  padding-inline-end: var(--c-input-spacing-inline) !important;
   display: flex !important;
   gap: var(--c-spacing-sm) !important;
   align-items: center !important;
