@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Запитувати користувачів у групі користувачів «{name}»',
     'Query for users' => 'Запитувати користувачів',
     'Query for volumes' => 'Запитувати томи',
+    'Query for {type}' => 'Запит: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Параметри запиту (як-от {ex1}) або фрагмент URI (як-от {ex2}), які необхідно додати до URL.',
     'Queue Manager' => 'Диспетчер черги',
     'Quick Post' => 'Швидка публікація',

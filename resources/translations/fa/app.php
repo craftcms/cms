@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'استعلام کاربر در گروه کاربری «{name}»',
     'Query for users' => 'استعلام کاربران',
     'Query for volumes' => 'استعلام مخزن‌ها',
+    'Query for {type}' => 'استعلام {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'پارامترهای استعلام (مثلاً {ex1}) یا یک قطعه URI (مثلاً {ex2}) که باید به URL الحاق شود.',
     'Queue Manager' => 'مدیر صف',
     'Quick Post' => 'انتشار سریع',

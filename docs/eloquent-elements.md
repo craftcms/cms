@@ -63,6 +63,7 @@ Everything else has a default, derived from the model. Override a method on the 
 | `modelAttributes()` | Every column but the primary key, the timestamps, the soft-delete column, and any named like one of the element's own properties | `name`, `email`, `company` | |
 | `cpIndexUri()` | The plural of `refHandle()` | `customers` | `order-lines` |
 | `cpNavIcon()` | `database` | | |
+| `gqlTypeName()` | `refHandle()`, studly-cased | `Customer` | `OrderLine` |
 
 The template query is named after `refHandle()`, pluralized and camel-cased: `craft.customers()`, `craft.orderLines()`.
 
@@ -331,7 +332,40 @@ Eager-load the field with `.with(['customers'])` like any other relation field.
 
 Craft stores a field's type by its class name. Renaming the field type class breaks the fields that use it.
 
-These fields aren't available in GraphQL, because Eloquent element types have no GraphQL types.
+In GraphQL, the field returns the type's elements in schemas that can query the type. See [GraphQL](#graphql).
+
+## GraphQL
+
+Registering a type adds a **Query for customers** component to GraphQL schemas, under **Customers**. A schema with it gets three queries, named after `refHandle()`:
+
+```graphql
+{
+  customers(search: "grace", limit: 10) { id name email }
+  customer(id: 123) { name }
+  customerCount
+}
+```
+
+The queries take the arguments every element query takes, plus one per custom field. Model attributes can't be used as arguments.
+
+The elements' GraphQL type is named after `gqlTypeName()`, `Customer`. It implements `ElementInterface`, and has a field per custom field and per model attribute. Model attributes listed in the model's `$hidden` property are left out, and so are those missing from its `$visible` property when it has one, and those whose names GraphQL doesn't allow, such as `external-id`. A model attribute named like an element field doesn't get a field of its own, and a custom field named like a model attribute is left out, as the element's property by that name returns the model attribute.
+
+Model attributes are typed by their casts, or by their columns when they don't have one:
+
+| Cast or column | GraphQL type |
+| --- | --- |
+| `timestamp` cast, `int` or `integer` cast on a `bigint`, unsigned `int` or SQLite integer column, or one of those columns | `Number` |
+| `int` or `integer` cast, or another integer column | `Int` |
+| `float`, `double` or `real` cast, or a floating-point column | `Float` |
+| `bool` or `boolean` cast, or a boolean column | `Boolean` |
+| `date`, `datetime`, `immutable_date` or `immutable_datetime` cast | `DateTime` |
+| Anything else | `String` |
+
+MySQL and SQLite store booleans as integers, so cast boolean columns to `boolean` to get a `Boolean`. A `String` field returns an enum cast's value, and an `array`, `json` or `collection` cast's value as JSON.
+
+Requests authenticated as a user get the component when the user can see the type's index: the **View** permission, or the model policy's `viewAny` ability. The queries return every element the type's query finds, as the index does.
+
+A handle whose plural is the same, such as `species`, gets `speciesList` for its list query. Override `refHandle()` if a query name clashes with another, and `gqlTypeName()` if the type name clashes with another GraphQL type, such as `Site` or `Section`.
 
 ## Permissions
 
@@ -384,4 +418,5 @@ A listener for the `ElementAuthorizing` event runs before any of these checks an
 - There's no settings page for designing an element type's field layout or card in the control panel.
 - Code-defined layouts don't support generated fields.
 - `increment()` and `decrement()` on a model instance don't sync its element.
-- Eloquent elements aren't exposed to GraphQL or the MCP server.
+- Eloquent elements can't be saved or deleted through GraphQL.
+- Eloquent elements aren't exposed to the MCP server.

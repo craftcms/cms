@@ -16,10 +16,12 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -75,6 +77,7 @@ class LooseEndsChecks
             ...$this->configFiles(),
             ...$this->generalConfigSettings(),
             ...$this->legacyEnvVars(),
+            ...$this->siteBaseUrls(),
             ...$this->mailTransport(),
             ...$this->usageStorage(),
             ...$this->projectLayout(),
@@ -347,6 +350,40 @@ class LooseEndsChecks
                 t('Craft 5 environment variables are set.', category: 'yii2-adapter'),
                 t('Rename each one to its Laravel equivalent. Craft 5 added an underscore to the end of the table prefix, but `DB_PREFIX` is used as is, so include it there.', category: 'yii2-adapter'),
                 detail: collect($vars)->map(fn(string $new, string $old) => "`$old` → `$new`")->join(', '),
+            ),
+        ];
+    }
+
+    /**
+     * Finds sites whose base URL uses the `@web` alias, which only the adapter defines.
+     *
+     * @return list<Finding>
+     */
+    public function siteBaseUrls(): array
+    {
+        $sites = Sites::getAllSites(true)->filter(function(Site $site): bool {
+            // Resolve a leading environment variable, as its value can start with `@web` too.
+            $baseUrl = preg_replace_callback(
+                '/^\$\{?(\w+)}?/',
+                fn(array $match) => (string)Env::get($match[1]),
+                (string)$site->getBaseUrl(false),
+            );
+
+            return $baseUrl === '@web' || str_starts_with($baseUrl, '@web/');
+        });
+
+        if ($sites->isEmpty()) {
+            return [];
+        }
+
+        return [
+            $this->finding(
+                'config.web-alias-site-urls',
+                Section::Config,
+                Severity::Breaks,
+                t('Site base URLs use the `@web` alias.', category: 'yii2-adapter'),
+                t('Replace `@web` with an environment variable such as `$APP_URL`, as in `$APP_URL/fr/`, in Settings → Sites or in the environment variable that holds it.', category: 'yii2-adapter'),
+                detail: $sites->map(fn(Site $site) => sprintf('%s: `%s`', $site->getName(), $site->getBaseUrl(false)))->join("\n"),
             ),
         ];
     }
