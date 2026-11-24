@@ -1065,6 +1065,7 @@ readonly class FormFields
             'step' => $step,
             'suffix' => $suffix,
             'labelledBy' => $labelledBy,
+            'disabled' => (bool) ($config['disabled'] ?? false),
         ]);
 
         // Keep the slider and the number input in step; the number snaps back to the slider's clamped value on blur.
@@ -1090,7 +1091,7 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
         return Html::tag('div',
             Html::tag('div', $rangeInput, ['class' => 'range-wrapper']).
             Html::tag('div', $numberInput),
-            ['class' => 'flex'],
+            ['class' => 'range-group'],
         );
     }
 
