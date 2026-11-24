@@ -72,6 +72,24 @@ it('reads fresh cached queries from ElementRestored listeners', function () {
         ->and(EntryElement::find()->id($entry->id)->cache()->exists())->toBeTrue();
 });
 
+it('bypasses a restored element’s caches until an enclosing transaction rolls back, without caching the restore', function () {
+    $entry = Entry::factory()->createElement();
+    app(Elements::class)->deleteElement($entry);
+    $cachedExists = fn (): bool => EntryElement::find()->id($entry->id)->cache()->exists();
+
+    expect($cachedExists())->toBeFalse();
+
+    DB::beginTransaction();
+    $trashedEntry = EntryElement::find()->id($entry->id)->trashed()->one();
+
+    expect(app(ElementDeletions::class)->restoreElements([$trashedEntry]))->toBeTrue()
+        ->and($cachedExists())->toBeTrue();
+
+    DB::rollBack();
+
+    expect($cachedExists())->toBeFalse();
+});
+
 it('returns false when an element vetoes restore in beforeRestore', function () {
     $action = restoreElementsService();
     $element = new TestRestoreElement(beforeRestoreResult: false);

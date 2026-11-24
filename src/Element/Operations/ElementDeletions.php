@@ -626,10 +626,7 @@ readonly class ElementDeletions
                 }
 
                 // After commit, so another process can't cache the element as it was before the restore
-                DB::afterCommit(fn () => $this->elementCaches->invalidateForElement($element));
-
-                // Until then, bypass its caches so restore hooks and listeners read its new state
-                $this->elementCaches->markPendingForElement($element);
+                $this->elementCaches->invalidateForElementAfterCommit($element);
             }
 
             foreach ($elements as $element) {

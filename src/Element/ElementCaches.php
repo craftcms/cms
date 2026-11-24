@@ -41,6 +41,14 @@ class ElementCaches
     private bool $registeredShutdownFlush = false;
 
     /**
+     * Tags whose caches are bypassed until an after-commit invalidation runs, with the number of invalidations
+     * waiting on each.
+     *
+     * @var array<string, int>
+     */
+    private array $bypassedTags = [];
+
+    /**
      * Runs a callback, deferring the cache tags it invalidates until it returns, and then invalidating each tag once.
      *
      * Nested calls defer to the outermost one. Once 500 tags are pending, they're invalidated as soon as the
@@ -83,11 +91,11 @@ class ElementCaches
      */
     public function hasPendingInvalidations(array $tags): bool
     {
-        if ($this->deferredTags === []) {
+        if ($this->deferredTags === [] && $this->bypassedTags === []) {
             return false;
         }
 
-        return array_any($tags, fn ($tag) => isset($this->deferredTags[$tag]));
+        return array_any($tags, fn ($tag) => isset($this->deferredTags[$tag]) || isset($this->bypassedTags[$tag]));
     }
 
     public function isCollectingCacheInfo(): bool
@@ -152,19 +160,33 @@ class ElementCaches
     }
 
     /**
-     * Marks an element’s cache tags as pending within the current {@see deferInvalidations()} scope, without
-     * invalidating them or dispatching an event, so caches tagged with them are bypassed until the scope ends.
-     *
-     * Use it when the element’s caches are invalidated after a transaction commits, but code that runs before
-     * then, such as event listeners, should read its new state.
+     * Invalidates an element’s caches once the current transaction commits, and bypasses them until then, so code
+     * that runs before the commit, such as event listeners, reads the element’s new state. If the transaction rolls
+     * back, the caches are left alone.
      *
      * @internal
      */
-    public function markPendingForElement(ElementInterface $element): void
+    public function invalidateForElementAfterCommit(ElementInterface $element): void
     {
-        if ($this->deferDepth > 0) {
-            $this->deferTags($this->tagsForElement($element));
+        $tags = $this->tagsForElement($element);
+
+        foreach ($tags as $tag) {
+            $this->bypassedTags[$tag] = ($this->bypassedTags[$tag] ?? 0) + 1;
         }
+
+        $stopBypassing = function () use ($tags): void {
+            foreach ($tags as $tag) {
+                if (--$this->bypassedTags[$tag] === 0) {
+                    unset($this->bypassedTags[$tag]);
+                }
+            }
+        };
+
+        DB::afterCommit(function () use ($element, $stopBypassing): void {
+            $this->invalidateForElement($element);
+            $stopBypassing();
+        });
+        DB::afterRollBack($stopBypassing);
     }
 
     /**
@@ -187,7 +209,16 @@ class ElementCaches
     private function invalidateTags(array $tags): array
     {
         if ($this->deferDepth > 0) {
-            $this->deferTags($tags);
+            foreach ($tags as $tag) {
+                $this->deferredTags[$tag] = true;
+            }
+
+            if (! $this->registeredShutdownFlush) {
+                register_shutdown_function($this->flushDeferredInvalidations(...));
+                $this->registeredShutdownFlush = true;
+            }
+
+            $this->flushDeferredInvalidationsOverThreshold();
 
             return $tags;
         }
@@ -195,23 +226,6 @@ class ElementCaches
         TagDependency::invalidate($tags);
 
         return $tags;
-    }
-
-    /**
-     * @param  string[]  $tags
-     */
-    private function deferTags(array $tags): void
-    {
-        foreach ($tags as $tag) {
-            $this->deferredTags[$tag] = true;
-        }
-
-        if (! $this->registeredShutdownFlush) {
-            register_shutdown_function($this->flushDeferredInvalidations(...));
-            $this->registeredShutdownFlush = true;
-        }
-
-        $this->flushDeferredInvalidationsOverThreshold();
     }
 
     private function flushDeferredInvalidations(): void
