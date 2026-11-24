@@ -3,9 +3,12 @@ import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/input/input';
 import '@craftcms/ui/components/select/select';
 import '@craftcms/ui/components/switch/switch';
+import {router} from '@inertiajs/vue3';
+import {effectScope} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import {broadcast} from '@/common/craft/broadcast';
+import {useElementPresentations} from '@/modules/elements/element-presentations';
 import './craft-link-field';
 import type {
   LinkChangeDetail,
@@ -538,6 +541,54 @@ describe('a linked element', () => {
     }
   });
 
+  it('shares one request with relation fields drawing its element when it’s saved', async () => {
+    const scope = effectScope();
+    scope.run(() =>
+      useElementPresentations(
+        {elementType: 'Entry', viewMode: 'list', thumbSize: 'sm'},
+        [{id: 12, siteId: 1}]
+      )
+    );
+    const post = respondWithElement({
+      id: 12,
+      label: 'live',
+      siteId: 1,
+      status: {fill: 'green', label: 'Live', draft: false},
+    });
+
+    try {
+      broadcast({event: 'saveElement', id: 12});
+      await expect
+        .element(page.getByRole('img', {name: 'Status: Live'}))
+        .toBeVisible();
+      await new Promise((settle) => setTimeout(settle, 100));
+
+      expect(post).toHaveBeenCalledTimes(1);
+    } finally {
+      post.mockRestore();
+      scope.stop();
+    }
+  });
+
+  it('draws the server’s chip when a render brings back what an earlier one replaced', async () => {
+    const original = linkField.modelValue!;
+    linkField.modelValue = {
+      ...original,
+      element: {...original.element!, label: 'renamed'},
+    };
+    await linkField.updateComplete;
+    await expect
+      .element(linkField.querySelector('craft-chip')!)
+      .toHaveTextContent('renamed');
+
+    linkField.modelValue = {...original, element: {...original.element!}};
+    await linkField.updateComplete;
+
+    await expect
+      .element(linkField.querySelector('craft-chip')!)
+      .toHaveTextContent('pending');
+  });
+
   it('draws only the latest fetch when it’s saved again while an earlier one is waiting', async () => {
     const responses: Array<(response: unknown) => void> = [];
     const post = vi.spyOn(actionClient, 'post').mockImplementation(
@@ -949,6 +1000,80 @@ describe('a linked element', () => {
     } finally {
       error.mockRestore();
     }
+  });
+
+  describe('saved in the image editor', () => {
+    async function save(result: Record<string, unknown>): Promise<{
+      changes: string[];
+      reload: ReturnType<typeof vi.spyOn>;
+    }> {
+      const changes: string[] = [];
+      linkField.addEventListener('link-change', (event) =>
+        changes.push(
+          (event as CustomEvent<LinkChangeDetail>).detail.value.value
+        )
+      );
+      const reload = vi.spyOn(router, 'reload').mockImplementation(() => {});
+      vi.spyOn(actionClient, 'post').mockImplementation(
+        () => new Promise(() => {})
+      );
+      imageEditor.openImageEditorDialog.mockClear();
+      linkField.modelValue = {
+        ...linkField.modelValue,
+        element: {
+          ...linkField.modelValue!.element!,
+          actions: [
+            {
+              label: 'Open in Image Editor',
+              icon: 'paintbrush',
+              behavior: {type: 'editImage', assetId: 12, settings: {} as never},
+            },
+          ],
+        },
+      };
+      await linkField.updateComplete;
+      await page.getByRole('button', {name: 'Actions'}).click();
+      await page.getByRole('button', {name: 'Open in Image Editor'}).click();
+      await expect
+        .poll(() => imageEditor.openImageEditorDialog.mock.calls.length)
+        .toBe(1);
+      const [, onSaved] = imageEditor.openImageEditorDialog.mock
+        .calls[0] as unknown as [unknown, (result: unknown) => void];
+      onSaved(result);
+
+      return {changes, reload};
+    }
+
+    beforeEach(async () => {
+      linkField.live = true;
+      await linkField.updateComplete;
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('leaves the page as it is when the image is saved in place', async () => {
+      const {changes, reload} = await save({});
+
+      expect(changes).toEqual([]);
+      expect(reload).not.toHaveBeenCalled();
+    });
+
+    it('links to the new asset when the image is saved as one', async () => {
+      const {changes} = await save({newAssetId: 34});
+
+      expect(changes).toEqual(['{entry:34@1:url}']);
+    });
+
+    it('keeps its link when the field is disabled', async () => {
+      linkField.disabled = true;
+      await linkField.updateComplete;
+
+      const {changes} = await save({newAssetId: 34});
+
+      expect(changes).toEqual([]);
+    });
   });
 
   it('is replaced through the element selector, from the menu button', async () => {

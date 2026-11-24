@@ -11,6 +11,7 @@ import {
 import type {PresentedElement} from '@/modules/elements/element-presentations';
 import {ElementPresentationsController} from '@/modules/elements/element-presentations-controller';
 import {openElementEditor} from '@/modules/elements/open-element-editor';
+import {openImageEditorDialog} from '@/modules/image-editor/open-image-editor-dialog';
 import type {ChipElement} from '@/modules/elements/types/element-data';
 import {chipMenu} from '@/modules/ui/element-select/chipMenu';
 import type {ElementPresentation} from '@/modules/ui/element-select/types';
@@ -208,11 +209,17 @@ class CraftLinkField extends LitElement {
   private requestedChip: LinkedElement | null = null;
 
   /**
-   * The chips the field was given or sent out. A link given back, as a
-   * popover does each time it opens, brings one of them, which may be older
-   * than what's cached. Any other comes from the server.
+   * The chips the field was given. A popover gives its link back each time it
+   * opens, with the same chip, which may be older than what's cached. A new
+   * server render brings new objects, even for the same data.
    */
-  private readonly knownChips = new Set<string>();
+  private readonly givenChips = new WeakSet<LinkedElement>();
+
+  /**
+   * The chips the field sent out since the server last gave it one. They
+   * come back as copies, so they're told apart by their data.
+   */
+  private readonly sentChips = new Set<string>();
 
   /**
    * The linked element's chip, cached with relation fields' chips, so it's
@@ -223,6 +230,8 @@ class CraftLinkField extends LitElement {
     () => ({
       elementType: this.selectedType?.elementType ?? '',
       viewMode: 'list',
+      // As relation fields resolve it for chips, so they share cached chips.
+      thumbSize: 'sm',
     }),
     () => {
       const element = this.linkedElement();
@@ -261,7 +270,9 @@ class CraftLinkField extends LitElement {
         ...action,
         onClick: (event: Event) =>
           void this.runDialogAction(() =>
-            this.dispatchAction(behavior, destructive, event)
+            behavior.type === 'editImage'
+              ? this.editImage(behavior)
+              : this.dispatchAction(behavior, destructive, event)
           ),
       };
     });
@@ -297,7 +308,11 @@ class CraftLinkField extends LitElement {
     const modelChanged = changedProperties.has('modelValue');
     const echo = modelChanged && this.isEcho(this.modelValue);
     const given = modelChanged ? this.modelValue?.element : null;
-    const fromServer = Boolean(given && !this.knownChips.has(chipData(given)));
+    const fromServer = Boolean(
+      given &&
+      !this.givenChips.has(given) &&
+      !this.sentChips.has(chipData(given))
+    );
 
     if (modelChanged && !echo) {
       const value = this.modelValue ?? {};
@@ -333,7 +348,10 @@ class CraftLinkField extends LitElement {
           replace: this.hasUpdated,
         });
       }
-      this.knownChips.add(chipData(given));
+      if (fromServer) {
+        this.sentChips.clear();
+      }
+      this.givenChips.add(given);
     }
 
     this.loadPlaceholderElement();
@@ -560,41 +578,76 @@ class CraftLinkField extends LitElement {
 
     const panel = await openElementEditor(element, type.elementType!, {
       opener,
-      onSaved: ({data}) => {
-        if (
-          this.typeId !== type.id ||
-          this.selectedElement?.id !== element.id
-        ) {
-          return;
-        }
-
-        const replacedId = Number(data?.replacedAssetId);
-        const newId = Number(data?.newAssetId);
-        // Swaps only the ID, keeping the reference's site and whatever follows.
-        const newValue = this.value.replace(/^\{(\w+):\d+/, `{$1:${newId}`);
-        const replaced =
-          !this.disabled &&
-          replacedId === element.id &&
-          Number.isInteger(newId) &&
-          newId > 0 &&
-          newValue !== this.value;
-
-        if (replaced) {
-          this.value = newValue;
-          this.selectedElement = {
-            id: newId,
-            label: this.defaultLabel,
-            siteId: element.siteId,
-          };
-          this.change('discrete');
-        }
-      },
+      onSaved: ({data}) =>
+        this.replaceAsset(
+          type,
+          element,
+          data?.replacedAssetId,
+          data?.newAssetId
+        ),
       onClosed: () => this.dispatchElementSelectEvent('element-select-end'),
     });
 
     if (!panel) {
       this.dispatchElementSelectEvent('element-select-end');
     }
+  }
+
+  /**
+   * Points the link at the asset an image was saved as, in place of the one
+   * it was edited from, unless the field is disabled or has moved on.
+   */
+  private replaceAsset(
+    type: LinkTypeConfig,
+    element: LinkedElement,
+    replacedAssetId: unknown,
+    newAssetId: unknown
+  ): void {
+    if (
+      this.disabled ||
+      this.typeId !== type.id ||
+      this.selectedElement?.id !== element.id
+    ) {
+      return;
+    }
+
+    const replacedId = Number(replacedAssetId);
+    const newId = Number(newAssetId);
+    // Swaps only the ID, keeping the reference's site and whatever follows.
+    const newValue = this.value.replace(/^\{(\w+):\d+/, `{$1:${newId}`);
+    const replaced =
+      replacedId === element.id &&
+      Number.isInteger(newId) &&
+      newId > 0 &&
+      newValue !== this.value;
+
+    if (replaced) {
+      this.value = newValue;
+      this.selectedElement = {
+        id: newId,
+        label: this.defaultLabel,
+        siteId: element.siteId,
+      };
+      this.change('discrete');
+    }
+  }
+
+  /**
+   * Opens the image editor for the chip's asset. A save in place is
+   * broadcast, which refetches the chip; one saved as a new asset takes the
+   * linked one's place.
+   */
+  private editImage(
+    behavior: Extract<ElementActionBehavior, {type: 'editImage'}>
+  ): Promise<void> {
+    const type = this.selectedType;
+    const element = this.chip;
+
+    return openImageEditorDialog(behavior.settings, (result) => {
+      if (type && element && result.newAssetId) {
+        this.replaceAsset(type, element, behavior.assetId, result.newAssetId);
+      }
+    }).then(({closed}) => closed);
   }
 
   /** Runs an action that opens a dialog, with the field's popover set aside until the dialog closes. */
@@ -798,7 +851,7 @@ class CraftLinkField extends LitElement {
     const element = type.kind === 'element' ? this.chip : null;
 
     if (element) {
-      this.knownChips.add(chipData(element));
+      this.sentChips.add(chipData(element));
     }
 
     return {
