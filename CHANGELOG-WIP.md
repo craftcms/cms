@@ -62,6 +62,10 @@
 - Requests now read only the parts of the project config they use from the cache, rather than the whole config, which cuts cache traffic on sites with a networked cache such as Redis or Valkey. After a project config change, only one request rewrites the cached config. ([#20809](https://github.com/craftcms/cms/pull/20809))
 - `craft\helpers\HtmlPurifier::process()` now caches HTML Purifier’s HTML definition when it’s passed a config array or no config, rather than rebuilding it on every call. HTML Purifier’s definition caches are now stored in `storage/runtime/htmlpurifier/`. ([#20847](https://github.com/craftcms/cms/issues/20847))
 
+### System
+
+- Fixed a bug where eager-loading maps that covered more than one element type, or were returned as a list of maps, only loaded the elements from one of them.
+
 ### Dependencies
 
 - Updated `commerceguys/addressing` to v2.3. ([#19488](https://github.com/craftcms/cms/pull/19488))
