@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Support\Facades\Validator;
 
 it('can normalize a color', function (string $expected, string $color) {
     expect(ColorRule::normalizeColor($color))->toBe($expected);
@@ -69,3 +70,13 @@ it('validates alpha channels when allowed', function (string $input, bool $expec
     ['#ffc10egg', false],
     ['rgba(255, 0, 0, 0.2)', false],
 ]);
+
+it('names the attribute in its message', function () {
+    $validator = Validator::make(
+        ['color' => 'xxx'],
+        ['color' => [new ColorRule]],
+        attributes: ['color' => 'Brand color'],
+    );
+
+    expect($validator->errors()->first('color'))->toBe('Brand color is invalid.');
+});

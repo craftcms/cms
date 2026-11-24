@@ -1441,6 +1441,40 @@ describe('UiRenderer', () => {
     expect(ui.getValue(['summary'])).toBe('Derived from My Site');
   });
 
+  it('shows field and global errors without their emphasis markers', async () => {
+    const invalid: UiPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Date'},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: ['date'],
+            mode: 'editable',
+            deltaGroup: ['date'],
+          },
+        },
+      ],
+      values: {date: ''},
+      errors: [{path: ['date'], messages: ['The *Date* field is required.']}],
+      globalErrors: ['*Blocks* has an invalid entry.'],
+    };
+    app.unmount();
+    await mount(invalid);
+
+    expect(
+      container.querySelector('[slot="feedback"] li')?.textContent?.trim()
+    ).toBe('The Date field is required.');
+    expect(
+      container.querySelector('ul[role="alert"] li')?.textContent?.trim()
+    ).toBe('Blocks has an invalid entry.');
+  });
+
   it('uses a path slot to override a control without replacing UI behavior', async () => {
     const overridden: UiPayload = {
       scope: [],

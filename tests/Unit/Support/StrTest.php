@@ -239,6 +239,12 @@ test('shortcodesToEmoji', function (string $expected, string $str) {
     ['Test — em – en - dashes 🤞', 'Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:'],
 ]);
 
+test('stripEmphasis', function (string $expected, string $str) {
+    expect(Str::stripEmphasis($str))->toBe($expected);
+})->with([
+    ['Blocks is invalid.', '**Blocks** is invalid.'],
+]);
+
 test('title', function (string $expected, string $string, ?string $language = null) {
     expect(Str::title($string, $language))->toBe($expected);
 })->with([

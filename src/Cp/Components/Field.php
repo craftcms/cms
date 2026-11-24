@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Concerns\HasId;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use Override;
@@ -406,7 +407,7 @@ class Field extends ViewComponent
         return Html::tag(
             'ul',
             implode('', array_map(
-                fn (string $error): string => Html::tag('li', Html::encode($error)),
+                fn (string $error): string => Html::tag('li', Html::encode(Str::stripEmphasis($error))),
                 $errors,
             )),
             [

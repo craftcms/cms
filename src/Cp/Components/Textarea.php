@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Stringable;
@@ -31,6 +32,7 @@ class Textarea extends ViewComponent
 {
     use HasDisabled;
     use HasId;
+    use HasSize;
 
     protected ?string $name = null;
 
@@ -202,6 +204,7 @@ class Textarea extends ViewComponent
     {
         return [
             'monospace' => $this->monospace,
+            'size' => $this->getSize(),
             // The component pushes the host properties it's given onto the
             // slotted textarea, and styles itself from them. The native
             // textarea keeps them too, for pre-upgrade correctness (form
