@@ -231,7 +231,7 @@ it('only offers MCP clients the skills to manage, and links to edit them, if the
     mcpUser([]);
     skill('Voice');
 
-    $tools = McpRequest::send($this, 'tools/list')->assertOk()->json('result.tools.*.name');
+    $tools = array_column(McpRequest::tools($this), 'name');
 
     McpRequest::send($this, 'tools/call', ['name' => 'skills_list', 'arguments' => []])
         ->assertOk()

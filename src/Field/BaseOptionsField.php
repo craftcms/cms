@@ -657,18 +657,11 @@ abstract class BaseOptionsField extends Field implements DefaultableFieldInterfa
                 $parts[] = Html::tag('div', Icons::svg($value->icon), [
                     'class' => ['cp-icon', 'small'],
                     'style' => array_filter([
-                        '--icon-color' => $value->color,
+                        'color' => $value->color,
                     ]),
                 ]);
             } elseif (isset($value->color)) {
-                $parts[] = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                    Html::tag('div', attributes: [
-                        'class' => 'color-preview',
-                        'style' => [
-                            'background-color' => $value->color,
-                        ],
-                    ]).
-                    Html::endTag('div');
+                $parts[] = Html::tag('craft-indicator', '', ['fill' => $value->color]);
             }
             // Custom values have no label
             $parts[] = Html::tag('div', $value->label
@@ -676,7 +669,7 @@ abstract class BaseOptionsField extends Field implements DefaultableFieldInterfa
                 : (string) $value->value
             );
 
-            return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'gap-xs']])
+            return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'items-center', 'gap-sm']])
                 .implode('', $parts)
                 .Html::endTag('div');
         }
