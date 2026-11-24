@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\SchedulableElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
@@ -99,6 +100,7 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -123,7 +125,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(EntryRules::class)]
-class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface
+class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, SchedulableElementInterface, WorkflowableInterface
 {
     use LegacyConstants;
     use NestedElement {
@@ -1566,6 +1568,27 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     public function getExpiryDate(): ?DateTimeInterface
     {
         return $this->expiryDate;
+    }
+
+    /**
+     * @return EntryQuery<self>
+     */
+    public static function findWithScheduledDatesBetween(DateTimeInterface $after, DateTimeInterface $until): EntryQuery
+    {
+        $after = Query::prepareDateForDb($after);
+        $until = Query::prepareDateForDb($until);
+
+        return self::find()
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->where(fn (Builder $query) => $query
+                ->where(fn (Builder $query) => $query
+                    ->where('entries.postDate', '>', $after)
+                    ->where('entries.postDate', '<=', $until))
+                ->orWhere(fn (Builder $query) => $query
+                    ->where('entries.expiryDate', '>', $after)
+                    ->where('entries.expiryDate', '<=', $until)));
     }
 
     /**
