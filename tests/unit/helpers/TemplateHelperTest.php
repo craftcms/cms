@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\Template;
 use craft\test\TestCase;
 use craft\web\twig\Environment;
@@ -53,7 +54,8 @@ class TemplateHelperTest extends TestCase
             self::fail('Expected the template to throw.');
         } catch (RuntimeError $e) {
             $view->setTemplateMode(View::TEMPLATE_MODE_CP);
-            $customTemplatesPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'custom-cp-templates';
+            // A different path that still resolves the control panel's login template
+            $customTemplatesPath = Craft::$app->getPath()->getCpTemplatesPath() . DIRECTORY_SEPARATOR . '.';
             $view->setTemplatesPath($customTemplatesPath);
             $previous = $e->getPrevious();
             [$resolvedPath, $line] = Template::resolveTemplatePathAndLine($previous->getFile(), $previous->getLine());
@@ -96,6 +98,37 @@ class TemplateHelperTest extends TestCase
             self::assertSame(2, $line);
         } finally {
             unlink($path);
+            $view->setTwig($oldTwig);
+        }
+    }
+
+    public function testResolveTemplatePathAndLineForTemplateUsingTraitOnlyItsModeHas(): void
+    {
+        $view = Craft::$app->getView();
+        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $oldTwig = $view->getTwig();
+        $dir = Craft::$app->getPath()->getSiteTemplatesPath() . DIRECTORY_SEPARATOR . 'resolve-trait-' . uniqid();
+        FileHelper::writeToFile("$dir/site-trait.twig", '{% block trait %}{% endblock %}');
+        FileHelper::writeToFile("$dir/broken.twig", "{% use '" . basename($dir) . "/site-trait' %}\n{{ 1 // 0 }}");
+        $twig = new Environment(new TemplateLoader($view), [
+            'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+            'debug' => false,
+        ]);
+        $view->setTwig($twig);
+
+        try {
+            $twig->render(basename($dir) . '/broken');
+            self::fail('Expected the template to throw.');
+        } catch (RuntimeError $e) {
+            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            $previous = $e->getPrevious();
+            [$resolvedPath, $line] = Template::resolveTemplatePathAndLine($previous->getFile(), $previous->getLine());
+
+            self::assertSame(realpath("$dir/broken.twig"), realpath($resolvedPath));
+            self::assertSame(2, $line);
+        } finally {
+            FileHelper::removeDirectory($dir);
+            $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
             $view->setTwig($oldTwig);
         }
     }

@@ -13,6 +13,7 @@ use craft\base\Renderable;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
+use ReflectionClass;
 use Stringable;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -366,8 +367,10 @@ class Template
             return false;
         }
 
+        // Only the compiled class's metadata is needed, and its constructor could load other templates, such as traits,
+        // that the current template mode can't resolve
         /** @var TwigTemplate $template */
-        $template = new $class(Craft::$app->getView()->getTwig());
+        $template = (new ReflectionClass($class))->newInstanceWithoutConstructor();
         $templatePath = self::resolveSourcePath($template, $contents);
         $templateLine = null;
 
@@ -415,19 +418,21 @@ class Template
             foreach ($templateModes as $templateMode) {
                 $view->setTemplateMode($templateMode);
                 $twig = $view->getTwig();
-                /** @var TwigTemplate $modeTemplate */
-                $modeTemplate = new $class($twig);
-                $path = $modeTemplate->getSourceContext()->getPath();
+                $name = $template->getTemplateName();
+
+                try {
+                    $path = $twig->getLoader()->getSourceContext($name)->getPath();
+                    $compiledHere = $twig->getTemplateClass($name) === $class;
+                } catch (LoaderError) {
+                    continue;
+                }
 
                 if ($path === '') {
                     continue;
                 }
 
-                try {
-                    if ($twig->getTemplateClass($template->getTemplateName()) === $class) {
-                        return $path;
-                    }
-                } catch (LoaderError) {
+                if ($compiledHere) {
+                    return $path;
                 }
 
                 $paths[] = $path;
