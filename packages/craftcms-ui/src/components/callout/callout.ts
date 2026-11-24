@@ -43,8 +43,9 @@ import {
  *   scale are ignored; set `--c-callout-padding-block` /
  *   `--c-callout-padding-inline` for anything else.
  *
- *   The callout's own default is asymmetric — `--c-spacing-sm` on the block
- *   axis, `--c-spacing-md` on the inline one — so leaving `padding` off keeps
+ *   The callout's own default is asymmetric — 2.5 × `--c-spacing` on the
+ *   block axis (`--c-spacing-sm` for an `inline` callout), `--c-spacing-sm` on
+ *   the inline one — so leaving `padding` off keeps
  *   exactly that pair. A value that *is* given applies to both axes, the way a
  *   one-value CSS `padding` shorthand does; scaling the two axes apart from a
  *   single value would make `padding="md"` mean something other than `md`.
@@ -57,9 +58,10 @@ import {
  * @cssproperty --c-callout-radius - Corner radius, applied to whichever
  *   corners `rounded` selects. Defaults to `--c-radius-md`.
  * @cssproperty --c-callout-padding-block - Block-axis padding of the callout
- *   box when `padding` is absent. Defaults to `--c-spacing-sm`.
+ *   box when `padding` is absent. Defaults to 2.5 × `--c-spacing`, or
+ *   `--c-spacing-sm` for an `inline` callout.
  * @cssproperty --c-callout-padding-inline - Inline-axis padding of the callout
- *   box when `padding` is absent. Defaults to `--c-spacing-md`.
+ *   box when `padding` is absent. Defaults to `--c-spacing-sm`.
  * @cssproperty --c-callout-icon-padding-inline - Inline-axis padding around
  *   the icon. Defaults to `--c-spacing-sm`.
  * @cssproperty --c-callout-text-padding-inline - Inline-axis padding around

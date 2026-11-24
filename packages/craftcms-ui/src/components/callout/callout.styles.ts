@@ -3,13 +3,20 @@ import {css} from 'lit';
 export default css`
   :host {
     display: contents;
+    /* Taller than the gap between wrapped lines, so a callout's text doesn't
+       crowd its border. */
+    --_callout-default-padding-block: calc(var(--c-spacing) * 2.5);
+  }
+
+  :host([inline]) {
+    --_callout-default-padding-block: var(--c-spacing-sm);
   }
 
   .callout {
     --_radius: var(--c-callout-radius, var(--c-radius-md));
     --_callout-padding-block: var(
       --c-callout-padding-block,
-      var(--c-spacing-sm)
+      var(--_callout-default-padding-block)
     );
     --_callout-padding-inline: var(
       --c-callout-padding-inline,
