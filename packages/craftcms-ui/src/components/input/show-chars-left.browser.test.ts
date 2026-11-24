@@ -101,3 +101,21 @@ it('puts the craft-textarea counter in the padding below its text', async () => 
   );
   expect(number.right).toBeLessThanOrEqual(textarea.right);
 });
+
+it('spaces the craft-textarea counter evenly from the right and bottom edges', async () => {
+  const {control, counter} = await render(
+    'craft-textarea',
+    'maxlength="1000" show-chars-left'
+  );
+  const number = counter()!.querySelector('[aria-hidden]')!;
+  const baseline = document.createElement('span');
+  baseline.style.display = 'inline-block';
+  number.append(baseline);
+
+  const textarea = control.getBoundingClientRect();
+  const right = textarea.right - number.getBoundingClientRect().right;
+  const bottom = textarea.bottom - baseline.getBoundingClientRect().bottom;
+
+  expect(right).toBeGreaterThan(0);
+  expect(Math.abs(bottom - right)).toBeLessThanOrEqual(1);
+});

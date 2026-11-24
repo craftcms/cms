@@ -50,10 +50,24 @@ export default css`
   }
 
   .input-group__input > .chars-left {
-    inset-block-end: calc(
-      var(--_spacing-block) + var(--c-form-control-border-width)
+    --_chars-left-inset: calc(
+      var(--c-input-spacing-inline) + var(--c-form-control-border-width)
     );
+    inset-block-end: var(--_chars-left-inset);
+    inset-inline-end: var(--_chars-left-inset);
     block-size: auto;
-    line-height: var(--leading-normal);
+    line-height: 1;
+  }
+
+  @supports (text-box: trim-both cap alphabetic) {
+    .input-group__container
+      > .input-group__input:has(> .chars-left)
+      ::slotted([slot='input']) {
+      --_chars-left-room: calc(1cap + var(--c-spacing-sm));
+    }
+
+    .input-group__input > .chars-left > [aria-hidden] {
+      text-box: trim-both cap alphabetic;
+    }
   }
 `;
