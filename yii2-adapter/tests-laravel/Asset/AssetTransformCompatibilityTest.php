@@ -318,17 +318,12 @@ it('selects the volume before the legacy transformer candidate', function(string
     ]);
     $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(RegisteredLegacyImageTransformer::class);
-    $before = function(GenerateTransformEvent $event): void {
-        $event->url = '/legacy/event.jpg';
-    };
-    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
 
     try {
         expect($asset->getUrl($transform))->toBe('/transforms/320x160.webp')
             ->and($this->driver->request)->not->toBeNull()
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
-        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
     }
 })->with([
@@ -390,6 +385,34 @@ it('lazily bridges a selected legacy transformer that was not registered', funct
         ->and($this->driver->request)->toBeNull()
         ->and(Craft::$app->getImageTransforms()->getImageTransformer(UnregisteredLegacyImageTransformer::class)->asset)->toBe($asset)
         ->and(Craft::$app->getImageTransforms()->getImageTransformer(UnregisteredLegacyImageTransformer::class)->invalidatedAsset)->toBe($asset);
+});
+
+it('triggers legacy generate transform events for asset transform drivers', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $generated = [];
+    $before = function(GenerateTransformEvent $event): void {
+        if ($event->transform->width === 100) {
+            $event->url = '/legacy/event.jpg';
+        }
+    };
+    $after = function(GenerateTransformEvent $event) use (&$generated): void {
+        $generated[] = [$event->transform->width, $event->url];
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
+
+    try {
+        expect($asset->transform(['width' => 320])->url)->toBe('/transforms/320x160.webp')
+            ->and($asset->transform(['width' => 100])->url)->toBe('/legacy/event.jpg')
+            ->and($generated)->toBe([[320, '/transforms/320x160.webp']]);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
+    }
 });
 
 it('honors before-generate URLs before invoking a legacy transformer', function(): void {

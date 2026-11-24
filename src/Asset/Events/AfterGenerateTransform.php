@@ -8,7 +8,10 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
- * @event AfterGenerateTransform The event that is triggered after a transform is generated for an asset.
+ * @event AfterGenerateTransform The event that is triggered after an asset’s transform driver returns the transform URL.
+ *
+ * It fires for every transform driver. The transformed file may not exist yet, such as when the driver generates it
+ * on the first request to {@see $url}. It doesn’t fire when a {@see TransformGenerating} listener provides the URL.
  *
  * @since 6.0.0
  */

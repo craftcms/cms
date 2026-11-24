@@ -10,6 +10,7 @@ use craft\elements\Asset;
 use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
+use craft\models\ImageTransform as LegacyImageTransform;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
@@ -18,8 +19,10 @@ use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use Deprecated;
 use Illuminate\Support\Facades\Event;
+use TypeError;
 
 /**
  * @internal
@@ -122,13 +125,13 @@ trait LegacyConstants
     public const string EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
-     * @deprecated 6.0.0 Use {@see TransformGenerating} or {@see \CraftCms\Cms\Image\Events\ImageTransforming} instead.
+     * @event GenerateTransformEvent The event that is triggered before an asset’s transform URL is determined.
+     * @deprecated 6.0.0 Use {@see TransformGenerating} instead.
      */
     public const string EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
 
     /**
-     * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
+     * @event GenerateTransformEvent The event that is triggered after an asset’s transform driver returns the transform URL.
      * @deprecated 6.0.0 Use {@see AfterGenerateTransform} instead.
      */
     public const string EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
@@ -169,7 +172,7 @@ trait LegacyConstants
         Event::listen(function(TransformGenerating $event) {
             if (YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
                 $yiiEvent = new GenerateTransformEvent([
-                    'transform' => $event->transform,
+                    'transform' => self::legacyTransform($event->transform),
                     'asset' => $event->asset,
                     'url' => $event->url,
                     'sender' => $event->asset,
@@ -184,7 +187,7 @@ trait LegacyConstants
         Event::listen(function(AfterGenerateTransform $event) {
             if (YiiEvent::hasHandlers(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                 $yiiEvent = new GenerateTransformEvent([
-                    'transform' => $event->transform,
+                    'transform' => self::legacyTransform($event->transform),
                     'asset' => $event->asset,
                     'url' => $event->url,
                     'sender' => $event->asset,
@@ -204,5 +207,32 @@ trait LegacyConstants
                 YiiEvent::trigger(Asset::class, self::EVENT_BEFORE_HANDLE_FILE, $yiiEvent);
             }
         });
+    }
+
+    /**
+     * Returns the transform that legacy transform event handlers get.
+     *
+     * @param ImageTransform|string|array<string, mixed>|null $transform
+     */
+    private static function legacyTransform(ImageTransform|string|array|null $transform): ?LegacyImageTransform
+    {
+        if ($transform === null || $transform instanceof LegacyImageTransform) {
+            return $transform;
+        }
+
+        try {
+            return match (true) {
+                $transform instanceof ImageTransform => new LegacyImageTransform([
+                    ...$transform->getConfig(),
+                    'id' => $transform->id,
+                    'uid' => $transform->uid,
+                    'parameterChangeTime' => $transform->parameterChangeTime,
+                ]),
+                is_array($transform) => new LegacyImageTransform()->setInlineParameters($transform),
+                default => null,
+            };
+        } catch (TypeError) {
+            return null;
+        }
     }
 }

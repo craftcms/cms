@@ -10,6 +10,8 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
@@ -24,6 +26,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -96,6 +99,29 @@ it('transforms with the asset’s disk’s transformer and its settings', functi
     expect($diskDriver->request->parameters['width'])->toBe(100)
         ->and($diskDriver->request->asset)->toBe($asset)
         ->and($diskDriver->request->transformer->settings)->toBe(['zone' => 'disk']);
+});
+
+it('dispatches transform events around any driver', function () {
+    $diskDriver = registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver']);
+    $generated = [];
+    Event::listen(TransformGenerating::class, function (TransformGenerating $event) {
+        if ($event->transform->width === 50) {
+            $event->url = '/cdn/my image.png';
+        }
+    });
+    Event::listen(AfterGenerateTransform::class, function (AfterGenerateTransform $event) use (&$generated) {
+        $generated[] = [$event->transform->width, $event->url];
+    });
+
+    $transformed = app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+    $overridden = app(AssetTransformers::class)->transform($asset, ['width' => 50]);
+
+    expect($transformed->url)->toBe('/transforms/hero.webp')
+        ->and($overridden->url)->toBe('/cdn/my%20image.png')
+        ->and($overridden->mimeType)->toBe('image/png')
+        ->and($diskDriver->request->parameters['width'])->toBe(100)
+        ->and($generated)->toBe([[100, '/transforms/hero.webp']]);
 });
 
 it('throws for invalid transformer config with debug mode on', function (mixed $value, string $exception) {
