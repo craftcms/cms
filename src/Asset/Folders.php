@@ -314,6 +314,8 @@ class Folders
         Asset::find()
             ->folderId($folder->id)
             ->includeSubfolders()
+            ->site('*')
+            ->unique()
             ->status(null)
             ->cursor()
             ->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));

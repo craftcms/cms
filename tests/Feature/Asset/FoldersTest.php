@@ -10,7 +10,10 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -485,7 +488,7 @@ it('renames subfolders whose paths differ in case from the renamed folder', func
     }
 });
 
-it('regenerates transforms of assets in a renamed folder on remote storage', function () {
+it('regenerates transforms of assets in a renamed folder on remote storage, whichever site it’s renamed from', function () {
     // Only Laravel’s local adapter gets its transforms’ `fileExists` checked against the disk
     Storage::extend('folders-test-remote', function ($app, array $config) {
         $adapter = new LocalFlysystemAdapter($config['root']);
@@ -500,7 +503,11 @@ it('regenerates transforms of assets in a renamed folder on remote storage', fun
     $disk = Storage::disk('remote-disk');
     $disk->deleteDirectory('');
 
-    $volume = Volume::factory()->create(['disk' => 'remote-disk', 'hasUrls' => true]);
+    $volume = Volume::factory()->create([
+        'disk' => 'remote-disk',
+        'hasUrls' => true,
+        'propagationMethod' => PropagationMethod::Custom->value,
+    ]);
     $root = $this->folders->getRootFolderByVolumeId($volume->id);
     $folder = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
@@ -534,7 +541,12 @@ it('regenerates transforms of assets in a renamed folder on remote storage', fun
         $oldPath = $transformPath($transformUrl());
         expect($oldPath)->toStartWith('_'.$volume->uid.'/Photos/Trips/');
 
+        // The asset only exists in the primary site
+        $primarySite = Sites::getPrimarySite();
+        Sites::setCurrentSite(Site::factory()->create()->id);
         $this->folders->renameFolderById($folder->id, 'Albums');
+        Sites::setCurrentSite($primarySite);
+
         $newPath = $transformPath($transformUrl());
 
         expect($newPath)->toBe(str_replace('/Photos/', '/Albums/', $oldPath))
