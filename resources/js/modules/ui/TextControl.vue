@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {isMobileBrowser} from '@craftcms/garnish';
   import CraftInput from '@craftcms/ui/components/input/input';
+  import {t} from '@craftcms/ui/utilities/translate';
   import '@craftcms/ui/components/text-expander/text-expander';
   import {computed, onMounted, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
@@ -120,10 +121,19 @@
     @input="onInput"
   >
     <input :id="inputId" slot="input" />
-    <slot name="suffix">
-      <span v-if="control.props.suffix" slot="suffix">{{
-        control.props.suffix
+    <span v-if="control.props.prefix" slot="prefix" data-description>
+      <span aria-hidden="true">{{ control.props.prefix }}</span>
+      <span class="sr-only">{{
+        t('Value prefixed by “{prefix}”.', {prefix: control.props.prefix})
       }}</span>
+    </span>
+    <slot name="suffix">
+      <span v-if="control.props.suffix" slot="suffix" data-description>
+        <span aria-hidden="true">{{ control.props.suffix }}</span>
+        <span class="sr-only">{{
+          t('Value suffixed by “{suffix}”.', {suffix: control.props.suffix})
+        }}</span>
+      </span>
     </slot>
   </craft-input>
   <craft-text-expander
