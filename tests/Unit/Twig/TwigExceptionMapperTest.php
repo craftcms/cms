@@ -71,6 +71,29 @@ it('maps errors to the template mode’s source template when another mode has a
     $this->fail('Expected the template to throw.');
 });
 
+it('maps errors in templates that use traits only their own template mode has', function () {
+    $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    File::put("$tempDir/site-trait.twig", '{% block trait %}{% endblock %}');
+    File::put("$tempDir/broken.twig", "{% use 'site-trait' %}\n{{ 1 // 0 }}");
+    Aliases::set('@templates', $tempDir);
+
+    try {
+        app(TemplateManager::class)->renderTemplate('broken', templateMode: TemplateMode::Site);
+    } catch (Throwable $exception) {
+        $mapped = TemplateMode::with(TemplateMode::Cp, fn () => app(TwigExceptionMapper::class)->map($exception));
+
+        expect(realpath($mapped->getFile()))->toBe(realpath("$tempDir/broken.twig"))
+            ->and($mapped->getLine())->toBe(2);
+
+        return;
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $this->fail('Expected the template to throw.');
+});
+
 it('maps errors to the source of templates included by unescaped string templates', function () {
     $tempDir = sys_get_temp_dir().'/craft-twig-error-test-'.uniqid();
     File::ensureDirectoryExists($tempDir);

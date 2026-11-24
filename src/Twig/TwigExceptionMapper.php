@@ -8,6 +8,7 @@ use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\View\TemplateMode;
 use Error;
 use Exception;
+use ReflectionClass;
 use ReflectionProperty;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -101,7 +102,9 @@ readonly class TwigExceptionMapper
             return false;
         }
 
-        $template = new $class(Twig::get());
+        // Only the compiled class's metadata is needed, and its constructor could load other templates, such as traits,
+        // that the current template mode can't resolve
+        $template = new ReflectionClass($class)->newInstanceWithoutConstructor();
         $templatePath = $this->resolveSourcePath($template, $contents) ?: $template->getSourceContext()->getName();
         $templateLine = null;
 
@@ -137,12 +140,13 @@ readonly class TwigExceptionMapper
         foreach (TemplateMode::cases() as $mode) {
             [$path, $compiledHere] = TemplateMode::with($mode, function () use ($mode, $template) {
                 $twig = Twig::get($mode);
-                $path = new ($template::class)($twig)->getSourceContext()->getPath();
+                $name = $template->getTemplateName();
 
+                // Constructing the template could load other templates, such as traits, that this mode can't resolve
                 try {
-                    return [$path, $twig->getTemplateClass($template->getTemplateName()) === $template::class];
+                    return [$twig->getLoader()->getSourceContext($name)->getPath(), $twig->getTemplateClass($name) === $template::class];
                 } catch (LoaderError) {
-                    return [$path, false];
+                    return ['', false];
                 }
             });
 
