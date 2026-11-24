@@ -55,6 +55,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added the `rootOnly()` route macro, for routes in the `craft` middleware group that should only match at the app’s root URL and keep it in their URLs. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
+- Asset selector modals’ index adapters now have `refresh()` and `selectElements()` methods. ([#21036](https://github.com/craftcms/cms/issues/21036))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
