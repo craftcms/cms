@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
+use CraftCms\Cms\Asset\Folders as FoldersService;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -279,7 +280,7 @@ class AssetsHelper
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-                Folders::createFolder($folder);
+                app(FoldersService::class)->createFolderForMove($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }

@@ -247,6 +247,41 @@ class Folders
      */
     public function createFolder(VolumeFolder $folder): void
     {
+        $parent = $this->newFolderParent($folder);
+
+        event($event = new FolderCreating($folder));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be created.'));
+        }
+
+        $this->makeFolder($folder, $parent);
+    }
+
+    /**
+     * Creates a folder as part of a folder move.
+     *
+     * Unlike {@see createFolder()}, it doesn’t dispatch {@see FolderCreating}, so a listener can’t stop a move after
+     * some of its folders were created.
+     *
+     * @internal
+     *
+     * @throws FsObjectExistsException if a folder already exists with such a name
+     * @throws FilesystemException if unable to create the directory on volume
+     * @throws AssetException if invalid folder provided
+     */
+    public function createFolderForMove(VolumeFolder $folder): void
+    {
+        $this->makeFolder($folder, $this->newFolderParent($folder));
+    }
+
+    /**
+     * Returns the parent of a folder about to be created, after checking that the folder can be created.
+     *
+     * @throws FsObjectExistsException|AssetException
+     */
+    private function newFolderParent(VolumeFolder $folder): VolumeFolder
+    {
         $parent = $folder->getParent();
 
         if (! $parent) {
@@ -265,12 +300,14 @@ class Folders
             ));
         }
 
-        event($event = new FolderCreating($folder));
+        return $parent;
+    }
 
-        if (! $event->isValid) {
-            throw new AssetOperationException(t('The folder couldn’t be created.'));
-        }
-
+    /**
+     * @throws FilesystemException if unable to create the directory on volume
+     */
+    private function makeFolder(VolumeFolder $folder, VolumeFolder $parent): void
+    {
         $path = rtrim((string) $folder->path, '/');
 
         if (! $parent->getVolume()->sourceDisk()->makeDirectory($path)) {
