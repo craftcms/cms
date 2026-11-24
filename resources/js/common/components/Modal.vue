@@ -206,6 +206,7 @@
         <div v-if="resizable" class="resize-frame">
           <craft-resize-grips
             .target="content"
+            :storage-key="storageKey"
             @craft-resize="
               (event: CustomEvent<ResizeGripsSize>) => resize(event.detail)
             "
