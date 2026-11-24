@@ -158,14 +158,6 @@
       false
   );
 
-  /** Whether the content starts with a tab strip, which sits flush with its top. */
-  const hasContentTabs = computed(
-    () =>
-      (uiPayload.value?.nodes.filter(
-        (node) => node.component === 'craft:tab' && !isSidebarTab(node)
-      ).length ?? 0) > 1
-  );
-
   /** Field layout tabs that render as details panels, rather than tabs. */
   const sidebarTabs = computed(
     () => uiPayload.value?.nodes.filter(isSidebarTab) ?? []
@@ -935,15 +927,8 @@
     <craft-spinner :label="t('Loading')"></craft-spinner>
   </div>
   <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
-    <div
-      ref="content"
-      :class="
-        hasContentTabs
-          ? ['pb-lg', {'pt-md': !isSlideout && !contentInPreview}]
-          : 'py-lg'
-      "
-    >
-      <CpContainer>
+    <div ref="content" class="element-editor__content">
+      <CpContainer class="py-lg">
         <component
           :is="formWrapper ?? 'div'"
           v-bind="formWrapper ? {editor, region: 'content'} : {}"

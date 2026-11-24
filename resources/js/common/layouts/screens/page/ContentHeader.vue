@@ -20,7 +20,7 @@
 </script>
 
 <template>
-  <div id="cp-content-header" class="pt-lg" :class="{'pb-md': !ruled}">
+  <div id="cp-content-header" class="pbs-lg" :class="{'pbe-lg': !ruled}">
     <CpContainer>
       <div
         class="flex flex-wrap gap-md items-center justify-between"

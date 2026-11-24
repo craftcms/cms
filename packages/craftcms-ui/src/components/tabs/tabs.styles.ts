@@ -23,12 +23,12 @@ export default css`
   }
 
   /*
-   * Room beside each label for its hover fill. The gap between tabs shrinks to
-   * make up for it, so the labels sit only a little further apart.
+   * Room beside each label for its hover fill. The gap between tabs is small
+   * to make up for it, just enough to keep neighbouring fills apart.
    */
   :host(:not([appearance='fill'])) {
     --c-tab-padding-inline: var(--c-spacing-md);
-    --c-tabs-tab-gap: var(--c-spacing-md);
+    --c-tabs-tab-gap: var(--c-spacing-sm);
   }
 
   /*

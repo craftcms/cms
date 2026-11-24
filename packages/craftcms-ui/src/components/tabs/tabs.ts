@@ -184,7 +184,7 @@ const FIT_TOLERANCE = 1;
  * @cssproperty --c-tabs-gap - Space between the tab strip and the panels.
  *   Defaults to `--c-spacing-lg`.
  * @cssproperty --c-tabs-tab-gap - Space between adjacent tabs. Defaults to
- *   `--c-spacing-md`, or `--c-spacing-sm` with the `fill` appearance.
+ *   `--c-spacing-sm`, or `--c-spacing-md` on the inline placements.
  * @cssproperty --c-tabs-strip-min-inline-size - Minimum width of the tab
  *   strip on the inline placements. Defaults to `120rem / 16`.
  * @cssproperty --c-tabs-border - Color of the rule along the tab strip.
