@@ -96,6 +96,12 @@ export class PreviewFileModal {
     }
   });
   #destroyed = false;
+  #settleClosed: () => void = () => {};
+
+  /** Settles once the preview has closed, however it closes. */
+  readonly closed = new Promise<void>((resolve) => {
+    this.#settleClosed = resolve;
+  });
 
   constructor(
     assetId: number,
@@ -246,6 +252,8 @@ export class PreviewFileModal {
       PreviewFileModal.openInstance = null;
       destroyFocalPoint();
     }
+
+    this.#settleClosed();
   }
 
   loadAsset(

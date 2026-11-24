@@ -44,6 +44,12 @@ const slideouts = vi.hoisted(() => ({
 
 vi.mock('@/common/slideouts', () => slideouts);
 
+const imageEditor = vi.hoisted(() => ({
+  openImageEditorDialog: vi.fn(async () => ({closed: Promise.resolve()})),
+}));
+
+vi.mock('@/modules/image-editor/open-image-editor-dialog', () => imageEditor);
+
 /**
  * The link type and its destination render as one grouped input, like a
  * grouped UI field (“Field Limit”). Runs in Chromium so names, descriptions
@@ -797,6 +803,113 @@ describe('a linked element', () => {
       .element(page.getByRole('button', {name: 'Edit'}))
       .toBeVisible();
     post.mockRestore();
+  });
+
+  describe('with an action that opens a dialog', () => {
+    let events: string[];
+    let close: () => void;
+    let craft: typeof window.Craft;
+
+    beforeEach(async () => {
+      events = [];
+      for (const name of ['element-select-start', 'element-select-end']) {
+        linkField.addEventListener(name, () => events.push(name));
+      }
+      const closed = new Promise<void>((resolve) => (close = resolve));
+      craft = window.Craft;
+      window.Craft = Object.assign(Object.create(null), craft, {
+        PreviewFileModal: vi.fn(function () {
+          events.push('preview');
+          return {closed};
+        }),
+      });
+      linkField.modelValue = {
+        ...linkField.modelValue,
+        element: {
+          ...linkField.modelValue!.element!,
+          actions: [
+            {
+              label: 'Preview file',
+              icon: 'view',
+              behavior: {type: 'previewFile', assetId: 12},
+            },
+          ],
+        },
+      };
+      await openMenu();
+      await page.getByRole('button', {name: 'Preview file'}).click();
+      await expect
+        .poll(() => events)
+        .toEqual(['element-select-start', 'preview']);
+    });
+
+    afterEach(() => {
+      window.Craft = craft;
+    });
+
+    it('suspends while the dialog is showing', async () => {
+      await new Promise((settle) => setTimeout(settle));
+      expect(events).toHaveLength(2);
+
+      close();
+      await expect.poll(() => events.at(-1)).toBe('element-select-end');
+    });
+
+    it('resumes once the dialog closes, after it was moved', async () => {
+      const host = document.createElement('div');
+      document.body.append(host);
+
+      try {
+        host.append(linkField);
+        close();
+        await expect.poll(() => events.at(-1)).toBe('element-select-end');
+      } finally {
+        host.remove();
+      }
+    });
+
+    it('doesn’t resume once it’s removed', async () => {
+      linkField.remove();
+      close();
+      await new Promise((settle) => setTimeout(settle));
+
+      expect(events).toHaveLength(2);
+    });
+  });
+
+  it('resumes when the image editor can’t be opened', async () => {
+    const events: string[] = [];
+    for (const name of ['element-select-start', 'element-select-end']) {
+      linkField.addEventListener(name, () => events.push(name));
+    }
+    imageEditor.openImageEditorDialog.mockRejectedValueOnce(
+      new Error('Failed to fetch dynamically imported module')
+    );
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    linkField.modelValue = {
+      ...linkField.modelValue,
+      element: {
+        ...linkField.modelValue!.element!,
+        actions: [
+          {
+            label: 'Open in Image Editor',
+            icon: 'paintbrush',
+            behavior: {type: 'editImage', assetId: 12, settings: {} as never},
+          },
+        ],
+      },
+    };
+
+    try {
+      await openMenu();
+      await page.getByRole('button', {name: 'Open in Image Editor'}).click();
+
+      await expect
+        .poll(() => events)
+        .toEqual(['element-select-start', 'element-select-end']);
+    } finally {
+      error.mockRestore();
+    }
   });
 
   it('is replaced through the element selector, from the menu button', async () => {

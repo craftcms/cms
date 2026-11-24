@@ -1,7 +1,13 @@
 import {t, type ElementInfo} from '@craftcms/ui';
 import {createElementSelectorModal} from '@/modules/element-selector-modal/create-element-selector-modal';
 import {isInteractiveClick} from '@/common/utils/dom';
-import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+import type {ActionItem} from '@/common/types';
+import {
+  createElementActionDispatcher,
+  createElementActionMenu,
+  type ElementActionBehavior,
+  type ElementActionMenuItem,
+} from '@/modules/elements/composables/useElementActionMenu';
 import {ElementPresentationsController} from '@/modules/elements/element-presentations-controller';
 import {openElementEditor} from '@/modules/elements/open-element-editor';
 import type {ChipElement} from '@/modules/elements/types/element-data';
@@ -114,6 +120,12 @@ function chipData(element: LinkedElement): string {
   return JSON.stringify(element);
 }
 
+/** Element actions that open a dialog: the file preview and the image editor. */
+const dialogBehaviors = new Set<ElementActionBehavior['type']>([
+  'previewFile',
+  'editImage',
+]);
+
 /** Whether a chip is the one drawn from the selector's label, before the rest of it is fetched. */
 function isPlaceholder(element: LinkedElement): boolean {
   return Object.keys(element).every((key) =>
@@ -212,7 +224,40 @@ class CraftLinkField extends LitElement {
   );
 
   /** One dispatcher for the actions the server describes for the chip's element. */
-  private readonly toActionItems = createElementActionMenu();
+  private readonly elementActionItems = createElementActionMenu();
+
+  /** Runs the chip's actions that open a dialog, so the field can tell when one can't. */
+  private readonly dispatchAction = createElementActionDispatcher();
+
+  /**
+   * The chip's element's own actions. Those that open a dialog first set aside
+   * a popover the field is in, as Edit does, and bring it back once the dialog
+   * has closed: the dialog taking focus would otherwise dismiss it.
+   */
+  private readonly toActionItems = (
+    items: ElementActionMenuItem[]
+  ): ActionItem[] =>
+    this.elementActionItems(items).map((action, index) => {
+      const item = items[index];
+
+      if (
+        !item ||
+        item.type === 'hr' ||
+        !dialogBehaviors.has(item.behavior.type)
+      ) {
+        return action;
+      }
+
+      const {behavior, destructive} = item;
+
+      return {
+        ...action,
+        onClick: (event: Event) =>
+          void this.runDialogAction(() =>
+            this.dispatchAction(behavior, destructive, event)
+          ),
+      };
+    });
 
   @state()
   private linkAttributes: LinkAttributes = {...emptyAttributes};
@@ -544,6 +589,23 @@ class CraftLinkField extends LitElement {
     });
 
     if (!panel) {
+      this.dispatchElementSelectEvent('element-select-end');
+    }
+  }
+
+  /** Runs an action that opens a dialog, with the field's popover set aside until the dialog closes. */
+  private async runDialogAction(
+    open: () => void | Promise<void>
+  ): Promise<void> {
+    await this.dispatchElementSelectStartEvent(this.actionMenuInvoker());
+
+    try {
+      await open();
+    } catch (error) {
+      console.error(error);
+    }
+
+    if (this.isConnected) {
       this.dispatchElementSelectEvent('element-select-end');
     }
   }
