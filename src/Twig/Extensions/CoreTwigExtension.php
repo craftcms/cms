@@ -214,7 +214,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
                 // testEmpty() only converts Stringable values to strings when they aren't countable or traversable
                 if ($isSandboxed && $obj instanceof Stringable && ! $obj instanceof Countable && ! $obj instanceof Traversable) {
-                    Twig::get()->getExtension(SandboxExtension::class)->ensureToStringAllowed($obj);
+                    Twig::get()->getExtension(SandboxExtension::class)->getSecurityPolicy()->checkMethodAllowed($obj, '__toString');
                 }
 
                 return CoreExtension::testEmpty($obj);
