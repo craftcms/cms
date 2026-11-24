@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementSaved;
@@ -722,23 +723,21 @@ it('invalidates a save’s caches once an enclosing transaction commits', functi
         ->and($invalidations[0]['tags'])->toContain("element::$entry->id");
 });
 
-it('bypasses queries cached with a wrapped dependency while their element’s tags are pending', function () {
+it('bypasses queries cached with a composite dependency while any tags are pending', function () {
     $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
     $cachedTitle = fn (): string => Entry::find()->id($entry->id)
-        ->cache(3600, new AnyDependency([new TagDependency(['element::'.Entry::class])]))
+        ->cache(3600, new AnyDependency([new TagDependency(['element::'.User::class])]))
         ->one()->title;
 
     expect($cachedTitle())->toBe('Old title');
 
     DB::beginTransaction();
-    $entry->title = 'New title';
+    DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->update(['title' => 'New title']);
+    app(ElementCaches::class)->invalidateForElementType(User::class);
 
-    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
-        ->and($cachedTitle())->toBe('New title');
+    expect($cachedTitle())->toBe('New title');
 
     DB::rollBack();
-
-    expect($cachedTitle())->toBe('Old title');
 });
 
 it('keeps a save’s caches pending when an enclosing transaction rolls back', function () {

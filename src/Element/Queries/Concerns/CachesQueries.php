@@ -83,7 +83,8 @@ trait CachesQueries
      * Returns the cached result for the query, or runs the callback and caches its result.
      *
      * The cache is bypassed while any of the query’s cache tags are waiting to be invalidated, so code that runs
-     * during an element operation, such as an `ElementSaved` listener, reads the element’s new state.
+     * during an element operation, such as an `ElementSaved` listener, reads the element’s new state. Queries cached
+     * with a dependency other than a `TagDependency` are bypassed while any tags are pending.
      *
      * @template T
      *
@@ -93,10 +94,14 @@ trait CachesQueries
     protected function rememberQueryResult(string $key, Closure $callback): mixed
     {
         $dependency = $this->getCacheDependency();
-        // The query's own tags apply whatever dependency it's cached with, such as one that wraps a TagDependency
-        $tags = $dependency instanceof TagDependency ? [...$this->getCacheTags(), ...$dependency->tags] : $this->getCacheTags();
+        $elementCaches = app(ElementCaches::class);
 
-        if (app(ElementCaches::class)->hasPendingInvalidations($tags)) {
+        // Other dependencies, such as an AnyDependency, don't expose their tags, so they're bypassed while any are pending
+        $bypass = $dependency instanceof TagDependency
+            ? $elementCaches->hasPendingInvalidations($dependency->tags)
+            : $elementCaches->hasAnyPendingInvalidations();
+
+        if ($bypass) {
             return $callback();
         }
 

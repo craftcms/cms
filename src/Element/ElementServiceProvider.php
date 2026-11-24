@@ -45,6 +45,10 @@ class ElementServiceProvider extends ServiceProvider
         Event::subscribe(BroadcastElementChanges::class);
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
+        // Resolved while the app boots, so every Octane sandbox shares this instance and its pending tags, rather than
+        // one sandbox creating its own and losing its pending tags when Octane discards it
+        app(ElementCaches::class);
+
         app()->terminating(function () {
             app(ElementCaches::class)->invalidatePendingTags();
             app(BulkOpDeferrals::class)->persistPending();

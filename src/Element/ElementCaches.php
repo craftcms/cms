@@ -65,6 +65,16 @@ class ElementCaches
     }
 
     /**
+     * Returns whether any cache tags are waiting to be invalidated.
+     *
+     * Caches with dependencies whose tags can't be read, such as an `AnyDependency`, may be stale while this is true.
+     */
+    public function hasAnyPendingInvalidations(): bool
+    {
+        return $this->pendingTags !== [];
+    }
+
+    /**
      * Returns whether any of the given cache tags are waiting to be invalidated.
      *
      * Caches tagged with them are stale, so they shouldn't be read or written until the tags are invalidated.
