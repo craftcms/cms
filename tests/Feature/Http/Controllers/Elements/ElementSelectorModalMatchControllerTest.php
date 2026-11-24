@@ -60,5 +60,6 @@ it('counts saved unpublished drafts, which selector modals list', function () {
 it('holds elements to the selector’s criteria too', function () {
     $entry = EntryModel::factory()->createElement();
 
-    expect(($this->matches)($entry, 'in', ['slug' => 'something-else']))->toBeFalse();
+    expect(($this->matches)($entry, 'in', ['slug' => 'something-else']))->toBeFalse()
+        ->and(($this->matches)($entry, 'in', ['id' => ['not', $entry->id]]))->toBeFalse();
 });

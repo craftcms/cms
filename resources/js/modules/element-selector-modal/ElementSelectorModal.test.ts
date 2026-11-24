@@ -752,6 +752,50 @@ describe('the new entry button', () => {
     unmount();
   });
 
+  it('stays away on a section the user can’t save entries in, even when another one can', async () => {
+    const authors = window.Craft!.creatableSections[0];
+    authors.canSave = false;
+    window.Craft!.creatableSections.push({
+      ...authors,
+      id: 5,
+      uid: 'def',
+      handle: 'books',
+      name: 'Books',
+      canSave: true,
+    });
+    const books = {
+      type: 'native',
+      key: 'section:def',
+      label: 'Books',
+      data: {handle: 'books'},
+    };
+
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source, books]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    expect(
+      host.querySelector('[slot="secondary-actions"] craft-button')
+    ).toBeNull();
+
+    stub.emit!('source-change', books);
+    await nextTick();
+
+    expect(
+      host
+        .querySelector('[slot="secondary-actions"] craft-button')
+        ?.textContent?.trim()
+    ).toBe('New Books entry');
+
+    unmount();
+  });
+
   it('offers only the entry types the selection condition allows', async () => {
     window.Craft!.creatableSections[0].entryTypes.push({
       uid: 'type-b',

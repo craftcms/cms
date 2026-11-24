@@ -36,8 +36,9 @@ readonly class ElementSelectorModalMatchController
             Typecast::configure($query, ElementHelper::cleanseQueryCriteria($criteria));
         }
 
+        // A separate clause, rather than `id()`, so it doesn't replace an ID restriction from the criteria
         $query
-            ->id($request->integer('elementId'))
+            ->where('elements.id', $request->integer('elementId'))
             ->siteId($request->input('siteId'));
 
         $request->selectionCondition()?->modifyQuery($query);

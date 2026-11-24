@@ -51,13 +51,20 @@
   const {creatableTypes, menuItems} = useCreatableEntryTypes({
     sources: () => props.sources,
     source: () => props.source,
-    // Only sections whose entries the user can save (`saveEntries`)
     creatableSections: () =>
-      ((window.Craft?.creatableSections as CreatableSection[]) ?? []).filter(
-        (section) => section.canSave
-      ),
+      (window.Craft?.creatableSections as CreatableSection[]) ?? [],
     siteId: () => props.siteId,
-    allows: () => creatableUnderCondition(props.controller.options.condition),
+    // Only in sections whose entries the user can save (`saveEntries`).
+    // Filtered here rather than from the sections, which also tell which
+    // section the source on screen shows.
+    allows: () => {
+      const allowedByCondition = creatableUnderCondition(
+        props.controller.options.condition
+      );
+
+      return (creatable) =>
+        creatable.section.canSave && (allowedByCondition?.(creatable) ?? true);
+    },
   });
 
   const label = computed(() => {
