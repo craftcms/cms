@@ -26,7 +26,7 @@
 - Fixed a bug where `ResponseHeaders::noCache()` overrode cache headers set after it, such as by a later `{% expires %}` tag. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where concurrent transforms of the same remote image could fail because one deleted the downloaded source while another was still using it. ([#20983](https://github.com/craftcms/cms/pull/20983))
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
-- Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060))
+- Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060), [#21063](https://github.com/craftcms/cms/pull/21063))
 - Fixed a bug where the `configuration_*` MCP tools couldn’t assign a workflow to a section. ([#21042](https://github.com/craftcms/cms/issues/21042), [#21051](https://github.com/craftcms/cms/pull/21051))
 - Fixed a bug where `craft:users:create` could create users with a username or email that was already taken. ([#21040](https://github.com/craftcms/cms/issues/21040), [#21052](https://github.com/craftcms/cms/pull/21052))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
@@ -40,7 +40,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - URLs generated with `route()` and `action()` for routes in the `craft` middleware group now use the current site’s base URL, and a `site` parameter generates them for another site. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added the `rootOnly()` route macro, for routes in the `craft` middleware group that should only match at the app’s root URL and keep it in their URLs. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
-- Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21060](https://github.com/craftcms/cms/issues/21060))
+- Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
