@@ -53,8 +53,7 @@ it('keeps link cells with unavailable link types unchanged when the table is edi
     expect($normalized[0]['link'])->toBe($raw)
         ->and($field->serializeValueForDb($normalized, new Entry))->toBe([['col1' => $raw]])
         ->and($errors)->toBe([])
-        ->and($cell->mode)->toBe(ControlMode::Editable)
-        ->and($cell->props['registeredTypes'])->toContain('url')->not->toContain('missing');
+        ->and($cell->mode)->toBe(ControlMode::Editable);
 });
 
 it('scopes tables with columns that can link to elements to the field itself', function () {

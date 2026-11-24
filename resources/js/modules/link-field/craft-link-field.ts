@@ -407,7 +407,15 @@ class CraftLinkField extends LitElement {
 
   /** Whether the field shows its link as a chip. */
   private get showsChip(): boolean {
-    return this.live && this.narrow;
+    return this.live && (this.narrow || this.unavailable);
+  }
+
+  /**
+   * Whether the link's type isn't one the field offers. Its editor would swap
+   * in the first type that is, so it's kept as a chip that can only be removed.
+   */
+  private get unavailable(): boolean {
+    return Boolean(this.modelValue?.value) && !this.modelType();
   }
 
   protected override updated(changedProperties: PropertyValues<this>): void {

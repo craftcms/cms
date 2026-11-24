@@ -35,7 +35,6 @@ function compactControl(
   showLabelField: boolean;
   advancedFields: LinkAdvancedField[];
   compact: boolean;
-  registeredTypes: string[] | null;
 }> {
   return {
     type: 'CraftCms\\Cms\\Ui\\Controls\\Link',
@@ -45,7 +44,6 @@ function compactControl(
       showLabelField: true,
       advancedFields,
       compact: true,
-      registeredTypes: null,
     },
     path: ['fields', 'link'],
     mode: 'editable',
@@ -260,12 +258,21 @@ it('removes a compact link, and moves focus to the Add link button', async () =>
     .toBe('Add link, Link, row 1');
 });
 
-it('locks links of unavailable types, and keeps submitting them', async () => {
-  await mountCell({type: 'retired', value: 'opaque', label: 'Kept'});
+it('locks links of unavailable types at any width, and keeps submitting them', async () => {
+  // Wide enough for the side-by-side editor, which would swap in the first available type
+  await mountCell(
+    {type: 'retired', value: 'opaque', label: 'Kept'},
+    {width: 400}
+  );
 
   await expect
     .element(page.getByText('This link type is no longer available.'))
     .toBeVisible();
+  expect(
+    container!
+      .querySelector('craft-link-field[compact]')!
+      .querySelector('craft-input, craft-select')
+  ).toBeNull();
   expect(
     Object.fromEntries(
       [...container!.querySelectorAll<HTMLInputElement>('input[type="hidden"]')]

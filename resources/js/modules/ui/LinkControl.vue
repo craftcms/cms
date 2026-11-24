@@ -15,7 +15,6 @@
     showLabelField?: boolean;
     advancedFields?: LinkAdvancedField[];
     compact?: boolean;
-    registeredTypes?: string[] | null;
   };
   type LinkValue = Pick<LinkFieldValue, 'type' | 'value'> &
     Partial<Omit<LinkFieldValue, 'type' | 'value'>>;
