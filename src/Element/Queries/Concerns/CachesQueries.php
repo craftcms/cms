@@ -93,11 +93,10 @@ trait CachesQueries
     protected function rememberQueryResult(string $key, Closure $callback): mixed
     {
         $dependency = $this->getCacheDependency();
+        // The query's own tags apply whatever dependency it's cached with, such as one that wraps a TagDependency
+        $tags = $dependency instanceof TagDependency ? [...$this->getCacheTags(), ...$dependency->tags] : $this->getCacheTags();
 
-        if (
-            $dependency instanceof TagDependency &&
-            app(ElementCaches::class)->hasPendingInvalidations($dependency->tags)
-        ) {
+        if (app(ElementCaches::class)->hasPendingInvalidations($tags)) {
             return $callback();
         }
 

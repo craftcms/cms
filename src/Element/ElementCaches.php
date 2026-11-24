@@ -37,7 +37,7 @@ class ElementCaches
      */
     private array $pendingTags = [];
 
-    private bool $registeredShutdownFlush = false;
+    private static bool $registeredShutdownFlush = false;
 
     /**
      * Runs a callback, collecting the cache tags it invalidates, and invalidates each one once after it returns.
@@ -239,16 +239,17 @@ class ElementCaches
             $this->pendingTags[$tag] = true;
         }
 
-        if (! $this->registeredShutdownFlush) {
-            // In case the process exits or hits a fatal error before the tags are invalidated
-            register_shutdown_function(function (): void {
+        if (! self::$registeredShutdownFlush) {
+            // In case the process exits or hits a fatal error before the tags are invalidated. Registered once per
+            // process, and resolves the service when it runs, so it doesn't keep Octane sandboxes' instances alive.
+            register_shutdown_function(static function (): void {
                 try {
-                    $this->invalidatePendingTags();
+                    app(self::class)->invalidatePendingTags();
                 } catch (Throwable) {
                     // The app may already be gone
                 }
             });
-            $this->registeredShutdownFlush = true;
+            self::$registeredShutdownFlush = true;
         }
 
         if ($this->deferDepth === 0) {

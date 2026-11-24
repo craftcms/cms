@@ -35,6 +35,8 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Dependency\AnyDependency;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -718,6 +720,25 @@ it('invalidates a save’s caches once an enclosing transaction commits', functi
     expect($invalidations)->toHaveCount(1)
         ->and($invalidations[0]['level'])->toBe($outerLevel)
         ->and($invalidations[0]['tags'])->toContain("element::$entry->id");
+});
+
+it('bypasses queries cached with a wrapped dependency while their element’s tags are pending', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+    $cachedTitle = fn (): string => Entry::find()->id($entry->id)
+        ->cache(3600, new AnyDependency([new TagDependency(['element::'.Entry::class])]))
+        ->one()->title;
+
+    expect($cachedTitle())->toBe('Old title');
+
+    DB::beginTransaction();
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($cachedTitle())->toBe('New title');
+
+    DB::rollBack();
+
+    expect($cachedTitle())->toBe('Old title');
 });
 
 it('keeps a save’s caches pending when an enclosing transaction rolls back', function () {
