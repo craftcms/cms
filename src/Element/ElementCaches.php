@@ -152,6 +152,22 @@ class ElementCaches
     }
 
     /**
+     * Marks an element’s cache tags as pending within the current {@see deferInvalidations()} scope, without
+     * invalidating them or dispatching an event, so caches tagged with them are bypassed until the scope ends.
+     *
+     * Use it when the element’s caches are invalidated after a transaction commits, but code that runs before
+     * then, such as event listeners, should read its new state.
+     *
+     * @internal
+     */
+    public function markPendingForElement(ElementInterface $element): void
+    {
+        if ($this->deferDepth > 0) {
+            $this->deferTags($this->tagsForElement($element));
+        }
+    }
+
+    /**
      * @return list<string>
      */
     public function invalidateForElement(ElementInterface $element): array
@@ -171,16 +187,7 @@ class ElementCaches
     private function invalidateTags(array $tags): array
     {
         if ($this->deferDepth > 0) {
-            foreach ($tags as $tag) {
-                $this->deferredTags[$tag] = true;
-            }
-
-            if (! $this->registeredShutdownFlush) {
-                register_shutdown_function($this->flushDeferredInvalidations(...));
-                $this->registeredShutdownFlush = true;
-            }
-
-            $this->flushDeferredInvalidationsOverThreshold();
+            $this->deferTags($tags);
 
             return $tags;
         }
@@ -188,6 +195,23 @@ class ElementCaches
         TagDependency::invalidate($tags);
 
         return $tags;
+    }
+
+    /**
+     * @param  string[]  $tags
+     */
+    private function deferTags(array $tags): void
+    {
+        foreach ($tags as $tag) {
+            $this->deferredTags[$tag] = true;
+        }
+
+        if (! $this->registeredShutdownFlush) {
+            register_shutdown_function($this->flushDeferredInvalidations(...));
+            $this->registeredShutdownFlush = true;
+        }
+
+        $this->flushDeferredInvalidationsOverThreshold();
     }
 
     private function flushDeferredInvalidations(): void

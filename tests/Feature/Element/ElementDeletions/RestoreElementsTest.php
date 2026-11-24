@@ -52,6 +52,26 @@ it('restores a trashed entry and updates restore side effects', function () {
     Event::assertDispatched(fn (ElementRestored $event) => $event->element->id === $entry->id);
 });
 
+it('reads fresh cached queries from ElementRestored listeners', function () {
+    $entry = Entry::factory()->createElement();
+    app(Elements::class)->deleteElement($entry);
+
+    expect(EntryElement::find()->id($entry->id)->cache()->exists())->toBeFalse();
+
+    $existsInListener = [];
+    Event::listen(function (ElementRestored $event) use ($entry, &$existsInListener) {
+        if ($event->element->id === $entry->id) {
+            $existsInListener[] = EntryElement::find()->id($entry->id)->cache()->exists();
+        }
+    });
+
+    $trashedEntry = EntryElement::find()->id($entry->id)->trashed()->one();
+
+    expect(app(ElementDeletions::class)->restoreElements([$trashedEntry]))->toBeTrue()
+        ->and($existsInListener)->toBe([true])
+        ->and(EntryElement::find()->id($entry->id)->cache()->exists())->toBeTrue();
+});
+
 it('returns false when an element vetoes restore in beforeRestore', function () {
     $action = restoreElementsService();
     $element = new TestRestoreElement(beforeRestoreResult: false);
