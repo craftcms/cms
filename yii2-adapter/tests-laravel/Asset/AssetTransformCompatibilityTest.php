@@ -510,6 +510,28 @@ it('honors before-generate URLs before invoking a legacy transformer', function(
     }
 });
 
+it('resolves listener URLs for assets with an applied transform', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $calls = 0;
+    EventFacade::listen(TransformGenerating::class, function(TransformGenerating $event) use (&$calls): void {
+        if (++$calls > 10) {
+            throw new RuntimeException('The listener was called recursively.');
+        }
+
+        $event->url = 'https://cdn.test/source.jpg?w=100';
+    });
+
+    $asset->setTransform(['width' => 100]);
+
+    expect($asset->getUrl())->toBe('https://cdn.test/source.jpg?w=100')
+        ->and($asset->getWidth())->toBe(100)
+        ->and($asset->getHeight())->toBe(50);
+});
+
 it('keeps unexpected legacy transformer exceptions observable', function(): void {
     Event::on(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS, function(RegisterComponentTypesEvent $event): void {
         $event->types[] = ThrowingLegacyImageTransformer::class;
