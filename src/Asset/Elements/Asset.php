@@ -3727,7 +3727,7 @@ CSS,
 
             // Relocate the file?
             if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
-                $this->_relocateFile();
+                $this->_relocateFile($isNew);
             }
 
             // Get the asset record
@@ -4164,7 +4164,7 @@ CSS,
      * @throws VolumeException if a file operation errored
      * @throws Exception if something else goes wrong
      */
-    private function _relocateFile(): void
+    private function _relocateFile(bool $isNew): void
     {
         // Get the (new?) folder ID & filename
         if (isset($this->newLocation)) {
@@ -4253,7 +4253,8 @@ CSS,
         }
 
         $hasNewFile = $this->uploadSource !== null || $tempPath !== null;
-        if ($oldVolume !== null && $oldPath !== null && ($hasNewFile || ! $sameFile)) {
+        // A new asset can have a folder before its first save, but it has no old file
+        if (! $isNew && $oldVolume !== null && $oldPath !== null && ($hasNewFile || ! $sameFile)) {
             event(new AssetFileChanged(
                 asset: $this,
                 change: $hasNewFile ? AssetFileChange::Replaced : AssetFileChange::Moved,

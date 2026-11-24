@@ -791,9 +791,8 @@ class ImageTransformer
             return null;
         }
 
-        $path = implode('/', array_map(rawurlencode(...), explode('/', $this->getTransformFolderPath($volume, $folderPath))));
-
-        return Html::encodeSpaces($this->getTransformDisk($volume)->url($path));
+        // Built like getTransformUrl() builds transform URLs, so it’s a prefix of them
+        return Html::encodeSpaces($this->getTransformDisk($volume)->url($this->getTransformFolderPath($volume, $folderPath)));
     }
 
     /**

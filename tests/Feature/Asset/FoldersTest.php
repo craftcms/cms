@@ -475,6 +475,11 @@ it('renames subfolders whose paths differ in case from the renamed folder', func
         'foldedMoved' => $store($foldedFolder = $store($root->id, 'Straße/'), 'STRASSE/moved/'),
     ];
 
+    $renamed = [];
+    Event::listen(FolderRenamed::class, function (FolderRenamed $event) use (&$renamed) {
+        $renamed[] = $event;
+    });
+
     try {
         $this->folders->renameFolderById($folder, 'Renamed');
         $this->folders->renameFolderById($unicodeFolder, 'Unicode');
@@ -494,6 +499,12 @@ it('renames subfolders whose paths differ in case from the renamed folder', func
             'unicodeMoved' => 'Unicode/moved/',
             'foldedMoved' => 'Folded/moved/',
         ]);
+
+        // Caches hold their files under their old paths, so those paths get prefixes of their own
+        $separate = $disk->directoryExists('uploads/separate') ? [] : ['uploads/separate/'];
+        expect($renamed[0]->oldSubfolderPaths)->toEqualCanonicalizing(['uploads/moved/', ...$separate])
+            ->and($renamed[1]->oldSubfolderPaths)->toBe(['ⱥ/moved/'])
+            ->and($renamed[2]->oldSubfolderPaths)->toBe(['STRASSE/moved/']);
     } finally {
         $disk->deleteDirectory('');
     }

@@ -386,6 +386,7 @@ class Folders
         // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder’s
         $disk = $volume->sourceDisk();
         $folderIds = [];
+        $oldSubfolderPaths = [];
         $parentIds = [$folder->id];
         while ($parentIds) {
             array_push($folderIds, ...$parentIds);
@@ -415,6 +416,12 @@ class Folders
                 // where the transform disk ignores case
                 if ($oldPrefix !== $oldFolderPath) {
                     $moveTransforms($oldChildPath, $newChildPath);
+
+                    // Its files were served under its old path, which the renamed folder’s doesn’t cover. Subfolders
+                    // are found parent first, so a path already covered by one in the list is skipped
+                    if (! array_any($oldSubfolderPaths, fn (string $path) => str_starts_with($oldChildPath, $path))) {
+                        $oldSubfolderPaths[] = $oldChildPath;
+                    }
                 }
 
                 $childFolder->path = $newChildPath;
@@ -431,7 +438,7 @@ class Folders
             ->cursor()
             ->each(fn (Asset $asset) => app(ElementCaches::class)->invalidateForElement($asset));
 
-        event(new FolderRenamed($folder, $oldFolderPath));
+        event(new FolderRenamed($folder, $oldFolderPath, $oldSubfolderPaths));
 
         return $newName;
     }

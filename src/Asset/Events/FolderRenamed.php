@@ -24,10 +24,16 @@ class FolderRenamed implements ShouldDispatchAfterCommit
         public VolumeFolder $folder,
         /** The folder’s path before the rename, with a trailing slash */
         public ?string $oldPath = null,
+        /**
+         * @var list<string> The paths before the rename of subfolders whose stored paths differed in case from
+         *                   {@see $oldPath}, such as `uploads/moved/` under `Uploads/` on case-insensitive storage, with trailing slashes
+         */
+        public array $oldSubfolderPaths = [],
     ) {}
 
     /**
-     * Returns the URL prefixes the folder’s files and their transforms were served from before the rename.
+     * Returns the URL prefixes the folder’s files and their transforms were served from before the rename, including
+     * those of {@see $oldSubfolderPaths}.
      *
      * @return list<string>
      */
@@ -38,18 +44,21 @@ class FolderRenamed implements ShouldDispatchAfterCommit
         }
 
         $volume = $this->folder->getVolume();
-        $prefixes = [];
+        $sourcePrefixes = [];
+        $transformPrefixes = [];
 
-        if ($volume->sourceHasUrls()) {
-            $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
-            $prefixes[] = Html::encodeSpaces($volume->sourceDisk()->url($path));
+        foreach ([$this->oldPath, ...$this->oldSubfolderPaths] as $oldPath) {
+            if ($volume->sourceHasUrls()) {
+                $path = implode('/', array_map(rawurlencode(...), explode('/', $oldPath)));
+                $sourcePrefixes[] = Html::encodeSpaces($volume->sourceDisk()->url($path));
+            }
+
+            $transformPrefix = app(ImageTransformer::class)->getTransformFolderUrl($volume, $oldPath);
+            if ($transformPrefix !== null) {
+                $transformPrefixes[] = $transformPrefix;
+            }
         }
 
-        $transformPrefix = app(ImageTransformer::class)->getTransformFolderUrl($volume, $this->oldPath);
-        if ($transformPrefix !== null) {
-            $prefixes[] = $transformPrefix;
-        }
-
-        return $prefixes;
+        return array_values(array_unique([...$sourcePrefixes, ...$transformPrefixes]));
     }
 }

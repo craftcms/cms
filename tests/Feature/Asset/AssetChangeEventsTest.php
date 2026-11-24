@@ -14,6 +14,7 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidated;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -119,6 +120,22 @@ it('reports the URL each file was served from, as well as its disk URL', functio
         ]);
 });
 
+it('reports nothing when a new asset is saved with its folder already set', function () {
+    $temp = AssetsHelper::tempFilePath('jpg');
+    copy(dirname(__DIR__, 2).'/_data/assets/files/background.jpg', $temp);
+    $asset = new Asset;
+    $asset->tempFilePath = $temp;
+    $asset->setFilename('new.jpg');
+    $asset->folderId = $this->folderModel->id;
+    $asset->newFolderId = $this->folderModel->id;
+    $asset->setVolumeId($this->volume->id);
+    $asset->ruleset->useScenario(AssetRules::SCENARIO_CREATE);
+
+    expect(Elements::saveElement($asset))->toBeTrue()
+        ->and($this->disk->exists('My Photos/new.jpg'))->toBeTrue()
+        ->and(($this->of)(AssetFileChanged::class))->toHaveCount(0);
+});
+
 it('does not report a move that was rolled back', function () {
     $asset = ($this->image)();
     $root = app(Folders::class)->getFolderById($this->rootId);
@@ -198,6 +215,9 @@ it('reports deleted transform files with the URLs they were served from', functi
 });
 
 it('reports a renamed folder’s old URL prefixes, including its transforms’', function () {
+    // Disks put characters such as parentheses in URLs as they are, and only spaces get encoded
+    $this->folderModel->update(['name' => 'My (2026)', 'path' => 'My (2026)/']);
+    $this->disk->makeDirectory('My (2026)');
     $asset = ($this->image)();
     // The transform URL as Craft served it before the rename
     $transformUrl = strtok(app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->getUrl(['width' => 100])), '?');
@@ -207,10 +227,10 @@ it('reports a renamed folder’s old URL prefixes, including its transforms’',
     $renamed = ($this->of)(FolderRenamed::class);
     $prefixes = $renamed[0]->prefixes();
     expect($renamed)->toHaveCount(1)
-        ->and($renamed[0]->oldPath)->toBe('My Photos/')
+        ->and($renamed[0]->oldPath)->toBe('My (2026)/')
         ->and($renamed[0]->folder->path)->toBe('Trips/')
         ->and($prefixes)->toHaveCount(2)
-        ->and($prefixes[0])->toBe('https://cdn.example.test/media%20files/My%20Photos/')
+        ->and($prefixes[0])->toBe('https://cdn.example.test/media%20files/My%20%282026%29/')
         ->and($transformUrl)->toStartWith($prefixes[1])
-        ->and($prefixes[1])->toEndWith('/My%20Photos/');
+        ->and($prefixes[1])->toEndWith('/My%20(2026)/');
 });
