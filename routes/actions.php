@@ -7,6 +7,7 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Gql\Http\Middleware\AuthenticateAccessToken as AuthenticateGqlAccessToken;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\AboutCraftController;
@@ -172,7 +173,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
 
         // GQL API
-        Route::any('graphql/api', GqlApiController::class);
+        // Access tokens are authenticated before the control panel and maintenance mode checks
+        Route::allowDuringMaintenance()->middleware(AuthenticateGqlAccessToken::class)->any('graphql/api', GqlApiController::class);
 
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
