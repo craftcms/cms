@@ -2531,6 +2531,7 @@ return [
     'Query for users in the “{name}” user group' => 'Query for users in the “{name}” user group',
     'Query for users' => 'Query for users',
     'Query for volumes' => 'Query for volumes',
+    'Query for {type}' => 'Query for {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.',
     'Queue Manager' => 'Queue Manager',
     'Quick Post' => 'Quick Post',

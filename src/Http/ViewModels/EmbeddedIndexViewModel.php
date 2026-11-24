@@ -377,7 +377,6 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             'attributes' => ['data' => ['cp-url' => $this->editUrl($element)]],
             'hyperlink' => ! $element->trashed,
             'autoReload' => $this->mode() !== ElementIndexViewMode::Cards->value,
-            'showStatus' => true,
             'showActionMenu' => ! $element->trashed,
             'showNestedActions' => $nestedActions,
             'nestedActionEvents' => $nestedActions,

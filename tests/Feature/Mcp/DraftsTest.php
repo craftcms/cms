@@ -246,3 +246,14 @@ class TestMcpDraftElement extends BaseElement
         return true;
     }
 }
+
+it('validates unpublished drafts as live entries before applying them', function (): void {
+    $draft = app(ElementCapabilities::class)->create('entries', [
+        'sectionId' => $this->section->id,
+        'title' => 'Proposed article',
+        'enabled' => true,
+    ], asUnpublishedDraft: true)['element'];
+
+    expect(fn () => app(Drafts::class)->apply(type: 'entries', id: $draft['id']))->toThrow(ToolCallException::class, 'field is required.')
+        ->and(Entry::find()->drafts()->id($draft['id'])->status(null)->one()?->getIsUnpublishedDraft())->toBeTrue();
+});

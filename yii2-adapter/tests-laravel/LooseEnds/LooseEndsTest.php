@@ -7,7 +7,9 @@ use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\mail\transportadapters\Smtp;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -286,6 +288,33 @@ it('reports a Craft 5 table prefix when `DB_PREFIX` is empty, with the underscor
     }
 
     expect($detail)->toContain('`CRAFT_DB_TABLE_PREFIX` → `DB_PREFIX=craft_`');
+});
+
+it('reports sites whose base URL uses `@web`, including through an environment variable', function(): void {
+    $original = getenv('LOOSE_ENDS_SITE_URL');
+    putenv('LOOSE_ENDS_SITE_URL=@web');
+    $_ENV['LOOSE_ENDS_SITE_URL'] = $_SERVER['LOOSE_ENDS_SITE_URL'] = '@web';
+
+    try {
+        foreach ([
+            'French' => '@web/fr/',
+            'German' => '$LOOSE_ENDS_SITE_URL/de/',
+            'Dutch' => '$APP_URL/nl/',
+            'Spanish' => '@webroot/es/',
+            'Italian' => 'https://example.test/it/',
+        ] as $name => $baseUrl) {
+            Site::factory()->create(['name' => $name, 'baseUrl' => $baseUrl, 'enabled' => $name !== 'German']);
+        }
+        Sites::refreshSites();
+
+        $findings = app(LooseEndsChecks::class)->siteBaseUrls();
+    } finally {
+        putenv($original === false ? 'LOOSE_ENDS_SITE_URL' : "LOOSE_ENDS_SITE_URL=$original");
+        unset($_ENV['LOOSE_ENDS_SITE_URL'], $_SERVER['LOOSE_ENDS_SITE_URL']);
+    }
+
+    expect($findings)->toHaveCount(1)
+        ->and(explode("\n", $findings[0]->detail))->toEqualCanonicalizing(['French: `@web/fr/`', 'German: `$LOOSE_ENDS_SITE_URL/de/`']);
 });
 
 it('reports a Craft 5 mail transport adapter until a Laravel mailer is chosen', function(): void {
