@@ -8,6 +8,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Http\Request;
 
 beforeEach(function () {
     swapUrlRequest('https://localhost/news');
@@ -500,4 +501,28 @@ it('appends active route tokens to site URLs', function () {
 
     expect(Url::url('endpoint'))->toBe("https://localhost/endpoint?token=$token")
         ->and(Url::siteUrl('endpoint'))->toBe("https://localhost/endpoint?token=$token");
+});
+
+it('trusts only the hosts Craft is configured to serve', function () {
+    config()->set('app.url', 'https://site.example.test/en/');
+    Cms::config()->baseCpUrl('https://cp.example.test/admin');
+    Site::factory()->create(['baseUrl' => 'https://Other.Example.test/fr/']);
+    Site::factory()->create(['baseUrl' => 'https://disabled.example.test/', 'enabled' => false]);
+    Sites::refreshSites();
+
+    Request::setTrustedHosts(Url::trustedHostPatterns());
+
+    try {
+        $host = fn (string $host): ?string => rescue(fn () => Request::create("https://$host/")->getHost(), report: false);
+
+        expect($host('site.example.test'))->toBe('site.example.test')
+            ->and($host('cp.example.test'))->toBe('cp.example.test')
+            ->and($host('other.example.test'))->toBe('other.example.test')
+            ->and($host('localhost'))->toBe('localhost')
+            ->and($host('disabled.example.test'))->toBeNull()
+            ->and($host('attacker.example'))->toBeNull()
+            ->and($host('site.example.test.attacker.example'))->toBeNull();
+    } finally {
+        Request::setTrustedHosts([]);
+    }
 });

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Support;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
@@ -458,6 +459,36 @@ class Url extends \Illuminate\Support\Facades\URL
         }
 
         return self::fallbackBaseUrl();
+    }
+
+    /**
+     * Returns patterns for the hosts that Craft is configured to serve: the hosts of `APP_URL`, `baseCpUrl`, and
+     * enabled sites’ base URLs.
+     *
+     * Pass them to Laravel’s `TrustHosts` middleware, so requests for other hosts are rejected and URLs generated from
+     * the request use one of these hosts:
+     *
+     * ```php
+     * ->withMiddleware(function (Middleware $middleware): void {
+     *     $middleware->trustHosts(at: fn () => Url::trustedHostPatterns());
+     * })
+     * ```
+     *
+     * @return list<string>
+     */
+    public static function trustedHostPatterns(): array
+    {
+        return collect([
+            config('app.url'),
+            Env::parse(Cms::config()->baseCpUrl),
+            ...Sites::getAllSites(false)->map(fn (Site $site): ?string => $site->getBaseUrl()),
+        ])
+            ->map(fn (mixed $url): mixed => is_string($url) ? parse_url($url, PHP_URL_HOST) : null)
+            ->filter(fn (mixed $host): bool => is_string($host) && $host !== '')
+            ->map(fn (string $host): string => '^'.preg_quote(strtolower($host)).'$')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private static function isSecureRequest(): bool
