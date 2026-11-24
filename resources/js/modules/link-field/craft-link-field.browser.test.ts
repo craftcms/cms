@@ -148,7 +148,7 @@ it('keeps a missing element’s link, showing the Choose button, as the server t
   expect(linkField.querySelector('craft-chip')).toBeNull();
   expect(linkField.textContent).not.toContain('{entry:12@1:url}');
 
-  await page.getByRole('button', {name: 'Apply'}).click();
+  linkField.apply();
 
   expect(applied).toHaveBeenCalledWith(
     expect.objectContaining({type: 'entry', value: '{entry:12@1:url}'})
@@ -296,7 +296,7 @@ describe('a linked element', () => {
 
     await openMenu();
     await page.getByRole('button', {name: 'Remove'}).click();
-    await page.getByRole('button', {name: 'Apply'}).click();
+    linkField.apply();
 
     expect(applied).toHaveBeenCalledWith(
       expect.objectContaining({type: 'entry', value: ''})
@@ -317,7 +317,7 @@ describe('a linked element', () => {
     settings.onSelect([{id: 12, siteId: 1, label: 'pending'}]);
     await openMenu();
     await page.getByRole('button', {name: 'Remove'}).click();
-    await page.getByRole('button', {name: 'Apply'}).click();
+    linkField.apply();
 
     expect(applied).not.toHaveBeenCalled();
     await expect
@@ -439,7 +439,7 @@ describe('a linked element', () => {
         {once: true}
       );
     });
-    await page.getByRole('button', {name: 'Apply'}).click();
+    linkField.apply();
     expect((await applied).defaultLabel).toBe('live');
   });
 
@@ -829,7 +829,7 @@ describe('a linked element', () => {
       );
     });
 
-    await page.getByRole('button', {name: 'Apply'}).click();
+    linkField.apply();
     const value = await applied;
     await openMenu();
     await page.getByRole('button', {name: 'Remove'}).click();
@@ -876,7 +876,7 @@ describe('a linked element', () => {
     await page.getByRole('button', {name: 'Choose'}).click();
     const settings = await selectorSettings();
     settings.onSelect([{id: 12, siteId: 1, label: 'pending'}]);
-    await page.getByRole('button', {name: 'Apply'}).click();
+    linkField.apply();
     const value = await applied;
     respond();
     await expect
@@ -1090,7 +1090,7 @@ describe('a linked element', () => {
 it('describes the destination with its error', async () => {
   const url = page.getByRole('textbox', {name: 'URL'});
 
-  await page.getByRole('button', {name: 'Apply'}).click();
+  linkField.apply();
 
   await expect.element(url).toHaveAttribute('aria-invalid', 'true');
   await expect
@@ -1211,9 +1211,6 @@ describe('live', () => {
     linkField.modelValue = {...changes.at(-1)!.value};
     await linkField.updateComplete;
     await expect.element(url).toHaveValue('craftcms.com');
-    await expect
-      .element(page.getByRole('button', {name: 'Apply'}))
-      .not.toBeInTheDocument();
   });
 
   it('draws the latest chip an echo brings', async () => {

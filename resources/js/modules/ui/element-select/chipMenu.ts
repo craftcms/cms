@@ -104,6 +104,9 @@ export function chipMenu(
     edit?: {label: string; open: () => void};
     replace: () => void;
     remove: () => void;
+    /** More of the field's own actions, after Replace. */
+    fieldActions?: ActionItem[];
+    removeLabel?: string;
   }
 ): ActionItem[] {
   // What the element itself offers — server-described, so an element type's
@@ -138,9 +141,11 @@ export function chipMenu(
       });
     }
 
+    fieldSection.push(...(handlers.fieldActions ?? []));
+
     removeSection.push({
       icon: 'remove',
-      label: t('Remove'),
+      label: handlers.removeLabel ?? t('Remove'),
       variant: 'danger',
       onClick: handlers.remove,
     });

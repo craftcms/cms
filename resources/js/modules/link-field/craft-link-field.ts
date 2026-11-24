@@ -23,10 +23,13 @@ import '@craftcms/ui/components/field-group/field-group';
 import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/indicator/indicator';
 import '@craftcms/ui/components/pane/pane';
+import '@craftcms/ui/components/popover/popover';
+import '@craftcms/ui/components/truncate/truncate';
 import {
   html,
   LitElement,
   nothing,
+  render,
   type PropertyValues,
   type TemplateResult,
 } from 'lit';
@@ -117,6 +120,9 @@ const formValueKeys = [
 
 let advancedPanelIndex = 0;
 
+/** The narrowest a live field shows the link type and its destination side by side; narrower, it's a chip. */
+const rowMinWidth = 320;
+
 /** A chip's data, to tell chips apart: links are copied on their way back to a field. */
 function chipData(element: LinkedElement): string {
   return JSON.stringify(element);
@@ -144,14 +150,18 @@ function isPlaceholder(element: LinkedElement): boolean {
  * Edits a link: its type, its destination, and optionally its label and
  * advanced attributes.
  *
- * By default it's a form of its own, with Apply and Cancel buttons that fire
- * `apply` and `cancel`. With `live`, it's a field like any other: each edit
- * fires `link-change` straight away, and it sits in a pane when it has a label
- * or advanced attributes.
+ * By default, edits wait for `apply()`, so whatever contains the field draws
+ * its own Apply and Cancel buttons; to cancel, give the link back as a new
+ * `modelValue`. With `live`, it's a field like any other: each edit fires
+ * `link-change` straight away, and it sits in a pane when it has a label or
+ * advanced attributes. A live field too narrow for the link type and its
+ * destination side by side shows the link as a chip instead, edited in a
+ * popover; its menu's other actions, such as Replace, apply straight away.
+ * With `compact`, as in table cells, a wide one keeps its label and advanced
+ * attributes in a popover too, so it stays one line tall.
  *
  * @fires apply - The link was applied. `detail` is the `LinkFieldValue`, whose `value` is empty when the given link's element was removed.
- * @fires cancel - Editing was canceled. Give the link back as a new `modelValue` to discard the edits.
- * @fires link-change - A `live` field was edited. `detail` is a `LinkChangeDetail`.
+ * @fires link-change - A `live` or `compact` field was edited. `detail` is a `LinkChangeDetail`.
  */
 @customElement('craft-link-field')
 class CraftLinkField extends LitElement {
@@ -176,6 +186,14 @@ class CraftLinkField extends LitElement {
   /** Applies each edit as it's made, rather than on Apply. */
   @property({reflect: true, type: Boolean})
   live = false;
+
+  /** Keeps a live field one line tall, for tight spots such as table cells. */
+  @property({reflect: true, type: Boolean})
+  compact = false;
+
+  /** Names the field's buttons after it, where several read the same, as in a table's cells. */
+  @property({attribute: 'context-label'})
+  contextLabel = '';
 
   /**
    * Whether the field previews a value, such as in “Compare changes”. Previews
@@ -296,12 +314,115 @@ class CraftLinkField extends LitElement {
   /** The last value a `live` edit sent out, so its echo doesn't reset what's being typed. */
   private emittedValue: Partial<LinkFieldValue> | null = null;
 
+  /**
+   * Where a live field's popover is drawn: outside a table cell, whose input
+   * styles and click-to-focus would otherwise reach the editor, but in the
+   * same top-level container, so a modal layer hides it along with the cell.
+   */
+  private popoverContainer: HTMLElement | null = null;
+
+  /** The link a chip's popover edits, until it's applied. */
+  @state()
+  private draft: Partial<LinkFieldValue> | null = null;
+
+  /** Whether a live field is too narrow for its link type and destination side by side. */
+  @state()
+  private narrow = false;
+
+  /** What the popover shows: the whole link, for a chip, or a wide compact field's advanced attributes. */
+  @state()
+  private popoverContent: 'editor' | 'advanced' = 'editor';
+
+  /** Whether the advanced attributes' popover is open, for the cog's `aria-expanded`. */
+  @state()
+  private advancedOpen = false;
+
+  private width = 0;
+
+  // Switches views a frame later: switching changes the field's height, which
+  // would otherwise need another notification in the same frame.
+  private readonly resizeObserver = new ResizeObserver(([entry]) => {
+    this.width = entry?.contentRect.width ?? this.width;
+    requestAnimationFrame(() => this.syncWidth());
+  });
+
+  /** Whether the popover is set aside while a dialog it opened is open. */
+  private suspended = false;
+
+  private resuming = false;
+
+  private restoreFocusTo: HTMLElement | null = null;
+
   override connectedCallback(): void {
     super.connectedCallback();
 
     if (!this.typeId) {
       this.typeId = this.types[0]?.id ?? '';
     }
+
+    // A field moved in the DOM, as a table row is, draws its popover again.
+    if (this.live && this.hasUpdated) {
+      this.requestUpdate();
+    }
+
+    this.resizeObserver.observe(this);
+    this.addEventListener('focusout', this.handleFocusOut);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.resizeObserver.disconnect();
+    this.removeEventListener('focusout', this.handleFocusOut);
+    this.popoverContainer?.remove();
+    this.popoverContainer = null;
+  }
+
+  /**
+   * Switches between the chip and the side-by-side view to suit the field's
+   * width, except while it's being edited, which a switch would interrupt.
+   */
+  private syncWidth(): void {
+    const narrow = this.width > 0 && this.width < rowMinWidth;
+
+    if (narrow === this.narrow || this.isBeingEdited()) {
+      return;
+    }
+
+    this.narrow = narrow;
+  }
+
+  private isBeingEdited(): boolean {
+    const active = document.activeElement;
+
+    return Boolean(
+      this.editorPopover()?.open ||
+      (active && active !== this && this.contains(active))
+    );
+  }
+
+  private readonly handleFocusOut = (): void => {
+    // Focus has left once the event is over.
+    setTimeout(() => this.syncWidth());
+  };
+
+  /** Whether the field shows its link as a chip. */
+  private get showsChip(): boolean {
+    return this.live && this.narrow;
+  }
+
+  protected override updated(changedProperties: PropertyValues<this>): void {
+    super.updated(changedProperties);
+
+    if (!this.live) {
+      return;
+    }
+
+    if (!this.popoverContainer) {
+      this.popoverContainer = document.createElement('div');
+      (this.closest('body > *') ?? document.body).append(this.popoverContainer);
+    }
+
+    render(this.renderPopover(), this.popoverContainer, {host: this});
   }
 
   override willUpdate(changedProperties: PropertyValues<this>): void {
@@ -547,6 +668,10 @@ class CraftLinkField extends LitElement {
 
   /** Unlinks the element, and moves focus to the Choose button that takes the chip's place. */
   private async removeElement(): Promise<void> {
+    if (this.showsChip) {
+      return this.removeLink();
+    }
+
     this.value = '';
     this.defaultLabel = '';
     this.selectedElement = null;
@@ -681,6 +806,22 @@ class CraftLinkField extends LitElement {
     void this.editElement(type, element);
   }
 
+  /** Clears the chip's link, and moves focus to the Add link button that takes its place. */
+  private async removeLink(): Promise<void> {
+    this.value = '';
+    this.label = '';
+    this.defaultLabel = '';
+    this.selectedElement = null;
+    this.linkAttributes = {...emptyAttributes};
+    this.change('discrete');
+    await this.updateComplete;
+    this.addLinkButton()?.focus();
+  }
+
+  private addLinkButton(): HTMLElement | null {
+    return this.querySelector<HTMLElement>('.craft-link-field__add');
+  }
+
   /** The button that opens the chip's action menu. */
   private actionMenuInvoker(): HTMLElement | null {
     return this.querySelector<HTMLElement>(
@@ -719,9 +860,29 @@ class CraftLinkField extends LitElement {
             },
         replace: () => void this.chooseElement(this.actionMenuInvoker()),
         remove: () => void this.removeElement(),
+        fieldActions: this.showsChip ? [this.editLinkAction()] : [],
+        removeLabel: this.showsChip ? t('Remove link') : undefined,
       }
     );
   }
+
+  private editLinkAction(): ActionItem {
+    return {icon: 'link', label: t('Edit link'), onClick: this.openEditor};
+  }
+
+  /** The chip's menu, for a link that isn't to an element. */
+  private readonly linkMenuProvider = (): ActionItem[] =>
+    this.disabled
+      ? []
+      : [
+          ...(this.modelType() ? [this.editLinkAction()] : []),
+          {
+            icon: 'remove',
+            label: t('Remove link'),
+            variant: 'danger',
+            onClick: () => void this.removeLink(),
+          },
+        ];
 
   private async dispatchElementSelectStartEvent(
     restoreFocusTo: HTMLElement | null
@@ -889,7 +1050,8 @@ class CraftLinkField extends LitElement {
     );
   }
 
-  private apply(): void {
+  /** Fires `apply` with the edited link, or shows why it can't be applied. */
+  apply(): void {
     const type = this.selectedType;
     const linkValue = this.currentValue();
 
@@ -923,18 +1085,12 @@ class CraftLinkField extends LitElement {
     );
   }
 
-  /**
-   * Leaves the link as it was given to whatever contains the field, which gives
-   * it back as a new `modelValue` to discard the edits, resetting the editing
-   * state with it.
-   */
-  private cancel(): void {
-    this.dispatchEvent(new CustomEvent('cancel', {bubbles: true}));
-  }
-
   /** A label for one of the controls in the type + destination row, marked up like a grouped UI field's. */
   private renderLabel(label: string): TemplateResult {
-    return html`<span slot="label">${label}</span>`;
+    // A table's column heading already labels a compact field.
+    return html`<span slot="label" class=${this.compact ? 'sr-only' : nothing}
+      >${label}</span
+    >`;
   }
 
   private renderTypeSelect(): TemplateResult | typeof nothing {
@@ -972,7 +1128,8 @@ class CraftLinkField extends LitElement {
    */
   private renderSelectedElement(
     type: LinkTypeConfig,
-    element: LinkedElement
+    element: LinkedElement,
+    size: 'small' | 'xsmall' = 'small'
   ): TemplateResult {
     const label = element.label || this.defaultLabel;
     const status = element.status;
@@ -980,7 +1137,7 @@ class CraftLinkField extends LitElement {
 
     return html`
       <craft-chip
-        size="small"
+        size=${size}
         class="craft-link-field__chip"
         data-color=${element.color ?? nothing}
         ?show-status=${Boolean(status)}
@@ -1007,10 +1164,11 @@ class CraftLinkField extends LitElement {
                   ></craft-indicator>`}
             </div>`
           : nothing}
-        ${label}
+        <craft-truncate>${label}</craft-truncate>
         ${hasActions
           ? html`<div slot="suffix" class="flex items-center">
               <craft-action-menu
+                label=${this.buttonName(t('Actions'))}
                 .actions=${this.chipMenuProvider}
               ></craft-action-menu>
             </div>`
@@ -1172,6 +1330,26 @@ class CraftLinkField extends LitElement {
       return nothing;
     }
 
+    return html`
+      <craft-disclosure id=${this.advancedPanelId} size="small">
+        <craft-button
+          slot="invoker"
+          type="button"
+          variant="plain"
+          size="small"
+          flush
+          icon="chevron-right"
+          icon-position="suffix"
+        >
+          ${t('Advanced')}
+        </craft-button>
+        ${this.renderAdvancedFieldGroup('content')}
+      </craft-disclosure>
+    `;
+  }
+
+  /** The label and advanced attribute inputs. */
+  private renderAdvancedFieldGroup(slot?: string): TemplateResult {
     const fields = (
       [
         'urlSuffix',
@@ -1186,64 +1364,21 @@ class CraftLinkField extends LitElement {
     ).filter((field) => this.hasAdvancedField(field));
 
     return html`
-      <craft-disclosure id=${this.advancedPanelId} size="small">
-        <craft-button
-          slot="invoker"
-          type="button"
-          variant="plain"
-          size="small"
-          flush
-          icon="chevron-right"
-          icon-position="suffix"
-        >
-          ${t('Advanced')}
-        </craft-button>
-        <craft-field-group slot="content">
-          ${this.showLabelField
-            ? html`
-                <craft-input
-                  label=${t('Label')}
-                  type="text"
-                  placeholder=${this.chip?.label ||
-                  this.defaultLabel ||
-                  nothing}
-                  .value=${this.label}
-                  .disabled=${this.disabled}
-                  @input=${this.handleLabelChange}
-                ></craft-input>
-              `
-            : nothing}
-          ${fields.map((field) => this.renderAdvancedField(field))}
-        </craft-field-group>
-      </craft-disclosure>
-    `;
-  }
-
-  private renderButtons(): TemplateResult | typeof nothing {
-    if (this.live) {
-      return nothing;
-    }
-
-    return html`
-      <div class="buttons right">
-        <craft-button
-          type="button"
-          variant="plain"
-          size="small"
-          ?disabled=${this.disabled}
-          @click=${this.cancel}
-        >
-          ${t('Cancel')}
-        </craft-button>
-        <craft-button
-          type="button"
-          size="small"
-          ?disabled=${this.disabled}
-          @click=${this.apply}
-        >
-          ${t('Apply')}
-        </craft-button>
-      </div>
+      <craft-field-group slot=${slot ?? nothing}>
+        ${this.showLabelField
+          ? html`
+              <craft-input
+                label=${t('Label')}
+                type="text"
+                placeholder=${this.chip?.label || this.defaultLabel || nothing}
+                .value=${this.label}
+                .disabled=${this.disabled}
+                @input=${this.handleLabelChange}
+              ></craft-input>
+            `
+          : nothing}
+        ${fields.map((field) => this.renderAdvancedField(field))}
+      </craft-field-group>
     `;
   }
 
@@ -1270,18 +1405,317 @@ class CraftLinkField extends LitElement {
     });
   }
 
+  /** The type of the link the field was given, unless it's no longer available. */
+  private modelType(): LinkTypeConfig | undefined {
+    return this.types.find((type) => type.id === this.modelValue?.type);
+  }
+
+  /** Names a button after the field. */
+  private buttonName(action: string): string {
+    return this.contextLabel
+      ? t('{action}, {cell}', {action, cell: this.contextLabel})
+      : action;
+  }
+
+  private readonly openEditor = (): void => {
+    void this.openPopover('editor');
+  };
+
+  /** The cog opens the advanced attributes, and closes them again. */
+  private readonly toggleAdvanced = (): void => {
+    const popover = this.editorPopover();
+
+    if (popover?.open && this.popoverContent === 'advanced') {
+      void popover.hide();
+      return;
+    }
+
+    void this.openPopover('advanced');
+  };
+
+  /** Shows the popover once it's drawn with the content and anchor asked for. */
+  private async openPopover(content: 'editor' | 'advanced'): Promise<void> {
+    this.popoverContent = content;
+    await this.updateComplete;
+    await this.editorPopover()?.show();
+  }
+
+  /** What the popover sits beside: the chip, or a wide field's Advanced button. */
+  private popoverAnchor(): HTMLElement | undefined {
+    return (
+      this.querySelector<HTMLElement>(
+        this.popoverContent === 'advanced'
+          ? '.craft-link-field__advanced-button'
+          : '.craft-link-field--compact'
+      ) ?? undefined
+    );
+  }
+
+  private editorPopover(): HTMLElementTagNameMap['craft-popover'] | null {
+    return (
+      this.popoverContainer?.querySelector<
+        HTMLElementTagNameMap['craft-popover']
+      >(':scope > craft-popover') ?? null
+    );
+  }
+
+  private popoverEditor(): CraftLinkField | null {
+    return (
+      this.popoverContainer?.querySelector<CraftLinkField>(
+        'craft-link-field'
+      ) ?? null
+    );
+  }
+
+  private renderCompact(): TemplateResult {
+    const value = this.modelValue;
+    const type = this.modelType();
+
+    if (!value?.value) {
+      return html`
+        <div class="craft-link-field--compact">
+          <craft-button
+            class="craft-link-field__add"
+            type="button"
+            size="small"
+            variant="dashed"
+            icon="plus"
+            ?disabled=${this.disabled}
+            aria-label=${this.contextLabel
+              ? this.buttonName(t('Add link'))
+              : nothing}
+            @click=${this.openEditor}
+          >
+            ${t('Add link')}
+          </craft-button>
+        </div>
+      `;
+    }
+
+    const element = type?.kind === 'element' ? this.chip : null;
+    const label = value.label || value.defaultLabel || value.value;
+
+    return html`
+      <div class="craft-link-field--compact">
+        ${type && element
+          ? this.renderSelectedElement(type, element, 'xsmall')
+          : html`
+              <craft-chip size="xsmall" class="craft-link-field__chip">
+                <craft-truncate>${label}</craft-truncate>
+                ${this.disabled
+                  ? nothing
+                  : html`<div slot="suffix" class="flex items-center">
+                      <craft-action-menu
+                        label=${this.buttonName(t('Actions'))}
+                        .actions=${this.linkMenuProvider}
+                      ></craft-action-menu>
+                    </div>`}
+              </craft-chip>
+            `}
+        ${type
+          ? nothing
+          : html`<p class="craft-link-field__note">
+              ${t('This link type is no longer available.')}
+            </p>`}
+      </div>
+    `;
+  }
+
+  private renderPopover(): TemplateResult {
+    if (this.popoverContent === 'advanced' && !this.showsChip) {
+      return html`
+        <craft-popover
+          class="craft-link-popover"
+          .anchor=${this.popoverAnchor()}
+          manual
+          without-invoker-aria
+          placement="bottom-end"
+          @craft-after-show=${this.handlePopoverAfterShow}
+          @craft-after-hide=${this.handlePopoverAfterHide}
+        >
+          <div slot="content-body">${this.renderAdvancedFieldGroup()}</div>
+        </craft-popover>
+      `;
+    }
+
+    return html`
+      <craft-popover
+        class="craft-link-popover"
+        .anchor=${this.popoverAnchor()}
+        manual
+        without-invoker-aria
+        placement="bottom-start"
+        @craft-show=${this.handlePopoverShow}
+        @craft-after-show=${this.handlePopoverAfterShow}
+        @craft-after-hide=${this.handlePopoverAfterHide}
+      >
+        <div slot="content-body">
+          <craft-link-field
+            .types=${this.types}
+            .modelValue=${this.draft}
+            .showLabelField=${this.showLabelField}
+            .advancedFields=${this.advancedFields}
+            .disabled=${this.disabled}
+            .previewing=${this.previewing}
+            @apply=${this.handleEditorApply}
+            @element-select-start=${this.suspendPopover}
+            @element-select-end=${this.resumePopover}
+          ></craft-link-field>
+        </div>
+        <div slot="content-footer">
+          <craft-button
+            type="button"
+            variant="plain"
+            size="small"
+            @click=${() => void this.editorPopover()?.hide()}
+          >
+            ${t('Cancel')}
+          </craft-button>
+          <craft-button
+            type="button"
+            variant="primary"
+            size="small"
+            @click=${() => this.popoverEditor()?.apply()}
+          >
+            ${t('Apply')}
+          </craft-button>
+        </div>
+      </craft-popover>
+    `;
+  }
+
+  private readonly handlePopoverShow = (event: Event): void => {
+    if (event.target === this.editorPopover() && !this.resuming) {
+      this.draft = {...this.modelValue};
+    }
+  };
+
+  private readonly handlePopoverAfterShow = async (
+    event: Event
+  ): Promise<void> => {
+    if (event.target !== this.editorPopover()) {
+      return;
+    }
+
+    this.advancedOpen = this.popoverContent === 'advanced';
+    this.resuming = false;
+    await this.updateComplete;
+
+    if (this.restoreFocusTo?.isConnected) {
+      this.restoreFocusTo.focus();
+      this.restoreFocusTo = null;
+
+      return;
+    }
+
+    (this.popoverContent === 'advanced'
+      ? this.popoverContainer
+      : this.popoverEditor()
+    )
+      ?.querySelector<HTMLElement>('select, input, craft-input, craft-button')
+      ?.focus();
+  };
+
+  /**
+   * The popover isn't opened by a button of its own, so focus goes back to the
+   * chip's menu, or the Add link button, unless it has already moved on.
+   */
+  private readonly handlePopoverAfterHide = async (
+    event: Event
+  ): Promise<void> => {
+    if (event.target !== this.editorPopover()) {
+      return;
+    }
+
+    this.advancedOpen = false;
+
+    if (this.suspended) {
+      return;
+    }
+
+    await this.updateComplete;
+    const active = document.activeElement;
+
+    if (
+      !active ||
+      active === document.body ||
+      this.popoverContainer?.contains(active)
+    ) {
+      (this.popoverContent === 'advanced'
+        ? this.querySelector<HTMLElement>('.craft-link-field__advanced-button')
+        : (this.actionMenuInvoker() ?? this.addLinkButton())
+      )?.focus();
+    }
+
+    this.syncWidth();
+  };
+
+  private readonly handleEditorApply = (event: Event): void => {
+    const {detail: value} = event as CustomEvent<LinkFieldValue>;
+    event.stopPropagation();
+    this.modelValue = value;
+    this.emittedValue = value;
+    this.dispatchEvent(
+      new CustomEvent<LinkChangeDetail>('link-change', {
+        bubbles: true,
+        detail: {kind: 'discrete', value},
+      })
+    );
+    void this.editorPopover()?.hide();
+  };
+
+  private readonly suspendPopover = (event: Event): void => {
+    const {detail} = event as CustomEvent<ElementSelectStartDetail>;
+    this.restoreFocusTo = detail.restoreFocusTo ?? null;
+    this.suspended = true;
+    detail.waitUntil(this.editorPopover()?.hide() ?? Promise.resolve());
+  };
+
+  private readonly resumePopover = (): void => {
+    this.suspended = false;
+    this.resuming = true;
+    void this.editorPopover()?.show();
+  };
+
+  /** A wide compact field's button for its label and advanced attributes, which open in a popover. */
+  private renderAdvancedButton(): TemplateResult | typeof nothing {
+    if (!this.showAdvancedFields) {
+      return nothing;
+    }
+
+    return html`
+      <div class="craft-link-field__advanced">
+        <craft-button
+          class="craft-link-field__advanced-button"
+          type="button"
+          variant="plain"
+          size="small"
+          icon="gear"
+          aria-label=${this.buttonName(t('Advanced'))}
+          aria-expanded=${this.advancedOpen ? 'true' : 'false'}
+          @click=${this.toggleAdvanced}
+        ></craft-button>
+      </div>
+    `;
+  }
+
   override render(): TemplateResult {
+    if (this.showsChip) {
+      return html`${this.renderCompact()}${this.renderHiddenInputs()}`;
+    }
+
     const content = html`
       <div class="craft-link-field">
         <div class="craft-link-field__destination">
           ${this.renderTypeSelect()} ${this.renderTypeInput()}
+          ${this.compact ? this.renderAdvancedButton() : nothing}
         </div>
-        ${this.renderAdvancedFields()} ${this.renderButtons()}
+        ${this.compact ? nothing : this.renderAdvancedFields()}
       </div>
     `;
 
     return html`
-      ${this.live && this.showAdvancedFields
+      ${this.live && !this.compact && this.showAdvancedFields
         ? html`<craft-pane
             class="craft-link-field__pane"
             appearance="outline"

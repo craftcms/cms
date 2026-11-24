@@ -1,9 +1,13 @@
+import {t} from '@craftcms/ui';
 import type {OverType as OverTypeInstance} from 'overtype';
 import type {PreviewController} from './preview';
 import {escapeMarkdownLabel} from './utilities';
 import '@craftcms/ui/components/popover/popover';
 import '../../link-field/craft-link-field';
-import type {LinkFieldValue} from '../../link-field/craft-link-field';
+import type {
+  LinkFieldValue,
+  LinkTypeConfig,
+} from '../../link-field/craft-link-field';
 
 type LinkPopoverOptions = {
   advancedFields: string[];
@@ -47,22 +51,22 @@ export function createLinkPopoverController(
     selectionStart = editor.textarea.selectionStart;
     selectionEnd = editor.textarea.selectionEnd;
 
-    const content = document.createElement('div');
-    content.slot = 'content';
-    content.classList.add('p-2');
+    const body = document.createElement('div');
+    body.slot = 'content-body';
 
-    // SAFETY: craft-link-field is registered with these public configuration properties.
-    const linkField = document.createElement(
-      'craft-link-field'
-    ) as HTMLElement & {
-      advancedFields: string[];
-      showLabelField: boolean;
-      types: unknown[];
-    };
+    const linkField = document.createElement('craft-link-field');
     linkField.advancedFields = options.advancedFields;
     linkField.showLabelField = options.showLabelField;
-    linkField.types = options.types;
-    content.appendChild(linkField);
+    // SAFETY: The field type passes the link types' config through as it is.
+    linkField.types = options.types as LinkTypeConfig[];
+    body.appendChild(linkField);
+
+    const footer = document.createElement('div');
+    footer.slot = 'content-footer';
+    footer.append(
+      footerButton(t('Cancel'), 'plain', handleCancel),
+      footerButton(t('Apply'), 'primary', () => linkField.apply())
+    );
 
     trigger = triggerElement(event);
     const triggerId = anchorId(trigger);
@@ -76,12 +80,11 @@ export function createLinkPopoverController(
     popover.anchor = trigger;
     popover.manual = true;
     popover.withoutInvokerAria = true;
-    popover.appendChild(content);
+    popover.append(body, footer);
     document.body.appendChild(popover);
 
     // SAFETY: The registered apply event passes the CustomEvent payload consumed by handleApply.
     linkField.addEventListener('apply', handleApply as EventListener);
-    linkField.addEventListener('cancel', handleCancel);
     // SAFETY: The element-select-start listener ignores the event payload.
     linkField.addEventListener(
       'element-select-start',
@@ -149,6 +152,21 @@ export function createLinkPopoverController(
 
   function handleCancel(): void {
     close({restoreFocus: true});
+  }
+
+  function footerButton(
+    label: string,
+    variant: 'plain' | 'primary',
+    onClick: () => void
+  ): HTMLElement {
+    const button = document.createElement('craft-button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('size', 'small');
+    button.setAttribute('variant', variant);
+    button.textContent = label;
+    button.addEventListener('click', onClick);
+
+    return button;
   }
 
   function suspend(event: ElementSelectStartEvent): void {
