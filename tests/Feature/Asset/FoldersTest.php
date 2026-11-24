@@ -10,9 +10,9 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -20,7 +20,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
@@ -492,7 +492,7 @@ it('renames subfolders whose paths differ in case from the renamed folder', func
     }
 });
 
-it('regenerates transforms of assets in a renamed folder and its subfolders on remote storage, whichever site it’s renamed from', function () {
+it('moves transforms of assets in a renamed folder and its subfolders on remote storage, whichever site it’s renamed from', function () {
     // Only Laravel’s local adapter gets its transforms’ `fileExists` checked against the disk
     Storage::extend('folders-test-remote', function ($app, array $config) {
         $adapter = new LocalFlysystemAdapter($config['root']);
@@ -545,8 +545,11 @@ it('regenerates transforms of assets in a renamed folder and its subfolders on r
         fn () => $transformers->transform(Asset::find()->id($assetId)->one(), ['width' => 100])->url,
     ), '?'), 'https://remote.test/media/'));
 
+    $indexIds = fn () => DB::table(Table::IMAGETRANSFORMINDEX)->whereIn('assetId', $assetIds)->orderBy('id')->pluck('id')->all();
+
     try {
         $oldPaths = array_map($transformPath, $assetIds);
+        $oldIndexIds = $indexIds();
         expect($oldPaths[0])->toStartWith('_'.$volume->uid.'/Été/Trips/')
             ->and($oldPaths[1])->toStartWith('_'.$volume->uid.'/été/Beaches/');
 
@@ -568,7 +571,8 @@ it('regenerates transforms of assets in a renamed folder and its subfolders on r
             str_replace('/Été/', '/Summer/', $oldPaths[0]),
             str_replace('/été/', '/Summer/', $oldPaths[1]),
         ])
-            ->and($disk->allFiles('_'.$volume->uid))->toEqualCanonicalizing($newPaths);
+            ->and($disk->allFiles('_'.$volume->uid))->toEqualCanonicalizing($newPaths)
+            ->and($indexIds())->toBe($oldIndexIds);
     } finally {
         $disk->deleteDirectory('');
     }
@@ -612,12 +616,12 @@ it('clears caches that depend on a renamed folder’s assets, including ones reb
     };
     array_map($cache, [...$assetIds, $otherAssetId]);
 
-    // A request made while the folder records still have their old paths caches the first asset again
-    $invalidatedIds = [];
-    Event::listen(AssetTransformsInvalidating::class, function (AssetTransformsInvalidating $event) use (&$invalidatedIds, $cache) {
-        $invalidatedIds[] = $event->asset->id;
-        if (count($invalidatedIds) === 2) {
-            $cache($invalidatedIds[0]);
+    // A request made after the files moved but before the folder records change caches the first asset again
+    $recached = false;
+    VolumeFolderModel::saving(function () use (&$recached, $cache, $assetIds) {
+        if (! $recached) {
+            $recached = true;
+            $cache($assetIds[0]);
         }
     });
 
@@ -626,7 +630,7 @@ it('clears caches that depend on a renamed folder’s assets, including ones reb
 
         $this->folders->renameFolderById($folder->id, 'Albums');
 
-        expect($invalidatedIds)->toHaveCount(2)
+        expect($recached)->toBeTrue()
             ->and(DependencyCache::get("asset-{$assetIds[0]}"))->toBeNull()
             ->and(DependencyCache::get("asset-{$assetIds[1]}"))->toBeNull()
             ->and(DependencyCache::get("asset-$otherAssetId"))->toBe('Other/');

@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
@@ -64,7 +65,7 @@ class ImageTransformer
         bool $immediately,
         ?AssetTransformer $transformer = null,
     ): string {
-        $transformer ??= $this->currentTransformer($asset);
+        $transformer ??= $this->currentTransformer($asset->getVolume());
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
@@ -182,12 +183,12 @@ class ImageTransformer
 
     public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
     {
-        return $this->transformHasUrls($asset, $this->currentTransformer($asset));
+        return $this->transformHasUrls($asset, $this->currentTransformer($asset->getVolume()));
     }
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
     {
-        $transformer = $this->currentTransformer($asset);
+        $transformer = $this->currentTransformer($asset->getVolume());
         $this->getTransformUrl($asset, $index->getTransform(), true, $transformer);
         $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
         $stream = $this->transformDisk($asset, $transformer)->readStream($path);
@@ -233,7 +234,7 @@ class ImageTransformer
         ImageTransformIndex $transformIndex,
         ?AssetTransformer $transformer = null,
     ): void {
-        $transformer ??= $this->currentTransformer($asset);
+        $transformer ??= $this->currentTransformer($asset->getVolume());
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
 
         try {
@@ -440,7 +441,7 @@ class ImageTransformer
             throw new ImageTransformException('Asset not found - '.$index->assetId);
         }
 
-        $transformer ??= $this->currentTransformer($asset);
+        $transformer ??= $this->currentTransformer($asset->getVolume());
         $index->detectedFormat = $index->format ?: ImageTransformHelper::detectTransformFormat($asset);
         $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
@@ -743,14 +744,30 @@ class ImageTransformer
         return $tempPath;
     }
 
+    /**
+     * Returns the directory on the transform disk that holds the transforms of a volume folder’s assets.
+     */
+    public function getTransformFolderPath(Volume $volume, ?string $folderPath): string
+    {
+        return '_'.$volume->uid.'/'.($folderPath ?? '');
+    }
+
+    /**
+     * Returns the disk that a volume’s transforms are stored on.
+     */
+    public function getTransformDisk(Volume $volume): FilesystemAdapter
+    {
+        return Storage::disk($this->outputDisk($volume, $this->currentTransformer($volume)));
+    }
+
     private function getTransformBasePath(Asset $asset): string
     {
-        return '_'.$asset->getVolume()->uid.DIRECTORY_SEPARATOR.($asset->folderPath ?? '');
+        return $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath);
     }
 
     private function transformDisk(Asset $asset, AssetTransformer $transformer): FilesystemAdapter
     {
-        return Storage::disk($this->outputDisk($asset, $transformer));
+        return Storage::disk($this->outputDisk($asset->getVolume(), $transformer));
     }
 
     /**
@@ -767,13 +784,13 @@ class ImageTransformer
 
         $volume = $asset->getVolume();
 
-        return $this->outputDisk($asset, $transformer) === $volume->getResolvedDisk() && $volume->sourceHasUrls();
+        return $this->outputDisk($asset->getVolume(), $transformer) === $volume->getResolvedDisk() && $volume->sourceHasUrls();
     }
 
     /**
      * Returns the name of the disk the `craft` driver stores transforms on: its `output_disk`, or the volume’s own disk.
      */
-    private function outputDisk(Asset $asset, AssetTransformer $transformer): string
+    private function outputDisk(Volume $volume, AssetTransformer $transformer): string
     {
         $disk = $transformer->settings['output_disk'] ?? null;
 
@@ -781,7 +798,6 @@ class ImageTransformer
             throw new FilesystemException('The configured asset transform output disk is invalid.');
         }
 
-        $volume = $asset->getVolume();
         $diskName = $disk === null || $disk === ''
             ? $volume->getResolvedDisk()
             : $volume->resolveStorageTargetKey($disk, parse: false);
@@ -806,12 +822,12 @@ class ImageTransformer
     }
 
     /**
-     * Returns the `craft` transformer for an asset’s disk. A disk that uses another driver gets the `craft` defaults,
+     * Returns the `craft` transformer for a volume’s disk. A disk that uses another driver gets the `craft` defaults,
      * for when that driver hands a file to `craft` or a caller uses this class directly.
      */
-    private function currentTransformer(Asset $asset): AssetTransformer
+    private function currentTransformer(Volume $volume): AssetTransformer
     {
-        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedDisk());
+        $transformer = app(AssetTransformers::class)->forDisk($volume->getResolvedDisk());
 
         return $transformer->driver === 'craft' ? $transformer : new AssetTransformer('craft');
     }

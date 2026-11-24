@@ -17,10 +17,12 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -308,27 +310,19 @@ class Folders
         $volume = $folder->getVolume();
 
         $oldFolderPath = (string) $folder->path;
-        $this->renameDirectoryOnDisk($volume, rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
+        $this->renameDirectoryOnDisk($volume->sourceDisk(), rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
-        // Collect the subfolders by parent ID, as the loop below does, rather than with `includeSubfolders()`,
-        // which matches by path and misses paths that differ in case where the database compares case
-        $folderIds = [];
-        $parentIds = [$folder->id];
-        while ($parentIds) {
-            array_push($folderIds, ...$parentIds);
-            $parentIds = $this->findFolders(['parentId' => $parentIds])->pluck('id')->all();
-        }
+        // Transforms are stored by folder path outside the folder, so move them along with it
+        $imageTransformer = app(ImageTransformer::class);
+        $transformDisk = $imageTransformer->getTransformDisk($volume);
+        $moveTransforms = function (string $oldPath, string $newPath) use ($imageTransformer, $transformDisk, $volume): void {
+            $oldTransformPath = rtrim($imageTransformer->getTransformFolderPath($volume, $oldPath), '/');
 
-        $assets = fn () => Asset::find()
-            ->folderId($folderIds)
-            ->site('*')
-            ->unique()
-            ->status(null)
-            ->cursor();
-
-        // Transforms are stored under the folder path, so delete them while the folder records still have
-        // their old paths and the files can be found
-        $assets()->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));
+            if ($transformDisk->directoryExists($oldTransformPath)) {
+                $this->renameDirectoryOnDisk($transformDisk, $oldTransformPath, rtrim($imageTransformer->getTransformFolderPath($volume, $newPath), '/'));
+            }
+        };
+        $moveTransforms($oldFolderPath, $newFolderPath);
 
         $folder->name = $newName;
         $folder->path = $newFolderPath;
@@ -336,8 +330,10 @@ class Folders
 
         // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder’s
         $disk = $volume->sourceDisk();
+        $folderIds = [];
         $parentIds = [$folder->id];
         while ($parentIds) {
+            array_push($folderIds, ...$parentIds);
             $childFolders = $this->findFolders(['parentId' => $parentIds]);
             $parentIds = $childFolders->map(fn (VolumeFolder $childFolder) => $childFolder->id)->values()->all();
 
@@ -360,13 +356,25 @@ class Folders
                     continue;
                 }
 
+                // Transforms stored under a path that differs in case only moved along with the renamed folder’s
+                // where the transform disk ignores case
+                if ($oldPrefix !== $oldFolderPath) {
+                    $moveTransforms($oldChildPath, $newChildPath);
+                }
+
                 $childFolder->path = $newChildPath;
                 $this->storeFolderModel($childFolder);
             }
         }
 
         // Clear caches holding the assets’ old URLs only now, so ones rebuilt during the rename are cleared too
-        $assets()->each(fn (Asset $asset) => app(ElementCaches::class)->invalidateForElement($asset));
+        Asset::find()
+            ->folderId($folderIds)
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->cursor()
+            ->each(fn (Asset $asset) => app(ElementCaches::class)->invalidateForElement($asset));
 
         return $newName;
     }
@@ -593,12 +601,10 @@ class Folders
      * @throws FilesystemException
      * @throws FsObjectNotFoundException
      */
-    private function renameDirectoryOnDisk(Volume $volume, string $sourcePath, string $targetPath): void
+    private function renameDirectoryOnDisk(FilesystemAdapter $disk, string $sourcePath, string $targetPath): void
     {
         $sourcePath = trim($sourcePath, '/');
         $targetPath = trim($targetPath, '/');
-
-        $disk = $volume->sourceDisk();
 
         if ($sourcePath === '' || ! $disk->directoryExists($sourcePath)) {
             throw new FsObjectNotFoundException("No folder exists at path: $sourcePath");
