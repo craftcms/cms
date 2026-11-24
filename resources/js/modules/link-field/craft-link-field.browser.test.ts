@@ -5,6 +5,7 @@ import '@craftcms/ui/components/select/select';
 import '@craftcms/ui/components/switch/switch';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
+import {broadcast} from '@/common/craft/broadcast';
 import './craft-link-field';
 import type {
   LinkChangeDetail,
@@ -29,6 +30,7 @@ const selector = vi.hoisted(() => {
 type SelectorSettings = {
   triggerElement: () => HTMLElement;
   onHandoff: (settled: Promise<void>) => void;
+  onSelect: (elements: Array<Record<string, unknown>>) => void;
 };
 
 vi.mock(
@@ -117,6 +119,31 @@ it('shows the linked element as a chip with its status', async () => {
   await expect
     .element(page.getByRole('img', {name: 'Status: Pending'}))
     .toBeVisible();
+});
+
+it('keeps a missing element’s link, showing the Choose button, as the server treats it as empty', async () => {
+  const applied = vi.fn();
+  linkField.addEventListener('apply', (event) =>
+    applied((event as CustomEvent<LinkFieldValue>).detail)
+  );
+  linkField.modelValue = {
+    type: 'entry',
+    value: '{entry:12@1:url}',
+    defaultLabel: '',
+  };
+  await linkField.updateComplete;
+
+  await expect
+    .element(page.getByRole('button', {name: 'Choose'}))
+    .toBeVisible();
+  expect(linkField.querySelector('craft-chip')).toBeNull();
+  expect(linkField.textContent).not.toContain('{entry:12@1:url}');
+
+  await page.getByRole('button', {name: 'Apply'}).click();
+
+  expect(applied).toHaveBeenCalledWith(
+    expect.objectContaining({type: 'entry', value: '{entry:12@1:url}'})
+  );
 });
 
 describe('a linked element', () => {
@@ -277,14 +304,7 @@ describe('a linked element', () => {
     await linkField.updateComplete;
 
     await page.getByRole('button', {name: 'Choose'}).click();
-    await expect
-      .poll(() => selector.createElementSelectorModal.mock.calls.length)
-      .toBe(1);
-    const [, settings] = selector.createElementSelectorModal.mock
-      .calls[0] as unknown as [
-      string,
-      {onSelect: (elements: Array<Record<string, unknown>>) => void},
-    ];
+    const settings = await selectorSettings();
     settings.onSelect([{id: 12, siteId: 1, label: 'pending'}]);
     await openMenu();
     await page.getByRole('button', {name: 'Remove'}).click();
@@ -339,14 +359,10 @@ describe('a linked element', () => {
       );
     });
 
-    it('keeps its link and refreshes it when it’s saved without being replaced', async () => {
-      const {changes, post} = await save();
+    it('keeps its link when it’s saved without being replaced', async () => {
+      const {changes} = await save();
 
       expect(changes).toEqual([]);
-      expect(post).toHaveBeenCalledWith(
-        'relational-fields/structured-elements',
-        expect.objectContaining({elementIds: [12]})
-      );
     });
 
     it('keeps its link when the field is disabled', async () => {
@@ -356,9 +372,9 @@ describe('a linked element', () => {
       const {changes, post} = await save({replacedAssetId: 12, newAssetId: 34});
 
       expect(changes).toEqual([]);
-      expect(post).toHaveBeenCalledWith(
+      expect(post).not.toHaveBeenCalledWith(
         'relational-fields/structured-elements',
-        expect.objectContaining({elementIds: [12]})
+        expect.objectContaining({elementIds: [34]})
       );
     });
 
@@ -381,35 +397,100 @@ describe('a linked element', () => {
     });
   });
 
-  it('draws only the latest refresh when its editor saves twice', async () => {
-    const respond: Array<(label: string) => void> = [];
-    const post = vi.spyOn(actionClient, 'post').mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          respond.push((label) =>
-            resolve({data: {elements: [{id: 12, label, siteId: 1}]}} as never)
-          );
-        })
-    );
-    await userEvent.dblClick(page.getByText('pending'));
-    const [, options] = slideouts.openSlideout.mock.calls[0] as unknown as [
-      string,
-      {onSaved: (result: object) => void},
-    ];
+  it('is redrawn when its element is saved', async () => {
+    const post = respondWithElement({
+      id: 12,
+      label: 'live',
+      siteId: 1,
+      status: {fill: 'green', label: 'Live', draft: false},
+    });
 
-    options.onSaved({});
-    options.onSaved({});
-    respond[1]!('newer');
+    broadcast({event: 'saveElement', id: 12});
+
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Live'}))
+      .toBeVisible();
     await expect
       .element(linkField.querySelector('craft-chip')!)
-      .toHaveTextContent('newer');
-    respond[0]!('older');
+      .toHaveTextContent('live');
+    expect(post).toHaveBeenCalledWith(
+      'relational-fields/structured-elements',
+      expect.objectContaining({
+        elementType: 'Entry',
+        elementIds: [12],
+        siteId: 1,
+      })
+    );
+    post.mockRestore();
+  });
+
+  it('keeps its refreshed chip when the link is given back as it was', async () => {
+    const post = respondWithElement({
+      id: 12,
+      label: 'renamed',
+      siteId: 1,
+      status: {fill: 'green', label: 'Live', draft: false},
+    });
+    broadcast({event: 'saveElement', id: 12});
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Live'}))
+      .toBeVisible();
+
+    linkField.modelValue = {...linkField.modelValue};
+    await linkField.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
     await linkField.updateComplete;
 
-    expect(linkField.querySelector('craft-chip')!.textContent).toContain(
-      'newer'
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Live'}))
+      .toBeVisible();
+    await expect
+      .element(linkField.querySelector('craft-chip')!)
+      .toHaveTextContent('renamed');
+    post.mockRestore();
+  });
+
+  it('fetches the rest of a chip it was only given a label for', async () => {
+    const post = respondWithElement({
+      id: 13,
+      label: 'later',
+      siteId: 1,
+      status: {fill: 'green', label: 'Live', draft: false},
+    });
+
+    linkField.modelValue = {
+      type: 'entry',
+      value: '{entry:13@1:url}',
+      defaultLabel: 'later',
+      element: {id: 13, label: 'later', siteId: 1},
+    };
+
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Live'}))
+      .toBeVisible();
+    expect(post).toHaveBeenCalledWith(
+      'relational-fields/structured-elements',
+      expect.objectContaining({elementIds: [13], siteId: 1})
     );
+    post.mockRestore();
+  });
+
+  it('doesn’t fetch a chip it was given in full', async () => {
+    const post = vi.spyOn(actionClient, 'post');
+
+    linkField.modelValue = {
+      type: 'entry',
+      value: '{entry:14@1:url}',
+      defaultLabel: 'other',
+      element: {id: 14, label: 'other', siteId: 1, canEdit: true},
+    };
+    await linkField.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    await expect
+      .element(linkField.querySelector('craft-chip')!)
+      .toHaveTextContent('other');
+    expect(post).not.toHaveBeenCalled();
     post.mockRestore();
   });
 
@@ -444,15 +525,65 @@ describe('a linked element', () => {
       .toBeVisible();
   });
 
+  it('keeps its loaded chip when restored as applied before it loaded', async () => {
+    let respond: () => void = () => {};
+    const post = vi.spyOn(actionClient, 'post').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          respond = () =>
+            resolve({
+              data: {
+                elements: [
+                  {
+                    id: 12,
+                    label: 'pending',
+                    siteId: 1,
+                    cpEditUrl: '/admin/entries/pending',
+                    canEdit: true,
+                    status: {fill: 'blue', label: 'Pending', draft: false},
+                  },
+                ],
+              },
+            } as never);
+        })
+    );
+    linkField.modelValue = {type: 'entry', value: ''};
+    await linkField.updateComplete;
+    const applied = new Promise<LinkFieldValue>((resolve) => {
+      linkField.addEventListener(
+        'apply',
+        (event) => resolve((event as CustomEvent<LinkFieldValue>).detail),
+        {once: true}
+      );
+    });
+
+    await page.getByRole('button', {name: 'Choose'}).click();
+    const settings = await selectorSettings();
+    settings.onSelect([{id: 12, siteId: 1, label: 'pending'}]);
+    await page.getByRole('button', {name: 'Apply'}).click();
+    const value = await applied;
+    respond();
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Pending'}))
+      .toBeVisible();
+    linkField.modelValue = {...value};
+    await linkField.updateComplete;
+
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Pending'}))
+      .toBeVisible();
+    await openMenu();
+    await expect
+      .element(page.getByRole('button', {name: 'Edit'}))
+      .toBeVisible();
+    post.mockRestore();
+  });
+
   it('is replaced through the element selector, from the menu button', async () => {
     await openMenu();
     await page.getByRole('button', {name: 'Replace'}).click();
 
-    await expect
-      .poll(() => selector.createElementSelectorModal.mock.calls.length)
-      .toBe(1);
-    const [, settings] = selector.createElementSelectorModal.mock
-      .calls[0] as unknown as [string, SelectorSettings];
+    const settings = await selectorSettings();
     expect(settings.triggerElement()).toBe(
       page.getByRole('button', {name: 'Actions'}).element()
     );
@@ -469,6 +600,26 @@ it('describes the destination with its error', async () => {
     .element(url)
     .toHaveAccessibleDescription(/URL cannot be blank\./);
 });
+
+/** The settings the field opened its element selector with. */
+async function selectorSettings(): Promise<SelectorSettings> {
+  await expect
+    .poll(() => selector.createElementSelectorModal.mock.calls.length)
+    .toBe(1);
+  const [, settings] = selector.createElementSelectorModal.mock
+    .calls[0] as unknown as [string, SelectorSettings];
+
+  return settings;
+}
+
+/** Answers chip fetches with the given element. */
+function respondWithElement(
+  element: Record<string, unknown>
+): ReturnType<typeof vi.spyOn> {
+  return vi
+    .spyOn(actionClient, 'post')
+    .mockResolvedValue({data: {elements: [element]}} as never);
+}
 
 async function chooseType(id: string): Promise<void> {
   await page.getByRole('combobox', {name: 'Link Type'}).selectOptions(id);
@@ -497,12 +648,7 @@ async function openSelector(): Promise<{
     .getByRole('group', {name: 'Entry'})
     .getByRole('button', {name: 'Choose'});
   await choose.click();
-  await expect
-    .poll(() => selector.createElementSelectorModal.mock.calls.length)
-    .toBe(1);
-
-  const [, settings] = selector.createElementSelectorModal.mock
-    .calls[0] as unknown as [string, SelectorSettings];
+  const settings = await selectorSettings();
 
   return {choose, settings};
 }
@@ -571,6 +717,44 @@ describe('live', () => {
     await expect
       .element(page.getByRole('button', {name: 'Apply'}))
       .not.toBeInTheDocument();
+  });
+
+  it('draws the latest chip an echo brings', async () => {
+    linkField.modelValue = {
+      type: 'entry',
+      value: '{entry:12@1:url}',
+      defaultLabel: 'pending',
+      element: {
+        id: 12,
+        label: 'pending',
+        siteId: 1,
+        status: {fill: 'blue', label: 'Pending', draft: false},
+      },
+    };
+    await linkField.updateComplete;
+    await page.getByRole('button', {name: 'Advanced'}).click();
+    await page.getByRole('textbox', {name: 'Label'}).fill('Read more');
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Pending'}))
+      .toBeVisible();
+
+    linkField.modelValue = {
+      ...changes.at(-1)!.value,
+      element: {
+        id: 12,
+        label: 'pending',
+        siteId: 1,
+        status: {fill: 'green', label: 'Live', draft: false},
+      },
+    };
+    await linkField.updateComplete;
+
+    await expect
+      .element(page.getByRole('img', {name: 'Status: Live'}))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('textbox', {name: 'Label'}))
+      .toHaveValue('Read more');
   });
 
   it('sits in a pane, with its label and attributes under “Advanced”', async () => {
