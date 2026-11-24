@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -54,7 +54,7 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
             ->getTransformUrl($asset, $transform, $request->immediately ?? false);
         $url = Html::encodeSpaces($url);
 
-        event(new AfterGenerateTransform($asset, $transform, $url));
+        event(new TransformGenerated($asset, $transform, $url));
 
         return self::result($asset, $transform, $url);
     }

@@ -9,7 +9,11 @@ use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderCreated;
+use CraftCms\Cms\Asset\Events\FolderCreating;
 use CraftCms\Cms\Asset\Events\FolderRenamed;
+use CraftCms\Cms\Asset\Events\FolderRenaming;
+use CraftCms\Cms\Asset\Events\FoldersDeleted;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -239,8 +243,44 @@ class Folders
      * @throws FsObjectExistsException if a folder already exists with such a name
      * @throws FilesystemException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
+     * @throws AssetOperationException if a {@see FolderCreating} listener prevents the creation
      */
     public function createFolder(VolumeFolder $folder): void
+    {
+        $parent = $this->newFolderParent($folder);
+
+        event($event = new FolderCreating($folder));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be created.'));
+        }
+
+        $this->makeFolder($folder, $parent);
+    }
+
+    /**
+     * Creates a folder as part of a folder move.
+     *
+     * Unlike {@see createFolder()}, it doesn’t dispatch {@see FolderCreating}, so a listener can’t stop a move after
+     * some of its folders were created.
+     *
+     * @internal
+     *
+     * @throws FsObjectExistsException if a folder already exists with such a name
+     * @throws FilesystemException if unable to create the directory on volume
+     * @throws AssetException if invalid folder provided
+     */
+    public function createFolderForMove(VolumeFolder $folder): void
+    {
+        $this->makeFolder($folder, $this->newFolderParent($folder));
+    }
+
+    /**
+     * Returns the parent of a folder about to be created, after checking that the folder can be created.
+     *
+     * @throws FsObjectExistsException|AssetException
+     */
+    private function newFolderParent(VolumeFolder $folder): VolumeFolder
     {
         $parent = $folder->getParent();
 
@@ -260,6 +300,14 @@ class Folders
             ));
         }
 
+        return $parent;
+    }
+
+    /**
+     * @throws FilesystemException if unable to create the directory on volume
+     */
+    private function makeFolder(VolumeFolder $folder, VolumeFolder $parent): void
+    {
         $path = rtrim((string) $folder->path, '/');
 
         if (! $parent->getVolume()->sourceDisk()->makeDirectory($path)) {
@@ -300,6 +348,12 @@ class Folders
             throw new FsObjectExistsException(t('A folder with the name “{folderName}” already exists in the folder.', [
                 'folderName' => $newName,
             ]));
+        }
+
+        event($event = new FolderRenaming($folder, $newName));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be renamed.'));
         }
 
         $parentFolderPath = dirname((string) $folder->path);
@@ -405,6 +459,10 @@ class Folders
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
         $this->reset();
+
+        if ($allFolderIds !== []) {
+            event(new FoldersDeleted($allFolderIds));
+        }
     }
 
     /**
@@ -450,9 +508,14 @@ class Folders
         return $folderModel;
     }
 
+    /**
+     * Saves a folder record. Dispatches {@see FolderCreated} when it creates a new one.
+     */
     public function storeFolderModel(VolumeFolder $folder): void
     {
-        if (! $folder->id) {
+        $isNew = ! $folder->id;
+
+        if ($isNew) {
             $model = new VolumeFolderModel;
         } else {
             $model = VolumeFolderModel::findOrFail($folder->id);
@@ -468,6 +531,10 @@ class Folders
         $folder->uid = $model->uid;
 
         $this->reset();
+
+        if ($isNew) {
+            event(new FolderCreated($folder));
+        }
     }
 
     public function createFolderQuery(): Builder
