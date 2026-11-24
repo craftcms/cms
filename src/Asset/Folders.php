@@ -309,6 +309,15 @@ class Folders
         $oldFolderPath = (string) $folder->path;
         $this->renameDirectoryOnDisk($volume, rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
+        // Transforms are stored by folder path, so they go stale as moved assets’ do. This runs while the
+        // folder records still have their old paths.
+        Asset::find()
+            ->folderId($folder->id)
+            ->includeSubfolders()
+            ->status(null)
+            ->cursor()
+            ->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));
+
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderModel($folder);
