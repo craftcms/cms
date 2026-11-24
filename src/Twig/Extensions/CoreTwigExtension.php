@@ -119,6 +119,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
         private readonly PageLifecycle $pageLifecycle,
+        private readonly ?TwigEnvironment $environment = null,
     ) {}
 
     public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
@@ -214,7 +215,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
                 // testEmpty() only converts Stringable values to strings when they aren't countable or traversable
                 if ($isSandboxed && $obj instanceof Stringable && ! $obj instanceof Countable && ! $obj instanceof Traversable) {
-                    Twig::get()->getExtension(SandboxExtension::class)->getSecurityPolicy()->checkMethodAllowed($obj, '__toString');
+                    ($this->environment ?? Twig::get())->getExtension(SandboxExtension::class)->getSecurityPolicy()->checkMethodAllowed($obj, '__toString');
                 }
 
                 return CoreExtension::testEmpty($obj);
