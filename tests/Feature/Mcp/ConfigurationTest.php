@@ -121,15 +121,35 @@ it('manages workflows, keeping stages that aren’t replaced', function (): void
     ($this->call)('update', ['type' => 'workflows', 'identifier' => ['id' => $created['id']], 'attributes' => ['stages' => [[...$stage, 'settings' => []]]]])
         ->assertJsonPath('result.isError', true);
 
-    $section = Section::factory()->create(['workflowId' => $created['id']]);
+    $entryType = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']])['item'];
+    $section = ($this->operate)('create', 'sections', ['attributes' => [
+        'name' => 'News',
+        'handle' => 'news',
+        'entryTypes' => [$entryType['id']],
+        'siteSettings' => [['siteId' => Sites::getPrimarySite()->id, 'hasUrls' => false]],
+        'workflow' => $created['id'],
+    ]])['item'];
+
+    expect($section['workflow'])->toBe($created['uid'])
+        ->and(Section::query()->find($section['id'])->workflowId)->toBe($created['id']);
 
     ($this->call)('delete', ['type' => 'workflows', 'identifier' => ['id' => $created['id']]])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'This workflow cannot be deleted while it is assigned to a section.');
 
-    $section->update(['workflowId' => null]);
+    ($this->call)('update', ['type' => 'sections', 'identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => '00000000-0000-4000-8000-000000000000']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'Workflow not found.');
+    expect(Section::query()->find($section['id'])->workflowId)->toBe($created['id']);
 
-    expect(($this->operate)('delete', 'workflows', ['identifier' => ['uid' => $created['uid']]]))->toBe(['type' => 'workflows', 'deleted' => true]);
+    expect(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['name' => 'Articles']])['item']['workflow'])->toBe($created['uid'])
+        ->and(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => null]])['item']['workflow'])->toBeNull()
+        ->and(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => $created['uid']]])['item']['workflow'])->toBe($created['uid']);
+
+    ($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => null]]);
+
+    expect(Section::query()->find($section['id'])->workflowId)->toBeNull()
+        ->and(($this->operate)('delete', 'workflows', ['identifier' => ['uid' => $created['uid']]]))->toBe(['type' => 'workflows', 'deleted' => true]);
 });
 
 it('explains that workflows require Craft Pro', function (): void {
