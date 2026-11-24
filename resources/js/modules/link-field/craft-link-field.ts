@@ -8,6 +8,7 @@ import {
   type ElementActionBehavior,
   type ElementActionMenuItem,
 } from '@/modules/elements/composables/useElementActionMenu';
+import type {PresentedElement} from '@/modules/elements/element-presentations';
 import {ElementPresentationsController} from '@/modules/elements/element-presentations-controller';
 import {openElementEditor} from '@/modules/elements/open-element-editor';
 import type {ChipElement} from '@/modules/elements/types/element-data';
@@ -126,6 +127,11 @@ const dialogBehaviors = new Set<ElementActionBehavior['type']>([
   'editImage',
 ]);
 
+/** An element as the shared cache knows it: by its ID and site. */
+function presentedElement(element: LinkedElement): PresentedElement {
+  return {id: element.id, siteId: Number(element.siteId) || null};
+}
+
 /** Whether a chip is the one drawn from the selector's label, before the rest of it is fetched. */
 function isPlaceholder(element: LinkedElement): boolean {
   return Object.keys(element).every((key) =>
@@ -217,9 +223,7 @@ class CraftLinkField extends LitElement {
     }),
     () => {
       const element = this.linkedElement();
-      return element
-        ? [{id: element.id, siteId: Number(element.siteId) || null}]
-        : [];
+      return element ? [presentedElement(element)] : [];
     }
   );
 
@@ -322,7 +326,7 @@ class CraftLinkField extends LitElement {
       // As relation fields' renders: the one the field first draws only fills
       // a gap, since it may be older than what's cached. Later ones replace it.
       if (fromServer && !isPlaceholder(given)) {
-        this.presentations.seed([given], given.siteId, {
+        this.presentations.seed([given], null, {
           replace: this.hasUpdated,
         });
       }
@@ -365,9 +369,7 @@ class CraftLinkField extends LitElement {
     }
 
     this.requestedChip = key;
-    this.presentations
-      .load([{id: element.id, siteId: Number(element.siteId) || null}])
-      .catch(() => {});
+    this.presentations.load([presentedElement(element)]).catch(() => {});
   }
 
   private isEcho(value: Partial<LinkFieldValue> | null): boolean {
