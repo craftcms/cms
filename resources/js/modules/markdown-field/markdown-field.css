@@ -187,15 +187,20 @@ craft-markdown-field[capped]:defined
   overflow-y: auto !important;
 }
 
-/* A row of its own below the text, so the text never runs underneath it. */
+/*
+ * A row of its own below the text, so the text never runs underneath it. The
+ * count's digits sit as far from the field's bottom edge, at their baseline,
+ * as from its end edge, so the row's block-end padding matches its inline-end
+ * padding, and the count's box is trimmed to its digits.
+ */
 craft-markdown-field:defined .markdown-field-footer-controls {
   grid-area: 2 / 1 !important;
   justify-self: end !important;
-  padding-block-end: var(--c-spacing-md) !important;
+  padding-block-end: var(--c-input-spacing-inline) !important;
   padding-inline-end: var(--c-input-spacing-inline) !important;
   display: flex !important;
   gap: var(--c-spacing-sm) !important;
-  align-items: center !important;
+  align-items: last baseline !important;
   pointer-events: none !important;
 }
 
@@ -205,6 +210,13 @@ craft-markdown-field:defined .markdown-field-char-counter {
   font-family: var(--c-font-body) !important;
   font-size: var(--c-text-base) !important;
   line-height: 1 !important;
+}
+
+@supports (text-box: trim-both cap alphabetic) {
+  craft-markdown-field:defined .markdown-field-char-counter [aria-hidden] {
+    display: block !important;
+    text-box: trim-both cap alphabetic !important;
+  }
 }
 
 craft-markdown-field:defined .markdown-field-char-counter.negative-chars-left {

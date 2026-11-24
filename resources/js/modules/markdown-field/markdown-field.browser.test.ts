@@ -140,6 +140,26 @@ it('keeps its character counter below the text', async () => {
   }
 });
 
+it('spaces its character counter evenly from the right and bottom edges', async () => {
+  const field = mount({rows: '2', 'max-length': '2000', 'show-toolbar': ''});
+  await field.updateComplete;
+  const container = field.querySelector<HTMLElement>('.overtype-container')!;
+  const number = field.querySelector<HTMLElement>(
+    '.markdown-field-char-counter [aria-hidden="true"]'
+  )!;
+  // An empty inline block sits with its bottom edge on the baseline.
+  const baseline = document.createElement('span');
+  baseline.style.display = 'inline-block';
+  number.append(baseline);
+
+  const edges = container.getBoundingClientRect();
+  const right = edges.right - number.getBoundingClientRect().right;
+  const bottom = edges.bottom - baseline.getBoundingClientRect().bottom;
+
+  expect(right).toBeGreaterThan(0);
+  expect(Math.abs(right - bottom)).toBeLessThanOrEqual(1);
+});
+
 it('doesn’t redraw its preview when it’s given the value it already shows', () => {
   const field = mount();
   const {textarea, preview} = parts(field);
