@@ -106,6 +106,7 @@
     .autoCorrect="control.props.autocorrect ?? true"
     .autoCapitalize="control.props.autocapitalize ?? true"
     .inputSize="control.props.size"
+    :width="control.props.size ? 'auto' : undefined"
     :dir="control.props.dir"
     .monospace="control.props.monospace === true"
     :size="control.props.enlarged ? 'large' : 'medium'"

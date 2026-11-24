@@ -188,6 +188,14 @@ export default class CraftInput extends NativeField(LitElement) {
 
       input?.setAttribute(attribute, String(value));
     }
+
+    // Browsers ignore `size` on some input types, such as `number`, so the
+    // stylesheet sizes those from this property instead.
+    if (attributes.size === undefined) {
+      input?.style.removeProperty('--_input-size');
+    } else {
+      input?.style.setProperty('--_input-size', String(attributes.size));
+    }
   }
 }
 

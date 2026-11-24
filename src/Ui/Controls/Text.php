@@ -71,6 +71,7 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
             ->autocorrect((bool) ($control->props['autocorrect'] ?? true))
             ->autocapitalize((bool) ($control->props['autocapitalize'] ?? true))
             ->inputSize($control->props['size'] ?? null)
+            ->width(isset($control->props['size']) ? 'auto' : null)
             ->orientation($control->props['dir'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
             ->size(($control->props['enlarged'] ?? false) ? 'large' : null)
