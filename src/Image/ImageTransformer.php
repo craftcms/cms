@@ -239,7 +239,8 @@ class ImageTransformer
             $files[] = [
                 'disk' => $diskName,
                 'path' => $path,
-                'url' => $hasUrls ? Html::encodeSpaces($disk->url($path)) : null,
+                // As getTransformUrl() served it, revved with when the transform was generated
+                'url' => $hasUrls ? Html::encodeSpaces(AssetsHelper::revUrl($disk->url($path), $asset, $transformIndex->dateIndexed)) : null,
             ];
         }
 

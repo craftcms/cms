@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\AssetFileChange;
 use CraftCms\Cms\Asset\Events\AssetFileChanged;
+use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\FolderRenamed;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
@@ -90,6 +91,34 @@ it('reports a moved file with its old URL, and nothing for new assets', function
         ->and($changed[0]->asset->getPath())->toBe('a-b.jpg');
 });
 
+it('reports the URL each file was served from, as well as its disk URL', function () {
+    $base = 'https://cdn.example.test/media%20files/My%20Photos/a%20b.jpg';
+    $asset = ($this->image)();
+    $oldTimestamp = $asset->dateModified->getTimestamp();
+    Cms::config()->revAssetUrls = true;
+
+    try {
+        $temp = AssetsHelper::tempFilePath('jpg');
+        copy(dirname(__DIR__, 2).'/_data/assets/files/background.jpg', $temp);
+        app(Assets::class)->replaceAssetFile($asset, $temp, 'a b.jpg');
+    } finally {
+        Cms::config()->revAssetUrls = false;
+    }
+
+    // A plugin serves assets from its own URLs
+    Event::listen(AssetUrlDefined::class, fn (AssetUrlDefined $e) => $e->url = 'https://img.example.test/'.$e->asset->id.'?w=200');
+    $moved = ($this->image)('c.jpg');
+    expect(app(Assets::class)->moveAsset($moved, app(Folders::class)->getFolderById($this->rootId)))->toBeTrue();
+
+    $changed = ($this->of)(AssetFileChanged::class);
+    expect($changed)->toHaveCount(2)
+        ->and($changed[0]->urls())->toBe(["$base?v=$oldTimestamp", $base])
+        ->and($changed[1]->urls())->toBe([
+            "https://img.example.test/{$moved->id}?w=200",
+            'https://cdn.example.test/media%20files/My%20Photos/c.jpg',
+        ]);
+});
+
 it('does not report a move that was rolled back', function () {
     $asset = ($this->image)();
     $root = app(Folders::class)->getFolderById($this->rootId);
@@ -156,7 +185,8 @@ it('reports deleted transform files with the URLs they were served from', functi
     $invalidated = ($this->of)(AssetTransformsInvalidated::class);
     expect($invalidated)->toHaveCount(1)
         ->and($url)->toContain('My%20Photos/')
-        ->and($invalidated[0]->urls())->toBe([strtok($url, '?')])
+        ->and($url)->toContain('?v=')
+        ->and($invalidated[0]->urls())->toBe([$url, strtok($url, '?')])
         ->and($transformFiles)->toBe([$invalidated[0]->files[0]['path']])
         ->and($this->disk->exists($invalidated[0]->files[0]['path']))->toBeFalse()
         ->and($invalidated[0]->files[0]['disk'])->toBe('change-events-disk');

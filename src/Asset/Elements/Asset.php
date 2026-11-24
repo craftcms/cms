@@ -3853,6 +3853,8 @@ CSS,
         $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
 
         if (! $this->keepFileOnDelete) {
+            $oldUrl = $this->getUrl();
+
             if ($trashedAssetDisk !== null) {
                 $this->moveFileToTrash($trashedAssetDisk);
             } else {
@@ -3868,6 +3870,7 @@ CSS,
                 change: AssetFileChange::Deleted,
                 oldVolume: $this->getVolume(),
                 oldPath: $this->getPath(),
+                oldUrl: $oldUrl,
             ));
         }
 
@@ -3909,6 +3912,7 @@ CSS,
                 change: AssetFileChange::Restored,
                 oldVolume: $this->getVolume(),
                 oldPath: $this->getPath(),
+                oldUrl: $this->getUrl(),
             ));
         }
 
@@ -4255,6 +4259,8 @@ CSS,
                 change: $hasNewFile ? AssetFileChange::Replaced : AssetFileChange::Moved,
                 oldVolume: $oldVolume,
                 oldPath: $oldPath,
+                // The asset’s properties aren’t updated yet, so this is still the URL it was served from
+                oldUrl: $this->getUrl(),
             ));
         }
 

@@ -32,22 +32,34 @@ class AssetFileChanged implements ShouldDispatchAfterCommit
         public Volume $oldVolume,
         /** The file’s path in {@see $oldVolume} before the change, or for a restored file, the path it was restored to */
         public string $oldPath,
+        /** The URL {@see Asset::getUrl()} returned before the change, or for a restored file, after it */
+        public ?string $oldUrl = null,
     ) {}
 
     /**
-     * Returns the URLs the old file was served from, or a restored file is served from again, without revision query
-     * parameters.
+     * Returns the URLs the old file was served from, or a restored file is served from again: the URL as it was
+     * served, and the same URL without its query string.
+     *
+     * The served URL is the one {@see Asset::getUrl()} returned, so it includes a `v` revision parameter when the
+     * `revAssetUrls` config setting is on, and any URL a plugin set with
+     * {@see AssetUrlResolving} or {@see AssetUrlDefined}. Older `v` values, from earlier file dates or focal points,
+     * can’t be recovered; URLs with them expire on the CDN’s own TTL.
      *
      * @return list<string>
      */
     public function urls(): array
     {
-        if (! $this->oldVolume->sourceHasUrls()) {
-            return [];
+        $urls = [];
+
+        if ($this->oldUrl !== null) {
+            $urls[] = $this->oldUrl;
         }
 
-        $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
+        if ($this->oldVolume->sourceHasUrls()) {
+            $path = implode('/', array_map(rawurlencode(...), explode('/', $this->oldPath)));
+            $urls[] = Html::encodeSpaces($this->oldVolume->sourceDisk()->url($path));
+        }
 
-        return [Html::encodeSpaces($this->oldVolume->sourceDisk()->url($path))];
+        return array_values(array_unique($urls));
     }
 }

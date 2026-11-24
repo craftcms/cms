@@ -22,17 +22,28 @@ class AssetTransformsInvalidated implements ShouldDispatchAfterCommit
 {
     public function __construct(
         public Asset $asset,
-        /** @var list<array{disk: string, path: string, url: string|null}> The deleted transform files, with the URLs they were served from when the transforms have public URLs */
+        /** @var list<array{disk: string, path: string, url: string|null}> The deleted transform files, with the URLs they were served from, including their `v` revision parameters, when the transforms have public URLs */
         public array $files,
     ) {}
 
     /**
-     * Returns the URLs the deleted transforms were served from, without revision query parameters.
+     * Returns the URLs the deleted transforms were served from: each URL as it was served, and the same URL without
+     * its query string.
+     *
+     * A served URL’s `v` revision parameter is rebuilt from when its transform was generated. Older `v` values,
+     * from transforms generated and deleted before, can’t be recovered; URLs with them expire on the CDN’s own TTL.
      *
      * @return list<string>
      */
     public function urls(): array
     {
-        return array_values(array_filter(array_column($this->files, 'url')));
+        $urls = [];
+
+        foreach (array_filter(array_column($this->files, 'url')) as $url) {
+            $urls[] = $url;
+            $urls[] = strtok($url, '?');
+        }
+
+        return array_values(array_unique($urls));
     }
 }
