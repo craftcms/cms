@@ -551,8 +551,10 @@ it('regenerates transforms of assets in a renamed folder and its subfolders on r
             ->and($oldPaths[1])->toStartWith('_'.$volume->uid.'/été/Beaches/');
 
         // On case-insensitive storage, `été/Beaches` is inside `Été`
-        $disk->move('été/Beaches/beach.jpg', 'Été/Beaches/beach.jpg');
-        $disk->deleteDirectory('été');
+        if (! $disk->fileExists('Été/Beaches/beach.jpg')) {
+            $disk->move('été/Beaches/beach.jpg', 'Été/Beaches/beach.jpg');
+            $disk->deleteDirectory('été');
+        }
 
         // The assets only exist in the primary site
         $primarySite = Sites::getPrimarySite();
