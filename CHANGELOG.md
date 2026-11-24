@@ -52,6 +52,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
 - Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> didn’t save element editor slideouts opened from full-page element editors. ([#21021](https://github.com/craftcms/cms/pull/21021))
+- Entry selection modals now show “New entry” buttons when the selection condition only has “Viewable”, “Savable”, “Section”, “Section Type”, and “Entry Type” rules, offering only the entry types those rules allow, in sections the user has permission to save entries in. A new entry that doesn’t meet the condition once it’s saved isn’t selected. ([#20598](https://github.com/craftcms/cms/issues/20598))
 - Fixed an error that occurred on element indexes with inline editing enabled when a cell’s text matched a PHP function name. ([#20962](https://github.com/craftcms/cms/pull/20962))
 - Fixed a bug where the “Use shapes to represent statuses” preference had no effect. ([#20963](https://github.com/craftcms/cms/issues/20963))
 - Fixed a bug where aborting an update after a failed database backup left the system in maintenance mode. ([#20547](https://github.com/craftcms/cms/pull/20547))

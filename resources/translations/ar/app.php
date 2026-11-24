@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '”{handle}“ ليس مقبض صالح.',
     '“{name}” deleted.' => 'تم حذف ”{name}“.',
     '“{name}” value copied.' => 'تم نسخ قيمة “{name}”.',
+    '“{name}” was saved, but it can’t be selected here.' => 'تم حفظ “{name}”، لكن لا يمكن تحديده هنا.',
     'Deprecated' => 'مهمل',
     '“{{entry}}” is approved' => 'تمت الموافقة على “{{entry}}”',
     'About Craft CMS' => 'حول Craft CMS',
