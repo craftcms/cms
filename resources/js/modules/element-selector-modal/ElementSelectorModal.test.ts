@@ -20,6 +20,7 @@ import {writeModalIndexLook} from './modalIndexLook';
 const stub = vi.hoisted(() => ({
   clearSelection: vi.fn(),
   refresh: vi.fn(),
+  selectElements: vi.fn(),
   lastProps: null as Record<string, any> | null,
   emit: null as ((event: string, payload?: unknown) => void) | null,
 }));
@@ -108,7 +109,11 @@ vi.mock('./ElementPicker.vue', async () => {
       setup(props, {emit, expose}) {
         stub.lastProps = props as Record<string, any>;
         stub.emit = emit as (event: string, payload?: unknown) => void;
-        expose({clearSelection: stub.clearSelection, refresh: stub.refresh});
+        expose({
+          clearSelection: stub.clearSelection,
+          refresh: stub.refresh,
+          selectElements: stub.selectElements,
+        });
         return () => create('div', {class: 'index-stub'});
       },
     }),
@@ -174,6 +179,7 @@ beforeEach(() => {
   document.body.innerHTML = '';
   stub.clearSelection.mockClear();
   stub.refresh.mockClear();
+  stub.selectElements.mockClear();
   stub.lastProps = null;
   stub.emit = null;
   menu.actions = null;
@@ -307,6 +313,32 @@ describe('ElementSelectorModal', () => {
 
     expect(stub.clearSelection).toHaveBeenCalled();
     expect(instance.state.disabledElementIds).toEqual([1]);
+    unmount();
+  });
+
+  it('lets plugins refresh the index and select an element they created', async () => {
+    const instance = controller();
+    const {modal, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    let refreshed = false;
+    stub.refresh.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            refreshed = true;
+            resolve();
+          })
+        )
+    );
+
+    const index = modal().controller!.index!;
+    await index.refresh!();
+    expect(refreshed).toBe(true);
+
+    index.selectElements!([7]);
+    expect(stub.selectElements).toHaveBeenCalledWith([7]);
     unmount();
   });
 
@@ -504,8 +536,11 @@ describe('the upload button', () => {
 
     await showSource(uploadable);
     upload.emit!('uploaded', {id: 3, label: 'photo.jpg'});
+    await vi.waitFor(() =>
+      expect(stub.selectElements).toHaveBeenCalledWith([3])
+    );
 
-    expect(stub.refresh).toHaveBeenCalledWith(3);
+    expect(stub.refresh).toHaveBeenCalled();
     unmount();
   });
 });

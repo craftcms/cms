@@ -21,7 +21,6 @@ use Override;
  * @method static void deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true)
  * @method static \CraftCms\Cms\Asset\Data\VolumeFolder ensureFolderByFullPathAndVolume(string $fullPath, \CraftCms\Cms\Asset\Data\Volume $volume, bool $justRecord = true)
  * @method static void storeFolderModel(\CraftCms\Cms\Asset\Data\VolumeFolder $folder)
- * @method static void createFolderForMove(\CraftCms\Cms\Asset\Data\VolumeFolder $folder)
  * @method static \Illuminate\Database\Query\Builder createFolderQuery()
  * @method static void reset()
  *
