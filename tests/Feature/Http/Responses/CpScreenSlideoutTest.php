@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -228,7 +229,7 @@ it('prefers the screen’s own edit URL', function () {
 it('gives no edit URL to a slideout that isn’t a standalone page', function (string $url, string $method) {
     expect(slideoutEditUrlFor(new CpScreenResponse, $url, $method))->toBeNull();
 })->with([
-    'action URL' => [fn () => Url::actionUrl('elements/edit', ['elementId' => 1]), 'GET'],
+    'CP action URL' => [fn () => Url::cpUrl(Cms::config()->actionTrigger.'/elements/edit', ['elementId' => 1]), 'GET'],
     'POST' => [fn () => Url::cpUrl('settings/things/new'), 'POST'],
 ]);
 
