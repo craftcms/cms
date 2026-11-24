@@ -928,7 +928,7 @@
   </div>
   <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
     <div ref="content" class="element-editor__content">
-      <CpContainer class="py-lg">
+      <CpContainer class="pt-md pb-lg">
         <component
           :is="formWrapper ?? 'div'"
           v-bind="formWrapper ? {editor, region: 'content'} : {}"
