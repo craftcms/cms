@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” isn’t a valid handle.',
     '“{name}” deleted.' => '“{name}” deleted.',
     '“{name}” value copied.' => '“{name}” value copied.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}” was saved, but it can’t be selected here.',
     'Deprecated' => 'Deprecated',
     '“{{entry}}” is approved' => '“{{entry}}” is approved',
     'About Craft CMS' => 'About Craft CMS',

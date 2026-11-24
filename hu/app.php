@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}” nem egy érvényes kezelő.',
     '“{name}” deleted.' => '„{name}” törölve.',
     '“{name}” value copied.' => 'A(z) „{name}” értéke másolva.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}” mentve, de itt nem választható ki.',
     'Deprecated' => 'Elavult',
     '“{{entry}}” is approved' => '„{{entry}}” jóváhagyva',
     'About Craft CMS' => 'A Craft CMS névjegye',

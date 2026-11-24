@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}“ er ekki gilt kerfisheiti.',
     '“{name}” deleted.' => '„{name}“ eytt.',
     '“{name}” value copied.' => 'Gildi „{name}“ afritað.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}“ var vistað, en ekki er hægt að velja það hér.',
     'Deprecated' => 'Úrelt',
     '“{{entry}}” is approved' => '„{{entry}}“ er samþykkt',
     'About Craft CMS' => 'Um Craft CMS',

@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” bukan handle yang valid.',
     '“{name}” deleted.' => '“{name}” dihapus.',
     '“{name}” value copied.' => 'Nilai “{name}” disalin.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}” telah disimpan, tetapi tidak dapat dipilih di sini.',
     'Deprecated' => 'Usang',
     '“{{entry}}” is approved' => '“{{entry}}” disetujui',
     'About Craft CMS' => 'Tentang Craft CMS',

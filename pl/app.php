@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}” nie jest prawidłowym odnośnikiem.',
     '“{name}” deleted.' => 'Usunięto „{name}”.',
     '“{name}” value copied.' => 'Skopiowano wartość „{name}”.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}” zostało zapisane, ale nie można go tutaj wybrać.',
     'Deprecated' => 'Przestarzałe',
     '“{{entry}}” is approved' => 'Zatwierdzono „{{entry}}”',
     'About Craft CMS' => 'O Craft CMS',

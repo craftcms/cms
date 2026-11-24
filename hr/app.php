@@ -3740,6 +3740,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}“ nije valjan identifikator.',
     '“{name}” deleted.' => 'Izbrisano: „{name}“.',
     '“{name}” value copied.' => 'Kopirana je vrijednost „{name}“.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}“ je spremljeno, ali ovdje se ne može odabrati.',
     'Deprecated' => 'Zastarjelo',
     '“{{entry}}” is approved' => 'Unos „{{entry}}“ je odobren',
     'About Craft CMS' => 'O Craft CMS-u',

@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” אינו מזהה חוקי.',
     '“{name}” deleted.' => '“{name}” נמחק',
     '“{name}” value copied.' => 'הערך של “{name}” הועתק.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}” נשמר, אך לא ניתן לבחור אותו כאן.',
     'Deprecated' => 'הוצא משימוש',
     '“{{entry}}” is approved' => '“{{entry}}” אושר',
     'About Craft CMS' => 'אודות Craft CMS',

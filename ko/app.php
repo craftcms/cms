@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}”(은)는 유효한 핸들이 아닙니다.',
     '“{name}” deleted.' => '“{name}” 삭제됨.',
     '“{name}” value copied.' => '“{name}” 값을 복사했습니다.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}”이(가) 저장되었지만 여기에서 선택할 수 없습니다.',
     'Deprecated' => '사용 중단됨',
     '“{{entry}}” is approved' => '“{{entry}}”이(가) 승인됨',
     'About Craft CMS' => 'Craft CMS 정보',

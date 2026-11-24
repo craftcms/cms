@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}“ ist kein gültiger Kurzname.',
     '“{name}” deleted.' => '„{name}“ wurde gelöscht.',
     '“{name}” value copied.' => 'Wert von „{name}“ kopiert.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}“ wurde gespeichert, kann hier aber nicht ausgewählt werden.',
     'Deprecated' => 'Veraltet',
     '“{{entry}}” is approved' => '„{{entry}}“ ist genehmigt',
     'About Craft CMS' => 'Über Craft CMS',
