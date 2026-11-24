@@ -548,28 +548,30 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     /**
      * Adds the affixes marked `data-label` or `data-description` to the
-     * control's name or description, swapping out ones that were replaced or
-     * removed.
+     * control's name or description, and drops ones no longer in any affix
+     * slot, so an affix that moves between slots keeps its references.
      */
     #referenceAffixes(): void {
+      const affixes = new Map<string, HTMLElement>();
+
       for (const name of ADDITIONAL_SLOTS) {
         const node = this.#slotted(name);
-        const previous = this.#referencedAffixes.get(name);
 
-        if (node === previous) {
-          continue;
+        if (node) {
+          affixes.set(name, node);
         }
+      }
 
-        if (previous) {
+      const current = new Set(affixes.values());
+
+      for (const previous of this.#referencedAffixes.values()) {
+        if (!current.has(previous)) {
           this.removeFromAriaLabelledBy(previous);
           this.removeFromAriaDescribedBy(previous);
-          this.#referencedAffixes.delete(name);
         }
+      }
 
-        if (!node) {
-          continue;
-        }
-
+      for (const [name, node] of affixes) {
         if (node.hasAttribute('data-label')) {
           this.addToAriaLabelledBy(node, {idPrefix: name});
         }
@@ -577,9 +579,9 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         if (node.hasAttribute('data-description')) {
           this.addToAriaDescribedBy(node, {idPrefix: name});
         }
-
-        this.#referencedAffixes.set(name, node);
       }
+
+      this.#referencedAffixes = affixes;
     }
 
     #describeFeedback(): void {
