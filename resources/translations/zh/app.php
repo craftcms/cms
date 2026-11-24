@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => '查询“{name}”用户组中的用户',
     'Query for users' => '查询用户',
     'Query for volumes' => '查询存储卷',
+    'Query for {type}' => '查询{type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => '应附加到 URL 的查询参数（如 {ex1}）或 URI 片段（如 {ex2}）。',
     'Queue Manager' => '队列管理器',
     'Quick Post' => '快速编写',

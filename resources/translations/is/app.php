@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Fyrirspurn fyrir notendur í „{name}“ notendahópnum',
     'Query for users' => 'Fyrirspurn fyrir notendur',
     'Query for volumes' => 'Fyrirspurn fyrir söfn',
+    'Query for {type}' => 'Fyrirspurn: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Fyrirspurnarbreytur (t.d. {ex1}) eða URI brot (t.d. {ex2}) sem ætti að bæta við vefslóðina.',
     'Queue Manager' => 'Biðröðstjóri',
     'Quick Post' => 'Fljótfærsla',

@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => '«{name}» колдонуучулар тобундагы колдонуучуларды суроо',
     'Query for users' => 'Колдонуучуларды суроо',
     'Query for volumes' => 'Сактагычтарды суроо',
+    'Query for {type}' => 'Суроо: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'URL дарегине кошула турган суроо параметрлери (мисалы, {ex1}) же URI фрагменти (мисалы, {ex2}).',
     'Queue Manager' => 'Кезек менеджери',
     'Quick Post' => 'Тез жарыялоо',

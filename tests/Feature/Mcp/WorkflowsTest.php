@@ -106,6 +106,47 @@ it('reviews and publishes a draft through MCP as distinct operations', function 
     expect(WorkflowRun::find($submitted['runId'])->status)->toBe(WorkflowStatus::Published);
 });
 
+it('publishes an approved unpublished draft from an author who may not publish', function (): void {
+    $sectionPermissions = ['accessCp', "viewEntries:{$this->section->uid}", "createEntries:{$this->section->uid}"];
+    $author = User::factory()->withPermissions($sectionPermissions)->create(['admin' => false]);
+    app(UserPermissions::class)->saveUserPermissions($this->reviewer->id, [
+        ...$sectionPermissions,
+        "saveEntries:{$this->section->uid}",
+        "viewPeerEntries:{$this->section->uid}",
+        "savePeerEntries:{$this->section->uid}",
+        "viewPeerEntryDrafts:{$this->section->uid}",
+        "savePeerEntryDrafts:{$this->section->uid}",
+    ]);
+    $draftId = ($this->callWorkflow)('elements_create', ['asUnpublishedDraft' => true, 'id' => null, 'attributes' => [
+        'sectionId' => $this->section->id,
+        'typeId' => $this->entry->typeId,
+        'title' => 'Proposed entry',
+        'slug' => 'proposed-entry',
+        'enabled' => true,
+    ]], $author)->assertJsonPath('result.isError', false)->json('result.structuredContent.element.id');
+    $submitted = ($this->callWorkflow)('workflows_submit', ['id' => $draftId], $author)
+        ->assertJsonPath('result.isError', false)
+        ->json('result.structuredContent.review');
+
+    ($this->callWorkflow)('drafts_apply', ['id' => $draftId], $author)
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'You are not authorized to apply this draft.');
+
+    ($this->callWorkflow)('workflows_approve', ['id' => $draftId, 'runId' => $submitted['runId'], 'stageUid' => $submitted['stage']['uid']], $this->reviewer)
+        ->assertJsonPath('result.structuredContent.review.status', 'approved');
+    $this->travelTo('2026-11-24 10:15:42');
+    ($this->callWorkflow)('drafts_apply', [
+        'id' => $draftId,
+        'workflowRunId' => $submitted['runId'],
+        'workflowCurrentStage' => $submitted['currentStage'],
+    ], $this->reviewer)->assertJsonPath('result.isError', false);
+
+    $entry = EntryElement::find()->id($draftId)->one();
+
+    expect($entry?->getStatus())->toBe(EntryElement::STATUS_LIVE)
+        ->and($entry->postDate->format('Y-m-d H:i:s'))->toBe('2026-11-24 10:15:00');
+});
+
 it('saves enabled entries in a workflow section as drafts and suggests submitting them', function (string $tool, Closure $arguments, bool $unpublished): void {
     Passport::actingAs($this->author, ['mcp:admin'], 'craft-mcp');
 

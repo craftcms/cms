@@ -41,6 +41,7 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 ## Pull requests
 
 - Run `composer ci` before creating a pull request.
+- Load the `changelog-entries` skill for every bug fix or feature PR, and commit the release notes it calls for with the change, linking the GitHub issue it fixes. If the skill says the change gets no entry, such as a fix for behavior that was never released, say why in the PR body.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use the `pr` skill to write the pull request body.
 - Use the `requesting-accessibility-reviews` skill to request an accessibility review.
@@ -136,6 +137,7 @@ queues. The `merging-pull-requests` skill's safeguards still apply.
 - End a turn only when the work is done, when nothing can move without me, or when the blocker is deliberate, such as a protected branch or access I withheld. Don't end it with a summary that announces the next step instead of taking it, with an offer to continue, or with a list of decisions that don't block the rest of the work.
 - Treat errors, timeouts, failing tests, and failing tools as problems to diagnose: read the error, fix the command, wait and retry, or use another tool.
 - Ask before you push, open a pull request or edit its title or body, post comments or reviews on GitHub, merge, delete remote branches, or discard changes you didn't make, such as with `git reset --hard` or `git checkout -- <path>`.
+- Never close or comment on GitHub issues or discussions on your own, including after merging the pull request that fixes them. Do either only when asked to for that issue or discussion.
 - Don't ask before running tests, `composer ci`, `composer fix-cs`, `composer phpstan`, Pint, or `pnpm` scripts, installing dependencies from the lockfiles, starting dev servers, or creating local branches and worktrees.
 
 ## Reporting
