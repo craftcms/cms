@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 
@@ -638,4 +639,26 @@ it('lets listeners prevent folders from being created or renamed', function () {
     } finally {
         $disk->deleteDirectory('');
     }
+});
+
+it('gives FolderCreated listeners the folder as it was saved', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $names = [];
+    Event::listen(FolderCreated::class, function (FolderCreated $event) use (&$names) {
+        $names[] = $event->folder->name;
+    });
+
+    DB::transaction(function () use ($volume, $root) {
+        $folder = new VolumeFolder([
+            'name' => 'Saved',
+            'parentId' => $root->id,
+            'volumeId' => $volume->id,
+            'path' => 'saved/',
+        ]);
+        $this->folders->storeFolderModel($folder);
+        $folder->name = 'Changed';
+    });
+
+    expect($names)->toBe(['Saved']);
 });

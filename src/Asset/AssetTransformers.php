@@ -183,7 +183,7 @@ class AssetTransformers extends Manager
         #[\SensitiveParameter] mixed $definition,
     ): AssetTransformResult {
         $request = $this->request($asset, $definition, $this->forAsset($asset));
-        $transform = $request->namedTransform ?? $this->eventTransform($request->parameters);
+        $transform = $request->namedTransform !== null ? clone $request->namedTransform : $this->eventTransform($request->parameters);
 
         event($event = new TransformGenerating($asset, $transform));
 

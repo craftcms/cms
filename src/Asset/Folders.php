@@ -533,7 +533,7 @@ class Folders
         $this->reset();
 
         if ($isNew) {
-            event(new FolderCreated($folder));
+            event(new FolderCreated(clone $folder));
         }
     }
 

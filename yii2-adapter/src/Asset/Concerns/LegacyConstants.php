@@ -11,6 +11,7 @@ use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\models\ImageTransform as LegacyImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset as CoreAsset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Asset\Events\AssetUrlResolving;
 use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageHelper;
@@ -170,11 +172,10 @@ trait LegacyConstants
             }
         });
 
-        // Like Craft 5, only image files trigger the legacy transform events
         Event::listen(function(TransformGenerating $event) {
             if (
                 YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_GENERATE_TRANSFORM) &&
-                ImageHelper::canManipulateAsImage($event->asset->getExtension())
+                self::triggersLegacyTransformEvents($event->asset)
             ) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => self::legacyTransform($event->transform),
@@ -192,7 +193,7 @@ trait LegacyConstants
         Event::listen(function(TransformGenerated $event) {
             if (
                 YiiEvent::hasHandlers(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM) &&
-                ImageHelper::canManipulateAsImage($event->asset->getExtension())
+                self::triggersLegacyTransformEvents($event->asset)
             ) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => self::legacyTransform($event->transform),
@@ -243,5 +244,31 @@ trait LegacyConstants
         } catch (TypeError) {
             return null;
         }
+    }
+
+    /**
+     * Returns whether a transform of the asset should trigger the legacy generate transform events.
+     *
+     * Like Craft 5, only image files do, and on site requests, GIFs and SVGs only do when the `transformGifs` or
+     * `transformSvgs` config setting allows it. This checks the extension rather than the MIME type, because getting
+     * the MIME type of an asset with a transform runs the transform.
+     */
+    private static function triggersLegacyTransformEvents(CoreAsset $asset): bool
+    {
+        $extension = strtolower($asset->getExtension());
+
+        if (!ImageHelper::canManipulateAsImage($extension)) {
+            return false;
+        }
+
+        if (!request()->isSiteRequest()) {
+            return true;
+        }
+
+        return match ($extension) {
+            'gif' => Cms::config()->transformGifs,
+            'svg' => Cms::config()->transformSvgs,
+            default => true,
+        };
     }
 }

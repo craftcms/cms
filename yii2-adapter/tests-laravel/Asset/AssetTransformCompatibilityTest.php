@@ -27,6 +27,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -459,6 +460,36 @@ it('only triggers legacy generate transform events for image files', function():
             ->and($legacy)->toBe(0);
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    }
+});
+
+it('only triggers legacy generate transform events for GIFs on site requests when transformGifs allows it', function(): void {
+    Cms::config()->transformGifs = false;
+    $asset = ($this->asset)([
+        'filename' => 'animation.gif',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $legacy = 0;
+    $before = function() use (&$legacy): void {
+        $legacy++;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+
+    try {
+        request()->attributes->set('isCpRequest', false);
+        $asset->transform(['width' => 320]);
+        $siteRequestCount = $legacy;
+
+        request()->attributes->set('isCpRequest', true);
+        $asset->transform(['width' => 320]);
+
+        expect($siteRequestCount)->toBe(0)
+            ->and($legacy)->toBe(1);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+        Cms::config()->transformGifs = true;
+        request()->attributes->remove('isCpRequest');
     }
 });
 
