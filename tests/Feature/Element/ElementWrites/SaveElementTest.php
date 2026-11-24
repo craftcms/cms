@@ -670,3 +670,22 @@ it('invalidates each cache tag once per save, including the revisions it creates
             'element::'.Entry::class."::section:$section->id",
         ]);
 });
+
+it('reads fresh cached queries from ElementSaved listeners', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+
+    expect(Entry::find()->id($entry->id)->cache()->one()->title)->toBe('Old title');
+
+    $titlesInListener = [];
+    Event::listen(function (ElementSaved $event) use ($entry, &$titlesInListener) {
+        if ($event->element->id === $entry->id) {
+            $titlesInListener[] = Entry::find()->id($entry->id)->cache()->one()->title;
+        }
+    });
+
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($titlesInListener)->toBe(['New title'])
+        ->and(Entry::find()->id($entry->id)->cache()->one()->title)->toBe('New title');
+});

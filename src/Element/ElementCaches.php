@@ -74,6 +74,22 @@ class ElementCaches
         }
     }
 
+    /**
+     * Returns whether any of the given cache tags are waiting to be invalidated by {@see deferInvalidations()}.
+     *
+     * Caches tagged with them are stale, so they shouldn't be read or written until the tags are invalidated.
+     *
+     * @param  string[]  $tags
+     */
+    public function hasPendingInvalidations(array $tags): bool
+    {
+        if ($this->deferredTags === []) {
+            return false;
+        }
+
+        return array_any($tags, fn ($tag) => isset($this->deferredTags[$tag]));
+    }
+
     public function isCollectingCacheInfo(): bool
     {
         return $this->dependencyCollector()->isCollecting();

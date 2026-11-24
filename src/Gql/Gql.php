@@ -401,7 +401,10 @@ class Gql
     {
         $data = DependencyCache::get($cacheKey);
 
-        if (! isset($data['result'], $data['cacheInfo']['tags'])) {
+        if (
+            ! isset($data['result'], $data['cacheInfo']['tags']) ||
+            $this->elementCaches->hasPendingInvalidations($data['cacheInfo']['tags'])
+        ) {
             return null;
         }
 
@@ -447,6 +450,10 @@ class Gql
 
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
+
+        if ($this->elementCaches->hasPendingInvalidations($dependency->tags)) {
+            return;
+        }
 
         $cacheInfo = [
             'tags' => $dependency->tags,
