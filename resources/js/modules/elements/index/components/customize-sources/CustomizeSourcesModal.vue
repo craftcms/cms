@@ -628,6 +628,7 @@
     width="5xl"
     height="40rem"
     resizable
+    storage-key="CustomizeSourcesModal.size"
     @close="emit('close')"
     @submit="save"
   >

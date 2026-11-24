@@ -14,6 +14,11 @@ export interface ModalProps {
   /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
   resizable?: boolean;
   /**
+   * Remembers a `resizable` modal's size in local storage under this key, so
+   * the next modal with the same key opens at it.
+   */
+  storageKey?: string;
+  /**
    * Whether it keeps the tallest height it has reached while open, so content
    * that shrinks doesn't pull the box out from under the reader. Off for a
    * modal whose content gets replaced by a different screen, such as the

@@ -229,7 +229,7 @@ it('only offers MCP clients the site guidance to save if the user can use the ut
     $user = UserModel::factory()->withPermissions(['accessCp', 'useCraftMcp', 'editSite:'.Sites::getPrimarySite()->uid])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
 
-    $tools = McpRequest::send($this, 'tools/list')->assertOk()->json('result.tools.*.name');
+    $tools = array_column(McpRequest::tools($this), 'name');
 
     expect($tools)->toContain('guidance_update_personal')
         ->not->toContain('guidance_update');
