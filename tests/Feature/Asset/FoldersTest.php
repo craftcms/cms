@@ -587,16 +587,18 @@ it('dispatches folder events when creating, renaming, and deleting folders', fun
         $this->folders->renameFolderById($folder->id, 'Renamed');
         $this->folders->deleteFoldersByIds($folder->id);
 
-        expect($events)->toHaveCount(4)
+        expect($events)->toHaveCount(5)
             ->and($events[0])->toBeInstanceOf(FolderCreated::class)
             ->and($events[0]->folder->id)->toBe($folder->id)
-            ->and($events[1])->toBeInstanceOf(FolderRenaming::class)
+            ->and($events[1])->toBeInstanceOf(FolderCreated::class)
+            ->and($events[1]->folder->id)->toBe($child->id)
+            ->and($events[2])->toBeInstanceOf(FolderRenaming::class)
             ->and($renamingFrom)->toBe('Parent')
-            ->and($events[1]->newName)->toBe('Renamed')
-            ->and($events[2])->toBeInstanceOf(FolderRenamed::class)
-            ->and($events[2]->folder->path)->toBe('Renamed/')
-            ->and($events[3])->toBeInstanceOf(FoldersDeleted::class)
-            ->and($events[3]->folderIds)->toEqualCanonicalizing([$folder->id, $child->id]);
+            ->and($events[2]->newName)->toBe('Renamed')
+            ->and($events[3])->toBeInstanceOf(FolderRenamed::class)
+            ->and($events[3]->folder->path)->toBe('Renamed/')
+            ->and($events[4])->toBeInstanceOf(FoldersDeleted::class)
+            ->and($events[4]->folderIds)->toEqualCanonicalizing([$folder->id, $child->id]);
     } finally {
         $disk->deleteDirectory('');
     }
@@ -609,7 +611,10 @@ it('lets listeners prevent folders from being created or renamed', function () {
     $disk->deleteDirectory('');
     Event::listen(FolderCreating::class, fn (FolderCreating $event) => $event->isValid = $event->folder->name !== 'Blocked');
     Event::listen(FolderRenaming::class, fn (FolderRenaming $event) => $event->isValid = false);
-    Event::listen(FolderCreated::class, fn () => throw new RuntimeException('FolderCreated was dispatched.'));
+    $created = [];
+    Event::listen(FolderCreated::class, function (FolderCreated $event) use (&$created) {
+        $created[] = $event->folder->name;
+    });
     Event::listen(FolderRenamed::class, fn () => throw new RuntimeException('FolderRenamed was dispatched.'));
 
     try {
@@ -622,7 +627,8 @@ it('lets listeners prevent folders from being created or renamed', function () {
 
         expect(fn () => $this->folders->createFolder($blocked))->toThrow(AssetOperationException::class)
             ->and($disk->directoryExists('Blocked'))->toBeFalse()
-            ->and(VolumeFolderModel::where('path', 'Blocked/')->exists())->toBeFalse();
+            ->and(VolumeFolderModel::where('path', 'Blocked/')->exists())->toBeFalse()
+            ->and($created)->toBe([]);
 
         $folder = $this->folders->ensureFolderByFullPathAndVolume('Kept', app(Volumes::class)->getVolumeById($volume->id), justRecord: false);
 

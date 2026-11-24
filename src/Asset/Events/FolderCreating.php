@@ -15,8 +15,8 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  * Set {@see $isValid} to `false` to prevent the folder from being created.
  * {@see Folders::createFolder()} then throws an {@see AssetOperationException}.
  *
- * Folders that indexing, uploads, and other code create with
- * {@see Folders::ensureFolderByFullPathAndVolume()} don’t trigger it.
+ * Only {@see Folders::createFolder()} triggers it. Folders that indexing, uploads, and other code create
+ * can’t be prevented, but they still trigger {@see FolderCreated}.
  *
  * @since 6.0.0
  */

@@ -278,8 +278,6 @@ class Folders
         }
 
         $this->storeFolderModel($folder);
-
-        event(new FolderCreated($folder));
     }
 
     /**
@@ -473,9 +471,14 @@ class Folders
         return $folderModel;
     }
 
+    /**
+     * Saves a folder record. Dispatches {@see FolderCreated} when it creates a new one.
+     */
     public function storeFolderModel(VolumeFolder $folder): void
     {
-        if (! $folder->id) {
+        $isNew = ! $folder->id;
+
+        if ($isNew) {
             $model = new VolumeFolderModel;
         } else {
             $model = VolumeFolderModel::findOrFail($folder->id);
@@ -491,6 +494,10 @@ class Folders
         $folder->uid = $model->uid;
 
         $this->reset();
+
+        if ($isNew) {
+            event(new FolderCreated($folder));
+        }
     }
 
     public function createFolderQuery(): Builder

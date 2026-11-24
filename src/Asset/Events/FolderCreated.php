@@ -9,10 +9,10 @@ use CraftCms\Cms\Asset\Folders;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * @event FolderCreated The event that is triggered after a folder is created.
+ * @event FolderCreated The event that is triggered after a folder record is created.
  *
- * Folders that indexing, uploads, and other code create with
- * {@see Folders::ensureFolderByFullPathAndVolume()} don’t trigger it.
+ * It fires for every new folder, including folders that indexing and uploads create, and a volume’s root folder.
+ * Folders for temporary uploads have no volume, so their {@see VolumeFolder::$volumeId} is `null`.
  *
  * @since 6.0.0
  */
