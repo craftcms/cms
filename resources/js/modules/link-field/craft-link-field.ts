@@ -821,7 +821,23 @@ class CraftLinkField extends LitElement {
     this.defaultLabel = '';
     this.selectedElement = null;
     this.linkAttributes = {...emptyAttributes};
-    this.change('discrete');
+    const value: LinkFieldValue = {
+      ...emptyAttributes,
+      type: this.modelValue?.type ?? '',
+      value: '',
+      label: '',
+      defaultLabel: '',
+      element: null,
+      href: '',
+    };
+    this.emittedValue = value;
+    this.modelValue = value;
+    this.dispatchEvent(
+      new CustomEvent<LinkChangeDetail>('link-change', {
+        bubbles: true,
+        detail: {kind: 'discrete', value},
+      })
+    );
     await this.updateComplete;
     this.addLinkButton()?.focus();
   }
