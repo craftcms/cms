@@ -80,7 +80,7 @@ class ImageTransformer
         $index = $this->getTransformIndex($asset, $imageTransform);
         $disk = $this->transformDisk($asset, $transformer);
         $transformHasUrls = $this->transformHasUrls($asset, $transformer);
-        $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
+        $uri = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
         if ($disk instanceof LocalFilesystemAdapter) {
@@ -190,7 +190,7 @@ class ImageTransformer
     {
         $transformer = $this->currentTransformer($asset->getVolume());
         $this->getTransformUrl($asset, $index->getTransform(), true, $transformer);
-        $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $path = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $index);
         $stream = $this->transformDisk($asset, $transformer)->readStream($path);
 
         if (! is_resource($stream)) {
@@ -235,7 +235,7 @@ class ImageTransformer
         ?AssetTransformer $transformer = null,
     ): void {
         $transformer ??= $this->currentTransformer($asset->getVolume());
-        $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
+        $diskPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $transformIndex);
 
         try {
             event(new DeletingTransformedImage(
@@ -369,7 +369,7 @@ class ImageTransformer
         }
 
         $transformDisk = $this->transformDisk($asset, $transformer);
-        $transformPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $transformPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $index);
 
         if ($transformDisk->exists($transformPath)) {
             $dateModified = $transformDisk->lastModified($transformPath);
@@ -449,11 +449,11 @@ class ImageTransformer
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
         $disk = $this->transformDisk($asset, $transformer);
 
-        $target = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $target = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $index);
 
         // If we have a match, copy the file.
         if ($matchFound) {
-            $from = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $matchFound);
+            $from = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $matchFound);
 
             // Sanity check
             try {
@@ -758,11 +758,6 @@ class ImageTransformer
     public function getTransformDisk(Volume $volume): FilesystemAdapter
     {
         return Storage::disk($this->outputDisk($volume, $this->currentTransformer($volume)));
-    }
-
-    private function getTransformBasePath(Asset $asset): string
-    {
-        return $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath);
     }
 
     private function transformDisk(Asset $asset, AssetTransformer $transformer): FilesystemAdapter
