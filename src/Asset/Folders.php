@@ -310,16 +310,24 @@ class Folders
         $oldFolderPath = (string) $folder->path;
         $this->renameDirectoryOnDisk($volume, rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
+        // Collect the subfolders by parent ID, as the loop below does, rather than with `includeSubfolders()`,
+        // which matches by path and misses paths that differ in case where the database compares case
+        $folderIds = [];
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            array_push($folderIds, ...$parentIds);
+            $parentIds = $this->findFolders(['parentId' => $parentIds])->pluck('id')->all();
+        }
+
         $assets = fn () => Asset::find()
-            ->folderId($folder->id)
-            ->includeSubfolders()
+            ->folderId($folderIds)
             ->site('*')
             ->unique()
             ->status(null)
             ->cursor();
 
-        // Transforms are stored by folder path, so they go stale as moved assets’ do. This runs while the
-        // folder records still have their old paths.
+        // Transforms are stored under the folder path, so delete them while the folder records still have
+        // their old paths and the files can be found
         $assets()->each(fn (Asset $asset) => app(AssetTransformers::class)->invalidate($asset));
 
         $folder->name = $newName;

@@ -492,7 +492,7 @@ it('renames subfolders whose paths differ in case from the renamed folder', func
     }
 });
 
-it('regenerates transforms of assets in a renamed folder on remote storage, whichever site it’s renamed from', function () {
+it('regenerates transforms of assets in a renamed folder and its subfolders on remote storage, whichever site it’s renamed from', function () {
     // Only Laravel’s local adapter gets its transforms’ `fileExists` checked against the disk
     Storage::extend('folders-test-remote', function ($app, array $config) {
         $adapter = new LocalFlysystemAdapter($config['root']);
@@ -516,45 +516,57 @@ it('regenerates transforms of assets in a renamed folder on remote storage, whic
     $folder = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'parentId' => $root->id,
-        'name' => 'Photos',
-        'path' => 'Photos/',
+        'name' => 'Été',
+        'path' => 'Été/',
     ]);
-    $subfolder = VolumeFolderModel::factory()->create([
-        'volumeId' => $volume->id,
-        'parentId' => $folder->id,
-        'name' => 'Trips',
-        'path' => 'Photos/Trips/',
-    ]);
-    $asset = AssetModel::factory()->createElement([
-        'volumeId' => $volume->id,
-        'folderId' => $subfolder->id,
-        'filename' => 'beach.jpg',
-        'kind' => 'image',
-        'width' => 1200,
-        'height' => 800,
-        'dateModified' => now()->subMinute(),
-    ]);
-    $disk->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+    $createImage = function (string $subfolderPath) use ($volume, $folder, $disk): int {
+        $subfolder = VolumeFolderModel::factory()->create([
+            'volumeId' => $volume->id,
+            'parentId' => $folder->id,
+            'name' => basename($subfolderPath),
+            'path' => $subfolderPath,
+        ]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $subfolder->id,
+            'filename' => 'beach.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+            'dateModified' => now()->subMinute(),
+        ]);
+        $disk->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+        return $asset->id;
+    };
+    $assetIds = [$createImage('Été/Trips/'), $createImage('été/Beaches/')];
     $transformers = app(AssetTransformers::class);
-    $transformUrl = fn () => $transformers->withImmediateTransforms(
-        fn () => $transformers->transform(Asset::find()->id($asset->id)->one(), ['width' => 100])->url,
-    );
-    $transformPath = fn (string $url) => rawurldecode(Str::after(strtok($url, '?'), 'https://remote.test/media/'));
+    $transformPath = fn (int $assetId) => rawurldecode(Str::after(strtok($transformers->withImmediateTransforms(
+        fn () => $transformers->transform(Asset::find()->id($assetId)->one(), ['width' => 100])->url,
+    ), '?'), 'https://remote.test/media/'));
 
     try {
-        $oldPath = $transformPath($transformUrl());
-        expect($oldPath)->toStartWith('_'.$volume->uid.'/Photos/Trips/');
+        $oldPaths = array_map($transformPath, $assetIds);
+        expect($oldPaths[0])->toStartWith('_'.$volume->uid.'/Été/Trips/')
+            ->and($oldPaths[1])->toStartWith('_'.$volume->uid.'/été/Beaches/');
 
-        // The asset only exists in the primary site
+        // On case-insensitive storage, `été/Beaches` is inside `Été`
+        $disk->move('été/Beaches/beach.jpg', 'Été/Beaches/beach.jpg');
+        $disk->deleteDirectory('été');
+
+        // The assets only exist in the primary site
         $primarySite = Sites::getPrimarySite();
         Sites::setCurrentSite(Site::factory()->create()->id);
-        $this->folders->renameFolderById($folder->id, 'Albums');
+        $this->folders->renameFolderById($folder->id, 'Summer');
         Sites::setCurrentSite($primarySite);
 
-        $newPath = $transformPath($transformUrl());
+        $newPaths = array_map($transformPath, $assetIds);
 
-        expect($newPath)->toBe(str_replace('/Photos/', '/Albums/', $oldPath))
-            ->and($disk->allFiles('_'.$volume->uid))->toBe([$newPath]);
+        expect($newPaths)->toBe([
+            str_replace('/Été/', '/Summer/', $oldPaths[0]),
+            str_replace('/été/', '/Summer/', $oldPaths[1]),
+        ])
+            ->and($disk->allFiles('_'.$volume->uid))->toEqualCanonicalizing($newPaths);
     } finally {
         $disk->deleteDirectory('');
     }
