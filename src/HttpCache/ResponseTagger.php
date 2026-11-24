@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\HttpCache;
 
 use DateTimeImmutable;
-use FOS\HttpCache\TagHeaderFormatter\TagHeaderFormatter;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Container\Attributes\Scoped;
 
 /**
  * Collects the tags the current response depends on.
@@ -19,15 +18,13 @@ use Symfony\Component\HttpFoundation\Response;
  * {% do ResponseTagger.addTags(['nav']) %}
  * ```
  *
- * The tags reach the response only when a tag header formatter is configured. A driver whose cache needs other
- * strings, such as hashed tags, converts them in its formatter and its invalidation client. Cache drivers read them with
- * {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`, at
- * {@see getExpiryDate()}.
- *
- * Unlike FOSHttpCache's `ResponseTagger`, tagging a response doesn't clear the tags, so drivers can still read them.
+ * Craft doesn't send the tags anywhere itself. Cache integrations, such as `craftcms/http-cache` or a plugin, read
+ * them with {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`,
+ * at {@see getExpiryDate()}.
  *
  * @since 6.0.0
  */
+#[Scoped]
 class ResponseTagger
 {
     /**
@@ -43,10 +40,6 @@ class ResponseTagger
     private array $captures = [];
 
     private ?int $expiryTimestamp = null;
-
-    public function __construct(
-        private readonly ?TagHeaderFormatter $formatter = null,
-    ) {}
 
     /**
      * @param  string|list<string>  $tags
@@ -112,21 +105,5 @@ class ResponseTagger
     public function getExpiryDate(): ?DateTimeImmutable
     {
         return $this->expiryTimestamp === null ? null : new DateTimeImmutable("@{$this->expiryTimestamp}");
-    }
-
-    /**
-     * Adds the tags to the response's tag header, if a formatter is configured.
-     */
-    public function tagResponse(Response $response): void
-    {
-        if ($this->formatter === null || $this->tags === []) {
-            return;
-        }
-
-        $response->headers->set(
-            $this->formatter->getTagsHeaderName(),
-            $this->formatter->getTagsHeaderValue($this->getTags()),
-            false,
-        );
     }
 }

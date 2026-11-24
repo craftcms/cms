@@ -3,18 +3,11 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\HttpCache\ResponseTagger;
-use FOS\HttpCache\TagHeaderFormatter\CommaSeparatedTagHeaderFormatter;
-use Symfony\Component\HttpFoundation\Response;
 
-it('writes tags with the formatter and keeps them for drivers', function () {
-    $tagger = new ResponseTagger(new CommaSeparatedTagHeaderFormatter('Surrogate-Key', ' '));
-    $response = new Response(headers: ['Surrogate-Key' => 'existing']);
+it('ignores empty and duplicate tags', function () {
+    $tagger = (new ResponseTagger)->addTags(['a', '', 'b'])->addTags('a');
 
-    $tagger->addTags(['a', '', 'b'])->addTags('a');
-    $tagger->tagResponse($response);
-
-    expect($response->headers->all('surrogate-key'))->toBe(['existing', 'a b'])
-        ->and($tagger->getTags())->toBe(['a', 'b']);
+    expect($tagger->getTags())->toBe(['a', 'b']);
 });
 
 it('captures the tags added inside nested blocks', function () {

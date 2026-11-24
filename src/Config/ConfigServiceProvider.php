@@ -27,7 +27,6 @@ class ConfigServiceProvider extends ServiceProvider
     /** @var list<string> */
     private array $configFiles = [
         'general',
-        'http-cache',
         'redirects',
         'routes',
         'twig-sandbox',
