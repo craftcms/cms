@@ -34,6 +34,7 @@
 - Fixed a bug where renaming an asset folder left its assets’ image transforms behind, and transform URLs on non-local disks pointed to files that didn’t exist. ([#21049](https://github.com/craftcms/cms/pull/21049))
 - Fixed a bug where renaming an asset folder didn’t clear element caches, such as `{% cache %}` tags, that held its assets’ old URLs. ([#21049](https://github.com/craftcms/cms/pull/21049))
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
+- Fixed a bug where PHP could crash when getting the URL or dimensions of a legacy `craft\elements\Asset` after calling `setTransform()`.
 - Fixed a bug where Number and Money fields’ Size setting didn’t change their inputs’ width. ([#21054](https://github.com/craftcms/cms/issues/21054), [#21068](https://github.com/craftcms/cms/pull/21068))
 - Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060), [#21063](https://github.com/craftcms/cms/pull/21063))
 - Fixed a bug where the `configuration_*` MCP tools couldn’t assign a workflow to a section. ([#21042](https://github.com/craftcms/cms/issues/21042), [#21051](https://github.com/craftcms/cms/pull/21051))
