@@ -12,7 +12,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
@@ -193,7 +193,7 @@ class AssetTransformers extends Manager
 
         $result = $this->driver($request->transformer->driver)->transform($request);
 
-        event(new AfterGenerateTransform($asset, $transform, $result->url));
+        event(new TransformGenerated($asset, $transform, $result->url));
 
         return $result;
     }

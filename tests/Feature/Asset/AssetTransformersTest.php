@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
@@ -110,7 +111,7 @@ it('dispatches transform events around any driver', function () {
             $event->url = '/cdn/my image.png';
         }
     });
-    Event::listen(AfterGenerateTransform::class, function (AfterGenerateTransform $event) use (&$generated) {
+    Event::listen(TransformGenerated::class, function (TransformGenerated $event) use (&$generated) {
         $generated[] = [$event->transform->width, $event->url];
     });
 
@@ -122,6 +123,20 @@ it('dispatches transform events around any driver', function () {
         ->and($overridden->mimeType)->toBe('image/png')
         ->and($diskDriver->request->parameters['width'])->toBe(100)
         ->and($generated)->toBe([[100, '/transforms/hero.webp']]);
+});
+
+it('still dispatches the deprecated AfterGenerateTransform event to its listeners', function () {
+    registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver']);
+    $urls = [];
+    Event::listen(function (AfterGenerateTransform $event) use (&$urls) {
+        $urls[] = $event->url;
+    });
+    Deprecator::shouldReceive('log')->once();
+
+    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+
+    expect($urls)->toBe(['/transforms/hero.webp']);
 });
 
 it('throws for invalid transformer config with debug mode on', function (mixed $value, string $exception) {

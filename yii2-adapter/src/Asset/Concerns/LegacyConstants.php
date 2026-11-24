@@ -12,10 +12,10 @@ use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\models\ImageTransform as LegacyImageTransform;
 use CraftCms\Cms\Asset\Enums\FileKind;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -132,7 +132,7 @@ trait LegacyConstants
 
     /**
      * @event GenerateTransformEvent The event that is triggered after an asset’s transform driver returns the transform URL.
-     * @deprecated 6.0.0 Use {@see AfterGenerateTransform} instead.
+     * @deprecated 6.0.0 Use {@see TransformGenerated} instead.
      */
     public const string EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
@@ -184,7 +184,7 @@ trait LegacyConstants
             }
         });
 
-        Event::listen(function(AfterGenerateTransform $event) {
+        Event::listen(function(TransformGenerated $event) {
             if (YiiEvent::hasHandlers(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => self::legacyTransform($event->transform),

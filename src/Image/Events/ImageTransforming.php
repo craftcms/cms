@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Events;
 
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
@@ -16,7 +16,7 @@ use CraftCms\Cms\Image\Image;
  * transformed image, before it writes the file to the transform disk.
  *
  * Set {@see $tempPath} to write a different file instead. Other transform drivers don’t trigger it.
- * {@see TransformGenerating} and {@see AfterGenerateTransform} fire for every driver.
+ * {@see TransformGenerating} and {@see TransformGenerated} fire for every driver.
  *
  * @since 6.0.0
  */
