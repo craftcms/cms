@@ -894,21 +894,9 @@ class Releases
             ->first($this->workflows->requiresApproval(...));
         $draftToApply = $workflowDraft !== null ? clone $workflowDraft : $draft;
 
-        if ($draftToApply->enabled && $draftToApply->getEnabledForSite()) {
-            $draftToApply->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
+        $drafts = app(Drafts::class);
 
-        if ($draftToApply->getIsUnpublishedDraft()) {
-            $draftToApply->propagateRequired = true;
-        }
-
-        $draftToApply->applyingDraft = true;
-        $saved = app(Elements::class)->saveElement(
-            element: $draftToApply,
-            crossSiteValidate: Sites::isMultiSite(),
-        );
-
-        if (! $saved) {
+        if (! $drafts->saveDraftForApplying($draftToApply, Sites::isMultiSite())) {
             // Cross-site errors link to the invalid site for the element editor;
             // a release reports them as text in its error, notifications and MCP.
             $errors = array_map(
@@ -921,10 +909,7 @@ class Releases
             );
         }
 
-        $draftToApply->applyingDraft = false;
-        $draftToApply->propagateRequired = false;
-
-        return app(Drafts::class)->applyDraft($draftToApply);
+        return $drafts->applyDraft($draftToApply);
     }
 
     /** @return list<ElementInterface> */
