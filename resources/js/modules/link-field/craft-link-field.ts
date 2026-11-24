@@ -1,9 +1,8 @@
 import {actionClient, t, type ElementInfo} from '@craftcms/ui';
 import {createElementSelectorModal} from '@/modules/element-selector-modal/create-element-selector-modal';
-import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
-import {openSlideout} from '@/common/slideouts';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+import {openElementEditor} from '@/modules/elements/open-element-editor';
 import type {ChipElement} from '@/modules/elements/types/element-data';
 import {chipMenu} from '@/modules/ui/element-select/chipMenu';
 import type {ElementPresentation} from '@/modules/ui/element-select/types';
@@ -434,24 +433,12 @@ class CraftLinkField extends LitElement {
     element: LinkedElement
   ): Promise<void> {
     const opener = this.actionMenuInvoker();
-    const href =
-      element.cpEditUrl ??
-      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
-        undefined,
-        {
-          query: {
-            elementType: type.elementType!,
-            elementId: element.id,
-            siteId: element.siteId ?? null,
-          },
-        }
-      );
 
     // A popover this field is in would otherwise be dismissed by focus moving
     // into the slideout.
     await this.dispatchElementSelectStartEvent(opener);
 
-    const panel = await openSlideout(href, {
+    const panel = await openElementEditor(element, type.elementType!, {
       opener,
       onSaved: ({data}) => {
         if (
