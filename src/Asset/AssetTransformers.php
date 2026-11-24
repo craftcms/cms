@@ -223,10 +223,19 @@ class AssetTransformers extends Manager
     {
         $format = $transform instanceof ImageTransform ? $transform->format : ($transform['format'] ?? null);
         $path = parse_url($url, PHP_URL_PATH);
-        $mimeType = (is_string($path) ? File::getMimeTypeByExtension($path) : null)
-            ?? File::getMimeTypeByExtension('file.'.(is_string($format) ? $format : $asset->getExtension()));
+        $mimeType = (is_string($format) && $format !== '' ? File::getMimeTypeByExtension("file.$format") : null)
+            ?? (is_string($path) ? File::getMimeTypeByExtension($path) : null)
+            ?? File::getMimeTypeByExtension('file.'.$asset->getExtension());
+        [$width, $height] = $transform instanceof ImageTransform
+            ? ImageTransformHelper::transformedDimensions($asset, $transform)
+            : [null, null];
 
-        return new AssetTransformResult($url, str_starts_with($mimeType ?? '', 'image/') ? $mimeType : 'image/jpeg');
+        return new AssetTransformResult(
+            url: $url,
+            mimeType: str_starts_with($mimeType ?? '', 'image/') ? $mimeType : 'image/jpeg',
+            width: $width,
+            height: $height,
+        );
     }
 
     /**

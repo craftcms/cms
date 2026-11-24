@@ -27,7 +27,8 @@ class AssetServiceProvider extends ServiceProvider
             $imageTransformer->handleAssetTransformsInvalidating(...),
         );
         Event::listen(function (TransformGenerated $event) {
-            if (Event::hasListeners(AfterGenerateTransform::class)) {
+            // Wildcard listeners don’t count, so tools that listen to every event don’t trigger the deprecation
+            if (isset(Event::getRawListeners()[AfterGenerateTransform::class])) {
                 Deprecator::log(AfterGenerateTransform::class, '`'.AfterGenerateTransform::class.'` is deprecated. Listen to `'.TransformGenerated::class.'` instead.');
                 event(new AfterGenerateTransform($event->asset, $event->transform, $event->url));
             }

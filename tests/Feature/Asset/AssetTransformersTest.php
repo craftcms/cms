@@ -125,6 +125,24 @@ it('dispatches transform events around any driver', function () {
         ->and($generated)->toBe([[100, '/transforms/hero.webp']]);
 });
 
+it('gives listener-provided transform URLs the transform’s dimensions and format', function () {
+    registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver'], [
+        'filename' => 'photo.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    Event::listen(TransformGenerating::class, function (TransformGenerating $event) {
+        $event->url = 'https://cdn.example.com/photo.jpg?w=100&fm=webp';
+    });
+
+    $result = app(AssetTransformers::class)->transform($asset, ['width' => 100, 'format' => 'webp']);
+
+    expect($result->width)->toBe(100)
+        ->and($result->height)->toBe(50)
+        ->and($result->mimeType)->toBe('image/webp');
+});
+
 it('still dispatches the deprecated AfterGenerateTransform event to its listeners', function () {
     registerDriver('disk-driver');
     $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver']);
@@ -137,6 +155,21 @@ it('still dispatches the deprecated AfterGenerateTransform event to its listener
     app(AssetTransformers::class)->transform($asset, ['width' => 100]);
 
     expect($urls)->toBe(['/transforms/hero.webp']);
+});
+
+it('doesn’t dispatch the deprecated AfterGenerateTransform event for wildcard listeners', function () {
+    registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver']);
+    $dispatched = [];
+    Event::listen('*', function (string $name) use (&$dispatched) {
+        $dispatched[] = $name;
+    });
+    Deprecator::shouldReceive('log')->never();
+
+    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+
+    expect($dispatched)->toContain(TransformGenerated::class)
+        ->not->toContain(AfterGenerateTransform::class);
 });
 
 it('throws for invalid transformer config with debug mode on', function (mixed $value, string $exception) {

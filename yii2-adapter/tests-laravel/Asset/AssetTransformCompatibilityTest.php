@@ -21,6 +21,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -412,6 +413,52 @@ it('triggers legacy generate transform events for asset transform drivers', func
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
+    }
+});
+
+it('passes inline transform parameters to legacy generate transform handlers', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $zones = [];
+    $before = function(GenerateTransformEvent $event) use (&$zones): void {
+        $zones[] = $event->transform->getParameters()['zone'] ?? null;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+
+    try {
+        $asset->transform(['width' => 320, 'zone' => 'eu']);
+
+        expect($zones)->toBe(['eu']);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    }
+});
+
+it('only triggers legacy generate transform events for image files', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'document.pdf',
+        'kind' => 'pdf',
+    ]);
+    $legacy = 0;
+    $core = 0;
+    $before = function() use (&$legacy): void {
+        $legacy++;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    EventFacade::listen(TransformGenerating::class, function() use (&$core): void {
+        $core++;
+    });
+
+    try {
+        $asset->transform(['width' => 320]);
+
+        expect($core)->toBe(1)
+            ->and($legacy)->toBe(0);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
     }
 });
 

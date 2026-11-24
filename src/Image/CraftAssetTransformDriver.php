@@ -49,22 +49,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         }
 
         $format = $transform->format ?? ImageTransformHelper::detectTransformFormat($request->asset);
-        $source = clone $request->asset;
-        if (method_exists($source, 'setTransform')) {
-            $source->setTransform(null);
-        }
-        $sourceWidth = $source->getWidth();
-        $sourceHeight = $source->getHeight();
-        [$width, $height] = $sourceWidth && $sourceHeight
-            ? ImageHelper::targetDimensions(
-                $sourceWidth,
-                $sourceHeight,
-                $transform->width !== null ? (int) $transform->width : null,
-                $transform->height !== null ? (int) $transform->height : null,
-                $transform->mode,
-                $transform->upscale,
-            )
-            : [null, null];
+        [$width, $height] = ImageTransformHelper::transformedDimensions($request->asset, $transform);
 
         return new AssetTransformResult(
             url: $url,

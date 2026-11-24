@@ -20,6 +20,7 @@ use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageHelper;
 use Deprecated;
 use Illuminate\Support\Facades\Event;
 use TypeError;
@@ -169,8 +170,12 @@ trait LegacyConstants
             }
         });
 
+        // Like Craft 5, only image files trigger the legacy transform events
         Event::listen(function(TransformGenerating $event) {
-            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
+            if (
+                YiiEvent::hasHandlers(Asset::class, self::EVENT_BEFORE_GENERATE_TRANSFORM) &&
+                ImageHelper::canManipulateAsImage($event->asset->getExtension())
+            ) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => self::legacyTransform($event->transform),
                     'asset' => $event->asset,
@@ -185,7 +190,10 @@ trait LegacyConstants
         });
 
         Event::listen(function(TransformGenerated $event) {
-            if (YiiEvent::hasHandlers(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM)) {
+            if (
+                YiiEvent::hasHandlers(Asset::class, self::EVENT_AFTER_GENERATE_TRANSFORM) &&
+                ImageHelper::canManipulateAsImage($event->asset->getExtension())
+            ) {
                 $yiiEvent = new GenerateTransformEvent([
                     'transform' => self::legacyTransform($event->transform),
                     'asset' => $event->asset,
@@ -222,12 +230,13 @@ trait LegacyConstants
 
         try {
             return match (true) {
-                $transform instanceof ImageTransform => new LegacyImageTransform([
+                $transform instanceof ImageTransform && $transform->id !== null => new LegacyImageTransform([
                     ...$transform->getConfig(),
                     'id' => $transform->id,
                     'uid' => $transform->uid,
                     'parameterChangeTime' => $transform->parameterChangeTime,
                 ]),
+                $transform instanceof ImageTransform => new LegacyImageTransform()->setInlineParameters($transform->getParameters()),
                 is_array($transform) => new LegacyImageTransform()->setInlineParameters($transform),
                 default => null,
             };
