@@ -97,6 +97,23 @@ class SecurityPolicyTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider markupContentReplacementDataProvider
+     */
+    public function testMarkupContentCantBeReplacedWithinSandbox(string $template): void
+    {
+        self::expectException(SecurityNotAllowedMethodError::class);
+        $this->renderSandboxedString($template, ['safe' => new Markup('original', 'UTF-8')]);
+    }
+
+    public static function markupContentReplacementDataProvider(): array
+    {
+        return [
+            ['{% set x = safe.__construct("<script>", "UTF-8") %}{{ safe }}'],
+            ['{{ safe.withContent("<script>") }}'],
+        ];
+    }
+
     private function renderSandboxedString(string $template, array $variables = []): string
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();

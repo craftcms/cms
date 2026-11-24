@@ -188,7 +188,11 @@ class SecurityPolicy implements SecurityPolicyInterface
             return;
         }
 
-        if ($obj instanceof Template || $obj instanceof Markup) {
+        // The constructor and withContent() would let templates replace content that's already marked safe
+        if (
+            $obj instanceof Template ||
+            ($obj instanceof Markup && !in_array(strtolower($method), ['__construct', 'withcontent'], true))
+        ) {
             return;
         }
 
