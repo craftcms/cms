@@ -5,7 +5,7 @@
 > [!WARNING]
 > Sites that set `CRAFT_EPHEMERAL` on a read-only filesystem should now turn off automatic project config YAML writes by calling `writeYamlAutomatically(false)` on `CraftCms\Cms\ProjectConfig\ProjectConfig` from a service provider, and make sure Laravel’s storage path is writable. With the Yii adapter installed, `resourceBasePath` should also point to a writable directory, or the `assetManager` component should serve resources published at build time.
 
-- Improved the performance of edit pages with many fields or nested entries.
+- Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
