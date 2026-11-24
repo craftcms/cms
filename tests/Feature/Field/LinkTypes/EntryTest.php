@@ -60,6 +60,21 @@ test('the sources setting uses “All entries” as its All option', function ()
         ->and(array_column($props['options'], 'value'))->not->toContain('*');
 });
 
+test('the settings still render when “All entries” is the only source', function () {
+    $section = Section::factory()->create();
+    $section->siteSettings()->update(['hasUrls' => false]);
+    Sections::refreshSections();
+
+    $nodes = new Entry()->settingsNodes('linkTypes[entry]');
+
+    expect($nodes)->toHaveCount(3);
+
+    $props = $nodes[0]->getControl()->props();
+
+    expect($props['options'])->toBe([])
+        ->and($props['allLabel'])->toBe('All entries');
+});
+
 test('selection criteria no longer filters out unpermitted entries directly', function () {
     $entry = new Entry;
     $selectionCriteria = fn (): array => $this->selectionCriteria();

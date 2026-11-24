@@ -118,7 +118,7 @@ abstract class BaseElementLinkType extends BaseLinkType
             ])
             ->partition(fn (array $source): bool => $source['value'] === Choice::ALL_VALUE);
 
-        if ($sources->isEmpty()) {
+        if ($sources->isEmpty() && $allSources->isEmpty()) {
             return [];
         }
 
