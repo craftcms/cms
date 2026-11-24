@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Twig\SecurityPolicy;
@@ -145,6 +146,40 @@ it('doesn’t let sandboxed templates replace the content of safe strings', func
     'Markup::withContent()' => [new Markup('original', 'UTF-8'), '{{ safe.withContent("<script>") }}'],
     'HtmlString constructor' => [new HtmlString('original'), '{% set x = safe.__construct("<script>") %}{{ safe }}'],
 ]);
+
+it('lets sandboxed templates test values without converting them to strings', function (string $template, string $expected) {
+    $vars = [
+        'stringable' => new class implements Stringable
+        {
+            public function __toString(): string
+            {
+                return 'SECRET';
+            }
+        },
+        'entry' => new Entry,
+    ];
+
+    expect(Template::renderSandboxedString($template, $vars))->toBe($expected);
+})->with([
+    ['{{ stringable is object ? "y" : "n" }}', 'y'],
+    ['{{ stringable is string ? "y" : "n" }}', 'n'],
+    ['{{ stringable is instance of("Stringable") ? "y" : "n" }}', 'y'],
+    ['{{ entry is empty ? "y" : "n" }}', 'n'],
+    ['{{ [entry] is empty ? "y" : "n" }}', 'n'],
+]);
+
+it('checks the __toString() method of values that the empty test converts to strings', function () {
+    $stringable = new class implements Stringable
+    {
+        public function __toString(): string
+        {
+            return '';
+        }
+    };
+
+    expect(fn () => Template::renderSandboxedString('{{ stringable is empty ? "y" : "n" }}', ['stringable' => $stringable]))
+        ->toThrow(SecurityNotAllowedMethodError::class);
+});
 
 /**
  * Calls every filter and function allowed in the sandbox with an object whose properties and methods the sandbox doesn’t
