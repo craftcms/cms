@@ -442,6 +442,9 @@ class Template
             $view->setTemplatesPath($oldTemplatesPath);
         }
 
+        // Both modes can resolve the name to the same file, such as when a plugin registers the same template root for both
+        $paths = array_unique($paths);
+
         return count($paths) === 1 ? $paths[0] : null;
     }
 

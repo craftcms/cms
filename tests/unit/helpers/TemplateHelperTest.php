@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
+use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Template;
 use craft\test\TestCase;
@@ -16,6 +17,7 @@ use craft\web\twig\TemplateLoader;
 use craft\web\View;
 use Twig\Error\RuntimeError;
 use UnitTester;
+use yii\base\Event;
 
 /**
  * Unit tests for the Template helper.
@@ -130,6 +132,46 @@ class TemplateHelperTest extends TestCase
             FileHelper::removeDirectory($dir);
             $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
             $view->setTwig($oldTwig);
+        }
+    }
+
+    /**
+     * A template root registered for both template modes resolves a name to the same file in each, which isn't
+     * ambiguous.
+     */
+    public function testResolveTemplatePathAndLineForTemplateRootInBothModes(): void
+    {
+        $oldView = Craft::$app->getView();
+        $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'shared-root-' . uniqid();
+        FileHelper::writeToFile("$dir/broken.twig", "Line one\n{{ 1 // 0 }}");
+        $registerRoot = function(RegisterTemplateRootsEvent $event) use ($dir) {
+            $event->roots['shared-root'] = $dir;
+        };
+        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $registerRoot);
+        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $registerRoot);
+        $view = new View();
+        Craft::$app->set('view', $view);
+        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $view->setTwig(new Environment(new TemplateLoader($view), [
+            'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+            'debug' => false,
+        ]));
+
+        try {
+            // Unescaped string templates compile the templates they include under another class
+            $view->renderString('{% include "shared-root/broken" %}');
+            self::fail('Expected the template to throw.');
+        } catch (RuntimeError $e) {
+            $previous = $e->getPrevious();
+            [$resolvedPath, $line] = Template::resolveTemplatePathAndLine($previous->getFile(), $previous->getLine());
+
+            self::assertSame(realpath("$dir/broken.twig"), realpath($resolvedPath));
+            self::assertSame(2, $line);
+        } finally {
+            Event::off(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $registerRoot);
+            Event::off(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $registerRoot);
+            Craft::$app->set('view', $oldView);
+            FileHelper::removeDirectory($dir);
         }
     }
 }
