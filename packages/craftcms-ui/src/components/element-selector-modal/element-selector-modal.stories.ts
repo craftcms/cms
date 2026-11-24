@@ -119,16 +119,17 @@ async function openAndMeasure(canvasElement: HTMLElement) {
 
 export const Default: Story = {};
 
-/** A short result list gets a short dialog, not a tall one full of empty space. */
+/** A short result list keeps its default golden-ratio size, so the modal doesn't jump as results change. */
 export const FewResults: Story = {
   args: {rows: 2},
   async play({canvasElement}) {
     const {surface, viewport} = await openAndMeasure(canvasElement);
+    const expected = Math.min(
+      Math.max(surface.width / 1.618, 400),
+      viewport * 0.9
+    );
 
-    // Well clear of the 90dvh cap — the whole point of sizing to content.
-    await expect(surface.height).toBeLessThan(viewport * 0.9 - 1);
-    // ...and not collapsed below the floor.
-    await expect(surface.height).toBeGreaterThanOrEqual(400);
+    await expect(Math.abs(surface.height - expected)).toBeLessThanOrEqual(1);
   },
 };
 
