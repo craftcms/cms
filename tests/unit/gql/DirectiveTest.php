@@ -132,6 +132,12 @@ class DirectiveTest extends TestCase
             [$dateTime, $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[3])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[3]['timezone']))->format($dateTimeParameters[3]['format'])],
             ['what time is it?', $formatDateTime, [self::_buildDirective($formatDateTime, $dateTimeParameters[2])], 'what time is it?'],
 
+            // format date time with output
+            'format-date' => [new DateTime('2026-11-24 13:45:10', new DateTimeZone('UTC')), $formatDateTime, [self::_buildDirective($formatDateTime, ['output' => 'date', 'timezone' => 'UTC'])], '2026-11-24'],
+            'format-date-php' => [new DateTime('2026-11-24 03:45:10', new DateTimeZone('UTC')), $formatDateTime, [self::_buildDirective($formatDateTime, ['output' => 'date', 'format' => 'd/m/Y', 'timezone' => 'America/New_York'])], '23/11/2026'],
+            'format-time' => [new DateTime('2026-11-24 13:45:10', new DateTimeZone('UTC')), $formatDateTime, [self::_buildDirective($formatDateTime, ['output' => 'time', 'timezone' => 'UTC'])], '13:45:10+00:00'],
+            'format-time-php' => [new DateTime('2026-11-24 13:45:10', new DateTimeZone('UTC')), $formatDateTime, [self::_buildDirective($formatDateTime, ['output' => 'time', 'format' => 'H:i', 'timezone' => 'America/New_York'])], '08:45'],
+
             // Markdown
             ['Some *string*', $markDownDirective, [self::_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
 
