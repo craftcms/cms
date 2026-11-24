@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Interrogazione di utenti nel gruppo di utenti “{name}”',
     'Query for users' => 'Interrogazione di utenti',
     'Query for volumes' => 'Interrogazione di volumi',
+    'Query for {type}' => 'Interrogazione di {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Parametri della query (ad esempio {ex1}) o un frammento di URI (ad esempio {ex2}) da aggiungere all’URL.',
     'Queue Manager' => 'Gestore code',
     'Quick Post' => 'Pubblicazione rapida',

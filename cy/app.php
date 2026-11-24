@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Ymholi am ddefnyddwyr yn y grŵp defnyddwyr “{name}”',
     'Query for users' => 'Ymholi am ddefnyddwyr',
     'Query for volumes' => 'Ymholi am gyfrolau',
+    'Query for {type}' => 'Ymholi am {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Paramedrau ymholiad (e.e. {ex1}) neu ddarn URI (e.e. {ex2}) y dylid eu hatodi i’r URL.',
     'Queue Manager' => 'Rheolwr y Ciw',
     'Quick Post' => 'Postiad Cyflym',

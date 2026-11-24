@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Kueri pengguna di grup pengguna “{name}”',
     'Query for users' => 'Kueri pengguna',
     'Query for volumes' => 'Kueri volume',
+    'Query for {type}' => 'Kueri {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Parameter kueri (mis. {ex1}) atau fragmen URI (mis. {ex2}) yang harus ditambahkan ke URL.',
     'Queue Manager' => 'Pengelola Antrean',
     'Quick Post' => 'Posting Cepat',

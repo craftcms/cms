@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => '“{name}” 사용자 그룹의 사용자에 대한 쿼리',
     'Query for users' => '사용자에 대한 쿼리',
     'Query for volumes' => '볼륨에 대한 쿼리',
+    'Query for {type}' => '{type}에 대한 쿼리',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'URL에 추가해야 하는 쿼리 매개 변수(예: {ex1}) 또는 URI 조각(예: {ex2}).',
     'Queue Manager' => '큐 매니저',
     'Quick Post' => '빠른 게시',

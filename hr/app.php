@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Upiti za korisnike u korisničkoj grupi „{name}“',
     'Query for users' => 'Upiti za korisnike',
     'Query for volumes' => 'Upiti za spremišta',
+    'Query for {type}' => 'Upiti: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Parametri upita (npr. {ex1}) ili fragment URI-ja (npr. {ex2}) koje treba dodati na URL.',
     'Queue Manager' => 'Upravitelj reda čekanja',
     'Quick Post' => 'Brza objava',

@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Søk etter brukarar i brukargruppa «{name}»',
     'Query for users' => 'Søk etter brukarar',
     'Query for volumes' => 'Søk etter volum',
+    'Query for {type}' => 'Søk etter {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Spørjeparametrar (t.d. {ex1}) eller eit URI-fragment (t.d. {ex2}) som skal leggjast til URL-en.',
     'Queue Manager' => 'Køhandsamar',
     'Quick Post' => 'Snøggpublisering',

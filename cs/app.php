@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Dotaz na uživatele ve skupině uživatelů „{name}“',
     'Query for users' => 'Dotaz na uživatele',
     'Query for volumes' => 'Dotaz na svazky',
+    'Query for {type}' => 'Dotaz: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Parametry dotazu (např. {ex1}) nebo fragment URI (např. {ex2}), který by měl být připojen k adrese URL.',
     'Queue Manager' => 'Správce fronty',
     'Quick Post' => 'Rychlý příspěvek',

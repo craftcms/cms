@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Vyžiadať používateľov v skupine používateľov „{name}“',
     'Query for users' => 'Vyžiadať používateľov',
     'Query for volumes' => 'Vyžiadať zväzky',
+    'Query for {type}' => 'Dopyt: {type}',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Parametre požiadavky (napr. {ex1}) alebo fragment URI (napr. {ex2}), ktoré sa majú pripojiť k adrese URL.',
     'Queue Manager' => 'Správca frontu',
     'Quick Post' => 'Rýchly príspevok',

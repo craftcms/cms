@@ -2530,6 +2530,7 @@ return [
     'Query for users in the “{name}” user group' => 'Gebruikers opvragen in de gebruikersgroep “{name}”',
     'Query for users' => 'Gebruikers opvragen',
     'Query for volumes' => 'Volumes opvragen',
+    'Query for {type}' => '{type} opvragen',
     'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.' => 'Queryparameters (bijv. {ex1}) of een URI-fragment (bijv. {ex2}) om toe te voegen aan de URL.',
     'Queue Manager' => 'Wachtrijbeheer',
     'Quick Post' => 'Snel bericht',
