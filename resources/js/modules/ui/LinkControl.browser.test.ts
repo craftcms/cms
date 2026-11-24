@@ -356,3 +356,25 @@ it('applies or discards a compact link’s edits from the popover’s buttons', 
     expect.objectContaining({type: 'url', value: 'craftcms.com/docs'}),
   ]);
 });
+
+it('shows a link applied from the popover once the cell widens', async () => {
+  await mountCell({type: 'url', value: 'https://craftcms.com'});
+
+  await editLink();
+  await page.getByRole('textbox', {name: 'URL'}).fill('craftcms.com/applied');
+  await page.getByRole('button', {name: 'Apply'}).click();
+  await expect.poll(() => linkPopover()?.open).toBe(false);
+
+  // The field doesn't switch views while focus is in it
+  (document.activeElement as HTMLElement | null)?.blur();
+  container!.style.width = '400px';
+
+  await expect
+    .poll(
+      () =>
+        container!.querySelector<HTMLInputElement>(
+          'craft-link-field[compact] craft-input input'
+        )?.value
+    )
+    .toBe('craftcms.com/applied');
+});

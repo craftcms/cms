@@ -1661,8 +1661,9 @@ class CraftLinkField extends LitElement {
   private readonly handleEditorApply = (event: Event): void => {
     const {detail: value} = event as CustomEvent<LinkFieldValue>;
     event.stopPropagation();
+    // Not an echo of the field's own edit, so it loads into the editing state
+    this.emittedValue = null;
     this.modelValue = value;
-    this.emittedValue = value;
     this.dispatchEvent(
       new CustomEvent<LinkChangeDetail>('link-change', {
         bubbles: true,
