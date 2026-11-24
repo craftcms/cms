@@ -3,7 +3,9 @@
 ## Unreleased
 
 - Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
+- GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` objects. ([#21081](https://github.com/craftcms/cms/pull/21081))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
 ## 5.12.2 - 2026-11-20
 
