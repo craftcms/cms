@@ -7,6 +7,8 @@ use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\LinkTypes\Entry;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Sections;
 
 test('new instances get a default “Viewable” selection condition', function () {
     $entry = new Entry;
@@ -44,6 +46,18 @@ test('an explicit selection condition config is respected', function () {
     expect($rules)->toHaveCount(1)
         ->and($rules[0])->toBeInstanceOf(ViewableConditionRule::class)
         ->and($rules[0]->value)->toBeFalse();
+});
+
+test('the sources setting uses “All entries” as its All option', function () {
+    $section = Section::factory()->create();
+    $section->siteSettings()->update(['hasUrls' => true]);
+    Sections::refreshSections();
+
+    $props = new Entry()->settingsNodes('linkTypes[entry]')[0]->getControl()->props();
+
+    expect($props['allLabel'])->toBe('All entries')
+        ->and($props['allValue'])->toBe('*')
+        ->and(array_column($props['options'], 'value'))->not->toContain('*');
 });
 
 test('selection criteria no longer filters out unpermitted entries directly', function () {
