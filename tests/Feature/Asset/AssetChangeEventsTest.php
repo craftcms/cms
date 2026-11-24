@@ -208,8 +208,7 @@ it('reports deleted transform files with the URLs they were served from', functi
         ->and($url)->toContain('?v=')
         ->and($generated)->toHaveCount(1)
         ->and($generated[0]->urls())->toBe([$url, strtok($url, '?')])
-        // The event's path uses the OS directory separator
-        ->and($transformFiles)->toBe([str_replace('\\', '/', $generated[0]->path)])
+        ->and($transformFiles)->toBe([$generated[0]->path])
         ->and($this->disk->exists($generated[0]->path))->toBeFalse()
         ->and($generated[0]->disk)->toBe('change-events-disk');
 });

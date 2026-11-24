@@ -237,14 +237,15 @@ class ImageTransformer
     ): void {
         $transformer ??= $this->currentTransformer($asset->getVolume());
         $folderPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath);
-        $diskPath = $folderPath.$this->getTransformSubpath($asset, $transformIndex);
+        // Disk paths use forward slashes on every OS
+        $diskPath = $folderPath.$this->getTransformUri($asset, $transformIndex);
 
         try {
             // Only a generated transform was served from its own URL. It’s built as getTransformUrl() served it,
             // revved with when the transform was generated.
             $url = $transformIndex->fileExists && $this->transformHasUrls($asset->getVolume(), $transformer)
                 ? Html::encodeSpaces(AssetsHelper::revUrl(
-                    $this->transformDisk($asset, $transformer)->url($folderPath.$this->getTransformUri($asset, $transformIndex)),
+                    $this->transformDisk($asset, $transformer)->url($diskPath),
                     $asset,
                     $transformIndex->dateIndexed,
                 ))

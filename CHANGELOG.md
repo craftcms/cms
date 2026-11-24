@@ -36,6 +36,7 @@
 - Fixed a bug where renaming an asset folder left its assets’ image transforms behind, and transform URLs on non-local disks pointed to files that didn’t exist. ([#21049](https://github.com/craftcms/cms/pull/21049))
 - Fixed a bug where renaming an asset folder didn’t clear element caches, such as `{% cache %}` tags, that held its assets’ old URLs. ([#21049](https://github.com/craftcms/cms/pull/21049))
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
+- Fixed a bug where `CraftCms\Cms\Image\Events\DeletingTransformedImage::$path` and the legacy `craft\imagetransforms\ImageTransformer::EVENT_DELETE_TRANSFORMED_IMAGE` event’s path used backslashes on Windows. ([#21048](https://github.com/craftcms/cms/pull/21048))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\FolderCreating`, `FolderCreated`, `FolderRenaming`, `FolderRenamed`, and `FoldersDeleted` were never dispatched. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\TransformGenerating` and `AfterGenerateTransform`, and the legacy `craft\elements\Asset::EVENT_BEFORE_GENERATE_TRANSFORM` and `EVENT_AFTER_GENERATE_TRANSFORM` events, only fired for legacy image transformers. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Fixed a bug where PHP could crash when getting the URL or dimensions of a legacy `craft\elements\Asset` after calling `setTransform()`. ([#21089](https://github.com/craftcms/cms/pull/21089))
