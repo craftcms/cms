@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/button/button';
-  import {actionClient, ButtonVariant, t} from '@craftcms/ui';
+  import '@craftcms/ui/components/tab/tab';
+  import '@craftcms/ui/components/tabs/tabs';
+  import {actionClient, t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
   import {router, usePoll} from '@inertiajs/vue3';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
@@ -436,6 +438,26 @@
     }
   );
 
+  /** Only worth showing when there's a choice between the two kinds of plan. */
+  const showTabs = computed(
+    () =>
+      props.editableImportPlans.length > 0 &&
+      props.nonEditableImportPlans.length > 0
+  );
+
+  const filterIndex = computed(() =>
+    filters.value.findIndex((option) => option.value === filter.value)
+  );
+
+  function onFilterShown(event: Event): void {
+    const index = (event.target as {selectedIndex?: number}).selectedIndex;
+    const option = index === undefined ? undefined : filters.value[index];
+
+    if (option) {
+      filter.value = option.value;
+    }
+  }
+
   const plans = computed(() =>
     sortPlans(
       filter.value === 'editable'
@@ -456,9 +478,29 @@
 
   <CpContainer>
     <template #full>
+      <!-- tabs that name no panels: each shows the list below differently -->
+      <div v-if="showTabs" class="plan-tabs">
+        <craft-tabs
+          class="plan-tabs__strip"
+          :label="t('Show import plans')"
+          sync-location-hash="false"
+          .selectedIndex="filterIndex"
+          @craft-tab-show="onFilterShown"
+        >
+          <craft-tab
+            v-for="option in filters"
+            :key="option.value"
+            slot="tab"
+            :controls="`plan-tab-${option.value}`"
+            :disabled="option.disabled || undefined"
+          >
+            {{ option.label }}
+          </craft-tab>
+        </craft-tabs>
+      </div>
       <PlanList
         v-if="plans.length"
-        class="mt-md"
+        :class="{'mt-md': !showTabs}"
         :plans="plans"
         :label="t('Import plans')"
         :can-trigger="canTrigger"
@@ -472,30 +514,6 @@
         @run="startRun"
         @edit-mapping="editMapping"
       >
-        <template
-          v-if="editableImportPlans.length && nonEditableImportPlans.length"
-          #toolbar-filters
-        >
-          <div
-            role="group"
-            :aria-label="t('Show import plans')"
-            class="plan-filters"
-          >
-            <craft-button
-              v-for="option in filters"
-              :key="option.value"
-              type="button"
-              size="small"
-              :variant="ButtonVariant.Plain"
-              :aria-pressed="filter === option.value ? 'true' : 'false'"
-              .active="filter === option.value"
-              .disabled="option.disabled"
-              @click="filter = option.value"
-            >
-              {{ option.label }}
-            </craft-button>
-          </div>
-        </template>
         <template #toolbar-actions>
           <PlanSortMenu
             v-model:field="sortField"
@@ -514,10 +532,16 @@
 </template>
 
 <style scoped>
-  .plan-filters {
-    --c-button-spacing-inline: var(--c-spacing-md);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--c-spacing-sm);
+  /* the strip only rules under its own tabs, so the row rules the rest of the width */
+  .plan-tabs {
+    padding-inline: var(--cp-container-padding);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .plan-tabs__strip {
+    margin-block-end: -1px;
+    /* no panels follow, so no gap or rule for them */
+    --c-tabs-gap: 0;
+    --c-tabs-border: transparent;
   }
 </style>
