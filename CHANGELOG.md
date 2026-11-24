@@ -19,7 +19,6 @@
 - Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Deprecated the `fsHandle` parameter of the volume MCP tools. `disk` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Added `CraftCms\Cms\Asset\Events\TransformGenerated`. ([#21050](https://github.com/craftcms/cms/pull/21050))
-- Added `CraftCms\Cms\Asset\Events\TransformGenerating::$mimeType`. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Deprecated `CraftCms\Cms\Asset\Events\AfterGenerateTransform`. `TransformGenerated` should be used instead. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Deprecated setting general config settings with `CRAFT_` environment variables. They should be set in `config/craft/general.php` instead, with `env()`. ([#21018](https://github.com/craftcms/cms/pull/21018))
 - Removed the `maxCachedCloudImageSize` config setting and asset indexing’s “Cache remote images” option, including the `--cacheRemoteImages` CLI option. Remote image sources are no longer resized or retained between requests; transforms and image editing download originals as needed and delete the local copies afterward. Sites that opted into source caching may see more downloads, bandwidth use, and image-processing work. ([#20983](https://github.com/craftcms/cms/pull/20983))

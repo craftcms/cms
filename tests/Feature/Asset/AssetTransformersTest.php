@@ -120,7 +120,7 @@ it('dispatches transform events around any driver', function () {
 
     expect($transformed->url)->toBe('/transforms/hero.webp')
         ->and($overridden->url)->toBe('/cdn/my%20image.png')
-        ->and($overridden->mimeType)->toBe('image/png')
+        ->and($overridden->mimeType)->toBe('image/jpeg')
         ->and($diskDriver->request->parameters['width'])->toBe(100)
         ->and($generated)->toBe([[100, '/transforms/hero.webp']]);
 });
@@ -172,15 +172,14 @@ it('gives transform event listeners the driver’s named transform parameters wi
         ->and($result->mimeType)->toBe('image/jpeg');
 });
 
-it('uses the MIME type a transform event listener gives with its URL', function () {
+it('gives listener-provided transform URLs without a format the source file’s MIME type', function () {
     registerDriver('disk-driver');
     $asset = assetOnDisk('transformer-source', ['asset_transformer' => 'disk-driver'], ['filename' => 'brochure.pdf']);
     Event::listen(TransformGenerating::class, function (TransformGenerating $event) {
-        $event->url = 'https://cdn.example.com/brochure.pdf?page=1';
-        $event->mimeType = 'image/avif';
+        $event->url = 'https://cdn.example.com/brochure.png?page=1';
     });
 
-    expect(app(AssetTransformers::class)->transform($asset, ['width' => 100])->mimeType)->toBe('image/avif');
+    expect(app(AssetTransformers::class)->transform($asset, ['width' => 100])->mimeType)->toBe('application/pdf');
 });
 
 it('doesn’t let transform event listeners change named transforms', function () {
