@@ -289,6 +289,30 @@ it('invalidates the caches of an element and its nested elements once', function
         ->and($invalidations[0])->toBe(array_values(array_unique($invalidations[0])));
 });
 
+it('bypasses a deleted element’s caches until an enclosing transaction rolls back', function () {
+    $entry = EntryModel::factory()->createElement();
+    $cachedExists = fn (): bool => Entry::find()->id($entry->id)->cache()->exists();
+
+    expect($cachedExists())->toBeTrue();
+
+    $existsInListener = [];
+    Event::listen(function (ElementDeleted $event) use ($entry, $cachedExists, &$existsInListener) {
+        if ($event->element->id === $entry->id) {
+            $existsInListener[] = $cachedExists();
+        }
+    });
+
+    DB::beginTransaction();
+
+    expect($this->deletions->deleteElement($entry))->toBeTrue()
+        ->and($existsInListener)->toBe([false])
+        ->and($cachedExists())->toBeFalse();
+
+    DB::rollBack();
+
+    expect($cachedExists())->toBeTrue();
+});
+
 it('rolls back the delete when afterDelete throws', function () {
     $entry = EntryModel::factory()->createElement();
 

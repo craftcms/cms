@@ -329,7 +329,7 @@ readonly class ElementDeletions
                 }
 
                 // After commit, so another process can't cache the element as it was before the delete
-                DB::afterCommit(fn () => $this->elementCaches->invalidateForElement($element));
+                $this->elementCaches->invalidateForElementAfterCommit($element);
 
                 if ($element->hardDelete) {
                     // Remove drafts and revisions first. Otherwise PostgreSQL can null their elements' canonicalId after
