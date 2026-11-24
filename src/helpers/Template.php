@@ -367,8 +367,7 @@ class Template
 
         /** @var TwigTemplate $template */
         $template = new $class(Craft::$app->getView()->getTwig());
-        $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: null;
+        $templatePath = self::resolveSourcePath($class);
         $templateLine = null;
 
         if ($line !== null) {
@@ -381,6 +380,40 @@ class Template
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Returns the source path of a compiled template.
+     *
+     * When Dev Mode is disabled, compiled templates don't store their source path, and Twig asks the loader for it,
+     * which resolves the template name for the current template mode. The template may have been rendered in another
+     * mode, so this tries the current mode first, then the other one.
+     *
+     * @param class-string<TwigTemplate> $class
+     * @return string|null
+     */
+    private static function resolveSourcePath(string $class): ?string
+    {
+        $view = Craft::$app->getView();
+        $oldTemplateMode = $view->getTemplateMode();
+        $templateModes = array_unique([$oldTemplateMode, View::TEMPLATE_MODE_SITE, View::TEMPLATE_MODE_CP]);
+
+        try {
+            foreach ($templateModes as $templateMode) {
+                $view->setTemplateMode($templateMode);
+                /** @var TwigTemplate $template */
+                $template = new $class($view->getTwig());
+                $path = $template->getSourceContext()->getPath();
+
+                if ($path !== '') {
+                    return $path;
+                }
+            }
+        } finally {
+            $view->setTemplateMode($oldTemplateMode);
+        }
+
+        return null;
     }
 
     /**
