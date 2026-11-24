@@ -806,6 +806,15 @@ it('shows a plan registered in code on a read-only page, with its runs and nothi
             ->where('runs.count', 1));
 });
 
+it('opens a new plan for editing', function () {
+    get(route('craft.cp.import.create'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('import/Edit')
+            ->where('readOnly', false)
+            ->where('readOnlyNotice', null));
+});
+
 it('lists every plan’s runs, or narrows them to one plan’s', function () {
     ($this->createImportPlan)('Alpha', 'alpha');
     ($this->createImportPlan)('Bravo', 'bravo');

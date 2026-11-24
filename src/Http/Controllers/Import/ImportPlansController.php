@@ -136,7 +136,8 @@ class ImportPlansController
     {
         $old = $this->request->session()->get('import');
 
-        return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : new ImportPlanData);
+        // a plan made here is stored in the database, so it's editable from the start
+        return $this->cpScreenResponse(new ImportPlanData([...$old ?? [], 'editable' => true]));
     }
 
     public function edit(?string $handle = null): CpScreenResponse
