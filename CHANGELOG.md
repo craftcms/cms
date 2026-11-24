@@ -19,7 +19,6 @@
 - Deprecated `CraftCms\Cms\Asset\Data\Volume::$fsHandle`, `getFsHandle()`, `setFsHandle()`, and `getResolvedFsTarget()`. `$disk`, `getDisk()`, `setDisk()`, and `getResolvedDisk()` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Deprecated the `fsHandle` parameter of the volume MCP tools. `disk` should be used instead. ([#20959](https://github.com/craftcms/cms/pull/20959))
 - Added `CraftCms\Cms\Asset\Events\TransformGenerated`. ([#21050](https://github.com/craftcms/cms/pull/21050))
-- Added `CraftCms\Cms\Asset\Events\TransformGenerating::$mimeType`. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Deprecated `CraftCms\Cms\Asset\Events\AfterGenerateTransform`. `TransformGenerated` should be used instead. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Deprecated setting general config settings with `CRAFT_` environment variables. They should be set in `config/craft/general.php` instead, with `env()`. ([#21018](https://github.com/craftcms/cms/pull/21018))
 - Removed the `maxCachedCloudImageSize` config setting and asset indexing’s “Cache remote images” option, including the `--cacheRemoteImages` CLI option. Remote image sources are no longer resized or retained between requests; transforms and image editing download originals as needed and delete the local copies afterward. Sites that opted into source caching may see more downloads, bandwidth use, and image-processing work. ([#20983](https://github.com/craftcms/cms/pull/20983))
@@ -39,6 +38,7 @@
 - Fixed a bug where Plain Text fields’ “Enlarged” UI mode had no effect. ([#21034](https://github.com/craftcms/cms/pull/21034))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\FolderCreating`, `FolderCreated`, `FolderRenaming`, `FolderRenamed`, and `FoldersDeleted` were never dispatched. ([#21050](https://github.com/craftcms/cms/pull/21050))
 - Fixed a bug where `CraftCms\Cms\Asset\Events\TransformGenerating` and `AfterGenerateTransform`, and the legacy `craft\elements\Asset::EVENT_BEFORE_GENERATE_TRANSFORM` and `EVENT_AFTER_GENERATE_TRANSFORM` events, only fired for legacy image transformers. ([#21050](https://github.com/craftcms/cms/pull/21050))
+- Fixed a bug where PHP could crash when getting the URL or dimensions of a legacy `craft\elements\Asset` after calling `setTransform()`. ([#21089](https://github.com/craftcms/cms/pull/21089))
 - Fixed a bug where Number and Money fields’ Size setting didn’t change their inputs’ width. ([#21054](https://github.com/craftcms/cms/issues/21054), [#21068](https://github.com/craftcms/cms/pull/21068))
 - Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060), [#21063](https://github.com/craftcms/cms/pull/21063))
 - Fixed a bug where the `configuration_*` MCP tools couldn’t assign a workflow to a section. ([#21042](https://github.com/craftcms/cms/issues/21042), [#21051](https://github.com/craftcms/cms/pull/21051))
@@ -95,6 +95,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where Link fields’ Entry settings listed two “All” sources. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where option and Color field values didn’t show their colors in element indexes and cards. ([#21055](https://github.com/craftcms/cms/issues/21055), [#21070](https://github.com/craftcms/cms/pull/21070))
+- Fixed a bug where generated fields couldn’t be shown as element index columns. ([#21079](https://github.com/craftcms/cms/issues/21079), [#21087](https://github.com/craftcms/cms/pull/21087))
 
 ## 6.0.0-beta.2 - 2026-11-20
 

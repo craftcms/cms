@@ -188,7 +188,7 @@ class AssetTransformers extends Manager
         event($event = new TransformGenerating($asset, is_array($transform) ? $transform : clone $transform));
 
         if ($event->url !== null) {
-            return $this->resultForUrl($asset, $transform, Html::encodeSpaces($event->url), $event->mimeType);
+            return $this->resultForUrl($asset, $transform, Html::encodeSpaces($event->url));
         }
 
         $result = $this->driver($request->transformer->driver)->transform($request);
@@ -216,28 +216,27 @@ class AssetTransformers extends Manager
     }
 
     /**
-     * Returns the result for a URL that a {@see TransformGenerating} listener provided.
+     * Returns the result for a URL that a {@see TransformGenerating} listener provided. Like Craft 5, its MIME type is
+     * the transform’s format’s, or the source file’s if the transform has no format.
      *
      * @param  ImageTransform|array<string, mixed>  $transform
      */
-    private function resultForUrl(Asset $asset, ImageTransform|array $transform, string $url, ?string $mimeType): AssetTransformResult
+    private function resultForUrl(Asset $asset, ImageTransform|array $transform, string $url): AssetTransformResult
     {
-        if ($mimeType === null) {
-            $format = $transform instanceof ImageTransform ? $transform->format : ($transform['format'] ?? null);
-            $path = parse_url($url, PHP_URL_PATH);
-            $mimeType = (is_string($format) && $format !== '' ? File::getMimeTypeByExtension("file.$format") : null)
-                ?? (is_string($path) ? File::getMimeTypeByExtension($path) : null)
-                ?? File::getMimeTypeByExtension('file.'.$asset->getExtension());
-            $mimeType = str_starts_with($mimeType ?? '', 'image/') ? $mimeType : 'image/jpeg';
+        $format = $transform instanceof ImageTransform ? $transform->format : ($transform['format'] ?? null);
+        $source = clone $asset;
+        if (method_exists($source, 'setTransform')) {
+            $source->setTransform(null);
         }
-
         [$width, $height] = $transform instanceof ImageTransform
             ? ImageTransformHelper::transformedDimensions($asset, $transform)
             : [null, null];
 
         return new AssetTransformResult(
             url: $url,
-            mimeType: $mimeType,
+            mimeType: (is_string($format) && $format !== '' ? File::getMimeTypeByExtension("file.$format") : null)
+                ?? $source->getMimeType()
+                ?? 'application/octet-stream',
             width: $width,
             height: $height,
         );
