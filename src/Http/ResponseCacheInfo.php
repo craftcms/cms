@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\HttpCache;
+namespace CraftCms\Cms\Http;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
@@ -92,11 +93,15 @@ class ResponseCacheInfo
     /**
      * Records an expiry date the response depends on, keeping the earliest.
      */
-    public function setExpiryTimestamp(int $timestamp): void
+    public function addExpiryDate(DateTimeInterface $date): static
     {
+        $timestamp = $date->getTimestamp();
+
         if ($this->expiryTimestamp === null || $timestamp < $this->expiryTimestamp) {
             $this->expiryTimestamp = $timestamp;
         }
+
+        return $this;
     }
 
     /**

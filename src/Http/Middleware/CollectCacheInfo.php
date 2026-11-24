@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Http\ResponseCacheInfo;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 

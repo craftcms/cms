@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\CacheCollectors;
 
-use CraftCms\Cms\HttpCache\ResponseCacheInfo;
+use CraftCms\Cms\Http\ResponseCacheInfo;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 

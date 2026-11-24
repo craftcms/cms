@@ -368,7 +368,7 @@
 - Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
 
 ##### Added
-- Added `CraftCms\Cms\HttpCache\ResponseCacheInfo` and `CraftCms\Cms\Support\Facades\ResponseCacheInfo`. ([#21032](https://github.com/craftcms/cms/pull/21032))
+- Added `CraftCms\Cms\Http\ResponseCacheInfo` and `CraftCms\Cms\Support\Facades\ResponseCacheInfo`. ([#21032](https://github.com/craftcms/cms/pull/21032))
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
 
 ##### Deprecations

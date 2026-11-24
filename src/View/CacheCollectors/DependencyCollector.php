@@ -7,11 +7,12 @@ namespace CraftCms\Cms\View\CacheCollectors;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
-use CraftCms\Cms\HttpCache\ResponseCacheInfo;
+use CraftCms\Cms\Http\ResponseCacheInfo;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
@@ -209,7 +210,7 @@ class DependencyCollector implements CacheCollectorInterface
 
     private function mergeExpiryTimestamp(int $expiryTimestamp): void
     {
-        $this->responseCacheInfo->setExpiryTimestamp($expiryTimestamp);
+        $this->responseCacheInfo->addExpiryDate(new DateTimeImmutable("@{$expiryTimestamp}"));
 
         if ($this->expiryTimestamp === null || $expiryTimestamp < $this->expiryTimestamp) {
             $this->expiryTimestamp = $expiryTimestamp;

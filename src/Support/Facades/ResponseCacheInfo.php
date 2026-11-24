@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \CraftCms\Cms\HttpCache\ResponseCacheInfo addTags(string|list<string> $tags)
+ * @method static \CraftCms\Cms\Http\ResponseCacheInfo addTags(string|list<string> $tags)
  * @method static list<string> getTags()
+ * @method static \CraftCms\Cms\Http\ResponseCacheInfo addExpiryDate(\DateTimeInterface $date)
  * @method static \DateTimeImmutable|null getExpiryDate()
  *
- * @see \CraftCms\Cms\HttpCache\ResponseCacheInfo
+ * @see \CraftCms\Cms\Http\ResponseCacheInfo
  * @since 6.0.0
  */
 class ResponseCacheInfo extends Facade
@@ -26,6 +27,6 @@ class ResponseCacheInfo extends Facade
     #[Override]
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\HttpCache\ResponseCacheInfo::class;
+        return \CraftCms\Cms\Http\ResponseCacheInfo::class;
     }
 }
