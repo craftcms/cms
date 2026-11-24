@@ -2,6 +2,7 @@ import {property} from 'lit/decorators.js';
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement} from 'lit';
 import styles from './button-group.styles.js';
+import {scheduleMeasure} from '@src/utilities/frame';
 
 const START_ATTRIBUTE = 'data-button-group-start';
 const END_ATTRIBUTE = 'data-button-group-end';
@@ -59,7 +60,9 @@ export default class CraftButtonGroup extends LitElement {
    * changes which one is visibly first or last without firing `slotchange`,
    * or when one is selected or deselected.
    */
-  private _childObserver = new MutationObserver(() => this._markEnds());
+  private _childObserver = new MutationObserver(() =>
+    scheduleMeasure(this._markEnds)
+  );
 
   /**
    * Buttons use `active` for their pressed state too, and clear it when a
@@ -103,7 +106,7 @@ export default class CraftButtonGroup extends LitElement {
     if (this.name) {
       this._setupSelectionMode();
     }
-    this._markEnds();
+    scheduleMeasure(this._markEnds);
   }
 
   override updated(changed: PropertyValues) {
@@ -135,35 +138,41 @@ export default class CraftButtonGroup extends LitElement {
    * on either side of a selected child, whose own look sets it apart. Both
    * neighbors draw it, at the edge they share, so it still shows when either
    * one is raised above the other, as a hovered or focused one is.
+   *
+   * Which children show depends on their computed `display`, so this runs
+   * with `scheduleMeasure()`, reading before any group writes its marks.
    */
-  private _markEnds() {
+  private _markEnds = () => {
     const visible = Array.from(this.children).filter((child) =>
       this._isVisible(child)
     );
-    const first = visible[0];
-    const last = visible[visible.length - 1];
 
-    for (const child of Array.from(this.children)) {
-      const index = visible.indexOf(child);
-      const previous = index > 0 ? visible[index - 1] : undefined;
-      const next = index >= 0 ? visible[index + 1] : undefined;
+    return () => {
+      const first = visible[0];
+      const last = visible[visible.length - 1];
 
-      child.toggleAttribute(START_ATTRIBUTE, child === first);
-      child.toggleAttribute(END_ATTRIBUTE, child === last);
-      child.toggleAttribute(
-        DIVIDER_ATTRIBUTE,
-        previous !== undefined &&
-          !this._isSelected(child) &&
-          !this._isSelected(previous)
-      );
-      child.toggleAttribute(
-        DIVIDER_END_ATTRIBUTE,
-        next !== undefined &&
-          !this._isSelected(child) &&
-          !this._isSelected(next)
-      );
-    }
-  }
+      for (const child of Array.from(this.children)) {
+        const index = visible.indexOf(child);
+        const previous = index > 0 ? visible[index - 1] : undefined;
+        const next = index >= 0 ? visible[index + 1] : undefined;
+
+        child.toggleAttribute(START_ATTRIBUTE, child === first);
+        child.toggleAttribute(END_ATTRIBUTE, child === last);
+        child.toggleAttribute(
+          DIVIDER_ATTRIBUTE,
+          previous !== undefined &&
+            !this._isSelected(child) &&
+            !this._isSelected(previous)
+        );
+        child.toggleAttribute(
+          DIVIDER_END_ATTRIBUTE,
+          next !== undefined &&
+            !this._isSelected(child) &&
+            !this._isSelected(next)
+        );
+      }
+    };
+  };
 
   private _isSelected(element: Element): boolean {
     return (
@@ -387,7 +396,7 @@ export default class CraftButtonGroup extends LitElement {
       this._syncChildren();
     }
     this._applyFormDisabled();
-    this._markEnds();
+    scheduleMeasure(this._markEnds);
   }
 }
 
