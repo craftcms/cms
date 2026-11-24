@@ -138,20 +138,12 @@ it('reports deleted transform files with the URLs they were served from', functi
     expect(($this->of)(AssetTransformsInvalidated::class))->toHaveCount(0);
 });
 
-it('deletes a renamed folder’s transforms and reports its old URL prefix', function () {
-    $asset = ($this->image)();
-    app(AssetTransformers::class)->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
-    );
-    $this->events = [];
-
+it('reports a renamed folder’s old URL prefix', function () {
     app(Folders::class)->renameFolderById($this->folderModel->id, 'Trips');
 
     $renamed = ($this->of)(FolderRenamed::class);
     expect($renamed)->toHaveCount(1)
         ->and($renamed[0]->oldPath)->toBe('My Photos/')
         ->and($renamed[0]->folder->path)->toBe('Trips/')
-        ->and($renamed[0]->prefixes())->toBe(['https://cdn.example.test/media/My%20Photos/'])
-        ->and(($this->of)(AssetTransformsInvalidated::class))->toHaveCount(1)
-        ->and($this->disk->allFiles('_'.$this->volume->uid))->toBe([]);
+        ->and($renamed[0]->prefixes())->toBe(['https://cdn.example.test/media/My%20Photos/']);
 });

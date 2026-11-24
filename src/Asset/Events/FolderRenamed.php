@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Data\VolumeFolder;
-use CraftCms\Cms\Image\Events\AssetTransformsInvalidated;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * Dispatched after a folder is renamed, along with its subfolders and files.
  *
  * Asset events don’t fire for the files that moved with the folder. Caches can use {@see prefixes()} to purge
- * everything under the old folder’s URL. The folder’s transforms are invalidated per asset, which dispatches
- * {@see AssetTransformsInvalidated}.
+ * everything under the old folder’s URL.
  *
  * @since 6.0.0
  */
