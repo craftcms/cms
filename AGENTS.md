@@ -144,6 +144,7 @@ queues. The `merging-pull-requests` skill's safeguards still apply.
 - End a turn only when the work is done, when nothing can move without me, or when the blocker is deliberate, such as a protected branch or access I withheld. Don't end it with a summary that announces the next step instead of taking it, with an offer to continue, or with a list of decisions that don't block the rest of the work.
 - Treat errors, timeouts, failing tests, and failing tools as problems to diagnose: read the error, fix the command, wait and retry, or use another tool.
 - Ask before you push, open a pull request or edit its title or body, post comments or reviews on GitHub, merge, delete remote branches, or discard changes you didn't make, such as with `git reset --hard` or `git checkout -- <path>`.
+- Never close or comment on GitHub issues or discussions on your own, including after merging the pull request that fixes them. Do either only when asked to for that issue or discussion.
 - Don't ask before running tests, `composer ci`, `composer fix-cs`, `composer phpstan`, Pint, or `pnpm` scripts, installing dependencies from the lockfiles, starting dev servers, or creating local branches and worktrees.
 
 ## Reporting
