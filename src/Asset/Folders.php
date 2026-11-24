@@ -9,6 +9,11 @@ use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderCreated;
+use CraftCms\Cms\Asset\Events\FolderCreating;
+use CraftCms\Cms\Asset\Events\FolderRenamed;
+use CraftCms\Cms\Asset\Events\FolderRenaming;
+use CraftCms\Cms\Asset\Events\FoldersDeleted;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -238,6 +243,7 @@ class Folders
      * @throws FsObjectExistsException if a folder already exists with such a name
      * @throws FilesystemException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
+     * @throws AssetOperationException if a {@see FolderCreating} listener prevents the creation
      */
     public function createFolder(VolumeFolder $folder): void
     {
@@ -259,6 +265,12 @@ class Folders
             ));
         }
 
+        event($event = new FolderCreating($folder));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be created.'));
+        }
+
         $path = rtrim((string) $folder->path, '/');
 
         if (! $parent->getVolume()->sourceDisk()->makeDirectory($path)) {
@@ -266,6 +278,8 @@ class Folders
         }
 
         $this->storeFolderModel($folder);
+
+        event(new FolderCreated($folder));
     }
 
     /**
@@ -299,6 +313,12 @@ class Folders
             throw new FsObjectExistsException(t('A folder with the name “{folderName}” already exists in the folder.', [
                 'folderName' => $newName,
             ]));
+        }
+
+        event($event = new FolderRenaming($folder, $newName));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be renamed.'));
         }
 
         $parentFolderPath = dirname((string) $folder->path);
@@ -343,6 +363,8 @@ class Folders
                 $this->storeFolderModel($childFolder);
             }
         }
+
+        event(new FolderRenamed($folder));
 
         return $newName;
     }
@@ -402,6 +424,10 @@ class Folders
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
         $this->reset();
+
+        if ($allFolderIds !== []) {
+            event(new FoldersDeleted($allFolderIds));
+        }
     }
 
     /**
