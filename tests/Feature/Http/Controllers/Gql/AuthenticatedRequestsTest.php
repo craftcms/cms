@@ -320,9 +320,9 @@ it('requires offline access for access tokens while the system is offline', func
     app()->maintenanceMode()->activate([]);
 
     try {
-        $request($tokens['none'])->assertStatus(503);
+        $request($tokens['none'])->assertServiceUnavailable();
         $request($tokens['site'])->assertOk()->assertJsonPath('data.ping', 'pong');
-        $request($tokens['cp'], $cpPath)->assertStatus(503);
+        $request($tokens['cp'], $cpPath)->assertServiceUnavailable();
         $request($tokens['cpOffline'], $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
     } finally {
         app()->maintenanceMode()->deactivate();
