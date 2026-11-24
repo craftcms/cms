@@ -30,9 +30,12 @@ readonly class PreferencesController
         }
 
         $user = $currentUser->asElement();
+        $response = $this->asEditUserScreen($user, EditUserScreens::PREFERENCES);
 
-        return $this->asEditUserScreen($user, EditUserScreens::PREFERENCES)
-            ->inertiaPage('users/Preferences', new UserPreferencesViewModel($user));
+        return $response->inertiaPage('Ui', new UserPreferencesViewModel(
+            $user,
+            is_string($response->metaSidebarHtml) ? $response->metaSidebarHtml : null,
+        ));
     }
 
     public function update(UserPreferencesRequest $request, Users $users): Response

@@ -361,24 +361,25 @@
     margin-inline-start: auto;
   }
 
+  /* The labels start where a first field would, as if there were no tabs. */
   .ui-node-list__tabs {
-    /* A page's main column sets this (see PageScreen.vue). */
-    --c-tabs-gap: var(--cp-content-tabs-gap, var(--c-spacing-lg));
+    margin-block-start: calc(-1 * var(--c-tab-padding-block, 0.5em));
   }
 
   .ui-node-list__tabs::part(strip) {
     box-sizing: border-box;
-    block-size: calc(var(--cp-header-height) + 1px);
     align-items: stretch;
   }
 
+  /* The first label and its indicator start where the fields do; the hover
+     padding hangs outside. */
   .ui-node-list__tabs::part(tab-group) {
+    margin-inline-start: calc(-1 * var(--c-tab-padding-inline, 0px));
     align-items: stretch;
   }
 
   .ui-node-list__tabs craft-tab {
     align-items: center;
-    padding-block: 0;
   }
 
   /* A step back from the label, but the selected tab's icon keeps its color. */

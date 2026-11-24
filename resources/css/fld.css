@@ -55,12 +55,12 @@
    draws its bottom ones under those tabs too: where the form gives it a tab of
    its own, nothing follows it to divide it from. */
 /* Their block padding matches the space between a form's own tabs and its
-   first field (see UiNodeList.vue), which can be more than a grid cell, so
-   their grids are offset by the difference, keeping the tabs, chips and cards
-   on them. Under the designer's own tabs, it's a grid cell. */
+   first field (see UiNodeList.vue), and their grids are offset by any
+   difference from a grid cell, keeping the tabs, chips and cards on them.
+   Under the designer's own tabs, it's a grid cell. */
 .fld-pane,
 .card-view-designer {
-  --fld-pane-padding-block: var(--cp-content-tabs-gap, var(--c-spacing-lg));
+  --fld-pane-padding-block: var(--c-spacing-lg);
   --fld-pane-grid-offset: calc(
     var(--fld-pane-padding-block) - var(--c-spacing-lg)
   );

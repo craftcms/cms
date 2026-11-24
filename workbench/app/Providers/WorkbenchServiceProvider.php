@@ -113,6 +113,10 @@ class WorkbenchServiceProvider extends ServiceProvider
                         ->href('workbench/headings')
                         ->icon('heading'),
                     new NavItem()
+                        ->label('Tab Spacing')
+                        ->href('workbench/tab-spacing')
+                        ->icon('ruler-vertical'),
+                    new NavItem()
                         ->label('Layout Slots')
                         ->href('workbench/layout-slots')
                         ->icon('table-layout'),

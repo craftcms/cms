@@ -5,6 +5,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
@@ -32,16 +33,32 @@ test('index shows preferences page', function () {
     $response
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('users/Preferences')
-            ->where('preferences.preferredLanguage', 'en-US')
+            ->component('Ui')
+            ->where('ui.values.preferredLanguage', 'en-US')
+            ->where('ui.values.displaySettings', [])
+            ->where('ui.values.developmentSettings', [])
             ->where('readOnly', false)
-            ->has('languageOptions')
-            ->has('localeOptions')
-            ->has('weekStartDayOptions', 7)
-            ->has('timeZoneOptions')
+            ->where('submit.method', 'patch')
+            ->where('ui.nodes.0.props.label', t('General'))
+            ->where('ui.nodes.0.children', fn (Collection $children): bool => $children->doesntContain('component', 'craft:template-content'))
+            ->where('ui.nodes.2.props.label', t('Development'))
             ->has('subnav')
-            ->has('details')
-            ->where('prefsHook', null));
+            ->where('metadataHtml', fn (?string $html): bool => filled($html)));
+});
+
+test('index leaves out the development tab for non-admins', function () {
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp'])
+        ->create();
+
+    actingAs($user->asElement());
+
+    get(cp_url('myaccount/preferences'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Ui')
+            ->has('ui.nodes', 2)
+            ->missing('ui.values.developmentSettings'));
 });
 
 test('index includes preferences hook output and assets', function () {
@@ -57,11 +74,14 @@ test('index includes preferences hook output and assets', function () {
 
     get(cp_url('myaccount/preferences'))
         ->assertOk()
+        ->assertSee('/prefs-hook.css', false)
+        ->assertSee('window.prefsHookReady = true', false)
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('users/Preferences')
-            ->where('prefsHook.html', '<div data-hook="prefs">Preferences hook</div>')
-            ->where('prefsHook.headHtml', fn (string $html): bool => str_contains($html, '/prefs-hook.css'))
-            ->where('prefsHook.bodyHtml', fn (string $html): bool => str_contains($html, 'window.prefsHookReady = true')));
+            ->component('Ui')
+            ->where('ui.nodes.0.children', fn (Collection $children): bool => $children->contains(
+                fn (array $node): bool => $node['component'] === 'craft:template-content'
+                    && $node['props']['html'] === '<div data-hook="prefs">Preferences hook</div>',
+            )));
 });
 
 test('update saves language', function () {
@@ -175,6 +195,36 @@ test('update preserves existing preferences when not provided', function () {
     expect($user->getPreference('weekStartDay'))->toBe(0);
 });
 
+test('update sets the booleans a checkbox list covers', function () {
+    /** @var User $user */
+    $user = currentUser();
+
+    patchJson(cp_url('myaccount/preferences'), [
+        'displaySettings' => ['underlineLinks'],
+        'generalSettings' => null,
+        'developmentSettings' => ['showFieldHandles', 'profileTemplates'],
+    ])->assertOk();
+
+    expect($user->getPreference('useShapes'))->toBeFalse()
+        ->and($user->getPreference('underlineLinks'))->toBeTrue()
+        ->and($user->getPreference('disableAutofocus'))->toBeFalse()
+        ->and($user->getPreference('showFieldHandles'))->toBeTrue()
+        ->and($user->getPreference('profileTemplates'))->toBeTrue()
+        ->and($user->getPreference('showExceptionView'))->toBeFalse();
+});
+
+test('update rejects the development settings list for non-admin users', function () {
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp'])
+        ->create();
+
+    actingAs($user->asElement());
+
+    patchJson(cp_url('myaccount/preferences'), [
+        'developmentSettings' => [],
+    ])->assertForbidden();
+});
+
 test('update handles boolean preferences correctly', function () {
     /** @var User $user */
     $user = currentUser();
@@ -248,7 +298,7 @@ test('update saves the theme', function () {
     expect($user->getPreference('theme'))->toBe('dark');
 
     get(cp_url('myaccount/preferences'))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('preferences.theme', 'dark'));
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('ui.values.theme', 'dark'));
 });
 
 test('the theme is applied to the control panel root, following the system by default', function () {

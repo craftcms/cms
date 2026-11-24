@@ -35,11 +35,9 @@
 </script>
 
 <template>
-  <div class="py-3">
-    <CpContainer>
-      <slot></slot>
-    </CpContainer>
-  </div>
+  <CpContainer>
+    <slot></slot>
+  </CpContainer>
 
   <ScreenPanel
     v-if="hasDetails"

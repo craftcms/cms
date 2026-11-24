@@ -47,7 +47,9 @@ import styles from './tab.styles.js';
  * @cssproperty --c-tab-indicator-inset-inline-start - See above.
  * @cssproperty --c-tab-indicator-inset-inline-end - See above.
  * @cssproperty --c-tab-indicator-block-size - See above.
- * @cssproperty --c-tab-indicator-inline-size - See above.
+ * @cssproperty --c-tab-indicator-inline-size - See above. On the block
+ *   placements the indicator is inset by `--c-tab-padding-inline`, so it spans
+ *   the label.
  */
 export default class CraftTab extends LitElement {
   static override styles: CSSResultGroup = [hostStyles, styles];

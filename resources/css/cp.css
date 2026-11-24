@@ -845,3 +845,23 @@ craft-card:has(> [data-cover]):has(
     border-inline-start-color: Highlight;
   }
 }
+
+[data-layout-scope][data-layout-slot='content-tabs'] craft-tabs {
+  --c-tabs-gap: 0;
+}
+
+[data-layout-scope][data-layout-slot='content-tabs'] craft-tabs::part(strip) {
+  box-sizing: border-box;
+  block-size: calc(var(--cp-header-height) + 1px);
+  align-items: stretch;
+}
+
+[data-layout-scope][data-layout-slot='content-tabs']
+  craft-tabs::part(tab-group) {
+  align-items: stretch;
+}
+
+[data-layout-scope][data-layout-slot='content-tabs'] craft-tab {
+  align-items: center;
+  padding-block: 0;
+}

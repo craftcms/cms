@@ -29,6 +29,29 @@ class UserPreferencesRequest extends FormRequest
         return ! $this->hasAny(self::adminOnlyPreferences());
     }
 
+    /**
+     * The preferences form submits some booleans as lists of the ones that are
+     * checked; each list sets every boolean it covers.
+     */
+    protected function prepareForValidation(): void
+    {
+        $booleans = [];
+
+        foreach (self::checkboxGroups() as $group => $keys) {
+            if (! $this->exists($group)) {
+                continue;
+            }
+
+            $checked = (array) $this->input($group);
+
+            foreach ($keys as $key) {
+                $booleans[$key] = in_array($key, $checked, true);
+            }
+        }
+
+        $this->merge($booleans);
+    }
+
     /** @return array<string, list<string|object>> */
     public function rules(): array
     {
@@ -75,6 +98,16 @@ class UserPreferencesRequest extends FormRequest
             'showFieldHandles',
             'showExceptionView',
             'profileTemplates',
+        ];
+    }
+
+    /** @return array<string, list<string>> */
+    private static function checkboxGroups(): array
+    {
+        return [
+            'displaySettings' => ['useShapes', 'underlineLinks'],
+            'generalSettings' => ['disableAutofocus'],
+            'developmentSettings' => self::adminOnlyPreferences(),
         ];
     }
 

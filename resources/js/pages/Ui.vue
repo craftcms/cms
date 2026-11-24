@@ -28,6 +28,7 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
+  import {useIsSlideout} from '@/common/composables/screen';
 
   const props = withDefaults(
     defineProps<{
@@ -221,6 +222,14 @@
   const contentSlot = computed(() => (isBareTable.value ? 'full' : 'default'));
   provide(UiTableFlush, isBareTable);
 
+  const isSlideout = useIsSlideout();
+  /** Whether the fields start with a tab strip, spaced from the header like an element editor's. */
+  const hasTabs = computed(
+    () =>
+      shownUi.value.nodes.filter((node) => node.component === 'craft:tab')
+        .length > 1
+  );
+
   useAppLayout(() => ({
     form: props.submit ? inertiaForm : null,
     defaultFormActions: props.formActionsInSidebar
@@ -311,7 +320,14 @@
       <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          :class="isBareTable ? undefined : 'ui-page__fields py-lg'"
+          :class="
+            isBareTable
+              ? undefined
+              : [
+                  'ui-page__fields pb-lg',
+                  hasTabs ? {'pt-md': !isSlideout} : 'pt-lg',
+                ]
+          "
         >
           <UiRenderer
             ref="renderer"

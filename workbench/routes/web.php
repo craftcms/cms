@@ -9,6 +9,7 @@ use Workbench\App\Http\Controllers\HeadingsController;
 use Workbench\App\Http\Controllers\LayoutSlotsDemoController;
 use Workbench\App\Http\Controllers\PortedPagesController;
 use Workbench\App\Http\Controllers\SpecialPagesController;
+use Workbench\App\Http\Controllers\TabSpacingController;
 use Workbench\App\Http\Controllers\UiKitchenSinkController;
 
 use function CraftCms\Cms\cp_url;
@@ -50,4 +51,6 @@ Route::middleware(['craft', 'craft.cp', 'auth', 'can:accessCp'])
             ->whereNumber('step');
         Route::get('workbench/headings', HeadingsController::class)
             ->name('workbench.headings');
+        Route::get('workbench/tab-spacing', TabSpacingController::class)
+            ->name('workbench.tab-spacing');
     });

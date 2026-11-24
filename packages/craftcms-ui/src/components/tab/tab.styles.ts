@@ -26,7 +26,8 @@ export default css`
    * strip can move it without knowing anything about this shadow root: the
    * defaults below are the block-start placement (a rule underneath, pulled
    * 1px down to sit on top of the strip's border), and the other placements
-   * publish the vars that move it to the edge facing the panels.
+   * publish the vars that move it to the edge facing the panels. It spans the
+   * label rather than the padding around it.
    */
   :host::after {
     content: '';
@@ -35,8 +36,14 @@ export default css`
     background-color: transparent;
     inset-block-start: var(--c-tab-indicator-inset-block-start, auto);
     inset-block-end: var(--c-tab-indicator-inset-block-end, -1px);
-    inset-inline-start: var(--c-tab-indicator-inset-inline-start, 0);
-    inset-inline-end: var(--c-tab-indicator-inset-inline-end, 0);
+    inset-inline-start: var(
+      --c-tab-indicator-inset-inline-start,
+      var(--c-tab-padding-inline, 0)
+    );
+    inset-inline-end: var(
+      --c-tab-indicator-inset-inline-end,
+      var(--c-tab-padding-inline, 0)
+    );
     block-size: var(--c-tab-indicator-block-size, calc(2rem / 16));
     inline-size: var(--c-tab-indicator-inline-size, auto);
   }
