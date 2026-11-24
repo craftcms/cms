@@ -3,6 +3,7 @@ import {ChoiceGroup} from '@src/mixins/ChoiceGroup';
 import {formControlStyles} from '@src/mixins/FormControl';
 import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {scheduleMeasure} from '@src/utilities/frame';
 
 export type RadioGroupAppearance =
   | 'buttons'
@@ -70,7 +71,9 @@ export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
    * radios are watched too, since a button's width follows its label; wrapping
    * doesn't change a button's width, so that can't loop either.
    */
-  private _resizeObserver = new ResizeObserver(() => this._fitRow());
+  private _resizeObserver = new ResizeObserver(() =>
+    scheduleMeasure(this._fitRow)
+  );
 
   override render() {
     return html`${super.render()}
@@ -103,14 +106,14 @@ export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
       this._resizeObserver.observe(radio as unknown as HTMLElement);
     }
     this._syncButtons();
-    this._fitRow();
+    scheduleMeasure(this._fitRow);
   }
 
   override updated(changed: PropertyValues) {
     super.updated(changed);
     if (changed.has('appearance')) {
       this._syncButtons();
-      this._fitRow();
+      scheduleMeasure(this._fitRow);
     }
   }
 
@@ -150,8 +153,11 @@ export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
    * threshold nor the group's own width depends on the layout it picks, so
    * switching can't make it switch back, even in a container that sizes to
    * its content.
+   *
+   * Measuring makes the browser recalculate styles, so this runs with
+   * `scheduleMeasure()`, reading before any group writes its result.
    */
-  private _fitRow() {
+  private _fitRow = () => {
     let wrapped = false;
     const appearance = this.appearance;
 
@@ -173,12 +179,14 @@ export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
       wrapped = width + 0.5 < rowWidth;
     }
 
-    if (wrapped !== this._wrapped) {
-      this._wrapped = wrapped;
-      this.toggleAttribute('data-wrapped', wrapped);
-      this._syncButtons();
-    }
-  }
+    return () => {
+      if (wrapped !== this._wrapped) {
+        this._wrapped = wrapped;
+        this.toggleAttribute('data-wrapped', wrapped);
+        this._syncButtons();
+      }
+    };
+  };
 
   static override get styles() {
     return [
