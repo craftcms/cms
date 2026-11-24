@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Contracts\SchedulableElementInterface;
 use CraftCms\Cms\Element\CurrentElementIndex;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Element;
@@ -35,6 +36,7 @@ use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Events\ElementStatusChanged;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -70,6 +72,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
@@ -99,6 +102,7 @@ use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Deprecated;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -123,7 +127,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(EntryRules::class)]
-class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, WorkflowableInterface
+class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface, SchedulableElementInterface, WorkflowableInterface
 {
     use LegacyConstants;
     use NestedElement {
@@ -201,6 +205,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @var self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
      */
     private string $status;
+
+    /** @see getReplacedStoredStatus() */
+    private ?string $replacedStoredStatus = null;
 
     /**
      * @var bool Whether the entry was deleted along with its entry type
@@ -1569,6 +1576,137 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
+     * Returns the date-based status for the given dates.
+     *
+     * Like entry queries, it considers “now” to be the end of the current minute, so an entry’s status, its stored
+     * status and the entries a query finds all change at the same moment.
+     *
+     * @return self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
+     */
+    private static function statusForDates(?DateTimeInterface $postDate, ?DateTimeInterface $expiryDate): string
+    {
+        $now = now()->endOfMinute();
+
+        return match (true) {
+            ! $postDate || $postDate > $now => self::STATUS_PENDING,
+            $expiryDate && $expiryDate <= $now => self::STATUS_EXPIRED,
+            default => self::STATUS_LIVE,
+        };
+    }
+
+    /**
+     * @return Builder A query for canonical entries’ `entries` rows
+     */
+    private static function canonicalEntryRows(): Builder
+    {
+        return DB::table(Table::ENTRIES, 'entries')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', '=', 'entries.id')
+            ->whereNull('elements.draftId')
+            ->whereNull('elements.revisionId')
+            ->whereNull('elements.dateDeleted');
+    }
+
+    public static function findIdsWithOutdatedStatus(): array
+    {
+        if (Cms::config()->staticStatuses) {
+            Deprecator::log('staticStatuses', 'The `staticStatuses` config setting is deprecated. Listen for `'.ElementStatusChanged::class.'` to act on entries going live or expiring.');
+        }
+
+        $now = Query::prepareDateForDb(now()->endOfMinute());
+
+        return self::canonicalEntryRows()
+            ->where(fn (Builder $query) => $query
+                ->where(fn (Builder $query) => $query
+                    ->where(fn (Builder $query) => $query
+                        ->whereNull('entries.postDate')
+                        ->orWhere('entries.postDate', '>', $now))
+                    ->where('entries.status', '!=', self::STATUS_PENDING))
+                ->orWhere(fn (Builder $query) => $query
+                    ->where('entries.postDate', '<=', $now)
+                    ->whereNotNull('entries.expiryDate')
+                    ->where('entries.expiryDate', '<=', $now)
+                    ->where('entries.status', '!=', self::STATUS_EXPIRED))
+                ->orWhere(fn (Builder $query) => $query
+                    ->where('entries.postDate', '<=', $now)
+                    ->where(fn (Builder $query) => $query
+                        ->whereNull('entries.expiryDate')
+                        ->orWhere('entries.expiryDate', '>', $now))
+                    ->where('entries.status', '!=', self::STATUS_LIVE)))
+            ->orderBy('entries.id')
+            ->pluck('entries.id')
+            ->map(fn (mixed $id): int => (int) $id)
+            ->all();
+    }
+
+    /**
+     * With the deprecated `staticStatuses` config setting on, it re-saves the entry instead, as
+     * `craft:update-statuses` does, so `ElementSaved` listeners that compare {@see $oldStatus} keep working.
+     */
+    public static function updateStoredStatus(int $elementId): bool
+    {
+        if (Cms::config()->staticStatuses) {
+            $entry = self::find()->id($elementId)->status(null)->one();
+
+            if ($entry instanceof self) {
+                $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                $entry->resaving = true;
+                Elements::saveElement($entry, updateSearchIndex: false);
+            }
+
+            return false;
+        }
+
+        $row = DB::table(Table::ENTRIES)->where('id', $elementId)->first(['postDate', 'expiryDate', 'status']);
+
+        if ($row === null) {
+            return false;
+        }
+
+        $status = self::statusForDates(
+            $row->postDate ? Date::parse($row->postDate, 'UTC') : null,
+            $row->expiryDate ? Date::parse($row->expiryDate, 'UTC') : null,
+        );
+
+        if ($status === $row->status) {
+            return false;
+        }
+
+        // Only if nothing else changed it since it was read, so the change is dispatched once
+        return DB::table(Table::ENTRIES)
+            ->where('id', $elementId)
+            ->where('status', $row->status)
+            ->update(['status' => $status]) > 0;
+    }
+
+    public function getReplacedStoredStatus(): ?string
+    {
+        return $this->replacedStoredStatus;
+    }
+
+    public static function storedStatuses(array $elementIds): array
+    {
+        if ($elementIds === []) {
+            return [];
+        }
+
+        $statuses = [];
+
+        self::canonicalEntryRows()
+            ->join(Table::ELEMENTS_SITES.' as elements_sites', 'elements_sites.elementId', '=', 'entries.id')
+            ->whereIn('entries.id', $elementIds)
+            ->get(['entries.id', 'elements_sites.siteId', 'entries.status', 'elements.archived', 'elements.enabled', 'elements_sites.enabled as enabledForSite'])
+            ->each(function (object $row) use (&$statuses): void {
+                $statuses[(int) $row->id][(int) $row->siteId] = match (true) {
+                    (bool) $row->archived => self::STATUS_ARCHIVED,
+                    ! $row->enabled || ! $row->enabledForSite => self::STATUS_DISABLED,
+                    default => $row->status,
+                };
+            });
+
+        return $statuses;
+    }
+
+    /**
      * Returns the entry’s section.
      *
      * ---
@@ -1900,13 +2038,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     private function _status(): string
     {
-        $now = now();
-
-        return match (true) {
-            ! $this->postDate || $this->postDate > $now => self::STATUS_PENDING,
-            $this->expiryDate && $this->expiryDate <= $now => self::STATUS_EXPIRED,
-            default => self::STATUS_LIVE,
-        };
+        return self::statusForDates($this->postDate, $this->expiryDate);
     }
 
     /**
@@ -2790,12 +2922,15 @@ JS;
     #[Override]
     public function afterSave(bool $isNew): void
     {
+        $this->replacedStoredStatus = null;
+
         if (! $this->propagating) {
             $section = $this->getSection();
 
-            // Get the entry record
+            // Get the entry record, locked so the scheduled status update can’t change it until this save commits
             if (! $isNew) {
-                $model = EntryModel::findOrFail($this->id);
+                $model = EntryModel::query()->lockForUpdate()->findOrFail($this->id);
+                $this->replacedStoredStatus = $model->status;
             } else {
                 $model = new EntryModel;
                 $model->id = (int) $this->id;

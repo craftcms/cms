@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Commands\RestoreCommand;
 use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Queue\Events\JobExceptionOccurred;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Jobs\SyncJob;
@@ -43,6 +44,7 @@ class ElementServiceProvider extends ServiceProvider
         Event::subscribe(DraftActivity::class);
         Event::subscribe(ElementWriteActivity::class);
         Event::subscribe(BroadcastElementChanges::class);
+        Event::subscribe(ElementStatuses::class);
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
         // Resolved while the app boots, so every Octane sandbox shares this instance and its pending tags, rather than
@@ -60,6 +62,14 @@ class ElementServiceProvider extends ServiceProvider
                 app(ElementCaches::class)->invalidatePendingTags();
                 app(BulkOpDeferrals::class)->persistPending();
             }
+        });
+
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule
+                ->call(fn (): int => app(ElementStatuses::class)->updateScheduled())
+                ->name('craft:update-element-statuses')
+                ->everyMinute()
+                ->withoutOverlapping();
         });
 
         if (! $this->app->runningInConsole()) {

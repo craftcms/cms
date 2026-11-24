@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
 use DateTimeInterface;
@@ -26,6 +27,7 @@ use Throwable;
 
 /**
  * @since 6.0.0
+ * @deprecated in 6.0.0. The `craft:update-element-statuses` scheduled task updates entries’ statuses every minute.
  */
 final class UpdateStatusesCommand extends Command implements Isolatable
 {
@@ -45,7 +47,10 @@ final class UpdateStatusesCommand extends Command implements Isolatable
 
     public function handle(): int
     {
-        $now = Query::prepareDateForDb(now());
+        Deprecator::log('craft:update-statuses', 'The `craft:update-statuses` command is deprecated. The `craft:update-element-statuses` scheduled task updates entries’ statuses every minute.');
+
+        // Entry queries consider “now” to be the end of the current minute
+        $now = Query::prepareDateForDb(now()->endOfMinute());
 
         foreach ($this->conditions($now) as $status => $condition) {
             $this->components->task(

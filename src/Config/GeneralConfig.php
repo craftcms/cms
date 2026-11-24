@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Element\Events\ElementStatusChanged;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Env;
@@ -2147,14 +2148,17 @@ class GeneralConfig extends BaseConfig
     public mixed $softDeleteDuration = 2592000;
 
     /**
-     * @var bool Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
-     *           `update-statuses` command is executed.
+     * @var bool Whether entry queries should filter by entries’ stored statuses rather than their dates. Stored
+     *           statuses are updated when entries are saved, and by the `craft:update-element-statuses` scheduled
+     *           task, which re-saves entries whose statuses changed while this is on.
      *
      * ```php
      * ->staticStatuses()
      * ```
      *
      * @group System
+     *
+     * @deprecated in 6.0.0. Listen for {@see ElementStatusChanged} to act on entries going live or expiring.
      */
     public bool $staticStatuses = false;
 
@@ -5170,8 +5174,9 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
-     * `update-statuses` command is executed.
+     * Whether entry queries should filter by entries’ stored statuses rather than their dates. Stored statuses are
+     * updated when entries are saved, and by the `craft:update-element-statuses` scheduled task, which re-saves
+     * entries whose statuses changed while this is on.
      *
      * ```php
      * ->staticStatuses()
@@ -5180,6 +5185,7 @@ class GeneralConfig extends BaseConfig
      * @group System
      *
      * @see $staticStatuses
+     * @deprecated in 6.0.0. Listen for {@see ElementStatusChanged} to act on entries going live or expiring.
      */
     public function staticStatuses(bool $value = true): self
     {
