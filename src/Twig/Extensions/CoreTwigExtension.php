@@ -29,7 +29,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Template;
-use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Support\Facades\Twig as TwigFacade;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
@@ -215,7 +215,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
                 // testEmpty() only converts Stringable values to strings when they aren't countable or traversable
                 if ($isSandboxed && $obj instanceof Stringable && ! $obj instanceof Countable && ! $obj instanceof Traversable) {
-                    ($this->environment ?? Twig::get())->getExtension(SandboxExtension::class)->getSecurityPolicy()->checkMethodAllowed($obj, '__toString');
+                    ($this->environment ?? TwigFacade::get())->getExtension(SandboxExtension::class)->getSecurityPolicy()->checkMethodAllowed($obj, '__toString');
                 }
 
                 return CoreExtension::testEmpty($obj);

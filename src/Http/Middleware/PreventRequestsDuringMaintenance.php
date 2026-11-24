@@ -68,17 +68,23 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
             return parent::handle($request, $next);
         }
 
-        if (
-            $request->getHadToken()
-            || Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
-            || Gate::check($request->isCpRequest()
-                ? 'accessCpWhenSystemIsOff'
-                : 'accessSiteWhenSystemIsOff')
-        ) {
+        if ($this->allowsAccess($request)) {
             return $next($request);
         }
 
         return parent::handle($request, $next);
+    }
+
+    /**
+     * Returns whether a request to a Craft route can go through while the system is offline.
+     */
+    public function allowsAccess(Request $request): bool
+    {
+        return $request->getHadToken()
+            || Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
+            || Gate::check($request->isCpRequest()
+                ? 'accessCpWhenSystemIsOff'
+                : 'accessSiteWhenSystemIsOff');
     }
 
     public static function registerRouteMacro(): void

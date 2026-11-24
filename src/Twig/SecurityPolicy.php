@@ -199,14 +199,11 @@ class SecurityPolicy implements SecurityPolicyInterface
             return;
         }
 
-        // HtmlString is Laravel's equivalent of Markup, which render() methods return.
-        // Their constructors and withContent() would let templates replace content that's already marked safe.
+        // HtmlString is Laravel's equivalent of Markup, which render() methods return. Their constructors and
+        // Markup::withContent() would let templates replace content that's already marked safe.
         if (
             $obj instanceof Template ||
-            (
-                ($obj instanceof Markup || $obj instanceof HtmlString) &&
-                ! in_array(strtolower($method), ['__construct', 'withcontent'], true)
-            )
+            (($obj instanceof Markup || $obj instanceof HtmlString) && ! in_array(strtolower($method), ['__construct', 'withcontent'], true))
         ) {
             return;
         }

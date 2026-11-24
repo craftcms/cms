@@ -16,7 +16,7 @@ use Twig\Node\Expression\TestExpression;
  */
 class NonStringCoercingInputTest extends TestExpression
 {
-    #[\Override]
+    /** @return list<string> */
     public function getStringCoercedChildNames(): array
     {
         return $this->hasNode('arguments') ? ['arguments'] : [];

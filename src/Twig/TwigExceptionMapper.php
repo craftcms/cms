@@ -104,8 +104,9 @@ readonly class TwigExceptionMapper
 
         // Only the compiled class's metadata is needed, and its constructor could load other templates, such as traits,
         // that the current template mode can't resolve
+        /** @var Template $template */
         $template = new ReflectionClass($class)->newInstanceWithoutConstructor();
-        $templatePath = $this->resolveSourcePath($template, $contents) ?: $template->getSourceContext()->getName();
+        $templatePath = $this->resolveSourcePath($template, $contents) ?? $template->getTemplateName();
         $templateLine = null;
 
         if ($line !== null) {
@@ -123,36 +124,41 @@ readonly class TwigExceptionMapper
     /**
      * Returns the source path of a compiled template.
      *
-     * When debug mode is off, compiled templates don't store their source path, and Twig asks the loader for it, which
+     * Outside debug mode, compiled templates don't store their source path, and Twig asks the loader for it, which
      * resolves the template name for the current template mode. The template may have been rendered in another mode,
      * where the same name can resolve to a different template, so this prefers the mode whose environment compiles the
-     * template name to the same class. That class also depends on settings that can change while rendering, such as
-     * the escaping strategy, so when no mode matches it, the path is used if only one mode resolves the name.
+     * template name to the same class. That class also depends on settings that can change while rendering, such as the
+     * escaping strategy, so when no mode matches it, the path is used if only one mode resolves the name.
      */
-    private function resolveSourcePath(Template $template, string $compiledCode): string
+    private function resolveSourcePath(Template $template, string $compiledCode): ?string
     {
         if (! str_contains($compiledCode, 'Source::createWithLazyPath(')) {
-            return $template->getSourceContext()->getPath();
+            return $template->getSourceContext()->getPath() ?: null;
         }
 
+        $class = $template::class;
+        $name = $template->getTemplateName();
+        $modes = array_unique([TemplateMode::get(), TemplateMode::Site, TemplateMode::Cp], SORT_REGULAR);
         $paths = [];
 
-        foreach (TemplateMode::cases() as $mode) {
-            [$path, $compiledHere] = TemplateMode::with($mode, function () use ($mode, $template) {
+        foreach ($modes as $mode) {
+            $result = TemplateMode::with($mode, function () use ($mode, $name, $class): ?array {
                 $twig = Twig::get($mode);
-                $name = $template->getTemplateName();
 
-                // Constructing the template could load other templates, such as traits, that this mode can't resolve
                 try {
-                    return [$twig->getLoader()->getSourceContext($name)->getPath(), $twig->getTemplateClass($name) === $template::class];
+                    $path = $twig->getLoader()->getSourceContext($name)->getPath();
                 } catch (LoaderError) {
-                    return ['', false];
+                    return null;
                 }
+
+                return $path === '' ? null : [$path, $twig->getTemplateClass($name) === $class];
             });
 
-            if ($path === '') {
+            if ($result === null) {
                 continue;
             }
+
+            [$path, $compiledHere] = $result;
 
             if ($compiledHere) {
                 return $path;
@@ -164,6 +170,6 @@ readonly class TwigExceptionMapper
         // Both modes can resolve the name to the same file, such as when a plugin registers the same template root for both
         $paths = array_unique($paths);
 
-        return count($paths) === 1 ? $paths[0] : '';
+        return count($paths) === 1 ? $paths[0] : null;
     }
 }
