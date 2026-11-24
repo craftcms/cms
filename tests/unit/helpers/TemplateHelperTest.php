@@ -8,7 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
-use craft\helpers\FileHelper;
 use craft\helpers\Template;
 use craft\test\TestCase;
 use craft\web\twig\Environment;
@@ -31,33 +30,39 @@ class TemplateHelperTest extends TestCase
     protected UnitTester $tester;
 
     /**
-     * Outside Dev Mode, compiled templates don't store their source path, so it must still resolve after the template
-     * mode changes, such as when the error page is rendered.
+     * Outside Dev Mode, compiled templates don't store their source path, so it must still resolve to the right
+     * template after the template mode changes, such as when the error page is rendered, even when the other mode has
+     * a template with the same name.
      */
     public function testResolveTemplatePathAndLineFromAnotherTemplateMode(): void
     {
         $view = Craft::$app->getView();
         $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        $dir = Craft::$app->getPath()->getSiteTemplatesPath() . DIRECTORY_SEPARATOR . 'resolve-path-' . uniqid();
-        FileHelper::writeToFile("$dir/broken.twig", "Line one\n{{ 1 // 0 }}");
+        $oldTwig = $view->getTwig();
+        // The control panel has a login template too
+        $path = Craft::$app->getPath()->getSiteTemplatesPath() . DIRECTORY_SEPARATOR . 'login.twig';
+        file_put_contents($path, "Line one\n{{ 1 // 0 }}");
         $twig = new Environment(new TemplateLoader($view), [
             'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
             'debug' => false,
         ]);
+        $view->setTwig($twig);
 
         try {
-            $twig->render(basename($dir) . '/broken');
+            $twig->render('login');
             self::fail('Expected the template to throw.');
         } catch (RuntimeError $e) {
             $view->setTemplateMode(View::TEMPLATE_MODE_CP);
             $previous = $e->getPrevious();
-            [$path, $line] = Template::resolveTemplatePathAndLine($previous->getFile(), $previous->getLine());
+            [$resolvedPath, $line] = Template::resolveTemplatePathAndLine($previous->getFile(), $previous->getLine());
 
-            self::assertSame(realpath("$dir/broken.twig"), realpath($path));
+            self::assertSame(realpath($path), realpath($resolvedPath));
             self::assertSame(2, $line);
             self::assertSame(View::TEMPLATE_MODE_CP, $view->getTemplateMode());
         } finally {
-            FileHelper::removeDirectory($dir);
+            unlink($path);
+            $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+            $view->setTwig($oldTwig);
         }
     }
 }
