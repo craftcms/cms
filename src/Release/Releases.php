@@ -18,8 +18,6 @@ use CraftCms\Cms\Release\Activity\ReleaseOperation;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
-use CraftCms\Cms\Release\Events\ReleaseScheduled;
-use CraftCms\Cms\Release\Events\ReleaseUnscheduled;
 use CraftCms\Cms\Release\Exceptions\EarlyPublicationFailed;
 use CraftCms\Cms\Release\Exceptions\ReleaseDeletionRetry;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
@@ -332,8 +330,6 @@ class Releases
                 'lastError' => null,
             ]);
 
-            event(new ReleaseScheduled($release, $release->publishedAt));
-
             return $release->refresh();
         });
     }
@@ -348,7 +344,11 @@ class Releases
                 throw new ReleaseException(t('Only scheduled releases can be unscheduled.'));
             }
 
-            $this->returnToDraft($release);
+            $release->transitionTo(ReleaseStatus::Draft, [
+                'publishedAt' => null,
+                'scheduledById' => null,
+                'lastError' => null,
+            ]);
 
             return $release->refresh();
         });
@@ -438,11 +438,7 @@ class Releases
         try {
             [$publishedRelease, $failedRelease, $publicationFailure] = $this->publishReleaseInTransaction($release, $scheduledExecution, $actor);
         } catch (Throwable $exception) {
-            $this->failStrandedPublication(
-                $release->id,
-                $exception,
-                $release->status === ReleaseStatus::Scheduled ? $release->publishedAt : null,
-            );
+            $this->failStrandedPublication($release->id, $exception);
 
             throw $exception;
         }
@@ -484,7 +480,6 @@ class Releases
             }
 
             $items = $this->lockReleaseDrafts($release);
-            $scheduledFor = $release->status === ReleaseStatus::Scheduled ? $release->publishedAt : null;
 
             if ($actor !== null && ! $actor->can('publishReleases')) {
                 throw new ReleaseException(t('You are not allowed to publish releases.'), Response::HTTP_FORBIDDEN);
@@ -513,11 +508,6 @@ class Releases
                     'publishAttempts' => $release->publishAttempts + 1,
                 ]);
 
-                // A scheduled release that fails stops being scheduled
-                if ($scheduledFor !== null) {
-                    event(new ReleaseUnscheduled($release, $scheduledFor));
-                }
-
                 return [null, $release->refresh(), $exception];
             }
         }, 3);
@@ -530,7 +520,7 @@ class Releases
      * the transaction early, such as a MySQL statement with an implicit commit, the release would otherwise stay
      * Publishing, and nothing can publish, schedule or delete a release in that status.
      */
-    private function failStrandedPublication(int $releaseId, Throwable $exception, ?DateTimeInterface $scheduledFor): void
+    private function failStrandedPublication(int $releaseId, Throwable $exception): void
     {
         $release = Release::query()->find($releaseId);
 
@@ -544,11 +534,6 @@ class Releases
             report($transitionException);
 
             return;
-        }
-
-        // A scheduled release that fails stops being scheduled
-        if ($scheduledFor !== null) {
-            event(new ReleaseUnscheduled($release, $scheduledFor));
         }
 
         $this->notifyPublicationFailure($release, $exception);
@@ -884,23 +869,11 @@ class Releases
         $release->refresh();
 
         if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
-            $this->returnToDraft($release);
-        }
-    }
-
-    /** Moves a scheduled release back to a draft, dispatched as unscheduled once the transaction commits. */
-    private function returnToDraft(Release $release): void
-    {
-        $publishedAt = $release->publishedAt;
-
-        $release->transitionTo(ReleaseStatus::Draft, [
-            'publishedAt' => null,
-            'scheduledById' => null,
-            'lastError' => null,
-        ]);
-
-        if ($publishedAt !== null) {
-            event(new ReleaseUnscheduled($release, $publishedAt));
+            $release->transitionTo(ReleaseStatus::Draft, [
+                'publishedAt' => null,
+                'scheduledById' => null,
+                'lastError' => null,
+            ]);
         }
     }
 

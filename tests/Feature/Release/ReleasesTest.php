@@ -22,8 +22,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
-use CraftCms\Cms\Release\Events\ReleaseScheduled;
-use CraftCms\Cms\Release\Events\ReleaseUnscheduled;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
 use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Notifications\ReleaseFailed;
@@ -638,47 +636,4 @@ it('requires release publication permission even when a manager can publish the 
         ->and($release->fresh()->publishAttempts)->toBe(0)
         ->and(EntryElement::find()->id($canonical->id)->status(null)->one()->title)->toBe('Original content')
         ->and(EntryElement::find()->draftId($draft->draftId)->status(null)->one())->not()->toBeNull();
-});
-
-it('reports when a release is scheduled and every way it is unscheduled', function () {
-    Date::setTestNow('2026-10-01 12:00:00');
-    $events = [];
-    Event::listen([ReleaseScheduled::class, ReleaseUnscheduled::class], function (object $event) use (&$events) {
-        $events[] = [$event::class, $event->publishedAt->getTimestamp()];
-    });
-
-    $draft = releaseDraft(EntryModel::factory()->createElement(['title' => 'Original']), 'Change', $this->actor);
-    $release = $this->releases->create('Launch', null, $this->actor);
-    $this->releases->attach($release, $draft, $this->actor);
-
-    $release = $this->releases->schedule($release, Date::parse('2026-10-01 15:00:00'), $this->actor);
-    $release = $this->releases->unschedule($release, $this->actor);
-    // Deleting a scheduled release's last draft unschedules it too
-    $this->releases->schedule($release, Date::parse('2026-10-01 16:00:00'), $this->actor);
-    Elements::deleteElement($draft, true);
-
-    // So does a failed publication, and a failed release can be scheduled again
-    $failingDraft = releaseDraft(EntryModel::factory()->createElement(['title' => 'Original']), 'Failing change', $this->actor);
-    $failingRelease = $this->releases->create('Failing launch', null, $this->actor);
-    $this->releases->attach($failingRelease, $failingDraft, $this->actor);
-    $this->releases->schedule($failingRelease, Date::parse('2026-10-01 12:01:00'), $this->actor);
-    Event::listen(DraftApplying::class, function (DraftApplying $event) use ($failingDraft): void {
-        if ($event->draft->draftId === $failingDraft->draftId) {
-            throw new RuntimeException('The failing member failed.');
-        }
-    });
-    Date::setTestNow('2026-10-01 12:05:00');
-    $this->releases->publishDue();
-    expect($failingRelease->fresh()->status)->toBe(ReleaseStatus::Failed);
-    $this->releases->schedule($failingRelease->fresh(), Date::parse('2026-10-01 17:00:00'), $this->actor);
-
-    expect($events)->toBe([
-        [ReleaseScheduled::class, Date::parse('2026-10-01 15:00:00')->getTimestamp()],
-        [ReleaseUnscheduled::class, Date::parse('2026-10-01 15:00:00')->getTimestamp()],
-        [ReleaseScheduled::class, Date::parse('2026-10-01 16:00:00')->getTimestamp()],
-        [ReleaseUnscheduled::class, Date::parse('2026-10-01 16:00:00')->getTimestamp()],
-        [ReleaseScheduled::class, Date::parse('2026-10-01 12:01:00')->getTimestamp()],
-        [ReleaseUnscheduled::class, Date::parse('2026-10-01 12:01:00')->getTimestamp()],
-        [ReleaseScheduled::class, Date::parse('2026-10-01 17:00:00')->getTimestamp()],
-    ]);
 });
