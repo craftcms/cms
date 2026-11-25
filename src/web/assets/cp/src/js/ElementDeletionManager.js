@@ -74,8 +74,11 @@ Craft.ElementDeletionManager = Craft.DeletionBlockersModal.extend(
     },
 
     onSubmit: async function (data) {
-      // The blocker modal was the confirmation
-      await this.confirmAndDelete(data.totalElements, true);
+      // The blocker modal is the confirmation, unless there's a custom message or a permanent-deletion warning to show
+      await this.confirmAndDelete(
+        data.totalElements,
+        !this.settings.confirmationMessage && !this.settings.hardDelete
+      );
     },
 
     onHide: function () {
