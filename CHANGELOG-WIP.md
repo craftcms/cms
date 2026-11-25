@@ -31,12 +31,12 @@
 - Added the `craftCommand()` Twig function. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - GraphQL API requests can now pass a GraphQL token via an `X-Craft-Gql-Token` header. When the `Authorization` header also contains a user’s OAuth access token or personal access token, the GraphQL token determines the schema, and the user is logged in for the request, so queries with `withProvisionalDrafts` swap in their provisional drafts. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - The authenticated MCP server now supports HTTP basic auth. When a `craft\filters\BasicHttpAuthLogin` filter applies to it, either site-wide or via `filters` in `config/mcp.php`, clients authenticate with a username and password instead of an access token. ([#20844](https://github.com/craftcms/cms/issues/20844))
-- Twig’s deprecation warnings are now logged by the deprecator, along with Twig extensions, token parsers, and nodes that won’t be compatible with Twig 4.
+- Twig’s deprecation warnings are now logged by the deprecator, along with Twig extensions, token parsers, and nodes that won’t be compatible with Twig 4. ([#21111](https://github.com/craftcms/cms/pull/21111))
 
 ### Extensibility
 
-- Added `craft\services\Deprecator::logTwigDeprecation()`.
-- Added `craft\web\twig\Compiler`.
+- Added `craft\services\Deprecator::logTwigDeprecation()`. ([#21111](https://github.com/craftcms/cms/pull/21111))
+- Added `craft\web\twig\Compiler`. ([#21111](https://github.com/craftcms/cms/pull/21111))
 - Added `craft\services\Composer::MIN_VERSION`, `getIsAvailable()`, `getIsAvailableForUi()`, and `getUnavailableReason()`.
 - Added `craft\helpers\App::composerCommand()`. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - Added `craft\helpers\App::craftCommand()`. ([#20487](https://github.com/craftcms/cms/pull/20487))
