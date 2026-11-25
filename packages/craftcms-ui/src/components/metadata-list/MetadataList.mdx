@@ -1,0 +1,33 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as MetadataListStories from './metadata-list.stories';
+
+<Meta of={MetadataListStories} name="Docs" />
+
+# Metadata List
+
+`<craft-metadata-list>` lays out a list of facts about something, such as an element's ID, status and dates in its Info sidebar.
+
+<Canvas of={MetadataListStories.Default} sourceState="shown" />
+
+It wraps a native `<dl>`. Each item is a `<div>` holding a `<dt>` and its `<dd>`.
+
+## Layouts
+
+`layout` picks how the items sit:
+
+- `auto`, the default, puts each label beside its value where the list has room, and above it where it doesn't. It measures the list's own width, so a list in a narrow sidebar stacks even on a wide screen.
+- `stacked` puts each label above its value.
+- `inline` puts each label beside its value, with the values lined up in a column.
+- `row` lays the items out side by side, each label above its value, wrapping as they need to.
+
+<Canvas of={MetadataListStories.Auto} sourceState="shown" />
+<Canvas of={MetadataListStories.Inline} sourceState="shown" />
+<Canvas of={MetadataListStories.Row} sourceState="shown" />
+
+## Accessibility
+
+The list renders in the light DOM, so the `<dl>` keeps its native semantics. Always wrap a real `<dl>`, with each `<dt>` and its `<dd>` inside a `<div>`. A list of `<div>`s styled to look like one tells assistive technology nothing about which label goes with which value.
+
+## Properties
+
+<ArgTypes of={MetadataListStories} />

@@ -1,5 +1,4 @@
-import {t} from '@craftcms/ui';
-import {prettyETA} from '@uppy/core/utils';
+import {formatDuration, t} from '@craftcms/ui';
 import {html, LitElement, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import type {UploadState} from '@/upload-client';
@@ -68,7 +67,7 @@ export class FileUploadNotificationElement extends LitElement {
           })}${showEstimate
             ? html` · ${t('{speed}/s', {speed: formatBytes(this.speed)})} ·
               ${t('{time} left', {
-                time: prettyETA(
+                time: formatDuration(
                   Math.ceil((this.total - this.loaded) / this.speed)
                 ),
               })}`

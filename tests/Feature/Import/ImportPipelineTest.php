@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Carbon\CarbonImmutable;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Enums\ImportRunStatus;
 use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
 use CraftCms\Cms\Import\Events\ImportDispatching;
@@ -16,16 +19,17 @@ use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Events\ItemImporting;
 use CraftCms\Cms\Import\Import;
+use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Import\Jobs\FinishImport;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
+use CraftCms\Cms\Import\Models\ImportRun;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Contracts\Queue\Job as QueueJob;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -78,6 +82,9 @@ beforeEach(function () {
         return $pendingBatches;
     };
 
+    $this->run = fn (): ImportRun => ImportRun::query()->where('uid', 'run-id')->sole();
+    app(ImportRuns::class)->start($this->importPlan, 'run-id', null, null);
+
     $this->runJob = function (int $start = 0): void {
         [$job] = new ImportJob($this->importPlan, 'step-1', 'run-id', $start)->withFakeBatch();
         $job->handle();
@@ -104,22 +111,21 @@ it('dispatches nothing when there are no steps', function () {
     Bus::assertNothingDispatched();
 });
 
-it('flags the run as having failures when a step batch had failed jobs', function () {
+it('fails a step run whose batch had failed jobs', function () {
     new ImportPipeline([($this->step)('step-1'), ($this->step)('step-2')], $this->importPlan, 'run-id')->handle();
     $pendingBatches = ($this->pendingBatches)();
 
     $pendingBatches[0]->finallyCallbacks()[0](($this->batchWithFailures)(0));
-
-    expect(Cache::has(FinishImport::hasFailuresCacheKey('run-id')))->toBeFalse();
-
     $pendingBatches[1]->finallyCallbacks()[0](($this->batchWithFailures)(1));
 
-    expect(Cache::has(FinishImport::hasFailuresCacheKey('run-id')))->toBeTrue();
+    expect(($this->run)()->steps['step-1']['status'])->toBe('successful')
+        ->and(($this->run)()->steps['step-2']['status'])->toBe('failed');
 });
 
-it('fires the import finished event once with failures and clears the run’s failure flag', function () {
+it('fires the import finished event once with failures and fails the run when a step failed', function () {
     Event::fake([ImportFinished::class]);
-    Cache::put(FinishImport::hasFailuresCacheKey('run-id'), true);
+    app(ImportRuns::class)->recordItems('run-id', 'step-1', 1, 1, ['failed' => 1]);
+    app(ImportRuns::class)->stepFinished('run-id', 'step-1', false);
 
     new FinishImport($this->importPlan, 'run-id')->handle();
 
@@ -128,13 +134,16 @@ it('fires the import finished event once with failures and clears the run’s fa
         && count($event->steps) === 2
         && $event->runId === 'run-id'
         && $event->hasFailures);
-    expect(Cache::has(FinishImport::hasFailuresCacheKey('run-id')))->toBeFalse();
+    expect(($this->run)()->status)->toBe(ImportRunStatus::Failed)
+        ->and(($this->run)()->dateFinished)->not->toBeNull();
 });
 
-it('fires the import finished event without failures when no step flagged any', function () {
+it('fires the import finished event without failures when no step failed', function () {
     Event::fake([ImportFinished::class]);
 
     new FinishImport($this->importPlan, 'run-id')->handle();
+
+    expect(($this->run)()->status)->toBe(ImportRunStatus::Successful);
 
     Event::assertDispatched(fn (ImportFinished $event) => $event->hasFailures === false);
 });
@@ -237,16 +246,60 @@ it('passes the run ID to the item importing and imported events', function () {
         && $event->importedItem->key === 'my_message');
 });
 
-it('flags the run and the step as having failures when an item in an import job fails', function () {
+it('records each item that fails in an import job, with its data, against its own step run', function () {
     Event::fake([ImportChunkFinished::class]);
     Event::listen(ItemImporting::class, fn () => throw new Exception('Item failed.'));
 
     ($this->runJob)();
 
-    expect(Cache::has(FinishImport::hasFailuresCacheKey('run-id')))->toBeTrue()
-        ->and(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-1')))->toBeTrue()
-        ->and(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-2')))->toBeFalse();
+    $steps = ($this->run)()->steps;
+
+    expect($steps['step-1']['counts']['failed'])->toBe(3)
+        ->and($steps['step-1']['failures'])->toHaveCount(3)
+        ->and($steps['step-1']['failures'][1]['item'])->toBe(2)
+        ->and($steps['step-1']['failures'][1]['message'])->toBe('Item failed.')
+        ->and($steps['step-1']['failures'][1]['data'])->toBeArray()->not->toBeEmpty()
+        ->and($steps['step-2']['counts']['failed'])->toBe(0);
     Event::assertDispatched(fn (ImportChunkFinished $event) => $event->hasFailures);
+});
+
+it('counts what happened to each item, and records the source it read', function () {
+    $this->importPlan->steps[0]->source('tests/Fixtures/Import/system-messages.json');
+    ImportRun::query()->delete();
+    app(ImportRuns::class)->start($this->importPlan, 'run-id', null, null);
+    ($this->runJob)();
+    app(ImportRuns::class)->start($this->importPlan, 'run-id-2', null, null);
+    [$job] = new ImportJob($this->importPlan, 'step-1', 'run-id-2')->withFakeBatch();
+    $job->handle();
+
+    $first = ($this->run)()->steps['step-1'];
+    $second = ImportRun::query()->where('uid', 'run-id-2')->sole()->steps['step-1'];
+
+    expect($first['counts'])->toBe(['created' => 2, 'updated' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0])
+        ->and($first['total'])->toBe(2)
+        ->and($first['progress'])->toBe(100)
+        ->and($first['source'])->toBe(['name' => 'system-messages.json', 'size' => filesize(dirname(__DIR__, 2).'/Fixtures/Import/system-messages.json')])
+        ->and($second['counts'])->toBe(['created' => 0, 'updated' => 0, 'unchanged' => 2, 'skipped' => 0, 'failed' => 0]);
+});
+
+it('records each validation error of an item that couldn’t be saved in the run state', function () {
+    Event::fake([ImportChunkFinished::class]);
+    Event::listen(ItemImporting::class, function () {
+        $entry = new Entry(['id' => 317, 'title' => 'Set up your project']);
+        $entry->errors()->add('title', 'Title cannot be blank.');
+
+        throw new InvalidElementException($entry, 'Unable to save element being imported.');
+    });
+
+    ($this->runJob)();
+
+    expect(app(Import::class)->runState($this->importPlan)['steps']['step-1']['failures'][0])->toMatchArray([
+        'item' => 1,
+        'message' => 'Unable to save element being imported.',
+        'elementId' => 317,
+        'title' => 'Set up your project',
+        'problems' => [['path' => [], 'message' => 'Title cannot be blank.']],
+    ]);
 });
 
 it('skips the first chunk of a step whose source is invalid', function () {
@@ -306,12 +359,11 @@ it('fires the step finished event for each step, flagging item and job failures'
         && $event->runId === 'run-id'
         && $event->hasFailures === false);
 
-    Cache::put(FinishImport::stepHasFailuresCacheKey('run-id', 'step-2'), true);
+    app(ImportRuns::class)->recordItems('run-id', 'step-2', 1, 3, ['failed' => 1]);
     $secondBatch->finallyCallbacks()[0](($this->batchWithFailures)(0));
 
     Event::assertDispatched(fn (ImportStepFinished $event) => $event->step->uid === 'step-2'
         && $event->hasFailures);
-    expect(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-2')))->toBeFalse();
 
     $firstBatch->finallyCallbacks()[0](($this->batchWithFailures)(1));
 

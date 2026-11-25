@@ -596,7 +596,12 @@ readonly class Navigation
             $administrationItems[] = new NavItem()
                 ->label(t('Import'))
                 ->href('import')
-                ->icon('arrow-up-to-bracket');
+                ->icon('arrow-down-to-bracket')
+                ->subnav([
+                    // it goes where Import does, so it needs an id of its own
+                    new NavItem()->id('nav-import-plans')->label(t('Plans'))->href(cp_url('import')),
+                    new NavItem()->label(t('Activity'))->href(cp_url('import/activity')),
+                ]);
         }
 
         $utilities = $this->utilities->getAuthorizedUtilityTypes();

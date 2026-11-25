@@ -62,6 +62,10 @@ export {default as CraftInputTime} from './components/input-time/input-time.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftLink} from './components/link/link.js';
 export {default as CraftMediaItem} from './components/media-item/media-item.js';
+export {
+  default as CraftMetadataList,
+  type MetadataListLayout,
+} from './components/metadata-list/metadata-list.js';
 export {default as CraftMissingComponent} from './components/missing-component/missing-component.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';

@@ -27,6 +27,8 @@
     showTableColumns?: boolean;
     /** Whether any setting differs from its default, offering to reset them. */
     customized?: boolean;
+    /** The button's label, for a table that only sorts. Defaults to “View”. */
+    label?: string;
   }>();
 
   const sortField = defineModel<string>('sortField', {required: true});
@@ -140,7 +142,7 @@
       :variant="ButtonVariant.Fill"
       .disabled="disabled"
     >
-      {{ t('View') }}
+      {{ label ?? t('View') }}
     </craft-button>
 
     <div slot="content-body" class="gap-lg">

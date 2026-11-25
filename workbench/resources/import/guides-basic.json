@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Installing Craft",
+    "summary": "Get Craft running locally with a single command."
+  },
+  {
+    "title": "Creating your first section",
+    "summary": "Add a channel and an entry type to hold your posts."
+  },
+  {
+    "title": "Publishing an entry",
+    "summary": "Write, preview and publish your first piece of content."
+  },
+  {
+    "title": "Inviting your team",
+    "summary": "Add users and give them the permissions they need."
+  }
+]

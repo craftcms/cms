@@ -11,7 +11,7 @@ import {
   type UploadDuplicate,
   UploadDuplicatesNotificationElement,
 } from './upload-duplicates-notification.ce';
-import {showNotice} from '@/modules/messages/messages';
+import {showPersistentNotice} from '@/modules/messages/messages';
 
 /** Uses the existing CP notification for per-file upload controls. */
 export function createFileUploadNotification(
@@ -54,7 +54,7 @@ export function createFileUploadNotification(
     }
   };
 
-  const close = createUploadNotice(file.name, container);
+  const close = showPersistentNotice(file.name, container);
 
   return {
     updateProgress(loaded: number) {
@@ -108,7 +108,7 @@ export function createUploadCompleteNotification(
     router.visit(destination.url)
   );
 
-  const close = createUploadNotice(t('Upload complete.'), details, onClose);
+  const close = showPersistentNotice(t('Upload complete.'), details, onClose);
 
   return {
     update(count: number) {
@@ -129,7 +129,7 @@ export function showUploadDuplicates(
   duplicates: UploadDuplicate[],
   navigate?: (url: string) => void
 ): () => void {
-  return createUploadNotice(
+  return showPersistentNotice(
     uploadDuplicatesMessage(filename, duplicates.length),
     createDuplicateList(duplicates, navigate),
     () => {}
@@ -196,40 +196,4 @@ function createDuplicateList(
     });
   }
   return list;
-}
-
-/** CP notices appear asynchronously, so a close request may precede the show event. */
-function createUploadNotice(
-  message: string,
-  details: HTMLElement,
-  onClose?: () => void
-): () => void {
-  let shown = false;
-  let finished = false;
-  const notification = showNotice(message, {
-    details,
-    persist: true,
-  });
-  if (!notification) {
-    return () => onClose?.();
-  }
-  notification.on('show', () => {
-    shown = true;
-    if (onClose) {
-      notification.closeButton?.addEventListener('click', onClose);
-    } else {
-      notification.closeButton?.setAttribute('hidden', '');
-    }
-    if (finished) {
-      notification.close();
-    }
-  });
-
-  return () => {
-    finished = true;
-    onClose?.();
-    if (shown) {
-      notification.close();
-    }
-  };
 }

@@ -87,6 +87,10 @@ readonly class Table
 
     public const string IMPORT_PLANS = 'import_plans';
 
+    public const string IMPORT_RUNS = 'import_runs';
+
+    public const string IMPORT_RUN_ITEMS = 'import_run_items';
+
     public const string INFO = 'info';
 
     public const string MIGRATIONS = 'migrations';

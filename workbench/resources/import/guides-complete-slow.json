@@ -1,0 +1,238 @@
+[
+  {
+    "title": "Getting started with Craft",
+    "postDate": "2026-09-01 09:00:00",
+    "expiryDate": null,
+    "enabled": true,
+    "authors": ["craftcms"],
+    "summary": "Install Craft, create your first section, and publish an entry.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 12,
+    "topics": ["content-modeling", "templating"],
+    "reviewedOn": "2026-10-14",
+    "contactEmail": "docs@example.com",
+    "reviewers": ["ada@example.com"],
+    "related": ["content-modeling-basics"],
+    "content": [
+      {
+        "type": "guideText",
+        "heading": "Welcome",
+        "body": "This guide walks through a fresh install, from the installer to your first published entry."
+      },
+      {
+        "type": "guideCallout",
+        "tone": "tip",
+        "body": "Already have Craft running? Skip ahead to creating a section."
+      },
+      {
+        "type": "guideQuote",
+        "quote": "Start small, then grow the model.",
+        "attribution": "The docs team"
+      },
+      {
+        "type": "guideCode",
+        "title": "Create a project",
+        "language": "shell",
+        "code": "composer create-project craftcms/craft my-project"
+      },
+      {
+        "type": "guideStepGroup",
+        "title": "Set up your project",
+        "body": "Get Craft running and give it somewhere to put content.",
+        "steps": [
+          {
+            "type": "guideStep",
+            "title": "Install Craft",
+            "body": "Run the installer from your terminal.",
+            "minutes": 5,
+            "optional": false,
+            "tips": [
+              {
+                "type": "guideTip",
+                "body": "Use DDEV for a local environment.",
+                "tone": "tip"
+              },
+              {
+                "type": "guideTip",
+                "body": "Back up before upgrading.",
+                "tone": "warning"
+              }
+            ]
+          },
+          {
+            "type": "guideCallout",
+            "tone": "information",
+            "body": "The installer asks for your database credentials."
+          },
+          {
+            "type": "guideStep",
+            "title": "Create a section",
+            "body": "Add a channel for your posts.",
+            "minutes": 3,
+            "optional": true,
+            "tips": [
+              {
+                "type": "guideTip",
+                "body": "Channels suit most content.",
+                "tone": "information"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "guideCallout",
+        "tone": "information",
+        "body": "Craft needs PHP 8.4 or later."
+      },
+      {
+        "type": "guideQuote",
+        "quote": "The best CMS I’ve used.",
+        "attribution": "A happy developer"
+      }
+    ],
+    "faq": [
+      {
+        "type": "guideFaqItem",
+        "question": "Do I need a database?",
+        "answer": "Yes, MySQL or PostgreSQL."
+      },
+      {
+        "type": "guideFaqItem",
+        "question": "Can I import content?",
+        "answer": "Yes, with an import plan."
+      }
+    ],
+    "delay": 6000
+  },
+  {
+    "title": "Templating with Twig",
+    "postDate": "2026-09-15 09:00:00",
+    "expiryDate": null,
+    "enabled": true,
+    "authors": ["ada"],
+    "summary": "Output your content with Twig templates, layouts and includes.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 18,
+    "topics": ["templating"],
+    "reviewedOn": "2026-10-02",
+    "contactEmail": "templating@example.com",
+    "reviewers": ["support@craftcms.com", "ada@example.com"],
+    "related": ["getting-started-with-craft"],
+    "content": [
+      {
+        "type": "guideText",
+        "heading": "Layouts",
+        "body": "Every page extends a layout that holds the shared markup."
+      },
+      {
+        "type": "guideCode",
+        "title": "An entry template",
+        "language": "twig",
+        "code": "{% extends '_layout' %}\n\n{% block content %}\n  {{ entry.title }}\n{% endblock %}"
+      },
+      {
+        "type": "guideCallout",
+        "tone": "warning",
+        "body": "Escape anything a user can type."
+      },
+      {
+        "type": "guideStepGroup",
+        "title": "Build an entry template",
+        "body": "Show a guide’s fields on its own page.",
+        "steps": [
+          {
+            "type": "guideStep",
+            "title": "Create the template",
+            "body": "Add templates/guides/_entry.twig.",
+            "minutes": 2,
+            "optional": false,
+            "tips": []
+          },
+          {
+            "type": "guideStep",
+            "title": "Output the fields",
+            "body": "Print the summary and loop over the content blocks.",
+            "minutes": 10,
+            "optional": false,
+            "tips": [
+              {
+                "type": "guideTip",
+                "body": "Use a switch on the block’s type handle.",
+                "tone": "tip"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "guideQuote",
+        "quote": "Twig keeps logic out of the markup.",
+        "attribution": "The docs team"
+      }
+    ],
+    "faq": [
+      {
+        "type": "guideFaqItem",
+        "question": "Can I use PHP in templates?",
+        "answer": "No, but a module can add Twig functions."
+      }
+    ],
+    "delay": 6000
+  },
+  {
+    "title": "Speeding up your site",
+    "postDate": "2026-10-01 09:00:00",
+    "expiryDate": "2027-10-01 09:00:00",
+    "enabled": false,
+    "authors": ["craftcms", "ada"],
+    "summary": "Cache templates, eager-load relations, and keep queries in check.",
+    "difficulty": "advanced",
+    "featured": true,
+    "readingTime": 22,
+    "topics": ["performance", "templating"],
+    "reviewedOn": "2026-11-01",
+    "contactEmail": "performance@example.com",
+    "reviewers": ["support@craftcms.com"],
+    "related": ["templating-with-twig", "getting-started-with-craft"],
+    "content": [
+      {
+        "type": "guideText",
+        "heading": "Measure first",
+        "body": "Profile a slow page before changing anything."
+      },
+      {
+        "type": "guideCode",
+        "title": "Eager-load related guides",
+        "language": "php",
+        "code": "Entry::find()->with(['guideRelated'])->all();"
+      },
+      {
+        "type": "guideQuote",
+        "quote": "Premature optimization is the root of all evil.",
+        "attribution": "Donald Knuth"
+      }
+    ],
+    "sidebar": [
+      {
+        "type": "guideCallout",
+        "tone": "tip",
+        "body": "The debug toolbar shows every query a page runs."
+      }
+    ],
+    "faq": [
+      {
+        "type": "guideFaqItem",
+        "question": "Should I cache everything?",
+        "answer": "No; cache what’s slow and rarely changes."
+      }
+    ],
+    "delay": 6000
+  }
+]

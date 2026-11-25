@@ -6,7 +6,7 @@
    * lately.
    */
   import {router} from '@inertiajs/vue3';
-  import {useNow} from '@vueuse/core';
+  import {useIntervalFn, useTimeAgoIntl} from '@vueuse/core';
   import {
     computed,
     nextTick,
@@ -161,34 +161,14 @@
   });
 
   // Kept current, so “Checked 5 minutes ago” doesn't go stale on screen
-  const now = useNow({interval: 60_000});
+  const timeAgo = useTimeAgoIntl(() => dateFetched.value ?? Date.now(), {
+    locale: formattingLocale(),
+    relativeTimeFormatOptions: {numeric: 'auto'},
+    scheduler: (tick) => useIntervalFn(tick, 60_000),
+  });
 
   /** When the updates were last checked, such as “5 minutes ago”. */
-  const checkedAgo = computed(() => {
-    if (!dateFetched.value) {
-      return null;
-    }
-
-    const seconds = Math.round(
-      (new Date(dateFetched.value).getTime() - now.value.getTime()) / 1000
-    );
-    const format = new Intl.RelativeTimeFormat(formattingLocale(), {
-      numeric: 'auto',
-    });
-    const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-      ['day', 86_400],
-      ['hour', 3_600],
-      ['minute', 60],
-    ];
-
-    for (const [unit, size] of units) {
-      if (Math.abs(seconds) >= size) {
-        return format.format(Math.round(seconds / size), unit);
-      }
-    }
-
-    return format.format(0, 'second');
-  });
+  const checkedAgo = computed(() => (dateFetched.value ? timeAgo.value : null));
 </script>
 
 <template>

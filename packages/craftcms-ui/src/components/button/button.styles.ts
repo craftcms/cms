@@ -229,14 +229,14 @@ export default css`
   }
 
   :host([size~='xsmall']) {
-    --_padding-inline: var(--c-spacing-xs);
+    --_padding-inline: var(--c-button-spacing-inline, var(--c-spacing-xs));
     --_height: var(--c-size-control-xs);
     min-width: var(--c-size-control-xs);
     font-size: 0.8em;
   }
 
   :host([size~='small']) {
-    --_padding-inline: var(--c-spacing-sm);
+    --_padding-inline: var(--c-button-spacing-inline, var(--c-spacing-sm));
     --_height: var(--c-size-control-sm);
     --c-icon-size: var(--c-size-icon-xs, calc(10rem / 16));
     min-width: var(--c-size-control-sm);
@@ -244,7 +244,7 @@ export default css`
   }
 
   :host([size~='large']) {
-    --_padding-inline: var(--c-spacing-lg);
+    --_padding-inline: var(--c-button-spacing-inline, var(--c-spacing-lg));
     --_height: var(--c-size-control-lg);
     min-width: var(--c-size-control-lg);
   }
@@ -785,15 +785,15 @@ export default css`
   :host([href][size~='xsmall']:not([disabled])) .link {
     --_link-min-height: var(--c-size-touch-target-sm);
     --_link-min-width: var(--c-size-touch-target-sm);
-    padding-inline: var(--c-spacing-xs);
+    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-xs));
   }
 
   :host([href][size~='small']:not([disabled])) .link {
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-sm));
   }
 
   :host([href][size~='large']:not([disabled])) .link {
-    padding-inline: var(--c-spacing-lg);
+    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-lg));
   }
 
   /* Only an icon-only link sits flush in its square; one with a label keeps

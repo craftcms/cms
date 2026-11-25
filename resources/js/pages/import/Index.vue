@@ -1,220 +1,472 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
-  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
-  import {useCraftTable} from '@/common/table/craftTable';
-  import {computed, h, ref, watch} from 'vue';
+  import '@craftcms/ui/components/button/button';
+  import '@craftcms/ui/components/tab/tab';
+  import '@craftcms/ui/components/tabs/tabs';
+  import {actionClient, t} from '@craftcms/ui';
+  import {computed, ref, watch} from 'vue';
+  import {router, usePoll} from '@inertiajs/vue3';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
-  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
-  import {router} from '@inertiajs/vue3';
+  import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import {useLocalStorage} from '@/common/composables/useStorage';
   import type {ActionItems} from '@/common/types';
+  import {showError, showSuccess} from '@/modules/messages/messages';
+  import PlanList from '@/modules/import/plans/PlanList.vue';
+  import PlanSortMenu, {
+    type PlanSortDirection,
+    type PlanSortField,
+  } from '@/modules/import/plans/PlanSortMenu.vue';
+  import type {PlanBulkAction} from '@/modules/import/plans/types';
   import {
     create,
     destroy,
     duplicate,
     edit,
-    reorder,
+    editStep,
+    editStepMapping,
     run,
+    showStep,
+    storeStep,
   } from '@actions/Import/ImportPlansController';
-  import CpContainer from '@/common/components/CpContainer.vue';
+  import type {ImportStep as StepData} from '@/modules/import/mapping/types';
+  import {openStepMapping} from '@/modules/import/steps/step-mapping';
 
-  type ImportRow = CraftCms.Cms.Import.Data.ImportPlanIndexData;
+  type ImportPlan = CraftCms.Cms.Import.Data.ImportPlanIndexData;
+  type ImportStep = ImportPlan['steps'][number];
 
   const props = defineProps<{
     canSave: boolean;
     canDelete: boolean;
     canTrigger: boolean;
-    editableImportPlans: Array<ImportRow>;
-    nonEditableImportPlans: Array<ImportRow>;
+    editableImportPlans: Array<ImportPlan>;
+    nonEditableImportPlans: Array<ImportPlan>;
   }>();
 
-  function editUrl(row: ImportRow): string {
-    return row.editable ? edit({handle: row.handle}).url : '';
+  function planUrl(plan: ImportPlan): string {
+    return edit({handle: plan.handle}).url;
   }
 
-  function stepsCell(row: ImportRow) {
-    if (row.stepCount === 0) {
-      return t('No steps');
-    }
+  function stepUrl(plan: ImportPlan, step: ImportStep): string | null {
+    return plan.editable && step.uid
+      ? editStep({handle: plan.handle, uid: step.uid}).url
+      : null;
+  }
 
-    return h(
-      'div',
-      row.stepLabels.map((label, i) => h('div', `${i + 1}. ${label}`))
+  /** What a run is posted with: a saved plan by its uid, one registered in code by its handle. */
+  function runBody(plan: ImportPlan): Record<string, string | null> {
+    return plan.editable ? {uid: plan.uid} : {handle: plan.handle};
+  }
+
+  /** Plans whose run request is still in flight, before the server reports them running. */
+  const starting = ref(new Set<string>());
+
+  function isRunning(plan: ImportPlan): boolean {
+    return plan.running || starting.value.has(plan.handle);
+  }
+
+  function markStarting(plans: ImportPlan[], value: boolean): void {
+    const next = new Set(starting.value);
+    plans.forEach((plan) =>
+      value ? next.add(plan.handle) : next.delete(plan.handle)
     );
+    starting.value = next;
   }
 
-  function runAction(
-    body: Record<string, string | null>,
-    row: ImportRow
-  ): ActionItems[number] {
-    return {
-      type: 'button',
-      label: t('Run'),
-      onClick: () => {
-        if (
-          !window.confirm(
-            t('Are you sure you want to run “{name}”?', {
-              name: row.name,
-            })
-          )
-        ) {
-          return;
-        }
-        router.post(run().url, body);
-      },
-    };
-  }
-
-  const columnHelper = createCraftColumnHelper<ImportRow>();
-  const editableColumns = ref(
-    columnHelper.columns([
-      columnHelper.link('name', {
-        header: t('Name'),
-        props: ({row}) => ({
-          href: editUrl(row.original),
-        }),
-      }),
-      columnHelper.handle('handle'),
-      columnHelper.accessor('stepCount', {
-        header: t('Steps'),
-        cell: ({row}) => stepsCell(row.original),
-      }),
-      columnHelper.actions(({row}) => {
-        const actions: ActionItems = [
-          {
-            type: 'link',
-            label: t('Edit'),
-            href: editUrl(row.original),
-          },
-        ];
-
-        if (props.canTrigger) {
-          actions.push(runAction({uid: row.original.uid}, row.original));
-        }
-
-        if (props.canSave) {
-          actions.push({
-            type: 'button',
-            label: t('Duplicate'),
-            onClick: () =>
-              router.post(duplicate().url, {uid: row.original.uid}),
-          });
-        }
-
-        if (props.canDelete) {
-          actions.push({
-            type: 'button',
-            label: t('Delete'),
-            variant: 'danger',
-            onClick: () => {
-              if (
-                !window.confirm(
-                  t('Are you sure you want to delete “{name}”?', {
-                    name: row.original.name,
-                  })
-                )
-              ) {
-                return;
-              }
-              router.delete(destroy().url, {
-                data: {uid: row.original.uid},
-              });
-            },
-          });
-        }
-
-        return [h(ActionMenu, {actions})];
-      }),
-    ])
-  );
-
-  const planUids = ref<string[]>([]);
-
-  watch(
-    () => props.editableImportPlans,
-    (plans) => {
-      planUids.value = plans.map((plan) => plan.uid!);
-    },
-    {immediate: true}
-  );
-
-  /** The editable import plans, in the order the user has put them in. */
-  const editableRows = computed(() =>
-    planUids.value
-      .map((uid) => props.editableImportPlans.find((plan) => plan.uid === uid))
-      .filter((plan): plan is ImportRow => plan !== undefined)
-  );
-
-  function handleReorder(startIndex: number, finishIndex: number): void {
-    const previousUids = planUids.value;
-    const nextUids = [...previousUids];
-    const [uid] = nextUids.splice(startIndex, 1);
-
-    if (uid === undefined) {
+  /** Starts a run, then follows it to its page, unless it's to run in the background. */
+  function startRun(plan: ImportPlan, background = false): void {
+    if (
+      isRunning(plan) ||
+      !window.confirm(
+        t('Are you sure you want to run “{name}”?', {name: plan.name})
+      )
+    ) {
       return;
     }
 
-    nextUids.splice(finishIndex, 0, uid);
-    planUids.value = nextUids;
-
     router.post(
-      reorder(),
-      {uids: nextUids},
+      run().url,
+      {...runBody(plan), background},
       {
         preserveScroll: true,
-        preserveState: true,
-        onError: () => {
-          planUids.value = previousUids;
-        },
+        onStart: () => markStarting([plan], true),
+        onFinish: () => markStarting([plan], false),
       }
     );
   }
 
-  const editableTable = useCraftTable<ImportRow>({
-    get data() {
-      return editableRows.value;
-    },
-    get columns() {
-      return editableColumns.value;
-    },
-    getRowId: (row) => row.uid!,
+  /**
+   * Runs the selected plans that aren't running yet, one request at a time, as each is
+   * its own run, then reloads the plans once for their running state.
+   */
+  async function runSelected(selected: ImportPlan[]): Promise<void> {
+    const plans = selected.filter((plan) => !isRunning(plan));
+
+    if (
+      !plans.length ||
+      !window.confirm(
+        t(
+          'Are you sure you want to run {count, plural, =1 {“{name}”} other {these # import plans}}?',
+          {count: plans.length, name: plans[0]!.name}
+        )
+      )
+    ) {
+      return;
+    }
+
+    markStarting(plans, true);
+    let started = 0;
+
+    for (const plan of plans) {
+      try {
+        await actionClient.post(run().url, runBody(plan));
+        started++;
+      } catch (error: any) {
+        showError(
+          t('Couldn’t run “{name}”: {message}', {
+            name: plan.name,
+            message:
+              error?.response?.data?.message ?? t('A server error occurred.'),
+          })
+        );
+      }
+    }
+
+    if (started) {
+      showSuccess(
+        t(
+          '{count, plural, =1 {Started # import.} other {Started # imports.}}',
+          {
+            count: started,
+          }
+        )
+      );
+    }
+
+    router.reload({
+      only: ['editableImportPlans', 'nonEditableImportPlans'],
+      onFinish: () => markStarting(plans, false),
+    });
+  }
+
+  /** What can be done to the selected plans: run any, and duplicate or delete the editable ones. */
+  const bulkActions = computed<PlanBulkAction[]>(() => {
+    const actions: PlanBulkAction[] = [];
+
+    if (props.canTrigger) {
+      actions.push({
+        key: 'run',
+        label: t('Run'),
+        perform: (plans) => void runSelected(plans),
+      });
+    }
+
+    if (props.canSave) {
+      actions.push({
+        key: 'duplicate',
+        label: t('Duplicate'),
+        appliesTo: (plan) => plan.editable,
+        perform: (plans) =>
+          router.post(
+            duplicate().url,
+            {uids: plans.map((plan) => plan.uid)},
+            {preserveScroll: true}
+          ),
+      });
+    }
+
+    if (props.canDelete) {
+      actions.push({
+        key: 'delete',
+        label: t('Delete'),
+        appliesTo: (plan) => plan.editable,
+        destructive: true,
+        perform: (plans) => {
+          if (
+            !window.confirm(
+              plans.length === 1
+                ? t('Are you sure you want to delete “{name}”?', {
+                    name: plans[0]!.name,
+                  })
+                : t(
+                    'Are you sure you want to delete these {count, number} import plans?',
+                    {count: plans.length}
+                  )
+            )
+          ) {
+            return;
+          }
+
+          router.delete(destroy().url, {
+            data: {uids: plans.map((plan) => plan.uid)},
+            preserveScroll: true,
+          });
+        },
+      });
+    }
+
+    return actions;
   });
 
-  const nonEditableColumns = ref(
-    columnHelper.columns([
-      columnHelper.accessor('name', {
-        header: t('Name'),
-        cell: ({row, getValue}) =>
-          h('div', [h('div', {class: 'font-bold'}, getValue())]),
-      }),
-      columnHelper.handle('handle'),
-      columnHelper.accessor('stepCount', {
-        header: t('Steps'),
-        cell: ({row}) => stepsCell(row.original),
-      }),
-      columnHelper.actions(({row}) => {
-        if (!props.canTrigger) {
-          return [];
-        }
+  /** The uid of the step whose mapping is opening. */
+  const openingMapping = ref<string | null>(null);
 
-        return [
-          h(ActionMenu, {
-            actions: [runAction({handle: row.original.handle}, row.original)],
-          }),
-        ];
-      }),
-    ])
+  function canEditMapping(plan: ImportPlan, step: ImportStep): boolean {
+    return props.canSave && plan.editable && !!step.uid;
+  }
+
+  /**
+   * Opens a step's mapping, as its plan's page does, and saves the step into its plan
+   * once the mapping is applied, as there's no plan form here to hand it back to.
+   */
+  async function editMapping(
+    plan: ImportPlan,
+    summary: ImportStep,
+    opener: HTMLElement
+  ): Promise<void> {
+    if (openingMapping.value !== null) {
+      return;
+    }
+
+    openingMapping.value = summary.uid;
+
+    try {
+      const {data} = await actionClient.get<{step: StepData}>(showStep().url, {
+        params: {planUid: plan.uid, uid: summary.uid},
+      });
+      const step = data.step;
+
+      await openStepMapping(
+        {
+          step,
+          editable: true,
+          editUrl: summary.uid
+            ? editStepMapping({handle: plan.handle, uid: summary.uid}).url
+            : null,
+          opener,
+          apply: (values) => void saveMapping(plan, step, values),
+        },
+        t('Edit mapping')
+      );
+    } catch (error: any) {
+      showError(
+        error?.response?.data?.message ??
+          (error instanceof Error && error.message
+            ? error.message
+            : t('Couldn’t open the mapping.'))
+      );
+    } finally {
+      openingMapping.value = null;
+    }
+  }
+
+  async function saveMapping(
+    plan: ImportPlan,
+    step: StepData,
+    values: Partial<StepData['settings']>
+  ): Promise<void> {
+    // PHP sends empty settings as `[]`, which can't be spread into
+    const settings = Array.isArray(step.settings) ? {} : (step.settings ?? {});
+
+    try {
+      await actionClient.post(storeStep().url, {
+        planUid: plan.uid,
+        step: {...step, settings: {...settings, ...values}},
+      });
+      showSuccess(t('Import step saved.'));
+      router.reload({only: ['editableImportPlans']});
+    } catch (error: any) {
+      showError(
+        error?.response?.data?.message ?? t('Couldn’t save import step.')
+      );
+    }
+  }
+
+  /** Keeps the plans' running state current while one runs, so a finished run gets its button back. */
+  const poll = usePoll(
+    2000,
+    {only: ['editableImportPlans', 'nonEditableImportPlans']},
+    {autoStart: false}
   );
 
-  const nonEditableTable = useCraftTable<ImportRow>({
-    get data() {
-      return props.nonEditableImportPlans;
-    },
-    get columns() {
-      return nonEditableColumns.value;
-    },
-  });
+  watch(
+    () =>
+      [...props.editableImportPlans, ...props.nonEditableImportPlans].some(
+        (plan) => plan.running
+      ),
+    (running) => (running ? poll.start() : poll.stop()),
+    {immediate: true}
+  );
+
+  /** Runs a plan without leaving the plans, for those who can run them. */
+  function backgroundRun(plan: ImportPlan): ActionItems {
+    return props.canTrigger
+      ? [
+          {
+            type: 'button',
+            label: t('Run in the background'),
+            disabled: isRunning(plan),
+            onClick: () => startRun(plan, true),
+          },
+        ]
+      : [];
+  }
+
+  function editableActions(plan: ImportPlan): ActionItems {
+    const actions: ActionItems = [
+      {type: 'link', label: t('Edit'), href: planUrl(plan)},
+      {type: 'link', label: t('View activity'), href: plan.runsUrl},
+      ...backgroundRun(plan),
+    ];
+
+    if (props.canSave) {
+      actions.push({
+        type: 'button',
+        label: t('Duplicate'),
+        onClick: () => router.post(duplicate().url, {uid: plan.uid}),
+      });
+    }
+
+    if (props.canDelete) {
+      actions.push({
+        type: 'button',
+        label: t('Delete'),
+        variant: 'danger',
+        onClick: () => {
+          if (
+            !window.confirm(
+              t('Are you sure you want to delete “{name}”?', {name: plan.name})
+            )
+          ) {
+            return;
+          }
+          router.delete(destroy().url, {data: {uid: plan.uid}});
+        },
+      });
+    }
+
+    return actions;
+  }
+
+  function planActions(plan: ImportPlan): ActionItems {
+    return plan.editable
+      ? editableActions(plan)
+      : [
+          {type: 'link', label: t('View'), href: planUrl(plan)},
+          {type: 'link', label: t('View activity'), href: plan.runsUrl},
+          ...backgroundRun(plan),
+        ];
+  }
+
+  const sortField = useLocalStorage<PlanSortField>(
+    'importPlans.sortField',
+    'name'
+  );
+  const sortDirection = useLocalStorage<PlanSortDirection>(
+    'importPlans.sortDirection',
+    'asc'
+  );
+
+  const collator = new Intl.Collator(undefined, {numeric: true});
+
+  function byName(a: ImportPlan, b: ImportPlan): number {
+    return collator.compare(a.name, b.name);
+  }
+
+  function lastRunTime(plan: ImportPlan): number | null {
+    const date = plan.run?.dateCreated;
+    return date ? Date.parse(date) : null;
+  }
+
+  function sortPlans(plans: ImportPlan[]): ImportPlan[] {
+    const direction = sortDirection.value === 'asc' ? 1 : -1;
+
+    return [...plans].sort((a, b) => {
+      if (sortField.value !== 'lastRun') {
+        return byName(a, b) * direction;
+      }
+
+      const aTime = lastRunTime(a);
+      const bTime = lastRunTime(b);
+
+      // plans that have never run go last, whichever way the rest are sorted
+      if (aTime === null || bTime === null) {
+        return (
+          (aTime === null ? 1 : 0) - (bTime === null ? 1 : 0) || byName(a, b)
+        );
+      }
+
+      return (aTime - bTime) * direction || byName(a, b);
+    });
+  }
+
+  type PlanFilter = 'all' | 'editable' | 'code';
+
+  const filter = ref<PlanFilter>('all');
+
+  const allPlans = computed(() => [
+    ...props.editableImportPlans,
+    ...props.nonEditableImportPlans,
+  ]);
+
+  const filters = computed(
+    (): Array<{
+      value: PlanFilter;
+      label: string;
+      disabled?: boolean;
+    }> => [
+      {value: 'all', label: t('All')},
+      {
+        value: 'editable',
+        label: t('Editable'),
+        disabled: !props.editableImportPlans.length,
+      },
+      {
+        value: 'code',
+        label: t('Code'),
+        disabled: !props.nonEditableImportPlans.length,
+      },
+    ]
+  );
+
+  // a filter left with nothing in it, e.g. once its last plan is deleted, shows them all again
+  watch(
+    () => filters.value.find((chip) => chip.value === filter.value)?.disabled,
+    (disabled) => {
+      if (disabled) {
+        filter.value = 'all';
+      }
+    }
+  );
+
+  /** Only worth showing when there's a choice between the two kinds of plan. */
+  const showTabs = computed(
+    () =>
+      props.editableImportPlans.length > 0 &&
+      props.nonEditableImportPlans.length > 0
+  );
+
+  const filterIndex = computed(() =>
+    filters.value.findIndex((option) => option.value === filter.value)
+  );
+
+  function onFilterShown(event: Event): void {
+    const index = (event.target as {selectedIndex?: number}).selectedIndex;
+    const option = index === undefined ? undefined : filters.value[index];
+
+    if (option) {
+      filter.value = option.value;
+    }
+  }
+
+  const plans = computed(() =>
+    sortPlans(
+      filter.value === 'editable'
+        ? props.editableImportPlans
+        : filter.value === 'code'
+          ? props.nonEditableImportPlans
+          : allPlans.value
+    )
+  );
 </script>
 
 <template>
@@ -224,45 +476,72 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <div class="grid gap-lg">
-    <CpContainer>
-      <div class="mb-md">
-        <h2>{{ t('Editable Import Plans') }}</h2>
-        <p>
-          {{ t('Those import plans can be edited in the control panel.') }}
-        </p>
-      </div>
-
-      <template #full>
-        <AdminTable
-          :table="editableTable"
-          :reorderable="canSave"
-          appearance="flush"
-          @reorder="handleReorder"
+  <CpContainer>
+    <template #full>
+      <!-- tabs that name no panels: each shows the list below differently -->
+      <div v-if="showTabs" class="plan-tabs">
+        <craft-tabs
+          class="plan-tabs__strip"
+          :label="t('Show import plans')"
+          sync-location-hash="false"
+          .selectedIndex="filterIndex"
+          @craft-tab-show="onFilterShown"
         >
-          <template #empty-row>
-            <craft-empty
-              appearance="fill"
-              :label="t('No import plans yet.')"
-              icon="light/upload"
-            />
-          </template>
-        </AdminTable>
-      </template>
-    </CpContainer>
-
-    <CpContainer v-if="nonEditableImportPlans.length">
-      <div>
-        <h2>{{ t('Non-Editable Import Plans') }}</h2>
-        <p>
-          {{
-            t(
-              'Those import plans are registered in code and can’t be edited in the control panel.'
-            )
-          }}
-        </p>
+          <craft-tab
+            v-for="option in filters"
+            :key="option.value"
+            slot="tab"
+            :controls="`plan-tab-${option.value}`"
+            :disabled="option.disabled || undefined"
+          >
+            {{ option.label }}
+          </craft-tab>
+        </craft-tabs>
       </div>
-      <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>
-    </CpContainer>
-  </div>
+      <PlanList
+        v-if="plans.length"
+        :class="{'mt-md': !showTabs}"
+        :plans="plans"
+        :label="t('Import plans')"
+        :can-trigger="canTrigger"
+        :bulk-actions="bulkActions"
+        :actions="planActions"
+        :plan-url="planUrl"
+        :step-url="stepUrl"
+        :is-running="isRunning"
+        :can-edit-mapping="canEditMapping"
+        :opening-mapping="openingMapping"
+        @run="startRun"
+        @edit-mapping="editMapping"
+      >
+        <template #toolbar-actions>
+          <PlanSortMenu
+            v-model:field="sortField"
+            v-model:direction="sortDirection"
+          />
+        </template>
+      </PlanList>
+      <craft-empty
+        v-else
+        appearance="fill"
+        :label="t('No import plans yet.')"
+        icon="light/upload"
+      />
+    </template>
+  </CpContainer>
 </template>
+
+<style scoped>
+  /* the strip only rules under its own tabs, so the row rules the rest of the width */
+  .plan-tabs {
+    padding-inline: var(--cp-container-padding);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  .plan-tabs__strip {
+    margin-block-end: -1px;
+    /* no panels follow, so no gap or rule for them */
+    --c-tabs-gap: 0;
+    --c-tabs-border: transparent;
+  }
+</style>

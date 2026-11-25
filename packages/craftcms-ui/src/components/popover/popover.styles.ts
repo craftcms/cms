@@ -31,6 +31,10 @@ export default css`
     max-height: var(--popover-max-block-size, var(--_fitted-block-size));
   }
 
+  .popover-pane:focus {
+    outline: none;
+  }
+
   /* The positioned element is the one given the invoker's width, so the pane has
      to stop sizing itself or it stays at its own 320px cap and the match does
      nothing visible. */

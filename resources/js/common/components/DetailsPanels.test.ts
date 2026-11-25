@@ -182,6 +182,21 @@ it('puts the triggers in the rail and the panels in place', async () => {
   );
 });
 
+it('names what needs attention in a panel on its trigger', async () => {
+  await mount('#rail');
+  registry.register({
+    id: 'runs',
+    label: 'Runs',
+    headingId: 'runs-heading',
+    icon: 'clock',
+    alert: 'The latest run failed.',
+  });
+  await settle();
+
+  expect(trigger('runs').textContent).toContain('The latest run failed.');
+  expect(trigger('info').textContent?.trim()).toBe('');
+});
+
 it('stays folded to the rail when the shell mounts it overlaid', async () => {
   await mount('#rail', {overlaid: true});
 
@@ -400,6 +415,26 @@ it('leaves the URL hash alone as the panels unmount', async () => {
   await settle();
 
   expect(window.location.hash).toBe('#info');
+});
+
+it('opens on the first panel that isn’t closed by default, or stays folded', () => {
+  const panels = createScreenPanels();
+  const add = (id: string, closedByDefault = false) =>
+    panels.register({
+      id,
+      label: id,
+      headingId: `${id}-heading`,
+      icon: 'clock',
+      closedByDefault,
+    });
+
+  add('runs', true);
+  panels.start(undefined);
+  expect(panels.openPanelId.value).toBeNull();
+
+  add('info');
+  panels.start(undefined);
+  expect(panels.openPanelId.value).toBe('info');
 });
 
 it('starts open on a page with room beside the content', async () => {

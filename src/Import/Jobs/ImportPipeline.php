@@ -9,13 +9,13 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportStarted;
 use CraftCms\Cms\Import\Events\ImportStepFinished;
 use CraftCms\Cms\Import\Import as ImportService;
+use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Bus\Batch;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Foundation\Bus\PendingChain;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Override;
 
@@ -74,16 +74,12 @@ class ImportPipeline extends Job
                     // the step's stored items aren't needed anymore, even if the batch was canceled and FinishImport won't run
                     Storage::disk(Cms::config()->getImportDisk())->deleteDirectory(Import::spoolPath($runId, $stepUid));
 
-                    // let FinishImport know that at least one step had failures
-                    if ($batch->hasFailures()) {
-                        Cache::put(FinishImport::hasFailuresCacheKey($runId), true, now()->addDay());
-                    }
-
-                    $itemsFailed = (bool) Cache::pull(FinishImport::stepHasFailuresCacheKey($runId, $stepUid));
+                    $importRuns = app(ImportRuns::class);
+                    $importRuns->stepFinished($runId, $stepUid, $batch->hasFailures());
                     $step = collect($importPlan->steps ?? [])->firstWhere('uid', $stepUid);
 
                     if ($step !== null) {
-                        event(new ImportStepFinished($importPlan, $step, $runId, $batch->hasFailures() || $itemsFailed));
+                        event(new ImportStepFinished($importPlan, $step, $runId, $importRuns->stepFailed($runId, $stepUid)));
                     }
 
                     // FinishImport won't run, so it can't mark the import plan as no longer running

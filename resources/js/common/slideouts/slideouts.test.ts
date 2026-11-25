@@ -776,6 +776,34 @@ describe('SlideoutHost', () => {
     expect(shade.classList.contains('is-visible')).toBe(false);
   });
 
+  it('slides a closed slideout back off the screen before it goes, out of the way meanwhile', async () => {
+    await mountHost();
+    const panel = (await openSlideout('/a'))!;
+    await nextTick();
+    let finish = () => {};
+    const finished = new Promise<void>((resolve) => (finish = resolve));
+    const element = required(
+      document.querySelector<HTMLElement>(`[data-slideout-id="${panel.id}"]`),
+      'Expected the slideout.'
+    );
+    element.getAnimations = () => [{finished} as unknown as Animation];
+
+    closeSlideout(panel.id, {force: true});
+    await nextTick();
+
+    expect(slideoutPanels()).toHaveLength(0);
+    expect(element.isConnected).toBe(true);
+    expect(element.inert).toBe(true);
+    expect(element.style.insetInlineStart).toBe('100vw');
+
+    finish();
+    await finished;
+    await nextTick();
+    await nextTick();
+
+    expect(element.isConnected).toBe(false);
+  });
+
   it('closes the top slideout when the shade is clicked', async () => {
     await mountHost();
     const first = (await openSlideout('/a'))!;

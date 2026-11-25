@@ -1,23 +1,17 @@
-import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
+import {createApp, h, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {ImportStep, MappingValues} from '@/modules/import/mapping/types';
 import InlineStepMapping from './InlineStepMapping.vue';
 
 const state = vi.hoisted(() => ({
   fetchStepMapping: vi.fn(),
+  openStepMapping: vi.fn(),
 }));
 
 vi.mock('./step-mapping', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./step-mapping')>()),
   fetchStepMapping: state.fetchStepMapping,
-}));
-
-// The table and matching settings only render the trees the editor provides.
-vi.mock('@/modules/import/mapping/MappingTable.vue', () => ({
-  default: defineComponent({render: () => h('table')}),
-}));
-vi.mock('@/modules/import/mapping/MatchingSection.vue', () => ({
-  default: defineComponent({render: () => null}),
+  openStepMapping: state.openStepMapping,
 }));
 
 function emptyValues(): MappingValues {
@@ -36,7 +30,25 @@ function emptyValues(): MappingValues {
 function payload(suggestions: Record<string, unknown> = {}) {
   return {
     available: true,
-    destinationCols: [],
+    destinationCols: [
+      {
+        handle: 'title',
+        label: 'Title',
+        prefixedHandleAsArray: ['title'],
+        icon: 'i-cursor',
+      },
+      {
+        heading: 'Content',
+        subfields: [
+          {
+            handle: 'summary',
+            label: 'Summary',
+            prefixedHandleAsArray: ['layout-uid'],
+            icon: null,
+          },
+        ],
+      },
+    ],
     sourceDataCols: [],
     templateTextExpanderTriggers: [],
     values: emptyValues(),
@@ -66,13 +78,13 @@ async function flush(): Promise<void> {
   }
 }
 
-async function mount(): Promise<void> {
+async function mount(canMap = true): Promise<void> {
   app = createApp({
     render: () =>
       h(InlineStepMapping, {
         step,
         editable: true,
-        canMap: true,
+        canMap,
         onChange: (values: MappingValues) => changes.push(values),
       }),
   });
@@ -83,6 +95,7 @@ async function mount(): Promise<void> {
 
 beforeEach(() => {
   state.fetchStepMapping.mockReset().mockResolvedValue(payload());
+  state.openStepMapping.mockReset().mockResolvedValue(true);
   step.settings = {entryType: 'news'};
   changes = [];
   container = document.createElement('div');
@@ -94,18 +107,42 @@ afterEach(() => {
   container.remove();
 });
 
-it('hands up the server’s suggestions once they’re shown, so applying the step keeps them', async () => {
-  state.fetchStepMapping.mockResolvedValue(payload({title: 'name'}));
+it('shows nothing of the mapping until the step can be mapped', async () => {
+  await mount(false);
 
-  await mount();
-
-  expect(changes.at(-1)?.map).toEqual({title: 'name'});
+  expect(container.textContent!.trim()).toBe('');
+  expect(state.fetchStepMapping).not.toHaveBeenCalled();
 });
 
-it('hands nothing up when there’s nothing to suggest', async () => {
+it('lists every mapped destination by its label, whether the map has it by layout uid or by handle', async () => {
+  step.settings = {
+    entryType: 'news',
+    map: {title: 'name', 'layout-uid': 'blurb', a: 'a', b: 'b', c: 'c', d: 'd'},
+  };
+
   await mount();
 
-  expect(changes).toEqual([]);
+  const names = [...container.querySelectorAll('tbody th .truncate')].map(
+    (span) => span.textContent!.trim()
+  );
+  // all of them, with no limit to show the rest behind
+  expect(names).toEqual(['Title', 'Summary', 'a', 'b', 'c', 'd']);
+});
+
+it('edits the mapping in its panel, handing up what’s applied there', async () => {
+  step.settings = {entryType: 'news', map: {title: 'name'}};
+  await mount();
+
+  [...container.querySelectorAll<HTMLElement>('craft-button')]
+    .find((button) => button.textContent!.trim() === 'Edit mapping')!
+    .click();
+  await flush();
+
+  expect(state.openStepMapping).toHaveBeenCalledOnce();
+  const applied = {...emptyValues(), map: {title: 'heading'}};
+  state.openStepMapping.mock.calls[0]![0].apply(applied);
+
+  expect(changes).toEqual([applied]);
 });
 
 it('loads the columns again when a setting other than the mapping changes, such as the entry type', async () => {

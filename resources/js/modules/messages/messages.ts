@@ -205,6 +205,47 @@ export function showNotice(
   return showMessage({type: 'notice', message, settings});
 }
 
+/**
+ * Shows a notice that stays until the returned function closes it, with
+ * `details` its caller keeps up to date, such as a transfer's progress. Without
+ * `onClose` it can't be dismissed. Notices appear asynchronously, so the close
+ * request may come before it's on screen.
+ */
+export function showPersistentNotice(
+  message: string,
+  details: HTMLElement,
+  onClose?: () => void
+): () => void {
+  let shown = false;
+  let finished = false;
+  const notification = showNotice(message, {
+    details,
+    persist: true,
+  });
+  if (!notification) {
+    return () => onClose?.();
+  }
+  notification.on('show', () => {
+    shown = true;
+    if (onClose) {
+      notification.closeButton?.addEventListener('click', onClose);
+    } else {
+      notification.closeButton?.setAttribute('hidden', '');
+    }
+    if (finished) {
+      notification.close();
+    }
+  });
+
+  return () => {
+    finished = true;
+    onClose?.();
+    if (shown) {
+      notification.close();
+    }
+  };
+}
+
 export function showSuccess(
   message: string,
   settings?: MessageSettings

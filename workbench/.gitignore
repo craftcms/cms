@@ -1,3 +1,5 @@
 .env
 .env.dusk
 storage
+# written by the import plans seeder
+resources/import/guides-stress.json

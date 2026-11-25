@@ -109,6 +109,8 @@
     title: string;
     readOnly?: boolean;
     showReadOnlyNotice?: boolean;
+    /** Why the page is read-only, in place of the banner's default reason. */
+    readOnlyNotice?: string | null;
     primaryAction?: string | null;
     crumbs?: Array<BreadcrumbItem> | null;
     subnav?: Array<CraftCms.Cms.Cp.Data.NavItem>;
@@ -398,9 +400,15 @@
                           <CalloutReadOnly
                             v-if="
                               readOnly &&
-                              page.props.showReadOnlyNotice !== false
+                              page.props.showReadOnlyNotice !== false &&
+                              !page.props.readOnlyNotice
                             "
                           />
+                          <CalloutReadOnly
+                            v-else-if="readOnly && page.props.readOnlyNotice"
+                            icon="lock"
+                            >{{ page.props.readOnlyNotice }}</CalloutReadOnly
+                          >
                           <div
                             :class="{
                               'cp-content-view': true,

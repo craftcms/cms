@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Import;
 
+use Closure;
 use CraftCms\Cms\Element\Concerns\Structurable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
@@ -12,6 +13,10 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Validation\Rules\EntryTypeRule;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
+use CraftCms\Cms\Import\DefaultValueInputs;
+use CraftCms\Cms\Import\Enums\MatchMode;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Validation\Rules\SectionRule;
@@ -19,9 +24,12 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Validation\Validator;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -131,10 +139,44 @@ class EntryImporter extends ElementImporter
     #[Override]
     public static function getSettingsRules(): array
     {
-        return array_merge(parent::getSettingsRules(), [
+        $rules = array_merge(parent::getSettingsRules(), [
             'settings.section' => ['required', new SectionRule],
             'settings.entryType' => ['required', new EntryTypeRule],
         ]);
+
+        $rules['settings.map'][] = fn (string $attribute, mixed $value, Closure $fail, Validator $validator) => self::validateAuthors($validator);
+
+        return $rules;
+    }
+
+    /**
+     * Requires authors to come from somewhere when the section needs them and the step can create entries,
+     * since a new entry has none of its own.
+     */
+    private static function validateAuthors(Validator $validator): void
+    {
+        $settings = $validator->getData()['settings'] ?? [];
+        $section = Sections::resolveSection($settings['section'] ?? null);
+
+        if ($section === null || $section->minAuthors < 1) {
+            return;
+        }
+
+        if ((MatchMode::tryFrom((string) ($settings['matchMode'] ?? '')) ?? MatchMode::CreateAndUpdate) === MatchMode::UpdateOnly) {
+            return;
+        }
+
+        $map = ImportHelper::decodeRecursive($settings['map'] ?? []);
+        $defaults = ImportHelper::decodeRecursive($settings['defaultValues'] ?? []);
+
+        if (! empty($map['authorIds'] ?? null) || ! empty($defaults['authorIds'] ?? null)) {
+            return;
+        }
+
+        $validator->errors()->add('settings.map.authorIds', t('Map Author IDs or give it a default. Entries in {section} need {count, plural, =1{an author} other{at least # authors}}.', [
+            'section' => $section->name,
+            'count' => $section->minAuthors,
+        ]));
     }
 
     #[Override]
@@ -249,6 +291,42 @@ class EntryImporter extends ElementImporter
         }
 
         parent::setAttributesForImport($element, $attributes, $data);
+    }
+
+    #[Override]
+    public function getAvailableProperties(): array
+    {
+        $section = Sections::resolveSection($this->section);
+
+        if ($section === null) {
+            return parent::getAvailableProperties();
+        }
+
+        return array_map(fn (array $prop): array => $prop['name'] === 'authorIds'
+            ? [
+                ...$prop,
+                'required' => $section->minAuthors > 0,
+                'importSettings' => [
+                    new FieldMappingSetting(
+                        name: 'matchBy',
+                        label: t('Match authors by'),
+                        options: [
+                            ['value' => 'id', 'label' => t('ID')],
+                            ['value' => 'username', 'label' => t('Username')],
+                            ['value' => 'email', 'label' => t('Email')],
+                        ],
+                        default: 'id',
+                        instructions: t('Which of the authors’ values the incoming data holds.'),
+                    ),
+                ],
+                // the users the entry editor offers as authors, as many as the section allows
+                'defaultValueInput' => DefaultValueInputs::elements(ElementSelect::make('defaultValue')
+                    ->elementType(User::class)
+                    ->criteria(['can' => "viewEntries:$section->uid"])
+                    ->selectionLabel(t('Choose'))
+                    ->limit($section->maxAuthors)),
+            ]
+            : $prop, parent::getAvailableProperties());
     }
 
     #[Override]

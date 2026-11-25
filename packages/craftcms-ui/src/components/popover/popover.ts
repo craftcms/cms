@@ -884,9 +884,11 @@ export default class CraftPopover extends LitElement {
         popover=${supportsPopover ? 'manual' : nothing}
       >
         <div class="overlay-position">
+          <!-- focusable, so pressing its text doesn't hand focus to a focusable ancestor outside it -->
           <div
             class="popover-pane"
             part="popup"
+            tabindex="-1"
             @keyup=${this.#onEscape}
             @close-overlay=${this.#onCloseOverlay}
           >

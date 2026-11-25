@@ -1,5 +1,5 @@
 import {computed, toValue, type MaybeRefOrGetter} from 'vue';
-import {setEmptyValueMode} from './empty-values';
+import {handlesEmptyUnmapped, setEmptyValueMode} from './empty-values';
 import {getAt, isChecked, setAt} from './paths';
 import {useMappingContext, type MappingColumn} from './types';
 
@@ -29,12 +29,14 @@ export function useSourceMapping(col: MaybeRefOrGetter<MappingColumn>) {
       return;
     }
 
-    // only a mapped column can be matched on or have a When empty rule, so unmapping drops both
+    // only a mapped column can be matched on or, mostly, have a When empty rule, so unmapping drops them
     if (isChecked(getAt(context.values.matchCriteria, path.value))) {
       setAt(context.values.matchCriteria, path.value, '');
     }
 
-    setEmptyValueMode(context.values, toValue(col), 'skip');
+    if (!handlesEmptyUnmapped(toValue(col))) {
+      setEmptyValueMode(context.values, toValue(col), 'skip');
+    }
   }
 
   return {mapValue, isSuggested, choose};

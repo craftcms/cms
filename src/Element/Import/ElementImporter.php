@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
 use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -91,6 +92,10 @@ abstract class ElementImporter extends BaseImporter
 
     /** Whether rows create new elements, update the ones they match, or both. */
     public protected(set) MatchMode $matchMode = MatchMode::CreateAndUpdate;
+
+    private ?ImportItemOutcome $lastItemOutcome = null;
+
+    private ?int $lastItemElementId = null;
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -417,6 +422,8 @@ abstract class ElementImporter extends BaseImporter
             // properties declared outside ImportHelper may carry no icon
             icon: $prop['icon'] ?? null,
             defaultValueInput: $prop['defaultValueInput'] ?? null,
+            required: $prop['required'] ?? null,
+            importSettings: $prop['importSettings'] ?? null,
         ), $props));
 
         if ($this->fieldLayout === null) {
@@ -494,6 +501,8 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public function importItem(array $data): ?ElementInterface
     {
+        $this->lastItemOutcome = null;
+        $this->lastItemElementId = null;
         $prepared = $this->prepareItem($data);
 
         if ($prepared === null) {
@@ -503,6 +512,9 @@ abstract class ElementImporter extends BaseImporter
         ['element' => $element, 'hasChanges' => $hasChanges, 'createDraft' => $createDraft, 'publishDraft' => $publishDraft] = $prepared;
 
         if (! $hasChanges) {
+            $this->lastItemOutcome = ImportItemOutcome::Unchanged;
+            $this->lastItemElementId = $element->getCanonicalId();
+
             return $element;
         }
 
@@ -532,7 +544,27 @@ abstract class ElementImporter extends BaseImporter
             $element = Drafts::applyDraft($element);
         }
 
+        $this->lastItemOutcome = $prepared['isNew'] ? ImportItemOutcome::Created : ImportItemOutcome::Updated;
+        // a draft is recorded as the element it's a draft of, which is what's listed and linked to
+        $this->lastItemElementId = $element->getCanonicalId();
+
         return $element;
+    }
+
+    /**
+     * Returns what the last call to `importItem()` did with its item, if it imported one.
+     */
+    public function lastItemOutcome(): ?ImportItemOutcome
+    {
+        return $this->lastItemOutcome;
+    }
+
+    /**
+     * Returns the element the last call to `importItem()` imported its item into, if it imported one.
+     */
+    public function lastItemElementId(): ?int
+    {
+        return $this->lastItemElementId;
     }
 
     /**
@@ -672,10 +704,29 @@ abstract class ElementImporter extends BaseImporter
      */
     public static function describeErrors(ElementInterface $element): array
     {
-        return array_values(array_unique(array_map(
+        return array_map(
             fn (array $error): string => ($error['path'] === [] ? '' : implode(' › ', $error['path']).': ').$error['message'],
-            self::collectErrors($element),
-        )));
+            self::listErrors($element),
+        );
+    }
+
+    /**
+     * Returns an element's validation errors, each with where it is as labels, e.g. `['Content', 'Step group 3']`.
+     *
+     * @return list<array{path: list<string>, message: string}>
+     */
+    public static function listErrors(ElementInterface $element): array
+    {
+        $errors = [];
+
+        foreach (self::collectErrors($element) as $error) {
+            $errors[implode(' › ', $error['path']).'|'.$error['message']] ??= [
+                'path' => $error['path'],
+                'message' => $error['message'],
+            ];
+        }
+
+        return array_values($errors);
     }
 
     /**
@@ -1003,7 +1054,7 @@ abstract class ElementImporter extends BaseImporter
         }
 
         foreach ($fields as $handle => $value) {
-            if (empty($value) || ! empty($oldValues[$handle])) {
+            if (! self::hasValue($value) || ! empty($oldValues[$handle])) {
                 continue;
             }
 
@@ -1013,6 +1064,17 @@ abstract class ElementImporter extends BaseImporter
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether incoming data holds any value at all: a mapped container field the row has
+     * no data for still comes through as its nested elements' shape, with every value null.
+     */
+    private static function hasValue(mixed $value): bool
+    {
+        return is_array($value)
+            ? array_any($value, self::hasValue(...))
+            : $value !== null && $value !== '';
     }
 
     /**

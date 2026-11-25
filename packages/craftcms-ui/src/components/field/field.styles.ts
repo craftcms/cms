@@ -30,6 +30,33 @@ export default css`
     display: none;
   }
 
+  /* The heading beside the control, with everything else under the control */
+  :host([layout='inline']) .form-field {
+    display: grid;
+    grid-template-columns:
+      var(--c-field-inline-label-size, fit-content(40%))
+      minmax(0, 1fr);
+    column-gap: var(--c-spacing-lg);
+    align-items: start;
+  }
+
+  :host([layout='inline']) .form-field__group-one {
+    line-height: var(--c-field-label-line-height, 1.2);
+    /* the label's first line sits level with the middle of a standard control */
+    padding-block-start: max(
+      0px,
+      calc((var(--c-input-height, var(--c-size-control-md)) - 1lh) / 2)
+    );
+  }
+
+  :host([layout='inline']) .form-field__group-one > * {
+    margin-block-end: 0;
+  }
+
+  :host([layout='inline']) .form-field__group-two {
+    min-width: 0;
+  }
+
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
@@ -74,6 +101,7 @@ export default css`
     align-items: center;
     font-size: var(--c-field-label-font-size, inherit);
     font-weight: var(--c-field-label-font-weight, bold);
+    line-height: var(--c-field-label-line-height, 1.2);
     color: var(--c-field-label-color, inherit);
   }
 

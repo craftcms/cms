@@ -1,0 +1,93 @@
+[
+  {
+    "title": "Organizing content with structures",
+    "summary": "Order pages in a hierarchy and let editors drag them around.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 9,
+    "reviewers": ["ada@example.com"],
+    "topics": ["content-modeling"]
+  },
+  {
+    "title": "Writing custom Twig filters",
+    "summary": "Add your own filters to keep templates tidy.",
+    "difficulty": "advanced",
+    "featured": false,
+    "readingTime": 14
+  },
+  {
+    "title": "",
+    "summary": "Set up a staging site that mirrors production.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 11
+  },
+  {
+    "title": "Translating static strings",
+    "summary": "Keep interface copy in translation files.",
+    "difficulty": "expert",
+    "featured": false,
+    "readingTime": 7
+  },
+  {
+    "title": "Picking the right field type",
+    "summary": "Match each piece of content to a field that fits it.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 6,
+    "contactEmail": "editors at example dot com"
+  },
+  {
+    "title": "Optimizing images on upload",
+    "summary": "Resize and compress images as they’re uploaded.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 10,
+    "reviewers": ["nobody@example.com"]
+  },
+  {
+    "title": "Building a step-by-step tutorial",
+    "summary": "Use step groups to walk readers through a task.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 18,
+    "content": [
+      {
+        "type": "guideStepGroup",
+        "title": "Prepare your section",
+        "body": "Get a section ready for tutorials.",
+        "steps": [
+          {
+            "type": "guideStep",
+            "heading": "Create the section",
+            "body": "Add a structure section.",
+            "minutes": 4,
+            "optional": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Securing the control panel",
+    "summary": "Lock down who can sign in and what they can do.",
+    "difficulty": "advanced",
+    "featured": true,
+    "readingTime": 12
+  },
+  {
+    "title": "",
+    "summary": "A guide that came through without a title or a known difficulty.",
+    "difficulty": "guru",
+    "featured": false,
+    "readingTime": 5
+  },
+  {
+    "title": "Scheduling entries to publish",
+    "summary": "Set a post date and let entries go live on their own.",
+    "difficulty": "beginner",
+    "featured": false,
+    "readingTime": 4,
+    "topics": ["gardening"]
+  }
+]

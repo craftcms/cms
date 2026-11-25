@@ -346,32 +346,32 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #content-details>
-          <dl class="cp-metadata-list">
-            <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Status</dt>
+          <craft-metadata-list><dl>
+            <div>
+              <dt>Status</dt>
               <dd>Draft</dd>
             </div>
-            <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Author</dt>
+            <div>
+              <dt>Author</dt>
               <dd>Priya Raman</dd>
             </div>
-            <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Post Date</dt>
+            <div>
+              <dt>Post Date</dt>
               <dd>7/14/2026, 9:00 AM</dd>
             </div>
-            <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Expiry Date</dt>
+            <div>
+              <dt>Expiry Date</dt>
               <dd>9/1/2026, 12:00 AM</dd>
             </div>
-            <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">Slug</dt>
+            <div>
+              <dt>Slug</dt>
               <dd>summer-sale-up-to-40-off</dd>
             </div>
-            <div class="cp-metadata-list__item">
-              <dt class="font-bold text-xs">ID</dt>
+            <div>
+              <dt>ID</dt>
               <dd>4821</dd>
             </div>
-          </dl>
+          </dl></craft-metadata-list>
         </template>
 
         <template #page-footer>

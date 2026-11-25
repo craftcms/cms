@@ -10,7 +10,13 @@ import {TEMPLATE_RULE, type ImportStep} from '@/modules/import/mapping/types';
 /** Destination columns' labels, handles and icons, keyed by their path in the map joined with dots. */
 export type DestinationLabels = Record<
   string,
-  {label: string; handle: string; icon?: string | null}
+  {
+    label: string;
+    handle: string;
+    icon?: string | null;
+    /** The element type a default of elements is chosen from, which it's stored as the IDs of. */
+    defaultElementType?: string | null;
+  }
 >;
 
 export interface SummaryEntry {
@@ -20,7 +26,8 @@ export interface SummaryEntry {
   /** The destination's handle, which its map key isn't when the key is a uid. */
   handle: string;
   icon: string | null;
-  kind: 'column' | 'template' | 'nested';
+  /** `unmapped` for a destination that's only given a default. */
+  kind: 'column' | 'template' | 'nested' | 'unmapped';
   incoming: string;
   /** The template a destination is filled from, when it's filled from one. */
   template: string | null;
@@ -28,6 +35,8 @@ export interface SummaryEntry {
   /** Null when there's no rule: for a match key, or a container whose columns each have one. */
   whenEmpty: 'skip' | 'erase' | 'default' | null;
   defaultValue: string | null;
+  /** A default of elements, which is named by looking them up. */
+  defaultElements: {elementType: string; ids: number[]} | null;
   /** A container's mapped destinations. */
   children: SummaryEntry[];
 }
@@ -115,6 +124,15 @@ export function summarizeMapping(
         hasDefault && !matchKey
           ? (defaultList?.join(', ') ?? String(defaultValue))
           : null,
+      defaultElements:
+        hasDefault && !matchKey && known?.defaultElementType
+          ? {
+              elementType: known.defaultElementType,
+              ids: defaultListOf(defaultValue)
+                .map(Number)
+                .filter((id) => Number.isInteger(id) && id > 0),
+            }
+          : null,
       children: [],
     };
 
@@ -131,13 +149,17 @@ export function summarizeMapping(
             ),
             whenEmpty: null,
             defaultValue: null,
+            defaultElements: null,
             children: childEntries(path, value as Tree),
           }
         : null;
     }
 
     if (!hasMapping(value)) {
-      return null;
+      // a default fills in for a destination that's missing from the data as much as for one that's empty
+      return hasDefault && !matchKey
+        ? {...base, kind: 'unmapped', incoming: ''}
+        : null;
     }
 
     if (value === TEMPLATE_RULE) {
@@ -183,7 +205,27 @@ export function summarizeMapping(
     });
   }
 
-  return Object.entries(trees.map).flatMap(
+  const mapped = Object.entries(trees.map).flatMap(
     ([destination, value]) => entryAt([destination], value, null) ?? []
+  );
+  const keys = new Set(Object.keys(trees.map));
+  // destinations given a default without being mapped; a container's tree of defaults is keyed by name, not a list
+  const defaultOnly = Object.entries(trees.defaultValues).flatMap(
+    ([destination, value]) =>
+      keys.has(destination) || isTree(value)
+        ? []
+        : (entryAt([destination], '', null) ?? [])
+  );
+
+  return [...mapped, ...defaultOnly];
+}
+
+/** Whether a default is a container's own tree of defaults, rather than a value or a list of them. */
+function isTree(value: unknown): boolean {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).some((key) => !/^\d+$/.test(key))
   );
 }

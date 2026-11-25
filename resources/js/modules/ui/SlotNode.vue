@@ -17,3 +17,10 @@
     <component :is="slot" />
   </div>
 </template>
+
+<style scoped>
+  /* what fills it can render nothing, and an empty wrapper would still take up a gap in its group */
+  .ui-slot:empty {
+    display: none;
+  }
+</style>

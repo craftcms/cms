@@ -262,9 +262,6 @@ it('opens a step’s mapping straight from its mapping section', async () => {
     site: 'default',
     map: {title: 'name'},
   });
-  expect(
-    container.querySelector('.step-card__mapping h3')!.textContent
-  ).toContain('1 field');
 });
 
 it('names each row’s edit button and action menu after its step', () => {
@@ -312,12 +309,15 @@ it('leaves the action menu off a read-only step', () => {
   expect(container.querySelector('step-menu')).toBeNull();
 });
 
-it('names a read-only row’s button for viewing', () => {
+it('offers no settings button on a read-only row, which already shows them all', () => {
   mount([step()], {editable: false});
 
-  expect(rowButtons()[0]!.getAttribute('aria-label')).toBe(
-    'View 1. Entries — people.csv'
-  );
+  expect(
+    rowButtons().some(
+      (button) =>
+        button.getAttribute('aria-label') === 'View 1. Entries — people.csv'
+    )
+  ).toBe(false);
 });
 
 it('appends a step the add slideout hands back', async () => {

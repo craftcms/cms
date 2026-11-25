@@ -3,6 +3,7 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
+    "lib": ["es2022", "es2025.intl", "dom", "dom.iterable"],
     "paths": {
       "@/*": ["./resources/js/*"],
       "@craftcms/cp": ["./resources/js/cp-module.ts"],

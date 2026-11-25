@@ -203,7 +203,8 @@ class ImportPlan extends Component implements CpEditable, Validatable
                 'required',
                 'string',
                 'max:255',
-                new HandleRule(reservedWords: ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
+                // `runs` is where the plans' runs are listed, beside the plans' own pages
+                new HandleRule(reservedWords: ['id', 'dateCreated', 'dateUpdated', 'uid', 'title', 'runs']),
                 // ensure DB-stored import plans have unique handles
                 Rule::unique(Table::IMPORT_PLANS, 'handle')->ignore($this->uid, 'uid')->withoutTrashed('dateDeleted'),
             ],

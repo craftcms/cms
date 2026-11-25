@@ -33,8 +33,20 @@ function displayNotice(message: string, {details}: {details: HTMLElement}) {
     $closeBtn: {hide: () => {}, on: () => {}},
   };
 }
+function showPersistentNotice(
+  message: string,
+  details: HTMLElement,
+  onClose?: () => void
+) {
+  const notice = displayNotice(message, {details});
+  return () => {
+    onClose?.();
+    notice.close();
+  };
+}
 vi.mock('@/modules/messages/messages', () => ({
   showNotice: displayNotice,
+  showPersistentNotice,
   showError: vi.fn(),
 }));
 

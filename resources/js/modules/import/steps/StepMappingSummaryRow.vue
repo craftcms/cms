@@ -1,26 +1,33 @@
 <script setup lang="ts">
-  /** One mapped destination in a step's mapping summary, stepped in beneath any container it's nested in. */
+  /** One mapped destination in a step's mapping summary; a container's mapping opens from it. */
   import '@craftcms/ui/components/badge/badge';
+  import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/icon/icon';
   import {Color, t} from '@craftcms/ui';
   import {computed} from 'vue';
+  import {useElementNames} from '@/modules/import/mapping/useElementNames';
   import type {SummaryEntry} from './mapping-summary';
 
-  const {entry, level, open} = defineProps<{
+  const {entry, editable, opening} = defineProps<{
     entry: SummaryEntry;
-    level: number;
-    /** Whether a container's nested destinations are shown beneath it. */
-    open: boolean;
+    /** Whether a container's mapping opens to be edited, rather than only viewed. */
+    editable: boolean;
+    /** Whether a container's mapping is opening. */
+    opening: boolean;
   }>();
 
-  const emit = defineEmits<{toggle: []}>();
+  const emit = defineEmits<{editNested: [opener: HTMLElement]}>();
 
   const name = computed(() => entry.label ?? entry.handle);
 
-  const toggleLabel = computed(() =>
-    open
-      ? t('Hide the nested fields of {field}', {field: name.value})
-      : t('Show the nested fields of {field}', {field: name.value})
+  const elementNames = useElementNames(
+    () => entry.defaultElements?.elementType,
+    () => entry.defaultElements?.ids ?? []
+  );
+
+  /** The default as it reads: elements by their names. */
+  const defaultLabel = computed(() =>
+    entry.defaultElements ? elementNames.value.join(', ') : entry.defaultValue
   );
 
   const whenEmpty = computed(() => {
@@ -38,8 +45,8 @@
 </script>
 
 <template>
-  <tr :class="{'mapping-summary-row--nested': level > 0}">
-    <th scope="row" :style="{'--mapping-summary-level': level}">
+  <tr class="mapping-summary-row">
+    <th scope="row">
       <div class="mapping-summary-row__field">
         <!-- always the same width, so names line up whether or not they have an icon -->
         <span class="mapping-summary-row__icon" aria-hidden="true">
@@ -61,47 +68,52 @@
         >
       </div>
     </th>
-    <td>
+    <td :data-label="t('Incoming Data')">
       <code v-if="entry.kind === 'column'">{{ entry.incoming }}</code>
+      <span v-else-if="entry.kind === 'unmapped'" class="text-quiet">—</span>
       <template v-else-if="entry.kind === 'template'">
         <!-- the braces say it's a template; it's named only while there's none written yet -->
         <code v-if="entry.template">{{ entry.template }}</code>
         <span v-else class="text-quiet">{{ entry.incoming }}</span>
       </template>
-      <button
+      <craft-button
         v-else
         type="button"
-        class="mapping-summary-row__toggle"
-        :aria-expanded="open ? 'true' : 'false'"
-        :aria-label="toggleLabel"
-        @click="emit('toggle')"
+        size="small"
+        variant="plain"
+        flush="inline-start"
+        :icon="editable ? 'pencil' : 'eye'"
+        .loading="opening"
+        :aria-label="
+          editable
+            ? t('Edit mapping for {type}', {type: name})
+            : t('View mapping for {type}', {type: name})
+        "
+        @click="emit('editNested', $event.currentTarget as HTMLElement)"
       >
-        <craft-icon
-          :name="open ? 'chevron-down' : 'chevron-right'"
-        ></craft-icon>
-        <span>{{ entry.incoming }}</span>
-      </button>
+        {{ editable ? t('Edit mapping') : t('View mapping') }}
+      </craft-button>
     </td>
+    <!-- a default can run long, so it wraps rather than being cut off -->
     <td
+      :data-label="t('When empty')"
       :class="{
+        wrap: true,
         'text-quiet':
           entry.whenEmpty !== 'erase' && entry.whenEmpty !== 'default',
       }"
     >
       {{ whenEmpty }}
       <span v-if="entry.defaultValue !== null" class="text-quiet"
-        >· {{ entry.defaultValue }}</span
+        >· {{ defaultLabel }}</span
       >
     </td>
   </tr>
 </template>
 
 <style scoped>
-  /* nested destinations step in under the container they belong to */
-  .mapping-summary-row--nested > th {
-    padding-inline-start: calc(
-      var(--mapping-summary-level) * var(--c-spacing-lg)
-    );
+  .mapping-summary-row > th {
+    padding-inline-start: var(--mapping-summary-inset, var(--c-spacing-md));
   }
 
   .mapping-summary-row__field {
@@ -127,19 +139,56 @@
     color: var(--c-text-quiet);
   }
 
-  .mapping-summary-row__toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--c-text-quiet);
-    font: inherit;
-    cursor: pointer;
-  }
+  /* stacked where the columns would cut the names short: the destination in full, then each column's value under its name */
+  @container mapping-summary (width < 36rem) {
+    .mapping-summary-row {
+      display: grid;
+      grid-template-columns: max-content minmax(0, 1fr);
+      gap: var(--c-spacing-xs) var(--c-spacing-lg);
+      padding-block: var(--c-spacing-sm);
+      padding-inline-start: var(--mapping-summary-inset, 0);
+      border-block-end: 1px solid var(--c-table-border-color);
+    }
 
-  .mapping-summary-row__toggle:hover {
-    color: var(--c-text-default, inherit);
+    .mapping-summary-row > :is(th, td) {
+      grid-column: 1 / -1;
+      width: auto;
+      height: auto;
+      padding: 0;
+      border: 0;
+      overflow: visible;
+      white-space: normal;
+    }
+
+    .mapping-summary-row > th {
+      padding: 0;
+      margin-block-end: var(--c-spacing-xs);
+    }
+
+    /* under the name, past the icon */
+    .mapping-summary-row > td {
+      display: grid;
+      grid-template-columns: subgrid;
+      align-items: baseline;
+      padding-inline-start: calc(1.25em + var(--c-spacing-sm));
+      overflow-wrap: anywhere;
+    }
+
+    .mapping-summary-row > td::before {
+      content: attr(data-label);
+      color: var(--c-text-quiet);
+      font-size: var(--c-text-sm);
+      font-weight: normal;
+    }
+
+    .mapping-summary-row__field {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .mapping-summary-row__field .truncate {
+      overflow: visible;
+      white-space: normal;
+    }
   }
 </style>

@@ -1,4 +1,3 @@
-import humanizeDuration from 'humanize-duration';
 import type {WindowWithCraft} from '../types/globals.js';
 
 // @TODO grab this from the config
@@ -106,9 +105,54 @@ export function formatNumber(number: number | string, format?: string) {
   }).format(num);
 }
 
-export const cpHumanizer = humanizeDuration.humanizer({
-  language: defaultCpLocale,
-  fallbacks: ['en'],
-  largest: 2,
-  round: true,
-});
+type DurationUnit = 'days' | 'hours' | 'minutes' | 'seconds';
+
+const durationUnits: Array<[DurationUnit, number]> = [
+  ['days', 86_400],
+  ['hours', 3_600],
+  ['minutes', 60],
+  ['seconds', 1],
+];
+
+/**
+ * An amount of time in seconds, in the user's formatting locale, to its two largest units:
+ * “1h 5m” and “1m 30s” by default, or “1 minute, 30 seconds” in the `long` style.
+ */
+export function formatDuration(
+  seconds: number,
+  style: 'long' | 'short' | 'narrow' = 'narrow'
+): string {
+  let remaining = Math.max(0, Math.round(seconds));
+  const values = durationUnits.map(([unit, size]): [DurationUnit, number] => {
+    const value = Math.floor(remaining / size);
+    remaining -= value * size;
+    return [unit, value];
+  });
+  const largest = values.findIndex(([, value]) => value > 0);
+  const duration: Partial<Record<DurationUnit, number>> =
+    largest === -1
+      ? {seconds: 0}
+      : Object.fromEntries(
+          values.slice(largest, largest + 2).filter(([, value]) => value > 0)
+        );
+  const locale = formattingLocale();
+
+  if ('DurationFormat' in Intl) {
+    // it leaves out units that are zero, which would leave nothing of no time at all
+    return new Intl.DurationFormat(locale, {
+      style,
+      ...(largest === -1 ? {secondsDisplay: 'always'} : {}),
+    }).format(duration);
+  }
+
+  // where it isn't supported yet, each unit is formatted on its own
+  return new Intl.ListFormat(locale, {type: 'unit', style}).format(
+    Object.entries(duration).map(([unit, value]) =>
+      new Intl.NumberFormat(locale, {
+        style: 'unit',
+        unit: unit.slice(0, -1),
+        unitDisplay: style,
+      }).format(value)
+    )
+  );
+}

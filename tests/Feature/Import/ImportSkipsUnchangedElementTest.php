@@ -133,6 +133,15 @@ it('does not save when re-importing a row whose matrix blocks are unchanged', fu
         ->and(EntryElement::find()->title('seed entry')->status(null)->one()->getFieldValue('myMatrix')->count())->toBe(1);
 });
 
+it('does not save when a mapped matrix field has nothing in the row for its empty field', function () {
+    // a mapped container field the row has no data for comes through with each of its values null
+    $this->import->importItem($this->importer, ($this->entryData)([
+        'myMatrix' => ['blockEt' => ['title' => null, 'fields' => ['blockText' => null]]],
+    ]));
+
+    expect($this->saveCount)->toBe(0);
+});
+
 it('passes the matched entry to the item imported event even when it is not re-saved', function () {
     $seededEntryId = EntryElement::find()->title('seed entry')->one()->id;
     Event::fake([ItemImported::class]);

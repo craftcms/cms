@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use Closure;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanCreated;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanDeleted;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanUpdated;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\Import\Events\ImportPlanSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Models\ImportPlan as ImportPlanModel;
+use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
@@ -316,10 +320,6 @@ class ImportPlans
             $importRecord->description = $importPlan->description;
             $importRecord->steps = $importPlan->serializeSteps();
 
-            if (! $importRecord->exists) {
-                $importRecord->sortOrder = $this->nextSortOrder();
-            }
-
             $importRecord->save();
 
             DB::commit();
@@ -331,6 +331,8 @@ class ImportPlans
 
         // invalidate caches
         $this->importPlans = null;
+
+        Activities::record($isNewImport ? new ImportPlanCreated($importPlan) : new ImportPlanUpdated($importPlan));
 
         event(new ImportPlanSaved($importPlan, $isNewImport));
 
@@ -383,7 +385,7 @@ class ImportPlans
     }
 
     /**
-     * Soft-deletes the DB record for an import plan and invalidates the import plans cache.
+     * Soft-deletes the DB record for an import plan, deletes its runs, and invalidates the import plans cache.
      *
      * @param  ImportPlanData  $importPlan  The import plan to delete.
      */
@@ -396,36 +398,12 @@ class ImportPlans
         }
 
         $importRecord->delete();
+        app(ImportRuns::class)->deleteForPlan($importPlan);
 
         // invalidate caches
         $this->importPlans = null;
-    }
 
-    /**
-     * Saves the order of the editable import plans and invalidates the import plans cache.
-     *
-     * @param  string[]  $uids  The import plan UIDs, in their new order.
-     */
-    public function reorderImportPlans(array $uids): void
-    {
-        DB::transaction(function () use ($uids) {
-            foreach (array_values($uids) as $index => $uid) {
-                DB::table(Table::IMPORT_PLANS)
-                    ->where('uid', $uid)
-                    ->update(['sortOrder' => $index + 1]);
-            }
-        });
-
-        // invalidate caches
-        $this->importPlans = null;
-    }
-
-    /**
-     * Returns the sort order that places an import plan after all the others.
-     */
-    private function nextSortOrder(): int
-    {
-        return (int) DB::table(Table::IMPORT_PLANS)->max('sortOrder') + 1;
+        Activities::record(new ImportPlanDeleted($importPlan));
     }
 
     /**
@@ -450,7 +428,6 @@ class ImportPlans
                 'steps',
                 'import_plans.uid',
             ])
-            ->orderBy('sortOrder')
             ->orderBy('name')
             ->orderBy('handle')
             ->whereNull('dateDeleted');

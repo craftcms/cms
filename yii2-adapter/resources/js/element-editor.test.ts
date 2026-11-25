@@ -212,12 +212,13 @@ it('autosaves and submits custom HTML inputs together with native field edits', 
 it('doesn’t rule off the metadata when there’s no sidebar to show above it', async () => {
   mountEditor(
     editorProps({
-      metadataHtml: '<dl class="cp-metadata-list"><dt>ID</dt><dd>12</dd></dl>',
+      metadataHtml:
+        '<craft-metadata-list><dl><div><dt>ID</dt><dd>12</dd></div></dl></craft-metadata-list>',
     })
   );
 
   await vi.waitFor(() =>
-    expect(container.querySelector('.cp-metadata-list')).not.toBeNull()
+    expect(container.querySelector('craft-metadata-list')).not.toBeNull()
   );
   expect(container.querySelector('hr')).toBeNull();
 });
@@ -225,7 +226,8 @@ it('doesn’t rule off the metadata when there’s no sidebar to show above it',
 it('shows a legacy sidebar above the metadata, ruled off from it', async () => {
   mountEditor(
     editorProps({
-      metadataHtml: '<dl class="cp-metadata-list"><dt>ID</dt><dd>12</dd></dl>',
+      metadataHtml:
+        '<craft-metadata-list><dl><div><dt>ID</dt><dd>12</dd></div></dl></craft-metadata-list>',
       editorSidebarHtml:
         '<div data-element-editor-form></div><p class="legacy-sidebar">Legacy</p>',
     })

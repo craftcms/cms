@@ -3,9 +3,9 @@
    * The session timeout prompts: a warning shortly before the session expires,
    * and a sign-in form once it has, so work on the page isn't lost.
    */
-  import {actionClient, ConfigService, t} from '@craftcms/ui';
+  import {actionClient, ConfigService, formatDuration, t} from '@craftcms/ui';
   import {logout} from '@routes/cp';
-  import {useIntervalFn} from '@vueuse/core';
+  import {useIntervalFn, useNow} from '@vueuse/core';
   import {computed, nextTick, shallowRef, useTemplateRef, watch} from 'vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
   import Modal from '@/common/components/Modal.vue';
@@ -18,46 +18,28 @@
   const loginName = String(
     config.get('userEmail') ?? config.get('username') ?? ''
   );
-  const now = shallowRef(Date.now());
   const renewing = shallowRef(false);
   const alternativeLoginMethods =
     shallowRef<CraftCms.Cms.View.HtmlFragment | null>(null);
   const logoutForm = useTemplateRef<HTMLFormElement>('logoutForm');
   const loginForm = useTemplateRef<CraftLoginForm | null>('loginForm');
 
-  const {pause, resume} = useIntervalFn(() => (now.value = Date.now()), 1000, {
-    immediate: false,
+  const {now, pause, resume} = useNow({
+    controls: true,
+    scheduler: (tick) =>
+      useIntervalFn(tick, 1000, {immediate: false, immediateCallback: true}),
   });
 
   const remaining = computed(() =>
     state.expiresAt === null
       ? 0
-      : Math.max(0, Math.round(state.expiresAt - now.value / 1000))
+      : Math.max(0, Math.round(state.expiresAt - now.value.getTime() / 1000))
   );
-
-  /** “1 minute, 30 seconds”, in the user's language. */
-  function duration(seconds: number): string {
-    const locale = document.documentElement.lang || undefined;
-    const unit = (value: number, name: 'minute' | 'second') =>
-      new Intl.NumberFormat(locale, {
-        style: 'unit',
-        unit: name,
-        unitDisplay: 'long',
-      }).format(value);
-    const minutes = Math.floor(seconds / 60);
-    const parts = [
-      ...(minutes ? [unit(minutes, 'minute')] : []),
-      ...(seconds % 60 || !minutes ? [unit(seconds % 60, 'second')] : []),
-    ];
-
-    return new Intl.ListFormat(locale, {type: 'unit'}).format(parts);
-  }
 
   watch(
     () => state.phase,
     async (phase) => {
       if (phase === 'warning') {
-        now.value = Date.now();
         resume();
       } else {
         pause();
@@ -115,7 +97,9 @@
     >
       <p class="m-0">
         {{
-          t('Your session will expire in {time}.', {time: duration(remaining)})
+          t('Your session will expire in {time}.', {
+            time: formatDuration(remaining, 'long'),
+          })
         }}
       </p>
       <craft-button

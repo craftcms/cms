@@ -132,16 +132,19 @@ export function createScreenPanels(): ScreenPanels {
   }
 
   /**
-   * The panel a column opens on: the page's first, so a panel that stays from
-   * page to page doesn't take over the page's details, or that one when the
-   * page has none.
+   * The panel a column opens on: the page's first that isn't closed by default,
+   * so a panel that stays from page to page doesn't take over the page's
+   * details, or that one when the page has none. A page whose panels are all
+   * closed by default keeps the column folded.
    */
   function defaultPanelId(): string | null {
-    return (
-      panels.value.find((panel) => !panel.persistent)?.id ??
-      panels.value[0]?.id ??
-      null
-    );
+    const pagePanels = panels.value.filter((panel) => !panel.persistent);
+
+    if (pagePanels.length) {
+      return pagePanels.find((panel) => !panel.closedByDefault)?.id ?? null;
+    }
+
+    return panels.value[0]?.id ?? null;
   }
 
   /** The panel to open on when a page's panels arrive. */
