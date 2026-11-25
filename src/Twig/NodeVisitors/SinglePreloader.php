@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Twig\NodeVisitors;
 use CraftCms\Cms\Twig\Nodes\PreloadSinglesNode;
 use Twig\Environment;
 use Twig\Node\BodyNode;
-use Twig\Node\Expression\AssignNameExpression;
+use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\MacroNode;
 use Twig\Node\ModuleNode;
@@ -33,7 +33,7 @@ class SinglePreloader implements NodeVisitorInterface
         } elseif (
             ! empty($this->foundVariables) &&
             $node instanceof ContextVariable &&
-            ! $node instanceof AssignNameExpression &&
+            ! $node instanceof AssignContextVariable &&
             $node->hasAttribute('name') &&
             ! $node->getAttribute('always_defined') &&
             (! $node->hasAttribute('spread') || ! $node->getAttribute('spread'))
