@@ -184,7 +184,7 @@ it('clears cached blocks that added a tag when the tag is invalidated', function
     expect($this->get('/page')->getContent())->toBe($first);
 
     expect(app(ElementCaches::class)->invalidateTags(['nav', '']))->toBe(['nav']);
-    Event::assertDispatched(ElementCachesInvalidated::class, fn (ElementCachesInvalidated $event) => $event->tags === ['nav']);
+    Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === ['nav']);
 
     app()->forgetScopedInstances();
     expect($this->get('/page')->getContent())->not->toBe($first);
