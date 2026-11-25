@@ -1,0 +1,22 @@
+[
+    {
+        "section": "fixtureSection",
+        "entryType": "fixtureType",
+        "heading": "imported entry",
+        "copy": "top text",
+        "matrixA": [
+            {
+                "type": "blockA",
+                "title": "block a",
+                "copy": "text a"
+            }
+        ],
+        "matrixB": [
+            {
+                "type": "blockB",
+                "title": "block b",
+                "copy": "text b"
+            }
+        ]
+    }
+]

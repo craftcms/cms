@@ -272,6 +272,7 @@
     return {
       collapsed: isCollapsed(uid),
       'data-color': block(uid)?.color || undefined,
+      'data-has-errors': hasErrors(uid) ? '' : undefined,
     };
   }
 
@@ -430,6 +431,7 @@
         <template #label="{id: uid}">
           <div
             class="flex flex-nowrap gap-sm items-center"
+            :class="{'matrix-block-titlebar--errors': hasErrors(uid)}"
             data-matrix-block-titlebar
             data-card-label
           >
@@ -545,6 +547,15 @@
 </template>
 
 <style scoped>
+  /* styled as a field with errors is, down to the outermost block they're in */
+  .matrix-block-titlebar--errors {
+    color: var(--c-color-danger-on-quiet);
+  }
+
+  :deep([data-has-errors]::part(base)) {
+    border-color: var(--c-color-danger-border-loud);
+  }
+
   /* Between `md` and `lg`: block header bars make `md` look tighter than it
      is. The add buttons get the same space under the last block. */
   [data-matrix-blocks] {

@@ -1,0 +1,13 @@
+[
+    {
+        "username": "importeduser",
+        "email": "imported@example.com",
+        "addresses": [
+            {
+                "title": "address 1",
+                "countryCode": "US",
+                "note": "address text"
+            }
+        ]
+    }
+]

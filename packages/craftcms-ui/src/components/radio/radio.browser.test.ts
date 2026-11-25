@@ -80,3 +80,22 @@ it('takes no space without an icon', async () => {
 
   expect(label.left - input.right).toBeCloseTo(gap, 0);
 });
+
+it('lines its help text up under the label', async () => {
+  document.body.innerHTML = `
+    <craft-radio>
+      <input slot="input" type="radio" id="match" />
+      <label slot="label" for="match">Match</label>
+      <span slot="help-text">Also find the existing elements to update by it.</span>
+    </craft-radio>`;
+  const radio = document.querySelector('craft-radio')!;
+  await radio.updateComplete;
+
+  const label = radio.querySelector('label')!.getBoundingClientRect();
+  const help = radio
+    .querySelector('[slot="help-text"]')!
+    .getBoundingClientRect();
+
+  expect(help.left).toBeCloseTo(label.left, 0);
+  expect(help.top).toBeGreaterThanOrEqual(label.bottom);
+});

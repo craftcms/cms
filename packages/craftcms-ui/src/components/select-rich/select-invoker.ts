@@ -11,6 +11,8 @@ import '../icon/icon.js';
  * out the selection and its chevron, which the select's styles can't reach.
  *
  * @slot - What the select shows for the selected option.
+ * @slot badge - Appended to the value, and stays whole while a long value is
+ * cut short.
  *
  * @since 1.0
  */
@@ -31,7 +33,9 @@ export default class CraftSelectInvoker extends LitElement {
   @property({type: Boolean, reflect: true}) plain = false;
 
   override render() {
-    return html`<div id="content-wrapper"><slot></slot></div>
+    return html`<div id="content-wrapper">
+        <span class="value"><slot></slot></span><slot name="badge"></slot>
+      </div>
       ${this.singleOption || this.plain
         ? ''
         : html`<craft-icon

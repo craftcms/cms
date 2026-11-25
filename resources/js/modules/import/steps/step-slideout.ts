@@ -1,0 +1,132 @@
+/**
+ * Opening one import step's settings in a slideout panel.
+ *
+ * Opened with `openSlideoutWith()` rather than `openSlideout()`: a step is unsaved
+ * client state the edit screen holds, with no URL to fetch. The server is POSTed the
+ * draft step and returns only a UI payload for it; the panel edits a copy and hands
+ * it back on Done, so canceling leaves the screen untouched and nothing reaches the
+ * database until the import itself is saved.
+ */
+import {actionClient} from '@craftcms/ui';
+import {
+  stepSettings,
+  validateStep as validateStepAction,
+} from '@actions/Import/ImportPlansController';
+import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import {
+  createContextRegistry,
+  openContextSlideout,
+} from '@/modules/import/context-slideout';
+import {cloneStep} from '@/modules/import/mapping/paths';
+import type {UiPayload} from '@/modules/ui/types';
+import type {ImportStep} from '@/modules/import/mapping/types';
+
+export type StepSummary = CraftCms.Cms.Import.Data.StepSummary;
+
+export type StepUiPayload = Omit<
+  CraftCms.Cms.Import.Data.StepUiPayload,
+  'ui'
+> & {
+  ui: UiPayload;
+};
+
+export interface StepSlideoutContext {
+  step: ImportStep;
+  payload: UiPayload;
+  canMap: boolean;
+  sourceError: string | null;
+  /** The step at a glance, as its form last reported it. */
+  summary: StepSummary;
+  editable: boolean;
+  /** The step's own page, linked from the slideout's header. Unset for a step yet to be saved. */
+  editUrl?: string | null;
+  /** The submit button's label: Apply in a slideout, Save on the step's own page. */
+  submitLabel?: string;
+  /**
+   * Hands the step back. On the step's own page this saves its plan, and rejects with a
+   * {@link StepSaveError} when the plan can't be saved, which keeps the form open.
+   */
+  apply(step: ImportStep, summary: StepSummary): void | Promise<void>;
+}
+
+/**
+ * A plan that couldn't be saved with the step, with the server's errors by path: the
+ * step's own under `steps.<uid>.`, and any about the plan's other steps or the plan itself.
+ */
+export class StepSaveError extends Error {
+  constructor(readonly errors: Record<string, string | string[]>) {
+    super('The import plan couldn’t be saved with this step.');
+  }
+}
+
+export interface OpenStepSlideoutOptions {
+  step: ImportStep;
+  editable: boolean;
+  editUrl?: string | null;
+  opener: HTMLElement | null;
+  apply(step: ImportStep, summary: StepSummary): void;
+}
+
+const registry = createContextRegistry<StepSlideoutContext>('import-step');
+
+export function takeStepSlideoutContext(
+  contextId: string
+): StepSlideoutContext {
+  return registry.take(contextId);
+}
+
+/** Fetches the UI for a draft step, and whether that step can be mapped yet. */
+export async function fetchStepUi(step: ImportStep): Promise<StepUiPayload> {
+  const {data} = await actionClient.post(stepSettings().url, {step});
+
+  if (!data.ui) {
+    throw new Error('The import step did not return a UI payload.');
+  }
+
+  return {
+    ui: data.ui as UiPayload,
+    canMap: Boolean(data.canMap),
+    sourceError: data.sourceError ?? null,
+    summary: data.summary ?? {settings: [], destinationLabels: {}},
+  };
+}
+
+/**
+ * Validates a draft step against its importer type's rules. Rejects with the axios error
+ * (carrying `response.data.errors`) when the step is invalid.
+ */
+export async function validateStep(step: ImportStep): Promise<void> {
+  await actionClient.post(validateStepAction().url, {step});
+}
+
+/**
+ * Returns false when the panel was not opened — the user declined to discard unsaved
+ * changes in a panel this one would have replaced.
+ */
+export async function openStepSlideout(
+  options: OpenStepSlideoutOptions,
+  title: string
+): Promise<boolean> {
+  const step = cloneStep(options.step);
+  const {ui, canMap, sourceError, summary} = await fetchStepUi(step);
+
+  return openContextSlideout(
+    registry,
+    () =>
+      import('./StepSlideout.vue').then(
+        (m) => m.default as InertiaPageComponent
+      ),
+    {
+      step,
+      payload: ui,
+      canMap,
+      sourceError,
+      summary,
+      editable: options.editable,
+      editUrl: options.editUrl ?? null,
+      apply: options.apply,
+    },
+    title,
+    options.opener
+  );
+}

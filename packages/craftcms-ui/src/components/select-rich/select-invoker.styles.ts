@@ -90,12 +90,25 @@ export default css`
     position: relative;
     pointer-events: none;
     flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    min-width: 0;
+  }
+
+  /* The value gives way to its badge: it's the part that's cut short. */
+  .value {
+    min-width: 0;
     /* Clipped for the ellipsis, but with room for the ring and shadow of
        content at its edges, such as a selected color's swatch. */
     overflow: clip;
     overflow-clip-margin: 2px;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  ::slotted([slot='badge']) {
+    flex: none;
   }
 
   .indicator {

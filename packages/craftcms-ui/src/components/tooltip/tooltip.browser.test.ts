@@ -654,3 +654,59 @@ it('themes what it holds dark, so key caps read against its fill in the light th
     contrast(key.color, key.backgroundColor, fill.backgroundColor)
   ).toBeGreaterThanOrEqual(4.5);
 });
+
+it('wraps long text inside its box, even opened from text that doesn’t wrap', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `
+    <div style="white-space: nowrap">
+      <button id="invoker" type="button">Match</button>
+      <craft-tooltip for="invoker">Existing elements are found by the ticked fields, to update them, and this runs on well past the tooltip’s widest.</craft-tooltip>
+    </div>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+
+  await userEvent.hover(document.querySelector('button')!);
+  await after(300);
+
+  const box = tooltip.querySelector<HTMLElement>('[slot="content"]')!;
+  const range = document.createRange();
+  range.selectNodeContents(box);
+  const text = range.getBoundingClientRect();
+  const outer = box.getBoundingClientRect();
+
+  expect(tooltip.open).toBe(true);
+  expect(text.right).toBeLessThanOrEqual(outer.right + 1);
+});
+
+it('centers wrapped text on balanced lines, in a box no wider than them', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `
+    <button id="invoker" type="button" style="margin: 200px">Match</button>
+    <craft-tooltip for="invoker">Existing elements are found by the ticked fields, to update them, and this runs on well past the tooltip’s widest.</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+
+  await userEvent.hover(document.querySelector('button')!);
+  await after(400);
+
+  const content = tooltip.querySelector<HTMLElement>('[slot="content"]')!;
+  const range = document.createRange();
+  range.selectNodeContents(content);
+  const lines = Array.from(range.getClientRects());
+  const widest =
+    Math.max(...lines.map((line) => line.right)) -
+    Math.min(...lines.map((line) => line.left));
+  const box = content.getBoundingClientRect();
+  const style = getComputedStyle(content);
+  const padding =
+    parseFloat(style.paddingLeft) +
+    parseFloat(style.paddingRight) +
+    parseFloat(style.borderLeftWidth) +
+    parseFloat(style.borderRightWidth);
+
+  expect(style.textAlign).toBe('center');
+  expect(
+    new Set(lines.map((line) => Math.round(line.top))).size
+  ).toBeGreaterThan(1);
+  expect(box.width).toBeLessThanOrEqual(widest + padding + 2);
+});

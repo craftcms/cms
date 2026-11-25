@@ -297,7 +297,7 @@ export const AllExtensionPointsInContext: Story = {
             </craft-button>
             <craft-button type="button" role="tab" appearance="outline" aria-selected="false">
               SEO
-              <craft-icon name="circle-exclamation" slot="suffix"></craft-icon>
+              <craft-icon name="triangle-exclamation" slot="suffix"></craft-icon>
             </craft-button>
             <craft-button type="button" role="tab" appearance="outline" aria-selected="false">
               Related

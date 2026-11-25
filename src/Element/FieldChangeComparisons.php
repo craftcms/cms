@@ -175,13 +175,18 @@ readonly class FieldChangeComparisons
      * The `counterparts` pair each side's fields with the other side's by the same rules as the rows, by their layout
      * element UIDs, wherever those differ, so a field a condition shows only once the page has loaded finds its row.
      *
+     * @param  array{from: bool, to: bool}|null  $badged  The sides that badge their changed fields, when it's not for the
+     *                                                    versions' kinds to say.
+     * @param  array{from?: array<string, list<string>>, to?: array<string, list<string>>}  $errors  The errors each side's
+     *                                                                                               fields show, by path, when
+     *                                                                                               not the versions' own.
      * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}, counterparts: array{from: array<string, string>, to: array<string, string>}}
      */
-    public function compareElements(ElementInterface $from, ElementInterface $to): array
+    public function compareElements(ElementInterface $from, ElementInterface $to, ?array $badged = null, array $errors = []): array
     {
         $namespace = 'compare'.Str::random(8);
-        $fromPayload = $this->previews->compile($from, $from, "{$namespace}From", ControlMode::ReadOnly);
-        $toPayload = $this->previews->compile($to, $to, "{$namespace}To", ControlMode::ReadOnly);
+        $fromPayload = $this->previews->compile($from, $from, "{$namespace}From", ControlMode::ReadOnly, $errors['from'] ?? $from->uiErrors());
+        $toPayload = $this->previews->compile($to, $to, "{$namespace}To", ControlMode::ReadOnly, $errors['to'] ?? $to->uiErrors());
         $fromNodes = $fromPayload ? $this->previews->fieldNodes($fromPayload->nodes) : [];
         $toNodes = $toPayload ? $this->previews->fieldNodes($toPayload->nodes) : [];
         $pairs = [];
@@ -220,7 +225,7 @@ readonly class FieldChangeComparisons
 
         $rows = [];
         $paneNodes = ['from' => [], 'to' => []];
-        $badged = $this->badgedSides($from, $to);
+        $badged ??= $this->badgedSides($from, $to);
 
         foreach ($pairs as [$layoutElement, $fromNode, $toNode]) {
             $changed = $this->changed($layoutElement, $fromPayload, $fromNode, $from, $toPayload, $toNode, $to);
@@ -425,7 +430,7 @@ readonly class FieldChangeComparisons
             refreshable: false,
             nodes: $paneNodes,
             values: $payload->values ?? [],
-            errors: [],
+            errors: $payload->errors ?? [],
             globalErrors: [],
         );
     }
@@ -468,7 +473,9 @@ readonly class FieldChangeComparisons
 
     /**
      * Compares a field’s compiled nodes on two elements. The field is unchanged when both have the same value, or when
-     * both are the same element in the same site, and it’s `null` when that can’t be told from their form values.
+     * they’re the same instance, and it’s `null` when that can’t be told from their form values. Two instances of one
+     * element are compared by their values, since one can hold values that were set on it without being saved, and an
+     * element doesn’t track every attribute that’s set on it.
      *
      * @param  array{UiPayload, NodePayload}|null  $fromField
      * @param  array{UiPayload, NodePayload}|null  $toField
@@ -489,7 +496,7 @@ readonly class FieldChangeComparisons
 
         $unchanged = match (true) {
             $fromNode === null || $toNode === null => false,
-            $from->id === $to->id && $from->siteId === $to->siteId => true,
+            $from === $to => true,
             $this->loadsOwnValues($toNode) || $this->loadsOwnValues($fromNode) => $from ? $this->sameNestedElements($layoutElement, $from, $to) : null,
             default => $this->sameValue($fromValue, $toValue),
         };

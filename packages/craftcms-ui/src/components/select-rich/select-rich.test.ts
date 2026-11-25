@@ -67,3 +67,69 @@ describe('craft-select-rich', () => {
     );
   });
 });
+
+describe('craft-select-rich badge', () => {
+  const tick = () => new Promise((resolve) => setTimeout(resolve));
+
+  async function createBadged(): Promise<CraftSelectRich> {
+    const element = await createSelectRich();
+    element.insertAdjacentHTML(
+      'beforeend',
+      '<craft-option value="username">username<span slot="badge" class="badge">Suggested</span></craft-option>' +
+        '<craft-option value="email">email</craft-option>'
+    );
+    await tick();
+    return element;
+  }
+
+  const badges = (element: CraftSelectRich) =>
+    [...element.querySelectorAll('craft-select-invoker > [slot="badge"]')].map(
+      (badge) => badge.textContent
+    );
+
+  it('appends the selected option’s badge to its value', async () => {
+    const element = await createBadged();
+    const invoker = element.querySelector('craft-select-invoker')!;
+    const wrapper = invoker.shadowRoot!.querySelector('#content-wrapper')!;
+
+    expect(wrapper.querySelector('.value + slot[name="badge"]')).toBeTruthy();
+    // slotted from the light DOM, so the page's styles reach it
+    expect(invoker.querySelector(':scope > [slot="badge"].badge')).toBeTruthy();
+    expect(badges(element)).toEqual(['Suggested']);
+  });
+
+  it('replaces the badge as the selection changes, and as the selected option’s changes', async () => {
+    const element = await createBadged();
+
+    element.value = 'email';
+    await tick();
+
+    expect(badges(element)).toEqual([]);
+
+    element
+      .querySelector('craft-option[value="email"]')!
+      .insertAdjacentHTML('beforeend', '<span slot="badge">Suggested</span>');
+    await tick();
+
+    expect(badges(element)).toEqual(['Suggested']);
+  });
+
+  it('follows the selected option’s badge after being moved, and as its text changes', async () => {
+    const element = await createBadged();
+    const option = element.querySelector('craft-option[value="username"]')!;
+    const elsewhere = document.createElement('div');
+    document.body.append(elsewhere);
+
+    // a keyed reorder moves the select with the same option still selected
+    elsewhere.append(element);
+    option.insertAdjacentHTML('beforeend', '<span slot="badge">New</span>');
+    await tick();
+
+    expect(badges(element)).toEqual(['Suggested', 'New']);
+
+    option.querySelector('[slot="badge"]')!.firstChild!.textContent = 'Picked';
+    await tick();
+
+    expect(badges(element)[0]).toBe('Picked');
+  });
+});
