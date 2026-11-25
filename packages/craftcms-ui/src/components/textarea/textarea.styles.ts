@@ -36,4 +36,38 @@ export default css`
       overflow-y: auto !important;
     }
   }
+
+  .input-group__container
+    > .input-group__input:has(> .chars-left)
+    ::slotted([slot='input']) {
+    --_chars-left-room: calc(1lh + var(--c-spacing-sm));
+    --_block-offset: calc(
+      2 * (var(--_spacing-block, 0px) + var(--_input-border-width, 0px)) +
+        var(--_chars-left-room)
+    );
+    padding-block-end: calc(var(--_spacing-block) + var(--_chars-left-room));
+    padding-inline-end: var(--c-input-spacing-inline);
+  }
+
+  .input-group__input > .chars-left {
+    --_chars-left-inset: calc(
+      var(--c-input-spacing-inline) + var(--c-form-control-border-width)
+    );
+    inset-block-end: var(--_chars-left-inset);
+    inset-inline-end: var(--_chars-left-inset);
+    block-size: auto;
+    line-height: 1;
+  }
+
+  @supports (text-box: trim-both cap alphabetic) {
+    .input-group__container
+      > .input-group__input:has(> .chars-left)
+      ::slotted([slot='input']) {
+      --_chars-left-room: calc(1cap + var(--c-spacing-sm));
+    }
+
+    .input-group__input > .chars-left > [aria-hidden] {
+      text-box: trim-both cap alphabetic;
+    }
+  }
 `;

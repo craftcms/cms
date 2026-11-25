@@ -123,6 +123,24 @@ describe('PreviewFileModal', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  it('settles `closed` once it closes, or another preview takes its place', async () => {
+    const closed = vi.fn();
+    const first = new PreviewFileModal(5);
+    void first.closed.then(() => closed(5));
+    await settle();
+    expect(closed).not.toHaveBeenCalled();
+
+    const second = new PreviewFileModal(6);
+    void second.closed.then(() => closed(6));
+    await settle();
+    expect(closed.mock.calls).toEqual([[5]]);
+
+    second.hide();
+    openDialogs()[0]!.dispatchEvent(new Event('craft-after-hide'));
+    await settle();
+    expect(closed.mock.calls).toEqual([[5], [6]]);
+  });
+
   it('highlights a text preview’s code, keeping markup in it as text', async () => {
     post.mockResolvedValueOnce({
       data: {
