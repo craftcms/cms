@@ -3682,7 +3682,7 @@ return [
     '{task} uses the {provider} provider, which isn’t defined in {file}.' => '{task} používa poskytovateľa {provider}, ktorý nie je definovaný v {file}.',
     '{time} left' => 'Zostáva: {time}',
     '{title}, chat history' => '{title}, história chatu',
-    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, plural, =1{Našla sa {total, number} chyba} few{Našli sa {total, number} chyby} other{Našlo sa {total, number} chýb}} na {num, number} {num, plural, =1{karte} other{kartách}}.',
+    '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.' => '{total, plural, =1{Našla sa # chyba} few{Našli sa # chyby} other{Našlo sa # chýb}} na {num, number} {num, plural, =1{karte} other{kartách}}.',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{položka}} few{{položky}} other{{položiek}}}',
     '{total, number} {type} copied.' => 'Skopírované: {total, number} {type}.',
     '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}' => '{total, number} {total, plural, =1{rozloženie poľa} few{rozloženia poľa} other{rozložení poľa}} {type}',

@@ -3780,7 +3780,7 @@ return [
     'Composer {version} or later must be installed and available in the PATH environment variable.' => 'A Composer {version} vagy újabb verziójának telepítve kell lennie, és elérhetőnek kell lennie a PATH környezeti változóban.',
     'Congrats! You’re up to date.' => 'Gratulálunk! Ön naprakész.',
     'Connect the database' => 'Az adatbázis csatlakoztatása',
-    'Continue to the control panel in {num, number} {num, plural, =1{second} other{seconds}}' => 'Tovább a vezérlőpultra {num, number} {num, plural, =1{másodperc} other{másodperc}}}',
+    'Continue to the control panel in {num, number} {num, plural, =1{second} other{seconds}}' => 'Tovább a vezérlőpultra {num, number} {num, plural, =1{másodperc} other{másodperc}} múlva',
     'Cookies must be enabled to access the Craft CMS control panel.' => 'A Craft CMS vezérlőpult eléréséhez engedélyezni kell a cookie-kat.',
     'Copy value from site…' => 'Érték másolása a webhelyről…',
     'Could not create the group:' => 'Nem sikerült létrehozni a csoportot:',
