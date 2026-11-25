@@ -110,6 +110,8 @@ class AssetQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @uses $editable
+     *
+     * @phpstan-return static
      */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
     #[Gql(exclude: true)]
@@ -124,6 +126,8 @@ class AssetQuery extends ElementQuery
      * Sets the [[$savable]] property.
      *
      * @uses $savable
+     *
+     * @phpstan-return static
      */
     public function savable(?bool $value = true): self
     {

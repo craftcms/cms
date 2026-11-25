@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Components\Button;
 use CraftCms\Cms\Cp\Enums\ButtonVariant;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -10,6 +11,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
@@ -199,3 +201,44 @@ it('sends the primary action to a full page and a slideout alike', function (arr
         'HTTP_X_CRAFT_CONTAINER_ID' => 'slideout-1',
     ]],
 ]);
+
+function slideoutEditUrlFor(CpScreenResponse $screen, string $url, string $method = 'GET'): ?string
+{
+    $request = Request::create($url, $method, server: [
+        'HTTP_X_INERTIA' => 'true',
+        'HTTP_ACCEPT' => 'application/json',
+        'HTTP_X_CRAFT_CONTAINER_ID' => 'slideout-1',
+    ]);
+
+    return $screen->toResponse($request)->getData(true)['props']['screen']['editUrl'];
+}
+
+it('links a slideout to its own URL when the screen sets no edit URL', function () {
+    $url = Url::cpUrl('settings/things/new', ['foo' => 'bar']);
+
+    expect(slideoutEditUrlFor(new CpScreenResponse, $url))->toBe($url);
+});
+
+it('prefers the screen’s own edit URL', function () {
+    $screen = (new CpScreenResponse)->editUrl('settings/things/5');
+
+    expect(slideoutEditUrlFor($screen, Url::cpUrl('settings/things/new')))
+        ->toBe(Url::cpUrl('settings/things/5'));
+});
+
+it('gives no edit URL to a slideout that isn’t a standalone page', function (string $url, string $method) {
+    expect(slideoutEditUrlFor(new CpScreenResponse, $url, $method))->toBeNull();
+})->with([
+    'CP action URL' => [fn () => Url::cpUrl(Cms::config()->actionTrigger.'/elements/edit', ['elementId' => 1]), 'GET'],
+    'POST' => [fn () => Url::cpUrl('settings/things/new'), 'POST'],
+]);
+
+it('gives the legacy slideout the same fallback', function () {
+    $url = Url::cpUrl('settings/things/new');
+    $request = Request::create($url, server: [
+        'HTTP_ACCEPT' => 'application/json',
+        'HTTP_X_CRAFT_CONTAINER_ID' => 'slideout-1',
+    ]);
+
+    expect((new CpScreenResponse)->toResponse($request)->getData(true)['editUrl'])->toBe($url);
+});

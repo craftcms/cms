@@ -18,9 +18,11 @@ use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Enums\AssetFileChange;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Enums\ImageOrientation;
 use CraftCms\Cms\Asset\Enums\ImageType;
+use CraftCms\Cms\Asset\Events\AssetFileChanged;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
@@ -3725,7 +3727,7 @@ CSS,
 
             // Relocate the file?
             if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
-                $this->_relocateFile();
+                $this->_relocateFile($isNew);
             }
 
             // Get the asset record
@@ -3851,6 +3853,8 @@ CSS,
         $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
 
         if (! $this->keepFileOnDelete) {
+            $oldUrl = $this->getUrl();
+
             if ($trashedAssetDisk !== null) {
                 $this->moveFileToTrash($trashedAssetDisk);
             } else {
@@ -3860,6 +3864,14 @@ CSS,
                     // NBD
                 }
             }
+
+            event(new AssetFileChanged(
+                asset: $this,
+                change: AssetFileChange::Deleted,
+                oldVolume: $this->getVolume(),
+                oldPath: $this->getPath(),
+                oldUrl: $oldUrl,
+            ));
         }
 
         if ($this->hardDelete && $this->trashedFileExists) {
@@ -3894,6 +3906,14 @@ CSS,
     {
         if ($this->trashedFileExists) {
             $this->restoreFileFromTrash();
+
+            event(new AssetFileChanged(
+                asset: $this,
+                change: AssetFileChange::Restored,
+                oldVolume: $this->getVolume(),
+                oldPath: $this->getPath(),
+                oldUrl: $this->getUrl(),
+            ));
         }
 
         parent::afterRestore();
@@ -4144,7 +4164,7 @@ CSS,
      * @throws VolumeException if a file operation errored
      * @throws Exception if something else goes wrong
      */
-    private function _relocateFile(): void
+    private function _relocateFile(bool $isNew): void
     {
         // Get the (new?) folder ID & filename
         if (isset($this->newLocation)) {
@@ -4230,6 +4250,19 @@ CSS,
         if ($this->folderId) {
             // Nuke the transforms
             $this->deleteTransformData();
+        }
+
+        $hasNewFile = $this->uploadSource !== null || $tempPath !== null;
+        // A new asset can have a folder before its first save, but it has no old file
+        if (! $isNew && $oldVolume !== null && $oldPath !== null && ($hasNewFile || ! $sameFile)) {
+            event(new AssetFileChanged(
+                asset: $this,
+                change: $hasNewFile ? AssetFileChange::Replaced : AssetFileChange::Moved,
+                oldVolume: $oldVolume,
+                oldPath: $oldPath,
+                // The asset’s properties aren’t updated yet, so this is still the URL it was served from
+                oldUrl: $this->getUrl(),
+            ));
         }
 
         // Update file properties

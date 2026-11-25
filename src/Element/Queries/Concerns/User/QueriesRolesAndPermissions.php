@@ -110,6 +110,8 @@ trait QueriesRolesAndPermissions
      * ```
      *
      * @uses $admin
+     *
+     * @phpstan-return static
      */
     #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only users that have (or don’t have) admin accounts.')]
     #[Gql(exclude: true)]
@@ -142,6 +144,8 @@ trait QueriesRolesAndPermissions
      * ```
      *
      * @param  mixed  $value  The property value
+     *
+     * @phpstan-return static
      *
      * @uses $can
      */

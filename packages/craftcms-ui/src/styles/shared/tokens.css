@@ -309,7 +309,7 @@
   --c-input-border-style: var(--c-form-control-border-style);
   --c-input-radius: var(--c-form-control-radius);
   --c-input-spacing-inline: var(--c-form-control-spacing-inline);
-  --c-input-shadow: inset 0 2px 4px
+  --c-input-shadow: inset 0 1.25px 2.5px
     rgb(var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier)));
 
   /* Checkbox */
