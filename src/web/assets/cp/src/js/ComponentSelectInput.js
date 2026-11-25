@@ -51,12 +51,13 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
 
         // Options hide the menu after they're activated, so the replaced chip
         // has already been captured by then
+        this._handleMenuHide = () => {
+          this.$replacedComponent = null;
+        };
         this.$addBtn
           .disclosureMenu()
           .data('disclosureMenu')
-          .on('hide', () => {
-            this.$replacedComponent = null;
-          });
+          .on('hide', this._handleMenuHide);
       }
 
       if (this.$createBtn.length && this.settings.createAction) {
@@ -609,6 +610,9 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       delete this.componentSelect;
       delete this.componentSort;
       this.getOptions().off('activate');
+      if (this._handleMenuHide) {
+        this.$addBtn.data('disclosureMenu').off('hide', this._handleMenuHide);
+      }
       this.$createBtn.off('activate');
       this.base();
     },
