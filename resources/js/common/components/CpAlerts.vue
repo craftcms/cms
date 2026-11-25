@@ -44,6 +44,8 @@
   }
 
   craft-callout {
-    --c-callout-padding-inline: var(--cp-container-padding);
+    --c-callout-padding-inline: calc(var(--c-spacing-md) - 1px);
+    --c-callout-icon-padding-inline: 0 var(--c-spacing-sm);
+    --c-callout-text-padding-inline: 0;
   }
 </style>
