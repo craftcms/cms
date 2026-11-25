@@ -56,6 +56,26 @@ class RequestedSite
         return $this->requestedSite ?: null;
     }
 
+    /**
+     * Runs `$callback` with `$site` as the requested site, then puts back the one requested before.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public function using(Site $site, callable $callback): mixed
+    {
+        $requestedSite = $this->requestedSite;
+        $this->requestedSite = $site;
+
+        try {
+            return $callback();
+        } finally {
+            $this->requestedSite = $requestedSite;
+        }
+    }
+
     public function reset(): void
     {
         $this->requestedSite = null;

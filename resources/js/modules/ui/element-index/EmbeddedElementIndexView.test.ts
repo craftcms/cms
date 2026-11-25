@@ -34,6 +34,16 @@ const archive: BulkActionItem = {
   },
 } as BulkActionItem;
 
+const inspect: BulkActionItem = {
+  key: 'plugin:inspect',
+  label: 'Inspect selected',
+  action: {
+    type: 'event',
+    name: 'plugin:inspect',
+    detail: {mode: 'deep', params: {format: 'pdf'}},
+  },
+};
+
 describe('EmbeddedElementIndexView', () => {
   let app: ReturnType<typeof createApp> | undefined;
   let root: HTMLElement | undefined;
@@ -56,7 +66,7 @@ describe('EmbeddedElementIndexView', () => {
     request.post.mockImplementation(async (url: string) =>
       url.includes('save-elements')
         ? {data: {message: 'Changes saved.'}}
-        : {data: nestedIndexPayload(rows, {actions: [archive]})}
+        : {data: nestedIndexPayload(rows, {actions: [archive, inspect]})}
     );
     root = document.createElement('div');
     document.body.append(root);
@@ -64,7 +74,7 @@ describe('EmbeddedElementIndexView', () => {
       render: () =>
         h(EmbeddedElementIndexView, {
           elementType: 'Entry',
-          initial: nestedIndexPayload(rows, {actions: [archive]}),
+          initial: nestedIndexPayload(rows, {actions: [archive, inspect]}),
           params: {embeddedIndexToken: 'sealed'},
           storageKey: 'embeddedindex.test',
           readOnly,
@@ -114,6 +124,40 @@ describe('EmbeddedElementIndexView', () => {
         context: 'embeddedIndex',
         source: '__IMP__',
         embeddedIndexToken: 'sealed',
+      },
+    });
+  });
+
+  it('gives client action listeners its scope to perform actions with', async () => {
+    const container = mount(false);
+    await vi.waitFor(() =>
+      expect(container.querySelector('tr')).not.toBeNull()
+    );
+
+    selectRow(container, 'Entry 11');
+    await vi.waitFor(() =>
+      expect(actionItem(container, 'Inspect selected')).toBeDefined()
+    );
+    const item = actionItem(container, 'Inspect selected') as HTMLElement & {
+      action: unknown;
+    };
+
+    expect(item.action).toMatchObject({
+      type: 'event',
+      name: 'plugin:inspect',
+      detail: {
+        mode: 'deep',
+        params: {format: 'pdf'},
+        elementType: 'Entry',
+        elementIds: [11],
+        indexParams: {
+          elementType: 'Entry',
+          elementIds: [11],
+          context: 'embeddedIndex',
+          source: '__IMP__',
+          embeddedIndexToken: 'sealed',
+          criteria: {status: null},
+        },
       },
     });
   });
