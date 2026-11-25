@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInputCopy from './input-copy.js';
 import type CraftCopyButton from '../copy-button/copy-button.js';
 import './input-copy.js';

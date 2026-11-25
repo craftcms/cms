@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInputHandle from './input-handle.js';
 import './input-handle.js';
 

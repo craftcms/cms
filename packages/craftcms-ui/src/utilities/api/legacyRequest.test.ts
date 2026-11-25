@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createHttpClient} from './http';
 import {sendLegacyRequest} from './legacyRequest';
 

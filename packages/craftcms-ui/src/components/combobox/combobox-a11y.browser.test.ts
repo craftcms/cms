@@ -594,8 +594,8 @@ describe('multiple choice', () => {
     });
     const items = page.getByRole('list').getByRole('listitem');
 
-    await expect.element(items.nth(0)).toHaveTextContent('Cherry');
-    await expect.element(items.nth(1)).toHaveTextContent('Apple');
+    await expect.element(items.nth(0)).toMatchTextContent('Cherry');
+    await expect.element(items.nth(1)).toMatchTextContent('Apple');
     expect(items.elements()).toHaveLength(2);
   });
 

@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {submitScreenForm} from './submitScreenForm';
 import {firstMessages} from './errors';
 

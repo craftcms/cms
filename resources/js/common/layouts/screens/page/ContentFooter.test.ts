@@ -1,5 +1,5 @@
 import {createApp, defineComponent, h, nextTick, ref} from 'vue';
-import {afterEach, expect, it, vi} from 'vitest';
+import {afterEach, expect, it, vi} from 'vite-plus/test';
 import LayoutSlot from '@/common/components/LayoutSlot.vue';
 import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
 import ContentFooter from './ContentFooter.vue';

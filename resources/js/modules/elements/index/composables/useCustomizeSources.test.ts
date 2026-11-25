@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {router} from '@inertiajs/vue3';
 import {useCustomizeSources} from './useCustomizeSources';
 import {appendIndexQuery} from './useElementIndexVisits';

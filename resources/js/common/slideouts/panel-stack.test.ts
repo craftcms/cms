@@ -1,4 +1,4 @@
-import {afterEach, describe, expect, it, vi, type Mock} from 'vitest';
+import {afterEach, describe, expect, it, vi, type Mock} from 'vite-plus/test';
 import {
   registerPanel,
   shadeElement,

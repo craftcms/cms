@@ -29,6 +29,16 @@ minimumReleaseAgeExclude:
   - 'markdown-actions@1.3.0'
   # Our own Font Awesome kit, published with the CP Navigation icons.
   - '@awesome.me/kit-ddaed3f5c5@1.0.110'
+  - vite-plus
+  - '@voidzero-dev/*'
+  - oxlint
+  - '@oxlint/*'
+  - tsrs
+  - '@tsrs/*'
+  - oxfmt
+  - '@oxfmt/*'
+  - vitest
+  - '@vitest/*'
 
 # Single source of truth for every dependency more than one workspace package
 # needs. Manifests reference these as `catalog:` (or `catalog:legacy`), so two
@@ -46,7 +56,7 @@ catalog:
   '@storybook/addon-themes': ^10.6.6
   '@total-typescript/tsconfig': ^1.0.4
   '@types/node': ^25.6.0
-  '@vitest/coverage-v8': 4.1.10
+  '@vitest/coverage-v8': 5.1.1
   axios: ^1.17.0
   d3: ^7.9.0
   dom-accessibility-api: ^0.7.1
@@ -68,10 +78,13 @@ catalog:
   stylelint-use-logical-spec: ^5.0.1
   tailwindcss: ^4.2.4
   typescript: ^6.0.3
-  vite-plus: 0.2.6
+  vite-plus: 1.8.0
   vue: ^3.5.33
   webpack: ^5.89.0
   webpack-dev-server: ^4.15.1
+  vite: npm:@voidzero-dev/vite-plus-core@8.3.8001
+  vitest: 5.1.1
+  '@vitest/browser-playwright': 5.1.1
 
 # @craftcms/legacy is intentionally held on older majors — it builds the Craft 5
 # control panel bundles. Keeping those in their own catalog makes the split
@@ -91,13 +104,13 @@ enablePrePostScripts: true
 # Was npm's top-level `overrides` block: pin the whole tree to the Vite+ build
 # of Vite and to a single Vitest.
 overrides:
-  vite: 'npm:@voidzero-dev/vite-plus-core@0.2.6'
-  vitest: '4.1.10'
   # Transitive deps of @codemirror/language, pulled in on open ranges. Their
   # newest releases landed inside the minimumReleaseAge window above, so they're
   # held at the newest versions that clear it. Safe to drop once those age out.
   '@codemirror/state': '6.7.1'
   '@codemirror/view': '6.43.9'
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
 
 # Was npm's `allowScripts` block: which dependencies may run install lifecycle
 # scripts. pnpm 10+ spells this `allowBuilds`, keys on the bare package name
@@ -113,3 +126,8 @@ allowBuilds:
   core-js: false
   core-js-pure: false
   swiper: false
+peerDependencyRules:
+  allowAny:
+    - vitest
+  allowedVersions:
+    vitest: '*'

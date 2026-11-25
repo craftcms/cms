@@ -1,6 +1,6 @@
 import {effectScope, ref} from 'vue';
 import {type InertiaForm, useForm} from '@inertiajs/vue3';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {
   useSettingsSave,
   type SettingsSaveDependencies,

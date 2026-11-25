@@ -7,7 +7,7 @@ import {
   provide,
   reactive,
 } from 'vue';
-import {afterEach, describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it} from 'vite-plus/test';
 import LayoutSlot from '@/common/components/LayoutSlot.vue';
 import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
 import {

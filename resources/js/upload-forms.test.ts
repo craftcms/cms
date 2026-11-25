@@ -1,4 +1,4 @@
-import {afterEach, beforeAll, beforeEach, expect, it, vi} from 'vitest';
+import {afterEach, beforeAll, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UploadOptions} from './upload-client';
 
 const uploads: MockUpload[] = [];

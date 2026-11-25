@@ -1,4 +1,4 @@
-import {expect, it} from 'vitest';
+import {expect, it} from 'vite-plus/test';
 import {namePastedFiles} from './pasted-files';
 
 const now = new Date(2026, 9, 30, 9, 5, 7);

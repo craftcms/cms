@@ -97,7 +97,7 @@ it('names the button by exactly its tooltip’s text, without the tooltip also d
 
   await expect
     .element(page.getByRole('tooltip'))
-    .toHaveTextContent('3 columns');
+    .toMatchTextContent('3 columns');
   await expect
     .element(page.getByRole('button'))
     .toHaveAccessibleName('3 columns');
