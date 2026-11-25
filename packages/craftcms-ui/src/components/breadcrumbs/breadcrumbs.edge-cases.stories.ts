@@ -1,11 +1,12 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import type CraftBreadcrumbs from './breadcrumbs.js';
 import './breadcrumbs.js';
 import '../breadcrumb-item/breadcrumb-item.js';
-import '../button/button.js';
+import {besideOtherContent} from '../../../test/breadcrumbs-fixtures';
 
 /**
  * Cases that nobody sets up on purpose, but that reviewers need to see: the
@@ -30,19 +31,6 @@ type Story = StoryObj<CraftBreadcrumbs>;
 export const BesideOtherContent: Story = {
   name: 'Beside other content',
   render: () => html`
-    <div class="resizable-container">
-      <div style="display: flex; align-items: center; gap: 8px">
-        <div style="flex: 0 1 auto; min-inline-size: 0">
-          <craft-breadcrumbs>
-            <craft-breadcrumb-item href="#">Site Name</craft-breadcrumb-item>
-            <craft-breadcrumb-item href="#">Entries</craft-breadcrumb-item>
-            <craft-breadcrumb-item href="#">Entry Type</craft-breadcrumb-item>
-            <craft-breadcrumb-item href="#">Parent Entry</craft-breadcrumb-item>
-            <craft-breadcrumb-item>Current</craft-breadcrumb-item>
-          </craft-breadcrumbs>
-        </div>
-        <craft-button size="small">Actions</craft-button>
-      </div>
-    </div>
+    <div class="resizable-container">${unsafeHTML(besideOtherContent())}</div>
   `,
 };

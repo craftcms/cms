@@ -7,12 +7,28 @@ import '../action-item/action-item.js';
 import type CraftBreadcrumbs from './breadcrumbs.js';
 import type CraftActionMenu from '../action-menu/action-menu.js';
 import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
+import {besideOtherContent, ROW_GAP} from '../../../test/breadcrumbs-fixtures';
+import {deepActiveElement} from '../../../test/deep-active';
 
 beforeEach(() => {
   document.body.innerHTML = '';
 });
 
 const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+
+/** Long enough for the trail to collapse fully and measure once more. */
+const SETTLE_MS = 100;
+
+/** Partly collapsed, with the root kept. */
+const PARTLY_COLLAPSED = '520px';
+
+/** Resizes a container, then waits for the trail inside to settle. */
+async function resize(container: HTMLElement, width: string) {
+  container.style.inlineSize = width;
+  await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+  await frame();
+  await frame();
+}
 
 const TRAIL = `
   <craft-breadcrumb-item href="#root">Site Name</craft-breadcrumb-item>
@@ -64,6 +80,34 @@ async function trail(width: string, innerHTML = TRAIL) {
     shown,
     menuLabels,
     actions,
+  };
+}
+
+/** The trail in a content-sized row, settled at `width`. */
+async function besideTrail(
+  width: string,
+  prepare?: (element: CraftBreadcrumbs) => void
+) {
+  await import('../../styles/shared/variables.css');
+  await import('../../styles/shared/tokens.css');
+
+  document.body.innerHTML = besideOtherContent();
+  const row = document.querySelector<HTMLElement>('[data-row]')!;
+  row.style.inlineSize = width;
+  const element = row.querySelector<CraftBreadcrumbs>('craft-breadcrumbs')!;
+  prepare?.(element);
+  await element.updateComplete;
+  await resize(row, width);
+
+  return {
+    row,
+    wrapper: row.querySelector<HTMLElement>('[data-wrapper]')!,
+    after: row.querySelector<HTMLElement>('[data-after]')!,
+    element,
+    items: [...element.querySelectorAll('craft-breadcrumb-item')],
+    overflow: element.shadowRoot!.querySelector<HTMLElement>(
+      '.breadcrumbs__overflow'
+    )!,
   };
 }
 
@@ -164,65 +208,35 @@ describe('craft-breadcrumbs', () => {
   });
 
   it('brings crumbs back when its container is sized by its content', async () => {
-    await import('../../styles/shared/variables.css');
-    await import('../../styles/shared/tokens.css');
-
-    // A row like a page header's: the trail sits in a wrapper sized by its
-    // content, followed by another control.
-    const row = document.createElement('div');
-    row.style.cssText = 'display: flex; gap: 8px; inline-size: 300px';
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'flex: 0 1 auto; min-inline-size: 0';
-    const element = document.createElement(
-      'craft-breadcrumbs'
-    ) as CraftBreadcrumbs;
-    element.innerHTML = `
-      <craft-breadcrumb-item href="#root">Site Name</craft-breadcrumb-item>
-      <craft-breadcrumb-item href="#entries">Entries</craft-breadcrumb-item>
-      <craft-breadcrumb-item href="#type">Entry Type</craft-breadcrumb-item>
-      <craft-breadcrumb-item href="#parent">Parent Entry</craft-breadcrumb-item>
-      <craft-breadcrumb-item>Current</craft-breadcrumb-item>`;
-    const after = document.createElement('button');
-    after.textContent = 'Actions';
-    wrapper.append(element);
-    row.append(wrapper, after);
-    document.body.append(row);
-    await element.updateComplete;
-    await frame();
-    await frame();
-
-    const items = [...element.querySelectorAll('craft-breadcrumb-item')];
-    const overflow = element.shadowRoot!.querySelector<HTMLElement>(
-      '.breadcrumbs__overflow'
-    )!;
+    const {row, wrapper, after, element, items, overflow} =
+      await besideTrail('300px');
     expect(overflow.hidden).toBe(false);
-    // Nothing truncates, so the collapsed trail is already as wide as its
-    // content wants: widening the row alone doesn't resize it. A truncated
-    // crumb would grow back first, and remeasure the trail by accident.
     const label = items.at(-1)!.shadowRoot!.querySelector('.label')!;
     expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
 
-    // Let the collapse settle: the trail shrinking to its collapsed width
-    // queues one more measurement, which would otherwise see the wider row.
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await frame();
+    await resize(row, '2000px');
 
-    row.style.inlineSize = '2000px';
-    await frame();
-    await frame();
-    await frame();
-
-    // Otherwise the wrapper filled the row, which would bring the crumbs back
-    // without the trail asking for its width.
     expect(wrapper.getBoundingClientRect().width).toBeLessThan(
       row.getBoundingClientRect().width - after.getBoundingClientRect().width
     );
     expect(items.filter((item) => item.hidden)).toHaveLength(0);
     expect(overflow.hidden).toBe(true);
-    // The trail takes only its crumbs' width, so what follows stays beside it.
     expect(
       after.getBoundingClientRect().left - element.getBoundingClientRect().right
-    ).toBeLessThanOrEqual(8 + 1);
+    ).toBeLessThanOrEqual(ROW_GAP + 1);
+  });
+
+  it('brings crumbs back in a content-sized container when the trail has padding', async () => {
+    const {row, element, items, overflow} = await besideTrail('300px', (el) => {
+      el.style.boxSizing = 'border-box';
+      el.style.paddingInline = '12px';
+    });
+    expect(overflow.hidden).toBe(false);
+
+    await resize(row, '2000px');
+
+    expect(items.filter((item) => item.hidden)).toHaveLength(0);
+    expect(element.scrollWidth).toBeLessThanOrEqual(element.clientWidth);
   });
 
   it('follows the collapsed crumb’s own link from the menu', async () => {
@@ -496,25 +510,17 @@ describe('craft-breadcrumbs', () => {
   });
 
   describe('when the trail collapses or expands around focus', () => {
-    /** The element with focus, followed down through shadow roots. */
-    const deepActive = () => {
-      let active = document.activeElement;
-      while (active?.shadowRoot?.activeElement) {
-        active = active.shadowRoot.activeElement;
-      }
-      return active as HTMLElement;
-    };
-
-    /** Resizes the trail's container and waits for it to measure again. */
-    const resize = async (container: HTMLElement, width: string) => {
-      container.style.inlineSize = width;
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      await frame();
-      await frame();
-    };
-
     const linkOf = (item: Element) =>
       item.shadowRoot!.querySelector<HTMLAnchorElement>('a[href]')!;
+
+    const nameOf = (item: Element) => item.firstChild!.textContent!.trim();
+
+    const openMenuFromKeyboard = async (overflow: Element) => {
+      overflow.querySelector<HTMLElement>('craft-button')!.focus();
+      await userEvent.keyboard('{Enter}');
+      await frame();
+      await frame();
+    };
 
     it('moves focus to More items when the focused crumb collapses', async () => {
       const {container, items, overflow} = await trail('2000px');
@@ -524,51 +530,80 @@ describe('craft-breadcrumbs', () => {
       await resize(container, '200px');
 
       expect(items[2]!.hidden).toBe(true);
-      expect(deepActive()).not.toBe(document.body);
-      await expect.element(deepActive()).toHaveAccessibleName('More items');
+      expect(deepActiveElement()!).not.toBe(document.body);
+      await expect
+        .element(deepActiveElement() as HTMLElement)
+        .toHaveAccessibleName('More items');
     });
 
     it('moves focus to the first crumb back from the menu when the trail expands', async () => {
       const {container, element, items, overflow} = await trail('200px');
-      const firstCollapsed = items.find((item) => item.hidden)!;
-      const name = firstCollapsed.firstChild!.textContent!.trim();
+      const name = nameOf(items.find((item) => item.hidden)!);
       overflow.querySelector<HTMLElement>('craft-button')!.focus();
       expect(element.shadowRoot!.activeElement).not.toBeNull();
 
       await resize(container, '2000px');
 
       expect(overflow.hidden).toBe(true);
-      expect(deepActive()).not.toBe(document.body);
-      await expect.element(deepActive()).toHaveAccessibleName(name);
+      expect(deepActiveElement()!).not.toBe(document.body);
+      await expect
+        .element(deepActiveElement() as HTMLElement)
+        .toHaveAccessibleName(name);
     });
 
     it('closes the menu and moves focus to the first crumb back when the trail expands with focus in the menu', async () => {
       const {container, items, menu, overflow} = await trail('200px');
-      const firstCollapsed = items.find((item) => item.hidden)!;
-      const name = firstCollapsed.firstChild!.textContent!.trim();
-      overflow.querySelector<HTMLElement>('craft-button')!.focus();
-      await userEvent.keyboard('{Enter}');
-      await frame();
-      await frame();
+      const name = nameOf(items.find((item) => item.hidden)!);
+      await openMenuFromKeyboard(overflow);
       expect(menu.open).toBe(true);
-      // Focus is on an item in the open menu, not on its trigger.
-      expect((deepActive().getRootNode() as ShadowRoot).host?.localName).toBe(
-        'craft-action-item'
-      );
+      expect(
+        (deepActiveElement()!.getRootNode() as ShadowRoot).host?.localName
+      ).toBe('craft-action-item');
 
       await resize(container, '2000px');
 
       expect(overflow.hidden).toBe(true);
       expect(menu.open).toBe(false);
-      expect(deepActive()).not.toBe(document.body);
-      await expect.element(deepActive()).toHaveAccessibleName(name);
+      expect(deepActiveElement()!).not.toBe(document.body);
+      await expect
+        .element(deepActiveElement() as HTMLElement)
+        .toHaveAccessibleName(name);
+    });
+
+    it('closes a collapsing crumb’s own menu and moves focus to More items', async () => {
+      const {container, items} = await trail(
+        '2000px',
+        `
+        <craft-breadcrumb-item href="#root">Site Name</craft-breadcrumb-item>
+        <craft-breadcrumb-item href="#singles">Singles<craft-action-menu slot="suffix">
+          <craft-button slot="invoker" aria-label="Sections"></craft-button>
+          <craft-action-item href="#singles" checked>Singles</craft-action-item>
+          <craft-action-item href="#channels">Channels</craft-action-item>
+        </craft-action-menu></craft-breadcrumb-item>
+        <craft-breadcrumb-item>Current Entry With A Long Title</craft-breadcrumb-item>`
+      );
+      const switcher =
+        items[1]!.querySelector<CraftActionMenu>('craft-action-menu')!;
+      switcher.querySelector<HTMLElement>('craft-button')!.focus();
+      await userEvent.keyboard('{Enter}');
+      await frame();
+      await frame();
+      expect(switcher.open).toBe(true);
+      expect(items[1]!.contains(document.activeElement)).toBe(true);
+
+      await resize(container, '200px');
+
+      expect(items[1]!.hidden).toBe(true);
+      expect(switcher.open).toBe(false);
+      await expect
+        .element(deepActiveElement() as HTMLElement)
+        .toHaveAccessibleName('More items');
     });
 
     it('skips crumbs with no link when it chooses where focus goes', async () => {
       const {container, items, overflow} = await trail('200px');
       const collapsed = items.filter((item) => item.hidden);
       expect(collapsed.length).toBeGreaterThan(1);
-      // The first crumb in the menu is plain text, so it can't take focus.
       collapsed[0]!.removeAttribute('href');
       await frame();
       await frame();
@@ -577,22 +612,23 @@ describe('craft-breadcrumbs', () => {
 
       await resize(container, '2000px');
 
-      expect(deepActive()).not.toBe(document.body);
+      expect(deepActiveElement()!).not.toBe(document.body);
       await expect
-        .element(deepActive())
-        .toHaveAccessibleName(collapsed[1]!.firstChild!.textContent!.trim());
+        .element(deepActiveElement() as HTMLElement)
+        .toHaveAccessibleName(nameOf(collapsed[1]!));
     });
 
     it('leaves focus on a crumb that stays in the trail', async () => {
       const {container, items, overflow} = await trail('2000px');
       linkOf(items[0]!).focus();
 
-      await resize(container, '520px');
+      await resize(container, PARTLY_COLLAPSED);
 
-      // Partly collapsed, with the root kept.
       expect(overflow.hidden).toBe(false);
       expect(items[0]!.hidden).toBe(false);
-      await expect.element(deepActive()).toHaveAccessibleName('Site Name');
+      await expect
+        .element(deepActiveElement() as HTMLElement)
+        .toHaveAccessibleName('Site Name');
     });
   });
 
