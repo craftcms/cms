@@ -112,16 +112,23 @@
             name="triangle-exclamation"
             :label="t('Error')"
           ></craft-icon>
-          <div v-html="alert.content"></div>
+          <div class="cp-alerts__content" v-html="alert.content"></div>
+        </craft-callout>
+        <!-- Beside “Resolve now”, as `Craft.cp.initAlerts()` puts it. -->
+        <Teleport
+          v-if="isResolvable(alert)"
+          defer
+          :to="`.cp-alerts [data-alert-index='${index}'] .resolvable-alert-buttons`"
+        >
           <craft-button
-            v-if="isResolvable(alert)"
-            slot="action"
             type="button"
+            variant="outline"
+            inherit
             .loading="refreshing"
             @click="refresh"
             >{{ t('Refresh') }}</craft-button
           >
-        </craft-callout>
+        </Teleport>
       </li>
     </ul>
   </section>
@@ -138,5 +145,51 @@
     --c-callout-padding-inline: calc(var(--c-spacing-md) - 1px);
     --c-callout-icon-padding-inline: 0 var(--c-spacing-sm);
     --c-callout-text-padding-inline: 0;
+  }
+
+  .cp-alerts__content > :deep(* + *) {
+    margin-block-start: var(--c-spacing-sm);
+  }
+
+  .cp-alerts__content :deep(h2) {
+    margin: 0;
+    font-size: var(--c-text-md);
+    font-weight: bold;
+  }
+
+  .cp-alerts__content :deep(ul.errors) {
+    padding-inline-start: 1.25em;
+    list-style-type: square;
+  }
+
+  .cp-alerts__content :deep(.resolvable-alert-buttons) {
+    margin-block-start: var(--c-spacing-md);
+  }
+
+  .cp-alerts__content :deep(.resolvable-alert-buttons > *) {
+    vertical-align: middle;
+  }
+
+  .cp-alerts__content :deep(.resolvable-alert-buttons > * + *) {
+    margin-inline-start: var(--c-spacing-sm);
+  }
+
+  .cp-alerts__content :deep(.resolvable-alert-buttons a) {
+    align-items: center;
+    min-height: var(--c-size-control-md);
+    padding-inline: var(--c-spacing-md);
+    border: 1px solid var(--c-color-border-loud);
+    border-radius: var(--c-form-control-radius);
+    color: var(--c-color-on-quiet);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .cp-alerts__content :deep(.resolvable-alert-buttons a:hover) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-mix-hover),
+      transparent
+    );
   }
 </style>
