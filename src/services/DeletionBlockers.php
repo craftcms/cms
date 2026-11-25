@@ -165,18 +165,27 @@ class DeletionBlockers extends Component
     {
         $blockers = match ($type) {
             'category-group' => [
+                new TrashedElementsBlocker(
+                    Category::class,
+                    ['groupId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The category group contains {num, number} {num, plural, =1{category} other{categories}}.', ['num' => $num]),
+                ),
                 new SourceUsageBlocker(
                     CategoriesField::class,
                     ["group:$subject->uid"],
+                    $subject->name,
                     Table::CATEGORIES,
                     ['groupId' => $subject->id],
-                    fn(int $num) => Craft::t('app', 'The category group is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                    fn(int $num) => Craft::t('app', 'The category group is selected as a source for {num, number} {num, plural, =1{Categories field} other{Categories fields}}.', ['num' => $num]),
                 ),
-                new TrashedElementsBlocker(Category::class, ['groupId' => $subject->id]),
             ],
             'entry-type' => [
                 new EntryTypeUsageBlocker($subject),
-                new TrashedElementsBlocker(Entry::class, ['typeId' => $subject->id]),
+                new TrashedElementsBlocker(
+                    Entry::class,
+                    ['typeId' => $subject->id],
+                    fn(int $num) => Craft::t('app', '{num, number} {num, plural, =1{entry uses} other{entries use}} the entry type.', ['num' => $num]),
+                ),
             ],
             'field' => [
                 new FieldUsageBlocker($subject),
@@ -185,40 +194,55 @@ class DeletionBlockers extends Component
                 new FilesystemUsageBlocker($subject),
             ],
             'section' => [
+                new TrashedElementsBlocker(
+                    Entry::class,
+                    ['sectionId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The section contains {num, number} {num, plural, =1{entry} other{entries}}.', ['num' => $num]),
+                ),
                 new SourceUsageBlocker(
                     EntriesField::class,
                     $subject->type === Section::TYPE_SINGLE ? ["section:$subject->uid", 'singles'] : ["section:$subject->uid"],
+                    $subject->name,
                     Table::ENTRIES,
                     ['sectionId' => $subject->id],
-                    fn(int $num) => Craft::t('app', 'The section is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                    fn(int $num) => Craft::t('app', 'The section is selected as a source for {num, number} {num, plural, =1{Entries field} other{Entries fields}}.', ['num' => $num]),
                 ),
-                new TrashedElementsBlocker(Entry::class, ['sectionId' => $subject->id]),
             ],
             'site' => [
                 new SiteSectionsBlocker($subject),
             ],
             'tag-group' => [
+                new TrashedElementsBlocker(
+                    Tag::class,
+                    ['groupId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The tag group contains {num, number} {num, plural, =1{tag} other{tags}}.', ['num' => $num]),
+                ),
                 new SourceUsageBlocker(
                     TagsField::class,
                     ["taggroup:$subject->uid"],
+                    $subject->name,
                     Table::TAGS,
                     ['groupId' => $subject->id],
-                    fn(int $num) => Craft::t('app', 'The tag group is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                    fn(int $num) => Craft::t('app', 'The tag group is selected as a source for {num, number} {num, plural, =1{Tags field} other{Tags fields}}.', ['num' => $num]),
                 ),
-                new TrashedElementsBlocker(Tag::class, ['groupId' => $subject->id]),
             ],
             'user-group' => [
                 new UserGroupUsageBlocker($subject),
             ],
             'volume' => [
+                new TrashedElementsBlocker(
+                    Asset::class,
+                    ['volumeId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The volume contains {num, number} {num, plural, =1{asset} other{assets}}.', ['num' => $num]),
+                ),
                 new SourceUsageBlocker(
                     AssetsField::class,
                     ["volume:$subject->uid"],
+                    $subject->name,
                     Table::ASSETS,
                     ['volumeId' => $subject->id],
-                    fn(int $num) => Craft::t('app', 'The volume is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                    fn(int $num) => Craft::t('app', 'The volume is selected as a source for {num, number} {num, plural, =1{Assets field} other{Assets fields}}.', ['num' => $num]),
                 ),
-                new TrashedElementsBlocker(Asset::class, ['volumeId' => $subject->id]),
                 new UserPhotoVolumeBlocker($subject),
             ],
             default => [],

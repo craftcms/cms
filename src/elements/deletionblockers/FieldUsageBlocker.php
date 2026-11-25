@@ -43,7 +43,7 @@ class FieldUsageBlocker extends BaseResolvableDeletionBlocker
 
     public function getSummary(): string
     {
-        return Craft::t('app', 'The field is used by {num, number} {num, plural, =1{field layout} other{field layouts}}.', [
+        return Craft::t('app', 'The field is included in {num, number} {num, plural, =1{field layout} other{field layouts}}.', [
             'num' => count($this->getItems()),
         ]);
     }

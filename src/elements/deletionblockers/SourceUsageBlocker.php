@@ -28,15 +28,17 @@ class SourceUsageBlocker extends BaseResolvableDeletionBlocker
      *
      * @param class-string<BaseRelationField> $fieldType The relation field type, such as `craft\fields\Entries`
      * @param string[] $sourceKeys The source keys that select the source in the fields’ settings, such as `section:<uid>`
+     * @param string $sourceName The source’s name, such as a section’s name
      * @param string $elementTable The table that holds the source’s elements, such as `{{%entries}}`
      * @param array $elementCondition The condition on that table that selects the source’s elements, such as `['sectionId' => 1]`
      * @param (callable(int): string)|null $summary A callable that returns the blocker’s summary for the number of
-     * fields, such as “The section is a source for 2 fields.” Defaults to a summary that doesn’t name the source.
+     * fields, such as “The section is selected as a source for 2 Entries fields.” Defaults to a summary that doesn’t name the source.
      * Pass a callable rather than a string so translators get a whole sentence.
      */
     public function __construct(
         protected readonly string $fieldType,
         protected readonly array $sourceKeys,
+        protected readonly string $sourceName,
         protected readonly string $elementTable,
         protected readonly array $elementCondition,
         protected readonly mixed $summary = null,
@@ -58,7 +60,7 @@ class SourceUsageBlocker extends BaseResolvableDeletionBlocker
             return ($this->summary)($num);
         }
 
-        return Craft::t('app', 'It’s a source for {num, number} {num, plural, =1{field} other{fields}}.', [
+        return Craft::t('app', 'It’s selected as a source for {num, number} {num, plural, =1{field} other{fields}}.', [
             'num' => $num,
         ]);
     }
@@ -108,8 +110,9 @@ class SourceUsageBlocker extends BaseResolvableDeletionBlocker
             $items[] = [
                 'label' => $field->getUiLabel(),
                 'count' => $count,
-                'description' => Craft::t('app', '{count, number} {count, plural, =1{element relates} other{elements relate}} to {type} that will be moved to the trash.', [
+                'description' => Craft::t('app', '{count, number} {count, plural, =1{element relates} other{elements relate}} to {name} {type}.', [
                     'count' => $count,
+                    'name' => $this->sourceName,
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]),
             ];

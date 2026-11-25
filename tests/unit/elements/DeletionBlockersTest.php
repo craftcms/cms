@@ -126,7 +126,7 @@ class DeletionBlockersTest extends TestCase
             array_column($blocker->getItems(), 'count', 'label'),
         );
         self::assertSame('2 entries have a value.', $blocker->getItems()[0]['description']);
-        self::assertSame('The field is used by 2 field layouts.', $blocker->getSummary());
+        self::assertSame('The field is included in 2 field layouts.', $blocker->getSummary());
     }
 
     public function testUnusedFieldHasNoActiveBlockers(): void
@@ -146,7 +146,7 @@ class DeletionBlockersTest extends TestCase
         $usage = $this->activeBlocker($blockers, EntryTypeUsageBlocker::class);
         self::assertSame(['blockerBlog' => 1, 'blockerPages' => 2], array_column($usage->getItems(), 'count', 'label'));
         self::assertSame('The entry type is used by 2 sections.', $usage->getSummary());
-        self::assertSame('3 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
+        self::assertSame('3 entries use the entry type.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
     }
 
     public function testSectionBlockersListSourceFieldsAndEntriesToTrash(): void
@@ -190,7 +190,8 @@ class DeletionBlockersTest extends TestCase
             $counts = array_column($usage->getItems(), 'count', 'label');
             ksort($counts);
             self::assertSame(['Blocker Anything' => 0, 'Blocker Related' => 2], $counts);
-            self::assertSame('2 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
+            self::assertSame('2 elements relate to blockerBlog entries.', array_column($usage->getItems(), 'description', 'label')['Blocker Related']);
+            self::assertSame('The section contains 2 entries.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
         } finally {
             Craft::$app->getFields()->deleteField($anything);
         }
@@ -219,8 +220,8 @@ class DeletionBlockersTest extends TestCase
             $blockers = $this->blockers('tag-group', $group);
             $usage = $this->activeBlocker($blockers, SourceUsageBlocker::class);
             self::assertSame(['Blocker Tag Field' => 1], array_column($usage->getItems(), 'count', 'label'));
-            self::assertSame('The tag group is a source for 1 field.', $usage->getSummary());
-            self::assertSame('1 tag will be moved to the trash.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
+            self::assertSame('The tag group is selected as a source for 1 Tags field.', $usage->getSummary());
+            self::assertSame('The tag group contains 1 tag.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
         } finally {
             Craft::$app->getFields()->deleteField($field);
             Craft::$app->getTags()->deleteTagGroup($group);

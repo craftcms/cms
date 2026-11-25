@@ -31,10 +31,13 @@ class TrashedElementsBlocker extends BaseResolvableDeletionBlocker
      *
      * @param class-string<ElementInterface> $elementType The element type, such as `craft\elements\Entry`
      * @param array $criteria Element query criteria that select the elements, such as `['sectionId' => 1]`
+     * @param (callable(int): string)|null $summary A callable that returns the blocker’s summary for the number of
+     * elements, such as “The section contains 4 entries.” Defaults to a summary that says they’ll be moved to the trash.
      */
     public function __construct(
         protected readonly string $elementType,
         protected readonly array $criteria,
+        protected readonly mixed $summary = null,
         array $config = [],
     ) {
         parent::__construct($config);
@@ -62,6 +65,10 @@ class TrashedElementsBlocker extends BaseResolvableDeletionBlocker
 
     public function getSummary(): string
     {
+        if ($this->summary !== null) {
+            return ($this->summary)($this->count);
+        }
+
         return Craft::t('app', '{num, number} {num, plural, =1{{type}} other{{pluralType}}} will be moved to the trash.', [
             'num' => $this->count,
             'type' => $this->elementType::lowerDisplayName(),
