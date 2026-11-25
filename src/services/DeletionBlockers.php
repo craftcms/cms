@@ -318,24 +318,27 @@ class DeletionBlockers extends Component
      */
     private function moveEntriesActions(Section $section): array
     {
-        $entryIds = Entry::find()
-            ->sectionId($section->id)
-            ->drafts(null)
-            ->draftOf(false)
-            ->andWhere(['elements.canonicalId' => null])
-            ->site('*')
-            ->unique()
-            ->status(null)
-            ->ids();
-        if (empty($entryIds)) {
+        // Entries can’t be moved out of a Single
+        if ($section->type === Section::TYPE_SINGLE) {
             return [];
         }
 
-        $typeIds = array_unique(array_map('intval', (new Query())
-            ->select(['typeId'])
-            ->from(Table::ENTRIES)
-            ->where(['id' => $entryIds])
-            ->column()));
+        $typeIds = array_map('intval', (new Query())
+            ->select(['entries.typeId'])
+            ->distinct()
+            ->from(['entries' => Table::ENTRIES])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[entries.id]]')
+            ->where([
+                'entries.sectionId' => $section->id,
+                'elements.canonicalId' => null,
+                'elements.revisionId' => null,
+                'elements.dateDeleted' => null,
+            ])
+            ->column());
+        if (empty($typeIds)) {
+            return [];
+        }
+
         $siteIds = array_keys($section->getSiteSettings());
         $user = Craft::$app->getUser()->getIdentity();
 
@@ -361,17 +364,26 @@ class DeletionBlockers extends Component
             [
                 'icon' => 'arrow-right',
                 'label' => Craft::t('app', 'Move entries'),
-                'callback' => Html::jsWithVars(fn($entryIds, $siteId, $sectionUid) => <<<JS
-new Craft.EntryMover($entryIds, null, {
-  siteId: $siteId,
-  currentSectionUid: $sectionUid,
-  onMove: async () => {
-    await blocker.manager.refresh();
+                'callback' => Html::jsWithVars(fn($sectionId, $siteId, $sectionUid) => <<<JS
+Craft.sendActionRequest('POST', 'deletion-blockers/section-entry-ids', {
+  data: {sectionId: $sectionId},
+})
+  .then(({data}) => {
+    new Craft.EntryMover(data.entryIds, null, {
+      siteId: $siteId,
+      currentSectionUid: $sectionUid,
+      onMove: async () => {
+        await blocker.manager.refresh();
+        reject();
+      },
+      onCancel: () => reject(),
+    });
+  })
+  .catch((e) => {
+    Craft.cp.displayError(e?.response?.data?.message);
     reject();
-  },
-  onCancel: () => reject(),
-});
-JS, [$entryIds, $siteIds[0], $section->uid]),
+  });
+JS, [$section->id, $siteIds[0], $section->uid]),
             ],
         ];
     }
