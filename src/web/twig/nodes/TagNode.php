@@ -10,7 +10,6 @@ namespace craft\web\twig\nodes;
 use craft\helpers\Html;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
-use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 /**
@@ -28,7 +27,6 @@ class TagNode extends Node
     public function compile(Compiler $compiler): void
     {
         $content = new CaptureNode($this->getNode('content'), $this->getTemplateLine());
-        $content->setAttribute('raw', true);
         $var = $compiler->getVarName();
 
         $compiler

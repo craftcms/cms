@@ -62,7 +62,7 @@ TWIG;
         }, E_USER_DEPRECATED);
 
         try {
-            Craft::$app->getView()->getTwig()->createTemplate($template);
+            Craft::$app->getView()->getTwig()->createTemplate($template, uniqid('tags', true));
         } finally {
             restore_error_handler();
         }
@@ -75,6 +75,20 @@ TWIG;
         self::assertSame(
             '<input name="a[x]"><input name="a[b][y]"><input name="a[z]">',
             Craft::$app->getView()->renderString('{% namespace "a" %}<input name="x">{% namespace "b" %}<input name="y">{% endnamespace %}<input name="z">{% endnamespace %}'),
+        );
+    }
+
+    public function testMacrosImportedInCapturingTagsStayAvailable(): void
+    {
+        self::assertSame(
+            '<p>hi</p>|hi|hi|hi',
+            Craft::$app->getView()->renderString(<<<'TWIG'
+{%- macro hi() %}hi{% endmacro -%}
+{% tag 'p' %}{% import _self as a %}{{ a.hi() }}{% endtag %}|{{ a.hi() }}
+{%- namespace 'n' %}{% import _self as b %}{% endnamespace %}|{{ b.hi() }}
+{%- cache if false %}{% import _self as c %}{% endcache %}|{{ c.hi() }}
+{%- css %}{% import _self as d %}{% endcss %}
+TWIG),
         );
     }
 }

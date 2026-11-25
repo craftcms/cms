@@ -11,7 +11,6 @@ use Craft;
 use craft\helpers\Html;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
-use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 /**
@@ -29,7 +28,6 @@ class NamespaceNode extends Node
     public function compile(Compiler $compiler): void
     {
         $body = new CaptureNode($this->getNode('body'), $this->getTemplateLine());
-        $body->setAttribute('raw', true);
 
         $compiler
             ->addDebugInfo($this)

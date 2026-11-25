@@ -12,7 +12,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
-use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 /**
@@ -36,7 +35,6 @@ class CacheNode extends Node
     {
         $n = self::$_cacheCount++;
         $body = new CaptureNode($this->getNode('body'), $this->getTemplateLine());
-        $body->setAttribute('raw', true);
 
         $conditions = $this->hasNode('conditions') ? $this->getNode('conditions') : null;
         $ignoreConditions = $this->hasNode('ignoreConditions') ? $this->getNode('ignoreConditions') : null;
