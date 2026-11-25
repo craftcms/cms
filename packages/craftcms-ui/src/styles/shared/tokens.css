@@ -215,17 +215,23 @@
 
   /**
   Status
+
+  Enabled, pending and expired are more vivid than the palette, so they get
+  their own generated colors (`--color-status-*`, see color-definitions.js).
+  Each fill keeps 3:1 and each text color 4.5:1 against every surface a status
+  sits on, in both themes. The fill reaches 3:1 by itself, so the border
+  matches it rather than darkening the dot's edge.
    */
 
   /* Live */
-  --c-status-live-fill: var(--color-emerald-500);
-  --c-status-live-border: var(--color-emerald-700);
-  --c-status-live-text: var(--color-emerald-700);
+  --c-status-live-fill: var(--c-status-enabled-fill);
+  --c-status-live-border: var(--c-status-enabled-border);
+  --c-status-live-text: var(--c-status-enabled-text);
 
   /* Enabled */
-  --c-status-enabled-fill: var(--color-emerald-500);
-  --c-status-enabled-border: var(--color-emerald-700);
-  --c-status-enabled-text: var(--color-emerald-700);
+  --c-status-enabled-fill: var(--color-status-enabled-fill);
+  --c-status-enabled-border: var(--c-status-enabled-fill);
+  --c-status-enabled-text: var(--color-status-enabled-text);
 
   /* A field whose value differs from the canonical element's */
   --c-field-modified-indicator: var(--color-violet-600);
@@ -234,14 +240,14 @@
   --c-callout-fill-mute: 0%;
 
   /* Pending */
-  --c-status-pending-fill: var(--color-sky-400);
-  --c-status-pending-text: var(--color-sky-700);
-  --c-status-pending-border: var(--color-sky-700);
+  --c-status-pending-fill: var(--color-status-pending-fill);
+  --c-status-pending-text: var(--color-status-pending-text);
+  --c-status-pending-border: var(--c-status-pending-fill);
 
   /* Expired */
-  --c-status-expired-fill: var(--color-red-400);
-  --c-status-expired-text: var(--color-red-700);
-  --c-status-expired-border: var(--color-red-700);
+  --c-status-expired-fill: var(--color-status-expired-fill);
+  --c-status-expired-text: var(--color-status-expired-text);
+  --c-status-expired-border: var(--c-status-expired-fill);
 
   /* Disabled */
   --c-status-disabled-fill: var(--color-slate-200);
@@ -288,7 +294,7 @@
   --c-form-control-fill: color-mix(in oklab, var(--color-base-100), white 50%);
   --c-form-control-text: var(--c-text-default);
   --c-form-control-placeholder: var(--c-text-quiet);
-  --c-form-control-border-color: var(--color-slate-400);
+  --c-form-control-border-color: var(--color-form-control-border);
   --c-form-control-border-width: 1px;
   --c-form-control-border-style: solid;
   --c-form-control-radius: var(--c-radius-md);
@@ -400,7 +406,7 @@
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
   --c-form-control-placeholder: var(--color-slate-600);
-  --c-form-control-border-color: var(--color-slate-400);
+  --c-form-control-border-color: var(--color-form-control-border);
 }
 
 /* The light theme is the default, with no `data-theme` on <html>, so it sets
@@ -519,5 +525,35 @@
 .use-shapes {
   --c-status-shape-radius: 15%;
   --c-status-triangle-clip: polygon(50% 0, 100% 100%, 0 100%);
+  /* The triangle's 1px ring as a band: the triangle with the triangle inset by
+     1px, measured square to each edge, cut out of it. The apex moves down
+     1px ÷ sin(26.57°) and each base corner moves in along the base and its
+     side (the triangle is as tall as it is wide). */
+  --c-status-triangle-ring-clip: polygon(
+    evenodd,
+    50% 0,
+    100% 100%,
+    0 100%,
+    50% 0,
+    50% 2.24px,
+    1.62px calc(100% - 1px),
+    calc(100% - 1.62px) calc(100% - 1px),
+    50% 2.24px
+  );
   --c-status-diamond-clip: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  /* The diamond's 1px ring as a band: each inner corner moves in
+     1px ÷ sin(45°). */
+  --c-status-diamond-ring-clip: polygon(
+    evenodd,
+    50% 0,
+    100% 50%,
+    50% 100%,
+    0 50%,
+    50% 0,
+    50% 1.41px,
+    1.41px 50%,
+    50% calc(100% - 1.41px),
+    calc(100% - 1.41px) 50%,
+    50% 1.41px
+  );
 }

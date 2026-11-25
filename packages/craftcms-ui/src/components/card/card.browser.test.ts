@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import './card.js';
@@ -8,7 +8,10 @@ import '../checkbox/checkbox.js';
 import '../badge/badge.js';
 import '../truncate/truncate.js';
 import '../field/field.js';
-import {backdropOf, contrast} from '../../../test/contrast';
+import '../input/input.js';
+import '../radio/radio.js';
+import {paletteColors} from '@src/constants/colors.data';
+import {backdropOf, contrast, over} from '../../../test/contrast';
 import {
   HARD_IMAGES,
   MANY_ATTRIBUTES,
@@ -705,12 +708,11 @@ it('keeps a neutral card nested in a tinted one, and what’s in it, neutral', a
   expect(look('white')).toEqual(look('top-white'));
 });
 
-it('keeps quiet text and form controls legible on a white card in the dark theme', async () => {
+it('keeps quiet text legible on a white card in the dark theme', async () => {
   document.body.innerHTML = `
     <div data-theme="dark">
       <craft-card data-color="white">
         <span class="quiet" style="color: var(--c-text-quiet)">Instructions</span>
-        <span class="control" style="color: var(--c-form-control-border-color)">Input</span>
       </craft-card>
     </div>`;
   const card = document.querySelector<CraftCard>('craft-card')!;
@@ -718,11 +720,99 @@ it('keeps quiet text and form controls legible on a white card in the dark theme
   const fill = getComputedStyle(
     card.shadowRoot!.querySelector('.card')!
   ).backgroundColor;
-  const colorOf = (selector: string) =>
-    getComputedStyle(document.querySelector(selector)!).color;
+  const quiet = getComputedStyle(document.querySelector('.quiet')!).color;
 
-  expect(contrast(colorOf('.quiet'), fill)).toBeGreaterThanOrEqual(4.5);
-  expect(contrast(colorOf('.control'), fill)).toBeGreaterThanOrEqual(3);
+  expect(contrast(quiet, fill)).toBeGreaterThanOrEqual(4.5);
+});
+
+/** The element that paints a control's border: the control or one inside it. */
+function borderOf(control: Element): Element | null {
+  const candidates: Element[] = [control];
+  const collect = (root: Element | ShadowRoot) => {
+    for (const element of root.querySelectorAll('*')) {
+      candidates.push(element);
+      if (element.shadowRoot) collect(element.shadowRoot);
+    }
+  };
+  collect(control);
+  if (control.shadowRoot) collect(control.shadowRoot);
+
+  return (
+    candidates.find((element) => {
+      const {borderTopWidth, borderTopStyle} = getComputedStyle(element);
+      const {width, height} = element.getBoundingClientRect();
+
+      return (
+        parseFloat(borderTopWidth) >= 1 &&
+        borderTopStyle !== 'none' &&
+        width >= 10 &&
+        height >= 10
+      );
+    }) ?? null
+  );
+}
+
+/**
+ * A form control's border is its only boundary, so it needs 3:1 against what's
+ * behind it (WCAG 1.4.11), in any card a field can sit in: every color,
+ * selected or not.
+ */
+describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+  it.each(['an unselected', 'a selected'])(
+    'keeps form control borders at 3:1 in %s card of every color',
+    async (state) => {
+      const colors = [null, ...paletteColors];
+      document.body.innerHTML = `<div data-theme="${theme}" style="background: var(--c-surface-default)">${colors
+        .map(
+          (color) => `
+            <craft-card data-case="${color ?? 'uncolored'}" ${color ? `data-color="${color}"` : ''} ${state === 'a selected' ? 'active' : ''}>
+              <span slot="label">Block</span>
+              <craft-input aria-label="Title"></craft-input>
+              <craft-checkbox label="Featured"></craft-checkbox>
+              <craft-radio><input slot="input" type="radio" id="radio-${color ?? 'uncolored'}" /><label slot="label" for="radio-${color ?? 'uncolored'}">Option</label></craft-radio>
+            </craft-card>`
+        )
+        .join('')}</div>`;
+      const elements = [
+        ...document.querySelectorAll(
+          'craft-card, craft-input, craft-checkbox, craft-radio'
+        ),
+      ] as (Element & {updateComplete: Promise<unknown>})[];
+      await Promise.all(elements.map((element) => element.updateComplete));
+
+      const failures: string[] = [];
+
+      for (const card of document.querySelectorAll<CraftCard>('craft-card')) {
+        const root = card.shadowRoot!.querySelector('.card')!;
+        const body = over(
+          getComputedStyle(root).backgroundColor,
+          backdropOf(root)
+        );
+
+        for (const control of card.querySelectorAll(
+          'craft-input, craft-checkbox, craft-radio'
+        )) {
+          const name = `${card.dataset.case} ${control.localName}`;
+          const border = borderOf(control);
+          expect(border, `${name} draws a border`).not.toBeNull();
+          const backdrop = backdropOf(border!);
+          // Guards against a control that isn't in the card's body, which would
+          // measure it against the page instead.
+          expect(backdrop, name).toBe(body);
+
+          const ratio = contrast(
+            getComputedStyle(border!).borderTopColor,
+            backdrop
+          );
+          if (ratio < 3) {
+            failures.push(`${name}: ${ratio.toFixed(2)} on ${backdrop}`);
+          }
+        }
+      }
+
+      expect(failures).toEqual([]);
+    }
+  );
 });
 
 const GRAY_IMAGE = `data:image/svg+xml,${encodeURIComponent(

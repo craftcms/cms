@@ -11,7 +11,10 @@ import {statusShape} from '@src/constants/statuses';
  * live, a user that is disabled, a draft that is pending.
  *
  * The dot carries no text. It is meant to sit beside the thing it describes,
- * in an index row or a chip, where the name is already present.
+ * in an index row or a chip, where the name is already present. Without text
+ * beside it that names the state, the dot's shape and color are the only cue,
+ * so it must reach 3:1 against what's behind it: see Accessibility in its docs,
+ * or use `craft-badge`, which names the state in words.
  *
  * Reach for `craft-indicator` instead when the dot means something the status
  * vocabulary does not cover: indicator takes any palette color, where this

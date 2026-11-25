@@ -13,7 +13,7 @@ import '../input/input.js';
 import '../select/select.js';
 import '../combobox/combobox.js';
 import '../../styles/cp.css';
-import {contrast} from '../../../test/contrast';
+import {backdropOf, contrast, isPainted} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -363,6 +363,31 @@ it.each(['light', 'dark'])(
     );
   }
 );
+
+describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+  it.each([
+    '--c-surface-default',
+    '--c-surface-sunken',
+    '--c-surface-page',
+    '--c-surface-details',
+  ])('draws the outdated-field bar at 3:1 on %s', async (surface) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}" style="background: var(${surface}); padding: 8px">
+        <craft-field label="Title" status="outdated" status-label="Updated by someone else"></craft-field>
+      </div>`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    await field.updateComplete;
+    const bar = field.shadowRoot!.querySelector(
+      '.form-field__status-indicator'
+    )!;
+    const {backgroundColor} = getComputedStyle(bar);
+
+    expect(isPainted(backgroundColor)).toBe(true);
+    expect(contrast(backgroundColor, backdropOf(bar))).toBeGreaterThanOrEqual(
+      3
+    );
+  });
+});
 
 it('draws a label badge right after the read-only badge, at its size and weight', async () => {
   document.body.innerHTML = `
