@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.4 - 2026-11-25
 
 - Improved the Dutch control panel translations. ([#21099](https://github.com/craftcms/cms/discussions/21099))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
