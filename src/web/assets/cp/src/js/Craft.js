@@ -2855,12 +2855,13 @@ $.extend(Craft, {
   filterInputVal: function (input, regex) {
     const $input = $(input);
     const val = $input.val();
-    let selectionStart = $input[0].selectionStart;
+    const start = $input[0].selectionStart;
+    let selectionStart = start;
     let newVal = '';
     for (let i = 0; i < val.length; i++) {
       if (val[i].match(regex)) {
         newVal += val[i];
-      } else if (i < selectionStart) {
+      } else if (i < start) {
         selectionStart--;
       }
     }
@@ -2873,10 +2874,16 @@ $.extend(Craft, {
   /**
    * Reduces an input’s value to numeric characters.
    * @param {jQuery|HTMLElement} input
-   * @param {RegExp} regex
+   * @param {boolean} [localized=false] Whether the value is formatted for a locale, which may write it with its own
+   * digits, spaces, separators, minus signs, and direction marks
    */
-  filterNumberInputVal: function (input) {
-    this.filterInputVal(input, /[0-9.,\-]/);
+  filterNumberInputVal: function (input, localized = false) {
+    this.filterInputVal(
+      input,
+      localized
+        ? /[\p{Nd}\p{Zs}.,'’\u066b\u066c\u061c\u200e\u200f\u2212-]/u
+        : /[0-9.,\-]/
+    );
   },
 
   /**

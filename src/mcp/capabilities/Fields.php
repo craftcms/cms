@@ -8,10 +8,12 @@ use Craft;
 use craft\base\FieldInterface;
 use craft\fields\BaseRelationField;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
 use craft\mcp\attributes\RequiresAdmin;
 use craft\mcp\attributes\RequiresAdminChanges;
+use craft\mcp\schema\ConditionSchema;
 use craft\mcp\SensitiveValues;
 use craft\services\Fields as FieldService;
 use Illuminate\Support\Arr;
@@ -31,6 +33,7 @@ class Fields
     public function __construct(
         private FieldService $fields,
         private SensitiveValues $sensitiveValues,
+        private ConditionSchema $conditions,
     ) {
     }
 
@@ -100,6 +103,11 @@ class Fields
         ]);
 
         $this->validateSources($field, $settings);
+        $settings = $this->normalizeSelectionCondition($field, $settings);
+
+        if ($field instanceof BaseRelationField && array_key_exists('selectionCondition', $settings)) {
+            $field->setSelectionCondition($settings['selectionCondition']);
+        }
 
         return ['field' => $this->save($field)];
     }
@@ -153,6 +161,7 @@ class Fields
         if (array_key_exists('settings', $request->arguments)) {
             $settings = $this->sensitiveValues->restore($settings, $field->getSettings());
             $this->validateSources($field, $settings);
+            $settings = $this->normalizeSelectionCondition($field, $settings);
             $attributes = [...array_replace($field->getSettings(), $settings), ...$attributes];
         }
 
@@ -268,6 +277,24 @@ class Fields
         }
     }
 
+    /**
+     * Normalizes a relation field’s selection condition, rejecting rules Craft would drop.
+     *
+     * @param array<string, mixed> $settings
+     * @return array<string, mixed>
+     */
+    private function normalizeSelectionCondition(FieldInterface $field, array $settings): array
+    {
+        if (!$field instanceof BaseRelationField || !isset($settings['selectionCondition'])) {
+            return $settings;
+        }
+
+        $condition = $this->conditions->normalize($this->conditions->forRelationSelection($field), $settings['selectionCondition'], 'settings.selectionCondition');
+        $settings['selectionCondition'] = $condition['conditionRules'] ? $condition : null;
+
+        return $settings;
+    }
+
     /** @return array<string, mixed> */
     private function save(FieldInterface $field): array
     {
@@ -284,7 +311,7 @@ class Fields
         $config = $this->fields->createFieldConfig($field);
 
         if (isset($config['settings'])) {
-            $config['settings'] = $this->sensitiveValues->redact($config['settings']);
+            $config['settings'] = $this->sensitiveValues->redact(ProjectConfigHelper::unpackAssociativeArrays($config['settings']));
         }
 
         return [
