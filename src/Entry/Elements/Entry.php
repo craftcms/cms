@@ -36,8 +36,6 @@ use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\Element\Events\ElementStatusChanged;
-use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
@@ -73,7 +71,6 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Entries;
@@ -106,12 +103,19 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
 use RuntimeException;
+use Tpetry\QueryExpressions\Language\Alias;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\GreaterThan;
+use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
+use Tpetry\QueryExpressions\Operator\Comparison\LessThanOrEqual;
+use Tpetry\QueryExpressions\Operator\Logical\CondOr;
+use Tpetry\QueryExpressions\Value\Value;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -1583,10 +1587,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * Returns the date-based status for the given dates.
+     * Returns the status that the given post and expiry dates give an entry.
      *
-     * Like entry queries, it considers “now” to be the end of the current minute, so an entry’s status, its stored
-     * status and the entries a query finds all change at the same moment.
+     * “Now” is the end of the current minute, as in entry queries, so an entry’s status, its stored status and the
+     * results of entry queries all change in the same minute.
      *
      * @return self::STATUS_LIVE|self::STATUS_PENDING|self::STATUS_EXPIRED
      */
@@ -1602,30 +1606,23 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * Returns SQL that evaluates to an `entries` row’s date-based status, as {@see statusForDates()} does.
-     *
-     * @param  string  $table  The table name or alias to qualify the `entries` columns with
+     * Returns an SQL expression for the status that an `entries` row’s dates give it, matching {@see statusForDates()}.
      */
-    private static function statusForDatesSql(string $table): Expression
+    private static function statusForDatesSql(): Expression
     {
-        $grammar = DB::getQueryGrammar();
-        $now = DB::escape(Query::prepareDateForDb(now()->endOfMinute()));
-        $postDate = $grammar->wrap("$table.postDate");
-        $expiryDate = $grammar->wrap("$table.expiryDate");
+        $now = new Value(Query::prepareDateForDb(now()->endOfMinute()));
 
-        return DB::raw(sprintf(
-            "(CASE WHEN %1\$s IS NULL OR %1\$s > %3\$s THEN '%4\$s' WHEN %2\$s IS NOT NULL AND %2\$s <= %3\$s THEN '%5\$s' ELSE '%6\$s' END)",
-            $postDate,
-            $expiryDate,
-            $now,
-            self::STATUS_PENDING,
-            self::STATUS_EXPIRED,
-            self::STATUS_LIVE,
-        ));
+        return new CaseGroup(
+            when: [
+                new CaseRule(new Value(self::STATUS_PENDING), new CondOr(new IsNull('postDate'), new GreaterThan('postDate', $now))),
+                new CaseRule(new Value(self::STATUS_EXPIRED), new LessThanOrEqual('expiryDate', $now)),
+            ],
+            else: new Value(self::STATUS_LIVE),
+        );
     }
 
     /**
-     * @return Builder A query for canonical entries’ `entries` rows
+     * @return Builder A query for the `entries` rows of entries that aren’t drafts, revisions or deleted
      */
     private static function canonicalEntryRows(): Builder
     {
@@ -1636,17 +1633,22 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ->whereNull('elements.dateDeleted');
     }
 
+    /**
+     * Returns nothing while the deprecated `staticStatuses` config setting is on. Entry queries then read the stored
+     * statuses, and `craft:update-statuses` keeps them up to date by re-saving entries.
+     */
     public static function findIdsWithOutdatedStatus(): array
     {
-        // Once a day, since this runs every minute
-        if (Cms::config()->staticStatuses && Cache::add('craft:staticStatuses-deprecation-logged', true, now()->plus(days: 1))) {
-            Deprecator::log('staticStatuses', 'The `staticStatuses` config setting is deprecated. Turn it off and run Laravel’s scheduler. Entry queries get statuses from post and expiry dates, and Craft dispatches `'.ElementStatusChanged::class.'` and clears caches when those dates pass.');
+        if (Cms::config()->staticStatuses) {
+            return [];
         }
 
         $now = Query::prepareDateForDb(now()->endOfMinute());
 
-        // Only dates passing change a stored status without a save, so this can use the (status, postDate) and
-        // (status, expiryDate) indexes rather than comparing every entry’s status with its dates
+        // Saving an entry stores the status its dates give it. After that, its stored status only goes out of date
+        // when its post date or expiry date passes. So this only looks for pending entries whose post date passed
+        // and live entries whose expiry date passed, which the (status, postDate) and (status, expiryDate) indexes
+        // cover.
         return self::canonicalEntryRows()
             ->where(fn (Builder $query) => $query
                 ->where(fn (Builder $query) => $query
@@ -1661,43 +1663,15 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ->all();
     }
 
-    /**
-     * With the deprecated `staticStatuses` config setting on, it re-saves the entry instead, as `craft:update-statuses`
-     * did, so `ElementSaved` listeners that compare {@see $oldStatus} keep working. Entries nested in drafts and
-     * revisions are updated without re-saving them. A re-save that fails throws, so the failure is reported.
-     */
     public static function updateStoredStatus(int $elementId): ?array
     {
-        if (Cms::config()->staticStatuses) {
-            $entry = self::find()->id($elementId)->status(null)->one();
-
-            // Nested entries in drafts and revisions are updated below, since revisions can’t be re-saved
-            if ($entry instanceof self && ! ElementHelper::isDraftOrRevision($entry)) {
-                $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                $entry->resaving = true;
-
-                if (! Elements::saveElement($entry, updateSearchIndex: false)) {
-                    throw new InvalidElementException($entry, "Couldn’t re-save entry $elementId to update its status: ".implode(', ', $entry->errors()->all()));
-                }
-
-                $write = $entry->getStoredStatusWrite();
-
-                return $write !== null && $write['replaced'] !== $write['written']
-                    ? ['before' => null, 'status' => $write['written']]
-                    : null;
-            }
-        }
-
         return DB::transaction(function () use ($elementId): ?array {
-            // Under the same lock a save takes, so a save or another run that updated it first dispatches the change
-            // once, and the statuses read below are the ones this replaces
+            // Saves lock the same row. If a save or another run updated the status first, this finds nothing to
+            // change, so only one of them dispatches the change.
             $row = DB::table(Table::ENTRIES)
                 ->where('id', $elementId)
                 ->lockForUpdate()
-                ->first([
-                    'status',
-                    DB::raw(sprintf('%s as %s', self::statusForDatesSql(Table::ENTRIES)->getValue(DB::getQueryGrammar()), DB::getQueryGrammar()->wrap('dateStatus'))),
-                ]);
+                ->first(['status', new Alias(self::statusForDatesSql(), 'dateStatus')]);
 
             if ($row === null || $row->status === $row->dateStatus) {
                 return null;
@@ -2962,7 +2936,7 @@ JS;
         if (! $this->propagating) {
             $section = $this->getSection();
 
-            // Get the entry record, locked so the scheduled status update can’t change it until this save commits
+            // Lock the entry’s row so a scheduled status update can’t change it until this save commits
             if (! $isNew) {
                 $model = EntryModel::query()->lockForUpdate()->findOrFail($this->id);
                 $replacedStatus = $model->status;

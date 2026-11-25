@@ -67,12 +67,12 @@ class ElementServiceProvider extends ServiceProvider
             }
         });
 
-        // Runs what the craft:update-element-statuses command runs, in the scheduler's process
+        // Runs the same code as the craft:update-element-statuses command, in the scheduler’s process
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
             $schedule
                 ->call(fn (): int => app(ElementStatuses::class)->updateScheduled())
                 ->when(function (): bool {
-                    // Until the migration has brought stored statuses up to date, every outdated one would look like a change
+                    // Until the migration updates stored statuses, every outdated one would look like a new change
                     if (! Cms::isInstalled() || Updates::isCraftUpdatePending()) {
                         return false;
                     }

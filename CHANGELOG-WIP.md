@@ -306,7 +306,7 @@
 - Added the `craft:update-element-statuses` command, which Craft runs every minute to clear entries’ caches and dispatch `CraftCms\Cms\Element\Events\ElementStatusChanged` when their post and expiry dates pass. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Added the `scheduleElementStatusUpdates` config setting. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Deprecated the `staticStatuses` config setting. Laravel’s scheduler should be run instead. ([#21096](https://github.com/craftcms/cms/pull/21096))
-- Deprecated the `craft:update-statuses` command. `craft:update-element-statuses` should be used instead. ([#21096](https://github.com/craftcms/cms/pull/21096))
+- Deprecated the `craft:update-statuses` command, along with the `staticStatuses` config setting. ([#21096](https://github.com/craftcms/cms/pull/21096))
 - Two-factor authentication recovery codes are now encrypted at rest. ([#19252](https://github.com/craftcms/cms/pull/19252))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
 - The Project Config utility’s “Discard changes” action and the config sync’s “Use the loaded project config” option now show an error when the project config YAML files can’t be written, rather than failing with a server error. ([#20547](https://github.com/craftcms/cms/pull/20547))
@@ -609,7 +609,7 @@
   - `CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand` => `php craft elements:delete-all-of-type`
   - `CraftCms\Cms\Element\Commands\RestoreCommand` => `php craft elements:restore`
 - `craft\console\controllers\UpdateStatusesController` has been removed in favor of the class below:
-  - `CraftCms\Cms\Element\Commands\UpdateElementStatusesCommand` => `php craft update-element-statuses`
+  - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
 - `craft\console\controllers\utils\FixElementUidsController` has been removed in favor of the class below:
   - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
 - `craft\console\controllers\utils\FixFieldLayoutUidsController` has been removed in favor of the class below:

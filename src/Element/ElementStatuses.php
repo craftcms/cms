@@ -17,8 +17,8 @@ use Throwable;
 use WeakMap;
 
 /**
- * Keeps {@see SchedulableElementInterface} elements’ stored statuses up to date, and dispatches
- * {@see ElementStatusChanged} when an element’s status changes in a site.
+ * Updates the stored statuses of {@see SchedulableElementInterface} elements when their dates pass, and dispatches
+ * {@see ElementStatusChanged} when an element’s status changes in a site, from a save or a passed date.
  *
  * @since 6.0.0
  */
@@ -26,15 +26,15 @@ use WeakMap;
 readonly class ElementStatuses
 {
     /**
-     * The statuses of elements being saved, by site ID, read before their saves, and the site to compare for saves
-     * that propagate an element to one site on their own.
+     * The statuses by site ID of elements being saved, read before each save. `siteId` is set when the save only
+     * propagates the element to that site, so only that site is compared.
      *
      * @var WeakMap<ElementInterface, array{statuses: array<int, string>, siteId: int|null}>
      */
     private WeakMap $statusesBeforeSave;
 
     /**
-     * Saved elements whose sites are compared once their transaction commits
+     * Saved elements whose statuses will be compared when their transaction commits
      *
      * @var WeakMap<ElementInterface, true>
      */
@@ -47,12 +47,11 @@ readonly class ElementStatuses
     }
 
     /**
-     * Brings stored statuses up to date for elements whose dates passed, invalidates their caches and dispatches
-     * {@see ElementStatusChanged} for each site whose status changed. Returns how many elements’ stored statuses it
-     * updated.
+     * Updates the stored statuses of elements whose dates passed, invalidates their caches and dispatches
+     * {@see ElementStatusChanged} for each site whose status changed. Returns the number of elements it updated.
      *
-     * Run by the `craft:update-element-statuses` command, and every minute by the scheduler. A late or missed run
-     * is caught up by the next one, since it compares each element’s stored status with its dates.
+     * The `craft:update-element-statuses` command calls this, and the scheduler calls it every minute. If a run is
+     * late or skipped, the next run updates every element whose dates passed in the meantime.
      */
     public function updateScheduled(): int
     {
@@ -64,7 +63,7 @@ readonly class ElementStatuses
             }
 
             foreach ($elementType::findIdsWithOutdatedStatus() as $elementId) {
-                // One element failing, or a listener throwing, mustn't hold up the rest
+                // Report a failure or a listener exception, and move on to the next element
                 try {
                     $update = $elementType::updateStoredStatus($elementId);
 
@@ -73,11 +72,6 @@ readonly class ElementStatuses
                     }
 
                     $count++;
-
-                    // The element type saved the element instead, and the save dispatched the changes
-                    if ($update['before'] === null) {
-                        continue;
-                    }
 
                     $this->dispatchChanges(
                         $elementType,
@@ -101,15 +95,15 @@ readonly class ElementStatuses
 
         if (
             ! $element instanceof SchedulableElementInterface ||
-            // Including nested elements added or edited in drafts, which don’t have draft IDs themselves
+            // This includes nested elements added or edited in drafts, which have no draft ID of their own
             ElementHelper::isDraftOrRevision($element)
         ) {
             return;
         }
 
         if ($element->propagating) {
-            // The save it’s propagated from compares all sites once it’s saved, unless it isn’t being saved, as when
-            // an element is propagated to new sites on its own
+            // The save that propagates the element compares every site when it finishes. Only compare this site if
+            // the element is being propagated on its own, such as to a newly added site.
             $from = $element->propagatingFrom;
 
             if ($from !== null && (isset($this->statusesBeforeSave[$from]) || isset($this->comparingAfterCommit[$from]))) {
@@ -136,16 +130,15 @@ readonly class ElementStatuses
         ['statuses' => $before, 'siteId' => $siteId] = $this->statusesBeforeSave[$element];
         unset($this->statusesBeforeSave[$element]);
 
-        // Compare the stored status the save replaced, read under a lock, with the one it wrote. A scheduled run may
-        // have updated it after it was read above, or may update it before the comparison below, and dispatches
-        // that change itself.
+        // Compare the stored status that the save replaced with the one it wrote. Both were read under the row lock,
+        // so a change that a scheduled run makes before or after the save is left for that run to dispatch.
         $write = $element->getStoredStatusWrite();
 
         if ($write !== null && $write['replaced'] !== null) {
             $before = self::withDateStatus($before, $write['replaced']);
         }
 
-        // Once every site is written, such as when a draft is applied, which saves its other sites after this one.
+        // Wait until every site is written. Applying a draft, for example, saves the other sites after this one.
         // The save already invalidated the element’s caches.
         $this->comparingAfterCommit[$element] = true;
 
@@ -206,13 +199,13 @@ readonly class ElementStatuses
             : $elementType::find()->id($elementId)->siteId($siteId)->status(null)->one();
         $firstSiteElement = $find(array_key_first($after));
 
-        // Nested elements added or edited in drafts are found by scheduled runs, since their own rows look canonical
+        // Scheduled runs find nested elements added or edited in drafts, because their rows have no draft ID
         if ($firstSiteElement === null || ElementHelper::isDraftOrRevision($firstSiteElement)) {
             return;
         }
 
         if ($invalidateCaches) {
-            // The element’s tags cover all of its sites
+            // The element’s cache tags cover all of its sites
             ElementCaches::invalidateForElement($firstSiteElement);
         }
 
@@ -226,8 +219,8 @@ readonly class ElementStatuses
     }
 
     /**
-     * Replaces the date-based part of an element’s statuses by site ID, leaving disabled and archived sites as they
-     * are.
+     * Sets each site’s status to the given date-based status, except in sites where the element is disabled or
+     * archived.
      *
      * @param  array<int, string>  $statuses
      * @return array<int, string>

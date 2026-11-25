@@ -12,7 +12,7 @@ use Illuminate\Contracts\Console\Isolatable;
 use Override;
 
 /**
- * Brings elements’ stored statuses up to date with their dates. Craft schedules it every minute.
+ * Updates the stored statuses of elements whose dates passed. Craft schedules it every minute.
  *
  * @see ElementStatuses::updateScheduled()
  * @since 6.0.0

@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Element\Contracts;
 use CraftCms\Cms\Element\Events\ElementStatusChanged;
 
 /**
- * An element whose status changes on its own at set dates, without being saved, such as an entry going live at its
- * post date or expiring at its expiry date.
+ * An element whose status changes at set dates without a save, such as an entry that goes live at its post date and
+ * expires at its expiry date.
  *
- * Its element type stores each element’s date-based status, and the `craft:update-element-statuses` command, which
- * Craft schedules every minute, brings the stored statuses up to date. Craft dispatches {@see ElementStatusChanged}
- * whenever an element’s status changes in a site, from a save or from that command.
+ * The element type stores each element’s date-based status. The `craft:update-element-statuses` command, which Craft
+ * schedules every minute, updates stored statuses whose dates passed. Craft dispatches {@see ElementStatusChanged}
+ * when an element’s status changes in a site, from a save or from that command.
  *
  * @internal This may change before Craft 7, as more element types adopt it.
  *
@@ -21,27 +21,26 @@ use CraftCms\Cms\Element\Events\ElementStatusChanged;
 interface SchedulableElementInterface extends ElementInterface
 {
     /**
-     * Returns the IDs of canonical elements whose dates passed since their stored statuses were last updated.
+     * Returns the IDs of canonical elements with a date that passed after their stored status was last written.
      *
      * @return list<int>
      */
     public static function findIdsWithOutdatedStatus(): array;
 
     /**
-     * Brings an element’s stored status up to date with its dates, unless something else already did, and returns
-     * the stored status it wrote with the element’s statuses by site ID before the change, read under the same row
-     * lock as a save’s. Returns `null` if it didn’t change it.
+     * Brings an element’s stored status up to date with its dates, and returns the status it stored along with the
+     * element’s statuses by site ID before the change. Returns `null` if the stored status was already up to date,
+     * such as when a save or another run updated it first.
      *
-     * An element type may save the element instead, which dispatches {@see ElementStatusChanged} itself, and return
-     * `null` for `before`.
+     * It should lock the element’s row as saves do, so a change that a save and a run both see is dispatched once.
      *
-     * @return array{before: array<int, string>|null, status: string}|null
+     * @return array{before: array<int, string>, status: string}|null
      */
     public static function updateStoredStatus(int $elementId): ?array;
 
     /**
-     * Returns canonical elements’ statuses in each of their sites, as {@see ElementInterface::getStatus()} returns them
-     * from their stored statuses, indexed by element ID and site ID.
+     * Returns canonical elements’ statuses in each of their sites, based on their stored statuses, as
+     * {@see ElementInterface::getStatus()} would return them. The array is indexed by element ID and then site ID.
      *
      * @param  list<int>  $elementIds
      * @return array<int, array<int, string>>
@@ -49,12 +48,13 @@ interface SchedulableElementInterface extends ElementInterface
     public static function storedStatuses(array $elementIds): array;
 
     /**
-     * Returns the stored status the element’s last save replaced, read under a row lock, and the one it wrote, or
-     * `null` if the save didn’t write one, such as when it propagated the element to another site.
+     * Returns the stored status that the element’s last save replaced and the one it wrote, both read under the row
+     * lock. Returns `null` if the save didn’t write a stored status, such as when it propagated the element to
+     * another site.
      *
-     * Craft compares these rather than statuses read before and after the save, so a status that the
-     * `craft:update-element-statuses` command or another save changed during or right after the save is dispatched
-     * once, by the one that changed it.
+     * Craft compares these two statuses, rather than statuses read before and after the save. If the
+     * `craft:update-element-statuses` command or another save changes the status during the save or just after
+     * it, that one dispatches the change, and this save doesn’t dispatch it again.
      *
      * @return array{replaced: string|null, written: string}|null
      */

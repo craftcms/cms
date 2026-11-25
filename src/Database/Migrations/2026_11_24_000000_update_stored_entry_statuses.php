@@ -7,20 +7,31 @@ use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\GreaterThan;
+use Tpetry\QueryExpressions\Operator\Comparison\IsNull;
+use Tpetry\QueryExpressions\Operator\Comparison\LessThanOrEqual;
+use Tpetry\QueryExpressions\Operator\Logical\CondOr;
+use Tpetry\QueryExpressions\Value\Value;
 
 /**
- * Brings entries’ stored statuses up to date, so the `craft:update-element-statuses` command’s first run doesn’t
- * dispatch `ElementStatusChanged` for entries that went live or expired before the upgrade, and adds the indexes the
+ * Updates entries’ stored statuses, so the first run of `craft:update-element-statuses` doesn’t dispatch
+ * `ElementStatusChanged` for entries that went live or expired before the upgrade. Also adds the indexes that the
  * command uses to find entries whose dates passed.
  */
 return new class extends Migration
 {
     public function up(): void
     {
-        $now = DB::escape(Query::prepareDateForDb(now()->endOfMinute()));
-        $postDate = DB::getQueryGrammar()->wrap('postDate');
-        $expiryDate = DB::getQueryGrammar()->wrap('expiryDate');
-        $status = DB::raw("(CASE WHEN $postDate IS NULL OR $postDate > $now THEN 'pending' WHEN $expiryDate IS NOT NULL AND $expiryDate <= $now THEN 'expired' ELSE 'live' END)");
+        $now = new Value(Query::prepareDateForDb(now()->endOfMinute()));
+        $status = new CaseGroup(
+            when: [
+                new CaseRule(new Value('pending'), new CondOr(new IsNull('postDate'), new GreaterThan('postDate', $now))),
+                new CaseRule(new Value('expired'), new LessThanOrEqual('expiryDate', $now)),
+            ],
+            else: new Value('live'),
+        );
 
         DB::table(Table::ENTRIES)
             ->where('status', '!=', $status)

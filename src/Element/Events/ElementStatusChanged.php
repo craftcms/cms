@@ -9,17 +9,16 @@ use CraftCms\Cms\Element\Contracts\SchedulableElementInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * Dispatched when an element’s status in a site changes, once the change is committed. For example, when an entry goes
- * live or expires, or is enabled, disabled or archived.
+ * Dispatched after an element’s status changes in a site and the change is committed, such as when an entry goes
+ * live, expires, or is enabled, disabled or archived.
  *
- * It’s dispatched once for each site whose status changed, whether a save changed it or a date passed. Craft notices
- * passed dates from the `craft:update-element-statuses` command, which it schedules every minute, so a status that
- * changes because a date passed is dispatched by that command’s next run.
+ * Craft dispatches it once for each site whose status changed. Saves dispatch it, including applying a draft and
+ * propagating an element to a new site. When a post or expiry date passes, the next run of the
+ * `craft:update-element-statuses` command dispatches it. Craft schedules that command every minute.
  *
  * Only {@see SchedulableElementInterface} element types dispatch it, and only for canonical elements, not drafts or
- * revisions. Applying a draft and propagating an element to new sites dispatch it too. Deleting and restoring an
- * element don’t; a date that passed while an element was deleted is dispatched by the command’s first run after it’s
- * restored.
+ * revisions. Deleting and restoring an element don’t dispatch it. If a date passed while the element was deleted, the
+ * command’s first run after the restore dispatches it.
  *
  * ```php
  * use CraftCms\Cms\Element\Events\ElementStatusChanged;
