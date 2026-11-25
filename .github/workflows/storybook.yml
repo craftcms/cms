@@ -21,7 +21,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '24'
   PHP_VERSION: '8.5'
 
 permissions:
@@ -60,7 +59,7 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .node-version
           cache: true
           run-install: false
 
@@ -173,7 +172,7 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .node-version
           cache: true
           run-install: false
 
@@ -231,7 +230,7 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version-file: .node-version
           cache: true
           run-install: false
 

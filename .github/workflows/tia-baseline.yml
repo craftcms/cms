@@ -31,7 +31,7 @@ jobs:
         if: steps.cem.outputs.cache-hit != 'true'
         uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: '24'
+          node-version-file: .node-version
           cache: true
           run-install: false
 
