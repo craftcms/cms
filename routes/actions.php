@@ -337,6 +337,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('entries/move-to-section-modal-data', [MoveEntryToSectionController::class, 'showModal']);
         Route::post('entries/move-to-section', [MoveEntryToSectionController::class, 'move']);
+        Route::post('entries/section-entry-ids', [MoveEntryToSectionController::class, 'sectionEntryIds']);
         Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 

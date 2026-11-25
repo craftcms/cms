@@ -15,6 +15,11 @@ type SectionGroup = HTMLElement & {value: string};
  * section from, such as from a section's deletion blockers.
  */
 export interface EntryMoverSettings {
+  /**
+   * A section to move all entries from. Its entries' IDs are loaded when the
+   * mover opens, in place of `entryIds`.
+   */
+  sectionId?: number | null;
   siteId?: number | null;
   currentSectionUid?: string | null;
   onMove?: () => void;
@@ -178,18 +183,30 @@ export class EntryMover extends Base {
       this.#selectBtn.loading = true;
     }
     this.#abortController = new AbortController();
+    const {signal} = this.#abortController;
+    const {sectionId} = this.entryMoverSettings;
 
-    actionClient
-      .post(
-        'entries/move-to-section-modal-data',
-        {
-          entryIds: this.entryIds,
-          siteId: this.elementIndex
-            ? this.elementIndex.siteId
-            : this.entryMoverSettings.siteId,
-          currentSectionUid: this.currentSectionUid,
-        },
-        {signal: this.#abortController.signal}
+    const loadEntryIds = sectionId
+      ? actionClient
+          .post('entries/section-entry-ids', {sectionId}, {signal})
+          .then(({data}: {data?: {entryIds?: number[]}}) => {
+            this.entryIds = data?.entryIds ?? [];
+          })
+      : Promise.resolve();
+
+    loadEntryIds
+      .then(() =>
+        actionClient.post(
+          'entries/move-to-section-modal-data',
+          {
+            entryIds: this.entryIds,
+            siteId: this.elementIndex
+              ? this.elementIndex.siteId
+              : this.entryMoverSettings.siteId,
+            currentSectionUid: this.currentSectionUid,
+          },
+          {signal}
+        )
       )
       .then(({data}: {data?: {sections?: MoveTargetSection[]}}) => {
         const list = this.#sectionsList;

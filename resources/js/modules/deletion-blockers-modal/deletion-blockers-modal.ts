@@ -147,6 +147,11 @@ export class DeletionBlockersModal extends Base {
       return;
     }
 
+    // The modal was closed while the blockers were loading
+    if (!this.modal || !this.blockers) {
+      return;
+    }
+
     for (const blocker of this.blockers) {
       blocker.destroy();
     }
@@ -157,19 +162,32 @@ export class DeletionBlockersModal extends Base {
       this.submitButton.disabled = data.blockers.length !== 0;
     }
 
-    if (!data.blockers.length) {
-      if (this.heading) {
+    if (this.heading) {
+      if (data.blockers.length) {
+        this.renderHeading(this.heading, data);
+      } else {
         this.heading.textContent = t(
           'Nothing is blocking the deletion anymore.'
         );
       }
-      return;
+      this.updateLabel();
+      // The action that triggered the refresh is gone, so move focus to the
+      // heading, which also announces the new state.
+      this.heading.focus();
     }
 
-    if (this.heading) {
-      this.renderHeading(this.heading, data);
+    if (data.blockers.length) {
+      await this.showBlockers(data);
     }
-    await this.showBlockers(data);
+  }
+
+  /** Names the dialog after its heading. */
+  updateLabel(): void {
+    if (this.modal && this.heading) {
+      this.modal.label = (this.heading.textContent ?? '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
   }
 
   /**
@@ -244,9 +262,9 @@ export class DeletionBlockersModal extends Base {
 
     this.heading = document.createElement('h1');
     this.heading.className = 'edm-heading';
+    this.heading.tabIndex = -1;
     this.renderHeading(this.heading, data);
     dialog.append(this.heading);
-    dialog.label = (this.heading.textContent ?? '').replace(/\s+/g, ' ').trim();
 
     this.blockersContainer = document.createElement('div');
     this.blockersContainer.className = 'edm-blockers';
@@ -275,9 +293,10 @@ export class DeletionBlockersModal extends Base {
       this.destroy();
     });
 
+    this.modal = dialog;
+    this.updateLabel();
     document.body.append(dialog);
     dialog.open = true;
-    this.modal = dialog;
 
     closeButton.addEventListener('click', () => {
       this.hideModal();

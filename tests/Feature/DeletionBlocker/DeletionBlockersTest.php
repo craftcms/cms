@@ -20,6 +20,7 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\DeletionBlockersController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -179,9 +180,11 @@ it('offers to move a section’s entries only when another section accepts their
     $own = EntryTypeModel::factory()->create();
     $blog = SectionModel::factory()->withEntryTypes($shared, $own)->create();
     $pages = SectionModel::factory()->withEntryTypes($shared)->create();
+    $about = SectionModel::factory()->withEntryTypes($shared)->create(['type' => SectionType::Single]);
 
     EntryModel::factory()->forSection($blog)->forEntryType($own)->createElement();
     EntryModel::factory()->forSection($pages)->forEntryType($shared)->createElement();
+    EntryModel::factory()->forSection($about)->forEntryType($shared)->createElement();
     Sections::refreshSections();
 
     $actionLabels = fn (SectionModel $section) => array_column(
@@ -189,8 +192,10 @@ it('offers to move a section’s entries only when another section accepts their
         'label',
     );
 
+    // Blog and Pages accept the single’s entry type, but entries can’t be moved out of a single
     expect($actionLabels($blog))->not->toContain('Move entries')
-        ->and($actionLabels($pages))->toContain('Move entries');
+        ->and($actionLabels($pages))->toContain('Move entries')
+        ->and($actionLabels($about))->not->toContain('Move entries');
 });
 
 it('reports the users in a user group and whether new users join it', function () {

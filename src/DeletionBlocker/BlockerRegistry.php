@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
@@ -179,33 +180,28 @@ class BlockerRegistry
     /**
      * Returns a “Move entries” action for a section’s blocker, if another section accepts all of its entries’ types.
      *
+     * The entry mover loads the entries’ IDs when it opens, so checking for blockers doesn’t load every entry.
+     *
      * @return list<array<string, mixed>>
      */
     private function moveEntriesActions(Section $section): array
     {
-        $entryIds = Entry::find()
-            ->sectionId($section->id)
-            ->drafts(null)
-            ->draftOf(false)
-            ->whereNull('elements.canonicalId')
-            ->site('*')
-            ->unique()
-            ->status(null)
-            ->ids();
-
-        if ($entryIds === []) {
+        // Entries can’t be moved out of a single
+        if ($section->type === SectionType::Single) {
             return [];
         }
 
-        $typeIds = DB::table(Table::ENTRIES)
-            ->whereIn('id', $entryIds)
+        $typeIds = DB::table(Table::ENTRIES, 'entries')
+            ->join(Table::ELEMENTS.' as elements', 'elements.id', '=', 'entries.id')
+            ->where('entries.sectionId', $section->id)
+            ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted'])
             ->distinct()
-            ->pluck('typeId')
+            ->pluck('entries.typeId')
             ->map(fn ($id) => (int) $id)
             ->all();
         $siteId = array_key_first($section->getSiteSettings());
 
-        if ($siteId === null || Sections::getAvailableEntryMoveTargetSections($typeIds, $siteId, $section->uid) === []) {
+        if ($typeIds === [] || $siteId === null || Sections::getAvailableEntryMoveTargetSections($typeIds, $siteId, $section->uid) === []) {
             return [];
         }
 
@@ -213,8 +209,9 @@ class BlockerRegistry
             [
                 'icon' => 'arrow-right',
                 'label' => t('Move entries'),
-                'callback' => Html::jsWithVars(fn ($entryIds, $siteId, $sectionUid) => <<<JS
-new Craft.EntryMover($entryIds, null, {
+                'callback' => Html::jsWithVars(fn ($sectionId, $siteId, $sectionUid) => <<<JS
+new Craft.EntryMover([], null, {
+  sectionId: $sectionId,
   siteId: $siteId,
   currentSectionUid: $sectionUid,
   onMove: async () => {
@@ -223,7 +220,7 @@ new Craft.EntryMover($entryIds, null, {
   },
   onCancel: () => reject(),
 });
-JS, [$entryIds, $siteId, $section->uid]),
+JS, [$section->id, $siteId, $section->uid]),
             ],
         ];
     }
