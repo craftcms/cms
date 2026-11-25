@@ -136,6 +136,25 @@ Skip markers can leave required checks pending and do not establish green CI.
 Never use them to evade required checks, merged-result verification, or merge
 queues. The `merging-pull-requests` skill's safeguards still apply.
 
+## Screenshots in pull requests
+
+- Take and add every screenshot in a pull request's description or comments
+  by following the `feature-screenshots` skill.
+- Host every image on GitHub, as a
+  `https://github.com/user-attachments/assets/…` URL. Never use images hosted
+  on ampcode.com, such as Amp attachment, artifact, or file URLs, or anywhere
+  else.
+- When the Claude in Chrome tools aren't available to upload the screenshots
+  yourself, ask the user to:
+  1. Download the screenshots.
+  2. Drop them into any comment box on GitHub, such as the pull request's,
+     without saving the comment.
+  3. Paste the Markdown or HTML that GitHub inserts for each image back into
+     the thread.
+
+  Then add those images to the pull request description, as the
+  `feature-screenshots` skill describes.
+
 ## Regression tests
 
 - Apply the `test-audit` authoring gate after a bug fix or behavior change. Add a
