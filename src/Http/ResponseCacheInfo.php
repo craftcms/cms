@@ -37,13 +37,6 @@ class ResponseCacheInfo
 {
     private bool $collecting = false;
 
-    /**
-     * What {@see stop()} collected, for code that runs after it.
-     *
-     * @var array{tags: list<string>, expiryDate: DateTimeImmutable|null}|null
-     */
-    private ?array $collected = null;
-
     public function __construct(
         private readonly ElementCaches $elementCaches,
         private readonly DependencyCollector $dependencies,
@@ -66,7 +59,7 @@ class ResponseCacheInfo
      */
     public function getTags(): array
     {
-        return $this->collected['tags'] ?? ($this->collecting ? $this->dependencies->collectedTags() : []);
+        return $this->collecting ? $this->dependencies->collectedTags() : [];
     }
 
     /**
@@ -84,15 +77,12 @@ class ResponseCacheInfo
      */
     public function getExpiryDate(): ?DateTimeImmutable
     {
-        if ($this->collected !== null) {
-            return $this->collected['expiryDate'];
-        }
-
         return $this->collecting ? $this->dependencies->collectedExpiryDate() : null;
     }
 
     /**
-     * Starts collecting the response's cache info for the whole request.
+     * Starts collecting the response's cache info until {@see stop()}, which {@see CollectCacheInfo} calls when the
+     * request terminates.
      *
      * @internal
      */
@@ -103,16 +93,16 @@ class ResponseCacheInfo
     }
 
     /**
-     * Stops collecting, keeping what was collected.
+     * Stops collecting. The response has no cache info after this.
      *
      * @internal
      */
     public function stop(): void
     {
-        $this->collected = [
-            'tags' => $this->dependencies->collectedTags(),
-            'expiryDate' => $this->dependencies->collectedExpiryDate(),
-        ];
+        if (! $this->collecting) {
+            return;
+        }
+
         $this->collecting = false;
         $this->elementCaches->stopCollectingCacheInfo();
     }

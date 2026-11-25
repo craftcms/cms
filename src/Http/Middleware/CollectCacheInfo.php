@@ -13,8 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Collects the elements eligible responses depend on, and caps their lifetimes at the response's earliest expiry.
  *
  * Global middleware, so it sees the final response. For a GET or HEAD request outside the control panel and actions,
- * it collects element tags and the earliest element expiry for the whole request into {@see ResponseCacheInfo} as
- * they're collected, so cache integrations can read them from route middleware too. If the response succeeds or is a
+ * it collects element tags and the earliest element expiry into {@see ResponseCacheInfo} until the request
+ * terminates, so cache integrations can read them from any middleware. If the response succeeds or is a
  * `304 Not Modified`, it caps the response's `max-age`, `s-maxage` and `Expires` at
  * {@see ResponseCacheInfo::getExpiryDate()}. Whether the response is stored is still up to the cache, from its headers.
  *
@@ -33,12 +33,7 @@ readonly class CollectCacheInfo
         }
 
         $this->cacheInfo->start();
-
-        try {
-            $response = $next($request);
-        } finally {
-            $this->cacheInfo->stop();
-        }
+        $response = $next($request);
 
         $expiryDate = $this->cacheInfo->getExpiryDate();
 
@@ -48,6 +43,14 @@ readonly class CollectCacheInfo
         }
 
         return $response;
+    }
+
+    /**
+     * Stops collecting once the response is sent, so outer middleware, such as a cache integration's, still reads it.
+     */
+    public function terminate(): void
+    {
+        $this->cacheInfo->stop();
     }
 
     private function isEligibleRequest(Request $request): bool

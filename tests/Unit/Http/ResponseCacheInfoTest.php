@@ -12,7 +12,7 @@ it('collects nothing outside a collection', function () {
         ->and($cacheInfo->getExpiryDate())->toBeNull();
 });
 
-it('ignores empty and duplicate tags and keeps the earliest future expiry date', function () {
+it('ignores empty and duplicate tags and keeps the earliest future expiry date until it stops', function () {
     $this->freezeSecond();
     $cacheInfo = app(ResponseCacheInfo::class);
     $cacheInfo->start();
@@ -29,8 +29,8 @@ it('ignores empty and duplicate tags and keeps the earliest future expiry date',
 
     $cacheInfo->stop();
 
-    expect($cacheInfo->getTags())->toBe(['a', 'b'])
-        ->and($cacheInfo->getExpiryDate()?->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
+    expect($cacheInfo->getTags())->toBe([])
+        ->and($cacheInfo->getExpiryDate())->toBeNull();
 });
 
 it('includes tags from collections still open inside the response', function () {
@@ -44,7 +44,6 @@ it('includes tags from collections still open inside the response', function () 
     expect($cacheInfo->getTags())->toEqualCanonicalizing(['page', 'inner']);
 
     app(ElementCaches::class)->stopCollectingCacheInfo();
-    $cacheInfo->stop();
 
     expect($cacheInfo->getTags())->toEqualCanonicalizing(['page', 'inner']);
 });

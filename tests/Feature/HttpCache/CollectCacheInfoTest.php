@@ -8,13 +8,36 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\ResponseCacheInfo;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
 use function CraftCms\Cms\renderString;
 
-it('tags a page with the elements it queried and caps its lifetimes at the earliest expiry', function () {
+beforeEach(function () {
+    // Where cache integrations such as craftcms/http-cache read the response's cache info: outermost global middleware.
+    $this->cacheInfo = new ArrayObject;
+    app()->instance(RecordCacheInfo::class, new RecordCacheInfo($this->cacheInfo));
+    app(Kernel::class)->prependMiddleware(RecordCacheInfo::class);
+});
+
+readonly class RecordCacheInfo
+{
+    public function __construct(private ArrayObject $seen) {}
+
+    public function handle(Request $request, Closure $next): mixed
+    {
+        $response = $next($request);
+
+        $this->seen['tags'] = ResponseCacheInfo::getTags();
+        $this->seen['expiry'] = ResponseCacheInfo::getExpiryDate()?->getTimestamp();
+
+        return $response;
+    }
+}
+
+it('tags a page with the elements it queried until it terminates, and caps its lifetimes at the earliest expiry', function () {
     $this->freezeSecond();
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
@@ -26,43 +49,13 @@ it('tags a page with the elements it queried and caps its lifetimes at the earli
 
     $response = $this->get('/page');
 
-    expect(ResponseCacheInfo::getTags())->toContain('element', 'element::'.Entry::class)
+    expect($this->cacheInfo['tags'])->toContain('element', 'element::'.Entry::class)
+        ->and($this->cacheInfo['expiry'])->toBe(now()->addMinutes(10)->getTimestamp())
+        ->and(ResponseCacheInfo::getTags())->toBe([])
         ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600')
         ->and($response->headers->getCacheControlDirective('s-maxage'))->toBe('600')
         ->and($response->getExpires()->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
 });
-
-it('lets cache drivers in route middleware read element tags and the earliest expiry', function () {
-    $this->freezeSecond();
-    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
-    $seen = [];
-    app()->instance('test.seen', function (array $info) use (&$seen) {
-        $seen = $info;
-    });
-
-    Route::get('/page', function () use ($entry) {
-        Entry::find()->id($entry->id)->one();
-
-        return response('ok');
-    })->middleware(RecordCacheInfo::class);
-
-    $this->get('/page');
-
-    expect($seen[0])->toContain('element', 'element::'.Entry::class)
-        ->and($seen[1])->toBe(now()->addMinutes(10)->getTimestamp());
-});
-
-class RecordCacheInfo
-{
-    public function handle(Request $request, Closure $next): mixed
-    {
-        $response = $next($request);
-
-        app('test.seen')([ResponseCacheInfo::getTags(), ResponseCacheInfo::getExpiryDate()?->getTimestamp()]);
-
-        return $response;
-    }
-}
 
 it('keeps a private response private when capping its lifetimes', function () {
     $this->freezeSecond();
@@ -149,7 +142,7 @@ it('collects tags added through the facade and the Twig global', function () {
 
     $this->get('/page');
 
-    expect(ResponseCacheInfo::getTags())->toBe(['from-php', 'from-twig']);
+    expect($this->cacheInfo['tags'])->toBe(['from-php', 'from-twig']);
 });
 
 it('keeps tags and element expiry dates from inside a cached block on a cache hit', function () {
@@ -162,14 +155,14 @@ it('keeps tags and element expiry dates from inside a cached block on a cache hi
     ))->setPublic()->setMaxAge(3600));
 
     $first = $this->get('/page');
-    expect(ResponseCacheInfo::getTags())->toContain('nav', 'element::'.Entry::class);
+    expect($this->cacheInfo['tags'])->toContain('nav', 'element::'.Entry::class);
 
     app()->forgetScopedInstances();
     $second = $this->get('/page');
 
     expect($second->getContent())->toBe($first->getContent())
-        ->and(ResponseCacheInfo::getTags())->toContain('nav', 'element::'.Entry::class)
-        ->and(ResponseCacheInfo::getExpiryDate()?->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp())
+        ->and($this->cacheInfo['tags'])->toContain('nav', 'element::'.Entry::class)
+        ->and($this->cacheInfo['expiry'])->toBe(now()->addMinutes(10)->getTimestamp())
         ->and($second->headers->getCacheControlDirective('max-age'))->toBe('600');
 });
 
@@ -204,8 +197,8 @@ it('only collects element tags for eligible requests', function (string $method,
     $this->call($method, $uri)->assertOk();
     $this->call($method, $uri)->assertOk();
 
-    expect(ResponseCacheInfo::getTags())->toBe([])
-        ->and(ResponseCacheInfo::getExpiryDate())->toBeNull();
+    expect($this->cacheInfo['tags'])->toBe([])
+        ->and($this->cacheInfo['expiry'])->toBeNull();
 })->with([
     'POST' => ['POST', '/page'],
     'control panel' => ['GET', 'cp'],
