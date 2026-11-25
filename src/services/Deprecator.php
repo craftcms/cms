@@ -18,6 +18,8 @@ use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
 use DateTime;
+use ReflectionClass;
+use Twig\Environment as TwigEnvironment;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
@@ -123,6 +125,55 @@ class Deprecator extends Component
         if ($this->_storeLogsInDb() && Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
             $this->storeLogs();
         }
+    }
+
+    /**
+     * Logs a deprecation warning that Twig triggered.
+     *
+     * Twig ends most of its messages with the template and line, as in `in "_layouts/base.twig" at line 3.`.
+     * When it doesn't, the warning is attributed to the first caller outside of Twig and Craft, such as the template
+     * that passed a deprecated value to a Craft filter, or the plugin that called a deprecated Twig function.
+     *
+     * @param string $message
+     * @param array $traces debug_backtrace() results from the error handler that received the warning
+     * @since 5.13.0
+     */
+    public function logTwigDeprecation(string $message, array $traces): void
+    {
+        // Start from the trigger_deprecation() call
+        foreach ($traces as $i => $trace) {
+            if ($trace['function'] === 'trigger_deprecation') {
+                $traces = array_slice($traces, $i);
+                break;
+            }
+        }
+
+        if (preg_match('/\s\(?in (?:"([^"]+)"|(\S+(?: \(string template \w+\))?)) at line (\d+)\)?\.?$/', $message, $match, PREG_OFFSET_CAPTURE)) {
+            $name = preg_replace('/ \(string template \w+\)$/', '', $match[1][0] !== '' ? $match[1][0] : $match[2][0]);
+            $file = is_file($name) ? $name : (Craft::$app->getView()->resolveTemplate($name) ?: $name);
+            $line = (int)$match[3][0];
+            $message = rtrim(substr($message, 0, $match[0][1]), '.') . '.';
+        } else {
+            $coreDirs = [
+                dirname((new ReflectionClass(TwigEnvironment::class))->getFileName()),
+                dirname(__DIR__),
+            ];
+            $t = 1;
+            while (isset($traces[$t]) && (!isset($traces[$t]['file']) || str_starts_with($traces[$t]['file'], $coreDirs[0]) || str_starts_with($traces[$t]['file'], $coreDirs[1]))) {
+                $t++;
+            }
+            $file = $traces[$t]['file'] ?? '';
+            $line = $traces[$t]['line'] ?? null;
+            $template = $traces[$t + 1]['object'] ?? null;
+
+            if ($template instanceof TwigTemplate) {
+                $templateName = $template->getTemplateName();
+                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $line = $this->_findTemplateLine($template, $line);
+            }
+        }
+
+        $this->log('twig:' . md5($message), $message, $file, $line);
     }
 
     private function _storeLogsInDb(): bool
