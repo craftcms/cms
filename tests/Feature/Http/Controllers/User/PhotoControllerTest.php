@@ -133,7 +133,7 @@ test('uploads and replaces a user photo through sessions', function () {
     ]);
 
     $volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
     ]);
 
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
@@ -177,7 +177,7 @@ test('destroy', function () {
     ]);
 
     $volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
     ]);
 
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
@@ -244,7 +244,7 @@ it('rejects invalid image contents without changing the users photo', function (
         'driver' => 'local',
         'root' => storage_path('framework/testing/invalid-photo'),
     ]);
-    $volume = Volume::factory()->create(['fs' => 'invalid-photo']);
+    $volume = Volume::factory()->create(['disk' => 'invalid-photo']);
     ProjectConfig::set('users.photoVolumeUid', $volume->uid);
     $photoId = User::findOne(auth()->id())->photoId;
 

@@ -20,7 +20,8 @@
             {"label": "Enlarged", "value": "enlarged"}
           ],
           "multiple": false,
-          "presentation": "select"
+          "presentation": "select",
+          "placeholder": false
         },
         "path": ["settings", "uiMode"],
         "mode": "editable",

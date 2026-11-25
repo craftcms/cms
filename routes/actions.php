@@ -7,6 +7,7 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Gql\Http\Middleware\AuthenticateAccessToken as AuthenticateGqlAccessToken;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\AboutCraftController;
@@ -53,6 +54,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexContro
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalMatchController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PasteableElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
@@ -171,7 +173,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
 
         // GQL API
-        Route::any('graphql/api', GqlApiController::class);
+        // Access tokens are authenticated before the control panel and maintenance mode checks
+        Route::allowDuringMaintenance()->middleware(AuthenticateGqlAccessToken::class)->any('graphql/api', GqlApiController::class);
 
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
@@ -319,6 +322,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
         Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::post('element-selector-modals/matches', ElementSelectorModalMatchController::class);
         Route::post('element-selects/pasteable', PasteableElementsController::class);
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);

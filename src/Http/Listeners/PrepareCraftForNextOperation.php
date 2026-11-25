@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Listeners;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
@@ -42,6 +43,9 @@ class PrepareCraftForNextOperation
     {
         $this->prepare($event->sandbox);
 
+        // Set by Sites::setCurrentSite(), and $_SERVER outlives the request in the worker, unlike the scoped Sites service.
+        unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
+
         if ($event instanceof RequestReceived) {
             // Resolved from the root app, so it keeps the booted view finder between requests.
             $event->app->make(TemplateRoots::class)->resetViewFactory($event->sandbox, TemplateMode::forRequest($event->request));
@@ -54,6 +58,10 @@ class PrepareCraftForNextOperation
      */
     public function prepare(Application $app): void
     {
+        // Tasks, ticks, and requests to the stdio MCP server don't terminate the app, so cache tags they left pending
+        // would otherwise wait for the next flush.
+        $app->make(ElementCaches::class)->invalidatePendingTags();
+
         // Memoized for a request, and they depend on its user, site, or language, or on content that can change.
         Element::forgetSources();
         BaseElementLinkType::forgetFetchedElements();

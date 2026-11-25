@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Gql\Queries\Address;
 use CraftCms\Cms\Gql\Queries\Asset;
+use CraftCms\Cms\Gql\Queries\EloquentElement;
 use CraftCms\Cms\Gql\Queries\Entry;
 use CraftCms\Cms\Gql\Queries\Ping;
 use CraftCms\Cms\Gql\Queries\Query;
@@ -42,5 +43,6 @@ class GqlQueries extends TypeRegistry
         User::class,
         Settings::class,
         Release::class,
+        EloquentElement::class,
     ];
 }

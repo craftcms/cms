@@ -251,8 +251,8 @@ class LegacyFilesystems
                 $volumes = Volumes::getAllVolumes();
                 foreach ($volumes as $volume) {
                     $changed = false;
-                    if ($volume->getFsHandle(false) === $fs->oldHandle) {
-                        $volume->setFsHandle($fs->handle);
+                    if ($volume->getDisk(false) === $fs->oldHandle) {
+                        $volume->setDisk($fs->handle);
                         $changed = true;
                     }
 

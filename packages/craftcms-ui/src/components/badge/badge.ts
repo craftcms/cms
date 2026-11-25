@@ -3,6 +3,7 @@ import {property, state} from 'lit/decorators.js';
 import type {CSSResultGroup, PropertyValues} from 'lit';
 import styles from './badge.styles.js';
 import {Color, type ColorValue} from '@src/constants/colors';
+import type {StatusShape} from '@src/constants/statuses';
 import '../indicator/indicator.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Size, type SizeValue} from '@src/constants/size';
@@ -34,6 +35,12 @@ export default class CraftBadge extends LitElement {
 
   /** The badge color — a color value from `Color` (e.g. `red`, `emerald`). */
   @property({reflect: true}) fill: ColorValue = Color.Gray;
+
+  /**
+   * The shape of the default indicator when the user's "Use shapes to
+   * represent statuses" preference is on. See `craft-indicator`'s `shape`.
+   */
+  @property({reflect: true}) shape: StatusShape = 'circle';
 
   /** Leaves out the prefix region, default indicator included. */
   @property({attribute: 'no-prefix', type: Boolean}) noPrefix: boolean = false;
@@ -134,6 +141,7 @@ export default class CraftBadge extends LitElement {
                 <craft-indicator
                   part="indicator"
                   fill="${this.getFill()}"
+                  shape="${this.shape}"
                 ></craft-indicator>
               </slot>
             </span>`}

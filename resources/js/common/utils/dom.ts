@@ -184,8 +184,10 @@ export async function revealElement(
 }
 
 /** An element's content box size, without padding, like jQuery's `width()`/`height()`. */
-export function contentSize(el: HTMLElement): {width: number; height: number} {
-  const style = getComputedStyle(el);
+export function contentSize(
+  el: HTMLElement,
+  style: CSSStyleDeclaration = getComputedStyle(el)
+): {width: number; height: number} {
   return {
     width:
       el.clientWidth -

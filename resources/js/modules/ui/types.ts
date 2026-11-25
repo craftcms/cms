@@ -39,6 +39,7 @@ export type TextControlProps = {
   max?: number | string;
   step?: number | string;
   maxLength?: number;
+  showCharsLeft?: boolean;
   placeholder?: string;
   inputMode?: string;
   autofocus?: boolean;
@@ -49,7 +50,11 @@ export type TextControlProps = {
   size?: number;
   dir?: string;
   monospace?: boolean;
+  enlarged?: boolean;
+  prefix?: string;
   suffix?: string;
+  /** The locale a number control's value is formatted in, posted alongside it. */
+  locale?: string;
   textExpanderTriggers?: TextExpanderTriggers;
 };
 

@@ -138,7 +138,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, InputSche
         return Ui::make([
             UiField::make(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
-                ->control(Choice::make('uiMode')->value($this->uiMode)->options([
+                ->control(Choice::make('uiMode')->value($this->uiMode)->withoutPlaceholder()->options([
                     ['label' => t('Normal'), 'value' => 'normal'],
                     ['label' => t('Enlarged'), 'value' => 'enlarged'],
                 ])),
@@ -192,8 +192,10 @@ class PlainText extends Field implements InlineEditableFieldInterface, InputSche
         return $control
             ->value($context->value)
             ->maxLength($this->charLimit)
+            ->showCharsLeft($this->charLimit !== null)
             ->placeholder($this->placeholder === null ? null : t($this->placeholder, category: 'site'))
-            ->monospace($this->code);
+            ->monospace($this->code)
+            ->enlarged($this->uiMode === 'enlarged');
     }
 
     #[Override]

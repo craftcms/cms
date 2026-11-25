@@ -7,6 +7,8 @@
     type ElementSelectorController,
   } from '@craftcms/ui';
   import {uniqueId} from '@craftcms/ui/utilities/unique-id';
+  import {elementTypeName} from '@/common/craft/element-types';
+  import {uppercaseFirst} from '@/common/craft/strings';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {openSlideout} from '@/common/slideouts';
@@ -14,12 +16,14 @@
   import {showError, showMessage} from '@/modules/messages/messages';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
+  import ElementSelectorModalMatchController from '@actions/Elements/ElementSelectorModalMatchController';
   import {
     useCreatableEntryTypes,
     type CreatableType,
     type CreatableSection,
   } from '@/modules/elements/composables/useCreatableEntryTypes';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
+  import {creatableUnderCondition} from './creatableUnderCondition';
 
   const props = defineProps<{
     controller: ElementSelectorController;
@@ -50,6 +54,17 @@
     creatableSections: () =>
       (window.Craft?.creatableSections as CreatableSection[]) ?? [],
     siteId: () => props.siteId,
+    // Only in sections whose entries the user can save (`saveEntries`).
+    // Filtered here rather than from the sections, which also tell which
+    // section the source on screen shows.
+    allows: () => {
+      const allowedByCondition = creatableUnderCondition(
+        props.controller.options.condition
+      );
+
+      return (creatable) =>
+        creatable.section.canSave && (allowedByCondition?.(creatable) ?? true);
+    },
   });
 
   const label = computed(() => {
@@ -58,7 +73,13 @@
 
     return sections.size === 1
       ? t('New {section} entry', {section: section!.name})
-      : t('New entry');
+      : uppercaseFirst(
+          t('New {type}', {
+            type:
+              elementTypeName('CraftCms\\Cms\\Entry\\Elements\\Entry') ??
+              'entry',
+          })
+        );
   });
 
   /**
@@ -125,6 +146,17 @@
      */
     async function choose(info: ElementInfo): Promise<void> {
       try {
+        if (controller.options.condition && !(await meetsCondition(info))) {
+          chosen = false;
+          showError(
+            t('“{name}” was saved, but it can’t be selected here.', {
+              name: info.label,
+            })
+          );
+
+          return;
+        }
+
         await onSelect?.([info], {});
       } catch {
         chosen = false;
@@ -192,6 +224,24 @@
       },
       () => settle()
     );
+  }
+
+  /**
+   * Whether the saved entry meets the selection condition, asked of the server
+   * before it's chosen: narrowing the entry types offered doesn't stop the
+   * entry from being switched to another type while it's edited.
+   */
+  async function meetsCondition(info: ElementInfo): Promise<boolean> {
+    const {data} = await actionClient.post(
+      ElementSelectorModalMatchController.url(),
+      {
+        ...props.controller.indexParams(),
+        elementId: info.id,
+        siteId: info.siteId,
+      }
+    );
+
+    return data.matches === true;
   }
 
   const actions = computed<Array<ActionItem>>(() =>

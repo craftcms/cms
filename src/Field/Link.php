@@ -274,7 +274,10 @@ class Link extends Field implements InlineEditableFieldInterface, InputSchemaFie
     public function getElementRules(ElementInterface $element): array
     {
         return [
-            function (string $attribute, LinkData $value, Closure $fail) {
+            function (string $attribute, ?LinkData $value, Closure $fail) {
+                if ($value === null) {
+                    return;
+                }
                 $error = $this->linkResolver()->validate($value, $this->getUiLabel());
 
                 if ($error !== null) {

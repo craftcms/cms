@@ -232,16 +232,16 @@ trait ProvidesAssetSettings
                 ->instructions(t('The volumes that should be available when selecting assets.'))
                 ->control(Choice::make('availableVolumes')
                     ->multiple()
-                    ->options([
-                        ['label' => t('All'), 'value' => '*'],
-                        ...$volumeOptions,
-                    ])
+                    ->options($volumeOptions)
+                    ->allOption()
                     ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
             UiField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
                 ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-            UiField::make(t('Selectable Assets Condition'))
-                ->instructions(mb_ucfirst(t('Only allow assets to be selected if they match the following rules:')))
+            UiField::make(t('Selectable {type} Condition', ['type' => Asset::pluralDisplayName()]))
+                ->instructions(mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
+                    'type' => Asset::pluralLowerDisplayName(),
+                ])))
                 ->control(ConditionBuilder::make('assetSelectionCondition')
                     ->conditionClass($assetSelectionCondition::class)
                     ->queryParams(['site'])

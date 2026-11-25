@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Asset;
 
 use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
 use CraftCms\Cms\Asset\Events\VolumeDeleting;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
 use CraftCms\Cms\Asset\Events\VolumeSaved;
 use CraftCms\Cms\Asset\Events\VolumeSaving;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
-use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
@@ -26,6 +26,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -113,7 +114,7 @@ class Volumes
     {
         $volume = new Volume([
             'name' => t('Temporary Uploads'),
-            'fs' => Cms::config()->getTempAssetUploadDisk(),
+            'disk' => Cms::config()->getTempAssetUploadDisk(),
             'propagationMethod' => PropagationMethod::All,
         ]);
         $volume->markAsTemporary();
@@ -174,7 +175,10 @@ class Volumes
 
             $volumeModel->name = $data['name'];
             $volumeModel->handle = $data['handle'];
-            $volumeModel->fs = $data['fs'] ?? null;
+            if (array_key_exists('fs', $data)) {
+                Deprecator::log("volumes.$volumeUid.fs", "The `{$data['handle']}` volume’s project config has an `fs` key, which has been renamed to `disk`.");
+            }
+            $volumeModel->disk = $data['disk'] ?? $data['fs'] ?? null;
             $volumeModel->hasUrls = $data['hasUrls'] ?? false;
             $volumeModel->subpath = $data['subpath'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
@@ -224,7 +228,7 @@ class Volumes
             ]);
 
             if ($rootFolder === null) {
-                VolumeFolderModel::create([
+                $rootFolder = new VolumeFolder([
                     'volumeId' => $volumeModel->id,
                     'parentId' => null,
                     'path' => '',
@@ -232,17 +236,19 @@ class Volumes
                 ]);
             } else {
                 $rootFolder->name = $volumeModel->name;
-                $this->folders->storeFolderModel($rootFolder);
             }
 
+            $this->folders->storeFolderModel($rootFolder);
+
+            // Clear the volume cache before committing, so listeners to after-commit events like FolderCreated can find the volume
+            $this->volumes = null;
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
+            $this->volumes = null;
             throw $e;
         }
 
-        // Clear caches
-        $this->volumes = null;
         $this->folders->reset();
 
         if ($wasTrashed) {

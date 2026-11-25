@@ -125,7 +125,7 @@ test('index lists linked groups and copyable handles with actions allowed by adm
 
     if ($allowAdminChanges) {
         expect($row['_deleteUrl'])->toBe(action([UserGroupsController::class, 'destroy'], $group->id))
-            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete "Editors"?');
+            ->and($row['_deleteConfirmMessage'])->toBe('Are you sure you want to delete “Editors”?');
 
         return;
     }

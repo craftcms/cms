@@ -21,11 +21,14 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
+use Illuminate\Support\Defer\DeferredCallbackCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Throwable;
+use WeakMap;
 
 use function CraftCms\Cms\t;
 
@@ -128,66 +131,36 @@ class ImageTransformHelper
     }
 
     /**
+     * Downloaded remote image sources by volume ID and path, for each request, command, or queued job.
+     * Laravel gives each of them its own deferred callback collection.
+     *
+     * @var WeakMap<DeferredCallbackCollection, array<string, string>>|null
+     */
+    private static ?WeakMap $remoteSources = null;
+
+    /**
      * Get a local image source to use for transforms.
+     *
+     * Remote sources are downloaded once per request, command, or queued job, and deleted when it ends.
      *
      * @throws FsObjectNotFoundException If the file cannot be found.
      */
     public static function getLocalImageSource(Asset $asset): string
     {
-        $volume = $asset->getVolume();
-        $imageSourcePath = $asset->getImageTransformSourcePath();
-
         try {
-            $disk = $volume->sourceDisk();
-            $isLocalFs = $disk instanceof LocalFilesystemAdapter;
+            $disk = $asset->getVolume()->sourceDisk();
 
-            if (! $isLocalFs) {
-                // This is a non-local fs
-                $remoteDateModified = null;
-                if (is_file($imageSourcePath) && filesize($imageSourcePath) !== 0) {
-                    try {
-                        $remoteDateModified = $disk->lastModified($asset->getPath());
-                    } catch (Throwable) {
-                        // Can't tell whether the cache is still fresh; assume it is rather than
-                        // re-downloading on every request just because the fs is being flaky.
-                    }
-                }
+            if ($disk instanceof LocalFilesystemAdapter) {
+                $imageSourcePath = $asset->getImageTransformSourcePath();
+            } else {
+                $deferred = app(DeferredCallbackCollection::class);
+                self::$remoteSources ??= new WeakMap;
+                $key = "{$asset->volumeId}:{$asset->getPath()}";
+                $imageSourcePath = self::$remoteSources[$deferred][$key] ?? null;
 
-                // Stale if the remote object has been modified more recently than our local copy.
-                $sourceIsStale = $remoteDateModified !== null && filemtime($imageSourcePath) < $remoteDateModified;
-
-                if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0 || $sourceIsStale) {
-                    if (is_file($imageSourcePath)) {
-                        // Delete since it's either a 0-byter or stale
-                        File::delete($imageSourcePath);
-                    }
-
-                    $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.delimiter.';
-                    $extension = $asset->getExtension();
-                    $tempFilename = uniqid($prefix, true).'.'.$extension;
-                    $tempFilePath = Path::temp($tempFilename);
-
-                    try {
-                        AssetsHelper::downloadFile($disk, $asset->getPath(), $tempFilePath);
-
-                        if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
-                            throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
-                                'file' => $asset->getFilename(),
-                            ]));
-                        }
-
-                        self::storeLocalSource($tempFilePath, $imageSourcePath);
-
-                        // And delete it after the request, command, or queued job, if nobody wants it.
-                        // A queue worker only terminates when it stops.
-                        if (Cms::config()->maxCachedCloudImageSize === 0) {
-                            defer(fn () => File::delete($imageSourcePath), always: true);
-                        }
-                    } finally {
-                        if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
-                            Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
-                        }
-                    }
+                if ($imageSourcePath === null || ! is_file($imageSourcePath)) {
+                    $imageSourcePath = self::downloadRemoteSource($asset, $disk);
+                    self::$remoteSources[$deferred] = [$key => $imageSourcePath] + (self::$remoteSources[$deferred] ?? []);
                 }
             }
         } catch (AssetException) {
@@ -200,6 +173,34 @@ class ImageTransformHelper
         }
 
         return $imageSourcePath;
+    }
+
+    /**
+     * Downloads a remote image source to a file of its own, so another request or job can't delete it while it's in use.
+     */
+    private static function downloadRemoteSource(Asset $asset, Filesystem $disk): string
+    {
+        $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.delimiter.';
+        $path = Path::temp(uniqid($prefix, true).'.'.$asset->getExtension());
+
+        try {
+            AssetsHelper::downloadFile($disk, $asset->getPath(), $path);
+
+            if (! is_file($path) || filesize($path) === 0) {
+                throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                    'file' => $asset->getFilename(),
+                ]));
+            }
+        } catch (Throwable $e) {
+            File::delete($path);
+
+            throw $e;
+        }
+
+        // Laravel runs deferred callbacks after each request, command, and queued job.
+        defer(fn () => File::delete($path), always: true);
+
+        return $path;
     }
 
     /**
@@ -337,22 +338,7 @@ class ImageTransformHelper
      */
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
-        if (! $destination) {
-            $destination = $source;
-        }
-
-        $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;
-
-        // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && ImageHelper::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
-            $image = app(Images::class)->loadImage($source);
-
-            if ($image instanceof Raster) {
-                $image->setQuality(100);
-            }
-
-            $image->scaleToFit($maxCachedImageSize, $maxCachedImageSize, false)->saveAs($destination);
-        } elseif ($source !== $destination) {
+        if ($destination !== '' && $source !== $destination) {
             copy($source, $destination);
         }
     }
@@ -454,5 +440,33 @@ class ImageTransformHelper
         clearstatcache(true, $tempPath);
 
         return $tempPath;
+    }
+
+    /**
+     * Returns the width and height an asset will have after a transform, or `null`s when the asset’s own size is unknown.
+     *
+     * @return array{?int, ?int}
+     */
+    public static function transformedDimensions(Asset $asset, ImageTransform $transform): array
+    {
+        $source = clone $asset;
+        if (method_exists($source, 'setTransform')) {
+            $source->setTransform(null);
+        }
+        $sourceWidth = $source->getWidth();
+        $sourceHeight = $source->getHeight();
+
+        if (! $sourceWidth || ! $sourceHeight) {
+            return [null, null];
+        }
+
+        return ImageHelper::targetDimensions(
+            $sourceWidth,
+            $sourceHeight,
+            $transform->width !== null ? (int) $transform->width : null,
+            $transform->height !== null ? (int) $transform->height : null,
+            $transform->mode,
+            $transform->upscale,
+        );
     }
 }

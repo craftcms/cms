@@ -450,6 +450,16 @@ test('login and logout routes are registered under site base paths', function ()
     expect(Auth::check())->toBeFalse();
 });
 
+test('auth middleware redirects guests to the current site’s login path', function () {
+    Cms::config()->loginPath = ['defaultSite' => 'login', 'fr' => 'connexion'];
+    Site::factory()->create(['handle' => 'fr', 'baseUrl' => 'https://localhost/fr']);
+    Sites::refreshSites();
+
+    Route::middleware(['web', 'craft', 'craft.web', 'auth'])->get('fr/account', fn () => 'ok');
+
+    get('https://localhost/fr/account')->assertRedirect('https://localhost/fr/connexion');
+});
+
 test('attemptLogin respects LoginUserRetrieving event', function () {
     $user = UserModel::factory()->admin()->create([
         'email' => 'event-user@example.com',

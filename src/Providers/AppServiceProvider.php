@@ -32,14 +32,12 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Log\ContextLogProcessor;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
@@ -164,8 +162,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerMacros(): void
     {
-        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
-
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
 
@@ -192,14 +188,6 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
-
-        Response::macro('setNoCacheHeaders', function (bool $replace = true) {
-            $this->header('Expires', '0', $replace);
-            $this->header('Pragma', 'no-cache', $replace);
-            $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
-
-            return $this;
-        });
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {

@@ -23,9 +23,13 @@ class Textarea extends Control implements ReadableValueControl, WritableValueCon
 
     private ?int $maxLength = null;
 
+    private bool $showCharsLeft = false;
+
     private ?string $placeholder = null;
 
     private bool $monospace = false;
+
+    private bool $enlarged = false;
 
     private bool $singleLine = false;
 
@@ -37,8 +41,10 @@ class Textarea extends Control implements ReadableValueControl, WritableValueCon
             ->value($value === null ? null : (string) $value)
             ->rows($control->props['rows'] ?? 2)
             ->maxlength($control->props['maxLength'] ?? null)
+            ->showCharsLeft((bool) ($control->props['showCharsLeft'] ?? false))
             ->placeholder($control->props['placeholder'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
+            ->size(($control->props['enlarged'] ?? false) ? 'large' : null)
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -70,6 +76,16 @@ class Textarea extends Control implements ReadableValueControl, WritableValueCon
         return $this;
     }
 
+    /**
+     * Shows how many characters are left before the `maxLength()` limit, as the value is typed.
+     */
+    public function showCharsLeft(bool $showCharsLeft = true): static
+    {
+        $this->showCharsLeft = $showCharsLeft;
+
+        return $this;
+    }
+
     public function placeholder(?string $placeholder): static
     {
         $this->placeholder = $placeholder;
@@ -80,6 +96,14 @@ class Textarea extends Control implements ReadableValueControl, WritableValueCon
     public function monospace(bool $monospace = true): static
     {
         $this->monospace = $monospace;
+
+        return $this;
+    }
+
+    /** Renders the control larger, for values worth reading at a glance. */
+    public function enlarged(bool $enlarged = true): static
+    {
+        $this->enlarged = $enlarged;
 
         return $this;
     }
@@ -106,8 +130,10 @@ class Textarea extends Control implements ReadableValueControl, WritableValueCon
         return Arr::whereNotNull([
             'rows' => $this->rows !== 2 ? $this->rows : null,
             'maxLength' => $this->maxLength,
+            'showCharsLeft' => $this->showCharsLeft ?: null,
             'placeholder' => $this->placeholder,
             'monospace' => $this->monospace ?: null,
+            'enlarged' => $this->enlarged ?: null,
             'singleLine' => $this->singleLine ?: null,
             ...$this->textExpanderProps(),
         ]);

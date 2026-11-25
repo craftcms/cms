@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     config()->set('filesystems.disks.duplicates-test', ['driver' => 'local', 'root' => storage_path('framework/testing/duplicates-test')]);
-    $volume = VolumeModel::factory()->create(['fs' => 'duplicates-test']);
+    $volume = VolumeModel::factory()->create(['disk' => 'duplicates-test']);
     app(Volumes::class)->reset();
     $GLOBALS['duplicatesFolder'] = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
 });

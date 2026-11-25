@@ -200,6 +200,7 @@ it('renders an accessible editable PHP form with ordinary nested names', functio
 
     expect($crawler->filter('input[name="settings[placeholder]"][value="Submitted placeholder"]'))->toHaveCount(1)
         ->and($crawler->filter('select[name="settings[uiMode]"] option[value="enlarged"][selected]'))->toHaveCount(1)
+        ->and($crawler->filter('select[name="settings[uiMode]"] option')->each(fn (Crawler $option) => $option->attr('value')))->toBe(['normal', 'enlarged'])
         ->and($crawler->filter('input[name="settings[code]"][value="1"]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[placeholder]"][aria-invalid="true"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-field[label="Placeholder Text"]'))->toHaveCount(1)

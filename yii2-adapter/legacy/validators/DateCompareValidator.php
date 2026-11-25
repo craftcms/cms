@@ -70,12 +70,12 @@ class DateCompareValidator extends Validator
 
         if (!isset($this->message)) {
             $this->message = match ($this->operator) {
-                '==' => t('{attribute} must be equal to "{compareValueOrAttribute}".'),
-                '!=' => t('{attribute} must not be equal to "{compareValueOrAttribute}".'),
-                '>' => t('{attribute} must be greater than "{compareValueOrAttribute}".'),
-                '>=' => t('{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
-                '<' => t('{attribute} must be less than "{compareValueOrAttribute}".'),
-                '<=' => t('{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
+                '==' => t('{attribute} must be equal to “{compareValueOrAttribute}”.'),
+                '!=' => t('{attribute} must not be equal to “{compareValueOrAttribute}”.'),
+                '>' => t('{attribute} must be greater than “{compareValueOrAttribute}”.'),
+                '>=' => t('{attribute} must be greater than or equal to “{compareValueOrAttribute}”.'),
+                '<' => t('{attribute} must be less than “{compareValueOrAttribute}”.'),
+                '<=' => t('{attribute} must be less than or equal to “{compareValueOrAttribute}”.'),
                 default => throw new InvalidConfigException("Unknown operator: $this->operator"),
             };
         }

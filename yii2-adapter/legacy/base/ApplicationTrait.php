@@ -59,6 +59,7 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
+use craft\services\Uploads;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -91,7 +92,6 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
-use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
@@ -148,6 +148,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Tags $tags The tags service
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
+ * @property-read Uploads $uploads The uploads service
  * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
@@ -1290,6 +1291,18 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the uploads service.
+     *
+     * @return Uploads The uploads service
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Uploads} instead.
+     */
+    public function getUploads(): Uploads
+    {
+        return $this->get('uploads');
+    }
+
+    /**
      * Returns the user groups service.
      *
      * @return UserGroups The user groups service
@@ -1399,10 +1412,6 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
-        if (!app()->isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
-
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1411,22 +1420,6 @@ trait ApplicationTrait
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
-        }
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws InvalidConfigException
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = Cms::config();
-
-        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath ?? '@webroot/cpresources');
-
-        if (! @FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
     }
 

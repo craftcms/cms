@@ -40,6 +40,7 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
+use craft\services\Uploads;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -188,6 +189,9 @@ return [
         ],
         'tokens' => [
             'class' => Tokens::class,
+        ],
+        'uploads' => [
+            'class' => Uploads::class,
         ],
         'urlManager' => [
             'class' => UrlManager::class,

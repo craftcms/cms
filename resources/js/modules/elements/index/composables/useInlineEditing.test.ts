@@ -153,4 +153,21 @@ describe('useInlineEditing', () => {
 
     expect(saveShortcut.defaultPrevented).toBe(true);
   });
+
+  it('stops starting when the index is removed while its inputs load', async () => {
+    const containerRef = ref<HTMLElement | null>(document.createElement('div'));
+    const state = useInlineEditing({
+      container: containerRef,
+      editableRows: [{id: 11, title: 'Original', inlineInputHtml: {title: ''}}],
+      busy: false,
+      loading: false,
+      load: async () => {
+        containerRef.value = null;
+      },
+      save: vi.fn(),
+    });
+
+    await expect(state.start()).resolves.toBeUndefined();
+    expect(state.editingIds.value).toEqual([]);
+  });
 });

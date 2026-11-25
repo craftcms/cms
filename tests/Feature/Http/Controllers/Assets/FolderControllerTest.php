@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Events\FolderCreating;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Http\Controllers\Assets\FolderController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\actingAs;
@@ -19,7 +21,7 @@ beforeEach(function () {
         'root' => storage_path('framework/testing/folder-controller-test/test-disk'),
     ]);
 
-    $this->volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $this->volume = Volume::factory()->create(['disk' => 'test-disk']);
     $this->folder = VolumeFolderModel::factory()->create(['volumeId' => $this->volume->id]);
 });
 
@@ -225,6 +227,39 @@ it('can move a folder whose parent has a null path', function () {
     expect(VolumeFolderModel::query()
         ->where('parentId', $destination->id)
         ->where('path', "$destinationName/$sourceName/")
+        ->exists())->toBeTrue();
+});
+
+it('moves folders even when FolderCreating listeners block new folders', function () {
+    $sourceName = fake()->uuid();
+    $destinationName = fake()->uuid();
+    $source = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->folder->id,
+        'path' => "$sourceName/",
+        'name' => $sourceName,
+    ]);
+    VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $source->id,
+        'path' => "$sourceName/child/",
+        'name' => 'child',
+    ]);
+    $destination = VolumeFolderModel::factory()->create([
+        'volumeId' => $this->volume->id,
+        'parentId' => $this->folder->id,
+        'path' => "$destinationName/",
+        'name' => $destinationName,
+    ]);
+    Event::listen(FolderCreating::class, fn (FolderCreating $event) => $event->isValid = false);
+
+    postJson(action([FolderController::class, 'move']), [
+        'folderId' => $source->id,
+        'parentId' => $destination->id,
+    ])->assertOk();
+
+    expect(VolumeFolderModel::query()
+        ->where('path', "$destinationName/$sourceName/child/")
         ->exists())->toBeTrue();
 });
 

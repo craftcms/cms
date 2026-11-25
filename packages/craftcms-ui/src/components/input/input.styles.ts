@@ -32,6 +32,16 @@ export default css`
     max-width: 100%;
   }
 
+  /* Browsers ignore size on number inputs; the extra 1.5em fits the spin buttons. */
+  :host([maxlength]:not([width='full'])[type='number'])
+    ::slotted([slot='input']),
+  :host([width='auto'][type='number']) ::slotted([slot='input']) {
+    box-sizing: border-box;
+    width: calc(
+      var(--_input-size) * 1ch + 1.5em + 2 * var(--c-input-spacing-inline)
+    );
+  }
+
   /* Stop the input chrome from flexing back out to the available space. */
   :host([maxlength]:not([width='full'])) .input-group__container,
   :host([width='auto']) .input-group__container {

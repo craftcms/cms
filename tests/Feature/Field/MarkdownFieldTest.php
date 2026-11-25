@@ -390,7 +390,7 @@ it('validates html sanitizer settings', function () {
 it('validates and applies asset selector volume settings', function () {
     $volume = Volume::factory()->create([
         'name' => 'Images',
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
     ]);
     app()->forgetInstance(VolumesService::class);
 
@@ -416,10 +416,22 @@ it('validates and applies asset selector volume settings', function () {
         ->and($invalidField->errors()->has('availableVolumes'))->toBeTrue();
 });
 
+it('uses the All option of the available volumes setting', function () {
+    Volume::factory()->create(['disk' => 'test-disk']);
+    app()->forgetInstance(VolumesService::class);
+
+    $field = new MarkdownField(['name' => 'Body', 'handle' => 'body']);
+    $assetSettingsNodes = fn (): array => $this->assetSettingsNodes();
+    $props = $assetSettingsNodes->call($field)[0]->getControl()->props();
+
+    expect($props['allValue'])->toBe('*')
+        ->and(array_column($props['options'], 'value'))->not->toContain('*');
+});
+
 it('passes its asset settings to the editor control', function () {
     actingAs(User::findOne());
-    $selectableVolume = Volume::factory()->create(['fs' => 'test-disk']);
-    $uploadVolume = Volume::factory()->create(['fs' => 'test-disk']);
+    $selectableVolume = Volume::factory()->create(['disk' => 'test-disk']);
+    $uploadVolume = Volume::factory()->create(['disk' => 'test-disk']);
     $uploadFolder = VolumeFolder::factory()->create(['volumeId' => $uploadVolume->id, 'path' => '']);
     app()->forgetInstance(VolumesService::class);
 

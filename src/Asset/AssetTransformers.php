@@ -12,6 +12,8 @@ use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
@@ -24,6 +26,8 @@ use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
@@ -35,6 +39,7 @@ use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
 use Stringable;
+use TypeError;
 use WeakMap;
 
 /**
@@ -178,8 +183,63 @@ class AssetTransformers extends Manager
         #[\SensitiveParameter] mixed $definition,
     ): AssetTransformResult {
         $request = $this->request($asset, $definition, $this->forAsset($asset));
+        $transform = $this->eventTransform($request->parameters, $request->namedTransform);
 
-        return $this->driver($request->transformer->driver)->transform($request);
+        event($event = new TransformGenerating($asset, is_array($transform) ? $transform : clone $transform));
+
+        if ($event->url !== null) {
+            return $this->resultForUrl($asset, $transform, Html::encodeSpaces($event->url));
+        }
+
+        $result = $this->driver($request->transformer->driver)->transform($request);
+
+        event(new TransformGenerated($asset, $transform, $result->url));
+
+        return $result;
+    }
+
+    /**
+     * Returns the transform that transform events get: an image transform with the request’s parameters, keeping the
+     * named transform’s identity if there is one, or the parameters when the driver gives a core parameter a type that
+     * image transforms don’t support.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return ImageTransform|array<string, mixed>
+     */
+    private function eventTransform(array $parameters, ?ImageTransform $namedTransform): ImageTransform|array
+    {
+        try {
+            return ($namedTransform !== null ? clone $namedTransform : new ImageTransform)->setInlineParameters($parameters);
+        } catch (TypeError) {
+            return $parameters;
+        }
+    }
+
+    /**
+     * Returns the result for a URL that a {@see TransformGenerating} listener provided. Like Craft 5, its MIME type is
+     * the transform’s format’s, or the source file’s if the transform has no format.
+     *
+     * @param  ImageTransform|array<string, mixed>  $transform
+     */
+    private function resultForUrl(Asset $asset, ImageTransform|array $transform, string $url): AssetTransformResult
+    {
+        $format = $transform instanceof ImageTransform ? $transform->format : ($transform['format'] ?? null);
+        $source = clone $asset;
+        if (method_exists($source, 'setTransform')) {
+            $source->setTransform(null);
+        }
+        [$width, $height] = $transform instanceof ImageTransform
+            ? ImageTransformHelper::transformedDimensions($asset, $transform)
+            : [null, null];
+
+        return new AssetTransformResult(
+            url: $url,
+            mimeType: (is_string($format) && $format !== '' ? File::getMimeTypeByExtension("file.$format") : null)
+                ?? $source->getMimeType()
+                ?? 'application/octet-stream',
+            width: $width,
+            height: $height,
+        );
     }
 
     /**
@@ -329,7 +389,7 @@ class AssetTransformers extends Manager
 
     private function forAsset(Asset $asset): AssetTransformer
     {
-        return $this->forDisk($asset->getVolume()->getResolvedFsTarget());
+        return $this->forDisk($asset->getVolume()->getResolvedDisk());
     }
 
     /**

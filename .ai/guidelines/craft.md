@@ -41,9 +41,41 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 ## Pull requests
 
 - Run `composer ci` before creating a pull request.
+- Load the `changelog-entries` skill for every bug fix or feature PR, and commit the release notes it calls for with the change, linking the GitHub issue it fixes. If the skill says the change gets no entry, such as a fix for behavior that was never released, say why in the PR body.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use the `pr` skill to write the pull request body.
 - Use the `requesting-accessibility-reviews` skill to request an accessibility review.
+
+## Screenshots in pull requests
+
+- Take and add every screenshot in a pull request's description or comments by following the `feature-screenshots` skill.
+- Host every image on GitHub, as a `https://github.com/user-attachments/assets/…` URL. Never use images hosted on ampcode.com, such as Amp attachment, artifact, or file URLs, or anywhere else.
+- When the Claude in Chrome tools aren't available to upload the screenshots yourself, ask the user to:
+  1. Download the screenshots.
+  2. Drop them into any comment box on GitHub, such as the pull request's, without saving the comment.
+  3. Paste the Markdown or HTML that GitHub inserts for each image back into the thread.
+
+  Then add those images to the pull request description, as the `feature-screenshots` skill describes.
+
+## Workspace skills
+
+The Craft workspace skills cover processes shared with Craft 5 and the plugin repos: `releasing`, `changelog-entries`, `merging-pull-requests`, `watching-copilot-reviews`, `requesting-accessibility-reviews`, `feature-screenshots`, and `pr`. Follow them, along with the details for this repo below.
+
+### Releasing
+
+- Release Craft 6 from `6.x`. The version is `VERSION` in `src/Cms.php`, and the Finish commit bumps it.
+- `6.x` gets Craft 5 fixes through the next-minor 5.x branch, such as `5.13`. When releasing both majors, finish the 5.x release and merge it forward into `6.x` first.
+- Unreleased security fixes are on `6.x-internal` in craftcms/cms-internal.
+
+### Changelog entries
+
+- `CHANGELOG-WIP.md` (`# Release Notes for Craft CMS 6.0 (WIP)`) is for people upgrading from Craft 5. Something first released in a 6.0 alpha or beta is new to them, so later changes to it get no WIP entry.
+- Use Craft 6 class names in code references, such as `CraftCms\Cms\Database\Claim` or `CraftCms\Cms\Support\Facades\FacadeName`, and name macros as ``the `Request::isPreview()` macro``.
+- When ordering entries, front-end developer changes include Blade, and plugin and module development changes include Laravel and control panel Inertia, Vue and web components.
+
+## Breaking changes in 6.0 pre-releases
+
+From 6.0.0-beta.1 on, don't break anything a tagged 6.0 pre-release shipped. Prefer deprecation (`Deprecator::log()`, a "Deprecated" changelog entry, removal in Craft 7), and ask before any unavoidable break.
 
 ## Control panel trigger
 
@@ -116,6 +148,7 @@ queues. The `merging-pull-requests` skill's safeguards still apply.
 - End a turn only when the work is done, when nothing can move without me, or when the blocker is deliberate, such as a protected branch or access I withheld. Don't end it with a summary that announces the next step instead of taking it, with an offer to continue, or with a list of decisions that don't block the rest of the work.
 - Treat errors, timeouts, failing tests, and failing tools as problems to diagnose: read the error, fix the command, wait and retry, or use another tool.
 - Ask before you push, open a pull request or edit its title or body, post comments or reviews on GitHub, merge, delete remote branches, or discard changes you didn't make, such as with `git reset --hard` or `git checkout -- <path>`.
+- Never close or comment on GitHub issues or discussions on your own, including after merging the pull request that fixes them. Do either only when asked to for that issue or discussion.
 - Don't ask before running tests, `composer ci`, `composer fix-cs`, `composer phpstan`, Pint, or `pnpm` scripts, installing dependencies from the lockfiles, starting dev servers, or creating local branches and worktrees.
 
 ## Reporting

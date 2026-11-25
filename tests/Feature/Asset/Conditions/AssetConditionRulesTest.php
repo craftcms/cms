@@ -347,7 +347,7 @@ describe('HeightConditionRule', function () {
 
 describe('VolumeConditionRule', function () {
     it('matchElement returns true when the asset’s volume is in the selected values', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
         $asset = AssetModel::factory()->createElement(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);
 
@@ -362,8 +362,8 @@ describe('VolumeConditionRule', function () {
     });
 
     it('matchElement returns false when the asset’s volume is not in the selected values', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
-        $volume2 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
         $asset = AssetModel::factory()->createElement(['volumeId' => $volume2->id, 'folderId' => $folder2->id]);
 
@@ -378,8 +378,8 @@ describe('VolumeConditionRule', function () {
     });
 
     it('modifyQuery filters assets by volume', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
-        $volume2 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
         $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
         AssetModel::factory()->create(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);
@@ -400,8 +400,8 @@ describe('VolumeConditionRule', function () {
     });
 
     it('modifyQuery excludes assets in the selected volumes', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
-        $volume2 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
         $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
         AssetModel::factory()->create(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);

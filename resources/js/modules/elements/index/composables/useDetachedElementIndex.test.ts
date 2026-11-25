@@ -27,8 +27,9 @@ it.each(['earlier first', 'latest first'])(
     const index = scope.run(() =>
       useDetachedElementIndex({initial: indexData(), fetch})
     )!;
-    const firstLoad = index.refresh({selectId: 1});
-    const secondLoad = index.refresh({selectId: 2});
+    // As a plugin would: each reload selects what it added, once it's done.
+    const firstLoad = index.refresh().then(() => index.selectElements([1]));
+    const secondLoad = index.refresh().then(() => index.selectElements([2]));
 
     if (order === 'earlier first') {
       first.resolve(indexData(1));

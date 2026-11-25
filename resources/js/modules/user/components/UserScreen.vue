@@ -21,11 +21,24 @@
   import CpContainer from '@/common/components/CpContainer.vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
+  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ElementActionMenu from '@/modules/elements/components/ElementActionMenu.vue';
+  import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
 
   const page = usePage<{
     details?: string | null;
     detailsFragment?: CraftCms.Cms.View.HtmlFragment | null;
+    screen?: {
+      /** The user's status and actions, as the Profile screen's header shows them. */
+      userHeader?: {
+        statusLabelHtml: string | null;
+        actionMenu: ElementActionMenuItem[];
+      };
+    };
   }>();
+
+  const header = computed(() => page.props.screen?.userHeader ?? null);
 
   const detailsFragment = computed(() => page.props.detailsFragment ?? null);
   const details = computed(() => page.props.details ?? null);
@@ -35,6 +48,14 @@
 </script>
 
 <template>
+  <LayoutSlot v-if="header?.statusLabelHtml" name="content-toolbar-meta">
+    <DynamicHtmlRenderer :html="header.statusLabelHtml" />
+  </LayoutSlot>
+
+  <LayoutSlot v-if="header?.actionMenu.length" name="content-toolbar-actions">
+    <ElementActionMenu :items="header.actionMenu" />
+  </LayoutSlot>
+
   <div class="py-3">
     <CpContainer>
       <slot></slot>

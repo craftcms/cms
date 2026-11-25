@@ -1334,7 +1334,7 @@ abstract class ContentIndexViewModel extends ViewModel
             : $this->defaultTableColumns();
     }
 
-    private function resolveQuery(): ElementQueryInterface
+    protected function resolveQuery(): ElementQueryInterface
     {
         if ($this->query !== null) {
             return $this->query;
@@ -1667,7 +1667,6 @@ abstract class ContentIndexViewModel extends ViewModel
                 'autoReload' => false,
                 'selectable' => false,
                 'sortable' => false,
-                'showStatus' => true,
                 ...$this->cardConfig($element),
             ];
 

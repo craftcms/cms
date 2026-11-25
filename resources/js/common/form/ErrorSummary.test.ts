@@ -1,4 +1,5 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {createApp, h, nextTick, type App} from 'vue';
 import ErrorSummary from './ErrorSummary.vue';
 
@@ -6,10 +7,13 @@ vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
 
 let app: App | undefined;
 
-async function mount(errors: Record<string, string>): Promise<HTMLElement> {
+async function mount(
+  errors: Record<string, string>,
+  props: {errorPaths?: (key: string) => (string[] | null)[]} = {}
+): Promise<HTMLElement> {
   const container = document.createElement('div');
   document.body.append(container);
-  app = createApp({render: () => h(ErrorSummary, {errors})});
+  app = createApp({render: () => h(ErrorSummary, {errors, ...props})});
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
   app.mount(container);
   await nextTick();
@@ -41,6 +45,64 @@ it('links each error to its field, and leaves the rest as text', async () => {
   expect(items[1]!.textContent?.trim()).toBe('Something else went wrong.');
 });
 
+it('links a field error by the path its screen resolves the key to, with the field name in bold', async () => {
+  document.body.innerHTML = `
+    <craft-field id="ui-fields-a11yDate"><input></craft-field>
+    <craft-field id="ui-postDate"><input></craft-field>`;
+  const errorPaths = (key: string) => [
+    key === 'a11yDate' ? ['fields', key] : null,
+    [key],
+  ];
+
+  const summary = await mount(
+    {
+      a11yDate: 'The *Date* field is required.',
+      postDate: '*Post Date* must be a date.',
+    },
+    {errorPaths}
+  );
+  const links = [...summary.querySelectorAll('a')];
+
+  expect(links.map((link) => link.getAttribute('href'))).toEqual([
+    '#ui-fields-a11yDate',
+    '#ui-postDate',
+  ]);
+  expect(links.map((link) => computeAccessibleName(link))).toEqual([
+    'The Date field is required.',
+    'Post Date must be a date.',
+  ]);
+  expect(
+    links.map((link) => link.querySelector('strong')?.textContent)
+  ).toEqual(['Date', 'Post Date']);
+});
+
+it('shows an unlinked error with its field name in bold, without the asterisks', async () => {
+  const summary = await mount({elsewhere: 'The *Date* field is required.'});
+  const item = summary.querySelector('li')!;
+
+  expect(item.querySelector('a')).toBeNull();
+  expect(item.textContent?.trim()).toBe('The Date field is required.');
+  expect(item.querySelector('strong')?.textContent).toBe('Date');
+});
+
+it('lists only top-level errors, leaving a field’s nested errors beside their controls', async () => {
+  const summary = await mount({
+    myTable: '*Table* has invalid cells.',
+    'myTable.0.col2': 'Enter a date.',
+    myTableNotes: '*Table notes* is too long.',
+    blocks: 'Fix *Blocks*.',
+    'blocks[abc].title': 'Title is required.',
+  });
+
+  expect(
+    [...summary.querySelectorAll('li')].map((item) => item.textContent?.trim())
+  ).toEqual([
+    'Table has invalid cells.',
+    'Table notes is too long.',
+    'Fix Blocks.',
+  ]);
+});
+
 it('takes focus when it appears, so the failure is announced', async () => {
   const summary = await mount({title: 'Title is required.'});
   const group = summary.querySelector('[role="group"]')!;
@@ -68,12 +130,64 @@ it('switches to the tab a linked field is on and focuses its input', async () =>
 
   const summary = await mount({title: 'Title is required.'});
   summary.querySelector('a')!.click();
-  await nextTick();
 
-  expect(document.getElementById('tab-2')!.classList.contains('hidden')).toBe(
-    false
+  await vi.waitFor(() => {
+    expect(document.getElementById('tab-2')!.classList.contains('hidden')).toBe(
+      false
+    );
+    expect(document.activeElement).toBe(
+      document.getElementById('ui-title-input')
+    );
+  });
+});
+
+it('links an error once its field reaches the page, as a tab the server held back does after a save', async () => {
+  const summary = await mount({
+    'fields.title': 'Title is required.',
+    'fields.venue': 'Venue is required.',
+  });
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<craft-field id="ui-fields-title"><input></craft-field>`
   );
-  expect(document.activeElement).toBe(
-    document.getElementById('ui-title-input')
+
+  await vi.waitFor(() =>
+    expect(
+      [...summary.querySelectorAll('a')].map((link) =>
+        link.getAttribute('href')
+      )
+    ).toEqual(['#ui-fields-title'])
   );
+
+  document.body.insertAdjacentHTML(
+    'beforeend',
+    `<section><craft-field id="ui-fields-venue"><input></craft-field></section>`
+  );
+
+  await vi.waitFor(() =>
+    expect(
+      [...summary.querySelectorAll('a')].map((link) =>
+        link.getAttribute('href')
+      )
+    ).toEqual(['#ui-fields-title', '#ui-fields-venue'])
+  );
+});
+
+it('highlights the field a link goes to, as a deep link to it does', async () => {
+  document.body.innerHTML = `
+    <craft-field id="ui-fields-related">
+      <div slot="input"><button type="button">Add an entry</button></div>
+    </craft-field>`;
+  Element.prototype.scrollIntoView = vi.fn();
+  const field = document.getElementById('ui-fields-related')!;
+
+  const summary = await mount({'fields.related': 'Related is required.'});
+  expect(field.hasAttribute('data-highlighted')).toBe(false);
+
+  summary.querySelector('a')!.click();
+
+  await vi.waitFor(() => {
+    expect(field.hasAttribute('data-highlighted')).toBe(true);
+    expect(document.activeElement).toBe(field.querySelector('button'));
+  });
 });

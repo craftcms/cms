@@ -2,6 +2,7 @@ import {beforeAll, beforeEach, describe, expect, it} from 'vite-plus/test';
 import {contrast, loadTokens} from '../../../test/contrast';
 import {Color} from '@src/constants/colors';
 import './badge.js';
+import '../icon/icon.js';
 import type CraftBadge from './badge.js';
 
 const fills = [...new Set(Object.values(Color))];
@@ -83,6 +84,26 @@ it.each([
   expect(
     badge.shadowRoot!.querySelector('.badge')!.getBoundingClientRect().height
   ).toBe(document.querySelector('.probe')!.getBoundingClientRect().height);
+});
+
+it.each([
+  ['small', '--c-size-icon-xs'],
+  ['medium', '--c-size-icon-sm'],
+])('sizes a %s badge’s icons to %s', async (size, token) => {
+  document.body.innerHTML = `
+    <span class="probe" style="display: block; block-size: var(${token})"></span>
+    <craft-badge size="${size}" fill="success">
+      <craft-icon slot="prefix" name="check"></craft-icon>Applied
+    </craft-badge>`;
+  const badge = document.querySelector('craft-badge')!;
+  await badge.updateComplete;
+  const probe = document.querySelector('.probe')!.getBoundingClientRect();
+
+  // The probe resolves the token, so a missing one can't pass as 0 = 0.
+  expect(probe.height).toBeGreaterThan(0);
+  expect(
+    badge.querySelector('craft-icon')!.getBoundingClientRect().height
+  ).toBe(probe.height);
 });
 
 it('lifts white off the page in the dark theme, and draws black a shade darker', async () => {
