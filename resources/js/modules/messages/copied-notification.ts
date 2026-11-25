@@ -1,5 +1,6 @@
 import '@craftcms/ui/components/pane/pane';
 import {t} from '@craftcms/ui/utilities/translate';
+import {broadcast, onBroadcast} from '@/common/craft/broadcast';
 import {prefixedKey} from '@/common/composables/useStorage';
 import {
   messagesElement,
@@ -11,8 +12,26 @@ import {
 const TEXT_LENGTH = 500;
 
 const MINIMIZED_KEY = 'copiedNotificationMinimized';
+const BROADCAST_EVENT = 'copiedNotificationMinimized';
 
 let buttonCount = 0;
+
+/** The cards in this tab, which follow other tabs' minimizing. */
+const cards = new Set<CopiedNotification>();
+let listening = false;
+
+function listenToOtherTabs(): void {
+  if (listening) {
+    return;
+  }
+
+  listening = true;
+  onBroadcast(BROADCAST_EVENT, ({minimized}) => {
+    for (const card of cards) {
+      card.dock(minimized === true);
+    }
+  });
+}
 
 /**
  * Opens the next "copied" card in full. Called when something new is
@@ -120,6 +139,9 @@ export abstract class CopiedNotification extends Notification {
     });
 
     this.docked = storedMinimized();
+    cards.add(this);
+    this.on('close', () => cards.delete(this));
+    listenToOtherTabs();
   }
 
   /** How many things are copied, which the minimized card shows past one. */
@@ -180,11 +202,19 @@ export abstract class CopiedNotification extends Notification {
 
   /**
    * Docks the card below other notifications, minimized, or opens it in
-   * full, and remembers which for later pages.
+   * full, and remembers which for later pages and other tabs.
    */
   setMinimized(minimized: boolean): void {
     storeMinimized(minimized);
+    broadcast({event: BROADCAST_EVENT, minimized});
+    this.dock(minimized);
+  }
 
+  /**
+   * Docks the card below other notifications, minimized, or opens it in
+   * full, in this tab only.
+   */
+  dock(minimized: boolean): void {
     if (this.docked === minimized) {
       return;
     }

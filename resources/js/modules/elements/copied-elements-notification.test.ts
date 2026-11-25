@@ -147,3 +147,26 @@ it('minimizes below newer notifications, and stays minimized on later pages unti
   const newCopy = await showCard();
   expect(newCopy.element!.closest('[role="status"]')).not.toBeNull();
 });
+
+it('minimizes and opens along with other tabs', async () => {
+  const card = new CopiedElementsNotification(
+    [7, 8].map((id) => ({type: 'Entry', id, siteId: 1})),
+    () => {},
+    {animate: false}
+  );
+  await card.show();
+  const otherTab = new BroadcastChannel('CraftCMS:');
+  const dock = document.querySelector('cp-messages .messages-dock')!;
+
+  otherTab.postMessage({event: 'copiedNotificationMinimized', minimized: true});
+  await vi.waitFor(() => expect(card.element!.parentElement).toBe(dock));
+
+  otherTab.postMessage({
+    event: 'copiedNotificationMinimized',
+    minimized: false,
+  });
+  await vi.waitFor(() =>
+    expect(card.element!.closest('[role="status"]')).not.toBeNull()
+  );
+  otherTab.close();
+});
