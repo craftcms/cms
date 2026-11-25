@@ -30,7 +30,9 @@ use Override;
 use function CraftCms\Cms\currentUser;
 
 /**
- * @extends ElementQuery<Asset>
+ * @template T of Asset
+ *
+ * @extends ElementQuery<T>
  *
  * @since 6.0.0
  */
@@ -110,6 +112,8 @@ class AssetQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @uses $editable
+     *
+     * @return self<T>
      */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
     #[Gql(exclude: true)]
@@ -124,6 +128,8 @@ class AssetQuery extends ElementQuery
      * Sets the [[$savable]] property.
      *
      * @uses $savable
+     *
+     * @return self<T>
      */
     public function savable(?bool $value = true): self
     {

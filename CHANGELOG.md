@@ -41,6 +41,7 @@
 - Element saves, deletions, restorations, nested element reordering, and URI updates now invalidate each cache tag once per operation, and propagations once per element. Element cache tags invalidated inside a database transaction are now invalidated when it commits. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Added `CraftCms\Cms\Element\ElementCaches::deferInvalidations()` and `hasPendingInvalidations()`. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
+- `CraftCms\Cms\Element\Queries\AssetQuery` now has a template type for the asset class it returns, like `EntryQuery`, so static analysis can type queries for asset subclasses.
 - Fixed a bug where macros imported within `{% namespace %}` tags weren’t available after the closing tag. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - Fixed a bug where Number fields’ inputs didn’t format their values for the user’s formatting locale. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))
 - Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
