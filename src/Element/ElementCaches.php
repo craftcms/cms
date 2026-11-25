@@ -209,7 +209,13 @@ class ElementCaches
      */
     public function invalidateTags(array $tags): array
     {
-        $tags = $this->queueInvalidations(array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== ''))));
+        $tags = array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== '')));
+
+        if ($tags === []) {
+            return [];
+        }
+
+        $tags = $this->queueInvalidations($tags);
 
         event(new ElementCachesInvalidated($tags));
 

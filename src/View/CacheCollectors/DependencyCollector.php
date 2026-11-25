@@ -244,6 +244,16 @@ class DependencyCollector implements CacheCollectorInterface
         return $timestamps === [] ? null : new DateTimeImmutable('@'.min($timestamps));
     }
 
+    /**
+     * Returns how many collections are open.
+     *
+     * @internal
+     */
+    public function depth(): int
+    {
+        return $this->isCollecting() ? count($this->buffers) + 1 : 0;
+    }
+
     public function collectElement(ElementInterface $element): void
     {
         if (! $this->isCollecting()) {
@@ -280,7 +290,8 @@ class DependencyCollector implements CacheCollectorInterface
             throw new RuntimeException('Element cache invalidation tags are not currently being collected.');
         }
 
-        $tags = array_keys($this->tags);
+        // Numeric tags become integer keys.
+        $tags = array_map(strval(...), array_keys($this->tags));
         $expiryTimestamp = $this->expiryTimestamp;
 
         if (! empty($this->buffers)) {

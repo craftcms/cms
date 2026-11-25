@@ -176,8 +176,26 @@ it('clears cached blocks that added a tag when the tag is invalidated', function
     app()->forgetScopedInstances();
     expect($this->get('/page')->getContent())->toBe($first);
 
-    expect(app(ElementCaches::class)->invalidateTags(['nav', '']))->toBe(['nav']);
+    expect(app(ElementCaches::class)->invalidateTags(['nav', '']))->toBe(['nav'])
+        ->and(app(ElementCaches::class)->invalidateTags(['']))->toBe([]);
+    Event::assertDispatchedTimes(ElementCachesInvalidated::class, 1);
     Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === ['nav']);
+
+    app()->forgetScopedInstances();
+    expect($this->get('/page')->getContent())->not->toBe($first);
+});
+
+it('keeps numeric tags added inside a cached block', function () {
+    Route::get('/page', fn () => response(renderString(
+        "{% cache globally using key 'year' %}{% do CacheInfo.addTags([2024]) %}{{ random() }}{% endcache %}",
+    )));
+
+    $first = $this->get('/page')->getContent();
+    app()->forgetScopedInstances();
+    expect($this->get('/page')->getContent())->toBe($first)
+        ->and($this->cacheInfo['tags'])->toContain('2024');
+
+    app(ElementCaches::class)->invalidateTags(['2024']);
 
     app()->forgetScopedInstances();
     expect($this->get('/page')->getContent())->not->toBe($first);

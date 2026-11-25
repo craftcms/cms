@@ -37,6 +37,11 @@ class CacheInfo
 {
     private bool $collecting = false;
 
+    /**
+     * How many collections were open before {@see start()}.
+     */
+    private int $parentDepth = 0;
+
     public function __construct(
         private readonly ElementCaches $elementCaches,
         private readonly DependencyCollector $dependencies,
@@ -88,6 +93,11 @@ class CacheInfo
      */
     public function start(): void
     {
+        if ($this->collecting) {
+            return;
+        }
+
+        $this->parentDepth = $this->dependencies->depth();
         $this->elementCaches->startCollectingCacheInfo();
         $this->collecting = true;
     }
@@ -104,6 +114,10 @@ class CacheInfo
         }
 
         $this->collecting = false;
-        $this->elementCaches->stopCollectingCacheInfo();
+
+        // Also closes collections left open inside it, so they don't leak into the next request.
+        while ($this->dependencies->depth() > $this->parentDepth) {
+            $this->elementCaches->stopCollectingCacheInfo();
+        }
     }
 }

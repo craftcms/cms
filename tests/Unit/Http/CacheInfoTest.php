@@ -47,3 +47,13 @@ it('includes tags from collections still open inside the response', function () 
 
     expect($cacheInfo->getTags())->toEqualCanonicalizing(['page', 'inner']);
 });
+
+it('closes collections left open inside it when it stops', function () {
+    $cacheInfo = app(CacheInfo::class);
+    $cacheInfo->start();
+    app(ElementCaches::class)->startCollectingCacheInfo();
+
+    $cacheInfo->stop();
+
+    expect(app(ElementCaches::class)->isCollectingCacheInfo())->toBeFalse();
+});

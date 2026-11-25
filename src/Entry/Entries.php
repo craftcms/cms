@@ -24,7 +24,6 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Query;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
@@ -280,8 +279,7 @@ class Entries
                 DB::commit();
 
                 // Invalidate caches for the old section
-                $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
-                TagDependency::invalidate($tag);
+                ElementCaches::invalidateTags([sprintf('element::%s::section:%s', Entry::class, $oldSection->id)]);
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;

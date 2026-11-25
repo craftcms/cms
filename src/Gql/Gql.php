@@ -395,7 +395,7 @@ class Gql
 
     public function invalidateCaches(): void
     {
-        TagDependency::invalidate(self::CACHE_TAG);
+        $this->elementCaches->invalidateTags([self::CACHE_TAG]);
     }
 
     /** @return array<string, mixed>|null */
