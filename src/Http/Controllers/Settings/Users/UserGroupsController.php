@@ -89,7 +89,8 @@ class UserGroupsController extends BaseUserSettingsController
             ->unless($this->readOnly, fn (Table $table) => $table
                 ->createAction(t('New user group'), route('craft.cp.settings.users.groups.create'))
                 ->createActionInPageHeader()
-                ->deletable());
+                ->deletable()
+                ->deletionBlockers('user-group'));
 
         return new CpScreenResponse()
             ->title(t('User Settings'))

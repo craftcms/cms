@@ -10,6 +10,17 @@ type SelectButton = HTMLElement & {disabled: boolean; loading: boolean};
 /** A `craft-radio-group`; its `value` is the chosen section's ID. */
 type SectionGroup = HTMLElement & {value: string};
 
+/**
+ * Settings for moving entries without an element index to read the site and
+ * section from, such as from a section's deletion blockers.
+ */
+export interface EntryMoverSettings {
+  siteId?: number | null;
+  currentSectionUid?: string | null;
+  onMove?: () => void;
+  onCancel?: () => void;
+}
+
 interface MoveTargetSection {
   id: number;
   label: string;
@@ -46,6 +57,8 @@ export class EntryMover extends Base {
   entryIds: Array<number | string> = [];
   currentSectionUid: string | null = null;
   elementIndex: LegacyElementIndex | null = null;
+  entryMoverSettings: EntryMoverSettings = {};
+  moved = false;
 
   #abortController: AbortController | null = null;
   #sectionsList: SectionGroup | null = null;
@@ -53,26 +66,33 @@ export class EntryMover extends Base {
 
   constructor(
     entryIds?: Array<number | string>,
-    elementIndex?: LegacyElementIndex
+    elementIndex?: LegacyElementIndex | null,
+    settings?: EntryMoverSettings
   ) {
     super();
     if (new.target === EntryMover) {
-      this.init(entryIds ?? [], elementIndex ?? null);
+      this.init(entryIds ?? [], elementIndex ?? null, settings);
     }
   }
 
   init(
     entryIds: Array<number | string>,
-    elementIndex: LegacyElementIndex | null
+    elementIndex: LegacyElementIndex | null,
+    settings: EntryMoverSettings = {}
   ): void {
     this.entryIds = entryIds;
     this.elementIndex = elementIndex;
+    this.entryMoverSettings = settings;
 
-    // uid of the section we're moving from
-    const sourceKey = String(elementIndex?.$source.data('key') ?? '');
-    this.currentSectionUid = sourceKey.startsWith('section:')
-      ? sourceKey.substring(8)
-      : null;
+    if (elementIndex) {
+      // uid of the section we're moving from
+      const sourceKey = String(elementIndex.$source.data('key') ?? '');
+      this.currentSectionUid = sourceKey.startsWith('section:')
+        ? sourceKey.substring(8)
+        : null;
+    } else {
+      this.currentSectionUid = settings.currentSectionUid ?? null;
+    }
 
     this.createModal();
   }
@@ -139,7 +159,13 @@ export class EntryMover extends Base {
     this.addListener(cancelBtn, 'click', 'cancel');
     this.addListener(this.#selectBtn, 'click', 'selectSection');
 
-    this.modal = new Modal(container);
+    this.modal = new Modal(container, {
+      onHide: () => {
+        if (!this.moved) {
+          this.entryMoverSettings.onCancel?.();
+        }
+      },
+    });
     this.getCompatibleSections();
   }
 
@@ -158,7 +184,9 @@ export class EntryMover extends Base {
         'entries/move-to-section-modal-data',
         {
           entryIds: this.entryIds,
-          siteId: this.elementIndex?.siteId,
+          siteId: this.elementIndex
+            ? this.elementIndex.siteId
+            : this.entryMoverSettings.siteId,
           currentSectionUid: this.currentSectionUid,
         },
         {signal: this.#abortController.signal}
@@ -228,9 +256,11 @@ export class EntryMover extends Base {
         showSuccess(response.data.message);
         announce(response.data.message);
 
+        this.moved = true;
         this.elementIndex?.updateElements();
         this.elementIndex?.$elements.attr('tabindex', '-1').focus();
         this.modal?.hide();
+        this.entryMoverSettings.onMove?.();
       })
       .catch((e: {response?: {data?: {message?: string}}}) => {
         showError(e?.response?.data?.message);

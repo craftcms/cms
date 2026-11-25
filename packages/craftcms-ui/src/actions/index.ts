@@ -15,6 +15,12 @@ export type BaseAction =
       confirm?: string;
       /** Asks the user to re-enter their password first, if their session needs it. */
       requireElevatedSession?: boolean;
+      /**
+       * The subject whose deletion blockers the host should show first, such
+       * as `{type: 'field', id: 12}`. If the user confirms the deletion in the
+       * blockers modal, the action skips `confirm`.
+       */
+      deletionBlockers?: {type: string; id: number | string};
     }
   | {
       type: 'event';
@@ -152,7 +158,16 @@ export async function runAction(
       break;
 
     case 'http': {
-      if (action.confirm) {
+      let confirmed = false;
+      if (action.deletionBlockers) {
+        const result = await checkDeletionBlockers(action.deletionBlockers);
+        if (!result) {
+          return;
+        }
+        confirmed = result !== true;
+      }
+
+      if (action.confirm && !confirmed) {
         if (!confirm(action.confirm)) {
           return;
         }
@@ -275,6 +290,29 @@ async function elevateSession(): Promise<boolean> {
   );
 
   return detail.confirmed ?? true;
+}
+
+/**
+ * Asks the host to show a subject's deletion blockers through a
+ * `craft:check-deletion-blockers` event, whose listener sets `detail.result`
+ * to a promise of `false` if the user closed the modal, `true` if there were
+ * no blockers, or `{confirmed: true}` if the user confirmed the deletion. If
+ * no host is listening, the action runs.
+ */
+async function checkDeletionBlockers(subject: {
+  type: string;
+  id: number | string;
+}): Promise<boolean | {confirmed: true}> {
+  const detail: {
+    type: string;
+    id: number | string;
+    result?: Promise<boolean | {confirmed: true}>;
+  } = {...subject};
+  window.dispatchEvent(
+    new CustomEvent('craft:check-deletion-blockers', {detail})
+  );
+
+  return detail.result ?? true;
 }
 
 /**

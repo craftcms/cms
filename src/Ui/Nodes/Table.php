@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Nodes;
 
 use CraftCms\Cms\Cp\Enums\TableAppearance;
+use CraftCms\Cms\DeletionBlocker\SubjectTypeRegistry;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -70,6 +71,8 @@ class Table implements Node
     private bool $deletable = false;
 
     private ?string $deleteConfirmMessage = null;
+
+    private ?string $deletionBlockerType = null;
 
     private ?string $bulkDeleteUrl = null;
 
@@ -346,6 +349,22 @@ class Table implements Node
     }
 
     /**
+     * Shows a row's deletion blockers before deleting it, looking up each row by
+     * its `id` as a subject of the given type, such as `field`.
+     *
+     * If the user confirms the deletion in the blockers modal, the table
+     * doesn't also ask for the deletion confirmation.
+     *
+     * @see SubjectTypeRegistry::register()
+     */
+    public function deletionBlockers(string $type): static
+    {
+        $this->deletionBlockerType = $type;
+
+        return $this;
+    }
+
+    /**
      * Enables row selection and adds a bulk delete action, submitting
      * `{ids: list<int|string>}` to `$url` via DELETE after confirmation.
      * Row deletion is configured independently with {@see deletable()}.
@@ -575,6 +594,7 @@ class Table implements Node
             'deleteUrl' => $this->deleteUrl,
             'deletable' => $this->deletable,
             'deleteConfirmMessage' => $this->deleteConfirmMessage,
+            'deletionBlockerType' => $this->deletionBlockerType,
             'bulkDeleteUrl' => $this->bulkDeleteUrl,
             'bulkDeleteConfirmMessage' => $this->bulkDeleteConfirmMessage,
             'bulkActions' => $this->bulkActions,
