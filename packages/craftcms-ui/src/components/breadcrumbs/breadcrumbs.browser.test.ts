@@ -226,6 +226,18 @@ describe('craft-breadcrumbs', () => {
     ).toBeLessThanOrEqual(ROW_GAP + 1);
   });
 
+  it('keeps a padded trail inside its container on a page without a box-sizing reset', async () => {
+    const {container, element} = await trail('300px');
+    expect(getComputedStyle(container).boxSizing).toBe('content-box');
+
+    element.style.paddingInline = '12px';
+    await resize(container, '300px');
+
+    expect(element.getBoundingClientRect().width).toBeLessThanOrEqual(
+      container.getBoundingClientRect().width + 0.5
+    );
+  });
+
   it('brings crumbs back in a content-sized container when the trail has padding', async () => {
     const {row, element, items, overflow} = await besideTrail('300px', (el) => {
       el.style.boxSizing = 'border-box';
