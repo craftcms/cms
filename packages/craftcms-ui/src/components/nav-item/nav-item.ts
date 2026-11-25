@@ -48,6 +48,8 @@ import {
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
  *
+ * @csspart toggle-icon - The subnav or flyout chevron beside the label.
+ *
  * @cssproperty [--c-nav-item-size=--c-size-touch-target] - The row's height,
  *   and its width too when it's `icon-only`.
  * @cssproperty [--c-nav-item-color=inherit] - The label's color while the
@@ -607,7 +609,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  protected renderSubnavToggle() {
+  protected renderSubnavToggle(part?: string) {
     return html`
       <craft-button
         @click="${this.toggleSubnav}"
@@ -627,6 +629,7 @@ export default class CraftNavItem extends LitElement {
       >
         <craft-icon
           id="${this.id}-toggle-icon"
+          part="${ifDefined(part)}"
           name="${this.subnavState === 'closed'
             ? 'chevron-down'
             : 'chevron-up'}"
@@ -680,7 +683,7 @@ export default class CraftNavItem extends LitElement {
    * every branch in the tab order, so tabbing past a branch would mean tabbing
    * through it.
    */
-  protected renderFlyoutToggle() {
+  protected renderFlyoutToggle(part?: string) {
     return html`
       <craft-button
         class="flyout-toggle"
@@ -698,6 +701,7 @@ export default class CraftNavItem extends LitElement {
       >
         <craft-icon
           class="flyout-indicator"
+          part="${ifDefined(part)}"
           name="chevron-right"
           aria-hidden="true"
         ></craft-icon>
@@ -755,9 +759,9 @@ export default class CraftNavItem extends LitElement {
             ></slot>`}
         <slot name="suffix">
           ${showToggle && this.togglePosition === 'suffix'
-            ? this.renderSubnavToggle()
+            ? this.renderSubnavToggle('toggle-icon')
             : nothing}
-          ${showFlyoutToggle ? this.renderFlyoutToggle() : nothing}
+          ${showFlyoutToggle ? this.renderFlyoutToggle('toggle-icon') : nothing}
         </slot>
       </div>
     `;

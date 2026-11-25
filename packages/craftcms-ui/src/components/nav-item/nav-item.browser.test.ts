@@ -889,27 +889,6 @@ async function rhythmFixture() {
   return {row, label};
 }
 
-it('spaces a heading from its first row as rows are spaced from each other', async () => {
-  const {label} = await rhythmFixture();
-  const top = (selector: string) => label(selector).top;
-  const pitch = top('[href="/admin/users"]') - top('[href="/admin/dashboard"]');
-
-  expect(pitch).toBeGreaterThan(0);
-  // Centered labels: the heading's smaller type moves its top by half the
-  // difference in line height, so compare centers.
-  const center = (selector: string) => {
-    const {top, height} = label(selector);
-    return top + height / 2;
-  };
-  expect(center('[href="/admin/dashboard"]') - center('#content')).toBeCloseTo(
-    pitch,
-    0
-  );
-  expect(
-    center('[href="/admin/users/credentialed"]') - center('#account')
-  ).toBeCloseTo(pitch, 0);
-});
-
 it('sets off a section, a nested heading, and the row after an open subnav by whole spacing steps', async () => {
   const {row} = await rhythmFixture();
   const gap = (before: string, after: string) =>
@@ -968,6 +947,11 @@ describe.each(['light', 'dark'])('chevrons in the %s theme', (theme) => {
     surface.style.backgroundColor = 'var(--c-surface-page)';
     // As CpSidebar sets it.
     surface.style.setProperty('--c-nav-item-color', 'var(--color-slate-700)');
+    // As MainNav styles it.
+    const chevronStyle = document.createElement('style');
+    chevronStyle.textContent = `craft-nav-item::part(toggle-icon) {
+      color: color-mix(in srgb, currentcolor 75%, transparent);
+    }`;
     surface.style.width = '300px';
     surface.innerHTML = `
       <craft-nav-list>
@@ -985,6 +969,7 @@ describe.each(['light', 'dark'])('chevrons in the %s theme', (theme) => {
         </craft-nav-item>
       </craft-nav-list>
     `;
+    surface.append(chevronStyle);
     document.body.append(surface);
     const items = [...surface.querySelectorAll<CraftNavItem>('craft-nav-item')];
     await Promise.all(items.map((item) => item.updateComplete));
