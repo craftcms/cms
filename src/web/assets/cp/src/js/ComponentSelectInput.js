@@ -17,6 +17,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     $components: null,
     $addBtn: null,
     $createBtn: null,
+    $replacedComponent: null,
 
     _initialized: false,
 
@@ -47,6 +48,16 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           const $button = $(ev.currentTarget);
           this.addComponent($button.data('type'), $button.data('id'));
         });
+
+        // Options hide the menu after they're activated, so the replaced chip
+        // has already been captured by then
+        this._handleMenuHide = () => {
+          this.$replacedComponent = null;
+        };
+        this.$addBtn
+          .disclosureMenu()
+          .data('disclosureMenu')
+          .on('hide', this._handleMenuHide);
       }
 
       if (this.$createBtn.length && this.settings.createAction) {
@@ -387,9 +398,18 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         actions.push({
           icon: async () => await Craft.ui.icon('arrows-rotate'),
           label: Craft.t('app', 'Replace'),
-          callback: () => {
-            const menu = this.$addBtn.disclosureMenu().data('disclosureMenu');
+          callback: (el) => {
+            // don't use `this` in case the chip ends up getting assigned to a different component select
+            const componentSelect = $(el)
+              .closest('.menu')
+              .data('disclosureMenu')
+              .$trigger.closest('.componentselect')
+              .data('componentSelect');
+            const menu = componentSelect.$addBtn
+              .disclosureMenu()
+              .data('disclosureMenu');
             menu.$alignmentElement = $component;
+            componentSelect.$replacedComponent = $component;
             menu.show();
           },
         });
@@ -521,6 +541,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     },
 
     async addComponent(type, id, addToMenu = false) {
+      const $replacedComponent = this.$replacedComponent;
       const disclosureMenu = this.$addBtn.length
         ? this.$addBtn.disclosureMenu().data('disclosureMenu')
         : null;
@@ -543,12 +564,19 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      if (!this.canAddMoreComponents()) {
-        this.removeComponent(this.getComponents().last(), false);
+      const $component = $(data.components[type][id][0]);
+
+      if ($replacedComponent && this.$components.is($replacedComponent)) {
+        this.insertComponent($component);
+        $component.parent('li').insertAfter($replacedComponent.parent('li'));
+        this.removeComponent($replacedComponent, false);
+      } else {
+        if (!this.canAddMoreComponents()) {
+          this.removeComponent(this.getComponents().last(), false);
+        }
+        this.insertComponent($component);
       }
 
-      const $component = $(data.components[type][id][0]);
-      this.insertComponent($component);
       this.addComponents($component);
       let $item = $component;
 
@@ -590,6 +618,9 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       delete this.componentSelect;
       delete this.componentSort;
       this.getOptions().off('activate');
+      if (this._handleMenuHide) {
+        this.$addBtn.data('disclosureMenu').off('hide', this._handleMenuHide);
+      }
       this.$createBtn.off('activate');
       this.base();
     },

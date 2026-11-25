@@ -7,6 +7,7 @@
 - Fixed an error that occurred when `{% namespace %}` tags were nested. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - Fixed a bug where Number fields and Table fields’ Number columns could save `0`, or drop the minus sign, for numbers written with the formatting locale’s own digits or minus sign, such as Arabic digits or Swedish negative numbers. ([#21110](https://github.com/craftcms/cms/pull/21110))
 - Fixed a bug where typing a character that a number input doesn’t allow could move the cursor to the wrong place. ([#21110](https://github.com/craftcms/cms/pull/21110))
+- Fixed a bug where the “Replace” action on component select chips could add the new component instead of replacing the old one. ([#21116](https://github.com/craftcms/cms/issues/21116), [#21124](https://github.com/craftcms/cms/pull/21124))
 
 ## 5.12.3 - 2026-11-24
 
