@@ -146,7 +146,7 @@ class SsoController extends Controller
      * @param \Exception|null $exception
      * @throws HttpException
      */
-    protected function handleFailedResponse(\Exception $exception = null)
+    protected function handleFailedResponse(\Throwable $exception = null)
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));

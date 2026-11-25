@@ -9,9 +9,12 @@ namespace crafttests\unit\web;
 
 use Craft;
 use craft\elements\User as UserElement;
+use craft\helpers\App;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
+use craft\web\Session as WebSession;
 use craft\web\User as WebUser;
 use UnitTester;
 
@@ -49,6 +52,8 @@ class UserTest extends TestCase
      */
     public function testSendUsernameCookie(): void
     {
+        DateTimeHelper::pause();
+
         // Send the cookie with a hardcoded time value
         $this->config->getGeneral()->rememberUsernameDuration = 20;
         $this->user->sendUsernameCookie($this->userElement);
@@ -57,7 +62,9 @@ class UserTest extends TestCase
         $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
 
         self::assertSame($this->userElement->username, $cookie->value);
-        self::assertSame(time() + 20, $cookie->expire);
+        self::assertSame(DateTimeHelper::currentTimeStamp() + 20, $cookie->expire);
+
+        DateTimeHelper::resume();
     }
 
     /**
@@ -94,19 +101,21 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test that the current time() is subtracted from the session expiration value.
+     * Test that the current timestamp is subtracted from the session expiration value.
      * We use a stub to ensure Craft::$app->getSession()->get() always returns 50 PHP sessions are difficult(ish) in testing.
      */
     public function testGetRemainingSessionTimeMath(): void
     {
+        DateTimeHelper::pause();
         $this->user->setIdentity($this->userElement);
 
-        // ensure Craft::$app->getSession()->get() always returns time() + 50.
-        $this->_sessionGetStub(time() + 50);
+        // ensure Craft::$app->getSession()->get() always returns the current timestamp + 50.
+        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
 
         // Give a few seconds depending on how fast tests run.
-        self::assertContains(Craft::$app->getUser()->getRemainingSessionTime(), [48, 49, 50]);
+        self::assertEquals(Craft::$app->getUser()->getRemainingSessionTime(), 50);
 
+        DateTimeHelper::resume();
         Session::reset();
     }
 
@@ -147,16 +156,81 @@ class UserTest extends TestCase
      */
     public function testGetHasElevatedSessionMath(): void
     {
+        DateTimeHelper::pause();
         $this->user->setIdentity($this->userElement);
 
-        $this->_sessionGetStub(time() + 50);
-        self::assertEqualsWithDelta(50, $this->user->getElevatedSessionTimeout(), 2.0);
+        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
+        self::assertEquals(50, $this->user->getElevatedSessionTimeout());
 
         // If the session->get() return value is smaller than time 0 is returned
-        $this->_sessionGetStub(time() - 50);
-        self::assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
+        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() - 50);
+        self::assertEquals(0, $this->user->getElevatedSessionTimeout());
 
+        DateTimeHelper::resume();
         Session::reset();
+    }
+
+    /**
+     * Test that logging in with an identity cookie after the PHP session has expired keeps the remembered session duration,
+     * even when the request said not to extend the session.
+     *
+     * @dataProvider cookieLoginDataProvider
+     */
+    public function testCookieLoginKeepsRememberedDuration(bool $extendSession): void
+    {
+        $duration = 1209600;
+        $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0';
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+        $_SESSION = [];
+
+        Craft::$app->set('session', new class() extends WebSession {
+            public function getIsActive(): bool
+            {
+                return true;
+            }
+
+            public function getHasSessionId(): bool
+            {
+                return true;
+            }
+
+            public function open(): void
+            {
+            }
+
+            public function regenerateID($deleteOldSession = false): void
+            {
+            }
+        });
+        Session::reset();
+
+        // Start a fresh request, so it picks up the user agent, cookie, and query param
+        $cookieValidationKey = Craft::$app->getRequest()->cookieValidationKey;
+        Craft::$app->set('request', array_merge(App::webRequestConfig(), ['cookieValidationKey' => $cookieValidationKey]));
+
+        // Create the identity cookie, then expire the PHP session
+        $this->user->generateToken($this->userElement->id);
+        $identityCookie = $this->user->identityCookie['name'];
+        $cookieValue = json_encode([$this->userElement->id, $this->userElement->getAuthKey(), $duration]);
+        $_SESSION = [];
+
+        $_COOKIE[$identityCookie] = Craft::$app->getSecurity()->hashData(serialize([$identityCookie, $cookieValue]), $cookieValidationKey);
+        if (!$extendSession) {
+            $_GET['dontExtendSession'] = '1';
+        }
+        Craft::$app->set('user', App::userConfig());
+
+        $user = Craft::$app->getUser();
+        self::assertSame($this->userElement->id, $user->getIdentity()?->id);
+        self::assertEqualsWithDelta($duration, $user->getRemainingSessionTime(), 5);
+    }
+
+    public static function cookieLoginDataProvider(): array
+    {
+        return [
+            'extending the session' => [true],
+            'not extending the session' => [false],
+        ];
     }
 
     /**
@@ -180,12 +254,8 @@ class UserTest extends TestCase
         Session::reset();
 
         $this->tester->mockCraftMethods('session', [
-            'getHasSessionId' => function() {
-                return true;
-            },
-            'get' => function($tokenParam) use ($returnValue) {
-                return $returnValue;
-            },
+            'getHasSessionId' => fn() => true,
+            'get' => fn($tokenParam) => $returnValue,
         ]);
     }
 

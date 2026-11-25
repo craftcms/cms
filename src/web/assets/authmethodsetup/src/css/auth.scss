@@ -34,14 +34,14 @@
       gap: var(--xs);
       padding-inline: 1px var(--s);
       padding-block: 0;
-      border: 1px solid var(--enabled-color);
+      border: 1px solid var(--bg-enabled);
       font-weight: 500;
 
       [data-icon] {
         width: calc(var(--touch-target-size) - 4px);
         height: calc(var(--touch-target-size) - 4px);
         border-radius: calc(var(--touch-target-size) / 2 - 2px);
-        background-color: var(--enabled-color);
+        background-color: var(--bg-enabled);
         text-align: center;
 
         &::before {
@@ -67,7 +67,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background-color: var(--enabled-color);
+    background-color: var(--bg-enabled);
     text-align: center;
 
     &::before {

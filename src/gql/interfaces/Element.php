@@ -13,6 +13,7 @@ use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
+use craft\gql\types\Site;
 use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
@@ -60,7 +61,13 @@ class Element extends InterfaceType implements SingularTypeInterface
      */
     public static function getFieldDefinitions(): array
     {
-        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), GqlHelper::canSchema('settings.sites') ? [
+            'site' => [
+                'name' => 'site',
+                'type' => Type::nonNull(Site::getType()),
+                'description' => 'The site the element is associated with.',
+            ],
+        ] : [], [
             Gql::GRAPHQL_COUNT_FIELD => [
                 'name' => Gql::GRAPHQL_COUNT_FIELD,
                 'type' => Type::int(),

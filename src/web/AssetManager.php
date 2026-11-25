@@ -24,14 +24,14 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
+    private const CACHE_TAG = 'assetmanager';
+
     /**
      * @var bool Whether asset source paths should be cached for subsequent requests.
      * @see hash()
      * @since 4.5.10
      */
     public bool $cacheSourcePaths = true;
-
-    private const CACHE_TAG = 'assetmanager';
 
     /**
      * @inheritdoc
@@ -83,13 +83,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function hash($path): string
     {
-        if (is_callable($this->hashCallback)) {
-            return call_user_func($this->hashCallback, $path);
-        }
-
-        $dir = is_file($path) ? dirname($path) : $path;
-        $alias = Craft::alias($dir);
-        $hash = sprintf('%x', crc32($alias . '|' . FileHelper::lastModifiedTime($path) . '|' . $this->linkAssets));
+        $hash = $this->hashInternal($path, $alias);
 
         if ($this->cacheSourcePaths) {
             // Store the hash for later
@@ -114,6 +108,17 @@ class AssetManager extends \yii\web\AssetManager
         return $hash;
     }
 
+    private function hashInternal(string $path, ?string &$alias = null): string
+    {
+        if (is_callable($this->hashCallback)) {
+            return call_user_func($this->hashCallback, $path);
+        }
+
+        $dir = is_file($path) ? dirname($path) : $path;
+        $alias = Craft::alias($dir);
+        return sprintf('%x', crc32(sprintf('%s|%s|%s', $alias, FileHelper::lastModifiedTime($path), $this->linkAssets)));
+    }
+
     /**
      * Get the cache key for a given asset hash
      *
@@ -130,7 +135,26 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishDirectory($src, $options): array
     {
-        [$dir, $url] = parent::publishDirectory($src, $options);
+        // If we're not publishing assets as symlinks, get a mutex lock to guard against
+        // a concurrent request clearing published assets
+        // (see https://github.com/craftcms/cms/issues/19477)
+        if (!$this->linkAssets) {
+            $mutex = Craft::$app->getMutex();
+            $lockName = sprintf('asset-bundle:%s', $this->hashInternal($src));
+            $acquiredLock = $mutex->acquire($lockName, 5);
+
+            if (!$acquiredLock) {
+                Craft::warning('Unable to acquire lock for publishing assets.', __METHOD__);
+            }
+        }
+
+        try {
+            [$dir, $url] = parent::publishDirectory($src, $options);
+        } finally {
+            if (!$this->linkAssets && $acquiredLock) {
+                $mutex->release($lockName);
+            }
+        }
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);

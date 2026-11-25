@@ -35,20 +35,6 @@ class HandleValidatorTest extends TestCase
      */
     protected static array $reservedWords = ['bird', 'is', 'the', 'word'];
 
-    public function testStaticConstants(): void
-    {
-        self::assertSame('[a-zA-Z][a-zA-Z0-9_]*', HandleValidator::$handlePattern);
-        self::assertSame(
-            [
-                'attribute', 'attributeLabels', 'attributeNames', 'attributes', 'classHandle', 'content',
-                'dateCreated', 'dateUpdated', 'errors', 'false', 'fields', 'handle', 'id', 'n', 'name', 'no',
-                'rawContent', 'rules', 'searchKeywords', 'section', 'this',
-                'true', 'type', 'uid', 'value', 'y', 'yes',
-            ],
-            HandleValidator::$baseReservedWords
-        );
-    }
-
     /**
      *
      */

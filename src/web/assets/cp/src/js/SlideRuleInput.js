@@ -6,6 +6,9 @@ Craft.SlideRuleInput = Garnish.Base.extend({
   $selectedOption: null,
   $input: null,
   value: null,
+  dragging: false,
+  sensitivity: 3,
+  rotateIntent: false,
 
   startPositionX: null,
 
@@ -24,7 +27,11 @@ Craft.SlideRuleInput = Garnish.Base.extend({
     this.$graduations = $('<div class="graduations"></div>').appendTo(
       this.$container
     );
-    this.$graduationsUl = $('<ul></ul>').appendTo(this.$graduations);
+    this.$graduationsUl = $('<ul></ul>')
+      .attr({
+        'aria-hidden': 'true',
+      })
+      .appendTo(this.$graduations);
 
     this.$container.attr({
       role: 'slider',
@@ -126,25 +133,44 @@ Craft.SlideRuleInput = Garnish.Base.extend({
   _handleTapStart: function (ev, touch) {
     ev.preventDefault();
 
+    // Only allow rotation if the user taps on anything within the graduations container
+    this.rotateIntent = $(ev.target).is('.graduations *');
+
+    if (!this.rotateIntent) return;
+
     this.startPositionX = touch.position.x;
     this.startLeft = this.$graduationsUl.position().left;
 
-    this.dragging = true;
     this.onStart();
   },
 
   _handleTapMove: function (ev, touch) {
-    if (this.dragging) {
+    if (!this.rotateIntent) return;
+
+    if (Math.abs(touch.position.x - this.startPositionX) > this.sensitivity) {
+      this.dragging = true;
+      this.$container.addClass('dragging');
       ev.preventDefault();
-
-      var curX = this.startPositionX - touch.position.x;
-      var left = this.startLeft - curX;
-      var value = this.positionToValue(left);
-
-      this.setValue(value);
-
+      this._setValueFromTouch(touch);
       this.onChange();
     }
+  },
+
+  _setValueFromTouch: function (touch) {
+    let referencePosition = this.dragging
+      ? this.startPositionX
+      : this.$cursor.offset().left + this.$cursor.outerWidth() / 2;
+    let delta;
+
+    if (this.dragging) {
+      delta = referencePosition - touch.position.x;
+    } else {
+      delta = touch.position.x - referencePosition;
+    }
+
+    const position = this.startLeft - delta;
+    const value = this.positionToValue(position);
+    this.setValue(value);
   },
 
   setValue: function (value) {
@@ -191,12 +217,21 @@ Craft.SlideRuleInput = Garnish.Base.extend({
     this.value = value;
   },
 
-  _handleTapEnd: function (ev) {
+  _handleTapEnd: function (ev, touch) {
+    if (!this.rotateIntent) return;
+
     if (this.dragging) {
       ev.preventDefault();
       this.dragging = false;
-      this.onEnd();
+      this.$container.removeClass('dragging');
+    } else {
+      this._setValueFromTouch(touch);
+      this.onChange();
     }
+
+    this.onEnd();
+    this.startPositionX = null;
+    this.rotateIntent = false;
   },
 
   positionToValue: function (position) {

@@ -59,7 +59,10 @@ class Asset extends Mutation
         if ($createDeleteMutation) {
             $mutationList['deleteAsset'] = [
                 'name' => 'deleteAsset',
-                'args' => ['id' => Type::nonNull(Type::int())],
+                'args' => [
+                    'id' => Type::nonNull(Type::int()),
+                    'hardDelete' => Type::boolean(),
+                ],
                 'resolve' => [Craft::createObject(AssetResolver::class), 'deleteAsset'],
                 'description' => 'Delete an asset.',
                 'type' => Type::boolean(),

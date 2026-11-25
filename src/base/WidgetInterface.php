@@ -26,7 +26,7 @@ interface WidgetInterface extends SavableComponentInterface
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `src/icons/solid/.`
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string|null
      * @since 3.2.0

@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -27,7 +28,9 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return int|null
      * @throws InvalidConfigException if the element is misconfigured
+     * @phpstan-impure
      */
+    #[AllowedInSandbox]
     public function getPrimaryOwnerId(): ?int;
 
     /**
@@ -43,6 +46,7 @@ interface NestedElementInterface extends ElementInterface
      * @return ElementInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getPrimaryOwner(): ?ElementInterface;
 
     /**
@@ -57,7 +61,9 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return int|null
      * @throws InvalidConfigException if the element is misconfigured
+     * @phpstan-impure
      */
+    #[AllowedInSandbox]
     public function getOwnerId(): ?int;
 
     /**
@@ -73,6 +79,7 @@ interface NestedElementInterface extends ElementInterface
      * @return ElementInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getOwner(): ?ElementInterface;
 
     /**
@@ -83,11 +90,23 @@ interface NestedElementInterface extends ElementInterface
     public function setOwner(?ElementInterface $owner): void;
 
     /**
+     * Returns each of the element’s owners
+     *
+     * @param array $criteria
+     * @return ElementInterface[]
+     * @throws InvalidConfigException if the element is misconfigured
+     * @since 5.8.17
+     */
+    #[AllowedInSandbox]
+    public function getOwners(array $criteria = []): array;
+
+    /**
      * Returns the field that contains the element.
      *
      * @return ElementContainerFieldInterface|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getField(): ?ElementContainerFieldInterface;
 
     /**
@@ -95,6 +114,7 @@ interface NestedElementInterface extends ElementInterface
      *
      * @return int|null
      */
+    #[AllowedInSandbox]
     public function getSortOrder(): ?int;
 
     /**

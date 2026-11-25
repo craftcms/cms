@@ -72,7 +72,6 @@ class GqlHelperTest extends TestCase
         self::assertFalse(GqlHelper::canSchema('something'));
 
         $result = GqlHelper::extractAllowedEntitiesFromSchema();
-        self::assertIsArray($result);
         self::assertEmpty($result);
     }
 
@@ -84,7 +83,7 @@ class GqlHelperTest extends TestCase
     public function testSchemaQueryAbility(): void
     {
         $permissionSet = [
-            'usergroups.allUsers:read',
+            'usergroups.everyone:read',
             'globalsets.someSet:read',
             'sections.someSection:read',
         ];
@@ -94,6 +93,7 @@ class GqlHelperTest extends TestCase
         self::assertTrue(GqlHelper::canQueryEntries());
         self::assertTrue(GqlHelper::canQueryGlobalSets());
         self::assertTrue(GqlHelper::canQueryUsers());
+        self::assertTrue(GqlHelper::canQueryAllUsers());
         self::assertFalse(GqlHelper::canQueryAssets());
         self::assertFalse(GqlHelper::canQueryCategories());
         self::assertFalse(GqlHelper::canQueryTags());
@@ -104,9 +104,7 @@ class GqlHelperTest extends TestCase
      */
     public function testUnionTypes(): void
     {
-        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
-            return 'one';
-        });
+        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], fn() => 'one');
         self::assertInstanceOf(UnionType::class, $unionType);
     }
 
@@ -222,7 +220,7 @@ class GqlHelperTest extends TestCase
         return [
             [
                 [
-                    'usergroups.allUsers:read',
+                    'usergroups.everyone:read',
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'sections.someSection:read',
@@ -233,7 +231,7 @@ class GqlHelperTest extends TestCase
             ],
             [
                 [
-                    'usergroups.allUsers:write',
+                    'usergroups.everyone:write',
                     'volumes.someVolume:read',
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
@@ -258,13 +256,13 @@ class GqlHelperTest extends TestCase
         return [
             [
                 [
-                    'usergroups.allUsers:read',
+                    'usergroups.everyone:read',
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'sections.someSection:read',
                 ],
                 [
-                    'usergroups' => ['allUsers'],
+                    'usergroups' => ['everyone'],
                     'volumes' => ['someVolume'],
                     'globalsets' => ['someSet'],
                     'sections' => ['someSection'],
@@ -272,24 +270,24 @@ class GqlHelperTest extends TestCase
             ],
             [
                 [
-                    'usergroups.allUsers:read',
+                    'usergroups.everyone:read',
                     'usergroups.otherGroup:read',
                 ],
                 [
-                    'usergroups' => ['allUsers', 'otherGroup'],
+                    'usergroups' => ['everyone', 'otherGroup'],
                 ],
             ], [
                 [
-                    'usergroups.allUsers:read',
+                    'usergroups.everyone:read',
                     'usergroups.otherGroup:write',
                 ],
                 [
-                    'usergroups' => ['allUsers'],
+                    'usergroups' => ['everyone'],
                 ],
             ],
             [
                 [
-                    'usergroups.allUsers:write',
+                    'usergroups.everyone:write',
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'sections.someSection:write',

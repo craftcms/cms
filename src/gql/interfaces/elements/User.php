@@ -13,6 +13,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\generators\UserType;
+use craft\gql\types\UserGroup;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -115,6 +116,16 @@ class User extends Element
                 'type' => Type::string(),
                 'description' => 'The user’s email.',
             ],
+            'affiliatedSiteHandle' => [
+                'name' => 'affiliatedSiteHandle',
+                'type' => Type::string(),
+                'description' => 'The handle of the site the user is affiliated with.',
+            ],
+            'affiliatedSiteId' => [
+                'name' => 'affiliatedSiteId',
+                'type' => Type::int(),
+                'description' => 'The ID of the site the user is affiliated with.',
+            ],
             'addresses' => [
                 'name' => 'addresses',
                 'args' => AddressArguments::getArguments(),
@@ -131,19 +142,27 @@ class User extends Element
      */
     protected static function getConditionalFields(): array
     {
+        $fields = [];
         $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
 
         if (Gql::isSchemaAwareOf('volumes.' . $volumeUid)) {
-            return [
-                'photo' => [
-                    'name' => 'photo',
-                    'type' => Asset::getType(),
-                    'description' => 'The user’s photo.',
-                    'complexity' => Gql::eagerLoadComplexity(),
-                ],
+            $fields['photo'] = [
+                'name' => 'photo',
+                'type' => Asset::getType(),
+                'description' => 'The user’s photo.',
+                'complexity' => Gql::eagerLoadComplexity(),
             ];
         }
 
-        return [];
+        if (Gql::canSchema('settings.usergroups')) {
+            $fields['groups'] = [
+                'name' => 'groups',
+                'type' => Type::nonNull(Type::listOf(Type::nonNull(UserGroup::getType()))),
+                'description' => 'The user groups the user belongs to.',
+                'complexity' => Gql::nPlus1Complexity(),
+            ];
+        }
+
+        return $fields;
     }
 }

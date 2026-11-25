@@ -1,7 +1,9 @@
-{% requireAdmin %}
+{% requireAdmin false %}
 
 {% extends "_layouts/cp" %}
 {% set title = "Fields"|t('app') %}
+
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
@@ -24,10 +26,15 @@
 
 
 {% block actionButton %}
-    {% set newFieldUrl = url('settings/fields/new') %}
-    <a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t('app') }}</a>
+    {% if not readOnly %}
+        {% set newFieldUrl = url('settings/fields/new') %}
+        <a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t('app') }}</a>
+    {% endif %}
 {% endblock %}
 
+{% if readOnly %}
+  {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
     <div id="fields-vue-admin-table"></div>
@@ -91,14 +98,19 @@
       callback: (value) => value || `<i class="light">${Craft.t('app', 'No usages')}</i>`,
     });
 
-    new Craft.VueAdminTable({
+    let config = {
       columns,
       container: '#fields-vue-admin-table',
-      deleteAction: 'fields/delete-field',
       emptyMessage: info.emptyMessage,
       tableDataEndpoint: 'fields/table-data',
       search: true,
-    });
+    };
+
+  {% if not readOnly %}
+    config['deleteAction'] = 'fields/delete-field';
+  {% endif %}
+
+    new Craft.VueAdminTable(config);
   })({{
     {
       isMultiSite: craft.app.isMultiSite,

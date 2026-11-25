@@ -10,9 +10,11 @@ namespace craft\fields;
 use CommerceGuys\Addressing\Country\Country as CountryModel;
 use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
@@ -24,7 +26,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -135,5 +137,14 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
         }
 
         return $value;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }

@@ -15,6 +15,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -84,6 +85,13 @@ abstract class ElementResolver extends Resolver
 
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
+        // combine `search` and `searchTermOptions` if both are set
+        $searchTermOptions = ArrayHelper::remove($arguments, 'searchTermOptions');
+        if ($searchTermOptions && isset($arguments['search'])) {
+            $searchTermOptions['query'] = $arguments['search'];
+            $arguments['search'] = $searchTermOptions;
+        }
+
         /** @var ElementQuery $query */
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
@@ -143,4 +151,20 @@ abstract class ElementResolver extends Resolver
      * @return mixed
      */
     abstract protected static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed;
+
+    /**
+     * Prepares a top-level, schema-scoped element query for this resolver, as if it were the
+     * root of a resolver chain.
+     *
+     * This gives code outside the resolver’s own class hierarchy (e.g. GQL element types
+     * resolving `prev`/`next` fields) a public way to get a properly-scoped query, without
+     * requiring `prepareQuery()` itself to be public.
+     *
+     * @param array $arguments Arguments to apply to the query.
+     * @return mixed
+     */
+    public static function prepareRootQuery(array $arguments): mixed
+    {
+        return static::prepareQuery(null, $arguments);
+    }
 }

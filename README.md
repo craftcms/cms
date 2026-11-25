@@ -1,4 +1,4 @@
-<a href="https://craftcms.com/" rel="noopener" target="_blank"><img width="247" height="60" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></a>
+<a href="https://craftcms.com/" rel="noopener" target="_blank"><picture><img width="247" height="60" src="https://craftcms.com/craftcms.svg" alt="Craft CMS"></picture></a>
 
 <br>
 

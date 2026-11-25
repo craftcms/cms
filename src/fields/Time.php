@@ -8,9 +8,11 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -20,6 +22,7 @@ use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use DateTime;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -29,7 +32,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -114,7 +117,6 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     {
         $rules = parent::defineRules();
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-        $rules[] = [['max'], TimeValidator::class, 'min' => $this->min];
 
         return $rules;
     }
@@ -124,6 +126,19 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
@@ -132,6 +147,7 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'field' => $this,
             'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
             'max' => $this->max ? DateTimeHelper::toDateTime(['time' => $this->max], true) : null,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -153,8 +169,8 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
-            'minTime' => $this->min,
-            'maxTime' => $this->max,
+            'minTime' => DateTimeHelper::timeToSeconds($this->min),
+            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
             'minuteIncrement' => $this->minuteIncrement,
         ]);
     }
@@ -236,6 +252,15 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
+    public function serializeValueForDb(mixed $value, ?ElementInterface $element): mixed
+    {
+        // Bypass Db::prepareDateForDb()
+        return $this->serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementConditionRuleType(): array|string|null
     {
         return EmptyFieldConditionRule::class;
@@ -259,6 +284,31 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'name' => $this->handle,
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
+            // MCP passes values nested in other fields’ input to normalizeValue() as given, so it describes them as the
+            // times of day that method parses, rather than as the `DateTime` type’s date-time strings.
+            'inputSchema' => $this->getInputSchema(),
+            // That schema accepts any string, so a time this field can’t parse is rejected rather than clearing it.
+            // GraphQL parses values into `DateTime` objects before this is called.
+            'normalizeValue' => function(mixed $value): mixed {
+                if (is_string($value) && $value !== '' && $this->normalizeValue($value, null) === null) {
+                    throw new UserError(sprintf('%s: The value couldn’t be parsed.', $this->handle));
+                }
+
+                return $value;
+            },
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        // Any time the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A time of day, such as 14:30 or 2:30 PM.',
         ];
     }
 }

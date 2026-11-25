@@ -19,7 +19,6 @@ interface LocalFsInterface
      * Return the root path of the FS.
      *
      * @return string
-     * @todo anything that calls this will need to account for volume subpaths when that's a thing
      */
     public function getRootPath(): string;
 }

@@ -79,8 +79,18 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
       // Determine if they are viewing a section that they have permission to create entries in
       const selectedSection = this.publishableSections.find(
-        (s) => s.handle === sectionHandle
+        (s) => s.handle === sectionHandle && s.sites.includes(this.siteId)
       );
+
+      // Ignore the source's entry type if it isn't available for the section
+      if (
+        entryTypeHandle &&
+        !selectedSection?.entryTypesBySite[this.siteId].some(
+          (t) => t.handle === entryTypeHandle
+        )
+      ) {
+        entryTypeHandle = undefined;
+      }
 
       this.$newEntryBtnGroup = $('<div class="btngroup submit" data-wrapper/>');
       let $menuBtn;
@@ -96,9 +106,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       if (selectedSection) {
         const visibleLabel =
           this.settings.context === 'index'
-            ? Craft.t('app', 'New {type}', {
-                type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
-              })
+            ? Craft.uppercaseFirst(
+                Craft.t('app', 'New {type}', {
+                  type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+                })
+              )
             : Craft.t('app', 'New {section} entry', {
                 section: selectedSection.name,
               });
@@ -156,9 +168,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         // only add the New Entry button if there are any sections for this site
         this.$newEntryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New {type}', {
-              type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
-            }),
+            label: Craft.uppercaseFirst(
+              Craft.t('app', 'New {type}', {
+                type: Craft.elementTypeNames['craft\\elements\\Entry'][2],
+              })
+            ),
             ariaLabel: Craft.t('app', 'New entry, choose a section'),
             spinner: true,
           })
@@ -196,7 +210,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 section: section.name,
               }),
             }).appendTo($li);
-            this.addListener($a, 'activate', () => {
+            this.addListener($a, 'activate', (ev) => {
+              ev.originalEvent.preventDefault();
               $menuBtn.data('trigger').hide();
               this._createEntry(section.id);
             });
@@ -221,7 +236,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
     // ---------------------------------------------------------------------
 
     if (this.settings.context === 'index') {
-      let uri = 'entries';
+      let uri = `content/${this.settings.page ?? 'entries'}`;
 
       if (sectionHandle) {
         uri += '/' + sectionHandle;
@@ -263,11 +278,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             draftId: data.entry.draftId,
             params: {
               fresh: 1,
+              updateSearchIndexImmediately: 1,
             },
           });
-          slideout.on('submit', () => {
-            this.clearSearch();
-            this.setSelectedSortAttribute('dateCreated', 'desc');
+          slideout.on('submit', (ev) => {
+            this.clearSearch(false);
+            this.startSearching();
+            this.$search.val(ev.data.title);
+            this.searchText = ev.data.title;
+
             this.selectElementAfterUpdate(data.entry.id);
             this.updateElements();
           });
@@ -276,6 +295,28 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       .finally(() => {
         this.$newEntryBtn.removeClass('loading');
       });
+  },
+
+  canPaste: function (elementInfo) {
+    if (!this.$source.data('sectionId')) {
+      return false;
+    }
+
+    const entryTypeIds = this.$source.data('entryTypeIds') || [];
+    for (const info of elementInfo) {
+      if (!entryTypeIds.includes(info.data.entryTypeId)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  pasteAttributes: function () {
+    return {
+      sectionId: this.$source.data('sectionId'),
+      placeInStructure: true,
+    };
   },
 });
 

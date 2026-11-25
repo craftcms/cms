@@ -141,7 +141,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     private function _prepareValue(string $name, mixed $value): mixed
     {
-        $columnType = static::getTableSchema()->columns[$name]->dbType ?? null;
+        $columnType = static::getTableSchema()->getColumn($name)->dbType ?? null;
         return Db::prepareValueForDb($value, $columnType);
     }
 }

@@ -69,6 +69,11 @@ class AddressesController extends Controller
         $fieldLayout->type = Address::class;
         $fieldLayout->reservedFieldHandles = [
             'address',
+            'countryCode',
+            'fullName',
+            'latLong',
+            'organization',
+            'organizationTaxId',
         ];
 
         if (!Craft::$app->getAddresses()->saveFieldLayout($fieldLayout)) {

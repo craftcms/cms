@@ -215,6 +215,28 @@ class UpdateController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $this->stdout('Updating license info ... ');
+
+        try {
+            Craft::$app->getCache()->delete(Craft::$app->getUpdates()->cacheKey);
+
+            // Use a fresh process so Craftnet receives the installed versions.
+            $php = App::phpExecutable() ?? 'php';
+            $script = $this->request->getScriptFile();
+            $process = new Process([$php, $script, 'update/info', '--interactive=0']);
+            $process->setTimeout(null);
+            $process->mustRun();
+
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        } catch (Throwable $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            $this->stdout('failed' . PHP_EOL, Console::FG_YELLOW);
+            $this->stderr(
+                'Run `php craft update/info` to retry the license refresh.' . PHP_EOL,
+                Console::FG_YELLOW,
+            );
+        }
+
         $this->stdout('Update complete!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
@@ -226,7 +248,7 @@ class UpdateController extends Controller
      */
     public function actionComposerInstall(): int
     {
-        $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
+        $this->stdout('Performing Composer install ... ');
         $output = '';
 
         try {
@@ -438,7 +460,7 @@ class UpdateController extends Controller
             return;
         }
 
-        $requirements[$update->packageName] = $to;
+        $requirements[$update->packageName] = "^$to";
         $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status, $update->phpConstraint];
 
         // Has the package name changed?
@@ -455,7 +477,7 @@ class UpdateController extends Controller
      */
     private function _performUpdate(array $requirements): bool
     {
-        $this->stdout('Performing update with Composer ... ', Console::FG_YELLOW);
+        $this->stdout('Performing update with Composer ... ');
         $composerService = Craft::$app->getComposer();
         $output = '';
 
@@ -498,7 +520,7 @@ class UpdateController extends Controller
             return false;
         }
 
-        $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
+        $this->stdout('Applying new migrations ... ');
 
         $php = App::phpExecutable() ?? 'php';
         $process = new Process([$php, $script, 'migrate/all', '--no-backup', '--no-content']);
@@ -562,7 +584,7 @@ class UpdateController extends Controller
             return;
         }
 
-        $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
+        $this->stdout('Reverting Composer changes ... ');
 
         $php = App::phpExecutable() ?? 'php';
         $process = new Process([$php, $script, 'update/composer-install']);
@@ -635,9 +657,7 @@ class UpdateController extends Controller
 
             if (!$user) {
                 $email = $this->prompt('Enter your email address to request a new license key:', [
-                    'validator' => function(string $input, ?string &$error = null) {
-                        return (new EmailValidator())->validate($input, $error);
-                    },
+                    'validator' => fn(string $input, ?string & $error = null) => (new EmailValidator())->validate($input, $error),
                 ]);
                 $session->setIdentity(new User([
                     'email' => $email,
@@ -670,7 +690,7 @@ class UpdateController extends Controller
      */
     private function _getUpdates(array $constraints = []): Updates
     {
-        $this->stdout('Fetching available updates ... ', Console::FG_YELLOW);
+        $this->stdout('Fetching available updates ... ');
         $updateData = Craft::$app->getApi()->getUpdates($constraints);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return new UpdatesModel($updateData);

@@ -322,7 +322,6 @@ abstract class Migration extends \yii\db\Migration
         }
 
         $schema = $this->db->getSchema();
-        $schema->maxObjectNameLength = 10;
         $table = $schema->getRawTableName($table);
         $tableLength = strlen($table);
         $i = 0;

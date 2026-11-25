@@ -1,0 +1,51 @@
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
+
+const waitForDiscoverPage = async ({page}) => {
+  await Promise.all([
+    // Wait for features sections to be loaded
+    page.waitForResponse((response) =>
+      response
+        .url()
+        .includes('//api.craftcms.com/v1/plugin-store/featured-sections')
+    ),
+
+    // Wait for active trials to be loaded
+    page.waitForResponse((response) =>
+      response.url().includes('//api.craftcms.com/v1/cms-editions')
+    ),
+    page.waitForResponse((response) =>
+      response
+        .url()
+        .includes('//api.craftcms.com/v1/plugin-store/plugins-by-handles')
+    ),
+  ]);
+};
+
+test('Shoud show the Discover page', async ({page, baseURL}) => {
+  await page.goto('./plugin-store');
+  const title = page.locator('h1');
+  await expect(title).toHaveText('Plugin Store');
+});
+
+test('Should show featured plugins', async ({
+  craftPluginStore,
+  page,
+  baseURL,
+}) => {
+  await page.goto('./plugin-store');
+
+  await craftPluginStore.waitForPluginStore(page);
+  await waitForDiscoverPage({page});
+
+  // Check that the page shows featured sections
+  const featuredSectionsLength = await page
+    .locator('.featured-section')
+    .count();
+  expect(featuredSectionsLength > 0).toBeTruthy();
+
+  // Check that the page shows plugins
+  const pluginsLength = await page.locator('.plugin-card').count();
+  expect(pluginsLength > 0).toBeTruthy();
+});

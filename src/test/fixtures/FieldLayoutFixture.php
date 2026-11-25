@@ -87,16 +87,25 @@ abstract class FieldLayoutFixture extends DbFixture
                     }
 
                     $required = ArrayHelper::remove($fieldConfig, 'required') ?? false;
-                    /** @var FieldInterface|Field $field */
-                    $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 
-                    if (!$fieldsService->saveField($field)) {
-                        $this->throwModelError($field);
+                    $fieldClass = new ($fieldConfig['type']);
+                    // if the field config type indicates that it's a custom field - proceed as before;
+                    // create field component, save it and add to layout elements
+                    if ($fieldClass instanceof FieldInterface) {
+                        /** @var FieldInterface|Field $field */
+                        $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
+
+                        if (!$fieldsService->saveField($field)) {
+                            $this->throwModelError($field);
+                        }
+
+                        $layoutElements[] = new CustomField($field, [
+                            'required' => $required,
+                        ]);
+                    } else {
+                        // otherwise it's a native field, so add it to the layout element
+                        $layoutElements[] = $fieldClass;
                     }
-
-                    $layoutElements[] = new CustomField($field, [
-                        'required' => $required,
-                    ]);
                 }
 
                 $tab->setElements($layoutElements);

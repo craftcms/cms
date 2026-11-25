@@ -11,6 +11,7 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Json;
 use ReflectionException;
 use ReflectionProperty;
@@ -21,7 +22,7 @@ use yii\base\InvalidConfigException;
 /**
  * The Conditions service provides APIs for managing conditions.
  *
- * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->conditions`]].
+ * An instance of the Conditions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConditions()|`Craft::$app->getConditions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -54,7 +55,7 @@ class Conditions extends Component
         // The base config will be JSON-encoded within a `config` key if this came from a condition builder
         if (isset($config['config']) && Json::isJsonObject($config['config'])) {
             $config = array_merge(
-                Json::decode(ArrayHelper::remove($config, 'config')),
+                ComponentHelper::cleanseConfig(Json::decode(ArrayHelper::remove($config, 'config'))),
                 $config
             );
         }
@@ -93,7 +94,13 @@ class Conditions extends Component
                     $newClass = $newConfig;
                     $newConfig = [];
                 } else {
+                    $newConfig = ComponentHelper::cleanseConfig($newConfig);
                     $newClass = ArrayHelper::remove($newConfig, 'class');
+                }
+
+                // Make sure the condition is being passed to the condition rule when it's being constructed
+                if (isset($config['condition'])) {
+                    $newConfig['condition'] = $config['condition'];
                 }
 
                 // Is the type changing?

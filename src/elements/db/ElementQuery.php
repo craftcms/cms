@@ -21,6 +21,7 @@ use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\elements\User;
@@ -35,8 +36,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
@@ -88,27 +91,34 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 
     /**
-     * @event PopulateElementEvent The event that is triggered before an element is populated.
+     * @event PopulateElementEvent The event that is triggered before an element is populated from a database row.
      *
-     * If [[PopulateElementEvent::$element]] is set by an event handler, the replacement will be returned by [[createElement()]] instead.
+     * If [[PopulateElementEvent::$element]] is set by an event handler, the replacement will be returned by [[createElement()]] instead of the original.
      *
      * @since 4.5.0
      */
     public const EVENT_BEFORE_POPULATE_ELEMENT = 'beforePopulateElement';
 
     /**
-     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     * @event PopulateElementEvent The event that is triggered after an element is populated from a database row.
      *
-     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead of the original.
      */
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     * @event PopulateElementEvent The event triggered after all elements are populated.
      *
-     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     * The query’s results are assigned to [[PopulateElementsEvent::$elements]], and are returned after all handlers are invoked. Handlers may add, remove, modify, and replace populated elements.
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
+
+    /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     *
+     * @since 5.10.0
+     */
+    public static ?self $activeQuery = null;
 
     // Base config attributes
     // -------------------------------------------------------------------------
@@ -135,6 +145,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public ?array $customFields = null;
 
+    /**
+     * @var array|null The generated field handles that may be involved in this query.
+     */
+    public ?array $generatedFields = null;
+
     // Result formatting attributes
     // -------------------------------------------------------------------------
 
@@ -150,6 +165,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by asArray()
      */
     public bool $asArray = false;
+
+    /**
+     * @var bool Whether to replace canonical elements with provisional drafts,
+     * when they exist for the current user.
+     * @used-by withProvisionalDrafts()
+     * @since 5.6.0
+     */
+    public bool $withProvisionalDrafts = false;
 
     /**
      * @var bool Whether to ignore placeholder elements when populating the results.
@@ -199,6 +222,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @since 3.2.0
      */
     public ?int $draftCreator = null;
+
+    /**
+     * @var bool Whether only canonical elements should be included in the
+     * results, including elements that reference another canonical element via
+     * `canonicalId` so long as they aren’t a draft.
+     * @since 5.7.0
+     */
+    public bool $canonicalsOnly = false;
 
     /**
      * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
@@ -458,10 +489,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?bool $hasDescendants = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
+     * @var int|ElementInterface|false|null The element (or its ID) that results must be an ancestor of.
      * @used-by ancestorOf()
      */
-    public ElementInterface|int|null $ancestorOf = null;
+    public ElementInterface|int|false|null $ancestorOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
@@ -470,10 +501,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $ancestorDist = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
+     * @var int|ElementInterface|false|null The element (or its ID) that results must be a descendant of.
      * @used-by descendantOf()
      */
-    public ElementInterface|int|null $descendantOf = null;
+    public ElementInterface|int|false|null $descendantOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
@@ -482,34 +513,34 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $descendantDist = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be a sibling of.
      * @used-by siblingOf()
      */
-    public ElementInterface|int|null $siblingOf = null;
+    public ElementInterface|int|false|null $siblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the result must be the previous sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the result must be the previous sibling of.
      * @used-by prevSiblingOf()
      */
-    public ElementInterface|int|null $prevSiblingOf = null;
+    public ElementInterface|int|false|null $prevSiblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the result must be the next sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the result must be the next sibling of.
      * @used-by nextSiblingOf()
      */
-    public ElementInterface|int|null $nextSiblingOf = null;
+    public ElementInterface|int|false|null $nextSiblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned before.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be positioned before.
      * @used-by positionedBefore()
      */
-    public ElementInterface|int|null $positionedBefore = null;
+    public ElementInterface|int|false|null $positionedBefore = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned after.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be positioned after.
      * @used-by positionedAfter()
      */
-    public ElementInterface|int|null $positionedAfter = null;
+    public ElementInterface|int|false|null $positionedAfter = null;
 
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
@@ -521,6 +552,12 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     // For internal use
     // -------------------------------------------------------------------------
+
+    /**
+     * @var array|null The [[orderBy]] value at the time [[prepForEagerLoading()]] was called.
+     * @see eagerLoad()
+     */
+    private ?array $_eagerLoadOrderBy = null;
 
     /**
      * @var mixed The placeholder condition for this query.
@@ -594,7 +631,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->elementType = $elementType;
 
         // Use ** as a placeholder for "all the default columns"
-        $config['select'] = $config['select'] ?? ['**' => '**'];
+        $config['select'] ??= ['**' => '**'];
 
         // Set a placeholder for the default `orderBy` param
         if (!isset($this->orderBy)) {
@@ -623,7 +660,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function __toString()
     {
-        return __CLASS__;
+        return self::class;
     }
 
     /**
@@ -675,6 +712,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function asArray(bool $value = true): static
     {
         $this->asArray = $value;
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $withProvisionalDrafts
+     */
+    public function withProvisionalDrafts(bool $value = true): static
+    {
+        $this->withProvisionalDrafts = $value;
         return $this;
     }
 
@@ -779,6 +826,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($value === true && $this->drafts === false) {
             $this->drafts = true;
         }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $canonicalsOnly
+     */
+    public function canonicalsOnly(bool $value = true): static
+    {
+        $this->canonicalsOnly = $value;
         return $this;
     }
 
@@ -1031,7 +1088,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             array_shift($value);
             $this->siteId = [];
             foreach (Craft::$app->getSites()->getAllSites() as $site) {
-                if (!in_array($site->id, $value, false)) {
+                if (!in_array($site->id, $value)) {
                     $this->siteId[] = $site->id;
                 }
             }
@@ -1454,6 +1511,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->eagerLoadSourceElement = $sourceElement;
 
+        // Remember the current `orderBy` value, so eagerLoad() can tell whether it was customized afterward
+        $this->_eagerLoadOrderBy = $this->orderBy;
+
         return $this;
     }
 
@@ -1525,14 +1585,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             );
         }
 
-        $db = $builder->db;
-        if (!$db instanceof Connection) {
+        if (!$builder->db instanceof Connection) {
             throw new QueryAbortedException(sprintf('Element queries must be executed for %s connections.', Connection::class));
         }
 
         // todo: remove after the next breakpoint
-        /** @var  */
-        if (!$db->columnExists(Table::ELEMENTS_SITES, 'content')) {
+        if (!$builder->db->columnExists(Table::ELEMENTS_SITES, 'content')) {
             throw new QueryAbortedException("The elements_sites.content column doesn't exist yet.");
         }
 
@@ -1592,12 +1650,17 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
         $this->_columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
             'dateCreated' => 'elements.dateCreated',
             'dateUpdated' => 'elements.dateUpdated',
+            'enabled' => 'elements.enabled',
+            'id' => 'elements.id',
+            'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
         ];
+
+        if ($class::hasTitles()) {
+            $this->_columnMap['title'] = 'elements_sites.title';
+        }
 
         // Keep track of whether an element table is joined into the query
         $this->_joinedElementTable = false;
@@ -1607,6 +1670,24 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
+        // Gather custom fields and generated field handles
+        $this->customFields = [];
+        $this->generatedFields = [];
+
+        if ($this->withCustomFields) {
+            foreach ($this->fieldLayouts() as $fieldLayout) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    $this->customFields[] = $field;
+                }
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    $this->generatedFields[] = $field;
+                }
+            }
+        }
+
+        // Map custom field handles to their content values
+        $this->_addCustomFieldsToColumnMap($builder->db);
+
         $this->subQuery
             ->addSelect([
                 'elementsId' => 'elements.id',
@@ -1614,17 +1695,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             ])
             ->from(['elements' => Table::ELEMENTS])
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
-            ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params);
+
+        $this->_applyWhereParam();
 
         if (Craft::$app->getIsMultiSite(false, true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        $this->customFields = $this->customFields();
-        $this->_loopInCustomFields();
+        $this->_applyCustomFieldParams();
 
         if ($this->distinct) {
             $this->query->distinct();
@@ -1687,40 +1768,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
-        if ($class::hasTitles()) {
-            $this->_columnMap['title'] = 'elements_sites.title';
-        }
-
-        // Map custom field handles to their content values
-        foreach ($this->customFields as $field) {
-            $valueSql = $field->getValueSql();
-            if ($valueSql !== null) {
-                if (isset($this->_columnMap[$field->handle])) {
-                    if (!is_array($this->_columnMap[$field->handle])) {
-                        $this->_columnMap[$field->handle] = [$this->_columnMap[$field->handle]];
-                    }
-                    $this->_columnMap[$field->handle][] = $valueSql;
-                } else {
-                    $this->_columnMap[$field->handle] = $valueSql;
-                }
-
-                // when preparing the query, we sometimes need to prep custom values some more
-                $dbType = $field::dbType();
-                // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
-                // see https://github.com/craftcms/cms/issues/15609
-                if ($db->getIsMysql() && is_string($dbType) && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
-                    $this->_columnsToCast[$field->handle] = 'CHAR(255)';
-                }
-            }
-        }
-
         $this->_applyRelatedToParam();
         $this->_applyNotRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
         $this->_applySearchParam();
         $this->_applyInBulkOpParam();
-        $this->_applyOrderByParams($db);
+        $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
         $this->_applyJoinParams();
 
@@ -1736,13 +1790,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             } catch (ReflectionException) {
                 $ref = null;
             }
-            /** @var ReflectionClass|null $ref */
+            /** @phpstan-ignore-next-line */
             if ($ref && !$ref->isAbstract()) {
                 $this->subQuery->andWhere(['elements.type' => $this->elementType]);
             }
         }
 
-        $this->_applyUniqueParam($db);
+        $this->_applyUniqueParam($builder->db);
 
         // Pass along the cache info
         if ($this->queryCacheDuration !== null) {
@@ -1862,7 +1916,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     private function eagerLoad(bool $count = false, array $criteria = []): ElementCollection|int|null
     {
-        if (!$this->eagerly || !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle)) {
+        if (
+            !$this->eagerly ||
+            !isset($this->eagerLoadSourceElement->elementQueryResult, $this->eagerLoadHandle) ||
+            count($this->eagerLoadSourceElement->elementQueryResult) < 2
+        ) {
             return null;
         }
 
@@ -1875,6 +1933,19 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
+            // Only pass `orderBy` along if it was customized after prepForEagerLoading() was called.
+            // Otherwise it's either the placeholder or ordering that only applies to this query's source element
+            // (e.g. a relation field’s fixed order), and the eager-loading map's order should be used instead.
+            if ($this->orderBy !== $this->_eagerLoadOrderBy) {
+                $criteria += ['orderBy' => $this->orderBy];
+            }
+
+            // `offset` and `limit` aren't included in getCriteria() either
+            $criteria += array_filter([
+                'offset' => $this->offset,
+                'limit' => $this->limit,
+            ], fn($value) => $value !== null);
+
             Craft::$app->getElements()->eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -2020,6 +2091,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function collectIds(?YiiConnection $db = null): Collection
+    {
+        return Collection::make($this->ids($db));
+    }
+
+    /**
      * Executes the query and renders the resulting elements using their partial templates.
      *
      * If no partial template exists for an element, its string representation will be output instead.
@@ -2028,12 +2107,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     * @see ElementHelper::renderElements()
+     * @see Template::render()
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements($this->all(), $variables);
+        return Template::render($this->all(), $variables);
     }
 
     /**
@@ -2299,21 +2379,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['title'] = (string)($row['title'] ?? '');
         }
 
-        // Set the field values
-        $content = ArrayHelper::remove($row, 'content');
-        $row['fieldValues'] = [];
-
-        if (!empty($this->customFields) && !empty($content)) {
-            if (is_string($content)) {
-                $content = Json::decode($content);
-            }
-
-            foreach ($this->customFields as $field) {
-                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
-                    $handle = $field->layoutElement->handle ?? $field->handle;
-                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
-                }
-            }
+        // Remove the field values
+        // (We'll set them after the element bas been created, and we have its field layout.)
+        $content = ArrayHelper::remove($row, 'content') ?? [];
+        if (is_string($content)) {
+            $content = Json::decode($content);
         }
 
         if (array_key_exists('dateDeleted', $row)) {
@@ -2362,6 +2432,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
             $row = $event->row ?? $row;
@@ -2373,11 +2444,38 @@ class ElementQuery extends Query implements ElementQueryInterface
         $element ??= new $class($row);
         $element->attachBehaviors($behaviors);
 
+        // Set the custom field values
+        if (!empty($content)) {
+            $fieldLayout = $element->getFieldLayout();
+            if ($fieldLayout) {
+                $element->setDirtyFieldTracking(false);
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                        $handle = $field->layoutElement->handle ?? $field->handle;
+                        $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
+                    }
+                }
+                $element->setDirtyFieldTracking();
+
+                $generatedFieldValues = [];
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    if (isset($content[$field['uid']])) {
+                        $generatedFieldValues[$field['uid']] = $content[$field['uid']];
+                        if (($field['handle'] ?? '') !== '') {
+                            $generatedFieldValues[$field['handle']] = $content[$field['uid']];
+                        }
+                    }
+                }
+                $element->setGeneratedFieldValues($generatedFieldValues);
+            }
+        }
+
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             return $event->element;
@@ -2454,8 +2552,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 "element::$this->elementType",
             ];
 
-            // If specific IDs were requested, then use those
-            if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
+            // If (<= 100) specific IDs were requested, then use those
+            if (
+                is_numeric($this->id) ||
+                (is_array($this->id) && count($this->id) <= 100 && ArrayHelper::isNumeric($this->id))
+            ) {
                 array_push($this->_cacheTags, ...array_map(fn($id) => "element::$id", (array)$this->id));
             } else {
                 $queryTags = $this->cacheTags();
@@ -2511,6 +2612,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Returns the fields that should take part in an upcoming elements query.
      *
      * @return FieldInterface[] The fields that should take part in the upcoming elements query
+     * @deprecated in 5.8.0.
      */
     protected function customFields(): array
     {
@@ -2522,6 +2624,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             array_push($fields, ...$fieldLayout->getCustomFields());
         }
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayouts(): array
+    {
+        return $this->fieldLayouts();
     }
 
     /**
@@ -2651,55 +2761,211 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Include custom fields in the column map
+     */
+    private function _addCustomFieldsToColumnMap(Connection $db): void
+    {
+        $isMysql = $db->getIsMysql();
+
+        foreach ($this->customFields as $field) {
+            $dbTypes = $field::dbType();
+
+            if ($dbTypes !== null) {
+                if (is_string($dbTypes)) {
+                    $dbTypes = ['*' => $dbTypes];
+                } else {
+                    $dbTypes = [
+                        '*' => reset($dbTypes),
+                        ...$dbTypes,
+                    ];
+                }
+
+                foreach ($dbTypes as $key => $dbType) {
+                    $alias = $field->handle . ($key !== '*' ? ".$key" : '');
+                    $resolver = fn() => $field->getValueSql($key !== '*' ? $key : null);
+
+                    $this->_addToColumnMap($alias, $resolver);
+
+                    // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
+                    // see https://github.com/craftcms/cms/issues/15609
+                    if ($isMysql && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+                        $this->_columnsToCast[$alias] = 'CHAR(255)';
+                    }
+                }
+            }
+        }
+
+        if (!empty($this->generatedFields)) {
+            $qb = $db->getQueryBuilder();
+            foreach ($this->generatedFields as $field) {
+                if (($field['handle'] ?? '') !== '') {
+                    $this->_addToColumnMap($field['handle'], $qb->jsonExtract('elements_sites.content', [$field['uid']]));
+                }
+            }
+        }
+    }
+
+    private function _addToColumnMap(string $alias, string|callable $column): void
+    {
+        if (isset($this->_columnMap[$alias])) {
+            if (!is_array($this->_columnMap[$alias])) {
+                $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
+            }
+            $this->_columnMap[$alias][] = $column;
+        } else {
+            $this->_columnMap[$alias] = $column;
+        }
+    }
+
+    /**
      * Allow the custom fields to modify the query.
      *
      * @throws QueryAbortedException
      */
-    private function _loopInCustomFields(): void
+    private function _applyCustomFieldParams(): void
     {
-        if (is_array($this->customFields)) {
-            $fieldAttributes = $this->getBehavior('customFields');
+        if (empty($this->customFields) && empty($this->generatedFields)) {
+            return;
+        }
 
+        $generatedFieldsByHandle = [];
+        if (!empty($this->generatedFields)) {
+            // Group the generated fields by handle and field UUID
+            foreach ($this->generatedFields as $field) {
+                if (!empty($field['handle'])) {
+                    $generatedFieldsByHandle[$field['handle']][$field['uid']] = $field;
+                }
+            }
+        }
+
+        /** @var CustomFieldBehavior $fieldAttributes */
+        $fieldAttributes = $this->getBehavior('customFields');
+        /** @var FieldInterface[][][] $fieldsByHandle */
+        $fieldsByHandle = [];
+
+        if (!empty($this->customFields)) {
             // Group the fields by handle and field UUID
-            /** @var FieldInterface[][][] $fieldsByHandle */
-            $fieldsByHandle = [];
             foreach ($this->customFields as $field) {
                 $fieldsByHandle[$field->handle][$field->uid][] = $field;
             }
 
-            foreach ($fieldsByHandle as $handle => $instancesByUid) {
-                // In theory all field handles will be accounted for on the CustomFieldBehavior, but just to be safe...
-                // ($fieldAttributes->$handle will return true even if it's set to null, so can't use isset() alone here)
+            foreach (array_keys(CustomFieldBehavior::$fieldHandles) as $handle) {
+                // $fieldAttributes->$handle will return true even if it's set to null, so can't use isset() here
                 if ($handle === 'owner' || ($fieldAttributes->$handle ?? null) === null) {
                     continue;
+                }
+
+                // Make sure the custom field exists in one of the field layouts or there's a generated field with that handle
+                if (!isset($fieldsByHandle[$handle]) && !isset($generatedFieldsByHandle[$handle])) {
+                    // If it looks like null/:empty: is a valid option, let it slide
+                    $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
+                        ? $fieldAttributes->$handle['value']
+                        : $fieldAttributes->$handle;
+                    if (is_array($value) && in_array(null, $value, true)) {
+                        $values = [...$value];
+                        $operator = QueryParam::extractOperator($values) ?? QueryParam::OR;
+                        if ($operator === QueryParam::OR) {
+                            continue;
+                        }
+                    }
+
+                    throw new QueryAbortedException("No custom or generated field with the handle \"$handle\" exists in the field layouts involved with this element query.");
                 }
 
                 $conditions = [];
                 $params = [];
 
-                foreach ($instancesByUid as $instances) {
-                    $firstInstance = $instances[0];
-                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                if (isset($fieldsByHandle[$handle])) {
+                    foreach ($fieldsByHandle[$handle] as $instances) {
+                        $firstInstance = $instances[0];
+                        static::$activeQuery = $this;
+                        try {
+                            $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                        } finally {
+                            static::$activeQuery = null;
+                        }
 
-                    // aborting?
-                    if ($condition === false) {
-                        throw new QueryAbortedException();
+                        // aborting?
+                        if ($condition === false) {
+                            throw new QueryAbortedException();
+                        }
+
+                        if ($condition !== null) {
+                            $conditions[] = $condition;
+
+                            // if we have a generated field with the same handle, we need to add it into the condition
+                            if (isset($generatedFieldsByHandle[$handle])) {
+                                $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
+                                    $generatedFieldsByHandle,
+                                    $fieldAttributes,
+                                    $fieldsByHandle,
+                                    false
+                                );
+                                $conditions = array_merge($conditions, $generatedFieldsConditions);
+                            }
+                        }
                     }
 
-                    if ($condition !== null) {
-                        $conditions[] = $condition;
-                    }
-                }
-
-                if (!empty($conditions)) {
-                    if (count($conditions) === 1) {
-                        $this->subQuery->andWhere(reset($conditions), $params);
-                    } else {
-                        $this->subQuery->andWhere(['or', ...$conditions], $params);
+                    if (!empty($conditions)) {
+                        if (count($conditions) === 1) {
+                            $this->subQuery->andWhere(reset($conditions), $params);
+                        } else {
+                            // if we're querying for empty, we need to glue the conditions with 'and'
+                            $glue = $fieldAttributes->$handle === ':empty:' ? QueryParam::AND : QueryParam::OR;
+                            $this->subQuery->andWhere([$glue, ...$conditions], $params);
+                        }
                     }
                 }
             }
         }
+
+        if (!empty($this->generatedFields)) {
+            $conditions = $this->_conditionsForGeneratedFields($generatedFieldsByHandle, $fieldAttributes, $fieldsByHandle);
+            if (!empty($conditions)) {
+                if (count($conditions) === 1) {
+                    $this->subQuery->andWhere(reset($conditions));
+                } else {
+                    $this->subQuery->andWhere(['and', ...$conditions]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get query conditions for generated fields
+     *
+     * @param array $generatedFieldsByHandle
+     * @param CustomFieldBehavior $fieldAttributes
+     * @param array $fieldsByHandle
+     * @param bool $checkCustomField whether to check if the custom field with that handle exists
+     * @return array
+     */
+    private function _conditionsForGeneratedFields(
+        array $generatedFieldsByHandle,
+        CustomFieldBehavior $fieldAttributes,
+        array $fieldsByHandle,
+        bool $checkCustomField = true,
+    ): array {
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+        $conditions = [];
+        $generatedFieldColumns = [];
+
+        foreach ($generatedFieldsByHandle as $handle => $fields) {
+            if (isset($fieldAttributes->$handle) && (!$checkCustomField || !isset($fieldsByHandle[$handle]))) {
+                foreach ($fields as $field) {
+                    $generatedFieldColumns[$handle][] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
+                }
+            }
+        }
+
+        foreach ($generatedFieldColumns as $handle => $columns) {
+            $column = count($columns) === 1
+                ? $columns[0]
+                : (new CoalesceColumnsExpression($columns))->getSql($this->subQuery->params);
+            $conditions[] = Db::parseParam($column, $fieldAttributes->$handle);
+        }
+
+        return $conditions;
     }
 
     /**
@@ -2851,7 +3117,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ];
 
             foreach ($structureParams as $param) {
-                if ($this->$param !== null) {
+                if (!in_array($this->$param, [null, false], true)) {
                     throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
@@ -3037,9 +3303,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
-            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
-            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $useInnerJoin = $this->drafts === true;
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -3050,16 +3314,27 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
             if ($this->draftId) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } elseif (isset($this->draftOf)) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+            if (isset($this->draftOf)) {
+                if ($this->draftOf === '*') {
+                    // drafts of any other element
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['not', ['drafts.canonicalId' => null]]);
+                } elseif ($this->draftOf === false) {
+                    // unpublished drafts only
+                    $this->subQuery->andWhere(['drafts.canonicalId' => null]);
+                } else {
+                    // drafts of specific owner elements
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['drafts.canonicalId' => $this->draftOf]);
+                }
             }
 
             if ($this->draftCreator) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
@@ -3071,7 +3346,16 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             }
 
-            if ($this->savedDraftsOnly) {
+            if ($this->canonicalsOnly) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    [
+                        'elements.canonicalId' => null,
+                        ...($this->savedDraftsOnly ? ['drafts.saved' => true] : []),
+                    ],
+                ]);
+            } elseif ($this->savedDraftsOnly) {
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
@@ -3079,6 +3363,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.saved' => true],
                 ]);
             }
+
+            $joinType = $useInnerJoin ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
@@ -3150,8 +3438,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        /** @var string|ElementInterface $class */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
             $element = $element->getCanonicalId();
 
@@ -3226,11 +3512,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             $this->_searchResults = $searchResults;
 
-            $elementIds = array_map(function(string $key) {
-                [$elementId] = explode('-', $key, 2);
-                return $elementId;
-            }, array_keys($searchResults));
-            $this->subQuery->andWhere(['elements.id' => $elementIds]);
+            $elementIdsBySiteId = [];
+            foreach (array_keys($searchResults) as $key) {
+                [$elementId, $siteId] = explode('-', $key, 2);
+                $elementIdsBySiteId[$siteId][] = $elementId;
+            }
+            $condition = ['or'];
+            foreach ($elementIdsBySiteId as $siteId => $elementIds) {
+                $condition[] = [
+                    'elements_sites.siteId' => $siteId,
+                    'elements.id' => $elementIds,
+                ];
+            }
+            $this->subQuery->andWhere($condition);
         } else {
             // Just filter the main query by the search query
             $searchQuery = $searchService->createDbQuery($this->search, $this);
@@ -3304,30 +3598,21 @@ class ElementQuery extends Query implements ElementQueryInterface
             $orderBy = array_filter($orderBy, fn($value) => !$value instanceof OrderByPlaceholderExpression);
         }
 
-        // Rename orderBy keys based on the real column name mapping
-        // (yes this is awkward but we need to preserve the order of the keys!)
+        // Parse orderBy keys for column mappings
         $orderByColumns = array_keys($orderBy);
-
-        foreach ($this->_columnMap as $orderValue => $columnName) {
-            // Are we ordering by this column name?
-            $pos = array_search($orderValue, $orderByColumns, true);
-
-            if ($pos !== false) {
-                // Swap it with the mapped column name
-                if (is_array($columnName)) {
-                    $params = [];
-                    $orderByColumns[$pos] = (new CoalesceColumnsExpression($columnName))->getSql($params);
-                } else {
-                    if (isset($this->_columnsToCast[$orderValue])) {
-                        $orderByColumns[$pos] = "CAST($columnName AS {$this->_columnsToCast[$orderValue]})";
-                    } else {
-                        $orderByColumns[$pos] = $columnName;
-                    }
-                }
-
-                $orderBy = array_combine($orderByColumns, $orderBy);
+        foreach ($orderByColumns as $i => $column) {
+            $parsed = $this->_parseStrForColumnMappings($column);
+            // add CAST()?
+            if (
+                isset($this->_columnsToCast[$column]) &&
+                !str_contains($parsed, 'COALESCE(')
+            ) {
+                $orderByColumns[$i] = "CAST($parsed AS {$this->_columnsToCast[$column]})";
+            } else {
+                $orderByColumns[$i] = $parsed;
             }
         }
+        $orderBy = array_combine($orderByColumns, $orderBy);
 
         // swap `score` direction value with a fixed order expression
         if (isset($this->_searchResults)) {
@@ -3393,7 +3678,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             } else {
                 // Is this a mapped column name?
                 if (is_string($column) && isset($this->_columnMap[$column])) {
-                    $column = $this->_columnMap[$column];
+                    $column = $this->_resolveColumnMapping($column);
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
                     if (!$this->asArray && is_string($column)) {
@@ -3524,6 +3809,89 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Applies the `where` param to the query being prepraed.
+     */
+    private function _applyWhereParam(): void
+    {
+        if (empty($this->where)) {
+            return;
+        }
+
+        if (is_string($this->where)) {
+            $where = $this->_parseStrForColumnMappings($this->where);
+        } elseif (is_array($this->where)) {
+            $where = $this->_parseArrayCondition($this->where);
+        } else {
+            $where = $this->where;
+        }
+
+        $this->subQuery->andWhere($where);
+    }
+
+    private function _parseStrForColumnMappings(string $str): string
+    {
+        if (!str_contains($str, '[')) {
+            return $this->_columnMappingSql($str) ?? $str;
+        }
+
+        return preg_replace_callback('/(?<!\.)\[\[(\w+(?:\.\w+)?)]]/', function(array $match) {
+            $mapping = $this->_columnMappingSql($match[1]);
+            if ($mapping === null) {
+                return $match[0];
+            }
+            if (preg_match('/^\w+(?:\.\w+)?$/', $mapping)) {
+                return "[[$mapping]]";
+            }
+            return $mapping;
+        }, $str);
+    }
+
+    private function _columnMappingSql(string $str): ?string
+    {
+        if (!isset($this->_columnMap[$str])) {
+            return null;
+        }
+
+        $column = $this->_resolveColumnMapping($str);
+        return is_array($column)
+            ? (new CoalesceColumnsExpression($column))->getSql($this->subQuery->params)
+            : $column;
+    }
+
+    private function _parseArrayCondition(array $condition): array
+    {
+        $parsed = [];
+
+        if (isset($condition[0])) {
+            // Operator format: [operator, ...operands]
+            $operator = $parsed[] = strtoupper(array_shift($condition));
+            if (in_array($operator, ['NOT', 'AND', 'OR'])) {
+                foreach ($condition as $value) {
+                    if (is_string($value)) {
+                        $value = $this->_parseStrForColumnMappings($value);
+                    } elseif (is_array($value)) {
+                        $value = $this->_parseArrayCondition($value);
+                    }
+                    $parsed[] = $value;
+                }
+            } else {
+                if (isset($condition[0]) && is_string($condition[0])) {
+                    $condition[0] = $this->_columnMappingSql($condition[0]) ?? $condition[0];
+                }
+                array_push($parsed, ...$condition);
+            }
+        } else {
+            // Hash format: [column => value]
+            foreach ($condition as $key => $value) {
+                $key = $this->_columnMappingSql($key) ?? $key;
+                $parsed[$key] = $value;
+            }
+        }
+
+        return $parsed;
+    }
+
+    /**
      * Converts found rows into element instances
      *
      * @param array $rows
@@ -3531,7 +3899,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _createElements(array $rows): array
     {
-        $elementsService = Craft::$app->getElements();
         $elements = [];
 
         if ($this->asArray === true) {
@@ -3566,6 +3933,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
 
+            if ($this->withProvisionalDrafts) {
+                ElementHelper::swapInProvisionalDrafts($elements);
+            }
+
             // Fire an 'afterPopulateElements' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENTS)) {
                 $event = new PopulateElementsEvent([
@@ -3578,5 +3949,25 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $elements;
+    }
+
+    private function _resolveColumnMapping(string $key): string|array
+    {
+        if (!isset($this->_columnMap[$key])) {
+            throw new InvalidArgumentException("Invalid column map key: $key");
+        }
+
+        // make sure it's not still a callback
+        if (is_callable($this->_columnMap[$key])) {
+            $this->_columnMap[$key] = $this->_columnMap[$key]();
+        } elseif (is_array($this->_columnMap[$key])) {
+            foreach ($this->_columnMap[$key] as $i => $mapping) {
+                if (is_callable($mapping)) {
+                    $this->_columnMap[$key][$i] = $mapping();
+                }
+            }
+        }
+
+        return $this->_columnMap[$key];
     }
 }

@@ -2,7 +2,7 @@
 
 {% set registerJs = false %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\highlight\\HighlightAsset") %}
 
 {% set jsSettings = {
     id: id|namespaceInputId,
@@ -11,11 +11,18 @@
     sources: sources,
     condition: condition ? condition.getConfig() : null,
     referenceElementId: referenceElement.id ?? null,
+    referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+        ? referenceElement.getOwnerId()
+        : null,
     referenceElementSiteId: referenceElement.siteId ?? null,
     criteria: criteria,
+    searchCriteria: searchCriteria ?? null,
     sourceElementId: sourceElementId,
+    defaultPlacement,
     viewMode: viewMode,
     limit: limit,
+    showSiteMenu: showSiteMenu ?? false,
+    siteIds: siteIds ?? null,
     modalStorageKey: storageKey,
     fieldId: fieldId,
     prevalidate: prevalidate ?? false,

@@ -20,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $folderId Folder ID
  * @property int|null $uploaderId Uploader ID
  * @property string $filename Filename
+ * @property string|null $mimeType MIME type
  * @property string $kind Kind
  * @property string|null $alt Alternative text
  * @property int $width Width

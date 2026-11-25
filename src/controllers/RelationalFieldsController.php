@@ -59,7 +59,7 @@ class RelationalFieldsController extends Controller
             }
         }
 
-        ElementHelper::swapInProvisionalDrafts($elements);
+        ElementHelper::loadProvisionalChanges($elements);
 
         $html = $this->getView()->renderTemplate('_includes/forms/elementSelect.twig', [
             'elements' => $elements,
@@ -68,10 +68,13 @@ class RelationalFieldsController extends Controller
             'selectionLabel' => $this->request->getParam('selectionLabel'),
             'elementType' => $elementType,
             'maintainHierarchy' => true,
+            'registerJs' => false,
         ]);
 
         return $this->asJson([
             'html' => $html,
+            'headHtml' => $this->getView()->getHeadHtml(),
+            'bodyHtml' => $this->getView()->getBodyHtml(),
         ]);
     }
 }

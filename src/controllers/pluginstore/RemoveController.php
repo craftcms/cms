@@ -9,6 +9,7 @@ namespace craft\controllers\pluginstore;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
+use yii\web\NotFoundHttpException;
 
 /**
  * RemoveController handles the plugin removal workflow.
@@ -24,6 +25,11 @@ class RemoveController extends BaseUpdaterController
      */
     public function beforeAction($action): bool
     {
+        // Plugin removals never install Composer packages
+        if ($action->id === self::ACTION_COMPOSER_INSTALL) {
+            throw new NotFoundHttpException();
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }

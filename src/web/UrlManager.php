@@ -85,9 +85,9 @@ class UrlManager extends \yii\web\UrlManager
     private array $_routeParams = [];
 
     /**
-     * @var ElementInterface|false|null
+     * @var ElementInterface|false
      */
-    private null|false|ElementInterface $_matchedElement = null;
+    private ElementInterface|false $_matchedElement;
 
     /**
      * @var mixed
@@ -267,7 +267,7 @@ class UrlManager extends \yii\web\UrlManager
             $element = false;
         }
 
-        $this->_matchedElement = $element;
+        $this->_matchedElement = $element ?? false;
         $this->_matchedElementRoute = $element;
     }
 
@@ -367,6 +367,11 @@ class UrlManager extends \yii\web\UrlManager
             return $route;
         }
 
+        // Is this an MCP request?
+        if (Craft::$app->getIsInstalled() && ($route = Craft::$app->get('mcp')->getSettings()->requestRoute($request)) !== false) {
+            return $route;
+        }
+
         // Is this an element request?
         if (($route = $this->_getMatchedElementRoute($request)) !== false) {
             return $route;
@@ -438,7 +443,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedUrlRoute(Request $request): array|false
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
-        /** @var YiiUrlRule $rule */
+        /** @var YiiUrlRule|object $rule */
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 
@@ -470,9 +475,49 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
     {
-        $redirectUri = $request->getPathInfo() === '.well-known/change-password'
-            ? Craft::$app->getConfig()->getGeneral()->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
-            : null;
+        return match ($request->getPathInfo()) {
+            '.well-known/change-password' => $this->_changePasswordRoute(),
+            '.well-known/passkey-endpoints' => $this->_passkeyEndpointsRoute(),
+            '.well-known/ai-catalog.json' => $request->getIsSiteRequest() && Craft::$app->getIsInstalled() && Craft::$app->get('mcp')->getSettings()->discoverableServers() ? ['mcp/catalog', []] : false,
+            default => $this->_oauthMetadataRoute($request),
+        };
+    }
+
+    /** Returns the OAuth discovery route for a registered protected resource. */
+    private function _oauthMetadataRoute(Request $request): array|false
+    {
+        $path = $request->getPathInfo();
+        $resourcePrefix = '.well-known/oauth-protected-resource';
+        $serverPrefix = '.well-known/oauth-authorization-server';
+        if ($path !== $resourcePrefix && !str_starts_with($path, $resourcePrefix . '/') && $path !== $serverPrefix && !str_starts_with($path, $serverPrefix . '/')) {
+            return false;
+        }
+
+        $oauth = Craft::$app->getOAuth();
+        foreach ($oauth->getResources() as $id => $resource) {
+            $resourcePath = '/' . trim(parse_url($resource->getResourceUrl(), PHP_URL_PATH) ?? '', '/');
+            $issuerPath = '/' . trim(parse_url($oauth->issuer($id), PHP_URL_PATH) ?? '', '/');
+            if ($path === rtrim($resourcePrefix . $resourcePath, '/')) {
+                return ['oauth/resource', ['resource' => $id]];
+            }
+            if ($path === rtrim($serverPrefix . $issuerPath, '/')) {
+                return ['oauth/metadata', ['resource' => $id]];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the route for `.well-known/change-password` requests, per
+     * https://w3c.github.io/webappsec-change-password-url/.
+     *
+     * @return array|false
+     */
+    private function _changePasswordRoute(): array|false
+    {
+        $redirectUri = Craft::$app->getConfig()->getGeneral()
+            ->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle);
 
         if (App::devMode()) {
             Craft::debug([
@@ -493,6 +538,25 @@ class UrlManager extends \yii\web\UrlManager
                 'statusCode' => 302,
             ],
         ];
+    }
+
+    /**
+     * Returns the route for `.well-known/passkey-endpoints` requests, per
+     * https://www.w3.org/TR/passkey-endpoints/.
+     *
+     * @return array
+     */
+    private function _passkeyEndpointsRoute(): array
+    {
+        if (App::devMode()) {
+            Craft::debug([
+                'rule' => 'Discoverable passkey endpoints',
+                'match' => true,
+                'parent' => null,
+            ], __METHOD__);
+        }
+
+        return ['well-known/passkey-endpoints'];
     }
 
     /**
@@ -554,6 +618,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $token = $request->getToken();
+        $route = $request->getTokenRoute();
 
         if (App::devMode()) {
             Craft::debug([
@@ -563,10 +628,6 @@ class UrlManager extends \yii\web\UrlManager
             ], __METHOD__);
         }
 
-        if ($token === null) {
-            return false;
-        }
-
-        return Craft::$app->getTokens()->getTokenRoute($token);
+        return $route ?? false;
     }
 }

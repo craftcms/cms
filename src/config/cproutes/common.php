@@ -3,6 +3,8 @@
 use craft\helpers\StringHelper;
 
 return [
+    'oauth/<resource:[a-zA-Z0-9_-]+>/<action:register|authorize|approve|deny|token>' => 'oauth/<action>',
+
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
     'assets' => 'assets/index',
     'assets/<defaultSource:{handle}(\/.*)?>' => 'assets/index',
@@ -13,10 +15,19 @@ return [
     'dashboard' => 'dashboard/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . StringHelper::UUID_PATTERN . '>' => 'elements/redirect',
+    'revisions/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/revisions',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
+
+    'content' => 'entries',
+    'content/<page:{slug}>' => ['template' => 'entries'],
+    'content/<page:{slug}>/<sectionHandle:{handle}>' => ['template' => 'entries'],
+    'content/<page:{slug}>/<section:{handle}>/new' => 'entries/create',
+    'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+    'content/<page:{slug}>/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'elements/revisions',
+
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'graphiql' => 'graphql/graphiql',
@@ -33,11 +44,15 @@ return [
     'myaccount/preferences' => 'users/preferences',
     'myaccount/password' => 'users/password',
     'myaccount/passkeys' => 'users/passkeys',
+    'myaccount/tokens' => 'users/tokens',
     'update' => 'updater',
     'settings/addresses' => ['template' => 'settings/addresses/_fields'],
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',
+    'settings/assets/filesystems' => 'fs/index',
+    'settings/assets/filesystems/new' => 'fs/edit',
+    'settings/assets/filesystems/<handle:{handle}>' => 'fs/edit',
     'settings/assets/transforms' => 'image-transforms/index',
     'settings/assets/transforms/new' => 'image-transforms/edit',
     'settings/assets/transforms/<transformHandle:{handle}>' => 'image-transforms/edit',
@@ -54,6 +69,7 @@ return [
     'settings/globals' => 'system-settings/global-set-index',
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
+    'settings/mcp' => 'mcp-settings/index',
     'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',
     'settings/routes' => [
         'template' => 'settings/routes',
@@ -88,4 +104,5 @@ return [
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',
+    'preview/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/preview',
 ];

@@ -12,6 +12,7 @@ use craft\base\Batchable;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Queue as QueueHelper;
 use craft\i18n\Translation;
+use yii\queue\RetryableJobInterface;
 
 /**
  * BaseBatchedJob is the base class for large jobs that may need to spawn
@@ -60,6 +61,17 @@ abstract class BaseBatchedJob extends BaseJob
 
     private ?Batchable $_data = null;
     private ?int $_totalItems = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        $this->ttr ??= ($this instanceof RetryableJobInterface ? $this->getTtr() : null)
+            ?? Craft::$app->getQueue()->ttr;
+    }
 
     public function __sleep(): array
     {
@@ -118,6 +130,7 @@ abstract class BaseBatchedJob extends BaseJob
 
         $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
+        $start = microtime(true);
 
         if ($this->itemOffset === 0) {
             $this->before();
@@ -138,13 +151,20 @@ abstract class BaseBatchedJob extends BaseJob
             $this->itemOffset++;
             $i++;
 
-            // Make sure we're not getting uncomfortably close to the memory limit, every 10 items
-            if ($startMemory !== null && $i % 10 === 0) {
+            // Make sure we're not getting uncomfortably close to the memory limit
+            if ($startMemory !== null) {
                 $memory = memory_get_usage();
                 $avgMemory = ($memory - $startMemory) / $i;
                 if ($memory + ($avgMemory * 15) > $memoryLimit) {
                     break;
                 }
+            }
+
+            // Make sure we don't hit the TTR, even if the next item takes twice as long as the average
+            $runningTime = microtime(true) - $start;
+            $avgRunningTime = $runningTime / $i;
+            if ($this->ttr !== null && $runningTime + ($avgRunningTime * 2) > $this->ttr) {
+                break;
             }
 
             // Make sure the job is still reserved before continuing

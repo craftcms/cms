@@ -90,4 +90,63 @@ return [
         'title' => 'Single entry',
     ],
 
+    // Element reference tags:
+    [
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Recursive Reference A',
+        'slug' => 'recursive-reference-a',
+        'plainTextField' => 'Substitution in A: [{entry:test1/recursive-reference-b:plainTextField}]',
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Recursive Reference B',
+        'slug' => 'recursive-reference-b',
+        'plainTextField' => 'Substitution in B: [{entry:test1/recursive-reference-c:plainTextField}]',
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Recursive Reference C',
+        'slug' => 'recursive-reference-c',
+        'plainTextField' => 'Value from C',
+    ],
+
+    // playwright
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 1',
+        'plainTextField5' => '1',
+        'numberField' => 1,
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 2',
+        'plainTextField5' => '2',
+        'numberField' => 2,
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 3',
+        'plainTextField5' => '3',
+        'numberField' => 3,
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1012',
+        'typeId' => '1012',
+        'title' => 'Test sorting 10',
+        'plainTextField5' => '10',
+        'numberField' => 10,
+    ],
 ];

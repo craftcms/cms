@@ -8,11 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Cp;
@@ -22,12 +24,16 @@ use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
- * Number represents a Number field.
+ * Range represents a Range field, which provides a tactile UI around a numeric value.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
  */
-class Range extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Range extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @inheritdoc
@@ -135,8 +141,22 @@ class Range extends Field implements InlineEditableFieldInterface, SortableField
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Range/settings.twig', [
             'field' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -146,6 +166,14 @@ class Range extends Field implements InlineEditableFieldInterface, SortableField
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): int|float|null
+    {
+        return $this->defaultValue;
     }
 
     /**
@@ -234,7 +262,30 @@ class Range extends Field implements InlineEditableFieldInterface, SortableField
             return '';
         }
 
-        return Craft::$app->getFormatter()->asDecimal($value);
+        $formatted = Craft::$app->getFormatter()->asDecimal($value);
+
+        if ($this->suffix) {
+            $formatted = $formatted . $this->suffix;
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            if ($this->step === 0) {
+                // Zero is not really a valid HTML `step` attribute value, and we definitely can’t divide by it:
+                $value = mt_rand($this->min, $this->max);
+            } else {
+                $value = mt_rand($this->min / $this->step, $this->max / $this->step) * $this->step;
+            }
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 
     /**

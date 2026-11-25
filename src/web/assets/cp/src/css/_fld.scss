@@ -4,12 +4,13 @@
 
 $base: 24px;
 $tabPadding: 14px;
-$tabWidth: $base * 11;
+$tabWidth: $base * 12;
 $gridColor: var(--gray-100);
 
 @mixin workspace-bg {
   background-color: var(--gray-050);
-  background-image: linear-gradient(to right, $gridColor 1px, transparent 0),
+  background-image:
+    linear-gradient(to right, $gridColor 1px, transparent 0),
     linear-gradient(to bottom, $gridColor 1px, transparent 1px);
   background-size: $base $base;
 }
@@ -25,24 +26,25 @@ $gridColor: var(--gray-100);
   @include mixins.input-styles;
   overflow: hidden;
   box-shadow: none;
-  padding-inline-end: $tabWidth + 1;
   min-height: 500px;
 
-  .errors > & {
-    border: 1px solid var(--error-color) !important;
+  .errors > .layoutdesigner > & {
+    border: 1px solid var(--fg-error) !important;
   }
 
   .fld-workspace {
     flex: 1;
-    border-start-start-radius: calc(var(--small-border-radius) - 1px);
+    max-width: 100%;
+    border-start-start-radius: calc(var(--radius-sm) - 1px);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
-    border-end-start-radius: calc(var(--small-border-radius) - 1px);
+    border-end-start-radius: calc(var(--radius-sm) - 1px);
     padding-inline: $base 0;
     padding-block: $base;
     @include workspace-bg;
     background-position: -1px -1px;
-    box-shadow: inset 0 1px 3px -1px color.adjust(mixins.$grey200, $lightness: -10%);
+    box-shadow: inset 0 1px 3px -1px
+      color.adjust(mixins.$grey200, $lightness: -10%);
 
     .fld-tabs {
       display: flex;
@@ -51,20 +53,17 @@ $gridColor: var(--gray-100);
     }
   }
 
-  &:not(:has(.fld-library)) {
-    padding-inline-end: 0;
-
-    .fld-workspace {
-      padding-inline-end: $base;
-    }
-  }
-
   .fld-library {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-end: 0;
+    display: none;
+  }
+}
+
+.fld-library-hud {
+  width: $tabWidth - 1;
+  max-width: 100%;
+
+  .main {
     height: 100%;
-    width: $tabWidth + 1;
     padding: $tabPadding;
   }
 }
@@ -73,28 +72,28 @@ $gridColor: var(--gray-100);
   background-color: var(--gray-050);
 }
 
-.fld-library-menu {
-  width: $tabWidth;
-  min-height: 200px;
-  margin-inline-start: $tabPadding * -1;
-  padding: $tabPadding;
-}
-
 .fld-library {
   display: flex;
   flex-direction: column;
+  height: 100%;
 
   .btngroup {
     margin-block-end: $tabPadding;
   }
 
-  .fld-field-library {
-    margin: -3px;
-    padding: 3px;
+  .fld-field-library,
+  .fld-ui-library {
+    margin-block: -3px;
+    margin-inline: #{-$tabPadding};
+    padding-block: 3px;
+    padding-inline: #{$tabPadding};
     flex: 1;
     min-height: 0;
+    max-height: 550px;
     overflow: auto;
+  }
 
+  .fld-field-library {
     .fld-field-group {
       margin-block-start: $tabPadding;
 
@@ -113,19 +112,24 @@ $gridColor: var(--gray-100);
   }
 
   .filtered {
-    display: none;
+    display: none !important;
   }
 }
 
 .layoutdesigner .fld-library,
 .fld-tab .tabs .tab,
-.fld-tab .fld-tabcontent,
-.fld-new-tab-btn,
-.fld-new-tab-btn:hover {
+.fld-tab .fld-tabcontent {
   background-color: var(--white);
   box-shadow:
     0 0 0 1px color.adjust(mixins.$grey900, $alpha: -0.9),
     0 2px 5px -2px color.adjust(mixins.$grey900, $alpha: -0.8);
+}
+
+.fld-new-tab-btn {
+  background: var(--white) !important;
+  box-shadow:
+    0 0 0 1px #{color.adjust(mixins.$grey900, $alpha: -0.9)},
+    0 2px 5px -2px #{color.adjust(mixins.$grey900, $alpha: -0.8)};
 }
 
 .fld-tab .settings::before,
@@ -144,6 +148,7 @@ $gridColor: var(--gray-100);
 
 .fld-tab {
   width: $tabWidth + $base;
+  max-width: 100%;
   padding-inline: 0 $base + 1;
   padding-block: 0 $base;
   box-sizing: border-box;
@@ -164,27 +169,29 @@ $gridColor: var(--gray-100);
       box-sizing: border-box;
       padding-block: 8px;
       padding-inline: $tabPadding;
-      border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
 
       body:not(.dragging) &.draggable {
         cursor: move;
         cursor: grab;
       }
-
-      span {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
     }
+  }
+
+  .fld-tab__name {
+    margin-block: 0;
+    font-weight: var(--font-weight-regular);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .fld-tabcontent {
     padding: $tabPadding;
     border-start-start-radius: 0;
-    border-start-end-radius: var(--medium-border-radius);
-    border-end-end-radius: var(--medium-border-radius);
-    border-end-start-radius: var(--medium-border-radius);
+    border-start-end-radius: var(--radius-md);
+    border-end-end-radius: var(--radius-md);
+    border-end-start-radius: var(--radius-md);
 
     & > .fld-element,
     & > .fld-add-btn {
@@ -192,17 +199,13 @@ $gridColor: var(--gray-100);
         margin-block-start: var(--s);
       }
     }
-
-    .fld-add-btn:not([aria-expanded='true']) {
-      display: none;
-    }
   }
 
   &.fld-insertion {
     .tabs .tab,
     .fld-tabcontent {
       margin: -2px;
-      border: 2px dashed var(--hairline-color);
+      border: 2px dashed var(--border-hairline);
       box-shadow: none;
       @include workspace-bg;
     }
@@ -227,8 +230,8 @@ $gridColor: var(--gray-100);
   align-items: center;
   padding: var(--s);
   gap: var(--s);
-  box-shadow: inset 0 0 0 1px var(--hairline-color);
-  border-radius: var(--medium-border-radius);
+  box-shadow: inset 0 0 0 1px var(--border-hairline);
+  border-radius: var(--radius-md);
   background-color: var(--white);
 
   body:not(.dragging) & {
@@ -238,8 +241,8 @@ $gridColor: var(--gray-100);
 
   &.fld-insertion {
     box-sizing: border-box;
-    border: 2px dashed var(--hairline-color);
-    border-radius: var(--medium-border-radius);
+    border: 2px dashed var(--border-hairline);
+    border-radius: var(--radius-md);
     background: none;
     box-shadow: none;
   }
@@ -249,10 +252,10 @@ $gridColor: var(--gray-100);
   }
 
   &.fld-field {
-    color: var(--medium-text-color);
+    color: var(--fg-subtle);
     background-color: var(--gray-100);
 
-    &:not(.draghelper) {
+    &:not(.draghelper, :focus) {
       box-shadow: none;
     }
 
@@ -329,7 +332,7 @@ $gridColor: var(--gray-100);
     justify-content: center;
     align-items: center;
     background-color: var(--gray-100);
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
     padding-block: 0;
     padding-inline: var(--s);
     height: var(--touch-target-size);
@@ -359,6 +362,10 @@ $gridColor: var(--gray-100);
   padding-inline: var(--padding);
   overflow: hidden auto;
   position: relative;
+
+  hr {
+    margin-inline: -24px;
+  }
 }
 
 .fld-element-settings-footer {
@@ -387,25 +394,12 @@ $gridColor: var(--gray-100);
   }
 }
 
-@container (width < #{$base + $tabWidth + $base + $tabWidth + 1}) {
-  .fld-container {
-    padding-inline-end: 0;
+// thumbnail management
+.thumb-management {
+  margin-block: var(--xl);
 
-    .fld-workspace {
-      padding-inline-end: $base;
-    }
-
-    & > .fld-library {
-      display: none;
-    }
-  }
-
-  .fld-tab {
-    .fld-tabcontent {
-      .fld-add-btn {
-        display: inline-flex !important;
-      }
-    }
+  .field:first-child {
+    margin-inline-end: var(--xl);
   }
 }
 
@@ -437,7 +431,7 @@ $gridColor: var(--gray-100);
 .cvd-preview-container {
   padding: var(--xl);
   border: 1px solid #{color.adjust(mixins.$inputColor, $alpha: -0.75)} !important;
-  border-radius: var(--small-border-radius);
+  border-radius: var(--radius-sm);
   display: grid;
   height: 100%;
   align-items: center;
@@ -458,13 +452,13 @@ $gridColor: var(--gray-100);
   justify-content: center;
   align-items: center;
   background-color: var(--gray-150);
-  border-radius: var(--medium-border-radius);
+  border-radius: var(--radius-md);
 }
 
 .card-placeholder {
   display: inline-block;
   border: 1px dashed mixins.$grey300;
-  border-radius: var(--small-border-radius);
+  border-radius: var(--radius-sm);
   padding-block: 0.1em;
   padding-inline: 0.5em;
 }

@@ -29,10 +29,13 @@ Craft.SortableCheckboxSelect = Garnish.Base.extend({
       $sortItems = this.$container.children('.checkbox-select-item:not(.all)');
     }
 
-    if ($sortItems.length) {
+    if (Craft.hasMousePointerEvents() && $sortItems.length) {
       this.dragSort = new Garnish.DragSort($sortItems, {
         axis: Garnish.Y_AXIS,
         handle: '.draggable-handle',
+      });
+      this.dragSort.on('sortChange', () => {
+        this.trigger('sortChange');
       });
     }
   },
@@ -47,6 +50,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
   $item: null,
   $moveHandle: null,
   $checkbox: null,
+  $checkboxLabel: null,
   $actionMenuBtn: null,
   $actionMenu: null,
   actionDisclosure: null,
@@ -57,7 +61,13 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     this.select = select;
     this.$item = $(item);
     this.$moveHandle = this.$item.children('.move');
+
+    if (!Craft.hasMousePointerEvents()) {
+      this.$moveHandle.hide();
+    }
+
     this.$checkbox = this.$item.children('input[type=checkbox]');
+    this.$checkboxLabel = this.$item.children('label');
 
     this.addListener(this.$checkbox, 'change', () => {
       this.handleCheckboxChange();
@@ -79,13 +89,21 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
       this.onUncheck();
     }
 
-    this.$moveHandle.removeClass('disabled');
+    this.$moveHandle?.removeClass('disabled');
 
     const menuId = 'menu-' + Math.floor(Math.random() * 1000000000);
+    let labelId = this.$checkboxLabel.attr('id');
+
+    if (!labelId) {
+      labelId = `label-${Math.floor(Math.random() * 1000000000)}`;
+      this.$checkboxLabel.attr('id', labelId);
+    }
+
     this.$actionMenuBtn = $('<button/>', {
       class: 'btn action-btn',
       'aria-controls': menuId,
       'aria-label': Craft.t('app', 'Actions'),
+      'aria-describedby': labelId,
       'data-disclosure-trigger': '',
       'data-icon': 'ellipsis',
     }).appendTo(this.$item);
@@ -96,14 +114,14 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
 
     this.actionDisclosure = new Garnish.DisclosureMenu(this.$actionMenuBtn);
     this.moveUpBtn = this.actionDisclosure.addItem({
-      icon: 'arrow-up',
+      icon: async () => await Craft.ui.icon('arrow-up'),
       label: Craft.t('app', 'Move up'),
       onActivate: () => {
         this.moveUp();
       },
     });
     this.moveDownBtn = this.actionDisclosure.addItem({
-      icon: 'arrow-down',
+      icon: async () => await Craft.ui.icon('arrow-down'),
       label: Craft.t('app', 'Move down'),
       onActivate: () => {
         this.moveDown();
@@ -123,10 +141,26 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
       }
     });
 
+    const allCheckedSiblings = this.getAllCheckedSiblings();
+    // if there are no other checked siblings, hide current item's action menu btn
+    if (allCheckedSiblings.length == 0) {
+      this.$actionMenuBtn.hide();
+    } else if (allCheckedSiblings.length == 1) {
+      // if there's only one other checked sibling,
+      // we need to show that sibling's action menu btn as it would have been hidden so far
+      $(allCheckedSiblings[0]).find('.btn.action-btn').show();
+    }
+
     this.$item.trigger('checked');
   },
 
   onUncheck: function () {
+    const allCheckedSiblings = this.getAllCheckedSiblings();
+    // if there's only one other checked sibling, hide that sibling's action menu btn
+    if (allCheckedSiblings.length == 1) {
+      $(allCheckedSiblings[0]).find('.btn.action-btn').hide();
+    }
+
     this.$moveHandle?.addClass('disabled');
     this.$actionMenuBtn?.remove();
     this.$actionMenu?.remove();
@@ -149,11 +183,18 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     return $item.length ? $item : null;
   },
 
+  getAllCheckedSiblings: function () {
+    return this.$item.siblings(
+      '.checkbox-select-item:not(.all):has(input[type=checkbox]:checked)'
+    );
+  },
+
   moveUp: function () {
     const $prev = this.getPrevCheckedItem();
     if ($prev) {
       this.$item.insertBefore($prev);
       this.$item.trigger('movedUp');
+      this.select.trigger('sortChange');
     }
   },
 
@@ -162,6 +203,7 @@ Craft.SortableCheckboxSelect.Item = Garnish.Base.extend({
     if ($next) {
       this.$item.insertAfter($next);
       this.$item.trigger('movedDown');
+      this.select.trigger('sortChange');
     }
   },
 });

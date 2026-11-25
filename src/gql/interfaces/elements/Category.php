@@ -11,6 +11,7 @@ use Craft;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Structure;
+use craft\gql\types\CategoryGroup;
 use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\services\Gql as GqlService;
@@ -67,7 +68,13 @@ class Category extends Structure
      */
     public static function getFieldDefinitions(): array
     {
-        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), Gql::canSchema('settings.categorygroups') ? [
+            'group' => [
+                'name' => 'group',
+                'type' => Type::nonNull(CategoryGroup::getType()),
+                'description' => 'The group that contains the category.',
+            ],
+        ] : [], [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::nonNull(Type::int()),
@@ -124,18 +131,14 @@ class Category extends Structure
                 'type' => self::getType(),
                 'args' => CategoryArguments::getArguments(),
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
                 'args' => CategoryArguments::getArguments(),
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
         ]), self::getName());
     }

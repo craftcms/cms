@@ -75,7 +75,23 @@ class ColorValidatorTest extends TestCase
         $this->model->exampleParam = $input;
 
         $this->colorValidator->validateAttribute($this->model, 'exampleParam');
+        $this->_assertValidation($mustValidate);
+    }
 
+    /**
+     * @dataProvider alphaColorValidatorAttributesDataProvider
+     * @param string $input
+     * @param bool $mustValidate
+     */
+    public function testAlphaAttributeValidation(string $input, bool $mustValidate): void
+    {
+        $this->model->exampleParam = $input;
+        (new ColorValidator(['allowAlpha' => true]))->validateAttribute($this->model, 'exampleParam');
+        $this->_assertValidation($mustValidate);
+    }
+
+    private function _assertValidation(bool $mustValidate): void
+    {
         if (!$mustValidate) {
             self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         } else {
@@ -99,7 +115,10 @@ class ColorValidatorTest extends TestCase
             ['#!!@@##', '!@#'],
             'three-chars-becomes-six' => ['#aassdd', 'asd'],
             ['#aassdd', 'ASD'],
-            ['#a22d', 'a22d'],
+            'four-chars-becomes-eight' => ['#aa2222dd', 'a22d'],
+            ['#aabbcc80', '#AABBCC80'],
+            'opaque-alpha-is-dropped' => ['#aabbcc', '#aabbccff'],
+            'opaque-shorthand-alpha-is-dropped' => ['#aabbcc', '#abcf'],
         ];
     }
 
@@ -116,12 +135,32 @@ class ColorValidatorTest extends TestCase
             ['fffc10e', false],
             ['xxx', false],
             ['#ffc1', false],
+            ['#ffc10e80', false],
+            ['#ffc10eff', true],
             ['#ffc1e', false],
             ['#ff', false],
             ['#f', false],
             ['#', false],
             ['rgba(255, 0, 0, 0.2)', false],
             ['255, 0, 0, 0.2', false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function alphaColorValidatorAttributesDataProvider(): array
+    {
+        return [
+            ['#ffc10e', true],
+            ['#ffc10e80', true],
+            ['ffc10e80', true],
+            ['#ffc1', true],
+            ['transparent', true],
+            ['#ffc10e8', false],
+            ['#ffc10e800', false],
+            ['#ffc10egg', false],
+            ['rgba(255, 0, 0, 0.2)', false],
         ];
     }
 

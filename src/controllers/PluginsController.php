@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\PluginInterface;
 use craft\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -32,8 +33,11 @@ class PluginsController extends Controller
             return false;
         }
 
-        // All plugin actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['edit-plugin-settings'];
+        if (!in_array($action->id, $viewActions)) {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
 
         return true;
     }
@@ -97,11 +101,21 @@ class PluginsController extends Controller
      */
     public function actionEditPluginSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
+        $this->requireAdmin(false);
+
         if (
             $plugin === null &&
             ($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null
         ) {
             throw new NotFoundHttpException('Plugin not found');
+        }
+
+        // Read-only?
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            if (!$plugin->hasReadOnlyCpSettings) {
+                throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+            }
+            return $plugin->getReadOnlySettingsResponse();
         }
 
         return $plugin->getSettingsResponse();

@@ -15,12 +15,11 @@ use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use DateTime;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -56,7 +55,9 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function labelHtml(): string
     {
         return
-            Html::tag('span', Html::encode($this->name)) .
+            Html::tag('h3', Html::encode($this->name), [
+                'class' => 'fld-tab__name',
+            ]) .
             ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
                 'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
                 'title' => Craft::t('app', 'This tab is conditional'),
@@ -132,7 +133,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         // Config normalization
         if (array_key_exists('elements', $config)) {
             if (is_string($config['elements'])) {
-                $config['elements'] = Json::decode($config['elements']);
+                $config['elements'] = Component::cleanseConfig(Json::decode($config['elements']));
             }
             if (!is_array($config['elements'])) {
                 unset($config['elements']);
@@ -215,14 +216,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (!isset($layoutElement->uid)) {
                 $layoutElement->uid = StringHelper::UUID();
             }
-            $elementConfig = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
-            if (!isset($elementConfig['dateAdded'])) {
-                // Default `dateAdded` to a minute ago, so there’s no chance that an element that predated 5.3 would get
-                // the same timestamp as a newly-added element, if the layout was saved within a minute of being edited,
-                // after updating to Craft 5.3+.
-                $elementConfig['dateAdded'] = DateTimeHelper::toIso8601((new DateTime())->modify('-1 minute'));
-            }
-            $elementConfigs[] = $elementConfig;
+            $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
         }
         return $elementConfigs;
     }
@@ -268,7 +262,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getElements(): array
     {
-        return $this->_elements ?? [];
+        return $this->_elements;
     }
 
     /**
@@ -319,7 +313,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
-        $asciiName = StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+        $asciiName = isset($this->name) ? StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en')) : '';
 
         if ($asciiName === '') {
             // Use md5() as a fallback

@@ -335,8 +335,8 @@ class RequestTest extends TestCase
         self::assertNotSame($newToken, $token);
 
         // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame('1', $tokenComponents['2']);
-        self::assertSame(40, strlen($tokenComponents['0']));
+        self::assertSame('1', $tokenComponents[2]);
+        self::assertSame(40, strlen($tokenComponents[0]));
     }
 
     /**
@@ -384,6 +384,30 @@ class RequestTest extends TestCase
 
         self::assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
         self::assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
+    }
+
+    public function testGetPreviewParam(): void
+    {
+        self::assertNull($this->request->getPreviewParam());
+        self::assertFalse($this->request->getHeaders()->has('X-Craft-Preview-Token'));
+
+        $this->request->setQueryParams(['x-craft-preview' => 'foobar']);
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->setQueryParams([]);
+        self::assertNull($this->request->getPreviewParam());
+
+        $this->request->setQueryParams(['x-craft-live-preview' => 'foobar']);
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->setQueryParams([]);
+        self::assertNull($this->request->getPreviewParam());
+
+        $this->request->getHeaders()->add('X-Craft-Preview-Token', 'foobar');
+        self::assertEquals('foobar', $this->request->getPreviewParam());
+
+        $this->request->getHeaders()->remove('X-Craft-Preview-Token');
+        self::assertNull($this->request->getPreviewParam());
     }
 
     /**
@@ -509,8 +533,9 @@ class RequestTest extends TestCase
             [false, 'application/json', ['text/html']],
             [true, 'application/json', ['application/json']],
             [true, 'application/json', ['application/*']],
-            [true, 'text/*', ['text/*']],
-            [false, 'text/*', ['text/html']],
+            [true, 'text/foo-bar', ['text/*']],
+            [true, 'text/*', ['text/html']],
+            [true, 'application/*+json', ['application/graphql-response+json']],
         ];
     }
 

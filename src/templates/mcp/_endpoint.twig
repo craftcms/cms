@@ -1,0 +1,91 @@
+{% extends '_layouts/base.twig' %}
+{% import '_includes/forms.twig' as forms %}
+{% set title = 'MCP server'|t('app') %}
+{% set bodyClass = 'mcp-endpoint' %}
+
+{% set runInTerminal = 'Run this in your terminal.'|t('app') %}
+{% set vsCodeConfig = {name: serverName, type: 'http', url: url}|json_encode(constant('JSON_UNESCAPED_SLASHES')) %}
+{% set clients = [
+  {
+    name: 'Claude Code',
+    instructions: runInTerminal,
+    snippet: "claude mcp add --transport http #{serverName} #{url}",
+  },
+  {
+    name: 'Codex',
+    instructions: runInTerminal,
+    snippet: "codex mcp add #{serverName} --url #{url}",
+  },
+  {
+    name: 'Gemini CLI',
+    instructions: runInTerminal,
+    snippet: "gemini mcp add --transport http #{serverName} #{url}",
+  },
+  {
+    name: 'VS Code',
+    instructions: runInTerminal,
+    snippet: "code --add-mcp '#{vsCodeConfig}'",
+  },
+  {
+    name: 'Cursor',
+    instructions: 'Add this to .cursor/mcp.json in your project, or to ~/.cursor/mcp.json for all projects.'|t('app'),
+    snippet: {mcpServers: {(serverName): {url: url}}}|json_encode(constant('JSON_UNESCAPED_SLASHES')),
+  },
+  {
+    name: 'Claude',
+    instructions: 'In Claude, open Settings → Connectors, choose “Add custom connector”, and paste the server URL above.'|t('app'),
+    snippet: null,
+  },
+] %}
+
+{% block body %}
+  <main class="readable">
+    <p class="light">{{ title }}</p>
+    <h1>
+      {{ isPublic
+        ? 'Ask your AI assistant about this site'|t('app')
+        : 'Manage this site from your AI assistant'|t('app') }}
+    </h1>
+    <p>
+      {{ isPublic
+        ? 'This URL is an MCP server for AI assistants, not a web page. Add it to your assistant to search and read this site’s public content in plain language.'|t('app')
+        : 'This URL is an MCP server for AI assistants, not a web page. Add it to your assistant to work with this site’s content and settings in plain language.'|t('app') }}
+    </p>
+
+    {{ forms.copyTextField({
+      label: 'Server URL'|t('app'),
+      class: 'code',
+      value: url,
+    }) }}
+
+    <h2>{{ 'Connect your assistant'|t('app') }}</h2>
+    {% for client in clients %}
+      <h3 id="mcp-client-{{ loop.index }}">{{ client.name }}</h3>
+      <p>{{ client.instructions }}</p>
+      {% if client.snippet %}
+        {{ forms.copyText({
+          class: 'code',
+          value: client.snippet,
+          labelledBy: "mcp-client-#{loop.index}",
+        }) }}
+      {% endif %}
+    {% endfor %}
+
+    <hr>
+    <p class="light">
+      {{ isPublic
+        ? 'No sign-in is needed. Assistants can only read the content this site has made public.'|t('app')
+        : 'The first time your assistant connects, it opens a browser window where you sign in and approve access.'|t('app') }}
+    </p>
+  </main>
+
+  {% css %}
+    body.mcp-endpoint main {
+      box-sizing: border-box;
+      width: 650px;
+      max-width: 100%;
+      margin-inline: auto;
+      padding: var(--xl) var(--padding);
+    }
+  {% endcss %}
+{% endblock %}

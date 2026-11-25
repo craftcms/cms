@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\CmsEdition;
@@ -20,7 +21,6 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
 use DateTime;
-use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
 /**
@@ -55,6 +55,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     use NestedElementQueryTrait {
         __set as nestedTraitSet;
         cacheTags as nestedTraitCacheTags;
+        fieldLayouts as nestedTraitFieldLayouts;
     }
 
     // General parameters
@@ -561,27 +562,23 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public function authorGroup(mixed $value): static
     {
-        if ($value instanceof UserGroup) {
-            $this->authorGroupId = $value->id;
-            return $this;
+        // If the value is a group handle, swap it with the user group
+        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+            $value = $group;
         }
 
-        if (ArrayHelper::isTraversable($value)) {
-            $collection = Collection::make($value);
-            if ($collection->every(fn($v) => $v instanceof UserGroup)) {
-                $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();
-                return $this;
-            }
-        }
-
-        if ($value !== null) {
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
+            $this->authorGroupId = $value;
+        } else {
+            $operator = QueryParam::extractOperator($value);
             $this->authorGroupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->authorGroupId = null;
+            if ($this->authorGroupId && $operator !== null) {
+                array_unshift($this->authorGroupId, $operator);
+            }
         }
 
         return $this;
@@ -859,6 +856,14 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             'entries.expiryDate',
         ]);
 
+        // todo: update after the next breakpoint
+        if (
+            Craft::$app->getConfig()->getGeneral()->staticStatuses &&
+            Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')
+        ) {
+            $this->query->addSelect(['entries.status']);
+        }
+
         $this->_applySectionIdParam();
         $this->applyNestedElementParams('entries.fieldId', 'entries.primaryOwnerId');
 
@@ -919,12 +924,40 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             }
 
             if ($this->authorGroupId) {
-                $this->subQuery->andWhere(['exists', (new Query())
-                    ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
-                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries_authors.authorId]]')
-                    ->where('[[entries.id]] = [[entries_authors.entryId]]')
-                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId)),
-                ]);
+                // Checking multiple groups?
+                if (
+                    is_array($this->authorGroupId) &&
+                    is_string(reset($this->authorGroupId)) &&
+                    strtolower(reset($this->authorGroupId)) === 'and'
+                ) {
+                    $groupIdChecks = array_slice($this->authorGroupId, 1);
+                } else {
+                    $groupIdChecks = [$this->authorGroupId];
+                }
+
+                foreach ($groupIdChecks as $i => $groupIdCheck) {
+                    if (
+                        is_array($groupIdCheck) &&
+                        is_string(reset($groupIdCheck)) &&
+                        strtolower(reset($groupIdCheck)) === 'not'
+                    ) {
+                        $groupIdOperator = 'not exists';
+                        array_shift($groupIdCheck);
+                        if (empty($groupIdCheck)) {
+                            continue;
+                        }
+                    } else {
+                        $groupIdOperator = 'exists';
+                    }
+
+                    $this->subQuery->andWhere([
+                        $groupIdOperator, (new Query())
+                            ->from(["entries_authors$i" => Table::ENTRIES_AUTHORS])
+                            ->innerJoin(["usergroups_users$i" => Table::USERGROUPS_USERS], "[[usergroups_users$i.userId]] = [[entries_authors$i.authorId]]")
+                            ->where("[[entries.id]] = [[entries_authors$i.entryId]]")
+                            ->andWhere(Db::parseNumericParam("usergroups_users$i.groupId", $groupIdCheck)),
+                    ]);
+                }
             }
         }
 
@@ -935,42 +968,14 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function afterPopulate($elements): array
+    protected function mustHaveField(): bool
     {
-        if (!$this->asArray && !empty($elements)) {
-            $this->loadAuthorIds($elements);
-        }
-
-        return parent::afterPopulate($elements);
+        return false;
     }
 
-    private function loadAuthorIds(array $entries): void
+    protected function mustHaveOwner(): bool
     {
-        /** @var Entry[][] $indexedEntries */
-        $indexedEntries = ArrayHelper::index($entries, null, [
-            fn(Entry $entry) => $entry->id,
-        ]);
-        $indexedAuthorIds = [];
-
-        $results = (new Query())
-            ->select(['entryId', 'authorId'])
-            ->from(Table::ENTRIES_AUTHORS)
-            ->where(['entryId' => array_keys($indexedEntries)])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($results as $result) {
-            $indexedAuthorIds[$result['entryId']][] = (int)$result['authorId'];
-        }
-
-        foreach ($indexedEntries as $entryId => $entriesOfId) {
-            foreach ($entriesOfId as $entry) {
-                $entry->setAuthorIds($indexedAuthorIds[$entryId] ?? []);
-            }
-        }
+        return false;
     }
 
     /**
@@ -978,6 +983,17 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     protected function statusCondition(string $status): mixed
     {
+        if (
+            in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED]) &&
+            Craft::$app->getConfig()->getGeneral()->staticStatuses
+        ) {
+            return [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+                'entries.status' => $status,
+            ];
+        }
+
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
@@ -1066,10 +1082,12 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                     ['entries.sectionId' => $section->id],
                 ];
                 if ($excludePeerEntries) {
-                    $sectionCondition[] = ['exists', (new Query())
-                        ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
-                        ->where('[[entries_authors.entryId]] = [[entries.id]]')
-                        ->andWhere(['entries_authors.authorId' => $user->id]), ];
+                    $sectionCondition[] = [
+                        'exists', (new Query())
+                            ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
+                            ->where('[[entries_authors.entryId]] = [[entries.id]]')
+                            ->andWhere(['entries_authors.authorId' => $user->id]),
+                    ];
                 }
                 if ($excludePeerDrafts) {
                     $sectionCondition[] = [
@@ -1245,6 +1263,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     protected function fieldLayouts(): array
     {
+        $this->_normalizeTypeId();
+        $this->_normalizeSectionId();
+
         if ($this->typeId || $this->sectionId) {
             $fieldLayouts = [];
             $sectionsService = Craft::$app->getEntries();
@@ -1268,6 +1289,6 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return $fieldLayouts;
         }
 
-        return parent::fieldLayouts();
+        return $this->nestedTraitFieldLayouts();
     }
 }

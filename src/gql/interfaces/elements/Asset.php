@@ -15,6 +15,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
+use craft\gql\types\Volume;
 use craft\helpers\Gql;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
@@ -214,18 +215,14 @@ class Asset extends Element
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
         ]), self::getName());
     }
@@ -235,8 +232,18 @@ class Asset extends Element
      */
     protected static function getConditionalFields(): array
     {
-        if (Gql::canQueryUsers()) {
-            return [
+        $fields = [];
+
+        if (Gql::canSchema('settings.volumes')) {
+            $fields['volume'] = [
+                'name' => 'volume',
+                'type' => Type::nonNull(Volume::getType()),
+                'description' => 'The volume that the asset belongs to.',
+            ];
+        }
+
+        if (Gql::canQueryAllUsers()) {
+            $fields += [
                 'uploaderId' => [
                     'name' => 'uploaderId',
                     'type' => Type::int(),
@@ -251,6 +258,6 @@ class Asset extends Element
             ];
         }
 
-        return [];
+        return $fields;
     }
 }

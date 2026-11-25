@@ -90,6 +90,7 @@ class Category extends ElementMutationResolver
     public function deleteCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $categoryId = $arguments['id'];
+        $hardDelete = $arguments['hardDelete'] ?? false;
 
         $elementService = Craft::$app->getElements();
         $category = $elementService->getElementById($categoryId, CategoryElement::class);
@@ -100,7 +101,8 @@ class Category extends ElementMutationResolver
 
         $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
+        $this->requireAllowedSitesForElement($category);
 
-        return $elementService->deleteElementById($categoryId);
+        return $elementService->deleteElementById($categoryId, hardDelete: $hardDelete);
     }
 }

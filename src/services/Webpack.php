@@ -23,7 +23,7 @@ use yii\web\AssetBundle;
 /**
  * Webpack service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getWebpack()|`Craft::$app->webpack()`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getWebpack()|`Craft::$app->getWebpack()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.22
@@ -112,10 +112,10 @@ class Webpack extends Component
      * Load the environment variables.
      *
      * @param class-string<AssetBundle> $class
-     * @return array|null
+     * @return array
      * @throws ReflectionException
      */
-    private function _getEnvVars(string $class): ?array
+    private function _getEnvVars(string $class): array
     {
         $settings = $this->_envFileVariables[$class] ?? null;
 

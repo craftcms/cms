@@ -18,6 +18,11 @@ use craft\helpers\StringHelper;
 class SearchQuery
 {
     /**
+     * @var string[] The only term option names that may be set via `$defaultTermOptions`.
+     */
+    private const ALLOWED_DEFAULT_TERM_OPTIONS = ['subLeft', 'subRight', 'exclude', 'exact'];
+
+    /**
      * @var string
      */
     private string $_query;
@@ -43,12 +48,15 @@ class SearchQuery
     public function __construct(string $query, array $defaultTermOptions = [])
     {
         $this->_query = $query;
-        $this->_defaultTermOptions = $defaultTermOptions + [
-                'subLeft' => false,
-                'subRight' => true,
-                'exclude' => false,
-                'exact' => false,
-            ];
+        $this->_defaultTermOptions = array_intersect_key(
+            $defaultTermOptions,
+            array_flip(self::ALLOWED_DEFAULT_TERM_OPTIONS),
+        ) + [
+            'subLeft' => false,
+            'subRight' => true,
+            'exclude' => false,
+            'exact' => false,
+        ];
 
         $this->_parse();
     }
@@ -155,8 +163,8 @@ class SearchQuery
             // overriding whatever the default subLeft/subRight term options are.
             // (see https://github.com/craftcms/cms/discussions/10613)
             if ($term->subLeft || $term->subRight) {
-                $term->subLeft = $term->subLeft ?? false;
-                $term->subRight = $term->subRight ?? false;
+                $term->subLeft ??= false;
+                $term->subRight ??= false;
             }
 
             // Now apply the default options
@@ -170,7 +178,6 @@ class SearchQuery
 
             if ($appendToPrevious) {
                 /** @noinspection PhpUndefinedVariableInspection */
-                /** @phpstan-ignore-next-line */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;

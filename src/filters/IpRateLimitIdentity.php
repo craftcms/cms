@@ -1,0 +1,119 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\filters;
+
+use Craft;
+use yii\base\Action;
+use yii\base\BaseObject;
+use yii\filters\RateLimitInterface;
+
+/**
+ * IP-based rate limit identity for use with RateLimiter.
+ *
+ * This class implements RateLimitInterface to provide IP-based rate limiting
+ * for unauthenticated requests, using cache storage for allowance tracking.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 5.9.15
+ */
+class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
+{
+    /**
+     * @var int Maximum number of requests allowed within the window
+     *
+     * If not set, the <config5:defaultRateLimit> config setting will be used.
+     */
+    public int $limit;
+
+    /**
+     * @var int Time window in seconds
+     *
+     * If not set, the <config5:defaultRateLimitDuration> config setting will be used.
+     */
+    public int $window;
+
+    /**
+     * @var string Cache key prefix for storing allowance data
+     */
+    public string $keyPrefix;
+
+    /**
+     * @var string The IP address to rate limit
+     *
+     * If not set, the request’s user IP will be used.
+     */
+    public string $ip;
+
+    /**
+     * Returns a new identity configured with the default rate limit settings, or `null` if
+     * <config5:defaultRateLimit> is disabled.
+     *
+     * @param string $keyPrefix The cache key prefix for storing allowance data
+     * @return self|null
+     * @since 5.12.0
+     */
+    public static function createDefault(string $keyPrefix): ?self
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->defaultRateLimit) {
+            return null;
+        }
+
+        return new self(['keyPrefix' => $keyPrefix]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->limit) || !isset($this->window)) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $this->limit ??= (int)$generalConfig->defaultRateLimit;
+            $this->window ??= $generalConfig->defaultRateLimitDuration;
+        }
+
+        $this->ip ??= Craft::$app->getRequest()->getUserIP() ?? 'unknown';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRateLimit($request, $action): array
+    {
+        return [$this->limit, $this->window];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function loadAllowance($request, $action): array
+    {
+        $key = $this->getCacheKey($action);
+        $data = Craft::$app->getCache()->get($key);
+        return $data !== false ? $data : [$this->limit, time()];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function saveAllowance($request, $action, $allowance, $timestamp): void
+    {
+        $key = $this->getCacheKey($action);
+        Craft::$app->getCache()->set($key, [$allowance, $timestamp], $this->window);
+    }
+
+    /**
+     * Generates the cache key for storing rate limit allowance.
+     */
+    private function getCacheKey(Action $action): string
+    {
+        return sprintf('%s:%s:%s', $this->keyPrefix, $action->getUniqueId(), $this->ip);
+    }
+}

@@ -129,7 +129,7 @@
                     v-html="cloudIcon"
                   />
                   <!-- eslint-enable vue/no-v-html -->
-                  <div>Tested on Cloud</div>
+                  <div>Tested on Craft Cloud</div>
                 </div>
               </template>
 

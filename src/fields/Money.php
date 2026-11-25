@@ -8,9 +8,12 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -38,7 +41,13 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class Money extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Money extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -53,7 +62,22 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
      */
     public static function icon(): string
     {
-        return 'dollar-sign';
+        return self::currencyIcon(Craft::$app->getLocale()->getDefaultCurrency());
+    }
+
+    private static function currencyIcon(string $currency): string
+    {
+        return match ($currency) {
+            'CHF' => 'franc-sign',
+            'EUR' => 'euro-sign',
+            'GBP' => 'sterling-sign',
+            'INR' => 'indian-rupee-sign',
+            'JPY', 'CNY' => 'yen-sign',
+            'KRW' => 'won-sign',
+            'RUB' => 'ruble-sign',
+            'TRY' => 'turkish-lira-sign',
+            default => 'dollar-sign',
+        };
     }
 
     /**
@@ -145,7 +169,28 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     /**
      * @inheritdoc
      */
+    public function getIcon(): ?string
+    {
+        return self::currencyIcon($this->currency);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSettingsHtml(): ?string
+    {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
     {
         foreach (['defaultValue', 'min', 'max'] as $attr) {
             if ($this->$attr !== null) {
@@ -158,6 +203,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
             'subUnits' => $this->subunits(),
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -176,6 +222,14 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     {
         $valueSql = static::valueSql($instances);
         return Db::parseMoneyParam($valueSql, $instances[0]->currency, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): float|int|null
+    {
+        return $this->defaultValue;
     }
 
     /**
@@ -298,7 +352,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             $value = MoneyHelper::toNumber($value);
         }
 
-        $decimals = $decimals ?? $this->subunits();
+        $decimals ??= $this->subunits();
 
         $defaultValue = null;
         if (isset($this->defaultValue)) {
@@ -339,7 +393,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
      */
     public function subunits(?Currency $currency = null): int
     {
-        $currency = $currency ?? new Currency($this->currency);
+        $currency ??= new Currency($this->currency);
         return $this->_isoCurrencies->subunitFor($currency);
     }
 
@@ -399,5 +453,14 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
             'type' => MoneyType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'number'];
     }
 }

@@ -33,6 +33,16 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    protected static bool $optionIcons = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected static bool $optionColors = true;
+
+    /**
+     * @inheritdoc
+     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Checkboxes');

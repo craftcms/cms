@@ -21,7 +21,7 @@ Craft.RecoveryCodesSetup = Garnish.Base.extend({
             '<ul class="auth-method-recovery-codes-list"/>'
           ).appendTo($pane);
 
-          for (let code of data.codes) {
+          for (const code of data.codes) {
             $('<li/>').text(code).appendTo($ul);
           }
 

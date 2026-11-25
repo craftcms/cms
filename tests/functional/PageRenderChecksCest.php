@@ -30,7 +30,7 @@ class PageRenderChecksCest
     /**
      * @var User|null
      */
-    public ?User $currentUser;
+    public ?User $currentUser = null;
 
     /**
      * @param FunctionalTester $I
@@ -145,7 +145,13 @@ class PageRenderChecksCest
             [
                 'url' => '/settings/assets', 'title' => 'Volumes - Asset Settings', 'extraContent' => [
                 ['rendered' => 'New volume'],
+                ['rendered' => 'Filesystems'],
                 ['rendered' => 'Image Transforms'],
+            ],
+            ],
+            [
+                'url' => '/settings/assets/filesystems', 'title' => 'Filesystems - Asset Settings', 'extraContent' => [
+                ['rendered' => 'New filesystem'],
             ],
             ],
             [

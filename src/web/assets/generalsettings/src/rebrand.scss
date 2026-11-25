@@ -8,11 +8,11 @@
 }
 
 .cp-current-image {
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
   width: 100px;
   height: 100px;
   background: no-repeat;
-  box-shadow: inset 0 0 0 1px var(--hairline-color);
+  box-shadow: inset 0 0 0 1px var(--border-hairline);
 
   &.checkered {
     background-color: var(--white);

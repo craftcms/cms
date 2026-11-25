@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -127,7 +128,7 @@ class Addresses extends InputObjectType
                 ];
 
                 // Get the field input types
-                foreach (Craft::$app->getAddresses()->getFieldLayout()->getCustomFields() as $field) {
+                foreach (GqlHelper::filterMutableFields(Craft::$app->getAddresses()->getFieldLayout()->getCustomFields()) as $field) {
                     /** @var Field $field */
                     $fields[$field->handle] = $field->getContentGqlMutationArgumentType();
                 }

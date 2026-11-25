@@ -26,10 +26,20 @@ class ClearCachesController extends Controller
     /**
      * Lists the caches that can be cleared.
      *
+     * @param string|null $which The cache(s) to clear
      * @return int
      */
-    public function actionIndex(): int
+    public function actionIndex(?string $which = null): int
     {
+        $which = array_filter(func_get_args());
+
+        if (!empty($which)) {
+            foreach ($which as $id) {
+                $this->run($id);
+            }
+            return ExitCode::OK;
+        }
+
         $this->stdout("The following caches can be cleared:\n\n", Console::FG_YELLOW);
 
         $lengths = [];
@@ -77,8 +87,15 @@ class ClearCachesController extends Controller
         $actions = parent::defineActions();
 
         foreach (ClearCaches::cacheOptions() as $option) {
+            $summary = $option['label'];
+
+            // When available, supplement with the tooltip text:
+            if (isset($option['info'])) {
+                $summary = sprintf('%s (%s)', $summary, $option['info']);
+            }
+
             $actions[$option['key']] = [
-                'helpSummary' => $option['label'],
+                'helpSummary' => $summary,
                 'action' => [
                     'class' => ClearCacheAction::class,
                     'action' => $option['action'],

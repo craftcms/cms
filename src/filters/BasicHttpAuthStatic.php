@@ -58,7 +58,7 @@ class BasicHttpAuthStatic extends HttpBasicAuth
             return true;
         }
 
-        list($username, $password) = Craft::$app->getRequest()->getAuthCredentials();
+        [$username, $password] = Craft::$app->getRequest()->getAuthCredentials();
 
         if ($username === $this->username && $password === $this->password) {
             return true;

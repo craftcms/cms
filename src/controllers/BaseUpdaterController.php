@@ -50,6 +50,12 @@ abstract class BaseUpdaterController extends Controller
     protected array $data = [];
 
     /**
+     * @var bool Whether the request’s data was signed with the global security key rather than the updater key.
+     * Responses are signed the same way, so the update can finish (or revert) whichever Craft version handles the next step.
+     */
+    protected bool $legacyData = false;
+
+    /**
      * @inheritdoc
      * @throws NotFoundHttpException if it’s not a control panel request
      * @throws BadRequestHttpException if there’s invalid data in the request
@@ -68,11 +74,34 @@ abstract class BaseUpdaterController extends Controller
         }
 
         if ($action->id !== 'index') {
-            if (($data = $this->request->getValidatedBodyParam('data')) === null) {
+            $data = $this->request->getBodyParam('data');
+            if (!is_string($data)) {
                 throw new BadRequestHttpException();
             }
 
-            $this->data = Json::decode($data);
+            $security = Craft::$app->getSecurity();
+            $validated = $security->validateData($data, $this->_dataKey());
+
+            if ($validated === false) {
+                // Data signed with the global security key, by a Craft version that predates updater keys.
+                // Self-updates hit this once: Composer runs in the old process, and the next step runs on new code.
+                $validated = $security->validateData($data);
+                $this->legacyData = $validated !== false;
+            }
+
+            if ($validated === false) {
+                throw new BadRequestHttpException('Request contained invalid updater data.');
+            }
+
+            $this->data = Json::decode($validated);
+
+            // Anything can be signed with the global key, so don't let legacy data reach Composer anonymously
+            if (
+                $this->legacyData &&
+                in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true)
+            ) {
+                $this->requirePermission('performUpdates');
+            }
         }
 
         return true;
@@ -106,10 +135,16 @@ abstract class BaseUpdaterController extends Controller
      * Ensures that PHP’s memory_limit and max_execution_time settings are high enough to run Composer.
      *
      * @return Response
+     * @throws BadRequestHttpException if the updater data has no post-precheck state
      */
     public function actionPrecheck(): Response
     {
-        $postState = $this->data['postPrecheckState'];
+        $postState = $this->data['postPrecheckState'] ?? null;
+
+        // Only set when there was something to do, so data without it can't have come from a precheck
+        if (!is_array($postState)) {
+            throw new BadRequestHttpException('Request contained invalid updater data.');
+        }
 
         if (!App::testIniSet()) {
             $errors = [];
@@ -490,10 +525,9 @@ abstract class BaseUpdaterController extends Controller
      * Runs the migrations for a given list of handles.
      *
      * @param string[] $handles
-     * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, ?string $restoreAction = null): ?Response
+    protected function runMigrations(array $handles): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
@@ -518,27 +552,17 @@ abstract class BaseUpdaterController extends Controller
             Craft::error($error, __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
 
-            $options = [];
-
-            // Do we have a database backup to restore?
-            if ($restoreAction !== null && !empty($this->data['dbBackupPath'])) {
-                if (!empty($this->data['install'])) {
-                    $restoreLabel = Craft::t('app', 'Revert update');
-                } else {
-                    $restoreLabel = Craft::t('app', 'Restore database');
-                }
-                $options[] = $this->actionOption($restoreLabel, $restoreAction);
-            }
-
-            $options[] = [
-                'label' => Craft::t('app', 'Troubleshoot'),
-                'url' => 'https://craftcms.com/knowledge-base/failed-updates',
+            $options = [
+                [
+                    'label' => Craft::t('app', 'Troubleshoot'),
+                    'url' => 'https://craftcms.com/knowledge-base/failed-updates',
+                ],
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
                 $email = $plugin->developerEmail;
             }
-            $email = $email ?? 'support@craftcms.com';
+            $email ??= 'support@craftcms.com';
 
             $options[] = [
                 'label' => Craft::t('app', 'Send for help'),
@@ -619,7 +643,28 @@ abstract class BaseUpdaterController extends Controller
      */
     private function _hashedData(): string
     {
-        return Craft::$app->getSecurity()->hashData(Json::encode($this->data));
+        return Craft::$app->getSecurity()->hashData(
+            Json::encode($this->data),
+            $this->legacyData ? null : $this->_dataKey(),
+        );
+    }
+
+    /**
+     * Returns the key used to sign updater data.
+     *
+     * The key is derived from the security key and this controller’s ID, so values signed with
+     * `hashData()` elsewhere (e.g. via the `|hash` filter) can’t be passed off as updater data,
+     * and updater data from one controller can’t be replayed to another.
+     *
+     * @return string
+     */
+    private function _dataKey(): string
+    {
+        return Craft::$app->getSecurity()->hkdf(
+            'sha256',
+            Craft::$app->getConfig()->getGeneral()->securityKey,
+            info: "craft-updater:$this->id",
+        );
     }
 
     /**

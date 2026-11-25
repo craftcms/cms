@@ -31,7 +31,11 @@ class ExpiresNode extends Node
                 ->write('$expiration = ')
                 ->subcompile($expiration)
                 ->raw(";\n")
-                ->write('$duration = \craft\helpers\DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();');
+                ->write(sprintf(
+                    '$duration = %s::toDateTime($expiration)->getTimestamp() - %s::currentTimeStamp();',
+                    DateTimeHelper::class,
+                    DateTimeHelper::class,
+                ));
         } else {
             $duration = DateTimeHelper::relativeTimeToSeconds(
                 $this->getAttribute('durationNum'),

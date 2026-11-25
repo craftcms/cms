@@ -9,8 +9,10 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Batchable;
+use craft\base\DefaultableFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\console\controllers\ResaveController;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
@@ -43,6 +45,12 @@ class ResaveElements extends BaseBatchedElementJob
     public bool $updateSearchIndex = false;
 
     /**
+     * @var string[] Only resave elements that have custom fields with these global field handles.
+     * @since 5.10.0
+     */
+    public array $withFields = [];
+
+    /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by [[to]].
      * @since 4.2.6
      */
@@ -53,6 +61,12 @@ class ResaveElements extends BaseBatchedElementJob
      * @since 4.2.6
      */
     public ?string $to = null;
+
+    /**
+     * @var bool Sets the specified fields to their default values.
+     * @since 5.10.0
+     */
+    public bool $toDefault = false;
 
     /**
      * @var bool Whether the [[set]] attribute should only be set if it doesn’t have a value.
@@ -92,7 +106,52 @@ class ResaveElements extends BaseBatchedElementJob
      */
     protected function processItem(mixed $item): void
     {
-        if (isset($this->set)) {
+        if ($this->toDefault) {
+            if ($this->set) {
+                /** @var ElementInterface $item */
+                $fields = [$item->getFieldLayout()?->getFieldByHandle($this->set)];
+            } else {
+                $fieldsService = Craft::$app->getFields();
+                $fields = array_map(
+                    function(string $handle) use ($fieldsService, $item) {
+                        $field = $fieldsService->getFieldByHandle($handle);
+                        if (!$field) {
+                            return null;
+                        }
+                        /** @var ElementInterface $item */
+                        return $item->getFieldLayout()?->getFieldByUid($field->uid);
+                    },
+                    $this->withFields,
+                );
+            }
+
+            $fields = array_filter($fields, fn(?FieldInterface $field) => $field instanceof DefaultableFieldInterface);
+
+            foreach ($fields as $field) {
+                $set = true;
+                if ($this->ifEmpty) {
+                    /** @var ElementInterface $item */
+                    if (!ElementHelper::isAttributeEmpty($item, $field->handle)) {
+                        $set = false;
+                    }
+                } elseif ($this->ifInvalid) {
+                    /** @var ElementInterface $item */
+                    $item->setScenario(Element::SCENARIO_LIVE);
+                    if ($item->validate("field:$field->handle")) {
+                        $set = false;
+                    }
+                }
+
+                if ($set) {
+                    /** @var ElementInterface $item */
+                    /** @var DefaultableFieldInterface $field */
+                    $defaultValue = $field->getDefaultValue();
+                    if ($defaultValue !== null) {
+                        $item->setFieldValue($field->handle, $defaultValue);
+                    }
+                }
+            }
+        } elseif (isset($this->set)) {
             $set = true;
             if ($this->ifEmpty) {
                 if (!ElementHelper::isAttributeEmpty($item, $this->set)) {

@@ -51,6 +51,14 @@ trait FieldConditionRuleTrait
     /**
      * @inheritdoc
      */
+    public function getFieldUid(): string
+    {
+        return $this->_fieldUid;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setFieldUid(string $uid): void
     {
         $this->_fieldUid = $uid;
@@ -88,10 +96,15 @@ trait FieldConditionRuleTrait
 
             foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
                 foreach ($fieldLayout->getCustomFields() as $field) {
-                    if ($field->uid === $this->_fieldUid) {
+                    if ($field->uid === $this->_fieldUid || $field->layoutElement->oldFieldUid === $this->_fieldUid) {
                         // skip if it doesn't have a label
                         $label = $field->layoutElement->label();
                         if ($label === null) {
+                            continue;
+                        }
+
+                        // make sure this is the expected condition rule class for the field
+                        if (!$this->isExpectedType($field)) {
                             continue;
                         }
 
@@ -119,14 +132,14 @@ trait FieldConditionRuleTrait
                     throw new InvalidConfigException("Field $this->_fieldUid is not included in the available field layouts.");
                 }
 
-                if (!empty($potentialInstances)) {
-                    // Just go with the first one
-                    $this->_fieldInstances[] = $first = array_shift($potentialInstances);
-                    $selectedInstance = $first;
-                    $selectedInstanceLabel = $first->layoutElement->label();
-                } else {
+                if (empty($potentialInstances)) {
                     throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
                 }
+
+                // Just go with the first one
+                $this->_fieldInstances[] = $first = array_shift($potentialInstances);
+                $selectedInstance = $first;
+                $selectedInstanceLabel = $first->layoutElement->label();
             }
 
             // Add any potential fields to the mix if they have a matching label and handle
@@ -141,6 +154,21 @@ trait FieldConditionRuleTrait
         }
 
         return $this->_fieldInstances;
+    }
+
+    private function isExpectedType(FieldInterface $field): bool
+    {
+        $expectedType = $field->getElementConditionRuleType();
+
+        if ($expectedType === null) {
+            return false;
+        }
+
+        if (is_array($expectedType)) {
+            $expectedType = $expectedType['class'];
+        }
+
+        return is_a($this, $expectedType);
     }
 
     /**
@@ -182,9 +210,15 @@ trait FieldConditionRuleTrait
      */
     public function getLabelHint(): ?string
     {
-        static $showHandles = null;
-        $showHandles ??= Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
-        return $showHandles ? $this->field()->handle : null;
+        return $this->field()->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function showLabelHint(): bool
+    {
+        return Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
     }
 
     /**
@@ -192,12 +226,16 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        $params = [];
-
-        foreach ($this->fieldInstances() as $field) {
-            $params[] = $field->handle;
+        try {
+            $instances = $this->fieldInstances();
+        } catch (InvalidConfigException) {
+            return [];
         }
 
+        $params = [];
+        foreach ($instances as $field) {
+            $params[] = $field->handle;
+        }
         return array_values(array_unique($params));
     }
 

@@ -29,7 +29,11 @@ class EntryRelation extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => fn() => EntryArguments::getArguments() + RelationCriteria::getArguments(),
+            'fields' => fn() => [
+                ...EntryArguments::getArguments(),
+                ...EntryArguments::getContentArguments(),
+                ...RelationCriteria::getArguments(),
+            ],
         ]));
     }
 }

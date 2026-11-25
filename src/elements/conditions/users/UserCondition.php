@@ -32,6 +32,10 @@ class UserCondition extends ElementCondition
             $types[] = UsernameConditionRule::class;
         }
 
+        if (Craft::$app->getIsMultiSite()) {
+            $types[] = AffiliatedSiteConditionRule::class;
+        }
+
         return $types;
     }
 }

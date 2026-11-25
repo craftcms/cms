@@ -1,5 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Button Tests" %}
+{% import '_includes/forms' as forms %}
 
 
 {% block actionButton %}
@@ -63,6 +64,48 @@
         </div>
 
         <button type="button" class="btn formsubmit" data-action="foo/bar" data-redirect="http://craft.dev/admin/entries/blog/204/drafts/{draftId}" tabindex="0">Create a draft</button>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            {{ forms.button({
+                label: '0',
+            }) }}
+            {{ forms.button({
+                label: '1',
+            }) }}
+            {{ forms.button({
+                label: '2',
+            }) }}
+        </div>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            {{ forms.button({
+                labelHtml: '0',
+            }) }}
+            {{ forms.button({
+                labelHtml: '<em>1</em>',
+            }) }}
+            {{ forms.button({
+                labelHtml: '<em>2</em>',
+            }) }}
+        </div>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            {{ forms.button({
+                icon: '0',
+            }) }}
+            {{ forms.button({
+                icon: '1',
+            }) }}
+            {{ forms.button({
+                icon: '2',
+            }) }}
+        </div>
     </div>
 
 {% endblock %}

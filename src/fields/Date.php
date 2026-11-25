@@ -8,9 +8,11 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -35,7 +37,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -196,6 +198,19 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
         } elseif ($this->showTime && !$this->showDate) {
@@ -232,6 +247,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
             'field' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -341,16 +357,12 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             if ($this->showTimeZone) {
                 $timeZone = $formatter->timeZone;
                 $formatter->timeZone = $value->getTimezone()->getName();
-                $html = sprintf(
-                    '%s %s',
-                    $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-                    $value->format('T')
-                );
+                $html = $formatter->asDatetime($value, Locale::LENGTH_SHORT, true);
                 $formatter->timeZone = $timeZone;
                 return $html;
             }
 
-            return $formatter->asDatetime($value, Locale::LENGTH_SHORT);
+            return $formatter->asDatetime($value, Locale::LENGTH_SHORT, true);
         }
 
         if ($this->showDate) {
@@ -407,7 +419,9 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             return null;
         }
 
+        /** @phpstan-ignore-next-line */
         if ($this->showTimeZone && (isset($timeZone) || (is_array($value) && !empty($value['timezone'])))) {
+            /** @phpstan-ignore-next-line */
             $date->setTimezone(new DateTimeZone($timeZone ?? $value['timezone']));
         }
 
@@ -417,7 +431,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (!$value) {
             return null;
@@ -479,6 +493,19 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             'name' => $this->handle,
             'type' => $type,
             'description' => $this->instructions,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        // Any date the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A date, or a date and time, such as 2026-11-22 or 2026-11-22T10:00:00+01:00. Include the UTC offset, or the time is read as UTC.',
         ];
     }
 }

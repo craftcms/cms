@@ -11,12 +11,13 @@ use Craft;
 use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
+use craft\config\McpConfig;
+use craft\config\OAuthConfig;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
-use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -25,7 +26,7 @@ use yii\base\InvalidArgumentException;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->getConfig()`]].
  *
  * @property-read DbConfig $db the DB config settings
  * @property-read GeneralConfig $general the general config settings
@@ -41,6 +42,8 @@ class Config extends Component
     public const CATEGORY_CUSTOM = 'custom';
     public const CATEGORY_DB = 'db';
     public const CATEGORY_GENERAL = 'general';
+    public const CATEGORY_MCP = 'mcp';
+    public const CATEGORY_OAUTH = 'oauth';
 
     /**
      * @var string The application type (`web` or `console`).
@@ -132,6 +135,14 @@ class Config extends Component
                 $configClass = GeneralConfig::class;
                 $envPrefix = 'CRAFT_';
                 break;
+            case self::CATEGORY_MCP:
+                $configClass = McpConfig::class;
+                $envPrefix = 'CRAFT_MCP_';
+                break;
+            case self::CATEGORY_OAUTH:
+                $configClass = OAuthConfig::class;
+                $envPrefix = 'CRAFT_OAUTH_';
+                break;
             default:
                 throw new InvalidArgumentException("Invalid config category: $category");
         }
@@ -169,10 +180,9 @@ class Config extends Component
         Typecast::properties($configClass, $config);
 
         if ($existingConfig !== null) {
-            Craft::configure($existingConfig, $config);
+            App::configure($existingConfig, $config);
             $config = $existingConfig;
         } else {
-            /** @var BaseObject $config */
             $config = new $configClass($config);
         }
 
@@ -218,6 +228,21 @@ class Config extends Component
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_DB);
+    }
+
+    /**
+     * Returns the OAuth config settings.
+     * @since 5.12.0
+     */
+    public function getOAuth(): OAuthConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_OAUTH);
+    }
+
+    /** Returns the MCP config settings. @since 5.12.0 */
+    public function getMcp(): McpConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_MCP);
     }
 
     /**
@@ -338,6 +363,27 @@ class Config extends Component
     }
 
     /**
+     * Returns whether an environment variable exists in the project’s `.env` file.
+     *
+     * @param string $name The environment variable name
+     * @return bool
+     * @since 5.11.0
+     */
+    public function doesEnvVarExist(string $name): bool
+    {
+        $path = $this->getDotEnvPath();
+
+        if (!file_exists($path)) {
+            return false;
+        }
+
+        $contents = file_get_contents($path);
+        $qName = preg_quote($name, '/');
+
+        return (bool)preg_match("/\s*^\s*$qName=.*/m", $contents);
+    }
+
+    /**
      * Sets an environment variable value in the project's `.env` file.
      *
      * @param string $name The environment variable name
@@ -358,6 +404,10 @@ class Config extends Component
         if ($value === false) {
             $contents = preg_replace("/\s*^\s*$qName=.*/m", '', $contents);
         } else {
+            if (StringHelper::containsNewlines($value)) {
+                throw new InvalidArgumentException("Invalid environment variable value: $value");
+            }
+
             $slashedValue = addslashes($value);
             // Only surround with quotes if the value contains a space
             if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {

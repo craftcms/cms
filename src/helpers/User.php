@@ -104,7 +104,28 @@ class User
     /**
      * @param string|null $authError
      * @param UserElement|null $user
+     * @return array{0:string,1:string}
+     * @since 5.8.10
+     */
+    public static function getLoginFailureInfo(?string $authError, ?UserElement $user): array
+    {
+        // if preventUserEnumeration is true and the account is locked
+        // set the $authError to a value that will trigger the generic, default message
+        if (
+            Craft::$app->getConfig()->getGeneral()->preventUserEnumeration &&
+            in_array($authError, [UserElement::AUTH_ACCOUNT_LOCKED, UserElement::AUTH_ACCOUNT_COOLDOWN])
+        ) {
+            $authError = UserElement::AUTH_INVALID_CREDENTIALS;
+        }
+
+        return [$authError, static::getLoginFailureMessage($authError, $user)];
+    }
+
+    /**
+     * @param string|null $authError
+     * @param UserElement|null $user
      * @return string
+     * @deprecated in 5.8.10
      */
     public static function getLoginFailureMessage(?string $authError, ?UserElement $user): string
     {

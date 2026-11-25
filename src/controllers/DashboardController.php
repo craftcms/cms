@@ -19,11 +19,13 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use craft\widgets\MissingWidget;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use ZipArchive;
 
@@ -72,9 +74,7 @@ class DashboardController extends Controller
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs(function() use ($widget) {
-                return (string)$widget->getSettingsHtml();
-            }, '__NAMESPACE__');
+            $settingsHtml = $view->namespaceInputs(fn() => (string)$widget->getSettingsHtml(), '__NAMESPACE__');
             $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
@@ -99,6 +99,11 @@ class DashboardController extends Controller
         $allWidgetJs = '';
 
         foreach ($widgets as $widget) {
+            // Skip widgets the user is no longer allowed to use
+            if (!$this->_canUseWidget($widget)) {
+                continue;
+            }
+
             $view->startJsBuffer();
             $info = $this->_getWidgetInfo($widget);
             $widgetJs = $view->clearJsBuffer(false);
@@ -157,6 +162,15 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
 
         $type = $this->request->getRequiredBodyParam('type');
+
+        if (
+            !is_string($type) ||
+            !in_array($type, $dashboardService->getAllWidgetTypes(), true) ||
+            !$type::isSelectable()
+        ) {
+            throw new ForbiddenHttpException('User not authorized to create this widget type.');
+        }
+
         $settings = $this->request->getBodyParam('settings');
 
         if (!$settings) {
@@ -193,6 +207,10 @@ class DashboardController extends Controller
 
         if (!$widget) {
             throw new BadRequestHttpException();
+        }
+
+        if (!$this->_canUseWidget($widget)) {
+            throw new ForbiddenHttpException('User not authorized to use this widget.');
         }
 
         // Create a new widget model with the new settings
@@ -270,7 +288,8 @@ class DashboardController extends Controller
     {
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
-        Craft::$app->getCache()->set("feed:$url", $data);
+        $key = sprintf('feed:%s:%s', static::currentUser()->id, $url);
+        Craft::$app->getCache()->set($key, $data);
         return $this->asSuccess();
     }
 
@@ -452,6 +471,21 @@ class DashboardController extends Controller
     }
 
     /**
+     * Returns whether the current user is allowed to use an existing widget.
+     *
+     * @param WidgetInterface $widget
+     * @return bool
+     */
+    private function _canUseWidget(WidgetInterface $widget): bool
+    {
+        // Missing widgets are still shown, so they can be deleted
+        return (
+            $widget instanceof MissingWidget ||
+            Craft::$app->getDashboard()->isWidgetTypeAvailable(get_class($widget))
+        );
+    }
+
+    /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
      * @param WidgetInterface $widget
@@ -470,9 +504,7 @@ class DashboardController extends Controller
 
         // Get the settings HTML + JS
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(function() use ($widget) {
-            return (string)$widget->getSettingsHtml();
-        }, "widget$widget->id-settings");
+        $settingsHtml = $view->namespaceInputs(fn() => (string)$widget->getSettingsHtml(), "widget$widget->id-settings");
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)

@@ -9,6 +9,7 @@ namespace craft\gql\types\elements;
 
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -45,7 +46,8 @@ class Asset extends Element
 
             switch ($fieldName) {
                 case 'url':
-                    return $source->getUrl($transform);
+                    $immediately = $arguments['immediately'] ?? null;
+                    return $source->getUrl($transform, $immediately);
                 case 'width':
                     return $source->getWidth($transform);
                 case 'height':
@@ -53,10 +55,22 @@ class Asset extends Element
             }
         }
 
+        if ($fieldName === 'volume') {
+            return $source->getVolume();
+        }
+
         if ($fieldName === 'srcset') {
             return $source->getSrcset($arguments['sizes']);
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function elementResolverClass(): ?string
+    {
+        return AssetResolver::class;
     }
 }

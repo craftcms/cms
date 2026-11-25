@@ -11,9 +11,13 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
+use Exception;
+use IntlTimeZone;
 use NumberFormatter;
+use Yii;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\helpers\FormatConverter;
 
 /**
  * @inheritdoc
@@ -80,7 +84,13 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['date'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        // https://github.com/craftcms/cms/issues/16953
+        $dateFormattedWithoutIntl = $this->formatDateWithoutIntl($value, $format);
+        if ($dateFormattedWithoutIntl !== null) {
+            return $dateFormattedWithoutIntl;
+        }
+
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'date');
         }
 
@@ -88,14 +98,60 @@ class Formatter extends \yii\i18n\Formatter
     }
 
     /**
+     * Checks if the date should be formatted without the help of intl.
+     * This is needed for some "old" dates, like dates from 19th century from Europe/Amsterdam timezone
+     *
+     * @param int|string|DateTime $value
+     * @param string|null $format
+     * @return string|null
+     * @throws Exception
+     */
+    private function formatDateWithoutIntl(int|string|DateTime $value, ?string $format): ?string
+    {
+        // see https://github.com/craftcms/cms/issues/16953 for more details on why this method was added
+
+        if (!$value instanceof DateTime || !extension_loaded('intl')) {
+            return null;
+        }
+
+        $intlTimeZone = IntlTimeZone::fromDateTimeZone($value->getTimezone());
+        $intlTimeZone->getOffset($value->getTimestamp(), true, $o1, $o2);
+        $intlTimeZone->getOffset($value->getTimestamp(), false, $o3, $o4);
+
+        // get PHP DateTime offset for this date
+        $phpOffset = $value->getTimezone()->getOffset($value);
+        // get DST offset that intl time zone would use (divided by 1000, b/c different units)
+        $dstIntlOffset = ($intlTimeZone->getRawOffset() + $intlTimeZone->getDSTSavings()) / 1000;
+        // get raw offset that intl time zone would use (divided by 1000, b/c different units)
+        $rawIntlOffset = $intlTimeZone->getRawOffset() / 1000;
+
+        // compare the php and intl offsets
+        // if either are the same, we're good to proceed with the intl approach, as we used to;
+        // but if they're both different, we should use PHP to format the date
+        if ($phpOffset === $dstIntlOffset || $phpOffset === $rawIntlOffset) {
+            return null;
+        }
+
+        // copied from yii\i18n\Formatter::formatDateTimeValue()
+        if (str_starts_with($format, 'php:')) {
+            $format = substr($format, 4);
+        } else {
+            $format = FormatConverter::convertDateIcuToPhp($format, 'date', Yii::$app->language);
+        }
+
+        return $value->format($format);
+    }
+
+    /**
      * @inheritdoc
      * @param int|string|DateTime $value
      * @param string|null $format
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
-    public function asTime($value, $format = null): string
+    public function asTime($value, $format = null, bool $withTimeZone = false): string
     {
         if ($format === null) {
             $format = $this->timeFormat;
@@ -105,23 +161,32 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['time'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
+        if (str_starts_with($format, 'php:')) {
+            $result = $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
+        } else {
+            $result = parent::asTime($value, $format);
         }
 
-        return parent::asTime($value, $format);
+        if ($withTimeZone && $result && $result !== $this->nullDisplay) {
+            $result .= ' ' . DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
+        }
+
+        return $result;
     }
 
     /**
      * @inheritdoc
      * @param int|string|DateTime $value
      * @param string|null $format
+     * @param bool $withTimeZone Whether the time zone abbreviation should be appended to the formatted time
      * @return string
      * @throws InvalidArgumentException
      * @throws InvalidConfigException
      */
-    public function asDatetime($value, $format = null): string
+    public function asDatetime($value, $format = null, bool $withTimeZone = false): string
     {
+        $value = DateTimeHelper::toDateTime($value, false, false);
+
         if ($format === null) {
             $format = $this->datetimeFormat;
         }
@@ -130,11 +195,17 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['datetime'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
-            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
+        if (str_starts_with($format, 'php:')) {
+            $result = $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
+        } else {
+            $result = parent::asDatetime($value, $format);
         }
 
-        return parent::asDatetime($value, $format);
+        if ($withTimeZone && $result && $result !== $this->nullDisplay) {
+            $result .= ' ' . DateTimeHelper::timeZoneAbbreviation($value->getTimezone());
+        }
+
+        return $result;
     }
 
     /**
@@ -286,7 +357,7 @@ class Formatter extends \yii\i18n\Formatter
     private function _formatDateTimeValueWithPhpFormat(mixed $value, string $format, string $type): string
     {
         // special cases for PHP format characters not supported by ICU
-        /** @var string[] $split */
+        /** @var list<array{string, int<0, max>}|string> $split */
         $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
         $formatted = '';
 

@@ -17,7 +17,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     sourceStatesStorageKey: null,
 
     searchTimeout: null,
-    sourceSelect: null,
     sourceNav: null,
 
     $container: null,
@@ -81,6 +80,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $countContainer: null,
     $actionsContainer: null,
     $actionMenuBtn: null,
+    $pasteBtn: null,
     page: 1,
     prevPage: null,
     resultSet: null,
@@ -111,9 +111,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     nestedInputNamespace: null,
 
     get viewMode() {
-      if (this._viewMode === 'structure' && !this.canSort) {
-        // return the default
-        return this.validateViewMode(null);
+      if (this._viewMode === 'structure' && !this.canViewAsStructure) {
+        return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
       }
 
       return this.validateViewMode(this._viewMode);
@@ -142,6 +141,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get sortable() {
       return this.settings.sortable && this.canSort && !this.inlineEditing;
+    },
+
+    get canViewAsStructure() {
+      return !this.trashed && !this.drafts && !this.searching;
     },
 
     get canSort() {
@@ -272,6 +275,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $('.body, .content', this.$container).removeClass('has-sidebar');
       }
 
+      // Get the request query params before we start changing anything
+      const queryParams =
+        this.settings.context === 'index' ? Craft.getQueryParams() : {};
+
       // Find the sources
       // ---------------------------------------------------------------------
 
@@ -363,14 +370,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           }
         }
-      } else if (
-        this.settings.criteria &&
-        this.settings.criteria.siteId &&
-        this.settings.criteria.siteId !== '*'
-      ) {
-        this._setSite(this.settings.criteria.siteId);
       } else {
-        this._setSite(Craft.siteId);
+        // if there's only one available site, go with that one
+        const siteIds = this.$container.data('site-ids');
+        if (siteIds?.length === 1) {
+          this._setSite(siteIds[0]);
+        } else if (
+          this.settings.criteria &&
+          this.settings.criteria.siteId &&
+          this.settings.criteria.siteId !== '*'
+        ) {
+          this._setSite(this.settings.criteria.siteId);
+        } else {
+          this._setSite(Craft.siteId);
+        }
       }
 
       // Don't let the criteria override the selected site
@@ -437,33 +450,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.filterHuds = {};
       this.addListener(this.$filterBtn, 'click', 'showFilterHud');
 
-      // Set the default status
-      // ---------------------------------------------------------------------
-
-      const queryParams =
-        this.settings.context === 'index' ? Craft.getQueryParams() : {};
-
-      if (queryParams.status) {
-        let selector;
-        switch (queryParams.status) {
-          case 'trashed':
-            selector = '[data-trashed]';
-            break;
-          case 'drafts':
-            selector = '[data-drafts]';
-            break;
-          default:
-            selector = `[data-status="${queryParams.status}"]`;
-        }
-
-        const $option = this.statusMenu.$options.filter(selector);
-        if ($option.length) {
-          this.statusMenu.selectOption($option[0]);
-        } else {
-          Craft.setQueryParam('status', null);
-        }
-      }
-
       // Initialize the Export button
       // ---------------------------------------------------------------------
 
@@ -491,34 +477,43 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         stepKey = this.instanceState.sourcePathStep || null;
       }
 
-      this.selectDefaultSource();
+      this.asyncSelectDefaultSource().then(() => {
+        const sourcePath = this.getDefaultSourcePath();
 
-      const sourcePath = this.getDefaultSourcePath();
-
-      // If no default source path was explicitly configured, or it's set to the root of the volume, use the localStorage key
-      if ((!sourcePath || sourcePath.length == 1) && stepKey) {
-        this.loadSourcePathByKey(stepKey).then((sourcePath) => {
-          if (sourcePath) {
-            // Filter out any source path steps that are above the source's root
-            const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
-            const sourceRootIndex = sourcePath.findIndex(
-              (p) => p.key === lastSourceKey
-            );
-            if (sourceRootIndex !== -1) {
-              this.sourcePath = sourcePath.slice(sourceRootIndex);
+        // If no default source path was explicitly configured, or it's set to the root of the volume, use the localStorage key
+        if ((!sourcePath || sourcePath.length == 1) && stepKey) {
+          this.loadSourcePathByKey(stepKey).then((sourcePath) => {
+            if (sourcePath) {
+              // Filter out any source path steps that are above the source's root
+              const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
+              const sourceRootIndex = sourcePath.findIndex(
+                (p) => p.key === lastSourceKey
+              );
+              if (sourceRootIndex !== -1) {
+                this.sourcePath = sourcePath.slice(sourceRootIndex);
+              }
             }
+            this.afterSetInitialSource(queryParams);
+          });
+        } else {
+          if (sourcePath) {
+            this.sourcePath = sourcePath;
           }
           this.afterSetInitialSource(queryParams);
-        });
-      } else {
-        if (sourcePath) {
-          this.sourcePath = sourcePath;
         }
-        this.afterSetInitialSource(queryParams);
-      }
 
-      // Set visible source name on small/zoomed screens
-      this.updateMainHeading();
+        // Set visible source name on small/zoomed screens
+        this.updateMainHeading();
+
+        if (this.settings.context === 'index') {
+          Craft.cp.onCopyElements((elementInfo, buttonLabel) => {
+            this.updatePasteButton(elementInfo);
+            if (this.$pasteBtn && buttonLabel) {
+              this.$pasteBtn.find('.label').text(buttonLabel);
+            }
+          });
+        }
+      });
     },
 
     afterInit: function () {
@@ -572,6 +567,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (queryParams.search) {
         this.startSearching();
         this.searchText = queryParams.search;
+        Craft.setQueryParam('search', queryParams.search);
       }
 
       // Respect the initial filters
@@ -593,6 +589,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           const attr = queryParams.sort.substring(0, lastDashPos);
           const dir = queryParams.sort.substring(lastDashPos + 1);
           this.setSelectedSortAttribute(attr, dir);
+        }
+      }
+
+      // Set the default status
+      // ---------------------------------------------------------------------
+
+      if (queryParams.status) {
+        let selector;
+        switch (queryParams.status) {
+          case 'trashed':
+            selector = '[data-trashed]';
+            break;
+          case 'drafts':
+            selector = '[data-drafts]';
+            break;
+          default:
+            selector = `[data-status="${queryParams.status}"]`;
+        }
+
+        const $option = this.statusMenu.$options.filter(selector);
+        if ($option.length) {
+          this.statusMenu.selectOption($option[0]);
+        } else {
+          Craft.setQueryParam('status', null);
         }
       }
 
@@ -678,6 +698,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (!this.sourceNav) {
         this.sourceNav = new SourceNav(this.$sidebar.find('nav'), {
           onSelectionChange: this._handleSourceSelectionChange.bind(this),
+          handleCtrlClicks: this.settings.context === 'index',
         });
       }
 
@@ -694,11 +715,29 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return this._getSourcesInList(this.getSourceContainer(), true);
     },
 
+    /**
+     * @deprecated in 5.9.0. Use asyncSelectDefaultSource() instead.
+     */
     selectDefaultSource: function () {
+      const $source = this.getDefaultSource();
+      return this.selectSource($source);
+    },
+
+    asyncSelectDefaultSource: async function () {
+      const $source = this.getDefaultSource();
+      return await this.asyncSelectSource($source);
+    },
+
+    getDefaultSource: function () {
       // The `source` query param should always take precedence
       let sourceKey;
       if (this.settings.context === 'index') {
         sourceKey = Craft.getQueryParam('source');
+        // defaultSourcePath is relative to defaultSource, so discard it if the `source` param points elsewhere
+        // (https://github.com/craftcms/cms/issues/19689)
+        if (sourceKey && sourceKey !== this.settings.defaultSource) {
+          this.settings.defaultSourcePath = null;
+        }
       }
 
       if (!sourceKey) {
@@ -721,7 +760,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $source = this.$visibleSources.first();
       }
 
-      return this.selectSource($source);
+      return $source;
     },
 
     refreshSources: function () {
@@ -735,11 +774,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           elementType: this.elementType,
         },
       })
-        .then((response) => {
+        .then(async (response) => {
           this.setIndexAvailable();
           this.getSourceContainer().replaceWith(response.data.html);
           this.initSources();
-          this.selectDefaultSource();
+          await this.asyncSelectDefaultSource();
         })
         .catch((e) => {
           if (!axios.isCancel(e)) {
@@ -1254,6 +1293,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         clearTimeout(this.searchTimeout);
       }
 
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('search', null);
+      }
+
       this.stopSearching();
 
       if (updateElements) {
@@ -1332,7 +1375,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (typeof key === 'object') {
-        for (let k in key) {
+        for (const k in key) {
           if (key.hasOwnProperty(k)) {
             if (key[k] !== null) {
               viewState[k] = key[k];
@@ -1483,18 +1526,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.activeViewMenu.hideTrigger();
         }
         if (!this.viewMenus[this.sourceKey]) {
-          if (
-            !this.getViewModesForSource().find(
-              (mode) => mode.mode === 'table'
-            ) &&
-            this.settings.sortable
-          ) {
-            return;
-          }
           this.viewMenus[this.sourceKey] = new ViewMenu(this, this.$source);
         }
         this.activeViewMenu = this.viewMenus[this.sourceKey];
         this.activeViewMenu.showTrigger();
+
+        // check if we should show the View button (ViewMenu.$trigger)
+        if (this.activeViewMenu) {
+          if (!this.activeViewMenu?.menuHasContent()) {
+            this.activeViewMenu.disableTrigger();
+          } else {
+            this.activeViewMenu.enableTrigger();
+          }
+        }
       }
     },
 
@@ -1529,6 +1573,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
       );
 
+      // set drafts/draftOf/savedDraftsOnly params depending on the context
+      if (
+        this.settings.canHaveDrafts &&
+        (this.drafts || (this.settings.context === 'index' && this.status))
+      ) {
+        baseCriteria.drafts = this.drafts ? null : false;
+        baseCriteria.draftOf = this.drafts ? null : false;
+        baseCriteria.savedDraftsOnly = true;
+      }
+
       const criteria = {
         offset: this.settings.batchSize * (this.page - 1),
         limit: this.settings.batchSize,
@@ -1548,22 +1602,33 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         criteria.status = this.status;
       }
 
+      const viewState = $.extend({}, this.getSelectedSourceState());
+      if (Garnish.isMobileBrowser(true)) {
+        viewState.tableColumns = [];
+      }
+
+      const [sortAttribute, sortDirection] =
+        this.getSortAttributeAndDirection();
+
       const params = {
         context: this.settings.context,
         elementType: this.elementType,
         canHaveDrafts: this.settings.canHaveDrafts,
         source: this.sourceKey,
+        fieldLayouts: this.$source?.data('field-layouts'),
         condition: this.settings.condition,
         referenceElementId: this.settings.referenceElementId,
+        referenceElementOwnerId: this.settings.referenceElementOwnerId,
         referenceElementSiteId: this.settings.referenceElementSiteId,
         baseCriteria,
         criteria,
         disabledElementIds: this.settings.disabledElementIds,
-        viewState: $.extend({}, this.getSelectedSourceState()),
+        viewState,
         paginated: this.paginated,
         selectable: this.selectable,
-        sortable: this.sortable,
+        sortable: this.sortable && sortAttribute === 'sortOrder',
         prevalidate: this.settings.prevalidate,
+        returnUrl: document.location.href,
       };
 
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
@@ -1583,10 +1648,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.instanceState.collapsedElementIds = [];
         }
         params.collapsedElementIds = this.instanceState.collapsedElementIds;
-      } else if (!this.sortable && !this.inlineEditing) {
+      } else if (!this.inlineEditing) {
         // Possible that the order/sort isn't entirely accurate if we're sorting by Score
-        const [sortAttribute, sortDirection] =
-          this.getSortAttributeAndDirection();
         params.viewState.order = sortAttribute;
         params.viewState.sort = sortDirection;
       }
@@ -1618,7 +1681,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination, pageChanged) {
+    updateElements: function (preservePagination = false) {
       return new Promise((resolve, reject) => {
         // Ignore if we're not fully initialized yet
         if (!this.initialized) {
@@ -1638,7 +1701,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.view.disable();
         }
 
-        if (preservePagination !== true) {
+        if (!preservePagination) {
           this.prevPage = null;
           this.setPage(1);
         }
@@ -1653,8 +1716,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           cancelToken: this._createCancelToken(),
         })
           .then((response) => {
-            this.setIndexAvailable();
-
             if (this.settings.context === 'index') {
               if (Craft.cp.fixedHeader) {
                 const headerContainerHeight =
@@ -1669,7 +1730,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               this.$main.scrollTop(0);
             }
 
-            this._updateView(this._viewParams, response.data);
+            this._updateView(this._viewParams, response.data).then(() => {
+              this.setIndexAvailable();
+            });
 
             if (this.criteriaHasChanged() && !this.sourceHasChanged()) {
               const itemLabel = this.getItemLabel();
@@ -1773,7 +1836,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           : Craft.t('app', 'Descending');
       const sortLabel = this.getSortLabel(attribute);
 
-      if (!attribute && !direction && !sortLabel) return;
+      if (!attribute && !direction && !sortLabel) {
+        return;
+      }
 
       return Craft.t('app', '{name} sorted by {attribute}, {direction}', {
         name: this.getSourceLabel(),
@@ -1783,7 +1848,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     updateLiveRegion: function (message) {
-      if (!message) return;
+      if (!message) {
+        return;
+      }
 
       this.$srStatusContainer.empty().text(message);
 
@@ -1792,7 +1859,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         const currentMessage = this.$srStatusContainer.text();
 
         // Check that this is the same message and hasn't been updated since
-        if (message !== currentMessage) return;
+        if (message !== currentMessage) {
+          return;
+        }
 
         this.$srStatusContainer.empty();
       }, 5000);
@@ -1810,7 +1879,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._$triggers.appendTo(this.$actionsContainer);
       }
 
+      this.$actionsContainer.removeClass('hidden');
       this.showingActionTriggers = true;
+      this.updatePasteButton();
     },
 
     submitAction: async function (action, actionParams, beforeCallback) {
@@ -1922,7 +1993,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this._$triggers.detach();
 
+      this.$actionsContainer.addClass('hidden');
       this.showingActionTriggers = false;
+      this.updatePasteButton();
     },
 
     updateSelectAllCheckbox: function () {
@@ -1959,12 +2032,78 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    updatePasteButton(elementInfo = null) {
+      elementInfo = elementInfo || Craft.cp.getCopiedElements();
+      if (this.canPasteInternal(elementInfo)) {
+        if (!this.$pasteBtn) {
+          this.$pasteBtn = Craft.ui
+            .createPasteButton()
+            .insertAfter(this.$actionsContainer);
+          this.addListener(this.$pasteBtn, 'activate', 'pasteElements');
+        } else {
+          this.$pasteBtn.removeClass('hidden');
+        }
+      } else {
+        this.$pasteBtn?.addClass('hidden');
+      }
+    },
+
+    canPasteInternal(elementInfo) {
+      if (!elementInfo.length || !this.$source) {
+        return false;
+      }
+
+      for (const e of elementInfo) {
+        if (e.type !== this.elementType) {
+          return false;
+        }
+      }
+
+      return this.canPaste(elementInfo);
+    },
+
+    canPaste: function (elementInfo) {
+      return false;
+    },
+
+    pasteAttributes: function () {
+      return {};
+    },
+
+    async pasteElements() {
+      Craft.cp.announce(Craft.t('app', 'Loading'));
+      this.$pasteBtn.addClass('loading');
+
+      try {
+        const newElementInfo = await Craft.cp.pasteElements(
+          Object.assign({}, this.pasteAttributes(), {
+            siteId: this.siteId,
+          })
+        );
+        if (!newElementInfo.length) {
+          return;
+        }
+      } finally {
+        this.$pasteBtn.removeClass('loading');
+      }
+
+      await this.updateElements();
+    },
+
     getSelectedElements: function () {
       return this.view ? this.view.getSelectedElements() : $();
     },
 
     getSelectedElementIds: function () {
       return this.view ? this.view.getSelectedElementIds() : [];
+    },
+
+    selectElementById: function (id) {
+      return this.view?.selectElementById(id) ?? false;
+    },
+
+    selectElementsById: function (ids) {
+      this.view?.selectElementsById(ids);
     },
 
     setStatus: function (status) {
@@ -2049,7 +2188,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      if (!dir) {
+      if (attr === 'sortOrder') {
+        dir = 'asc';
+      } else if (!dir) {
         dir = sortOption.defaultDir;
       }
 
@@ -2066,7 +2207,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       const oldHistory = this.getSelectedSourceState('orderHistory', []);
-      for (let i = 0; i < oldHistory.length; i++) {
+      for (let i = 0; i < oldHistory?.length; i++) {
         const [a] = oldHistory[i];
         if (a && !attributes.includes(a)) {
           history.push(oldHistory[i]);
@@ -2112,7 +2253,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return ['score', 'desc'];
       }
 
-      return [this.getSelectedSortAttribute(), this.getSelectedSortDirection()];
+      const attr = this.getSelectedSortAttribute();
+      let dir;
+
+      if (attr === 'sortOrder') {
+        dir = 'asc';
+      } else {
+        dir = this.getSelectedSortDirection();
+      }
+
+      return [attr, dir];
     },
 
     getSortLabel: function (attr) {
@@ -2160,6 +2310,57 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return this.sourcesByKey[key] || null;
     },
 
+    ensureSourceAttributeInfo: async function (source) {
+      const $source = this.getRootSource($(source));
+
+      // table-col-opts is the only one that won't ever be fully defined on page load
+      if ($source.data('table-col-opts') !== undefined) {
+        return;
+      }
+
+      let response;
+
+      try {
+        response = await Craft.sendActionRequest(
+          'POST',
+          'element-indexes/source-attribute-info',
+          {
+            data: {
+              elementType: this.elementType,
+              context: this.settings.context,
+              source: $source.data('key'),
+              fieldLayouts: $source.data('field-layouts'),
+            },
+          }
+        );
+      } catch (e) {
+        return;
+      }
+
+      $source.data(
+        'table-col-opts',
+        ($source.data('base-table-col-opts') || []).concat(
+          response.data.tableColumns
+        )
+      );
+
+      if ($source.data('sort-opts') === undefined) {
+        $source.data(
+          'sort-opts',
+          ($source.data('base-sort-opts') || []).concat(
+            response.data.sortOptions
+          )
+        );
+      }
+
+      if ($source.data('default-table-cols') === undefined) {
+        $source.data('default-table-cols', response.data.defaultTableColumns);
+      }
+    },
+
+    /**
+     * @deprecated in 5.9.0. Use asyncSelectSource() instead.
+     */
     selectSource: function (source) {
       const $source = $(source);
 
@@ -2169,6 +2370,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return false;
       }
 
+      // if newly selected source is the same as the one that's currently selected
       if (
         this.$source &&
         this.$source[0] &&
@@ -2189,16 +2391,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.sourceNav.selectItem($source);
 
       this.updateMainHeading();
-
-      if (this.searching) {
-        // Clear the search value without causing it to update elements
-        this.searchText = null;
-        this.$search.val('');
-        if (this.settings.context === 'index') {
-          Craft.setQueryParam('search', null);
-        }
-        this.stopSearching();
-      }
+      this.clearSearch(false);
 
       // Status menu
       // ----------------------------------------------------------------------
@@ -2319,22 +2512,37 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$source.data('default-source-path');
 
       if (this.settings.context === 'index') {
-        const urlParams = Craft.getQueryParams();
-        urlParams.source = this.sourceKey;
-        Craft.setUrl(Craft.getUrl(Craft.path, urlParams));
+        // Use setQueryParam so that the current URL is used and not Craft.path that might be stale by now
+        Craft.setQueryParam('source', this.sourceKey);
       }
+
+      this.updatePasteButton();
 
       return true;
     },
 
-    selectSourceByKey: function (key) {
-      var $source = this.getSourceByKey(key);
+    asyncSelectSource: async function (source) {
+      await this.ensureSourceAttributeInfo(source);
+      return this.selectSource(source);
+    },
 
-      if ($source) {
-        return this.selectSource($source);
-      } else {
+    /**
+     * @deprecated in 5.9.0. Use asyncSelectSourceByKey() instead.
+     */
+    selectSourceByKey: function (key) {
+      const $source = this.getSourceByKey(key);
+      if (!$source) {
         return false;
       }
+      return this.selectSource($source);
+    },
+
+    asyncSelectSourceByKey: async function (key) {
+      const $source = this.getSourceByKey(key);
+      if (!$source) {
+        return false;
+      }
+      return this.asyncSelectSource($source);
     },
 
     getSourceData($source, key) {
@@ -2358,7 +2566,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {Object[]}
      */
     getSortOptions: function ($source) {
-      const sortOptions = this.getSourceData($source, 'sort-opts') || [];
+      const sortOptions = [...(this.getSourceData($source, 'sort-opts') || [])];
 
       // Make sure there's at least one attribute
       if (!sortOptions.length) {
@@ -2379,6 +2587,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {?Object}
      */
     getSortOption: function (attribute, $source) {
+      if (attribute === 'sortOrder') {
+        if (!this.settings.sortable) {
+          return null;
+        }
+        return {
+          label: Craft.t('app', 'Custom'),
+          attribute: 'sortOrder',
+          defaultDir: 'asc',
+        };
+      }
+
       return (
         this.getSortOptions($source).find((o) => o.attr === attribute) || null
       );
@@ -2406,6 +2625,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
           return defaultSort;
         }
+      }
+
+      if (this.settings.sortable) {
+        return ['sortOrder', 'asc'];
       }
 
       // Default to the first sort option
@@ -2481,6 +2704,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getViewModesForSource: function () {
       let viewModes = this.$source.data('viewModes');
+
+      if (!viewModes) {
+        return false;
+      }
 
       // apply availableOnMobile
       if (Garnish.isMobileBrowser(true)) {
@@ -2565,6 +2792,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.viewModeBtns[this._viewMode]
           .addClass('active')
           .attr('aria-pressed', 'true');
+      }
+
+      // check if we should show the View button (ViewMenu.$trigger)
+      if (this.activeViewMenu) {
+        if (!this.activeViewMenu?.menuHasContent()) {
+          this.activeViewMenu.disableTrigger();
+        } else {
+          this.activeViewMenu.enableTrigger();
+        }
       }
     },
 
@@ -2670,6 +2906,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this._autoSelectElements.push(id);
     },
 
+    selectElementsAfterUpdate: function (ids) {
+      if (this._autoSelectElements === null) {
+        this._autoSelectElements = [];
+      }
+
+      this._autoSelectElements.push(...ids);
+    },
+
     addButton: function ($button) {
       this.getButtonContainer().append($button);
     },
@@ -2700,9 +2944,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    setIndexBusy: function () {
+    setIndexBusy: function (showSpinner = true) {
       this.$elements.addClass('busy');
-      this.$updateSpinner.appendTo(this.$elements);
+      if (showSpinner) {
+        this.$updateSpinner.appendTo(this.$elements);
+      }
       this.isIndexBusy = true;
 
       // Blur the active element, if it's within the element listing pane
@@ -2714,29 +2960,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         document.activeElement.blur();
       }
 
-      let elementsHeight = this.$elements.height();
-      let windowHeight = window.innerHeight;
-      let scrollTop = $(document).scrollTop();
-
-      if (this.settings.context == 'modal') {
-        windowHeight = this.$elements.parents('.modal').height();
-        scrollTop = this.$elements.scrollParent().scrollTop();
-      }
-
-      if (elementsHeight > windowHeight) {
-        let positionTop = Math.floor(scrollTop + windowHeight / 2) - 100;
-        positionTop = Math.floor((positionTop / elementsHeight) * 100);
-
-        this.$updateSpinner.css({
-          insetBlockStart: `${positionTop}%`,
-        });
-      }
       this.updateLiveRegion(Craft.t('app', 'Loading'));
     },
 
     setIndexAvailable: function () {
-      this.$elements.removeClass('busy');
-      this.$updateSpinner.remove();
+      this.hideIndexLoadingStyles();
       this.isIndexBusy = false;
 
       // Refocus the previously-focused element
@@ -2755,12 +2983,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Hides the loading styles on the element listing pane.
+     */
+    hideIndexLoadingStyles: function () {
+      this.$elements.removeClass('busy');
+      this.$updateSpinner.remove();
+    },
+
     createCustomizeSourcesModal: function () {
       // Recreate it each time
       var modal = new Craft.CustomizeSourcesModal(this, {
         hideOnEsc: false,
         hideOnShadeClick: false,
-        onHide: function () {
+        onFadeOut: function () {
           modal.destroy();
         },
       });
@@ -2851,7 +3087,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // UI state handlers
     // -------------------------------------------------------------------------
 
-    _handleSourceSelectionChange: function (event) {
+    _handleSourceSelectionChange: async function () {
       // If the selected source was just removed (maybe because its parent was collapsed),
       // there won't be a selected source
 
@@ -2860,7 +3096,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      if (this.selectSource(this.sourceNav.$selectedItem)) {
+      if (await this.asyncSelectSource(this.sourceNav.$selectedItem)) {
         this.updateElements();
       }
     },
@@ -2934,34 +3170,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         Craft.setQueryParam('status', queryParam);
       }
 
-      this.updateElements();
+      if (this.initialized) {
+        this.updateElements();
+      }
     },
 
-    _handleSiteChange: function (ev) {
+    _handleSiteChange: async function (ev) {
       this.siteMenu.$options.removeClass('sel');
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
-      this._setSite($option.data('site-id'));
+      await this._setSite($option.data('site-id'));
       if (this.initialized) {
         this.updateElements();
       }
       this.onSelectSite();
     },
 
-    _setSite: function (siteId) {
+    _setSite: async function (siteId) {
       let firstSite = this.siteId === null;
       this.siteId = siteId;
 
       this.updateSourceVisibility();
-
-      if (
-        this.initialized &&
-        !firstSite &&
-        (!this.$source || !this.$source.length) &&
-        this.$visibleSources.length
-      ) {
-        this.selectSource(this.$visibleSources[0]);
-      }
 
       // Hide any empty-nester headings
       var $headings = this.getSourceContainer().children('.heading');
@@ -2969,7 +3198,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.has('> ul > li:not(.hidden)').length !== 0) {
+        if ($heading.has('> ul > li .source-item:not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -2981,9 +3210,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           // Remember this site for later
           Craft.cp.setSiteId(siteId);
         }
-
-        this.updateFilterBtn();
       }
+
+      const selectSource =
+        this.initialized &&
+        !firstSite &&
+        (!this.$source || !this.$source.length) &&
+        this.$visibleSources.length;
+
+      return new Promise(async (resolve) => {
+        if (selectSource) {
+          await this.asyncSelectSource(this.$visibleSources[0]);
+        }
+
+        resolve();
+      });
     },
 
     updateSourceVisibility: function () {
@@ -3037,9 +3278,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // -------------------------------------------------------------------------
 
     _getSourcesInList: function ($list, topLevel) {
-      let $sources = $list.find('> li:not(.heading) > a');
+      let $sources = $list.find('> li:not(.heading) [data-source-item]');
       if (topLevel) {
-        $sources = $sources.add($list.find('> li.heading > ul > li > a'));
+        $sources = $sources.add(
+          $list.find('> li.heading > ul > li [data-source-item]')
+        );
       }
       return $sources;
     },
@@ -3114,7 +3357,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.hideActionTriggers();
 
         if (this.triggers) {
-          for (let trigger of this.triggers) {
+          for (const trigger of this.triggers) {
             trigger.destroy();
           }
         }
@@ -3130,7 +3373,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Update the count text
       // -------------------------------------------------------------
-
       if (this.$countContainer.length) {
         this.$countSpinner.removeClass('hidden');
         this.$countContainer.html('');
@@ -3140,9 +3382,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$countSpinner.addClass('hidden');
             const itemLabel = this.getItemLabel();
             const itemsLabel = this.getItemsLabel();
+            let countLabel;
 
             if (!this.paginated) {
-              let countLabel = Craft.t(
+              countLabel = Craft.t(
                 'app',
                 '{total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
@@ -3155,7 +3398,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             } else {
               const first = this.getFirstItemNumber(total);
               const last = this.getLastItemNumber(first, total);
-              let countLabel = Craft.t(
+              countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
@@ -3236,6 +3479,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.updateElements(true);
                 });
               }
+            }
+
+            if (this.settings.context === 'index') {
+              this._addPaginationContextToDocumentTitle(countLabel);
             }
           })
           .catch(() => {
@@ -3341,6 +3588,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       const settings = Object.assign(
         {
+          page: null,
           context: this.settings.context,
           batchSize:
             this.isAdministrative || this.viewMode === 'structure'
@@ -3366,19 +3614,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         delete this.view;
       }
 
-      this.view = this.createView(this.getSelectedViewMode(), settings);
+      this.view = this.createView(this.viewMode, settings);
 
       // Auto-select elements
       // -------------------------------------------------------------
 
       if (this._autoSelectElements) {
         if (this.selectable) {
-          for (var i = 0; i < this._autoSelectElements.length; i++) {
-            this.view.selectElementById(this._autoSelectElements[i]);
-          }
+          this.selectElementsById(this._autoSelectElements);
         }
 
         this._autoSelectElements = null;
+      }
+
+      if (this.settings.context === 'index') {
+        this._addSourceNameToDocumentTitle();
       }
 
       // Trigger the event
@@ -3387,8 +3637,50 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.onUpdateElements();
     },
 
+    /**
+     * Updates the document title to include the source label if it exists.
+     * Example: "Blog - Entries - Craft CMS", where "Blog" is the source label.
+     * @private
+     */
+    _addSourceNameToDocumentTitle: function () {
+      const documentTitleIncludesSourceLabel = () => {
+        const elementIndexType = this.settings.elementTypePluralName;
+        const titleArr = document.title.split(' - ');
+        return titleArr[1] === elementIndexType;
+      };
+
+      const titleArr = document.title.split(' - ');
+
+      // Include source label in the document title if it exists
+      if (this.getSourceLabel()) {
+        const elementIndexType = this.settings.elementTypePluralName;
+        // If the first part of the title is the element type (i.e., "Entries - Craft CMS"), push the source label to the front
+        if (!documentTitleIncludesSourceLabel()) {
+          titleArr.unshift(this.getSourceLabel());
+        } else {
+          titleArr[0] = this.getSourceLabel();
+        }
+      }
+      document.querySelector('title').textContent = titleArr.join(' - ');
+    },
+
+    /**
+     * Appends context information to the document title after the specific source label.
+     * Example: "Blog, 1-100 of 250 entries - Craft CMS", where "1-100 of 250 entries" is the context info.
+     * @param text
+     * @private
+     */
+    _addPaginationContextToDocumentTitle: function (text) {
+      const titleArr = document.title.split(' - ');
+
+      if (titleArr[0] !== this.getSourceLabel()) return;
+
+      titleArr[0] = `${titleArr[0]}, ${text}`;
+      document.querySelector('title').textContent = titleArr.join(' - ');
+    },
+
     _updateBadgeCounts: function (badgeCounts) {
-      for (let sourceKey in badgeCounts) {
+      for (const sourceKey in badgeCounts) {
         if (badgeCounts.hasOwnProperty(sourceKey)) {
           const $source = this.getSourceByKey(sourceKey);
           if ($source) {
@@ -3452,7 +3744,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         if (action.trigger) {
           const $trigger = $('<div/>', {
-            id: `${this.namespaceId(action.type)}-actiontrigger`,
+            id: `${this.namespaceId(action.triggerId)}`,
           }).append(action.trigger);
           $trigger.find('.btn').addClass('secondary');
 
@@ -3577,8 +3869,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           label: Craft.t('app', 'Format'),
           options: [
             {label: 'CSV', value: 'csv'},
+            {label: 'XLSX', value: 'xlsx'},
             {label: 'JSON', value: 'json'},
             {label: 'XML', value: 'xml'},
+            {label: 'YAML', value: 'yaml'},
           ],
           class: 'fullwidth',
         })
@@ -3684,11 +3978,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (actions && actions.length) {
         const $ul = $('<ul/>');
 
-        for (let action of actions) {
+        for (const action of actions) {
           $('<li/>')
             .append(
               $('<a/>', {
-                id: `${this.namespaceId(action.type)}-actiontrigger`,
+                id: `${this.namespaceId(action.triggerId)}`,
                 class: destructive ? 'error' : null,
                 data: {action},
                 text: action.name,
@@ -3768,6 +4062,42 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.$filterBtn.attr('aria-controls', null);
       }
     },
+
+    onBeforeMoveElementsToPage: async function (selectedItems, page) {
+      await this.settings.onBeforeMoveElementsToPage(selectedItems, page);
+    },
+    onMoveElementsToPage: async function (selectedItems, page) {
+      await this.settings.onMoveElementsToPage(selectedItems, page);
+    },
+    onBeforeReorderElements: async function (selectedItems, offset) {
+      await this.settings.onBeforeReorderElements(selectedItems, offset);
+    },
+    onReorderElements: async function (selectedItems, offset) {
+      await this.settings.onReorderElements(selectedItems, offset);
+    },
+    onBeforeDuplicateElements: async function (selectedItems) {
+      await this.settings.onBeforeDuplicateElements(selectedItems);
+    },
+    onDuplicateElements: async function (selectedItems) {
+      await this.settings.onDuplicateElements(selectedItems);
+
+      // if we’re currently searching, update elements after the queue is finished
+      if (this.searching && Craft.cp.enableQueue) {
+        const searchText = this.searchText;
+        Craft.cp.once('queueCompleted', async () => {
+          if (this.searching && this.searchText === searchText) {
+            this.selectElementsAfterUpdate(this.getSelectedElementIds());
+            await this.updateElements(true);
+          }
+        });
+      }
+    },
+    onBeforeDeleteElements: async function (selectedItems) {
+      await this.settings.onBeforeDeleteElements(selectedItems);
+    },
+    onDeleteElements: async function (selectedItems) {
+      await this.settings.onDeleteElements(selectedItems);
+    },
   },
   {
     defaults: {
@@ -3777,6 +4107,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       storageKey: null,
       condition: null,
       referenceElementId: null,
+      referenceElementOwnerId: null,
       referenceElementSiteId: null,
       allowedViewModes: null,
       showHeaderColumn: true,
@@ -3789,6 +4120,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       waitForDoubleClicks: false,
       canSelectElement: null,
       canDuplicateElements: (selectedItems) => true,
+      onBeforeMoveElementsToPage: async (selectedItems, page) => {},
+      onMoveElementsToPage: async (selectedItems, page) => {},
+      onBeforeReorderElements: async (selectedItems, offset) => {},
+      onReorderElements: async (selectedItems, offset) => {},
       onBeforeDuplicateElements: async (selectedItems) => {},
       onDuplicateElements: async (selectedItems) => {},
       canDeleteElements: (selectedItems) => true,
@@ -3840,23 +4175,18 @@ const SourceNav = Garnish.Base.extend(
 
     init: function (container, settings) {
       this.$container = $(container);
-
-      const items = this.$container.find('[data-source-item]');
-
       this.setSettings(settings, SourceNav.defaults);
-
       this.$items = $();
-      this.addItems(items);
     },
 
     addItems: function (items) {
       const $items = $(items);
 
-      for (var i = 0; i < $items.length; i++) {
+      for (let i = 0; i < $items.length; i++) {
         const item = $items[i];
 
-        this.addListener(item, 'click', this.handleClick.bind(this));
-        this.addListener(item, 'keydown', this.handleKeypress.bind(this));
+        this.addListener(item, 'click', 'handleClick');
+        this.addListener(item, 'keydown', 'handleKeypress');
       }
 
       this.$items = this.$items.add($items);
@@ -3866,7 +4196,7 @@ const SourceNav = Garnish.Base.extend(
      * Remove All Items
      */
     removeAllItems: function () {
-      for (var i = 0; i < this.$items.length; i++) {
+      for (let i = 0; i < this.$items.length; i++) {
         this._deinitItem(this.$items[i]);
       }
 
@@ -3889,6 +4219,16 @@ const SourceNav = Garnish.Base.extend(
 
     handleClick: function (event) {
       const $item = this.getClosestItem(event.target);
+
+      if (this.settings.handleCtrlClicks && Garnish.isCtrlKeyPressed(event)) {
+        const sourceKey = $item.data('key');
+        if (sourceKey) {
+          const urlParams = Craft.getQueryParams();
+          urlParams.source = sourceKey;
+          window.open(Craft.getUrl(Craft.path, urlParams));
+          return;
+        }
+      }
 
       this.selectItem($item);
     },
@@ -3980,6 +4320,7 @@ const SourceNav = Garnish.Base.extend(
     defaults: {
       selectedClass: 'sel',
       onSelectionChange: $.noop,
+      handleCtrlClicks: false,
     },
   }
 );
@@ -4035,13 +4376,7 @@ const ViewMenu = Garnish.Base.extend({
     this.menu.on('show', () => {
       this.$trigger.addClass('active');
       this.updateSortField();
-      this.updateTableFieldVisibility();
-      if (
-        this.elementIndex.getSelectedSourceState('mode') !==
-        this.elementIndex.defaultViewMode
-      ) {
-        this._createRevertBtn();
-      }
+      this.updateRevertBtn();
     });
 
     this.menu.on('hide', () => {
@@ -4054,6 +4389,19 @@ const ViewMenu = Garnish.Base.extend({
     });
   },
 
+  updateMenuContent: function () {
+    this.updateSortField();
+    this.updateTableFieldVisibility();
+  },
+
+  menuHasContent: function () {
+    this.updateMenuContent();
+    return (
+      (this.$sortField && !this.$sortField.hasClass('hidden')) ||
+      (this.$tableColumnsField && !this.$tableColumnsField.hasClass('hidden'))
+    );
+  },
+
   showTrigger: function () {
     this.$trigger.removeClass('hidden');
   },
@@ -4064,34 +4412,40 @@ const ViewMenu = Garnish.Base.extend({
     this.menu.hide();
   },
 
+  enableTrigger: function () {
+    this.$trigger.removeClass('disabled');
+    this.$trigger.attr('aria-disabled', false);
+  },
+
+  disableTrigger: function () {
+    this.$trigger.data('trigger').hide();
+    this.$trigger.addClass('disabled');
+    this.$trigger.attr('aria-disabled', true);
+    this.menu.hide();
+  },
+
   updateTableFieldVisibility: function () {
     // we only want to show the "Table Columns" checkboxes and "Use defaults" btn in table and structure views
     if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
+      ['table', 'structure'].includes(this.elementIndex.viewMode) &&
+      !Garnish.isMobileBrowser(true)
     ) {
-      if (this.$tableColumnsContainer) {
-        this.$tableColumnsContainer
-          .closest('.table-columns-field')
-          .addClass('hidden');
-      }
-    } else {
       if (this.$tableColumnsContainer) {
         this.$tableColumnsContainer
           .closest('.table-columns-field')
           .removeClass('hidden');
       }
-      if (this.$revertBtn) {
-        this.$revertBtn.removeClass('hidden');
+      this.updateRevertBtn();
+    } else {
+      if (this.$tableColumnsContainer) {
+        this.$tableColumnsContainer
+          .closest('.table-columns-field')
+          .addClass('hidden');
       }
     }
   },
 
   updateSortField: function () {
-    if (this.elementIndex.settings.sortable) {
-      return;
-    }
-
     if (this.$sortField) {
       if (this.elementIndex.viewMode === 'structure') {
         this.$sortField.addClass('hidden');
@@ -4131,7 +4485,7 @@ const ViewMenu = Garnish.Base.extend({
     this.$sortAttributeSelect.val(attribute);
     this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
-    if (attribute === 'score') {
+    if (['score', 'sortOrder'].includes(attribute)) {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
     } else {
@@ -4153,7 +4507,7 @@ const ViewMenu = Garnish.Base.extend({
         `input[value="${attribute}"]`
       );
       if (!$checkbox.prop('checked')) {
-        $checkbox.prop('checked', true);
+        $checkbox.prop('checked', true).trigger('change');
       }
       const $container = $checkbox.parent();
 
@@ -4216,9 +4570,12 @@ const ViewMenu = Garnish.Base.extend({
     this.updateSortField();
     this.updateTableColumnField();
     this.tidyTableColumnField();
+    this.updateRevertBtn();
 
-    this.$revertBtn.remove();
-    this.$revertBtn = null;
+    if (this.elementIndex.settings.context === 'index') {
+      // Update the query string
+      Craft.setQueryParam('sort', null);
+    }
 
     this.$closeBtn.focus();
     this.elementIndex.updateElements();
@@ -4226,10 +4583,7 @@ const ViewMenu = Garnish.Base.extend({
 
   _buildMenu: function () {
     const $metaContainer = $('<div class="meta"/>').appendTo(this.$container);
-
-    if (!this.elementIndex.settings.sortable) {
-      this.$sortField = this._createSortField().appendTo($metaContainer);
-    }
+    this.$sortField = this._createSortField().appendTo($metaContainer);
 
     if (!Garnish.isMobileBrowser(true)) {
       this.$tableColumnsField =
@@ -4250,24 +4604,7 @@ const ViewMenu = Garnish.Base.extend({
       class: 'flex-grow',
     }).appendTo($footerContainer);
 
-    // Only create the revert button if there's a custom view state
-    if (
-      this.elementIndex.getSelectedSourceState('order') ||
-      this.elementIndex.getSelectedSourceState('sort') ||
-      this.elementIndex.getSelectedSourceState('tableColumns')
-    ) {
-      this._createRevertBtn();
-    }
-
-    // we only want to show the "Use defaults" btn in table and structure views
-    if (
-      this.elementIndex.viewMode !== 'table' &&
-      this.elementIndex.viewMode !== 'structure'
-    ) {
-      if (this.$revertBtn) {
-        this.$revertBtn.addClass('hidden');
-      }
-    }
+    this.updateRevertBtn();
 
     this.$closeBtn = $('<button/>', {
       type: 'button',
@@ -4287,32 +4624,41 @@ const ViewMenu = Garnish.Base.extend({
       .getSortOptions(this.$source)
       .sort((a, b) => {
         return a.label === b.label ? 0 : a.label < b.label ? -1 : 1;
-      });
-    const groups = options.reduce(
-      (groups, o) => {
-        const index = o.attr.startsWith('field:') ? 1 : 0;
-        groups[index].push(o);
-        return groups;
-      },
-      [[], []]
-    );
-    if (groups[1].length) {
-      groups[1].unshift({
-        optgroup: Craft.t('app', 'Fields'),
+      })
+      .reduce(
+        (groups, option) => {
+          const index =
+            option.attr.startsWith('field:') ||
+            option.attr.startsWith('fieldInstance:')
+              ? 1
+              : 0;
+          groups[index].options.push(option);
+          return groups;
+        },
+        [
+          {label: Craft.t('app', 'Attributes'), options: []},
+          {label: Craft.t('app', 'Fields'), options: []},
+        ]
+      )
+      .filter((group) => group.options.length)
+      .map((group) => [
+        {optgroup: group.label},
+        ...group.options.map((option) => ({
+          label: option.label,
+          value: option.attr,
+        })),
+      ])
+      .flat();
+
+    if (this.elementIndex.settings.sortable) {
+      options.unshift({
+        label: Craft.t('app', 'Custom'),
+        value: 'sortOrder',
       });
     }
 
     const $sortAttributeSelectContainer = Craft.ui
-      .createSelect({
-        options: groups.flat().map((o) => {
-          return o.optgroup
-            ? o
-            : {
-                label: Craft.escapeHtml(o.label),
-                value: o.attr,
-              };
-        }),
-      })
+      .createSelect({options})
       .addClass('fullwidth')
       .appendTo($('<div class="flex-grow"/>').appendTo($container));
 
@@ -4381,6 +4727,7 @@ const ViewMenu = Garnish.Base.extend({
       this.elementIndex.selectViewMode(this.elementIndex.viewMode);
 
       this.elementIndex.updateElements();
+      this.updateSortField();
       this._createRevertBtn();
     });
 
@@ -4411,20 +4758,21 @@ const ViewMenu = Garnish.Base.extend({
       return $();
     }
 
-    this.$tableColumnsContainer = Craft.ui.createCheckboxSelect({
+    this.$tableColumnsContainer = Craft.ui.createSortableCheckboxSelect({
       options: columns.map((c) => ({
         label: c.label,
         value: c.attr,
       })),
-      sortable: true,
     });
 
     this.updateTableColumnField();
     this.tidyTableColumnField();
 
-    this.$tableColumnsContainer.data('dragSort').on('sortChange', () => {
-      this._onTableColumnChange();
-    });
+    this.$tableColumnsContainer
+      .data('sortableCheckboxSelect')
+      .on('sortChange', () => {
+        this._onTableColumnChange();
+      });
 
     this._getTableColumnCheckboxes().on('change', (ev) => {
       this._onTableColumnChange();
@@ -4471,6 +4819,33 @@ const ViewMenu = Garnish.Base.extend({
     this._createRevertBtn();
   },
 
+  updateRevertBtn: function () {
+    const hasRevertBtn =
+      this.elementIndex.getSelectedSourceState('order') ||
+      this.elementIndex.getSelectedSourceState('sort') ||
+      this.elementIndex.getSelectedSourceState('tableColumns');
+
+    if (!hasRevertBtn) {
+      if (this.$revertBtn) {
+        this.$revertBtn.remove();
+        this.$revertBtn = null;
+      }
+
+      return;
+    }
+
+    if (!this.$revertBtn) {
+      this._createRevertBtn();
+    }
+
+    // Only show it in table and structure views
+    const showRevertBtn = ['table', 'structure'].includes(
+      this.elementIndex.viewMode
+    );
+
+    this.$revertBtn.toggleClass('hidden', !showRevertBtn);
+  },
+
   _createRevertBtn: function () {
     if (this.$revertBtn) {
       return;
@@ -4509,20 +4884,18 @@ const FilterHud = Garnish.HUD.extend({
     return this.showing || this.conditionConfig || this.serialized;
   },
 
-  init: function (elementIndex, sourceKey, siteId, settings) {
+  init: function (elementIndex, sourceKey, siteId, settings = {}) {
     this.elementIndex = elementIndex;
     this.sourceKey = sourceKey;
     this.siteId = siteId;
     this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
 
-    if (settings) {
-      if (settings.conditionConfig) {
-        this.conditionConfig = settings.conditionConfig;
-        delete settings.conditionConfig;
-      } else if (settings.serialized) {
-        this.serialized = settings.serialized;
-        delete settings.serialized;
-      }
+    if (settings.conditionConfig) {
+      this.conditionConfig = settings.conditionConfig;
+      delete settings.conditionConfig;
+    } else if (settings.serialized) {
+      this.serialized = settings.serialized;
+      delete settings.serialized;
     }
 
     const $loadingContent = $('<div/>')
@@ -4535,7 +4908,7 @@ const FilterHud = Garnish.HUD.extend({
         $('<div/>', {
           text: Craft.t('app', 'Loading'),
           class: 'visually-hidden',
-          'aria-role': 'alert',
+          role: 'alert',
         })
       );
 
@@ -4545,6 +4918,7 @@ const FilterHud = Garnish.HUD.extend({
       Object.assign(
         {
           hudClass: 'hud element-filter-hud loading',
+          closeOtherHUDs: false,
         },
         settings
       )
@@ -4563,19 +4937,23 @@ const FilterHud = Garnish.HUD.extend({
       this.hide();
     });
 
+    Craft.cp.announce(Craft.t('app', 'Loading'));
     Craft.sendActionRequest('POST', 'element-indexes/filter-hud', {
       data: {
+        context: this.elementIndex.settings.context,
         elementType: this.elementIndex.elementType,
         source: this.sourceKey,
         condition: this.elementIndex.settings.condition,
         conditionConfig: this.conditionConfig,
         serialized: this.serialized,
+        fieldLayouts: this.elementIndex.$source.data('field-layouts'),
         id: `${this.id}-filters`,
       },
     })
       .then(async (response) => {
         this.loading = false;
         this.$hud.removeClass('loading');
+        Craft.cp.announce(Craft.t('app', 'Loading complete'));
         $loadingContent.remove();
 
         this.$main.append(response.data.hudHtml);
@@ -4671,13 +5049,39 @@ const FilterHud = Garnish.HUD.extend({
       hudHeight = windowHeight - searchOffset.bottom - 10;
     }
 
-    this.$hud.css({
-      width: this.elementIndex.$searchContainer.outerWidth() - 2,
-      top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
-      left: searchOffset.left + 1,
-      height: hudHeight ? `${hudHeight}px` : 'unset',
-      overflowY: hudHeight ? 'scroll' : 'unset',
-    });
+    const containerWidth = this.elementIndex.$searchContainer.outerWidth() - 2;
+    if (containerWidth >= 450) {
+      this.$hud.css({
+        maxWidth: 'none',
+        width: containerWidth,
+        top:
+          searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
+        left: searchOffset.left + 1,
+        height: hudHeight ? `${hudHeight}px` : 'unset',
+        overflowY: hudHeight ? 'scroll' : 'unset',
+        transform: 'none',
+      });
+
+      // Add an overlay for the shade
+      this.$shade.css({
+        backgroundColor: 'transparent',
+      });
+    } else {
+      this.$hud.css({
+        maxWidth: '680px',
+        width: '90%',
+        top: '50%',
+        left: '50%',
+        height: hudHeight ? `${hudHeight}px` : 'unset',
+        overflowY: hudHeight ? 'scroll' : 'unset',
+        transform: 'translateY(-50%) translateX(-50%)',
+      });
+
+      // Add an overlay for the shade
+      this.$shade.css({
+        backgroundColor: 'var(--shade-bg)',
+      });
+    }
   },
 
   onShow: function () {

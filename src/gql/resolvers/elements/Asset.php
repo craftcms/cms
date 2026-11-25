@@ -9,6 +9,7 @@ namespace craft\gql\resolvers\elements;
 
 use Craft;
 use craft\elements\Asset as AssetElement;
+use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
@@ -64,6 +65,11 @@ class Asset extends ElementResolver
         }, $pairs['volumes']));
 
         $query->andWhere(['in', 'assets.volumeId', $volumeIds]);
+
+        // Limit authenticated queries to assets the user can view
+        if (GqlHelper::getSchemaUser() && $query instanceof AssetQuery) {
+            $query->editable();
+        }
 
         return $query;
     }

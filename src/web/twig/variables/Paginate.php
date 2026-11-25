@@ -102,10 +102,7 @@ class Paginate extends BaseObject
      */
     public function getBasePath(): string
     {
-        if (isset($this->_basePath)) {
-            return $this->_basePath;
-        }
-        return $this->_basePath = Craft::$app->getRequest()->getPathInfo();
+        return $this->_basePath ?? ($this->_basePath = Craft::$app->getRequest()->getPathInfo());
     }
 
     /**

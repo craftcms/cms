@@ -110,11 +110,9 @@ class CraftSupport extends Widget
 
 EOD;
 
-        $view->registerJsWithVars(function($id, $settings) {
-            return <<<JS
+        $view->registerJsWithVars(fn($id, $settings) => <<<JS
 new Craft.CraftSupportWidget($id, $settings);
-JS;
-        }, [
+JS, [
             $this->id,
             [
                 'issueTitlePrefix' => sprintf("[%s.x]: ", $cmsMajorVersion),

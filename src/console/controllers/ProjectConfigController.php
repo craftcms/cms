@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
@@ -71,6 +72,12 @@ class ProjectConfigController extends Controller
     public bool $overwrite = false;
 
     /**
+     * @var bool Whether the check should fail if `project.yaml` is missing.
+     * @since 5.12.0
+     */
+    public bool $requireYaml = true;
+
+    /**
      * @var int Counter of the total paths that have been processed.
      */
     private int $_pathCount = 0;
@@ -93,6 +100,9 @@ class ProjectConfigController extends Controller
         $options = parent::options($actionID);
 
         switch ($actionID) {
+            case 'check':
+                $options[] = 'requireYaml';
+                break;
             case 'apply':
             case 'sync':
                 $options[] = 'force';
@@ -261,6 +271,54 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Checks project config schema compatibility with installed Craft and enabled plugins.
+     *
+     * Requires database access to an existing Craft installation, even when `--require-yaml=0` is passed. Does not apply project config or migrations.
+     * Pass `--require-yaml=0` to skip the check successfully if `project.yaml` is missing.
+     *
+     * @return int
+     * @since 5.12.0
+     */
+    public function actionCheck(): int
+    {
+        if (!Craft::$app->getIsInstalled()) {
+            $this->stdout('This check requires an existing Craft installation.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        if (!$projectConfig->getDoesExternalConfigExist()) {
+            if (!$this->requireYaml) {
+                $this->stdout('Project config file `project.yaml` was not found. Schema compatibility check skipped.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+
+            $this->stderr('Project config file `project.yaml` was not found. Schema compatibility could not be checked.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        if ($projectConfig->getHadFileWriteIssues()) {
+            $this->stderr('Resolve project config file-write errors before checking schema compatibility. Craft is currently using internal config instead of YAML.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        foreach (array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []) as $handle) {
+            if ($pluginsService->isPluginEnabled($handle) && $pluginsService->getPlugin($handle) === null) {
+                $this->stdout("Enabled plugin \"$handle\" could not be loaded. Check its Composer package and plugin initialization errors before checking schema compatibility." . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
+        if (!$this->_checkSchemaVersions()) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('Project config schema versions are compatible with installed Craft and enabled plugins.' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Applies project config file changes.
      *
      * @return int
@@ -276,20 +334,7 @@ class ProjectConfigController extends Controller
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $issues = [];
-        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
-            $this->stderr("Your project config files were created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
-
-            foreach ($issues as $issue) {
-                $this->stderr($issue['cause'], Console::FG_RED);
-                $this->stderr(' is installed with schema version of ', Console::FG_YELLOW);
-                $this->stderr($issue['existing'], Console::FG_RED);
-                $this->stderr(' while ', Console::FG_YELLOW);
-                $this->stderr($issue['incoming'], Console::FG_RED);
-                $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
-            }
-
-            $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+        if (!$this->_checkSchemaVersions()) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -298,16 +343,13 @@ class ProjectConfigController extends Controller
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateExternalConfig();
         } else {
-            // Any plugins need to be installed/uninstalled?
+            // Install new plugins
             $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS, true) ?? []);
-
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-
-            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             $this->stdout('Applying changes from your project config files ...');
 
@@ -332,17 +374,22 @@ class ProjectConfigController extends Controller
                 $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
+            } finally {
+                if (!$this->quiet) {
+                    $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem']);
+                    $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem']);
+                }
             }
+
+            $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
+
+            // Uninstall plugins
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
         }
-
-        $this->stdout("\nFinished applying changes\n", Console::FG_GREEN);
-
-        $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem']);
-        $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem']);
 
         return ExitCode::OK;
     }
@@ -459,7 +506,7 @@ class ProjectConfigController extends Controller
      */
     public function actionTouch(): int
     {
-        $time = time();
+        $time = DateTimeHelper::currentTimeStamp();
         ProjectConfig::touch($time);
         $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
@@ -524,6 +571,28 @@ class ProjectConfigController extends Controller
         $this->stdout($path, Console::FG_CYAN);
         $this->stdout(" ($size)\n");
         return ExitCode::OK;
+    }
+
+    private function _checkSchemaVersions(): bool
+    {
+        $issues = [];
+        if (Craft::$app->getProjectConfig()->getAreConfigSchemaVersionsCompatible($issues)) {
+            return true;
+        }
+
+        $this->stderr("Your project config files were created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+
+        foreach ($issues as $issue) {
+            $this->stderr($issue['cause'], Console::FG_RED);
+            $this->stderr(' is installed with schema version of ', Console::FG_YELLOW);
+            $this->stderr($issue['existing'], Console::FG_RED);
+            $this->stderr(' while ', Console::FG_YELLOW);
+            $this->stderr($issue['incoming'], Console::FG_RED);
+            $this->stderr(' was expected.' . PHP_EOL, Console::FG_YELLOW);
+        }
+
+        $this->stderr(PHP_EOL . 'Try running `composer install` from your terminal to resolve.' . PHP_EOL, Console::FG_YELLOW);
+        return false;
     }
 
     /**

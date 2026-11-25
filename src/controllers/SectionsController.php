@@ -10,11 +10,13 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\enums\PropagationMethod;
+use craft\helpers\Cp;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -28,6 +30,8 @@ use yii\web\Response;
  */
 class SectionsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -37,8 +41,16 @@ class SectionsController extends Controller
             return false;
         }
 
-        // All section actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['index', 'edit-section', 'table-data'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -52,6 +64,7 @@ class SectionsController extends Controller
     public function actionIndex(array $variables = []): Response
     {
         $variables['sections'] = Craft::$app->getEntries()->getAllSections();
+        $variables['readOnly'] = $this->readOnly;
 
         return $this->renderTemplate('settings/sections/_index.twig', $variables);
     }
@@ -67,6 +80,10 @@ class SectionsController extends Controller
      */
     public function actionEditSection(?int $sectionId = null, ?Section $section = null): Response
     {
+        if ($sectionId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         $sectionsService = Craft::$app->getEntries();
 
         $variables = [
@@ -83,14 +100,14 @@ class SectionsController extends Controller
                 }
             }
 
-            $variables['title'] = trim($section->name) ?: Craft::t('app', 'Edit Section');
+            $title = trim($section->name) ?: Craft::t('app', 'Edit Section');
         } else {
             if ($section === null) {
                 $section = new Section();
                 $variables['brandNewSection'] = true;
             }
 
-            $variables['title'] = Craft::t('app', 'Create a new section');
+            $title = Craft::t('app', 'Create a new section');
         }
 
         $typeOptions = [
@@ -105,10 +122,31 @@ class SectionsController extends Controller
 
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
+        $variables['readOnly'] = $this->readOnly;
 
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
-        return $this->renderTemplate('settings/sections/_edit.twig', $variables);
+        $response = $this->asCpScreen()
+            ->editUrl($section->getCpEditUrl())
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Sections'), 'settings/sections')
+            ->contentTemplate('settings/sections/_edit.twig', $variables);
+
+        if (!$this->readOnly) {
+            $response
+                ->action('sections/save-section')
+                ->redirectUrl('settings/sections')
+                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                    'redirect' => 'settings/sections/{id}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ]);
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**
@@ -137,7 +175,10 @@ class SectionsController extends Controller
         $section->handle = $this->request->getBodyParam('handle');
         $section->type = $this->request->getBodyParam('type') ?? Section::TYPE_CHANNEL;
         $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
-        $section->maxAuthors = $this->request->getBodyParam('maxAuthors') ?: 1;
+        $minAuthors = $this->request->getBodyParam('minAuthors');
+        $maxAuthors = $this->request->getBodyParam('maxAuthors');
+        $section->minAuthors = is_numeric($minAuthors) ? (int)$minAuthors : 0;
+        $section->maxAuthors = is_numeric($maxAuthors) ? (int)$maxAuthors : null;
         $section->propagationMethod = PropagationMethod::tryFrom($this->request->getBodyParam('propagationMethod') ?? '')
             ?? PropagationMethod::All;
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
@@ -148,8 +189,7 @@ class SectionsController extends Controller
             $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
         }
 
-        $entryTypeIds = $this->request->getBodyParam('entryTypes') ?: [];
-        $section->setEntryTypes(array_map(fn($id) => $sectionsService->getEntryTypeById((int)$id), array_filter($entryTypeIds)));
+        $section->setEntryTypes(array_filter($this->request->getBodyParam('entryTypes') ?: []));
 
         // Site-specific settings
         $allSiteSettings = [];
@@ -183,18 +223,10 @@ class SectionsController extends Controller
 
         // Save it
         if (!$sectionsService->saveSection($section)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
-
-            // Send the section back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'section' => $section,
-            ]);
-
-            return null;
+            return $this->asModelFailure($section, Craft::t('app', 'Couldn’t save section.'), 'section');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Section saved.'));
-        return $this->redirectToPostedUrl($section);
+        return $this->asModelSuccess($section, Craft::t('app',  'Section saved.'), 'section');
     }
 
     /**

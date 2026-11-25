@@ -9,7 +9,6 @@ namespace crafttests\fixtures;
 
 use Craft;
 use craft\records\Site;
-use craft\services\Sites;
 use craft\test\ActiveFixture;
 
 /**
@@ -37,9 +36,15 @@ class SitesFixture extends ActiveFixture
     public function load(): void
     {
         parent::load();
+        Craft::$app->getSites()->refreshSites();
+    }
 
-        // Because the Sites() class memoizes on initialization we need to set() a new sites class
-        // with the updated fixture data
-        Craft::$app->set('sites', new Sites());
+    /**
+     * @inheritdoc
+     */
+    public function unload(): void
+    {
+        parent::unload();
+        Craft::$app->getSites()->refreshSites();
     }
 }

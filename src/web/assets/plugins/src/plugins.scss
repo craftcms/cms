@@ -71,7 +71,7 @@
             inset-block-start: -1px;
             margin-inline-start: 7px;
             user-select: none;
-            border: 1px solid var(--medium-text-color);
+            border: 1px solid var(--fg-subtle);
             border-radius: 3px;
             display: inline-flex;
             height: 18px;
@@ -87,7 +87,7 @@
             }
 
             & > .edition-name {
-              color: var(--medium-dark-text-color);
+              color: var(--fg-subtle);
               letter-spacing: 1.5px;
               padding-inline-end: 5px;
               text-transform: uppercase;
@@ -96,7 +96,7 @@
 
             & > .edition-trial {
               position: relative;
-              background: var(--medium-text-color);
+              background: var(--fg-subtle);
               color: var(--white);
               border-radius: 0 1px 1px 0;
               letter-spacing: 1px;
@@ -120,7 +120,7 @@
                 transition: border-color linear 100ms;
                 inset-inline-start: -7px;
                 border-block-end: 16px solid transparent;
-                border-inline-end: 7px solid var(--medium-text-color);
+                border-inline-end: 7px solid var(--fg-subtle);
               }
             }
           }
@@ -147,7 +147,7 @@
           }
 
           .version {
-            color: var(--medium-text-color);
+            color: var(--fg-subtle);
             font-weight: normal;
             margin-inline-start: 14px;
           }
@@ -209,7 +209,7 @@
             margin: 0;
             padding: 3px;
             background: transparentize($inputColor, 0.75);
-            border-radius: var(--medium-border-radius);
+            border-radius: var(--radius-md);
 
             input.text {
               font-weight: bold;

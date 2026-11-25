@@ -9,17 +9,22 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\BaseFsInterface;
+use craft\base\ElementInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\enums\TimePeriod;
 use craft\errors\FsException;
+use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
+use Illuminate\Support\Collection;
+use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -252,17 +257,17 @@ class Assets
     {
         $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
 
-        if (strlen($title) > 255) {
-            $title = rtrim(substr($title, 255), ' ');
+        if (mb_strlen($title) > 255) {
+            $title = rtrim(mb_substr($title, 0, 255), ' ');
         }
 
         return $title;
     }
 
     /**
-     * Mirrors a folder structure on a volume.
+     * Mirrors a folder structure within a volume.
      *
-     * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
+     * @param VolumeFolder $sourceParentFolder Folder whose nested folder structure should be mirrored.
      * @param VolumeFolder $destinationFolder The destination folder
      * @param array $targetTreeMap map of relative path => existing folder ID
      * @return array map of original folder ID => new folder ID
@@ -349,9 +354,8 @@ class Assets
      */
     public static function sortFolderTree(array &$tree): void
     {
-        ArrayHelper::multisort($tree, function($folder) {
-            return $folder->getVolume()->sortOrder;
-        });
+        /** @phpstan-ignore parameterByRef.type */
+        ArrayHelper::multisort($tree, fn($folder) => $folder->getVolume()->sortOrder);
     }
 
     /**
@@ -573,6 +577,7 @@ class Assets
                         'jpeg',
                         'jpg',
                         'jpx',
+                        'jxl',
                         'pam',
                         'pfm',
                         'pgm',
@@ -595,6 +600,13 @@ class Assets
                     'label' => 'JSON',
                     'extensions' => [
                         'json',
+                    ],
+                ],
+                Asset::KIND_MARKDOWN => [
+                    'label' => 'Markdown',
+                    'extensions' => [
+                        'markdown',
+                        'md',
                     ],
                 ],
                 Asset::KIND_PDF => [
@@ -886,6 +898,10 @@ class Assets
      */
     public static function iconUrl(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         return UrlHelper::actionUrl('assets/icon', [
             'extension' => $extension,
         ]);
@@ -901,6 +917,10 @@ class Assets
      */
     public static function iconPath(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
 
         if (file_exists($path)) {
@@ -967,11 +987,75 @@ class Assets
             return true;
         }
 
-        if (!$fs->handle) {
-            return false;
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+
+        if (!$handle) {
+            // The default temp filesystem may have been replaced with another class via the DI container
+            return $fs === Craft::$app->getAssets()->getTempAssetUploadFs();
         }
 
-        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
-        return $fs->handle === $handle;
+        return $fs->handle && $fs->handle === $handle;
+    }
+
+    /**
+     * Resolves a possibly dynamic subpath for a given element, and returns the rendered subpath and
+     * matching volume folder (if one exists).
+     *
+     * @param Volume $volume
+     * @param string|null $subpath
+     * @param ElementInterface|null $element
+     * @return array{0:string,1:VolumeFolder|null}
+     * @throws Exception
+     * @throws InvalidSubpathException
+     * @since 5.9.0
+     */
+    public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
+    {
+        $assetsService = Craft::$app->getAssets();
+        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
+
+        // Are we looking for the root folder?
+        $subpath = trim($subpath ?? '', '/');
+        if ($subpath === '') {
+            return [$subpath, $rootFolder];
+        }
+
+        if (str_contains($subpath, '{')) {
+            // Prepare the path by parsing tokens and normalizing slashes.
+            try {
+                if ($element?->duplicateOf) {
+                    $element = $element->duplicateOf->getCanonical();
+                }
+                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+            } catch (InvalidConfigException|RuntimeError $e) {
+                throw new InvalidSubpathException($subpath, null, 0, $e);
+            }
+
+            // Did any of the tokens return null?
+            if (
+                $renderedSubpath === '' ||
+                trim($renderedSubpath, '/') != $renderedSubpath ||
+                str_contains($renderedSubpath, '//') ||
+                Collection::make(explode('/', $renderedSubpath))
+                    ->contains(fn(string $segment) => ElementHelper::isTempSlug($segment))
+            ) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            // Sanitize the subpath
+            $segments = array_filter(explode('/', $renderedSubpath), fn(string $segment): bool => $segment !== ':ignore:');
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $segments = array_map(fn(string $segment): string => FileHelper::sanitizeFilename($segment, [
+                'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+            ]), $segments);
+            $subpath = implode('/', $segments);
+        }
+
+        $folder = $assetsService->findFolder([
+            'volumeId' => $volume->id,
+            'path' => $subpath . '/',
+        ]);
+
+        return [$subpath, $folder];
     }
 }

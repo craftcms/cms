@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 
 /**
@@ -22,5 +23,6 @@ interface ExpirableElementInterface
      *
      * @return DateTime|null
      */
+    #[AllowedInSandbox]
     public function getExpiryDate(): ?DateTime;
 }

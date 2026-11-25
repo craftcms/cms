@@ -13,9 +13,9 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -26,7 +26,10 @@ use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\services\ElementSources;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -62,6 +65,12 @@ class ElementIndexesController extends BaseElementsController
      * @var array|null
      */
     protected ?array $source = null;
+
+    /**
+     * @var FieldLayout[]|null
+     * @since 5.9.18
+     */
+    protected ?array $fieldLayouts = null;
 
     /**
      * @var ElementConditionInterface|null
@@ -112,6 +121,7 @@ class ElementIndexesController extends BaseElementsController
         $this->context = $this->context();
         $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
+        $this->fieldLayouts = $this->fieldLayouts();
         $this->condition = $this->condition();
 
         if (!in_array($action->id, ['filter-hud', 'save-elements'])) {
@@ -162,6 +172,54 @@ class ElementIndexesController extends BaseElementsController
         ]);
     }
 
+    /**
+     * Returns attribute info for the current source.
+     *
+     * @since 5.9.0
+     */
+    public function actionSourceAttributeInfo(): Response
+    {
+        $elementSources = Craft::$app->getElementSources();
+
+        if ($this->sourceKey) {
+            $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
+                ->map(fn(array $option) => [
+                    'label' => $option['label'],
+                    'attr' => $option['attribute'] ?? $option['orderBy'],
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ])
+                ->values()
+                ->all();
+
+            $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
+                ->map(fn(array $attribute, string $key) => [
+                    ...$attribute,
+                    'attr' => $key,
+                ])
+                ->values()
+                ->all();
+
+            $defaultTableColumns = Collection::make($elementSources->getTableAttributes(
+                elementType: $this->elementType,
+                sourceKey: $this->sourceKey,
+                fieldLayouts: $this->fieldLayouts
+            ))
+                ->map(fn(array $attribute) => $attribute[0])
+                ->filter(fn(string $attribute) => $attribute !== 'title')
+                ->values()
+                ->all();
+        } else {
+            $sortOptions = [];
+            $tableColumns = [];
+            $defaultTableColumns = [];
+        }
+
+        return $this->asJson(compact(
+            'sortOptions',
+            'tableColumns',
+            'defaultTableColumns',
+        ));
+    }
 
     /**
      * Renders and returns an element index container, plus its first batch of elements.
@@ -371,7 +429,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $this->elementType::pluralLowerDisplayName();
+                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = StringHelper::toCamelCase($this->elementType::pluralLowerDisplayName());
                     break;
             }
         } elseif (
@@ -430,17 +488,21 @@ class ElementIndexesController extends BaseElementsController
 
         $conditionsService = Craft::$app->getConditions();
 
+        if (!$conditionConfig && $serialized) {
+            parse_str($serialized, $conditionConfig);
+            $conditionConfig = $conditionConfig['condition'];
+        }
+
         if ($conditionConfig) {
             $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
             $condition = $conditionsService->createCondition($conditionConfig);
-        } elseif ($serialized) {
-            parse_str($serialized, $conditionConfig);
-            /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig['condition']);
         } else {
-            /** @var ElementConditionInterface $condition */
             $condition = $this->elementType()::createCondition();
+        }
+
+        if (!empty($this->fieldLayouts)) {
+            $condition->setFieldLayouts($this->fieldLayouts);
         }
 
         $condition->mainTag = 'div';
@@ -507,13 +569,11 @@ class ElementIndexesController extends BaseElementsController
         $user = static::currentUser();
 
         // get all the elements
-        /** @var string|ElementInterface $elementType */
-        $elementType = $this->elementType();
         $elementIds = array_map(
             fn(string $key) => (int)StringHelper::removeLeft($key, 'element-'),
             array_keys($data),
         );
-        $elements = $elementType::find()
+        $elements = $this->elementType()::find()
             ->id($elementIds)
             ->status(null)
             ->drafts(null)
@@ -539,11 +599,15 @@ class ElementIndexesController extends BaseElementsController
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
-                $element->setAttributes($attributes);
+                $element->setAttributesFromRequest($attributes);
                 $element->setScenario($scenario);
             }
 
             $element->setFieldValuesFromRequest("$namespace.element-$element->id.fields");
+
+            if (!$elementsService->canSave($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to save this element.');
+            }
 
             if ($element->getIsUnpublishedDraft()) {
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -612,14 +676,11 @@ class ElementIndexesController extends BaseElementsController
         }
 
         if ($this->sourceKey === '__IMP__') {
-            /** @var ElementInterface|string $elementType */
-            $elementType = $this->elementType;
-
             return [
                 'type' => ElementSources::TYPE_NATIVE,
                 'key' => '__IMP__',
                 'label' => Craft::t('app', 'All elements'),
-                'hasThumbs' => $elementType::hasThumbs(),
+                'hasThumbs' => $this->elementType::hasThumbs(),
             ];
         }
 
@@ -633,33 +694,18 @@ class ElementIndexesController extends BaseElementsController
         return $source;
     }
 
-    /**
-     * Returns the condition that should be applied to the element query.
-     *
-     * @return ElementConditionInterface|null
-     * @since 4.0.0
-     */
-    protected function condition(): ?ElementConditionInterface
+    private function fieldLayouts(): ?array
     {
-        /** @var array|null $conditionConfig */
-        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = $this->request->getBodyParam('condition');
+        $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
 
-        if (!$conditionConfig) {
+        if (empty($fieldLayouts)) {
             return null;
         }
 
-        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
-
-        if ($condition instanceof ElementCondition) {
-            $referenceElementId = $this->request->getBodyParam('referenceElementId');
-            if ($referenceElementId) {
-                $siteId = $this->request->getBodyParam('referenceElementSiteId');
-                $condition->referenceElement = Craft::$app->getElements()->getElementById((int)$referenceElementId, siteId: $siteId);
-            }
-        }
-
-        return $condition;
+        return array_map(
+            fn(array $config) => FieldLayout::createFromConfig($config),
+            Component::cleanseConfig($fieldLayouts),
+        );
     }
 
     /**
@@ -718,6 +764,9 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
+
+            // Remove unsupported criteria attributes
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
             Craft::configure($query, Component::cleanseConfig($criteria));
             return true;
@@ -790,7 +839,8 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if (!empty($descendantIds)) {
-                    $query->andWhere(['not', ['elements.id' => $descendantIds]]);
+                    /** @phpstan-ignore-next-line */
+                    $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
                     $hasFilters = true;
                 }
             }
@@ -833,10 +883,33 @@ class ElementIndexesController extends BaseElementsController
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
 
         if ($this->sourceKey) {
+            // get the return URL with `?` replaced with a token
+            // (see https://github.com/craftcms/cms/issues/18923)
+            $returnUrl = $this->request->getParam('returnUrl');
+            if ($returnUrl) {
+                // only require the URL to be hashed if it contains Twig code
+                $validated = Craft::$app->getSecurity()->validateData($returnUrl);
+                if ($validated !== false) {
+                    $returnUrl = $validated;
+                } elseif (str_contains($returnUrl, '{')) {
+                    // the URL may contain its own (hashed) returnUrl param
+                    // (see https://github.com/craftcms/cms/issues/19983)
+                    $returnUrl = UrlHelper::removeParam($returnUrl, 'returnUrl');
+                    if (str_contains($returnUrl, '{')) {
+                        throw new BadRequestHttpException("Invalid returnUrl param: $returnUrl");
+                    }
+                }
+                $returnUrl = str_replace('?', ':QS:', $returnUrl);
+            }
+
             $responseData['html'] = $this->elementType::indexHtml(
                 $this->elementQuery,
                 $disabledElementIds,
-                $this->viewState,
+                [
+                    ...$this->viewState,
+                    'fieldLayouts' => $this->fieldLayouts,
+                    'returnUrl' => $returnUrl,
+                ],
                 $this->sourceKey,
                 $this->context,
                 $includeContainer,
@@ -862,10 +935,6 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function availableActions(): ?array
     {
-        if ($this->request->isMobileBrowser()) {
-            return null;
-        }
-
         $actions = $this->elementType::actions($this->sourceKey);
 
         foreach ($actions as $i => $action) {
@@ -1027,9 +1096,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $attributes = Craft::$app->getElementSources()->getTableAttributes(
-            $this->elementType,
-            $this->sourceKey,
-            $this->viewState['tableColumns'] ?? null,
+            elementType: $this->elementType,
+            sourceKey: $this->sourceKey,
+            customAttributes: $this->viewState['tableColumns'] ?? null,
+            fieldLayouts: $this->fieldLayouts,
         );
         $attributeHtml = [];
 

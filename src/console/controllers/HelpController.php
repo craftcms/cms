@@ -13,6 +13,7 @@ use craft\helpers\Console;
 use craft\helpers\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
+use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
@@ -150,6 +151,7 @@ class HelpController extends BaseHelpController
 
         // Try/catch in case an exception is thrown during reflection
         try {
+            /** @var Action<Controller> $action */
             $action = $controller->createAction($actionId);
             // Get the command description, args, and options
             $description = $this->unformattedActionHelp($controller->getActionMethodReflection($action));

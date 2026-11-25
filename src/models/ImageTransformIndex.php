@@ -9,6 +9,7 @@ namespace craft\models;
 
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\Model;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\ImageTransforms;
 use craft\validators\DateTimeValidator;
 use DateTime;
@@ -102,7 +103,7 @@ class ImageTransformIndex extends Model
 
         // Only respect inProgress if it's been less than 30 seconds since the last time the index was updated
         if ($this->inProgress) {
-            $duration = time() - ($this->dateUpdated?->getTimestamp() ?? 0);
+            $duration = DateTimeHelper::currentTimeStamp() - ($this->dateUpdated?->getTimestamp() ?? 0);
             if ($duration > 30) {
                 $this->inProgress = false;
             }

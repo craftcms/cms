@@ -72,7 +72,7 @@
           <input
             type="hidden"
             name="version"
-            :value="plugin.latestCompatibleVersion"
+            :value="`^${plugin.latestCompatibleVersion}`"
           />
         </template>
 

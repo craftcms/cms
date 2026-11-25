@@ -43,6 +43,14 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getLabelHint(): ?string;
 
     /**
+     * Returns whether to show rule’s option label hint.
+     *
+     * @return bool
+     * @since 4.16.0
+     */
+    public function showLabelHint(): bool;
+
+    /**
      * Returns the optgroup label the condition rule should be grouped under.
      *
      * @return string|null

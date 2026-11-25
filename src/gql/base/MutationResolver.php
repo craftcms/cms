@@ -8,7 +8,11 @@
 namespace craft\gql\base;
 
 use craft\base\Component;
+use craft\base\ElementInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\Gql;
+use craft\models\Site;
 use Exception;
 use GraphQL\Error\Error;
 
@@ -110,6 +114,46 @@ abstract class MutationResolver extends Component
     {
         if (!Gql::canSchema($scope, $action)) {
             throw new Error('Unable to perform the action.');
+        }
+    }
+
+    /**
+     * Check if the schema has access to the given site and throw an exception if not.
+     *
+     * @param int $siteId
+     * @throws Error
+     * @since 5.10.11
+     */
+    protected function requireAllowedSite(int $siteId): void
+    {
+        foreach (Gql::getAllowedSites() as $site) {
+            if ($siteId === $site->id) {
+                return;
+            }
+        }
+
+        throw new Error('Unable to perform the action.');
+    }
+
+    /**
+     * Check if the schema has access to every site the given element (and its canonical element) exists in,
+     * and throw an exception if not.
+     *
+     * @param ElementInterface $element
+     * @throws Error
+     * @since 5.11.6
+     */
+    protected function requireAllowedSitesForElement(ElementInterface $element): void
+    {
+        $siteIds = (new Query())
+            ->select('siteId')
+            ->distinct()
+            ->from(Table::ELEMENTS_SITES)
+            ->where(['elementId' => array_unique([$element->id, $element->getCanonicalId()])])
+            ->column();
+
+        foreach ($siteIds as $siteId) {
+            $this->requireAllowedSite((int)$siteId);
         }
     }
 }

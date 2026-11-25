@@ -21,6 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $typeId Type ID
  * @property string|null $postDate Post date
  * @property string|null $expiryDate Expiry date
+ * @property string $status Live
  * @property Element $element Element
  * @property Section $section Section
  * @property EntryType $type Type

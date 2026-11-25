@@ -169,7 +169,7 @@ class InstallController extends Controller
         }
         if (
             ($this->language || !$this->interactive) &&
-            !$this->createAttributeValidator($site, 'language')($this->language ?? $defaultSiteLanguage ?? '', $currentError)
+            !$this->createAttributeValidator($site, 'language')($this->language ?? $defaultSiteLanguage, $currentError)
         ) {
             $errors[] = ['language', $currentError];
         }
@@ -192,7 +192,7 @@ class InstallController extends Controller
         $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createAttributeValidator($user, 'newPassword')]);
         $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => $defaultSiteName, 'validator' => $this->createAttributeValidator($site, 'name')]);
         $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => $defaultSiteUrl, 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
-        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage ?? Craft::$app->language, 'validator' => $this->createAttributeValidator($site, 'language')]);
+        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage, 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it’s not already set to an alias or environment variable

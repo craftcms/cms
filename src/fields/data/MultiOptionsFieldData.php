@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use ArrayObject;
+use craft\web\twig\AllowedInSandbox;
 
 /**
  * Multi-select option field data class.
@@ -27,6 +28,7 @@ class MultiOptionsFieldData extends ArrayObject
      *
      * @return OptionData[]
      */
+    #[AllowedInSandbox]
     public function getOptions(): array
     {
         return $this->_options;
@@ -46,6 +48,7 @@ class MultiOptionsFieldData extends ArrayObject
      * @param mixed $value
      * @return bool
      */
+    #[AllowedInSandbox]
     public function contains(mixed $value): bool
     {
         $value = (string)$value;

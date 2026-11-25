@@ -40,6 +40,9 @@ class CoalesceColumnsExpression extends BaseObject implements ExpressionInterfac
             fn(string $column) => str_contains($column, '(') ? $column : "[[$column]]",
             $this->columns,
         );
+        if (count($columns) === 1) {
+            return reset($columns);
+        }
         return sprintf('COALESCE(%s)', implode(', ', $columns));
     }
 }

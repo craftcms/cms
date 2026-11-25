@@ -296,7 +296,13 @@ EOD,
         foreach ($entryTypes as $entryType) {
             if ($entryType->uid === $outgoingEntryType->uid) {
                 if (!$hasPersistingEntryType) {
-                    $modified[] = $persistingEntryType;
+                    // Clone the persisting entry type with the original name & handle,
+                    // in case the usage supports name & handle overrides
+                    $clone = $modified[] = clone $persistingEntryType;
+                    $clone->original = $persistingEntryType;
+                    $clone->name = $entryType->name;
+                    $clone->handle = $entryType->handle;
+
                     $hasPersistingEntryType = true;
                 }
             } else {

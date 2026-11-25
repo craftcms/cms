@@ -171,18 +171,6 @@ class FileHelperTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testGetMimeTypeExceptions(): void
-    {
-        if (PHP_VERSION_ID < 80100) {
-            $this->tester->expectThrowable(ErrorException::class, function() {
-                FileHelper::getMimeType('notafile');
-            });
-        }
-    }
-
-    /**
      * @dataProvider getExtensionByMimeTypeDataProvider
      *
      * @param string $expected
@@ -458,6 +446,11 @@ class FileHelperTest extends TestCase
             ['iPS(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
             ['not||a||file', 'not a file', ['separator' => '||']],
             ['not🐧a🐧file', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
+            ['testing', '"testing"', []],
+            ['testing', '\'testing\'', []],
+            ['testing', '“testing”', []],
+            ['testing', '‘testing’', []],
+            ['invoicefdp.exe', "invoice\u{202E}fdp.exe", []],
         ];
     }
 

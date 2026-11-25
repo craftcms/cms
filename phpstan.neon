@@ -1,3 +1,6 @@
+includes:
+    - vendor/mspirkov/yii2-phpstan/extension.neon
+
 parameters:
     level: 5
     paths:
@@ -5,7 +8,6 @@ parameters:
         - src
         - tests
     excludePaths:
-        - src/config/composer-classes.php
         - src/config/mimeTypes.php
         - src/image/*
         - src/services/Images.php
@@ -32,10 +34,9 @@ parameters:
         - stubs/yii/base/Component.stub
         - stubs/yii/base/Event.stub
         - stubs/yii/base/Module.stub
-        - stubs/yii/BaseYii.stub
         - stubs/yii/db/BaseActiveRecord.stub
-        - stubs/yii/db/Migration.stub
         - stubs/yii/db/Query.stub
+        - stubs/yii/db/Migration.stub
         - stubs/yii/di/ServiceLocator.stub
         - stubs/yii/helpers/BaseArrayHelper.stub
         - stubs/yii/validators/UniqueValidator.stub
@@ -48,8 +49,62 @@ parameters:
         yii\base\ErrorHandler:
             - convertExceptionToError
     ignoreErrors:
-        - '#Call to an undefined method yii\\web\\UrlManager::setRouteParams\(\)#'
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
         - '#^Parameter \#2 \$callback of function usort expects#'
+        # We ignore these errors because this test checks type casting.
+        -
+            message: '#^Object option "\w+" for craft\\test\\mockclasses\\models\\ExampleModel must be#'
+            identifier: mspirkovYii2.baseObjectInstantiationValidation
+            path: tests/unit/base/ModelTest.php
+    treatPhpDocTypesAsCertain: false
+    mspirkovYii2:
+        enableAllRules: false
+        enableValidationRules: true
+        aliases:
+            '@app': src
+        yiiAppTypes:
+            -
+                paths:
+                    - bootstrap
+                    - src
+                    - tests
+                type: craft\console\Application|craft\web\Application
+            -
+                paths:
+                    - src/console
+                type: craft\console\Application
+                nullable: false
+            -
+                paths:
+                    - src/controllers
+                type: craft\web\Application
+                nullable: false
+        applicationConfigs:
+            -
+                paths:
+                    - src
+                files:
+                    - src/config/app.php
+            -
+                paths:
+                    - src/console
+                files:
+                    - src/config/app.php
+                    - src/config/app.console.php
+            -
+                paths:
+                    - src/controllers
+                files:
+                    - src/config/app.php
+                    - src/config/app.web.php
+        baseObjectConfigValidation:
+            skippedClasses:
+                -
+                    class: craft\models\FsListing
+                -
+                    class: craft\web\UrlRule
+                    attributes:
+                        - template
+                        - variables

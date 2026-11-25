@@ -42,7 +42,7 @@ class Db
     public const SIMPLE_TYPE_TEXTUAL = 'textual';
 
     /**
-     * @var array
+     * @var string[]
      */
     private static array $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
@@ -463,6 +463,55 @@ class Db
     }
 
     /**
+     * Returns whether the given `orderBy` value is safe to apply to a query, because it can’t contain raw SQL.
+     *
+     * The value is considered safe if it’s:
+     *
+     * - an [[ExpressionInterface]] object
+     * - a string of comma-separated column names (optionally prefixed with a table name), each optionally followed by
+     *   `asc` or `desc`
+     * - an array of column names (optionally prefixed with a table name) set to `SORT_ASC` or `SORT_DESC`, and/or
+     *   [[ExpressionInterface]] objects
+     *
+     * @param mixed $orderBy
+     * @return bool
+     * @since 5.11.6
+     */
+    public static function isSafeOrderBy(mixed $orderBy): bool
+    {
+        if ($orderBy instanceof ExpressionInterface) {
+            return true;
+        }
+
+        if (is_string($orderBy)) {
+            foreach (StringHelper::split(trim($orderBy)) as $chunk) {
+                if (!preg_match('/^\w+(\.\w+)?(\s+(asc|desc))?$/i', $chunk)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (is_array($orderBy)) {
+            foreach ($orderBy as $column => $direction) {
+                if ($direction instanceof ExpressionInterface) {
+                    continue;
+                }
+                if (
+                    !is_string($column) ||
+                    !preg_match('/^\w+(\.\w+)?$/', $column) ||
+                    !in_array($direction, [SORT_ASC, SORT_DESC], true)
+                ) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Escapes commas, asterisks, and colons in a string, so they are not treated as special characters in
      * [[parseParam()]].
      *
@@ -626,7 +675,10 @@ class Db
                 // If this is a textual column type, also check for empty strings
                 if (
                     ($columnType === null && $isMysql) ||
-                    ($columnType !== null && static::isTextualColumnType($columnType))
+                    (
+                        $columnType !== null &&
+                        ($columnType === Schema::TYPE_JSON || static::isTextualColumnType($columnType))
+                    )
                 ) {
                     $valCondition = [
                         'or',
@@ -667,18 +719,23 @@ class Db
                     $val = (int)$val;
                 }
 
+                if ($caseInsensitive && is_string($val)) {
+                    $val = mb_strtolower($val);
+                }
+
                 if ($like) {
                     if ($caseInsensitive && !$isMysql) {
                         $operator = $operator === '=' ? 'ilike' : 'not ilike';
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';
                     }
-                    $condition[] = [$operator, $column, static::escapeForLike($val), false];
-                    continue;
-                }
 
-                if ($caseInsensitive) {
-                    $val = mb_strtolower($val);
+                    if ($caseInsensitive && $isMysql) {
+                        $condition[] = [$operator, $caseColumn, static::escapeForLike($val), false];
+                    } else {
+                        $condition[] = [$operator, $column, static::escapeForLike($val), false];
+                    }
+                    continue;
                 }
             }
 
@@ -702,7 +759,17 @@ class Db
         }
 
         if (!empty($notInVals)) {
-            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+            $c = ['not', self::_inCondition($caseColumn, $notInVals)];
+
+            if ($columnType === Schema::TYPE_JSON) {
+                $c = [
+                    'or',
+                    [$column => null],
+                    $c,
+                ];
+            }
+
+            $condition[] = $c;
         }
 
         // Skip the glue if there's only one condition
@@ -818,7 +885,7 @@ class Db
      * `null` values as well.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|bool $value The param value
+     * @param string|bool|null|array<string|bool|null> $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
      * @param string $columnType The database column type the param is targeting
      * @return array
@@ -830,17 +897,31 @@ class Db
         ?bool $defaultValue = null,
         string $columnType = Schema::TYPE_BOOLEAN,
     ): array {
-        self::_normalizeEmptyValue($value);
-        $operator = self::_parseParamOperator($value, '=');
-        $value = $value && $value !== ':empty:';
-        if ($operator === '!=') {
+        if (is_array($value)) {
+            return [
+                'or',
+                ...array_map(fn($val) => static::parseBooleanParam($column, $val, $defaultValue, $columnType), $value),
+            ];
+        }
+
+        if ($value !== null) {
+            self::_normalizeEmptyValue($value);
+            $operator = self::_parseParamOperator($value, '=');
+            $value = $value && $value !== ':empty:';
+        } else {
+            $operator = self::_parseParamOperator($value, '=');
+        }
+
+        if ($operator === '!=' && is_bool($value)) {
             $value = !$value;
         }
 
         if ($columnType === Schema::TYPE_JSON) {
+            /** @phpstan-ignore-next-line */
             $value = match ($value) {
                 true => 'true',
                 false => 'false',
+                null => null,
             };
             $defaultValue = match ($defaultValue) {
                 true => 'true',
@@ -850,7 +931,7 @@ class Db
         }
 
         $condition = [$column => $value];
-        if ($defaultValue === $value) {
+        if ($defaultValue === $value && $value !== null) {
             $condition = ['or', $condition, [$column => null]];
         }
 
@@ -1581,7 +1662,7 @@ class Db
     }
 
     /**
-     * @var Connection|null;
+     * @var Connection|null
      */
     private static ?Connection $_db = null;
 
@@ -1772,6 +1853,7 @@ class Db
         /** @var BatchQueryResult $result */
         $result = Craft::createObject([
             'class' => BatchQueryResult::class,
+            // @phpstan-ignore mspirkovYii2.yiiCreateObjectValidation (Object option "query" for yii\db\BatchQueryResult must be yii\db\Query, yii\db\QueryInterface given.)
             'query' => $query,
             'batchSize' => $batchSize,
             'db' => $db,

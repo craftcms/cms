@@ -104,7 +104,9 @@ Craft.PasskeySetup = Garnish.Base.extend({
     let regResponse;
 
     try {
-      regResponse = await startRegistration(data.options);
+      regResponse = await startRegistration({
+        optionsJSON: JSON.parse(data.options),
+      });
     } catch (e) {
       Craft.cp.displayError(e?.message);
       return;
@@ -138,6 +140,18 @@ Craft.PasskeySetup = Garnish.Base.extend({
   },
 
   async deletePasskey(uid, name) {
+    // Store a reference to the row
+    const row = this.$passkeysTable[0]
+      .querySelector(`[role="button"][data-uid="${uid}"]`)
+      .closest('tr');
+
+    const getTableRowArray = () => {
+      const tbody = this.$passkeysTable[0].querySelector('tbody');
+      return Array.from(tbody.querySelectorAll('tr'));
+    };
+    let rowArray = getTableRowArray();
+    const rowIndex = rowArray.indexOf(row);
+
     if (
       !confirm(
         Craft.t(
@@ -147,6 +161,17 @@ Craft.PasskeySetup = Garnish.Base.extend({
         )
       )
     ) {
+      return;
+    }
+
+    // Deleting a passkey removes a way of authenticating, so make them reverify first
+    try {
+      await new Promise((resolve, reject) => {
+        Craft.elevatedSessionManager
+          .requireElevatedSession(resolve, reject)
+          .catch(reject);
+      });
+    } catch (e) {
       return;
     }
 
@@ -168,6 +193,23 @@ Craft.PasskeySetup = Garnish.Base.extend({
 
     Craft.cp.displaySuccess(data.message);
     this.updateTable(data.tableHtml);
+
+    // Manage focus
+    if (rowArray.length > 1) {
+      // If this was now the first row, move focus to the previous row
+      // If it was the first row, keep the index the same (it will now be the next row)
+      const newRowIndex = rowIndex - 1 >= 0 ? rowIndex - 1 : rowIndex;
+
+      // Get new array of rows
+      rowArray = getTableRowArray();
+      const targetBtn = rowArray[newRowIndex].querySelector([
+        '[role="button"]',
+      ]);
+      targetBtn.focus();
+    } else {
+      // If there are no more rows, focus on the container instead
+      document.querySelector('#passkeys').focus();
+    }
   },
 
   platformName() {

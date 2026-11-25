@@ -43,7 +43,7 @@ EOD;
         }
 
         // Find assets with non-ASCII characters
-        $query = Asset::find();
+        $query = Asset::find()->site('*')->unique();
         if (Craft::$app->getDb()->getIsMysql()) {
             // h/t https://stackoverflow.com/a/11741314/1688568
             $query->andWhere(new Expression('[[filename]] <> CONVERT([[filename]] USING ASCII)'));

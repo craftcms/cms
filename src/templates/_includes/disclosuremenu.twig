@@ -1,8 +1,10 @@
 {% set id = id ?? "menu-#{random()}" %}
 {% set withButton = withButton ?? false %}
 {% set buttonSpinner = buttonSpinner ?? false %}
+{% set withSearchInput = withSearchInput ?? false %}
+{% set disabled = disabled ?? false %}
 
-{% set hasSelected = items|map(i => i.items ?? [i])|flatten(1)|contains('selected') %}
+{% set hasSelected = items|map(i => (i.items ?? [i]))|flatten(1)|contains('selected') %}
 
 {% macro itemType(item) %}
   {%- if item.type ?? false %}
@@ -38,6 +40,7 @@
         sel: selected,
         error: item.destructive ?? false,
         formsubmit: item.action ?? false,
+        disabled: item.disabled ?? false,
       }|filter|keys,
       href: type == 'button' ? null : url(item.url),
       data: {
@@ -67,12 +70,15 @@
           {{ item.label ?? item.html|raw }}
           {% if item.description is defined %}
             <span class="menu-item-description mt-2xs smalltext light">{{ item.description }}</span>
-        {% elseif item.handle is defined %}
+          {% elseif item.handle is defined %}
             <span class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</span>
           {% endif %}
         </span>
         {% if selected %}
           <span class="visually-hidden">, selected</span>
+        {% endif %}
+        {% if item.info is defined and item.info is not empty %}
+          <span class="info">{{ item.info|e|cpmd }}</span>
         {% endif %}
       {% endapply -%}
     {% endtag %}
@@ -99,7 +105,7 @@
   {% if html ?? false %}
     {{ html|raw }}
   {% elseif label ?? false %}
-    <span >{{ label }}</span>
+    <span>{{ label }}</span>
   {% endif %}
 
   {% tag 'button' with {
@@ -112,6 +118,7 @@
     data: {
       'disclosure-trigger': true,
     },
+    disabled: disabled ?? false,
   }|merge(buttonAttributes ?? {}, recursive=true) %}
     {%- apply spaceless %}
       {% if buttonSpinner %}
@@ -120,7 +127,7 @@
       {{ (buttonLabel or buttonHtml) ? tag('div', {
         class: 'label',
         text: buttonLabel ?? null,
-        html: buttonHtml ?? null
+        html: buttonHtml ?? null,
       }) }}
       {% if buttonSpinner %}
         <div class="spinner spinner-absolute">
@@ -134,6 +141,9 @@
 {% tag 'div' with {
   id: id,
   class: (class ?? [])|explodeClass|merge(['menu', 'menu--disclosure']),
+  data: {
+    'with-search-input': withSearchInput,
+  },
 } %}
   {% block menu %}
     {% set ulStarted = false %}
@@ -147,7 +157,9 @@
         {% endif %}
 
         {% if type == 'hr' %}
-          <hr class="padded">
+          {{ tag('hr', {
+            class: (item.padded ?? true) ? 'padded' : null,
+          }) }}
         {% else %}
           {% tag 'div' with {
             class: {
@@ -157,7 +169,10 @@
           } %}
             {% if item.heading is defined %}
               {% tag headingTag with {
-                class: ['h6', 'padded'],
+                class: {
+                  h6: true,
+                  padded: item.padded ?? true,
+                }|filter|keys,
               }|merge(item.headingAttributes ??{}, recursive=true) %}
                 {{ item.heading }}
               {% endtag %}

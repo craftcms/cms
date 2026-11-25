@@ -53,6 +53,14 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
+     * @inheritdoc
+     */
+    public function showLabelHint(): bool
+    {
+        return false;
+    }
+
+    /**
      * @var string|null UUID
      */
     public ?string $uid = null;
@@ -196,9 +204,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
                         'id' => 'operator',
                         'name' => 'operator',
                         'value' => $this->operator,
-                        'options' => array_map(function($operator) {
-                            return ['value' => $operator, 'label' => $this->operatorLabel($operator)];
-                        }, $operators),
+                        'options' => array_map(fn($operator) => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators),
                         'inputAttributes' => [
                             'hx' => [
                                 'post' => $this->reloadOnOperatorChange ? UrlHelper::actionUrl('conditions/render') : false,
@@ -221,9 +227,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             [['uid', 'condition'], 'safe'],
             [
                 ['operator'],
-                function() {
-                    return in_array($this->operator, $this->operators(), true);
-                },
+                fn() => in_array($this->operator, $this->operators(), true),
             ],
         ];
     }

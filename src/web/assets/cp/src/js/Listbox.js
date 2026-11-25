@@ -36,10 +36,18 @@ Craft.Listbox = Garnish.Base.extend(
         this.$selectedOption = null;
       }
 
-      this.addListener(this.$options, 'click', (ev) => {
-        this.select(this.$options.index($(ev.currentTarget)));
-        ev.preventDefault();
-      });
+      if (!this.settings.readOnly) {
+        this.addListener(this.$options, 'click', (ev) => {
+          this.select(this.$options.index($(ev.currentTarget)));
+          ev.preventDefault();
+        });
+      }
+
+      if (this.settings.readOnly) {
+        this.$options.each((index, option) => {
+          $(option).attr('tabindex', '-1');
+        });
+      }
     },
 
     select: function (index) {
@@ -91,6 +99,7 @@ Craft.Listbox = Garnish.Base.extend(
       selectedClass: 'active',
       focusClass: 'focus',
       onChange: $.noop,
+      readOnly: false,
     },
   }
 );

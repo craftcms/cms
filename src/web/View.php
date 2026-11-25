@@ -8,11 +8,13 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -25,8 +27,10 @@ use craft\web\twig\Extension;
 use craft\web\twig\FeExtension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SafeHtml;
+use craft\web\twig\SecurityPolicy;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use Illuminate\Support\Collection;
 use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -34,6 +38,7 @@ use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\ExtensionInterface;
+use Twig\Extension\SandboxExtension;
 use Twig\Extension\StringLoaderExtension;
 use Twig\Runtime\EscaperRuntime;
 use Twig\Template as TwigTemplate;
@@ -186,16 +191,6 @@ class View extends \yii\web\View
     /**
      * @var array|null
      */
-    private ?array $_cpTemplateRoots = null;
-
-    /**
-     * @var array|null
-     */
-    private ?array $_siteTemplateRoots = null;
-
-    /**
-     * @var array|null
-     */
     private ?array $_templateRoots = null;
 
     /**
@@ -307,6 +302,13 @@ class View extends \yii\web\View
     private array $_assetBundleBuffers = [];
 
     /**
+     * @var array
+     * @see startJsImportBuffer()
+     * @see clearJsImportBuffer()
+     */
+    private array $_jsImportBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -319,6 +321,18 @@ class View extends \yii\web\View
     private array $_html = [];
 
     /**
+     * @var array the registered imports for JavaScript as modules
+     * @see registerJsImport()
+     */
+    private array $_jsImports = [];
+
+    /**
+     * @var string[] The icons that should be registered to the page.
+     * @see registerIcons()
+     */
+    private array $_icons = [];
+
+    /**
      * @var callable[][]
      */
     private array $_hooks = [];
@@ -327,6 +341,12 @@ class View extends \yii\web\View
      * @var string|null
      */
     private ?string $_renderingTemplate = null;
+
+    /**
+     * @var int The number of string/object templates currently being rendered
+     * @see getIsRenderingStringTemplate()
+     */
+    private int $_stringTemplateDepth = 0;
 
     /**
      * @var bool
@@ -363,19 +383,38 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
+        $this->hook('cp.layouts.elementindex', [$this, '_prepareElementIndexVariables']);
+        $this->hook('cp.elements.toolbar', [$this, '_prepareElementToolbarVariables']);
+        $this->hook('cp.elements.sources', [$this, '_prepareElementSourcesVariables']);
         $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
     }
 
     /**
      * Returns the Twig environment.
      *
+     * @param string|null $templateMode
      * @return Environment
      */
-    public function getTwig(): Environment
+    public function getTwig(?string $templateMode = null): Environment
     {
-        return $this->_templateMode === self::TEMPLATE_MODE_CP
+        return ($templateMode ?? $this->_templateMode) === self::TEMPLATE_MODE_CP
             ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
             : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
+    }
+
+    /**
+     * Sets the Twig environment for the current template mode.
+     *
+     * @param Environment $twig
+     * @since 5.6.0
+     */
+    public function setTwig(Environment $twig): void
+    {
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+            $this->_cpTwig = $twig;
+        } else {
+            $this->_siteTwig = $twig;
+        }
     }
 
     /**
@@ -393,7 +432,9 @@ class View extends \yii\web\View
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
         // Mark SafeHtml as a safe interface
-        $twig->getRuntime(EscaperRuntime::class)->addSafeClass(SafeHtml::class, ['html']);
+        $safeClass = SafeHtml::class;
+        /** @phpstan-ignore argument.type */
+        $twig->getRuntime(EscaperRuntime::class)->addSafeClass($safeClass, ['html']);
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
@@ -415,6 +456,22 @@ class View extends \yii\web\View
             : $this->_siteTwigExtensions;
         foreach ($registeredExtensions as $extension) {
             $twig->addExtension($extension);
+        }
+
+        // Only register the SandboxExtension if something else hasn't already
+        if (!$twig->hasExtension(SandboxExtension::class)) {
+            $sandboxConfig = ArrayHelper::merge(
+                require Craft::getAlias('@app/config/twig-sandbox.php'),
+                Craft::$app->getConfig()->getConfigFromFile('twig-sandbox'),
+            );
+            $twig->addExtension(new SandboxExtension(new SecurityPolicy(
+                $sandboxConfig['allowedTags'],
+                $sandboxConfig['allowedFilters'],
+                $sandboxConfig['allowedFunctions'],
+                $sandboxConfig['allowedMethods'],
+                $sandboxConfig['allowedProperties'],
+                $sandboxConfig['allowedClasses'],
+            )));
         }
 
         // Set our timezone
@@ -547,6 +604,25 @@ class View extends \yii\web\View
     }
 
     /**
+     * Renders a Twig template in a sandboxed environment.
+     *
+     * @param string $template The name of the template to load
+     * @param array $variables The variables that should be available to the template
+     * @param string|null $templateMode The template mode to use
+     * @return string the rendering result
+     * @throws TwigLoaderError
+     * @throws TwigRuntimeError
+     * @throws TwigSyntaxError
+     * @throws Exception if $templateMode is invalid
+     * @see renderTemplate()
+     * @since 4.17.0
+     */
+    public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
+    {
+        return $this->sandbox(fn() => $this->renderTemplate($template, $variables, $templateMode), $templateMode);
+    }
+
+    /**
      * Returns whether a page template is currently being rendered.
      *
      * @return bool Whether a page template is currently being rendered.
@@ -554,6 +630,21 @@ class View extends \yii\web\View
     public function getIsRenderingPageTemplate(): bool
     {
         return $this->_isRenderingPageTemplate;
+    }
+
+    /**
+     * Returns whether a string or object template is currently being rendered.
+     *
+     * This will also return `true` for any templates that are included from a string or object template.
+     *
+     * @return bool
+     * @see renderString()
+     * @see renderObjectTemplate()
+     * @since 5.11.4
+     */
+    public function getIsRenderingStringTemplate(): bool
+    {
+        return $this->_stringTemplateDepth > 0;
     }
 
     /**
@@ -602,7 +693,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a template defined in a string.
+     * Renders a template defined by a string.
      *
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
@@ -628,10 +719,12 @@ class View extends \yii\web\View
         }
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
+        $this->_stringTemplateDepth++;
 
         try {
             return $twig->createTemplate($template)->render($variables);
         } finally {
+            $this->_stringTemplateDepth--;
             $this->_renderingTemplate = $lastRenderingTemplate;
             if (!$escapeHtml) {
                 $twig->setDefaultEscaperStrategy();
@@ -641,12 +734,30 @@ class View extends \yii\web\View
     }
 
     /**
+     * Renders a template defined by a string in a sandboxed environment.
+     *
+     * @param string $template The source template string.
+     * @param array $variables Any variables that should be available to the template.
+     * @param string $templateMode The template mode to use.
+     * @param bool $escapeHtml Whether dynamic HTML should be escaped
+     * @return string The rendered template.
+     * @throws TwigLoaderError
+     * @throws TwigSyntaxError
+     * @see renderString()
+     * @since 4.17.0
+     */
+    public function renderSandboxedString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
+    {
+        return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml), $templateMode);
+    }
+
+    /**
      * Renders an object template.
      *
      * The passed-in `$object` will be available to the template as an `object` variable.
      *
      * The template will be parsed for “property tags” (e.g. `{foo}`), which will get replaced with
-     * full Twig output tags (e.g. `{{ object.foo|raw }}`.
+     * full Twig output tags (e.g. `{{ object.foo }}`.
      *
      * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
      * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
@@ -655,12 +766,18 @@ class View extends \yii\web\View
      * @param mixed $object the object that should be passed into the template
      * @param array $variables any additional variables that should be available to the template
      * @param string $templateMode The template mode to use.
+     * @param string|false $escaperStrategy The escaper strategy to use (`false` by default)
      * @return string The rendered template.
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
-    {
+    public function renderObjectTemplate(
+        string $template,
+        mixed $object,
+        array $variables = [],
+        string $templateMode = self::TEMPLATE_MODE_SITE,
+        string|false $escaperStrategy = false,
+    ): string {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
             return trim($template);
@@ -677,9 +794,10 @@ class View extends \yii\web\View
             $twig->disableStrictVariables();
         }
 
-        $twig->setDefaultEscaperStrategy(false);
+        $twig->setDefaultEscaperStrategy($escaperStrategy);
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
+        $this->_stringTemplateDepth++;
 
         try {
             // Is this the first time we've parsed this template?
@@ -691,26 +809,31 @@ class View extends \yii\web\View
             }
 
             // Get the variables to pass to the template
+            if ($object instanceof Arrayable) {
+                if (preg_match('/\binclude\b/', $template)) {
+                    // Export all normal fields, since we don’t know what the included template is going to need
+                    // (https://github.com/craftcms/cms/issues/18165)
+                    $fields = [];
+                } else {
+                    $fields = $this->filterFieldsByTemplate($object->fields(), $template) ?: ['!'];
+                }
+
+                $variables += $object->toArray(
+                    $fields,
+                    $this->filterFieldsByTemplate($object->extraFields(), $template),
+                    false,
+                );
+            }
+
             if ($object instanceof Model) {
                 foreach ($object->attributes() as $name) {
-                    if (!isset($variables[$name]) && str_contains($template, $name)) {
+                    if (
+                        !isset($variables[$name]) &&
+                        preg_match(sprintf('/\b%s\b/', preg_quote($name, '/')), $template)
+                    ) {
                         $variables[$name] = $object->$name;
                     }
                 }
-            }
-
-            if ($object instanceof Arrayable) {
-                // See if we should be including any of the extra fields
-                $extra = [];
-                foreach ($object->extraFields() as $field => $definition) {
-                    if (is_int($field)) {
-                        $field = $definition;
-                    }
-                    if (preg_match('/\b' . preg_quote($field, '/') . '\b/', $template)) {
-                        $extra[] = $field;
-                    }
-                }
-                $variables += $object->toArray([], $extra, false);
             }
 
             $variables['object'] = $object;
@@ -721,6 +844,7 @@ class View extends \yii\web\View
             $templateObj = $this->_objectTemplates[$cacheKey];
             return trim($templateObj->render($variables));
         } finally {
+            $this->_stringTemplateDepth--;
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
             $this->setTemplateMode($oldTemplateMode);
@@ -730,6 +854,44 @@ class View extends \yii\web\View
                 $twig->enableStrictVariables();
             }
         }
+    }
+
+    private function filterFieldsByTemplate(array $fields, string $template): array
+    {
+        $filtered = [];
+
+        foreach ($fields as $field => $definition) {
+            if (is_int($field)) {
+                $field = $definition;
+            }
+            if (preg_match(sprintf('/\b%s\b/', preg_quote($field, '/')), $template)) {
+                $filtered[] = $field;
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Renders an object template in a sandboxed environment.
+     *
+     * @param string $template the source template string
+     * @param mixed $object the object that should be passed into the template
+     * @param array $variables any additional variables that should be available to the template
+     * @param string $templateMode The template mode to use.
+     * @return string The rendered template.
+     * @throws Exception in case of failure
+     * @throws Throwable in case of failure
+     * @see renderObjectTemplate()
+     * @since 4.17.0
+     */
+    public function renderSandboxedObjectTemplate(
+        string $template,
+        mixed $object,
+        array $variables = [],
+        string $templateMode = self::TEMPLATE_MODE_SITE,
+    ): string {
+        return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode), $templateMode);
     }
 
     /**
@@ -789,7 +951,7 @@ class View extends \yii\web\View
             } else {
                 $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
             }
-            return "{{ $replace|raw }}";
+            return "{{ $replace }}";
         }, $template);
 
         // Bring the objects back
@@ -810,7 +972,6 @@ class View extends \yii\web\View
      * @param string|null $templateMode The template mode to use.
      * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
-     * @throws Exception
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
@@ -1035,11 +1196,7 @@ class View extends \yii\web\View
      */
     public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
     {
-        $jsVars = array_map(function($variable) {
-            return Json::encode($variable);
-        }, $vars);
-        $js = call_user_func($jsFn, ...array_values($jsVars));
-        $this->registerJs($js, $position, $key);
+        $this->registerJs(Html::jsWithVars($jsFn, $vars), $position, $key);
     }
 
     /**
@@ -1336,6 +1493,39 @@ class View extends \yii\web\View
     }
 
     /**
+     * Starts a buffer for any JavaScript imports registered with [[registerJsImport()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearJsImportBuffer()]].
+     *
+     * @see clearJsImportBuffer()
+     * @since 5.6.0
+     */
+    public function startJsImportBuffer(): void
+    {
+        $this->_jsImportBuffers[] = $this->_jsImports;
+        $this->_jsImports = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startJsImportBuffer()]], returning any JavaScript imports that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The JavaScript imports that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @see startAssetBundleBuffer()
+     * @since 5.6.0
+     */
+    public function clearJsImportBuffer(): array|false
+    {
+        if (empty($this->_jsImportBuffers)) {
+            return false;
+        }
+
+        $bufferedJsImports = $this->_jsImports;
+        $this->_jsImports = array_pop($this->_jsImportBuffers);
+        return $bufferedJsImports;
+    }
+
+    /**
      * @inheritdoc
      */
     public function registerJsFile($url, $options = [], $key = null): void
@@ -1373,6 +1563,30 @@ class View extends \yii\web\View
     }
 
     /**
+     * Registers a generic `<script>` tag with the given variables, pre-JSON-encoded.
+     *
+     * @param callable $scriptFn callback function that returns the JS code to be registered.
+     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$scriptFn`
+     * @param int $position the position at which the JS script tag should be inserted
+     *  in a page. The possible values are:
+     *  - [[POS_HEAD]]: in the head section
+     *  - [[POS_BEGIN]]: at the beginning of the body section
+     *  - [[POS_END]]: at the end of the body section
+     * @param array $options the HTML attributes for the `<script>` tag.
+     * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
+     * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
+     * will overwrite the former.
+     * @since 5.6.0
+     */
+    public function registerScriptWithVars(callable $scriptFn, array $vars, int $position = self::POS_END, array $options = [], ?string $key = null): void
+    {
+        $jsVars = array_map(fn($variable) => Json::encode($variable), $vars);
+
+        $script = call_user_func($scriptFn, ...array_values($jsVars));
+        $this->registerScript($script, $position, $options);
+    }
+
+    /**
      * Registers arbitrary HTML to be injected into the final page response.
      *
      * @param string $html the HTML code to be registered
@@ -1390,6 +1604,18 @@ class View extends \yii\web\View
             $key = md5($html);
         }
         $this->_html[$position][$key] = $html;
+    }
+
+    /**
+     * Registers a JavaScript import map entry to be injected into the final page response.
+     *
+     * @param string $key The module specifier.
+     * @param string $value  The URL or path to the resource the key will resolve to.
+     * @since 5.6.0
+    */
+    public function registerJsImport(string $key, string $value): void
+    {
+        $this->_jsImports[$key] = $value;
     }
 
     /**
@@ -1503,6 +1729,20 @@ $js
 JS;
 
         $this->registerJs($js, self::POS_BEGIN);
+    }
+
+    /**
+     * Registers icons for `Craft.ui.icon()`.
+     *
+     * @param string[] $icons The icons to be registered
+     * @since 5.7.0
+     */
+    public function registerIcons(array $icons): void
+    {
+        $this->_icons = [
+            ...$this->_icons,
+            ...array_flip($icons),
+        ];
     }
 
     /**
@@ -1716,7 +1956,7 @@ JS;
      * This method will go through the passed-in $html looking for `name=` attributes, and renaming their values such
      * that they will live within the passed-in $namespace (or the [[getNamespace()|active namespace]]).
      * By default, any `id=`, `for=`, `list=`, `data-target=`, `data-reverse-target=`, and `data-target-prefix=`
-     * attributes will get namespaced as well, by prepending the namespace and a dash to their values.
+     * attributes will get namespaced as well, by prepending the namespace and a hyphens to their values.
      * For example, the following HTML:
      *
      * ```html
@@ -1935,9 +2175,10 @@ JS;
 
         if (isset($this->_hooks[$hook])) {
             $handled = false;
+
+            /** @var callable(array $context, bool &$handled):string $method */
             foreach ($this->_hooks[$hook] as $method) {
                 $return .= $method($context, $handled);
-                /** @var bool $handled */
                 if ($handled) {
                     break;
                 }
@@ -1974,7 +2215,7 @@ JS;
      */
     public function endPage($ajaxMode = false): void
     {
-        if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$ajaxMode && $this->_templateMode === static::TEMPLATE_MODE_CP) {
             $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
@@ -2006,7 +2247,7 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
@@ -2016,6 +2257,7 @@ JS;
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
@@ -2055,16 +2297,17 @@ JS;
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
      */
-    public function beforeRenderPageTemplate(string $template, array &$variables, string &$templateMode): bool
+    public function beforeRenderPageTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
         // Fire a 'beforeRenderPageTemplate' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
-                'variables' => &$variables,
+                'variables' => $variables,
                 'templateMode' => $templateMode,
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+            $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
             return $event->isValid;
@@ -2096,6 +2339,28 @@ JS;
         }
     }
 
+    private function sandbox(callable $callback, ?string $templateMode): string
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->enableTwigSandbox) {
+            return $callback();
+        }
+
+        $extension = $this->getTwig($templateMode)->getExtension(SandboxExtension::class);
+
+        if ($extension->isSandboxed()) {
+            return $callback();
+        }
+
+        // enableSandbox() and disableSandbox() are deprecated as of Twig 3.29
+        $checker = $extension->getChecker();
+        $checker->setSandboxed(true);
+        try {
+            return $callback();
+        } finally {
+            $checker->setSandboxed(false);
+        }
+    }
+
     /**
      * @inheritdoc
      */
@@ -2104,6 +2369,10 @@ JS;
         $lines = [];
         if (!empty($this->title)) {
             $lines[] = '<title>' . Html::encode($this->title) . '</title>';
+        }
+
+        if (!empty($this->_jsImports)) {
+            $lines[] = '<script type="importmap">{"imports": ' . Json::encode($this->_jsImports) . '}</script>';
         }
         if (!empty($this->_scripts[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
@@ -2146,6 +2415,18 @@ JS;
         }
         if (!empty($this->_html[self::POS_END])) {
             $lines[] = implode("\n", $this->_html[self::POS_END]);
+        }
+
+        if (!empty($this->_icons)) {
+            $icons = [];
+            foreach (array_keys($this->_icons) as $icon) {
+                $icons[$icon] = Cp::iconSvg($icon);
+            }
+            $iconsJs = Json::encode($icons);
+            $this->js[self::POS_END][] = <<<JS
+Craft.icons = $iconsJs;
+JS;
+            $this->_icons = [];
         }
 
         $html = parent::renderBodyEndHtml($ajaxMode);
@@ -2391,6 +2672,95 @@ JS;
         }
         $js .= '}';
         $this->registerJs($js, self::POS_HEAD);
+    }
+
+    private function _prepareElementIndexVariables(array &$context): null
+    {
+        /** @var class-string<ElementInterface> $elementType */
+        $elementType = $context['elementType'];
+
+        $context['title'] ??= $elementType::pluralDisplayName();
+        $context['context'] = 'index';
+
+        $elementSourcesService = Craft::$app->getElementSources();
+        $context['sources'] = $elementSourcesService->getSources(
+            $elementType,
+            withDisabled: true,
+            page: $context['page'] ?? null,
+        );
+
+        $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
+        if ($context['showSiteMenu'] === 'auto') {
+            $context['showSiteMenu'] = $elementType::isLocalized();
+        }
+
+        $context['elementDisplayName'] = $elementType::displayName();
+        $context['elementPluralDisplayName'] = $elementType::pluralDisplayName();
+        $context['canHaveDrafts'] ??= $elementType::hasDrafts();
+
+        if (isset($context['page'])) {
+            if (isset($context['sources'][0]['page'])) {
+                $context['title'] = Craft::t('site', $context['sources'][0]['page']);
+            }
+            $context['selectedSubnavItem'] = $elementSourcesService->pageNameId($context['page']);
+        }
+
+        return null;
+    }
+
+    private function _prepareElementToolbarVariables(array &$context): null
+    {
+        /** @var class-string<ElementInterface> $elementType */
+        $elementType = $context['elementType'];
+
+        $context['context'] ??= 'index';
+        $context['isAdministrative'] = match ($context['context']) {
+            'index', 'embedded-index' => true,
+            default => false,
+        };
+        $context['showStatusMenu'] ??= 'auto';
+        if ($context['showStatusMenu'] === 'auto') {
+            $context['showStatusMenu'] = $elementType::hasStatuses();
+        }
+        $context['showSiteMenu'] = Craft::$app->getIsMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
+        if ($context['showSiteMenu'] === 'auto') {
+            $context['showSiteMenu'] = $elementType::isLocalized();
+        }
+        $context['idPrefix'] = sprintf('elementtoolbar%s-', mt_rand());
+
+        if ($context['showStatusMenu']) {
+            $context['elementStatuses'] ??= $elementType::statuses();
+            if (count($context['elementStatuses']) < 2) {
+                $context['showStatusMenu'] = false;
+            }
+        }
+
+        return null;
+    }
+
+    private function _prepareElementSourcesVariables(array &$context): null
+    {
+        /** @var class-string<ElementInterface> $elementType */
+        $elementType = $context['elementType'];
+
+        $context['keyPrefix'] ??= '';
+        $context['isTopLevel'] = $context['keyPrefix'] === '';
+
+        if ($context['isTopLevel']) {
+            $context['baseSortOptions'] ??= Collection::make($elementType::sortOptions())
+                ->map(fn($option, $key) => [
+                    'label' => $option['label'] ?? $option,
+                    'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ])
+                ->values()
+                ->all();
+            $context['tableColumns'] ??= Craft::$app->getElementSources()->getAvailableTableAttributes($elementType);
+        }
+
+        $context['viewModes'] ??= $elementType::indexViewModes();
+
+        return null;
     }
 
     /**

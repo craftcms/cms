@@ -71,6 +71,7 @@
         position: absolute;
         height: var(--touch-target-size);
         width: var(--touch-target-size);
+        border-radius: var(--button-border-radius);
       }
 
       & > .spinner.body-loading {

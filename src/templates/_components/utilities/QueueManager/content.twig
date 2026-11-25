@@ -17,6 +17,9 @@
                     <template v-else-if="name == 'ttr'">
                         [[ttrValue(value)]]
                     </template>
+                    <template v-else-if="name == 'class'">
+                        <code>[[value]]</code>
+                    </template>
                     <template v-else>
                         [[value]]
                     </template>
@@ -28,7 +31,8 @@
         <template v-if="activeJob.job">
             <hr>
             <h4>{{ 'Job Data'|t('app') }}</h4>
-            <pre class="pane"><code>[[activeJob.job]]</code></pre>
+            <div v-if="highlightedJobData" class="pane" v-html="highlightedJobData"></div>
+            <pre v-else class="pane"><code>[[activeJob.job]]</code></pre>
         </template>
     </div>
     <template v-else-if="!loading">

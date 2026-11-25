@@ -19,7 +19,6 @@ use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
-use Imagine\Imagick\Imagick;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\Component;
@@ -28,7 +27,7 @@ use yii\base\Exception;
 /**
  * Images service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->images`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->getImages()`]].
  *
  * @property bool $isGd Whether image manipulations will be performed using GD or not
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
@@ -125,12 +124,20 @@ class Images extends Component
             $supportedFormats[] = Format::ID_WEBP;
         }
 
+        if ($this->getSupportsBmp()) {
+            $supportedFormats[] = Format::ID_BMP;
+        }
+
         if ($this->getSupportsAvif()) {
             $supportedFormats[] = Format::ID_AVIF;
         }
 
         if ($this->getSupportsHeic()) {
             $supportedFormats[] = Format::ID_HEIC;
+        }
+
+        if ($this->getSupportsJxl()) {
+            $supportedFormats[] = Format::ID_JXL;
         }
 
         return $supportedFormats;
@@ -185,9 +192,22 @@ class Images extends Component
     }
 
     /**
+     * Returns whether the BMP image format is supported.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    public function getSupportsBmp(): bool
+    {
+        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
+        return $info->isFormatSupported(Format::ID_BMP);
+    }
+
+    /**
      * Returns whether the WebP image format is supported.
      *
      * @return bool
+     * @since 3.5.0
      */
     public function getSupportsWebP(): bool
     {
@@ -199,6 +219,7 @@ class Images extends Component
      * Returns whether the AVIF image format is supported.
      *
      * @return bool
+     * @since 3.7.26
      */
     public function getSupportsAvif(): bool
     {
@@ -216,6 +237,18 @@ class Images extends Component
     {
         $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
         return $info->isFormatSupported(Format::ID_HEIC);
+    }
+
+    /**
+     * Returns whether the JPEG XL image format is supported.
+     *
+     * @return bool
+     * @since 5.12.0
+     */
+    public function getSupportsJxl(): bool
+    {
+        $info = $this->getIsImagick() ? ImagickImagine::getDriverInfo() : GdImagine::getDriverInfo();
+        return $info->isFormatSupported(Format::ID_JXL);
     }
 
     /**
@@ -379,27 +412,33 @@ class Images extends Component
         $image = new \Imagick($filePath);
         $orientation = $image->getImageOrientation();
 
-        $degrees = false;
+        $degrees = match ($orientation) {
+            ImageHelper::EXIF_IFD0_ROTATE_180, ImageHelper::EXIF_IFD0_ROTATE_180_MIRRORED => 180,
+            ImageHelper::EXIF_IFD0_ROTATE_90, ImageHelper::EXIF_IFD0_ROTATE_90_MIRRORED => 90,
+            ImageHelper::EXIF_IFD0_ROTATE_270, ImageHelper::EXIF_IFD0_ROTATE_270_MIRRORED => 270,
+            default => 0,
+        };
 
-        switch ($orientation) {
-            case ImageHelper::EXIF_IFD0_ROTATE_180:
-                $degrees = 180;
-                break;
-            case ImageHelper::EXIF_IFD0_ROTATE_90:
-                $degrees = 90;
-                break;
-            case ImageHelper::EXIF_IFD0_ROTATE_270:
-                $degrees = 270;
-                break;
-        }
+        $mirrored = match ($orientation) {
+            ImageHelper::EXIF_IFD0_ROTATE_0_MIRRORED, ImageHelper::EXIF_IFD0_ROTATE_180_MIRRORED,
+                ImageHelper::EXIF_IFD0_ROTATE_90_MIRRORED, ImageHelper::EXIF_IFD0_ROTATE_270_MIRRORED => true,
+            default => false,
+        };
 
-        if ($degrees === false) {
+        if ($degrees === 0 && !$mirrored) {
             return false;
         }
 
         /** @var Raster $image */
         $image = $this->loadImage($filePath);
-        $image->rotate($degrees);
+
+        if ($degrees !== 0) {
+            $image->rotate($degrees);
+        }
+
+        if ($mirrored) {
+            $image->flipHorizontally();
+        }
 
         return $image->saveAs($filePath, true);
     }

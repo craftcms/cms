@@ -82,7 +82,7 @@ class QueryBatcher implements Batchable
             $slice = $query
                 ->offset((is_int($queryOffset) ? $queryOffset : 0) + $offset)
                 ->limit($limit)
-                ->all();
+                ->all($this->db);
         } catch (QueryAbortedException) {
             $slice = [];
         }

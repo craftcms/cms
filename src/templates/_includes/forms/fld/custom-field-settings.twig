@@ -5,21 +5,78 @@
 
 {% block fieldSettings %}
   {% if originalField %}
-    {% set fieldChipId = "chip#{random()}" %}
-    <div class="pane no-border p-m">
-      {{ chip(originalField, {
-        id: fieldChipId,
-        class: 'hairline',
-        showActionMenu: true,
-        showHandle: true,
+    {% if field.oldFieldUid %}
+      {{ hiddenInput('oldFieldUid', field.oldFieldUid) }}
+    {% endif %}
+
+    {% set fieldSelectId = "fieldselect#{random()}" %}
+    <div class="pane no-border p-m mt-0">
+      {{ forms.fieldSelectField({
+        id: fieldSelectId,
+        name: 'fieldId',
+        value: originalField,
+        limit: 1,
+        warning: 'Changing this may result in data loss.'|t('app'),
       }) }}
     </div>
 
     {% js %}
       (() => {
-        const $chip = $('#{{ fieldChipId|namespaceInputId }}');
-        $chip.on('dblclick taphold', (ev) => {
-          $chip.find('.btn').data('disclosureMenu').$container.find('[data-edit-action]').click();
+        const componentSelect = $("#{{ fieldSelectId|namespaceInputId }}").data('componentSelect');
+        let replaced = false;
+
+        const oldName = {{ defaultLabel|json_encode|raw }};
+        const oldHandle = {{ defaultHandle|json_encode|raw }};
+        const oldInstructions = {{ defaultInstructions|json_encode|raw }};
+        const oldTip = {{ defaultTip|json_encode|raw }};
+        const oldWarning = {{ defaultWarning|json_encode|raw }};
+
+        const $labelInput = $("#{{ 'label'|namespaceInputId }}");
+        const $handleInput = $("#{{ 'handle'|namespaceInputId }}");
+        const $instructionsInput = $("#{{ 'instructions'|namespaceInputId }}");
+        const $tipInput = $("#{{ 'tip'|namespaceInputId }}");
+        const $warningInput = $("#{{ 'warning'|namespaceInputId }}");
+
+        componentSelect.on('change', () => {
+          const $chip = componentSelect.getComponents().first();
+
+          if (!$chip.length) {
+            return;
+          }
+
+          const newName = $chip.data('label');
+          const newHandle = $chip.data('handle');
+          const newInstructions = $chip.data('instructions') ?? null;
+          const newTip = $chip.data('tip') ?? null;
+          const newWarning = $chip.data('warning') ?? null;
+
+          $labelInput.attr('placeholder', newName);
+          $handleInput.attr('placeholder', newHandle);
+          $instructionsInput.attr('placeholder', newInstructions);
+          $tipInput.attr('placeholder', newTip);
+          $warningInput.attr('placeholder', newWarning);
+
+          if (!replaced) {
+            // Override the name/handle/instructions/tip/warning for consistency with the old field,
+            // if they weren't already being overridden
+            if (!$labelInput.val()) {
+              $labelInput.val(oldName);
+            }
+            if (!$handleInput.val()) {
+              $handleInput.val(oldHandle);
+            }
+            if (!$instructionsInput.val()) {
+              $instructionsInput.val(oldInstructions);
+            }
+            if (!$tipInput.val()) {
+              $tipInput.val(oldTip);
+            }
+            if (!$warningInput.val()) {
+              $warningInput.val(oldWarning);
+            }
+          }
+
+          replaced = true;
         });
       })();
     {% endjs %}

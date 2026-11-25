@@ -8,16 +8,21 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Localization;
+use craft\helpers\Markdown;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
@@ -30,7 +35,13 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Number extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @since 3.5.11
@@ -74,8 +85,11 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
      */
     public static function dbType(): string
     {
-        $db = Craft::$app->getDb();
-        return $db->getIsMysql() ? sprintf('%s(65,16)', Schema::TYPE_DECIMAL) : Schema::TYPE_DECIMAL;
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return sprintf('%s(65,16)', Schema::TYPE_DECIMAL);
+        }
+
+        return Schema::TYPE_DECIMAL;
     }
 
     /**
@@ -179,9 +193,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
         $rules[] = [['previewFormat'], 'in', 'range' => [self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE]];
         $rules[] = [
-            ['previewCurrency'], 'required', 'when' => function(): bool {
-                return $this->previewFormat === self::FORMAT_CURRENCY;
-            },
+            ['previewCurrency'], 'required', 'when' => fn(): bool => $this->previewFormat === self::FORMAT_CURRENCY,
         ];
         $rules[] = [['previewCurrency'], 'string', 'min' => 3, 'max' => 3, 'encoding' => '8bit'];
 
@@ -193,9 +205,31 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig', [
             'field' => $this,
+            'readOnly' => $readOnly,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): int|null|float
+    {
+        return $this->defaultValue;
     }
 
     /**
@@ -215,29 +249,37 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
     /**
      * @param mixed $value
-     * @return int|float|string|null
+     * @return int|float|null
      */
-    private function _normalizeNumber(mixed $value): float|int|string|null
+    private function _normalizeNumber(mixed $value): float|int|null
     {
         // Was this submitted with a locale ID?
         if (isset($value['locale'], $value['value'])) {
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        if ($value === '') {
+        if (is_int($value) || is_float($value) || (is_string($value) && $value !== '')) {
+            $float = (float)$value;
+            $int = (int)$float;
+            return $int == $float ? $int : $float;
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        if ($value === null) {
             return null;
         }
 
-        if (is_string($value) && is_numeric($value)) {
-            if ((int)$value == $value) {
-                return (int)$value;
-            }
-            if ((float)$value == $value) {
-                return (float)$value;
-            }
-        }
-
-        return $value;
+        // ensure we only store the selected number of decimals and that the result is the same as in v4
+        // https://github.com/craftcms/cms/issues/16181
+        $value = round((float)$value, $this->decimals);
+        return $this->decimals === 0 ? (int)$value : $value;
     }
 
     /**
@@ -250,7 +292,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
         try {
             $formatNumber = !$this->step && !$formatter->willBeMisrepresented($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $formatNumber = false;
         }
 
@@ -261,7 +303,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
                         $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
                     } catch (InvalidArgumentException) {
                     }
-                } elseif ($this->decimals) {
+                } elseif ($this->decimals !== 0) {
                     // Just make sure we're using the right decimal symbol
                     $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                     try {
@@ -299,6 +341,15 @@ JS;
             'field' => $this,
             'value' => $value,
             'formatNumber' => $formatNumber,
+            'currencyLabel' => $this->previewFormat === self::FORMAT_CURRENCY ? $this->currencyLabel() : false,
+        ]);
+    }
+
+    private function currencyLabel(): string
+    {
+        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->previewCurrency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->previewCurrency),
         ]);
     }
 
@@ -330,17 +381,43 @@ JS;
     /**
      * @inheritdoc
      */
+    protected function dbTypeForValueSql(): array|string|null
+    {
+        if (!$this->decimals) {
+            return Schema::TYPE_INTEGER;
+        }
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return sprintf('%s(65,%s)', Schema::TYPE_DECIMAL, $this->decimals);
+        }
+
+        return Schema::TYPE_DECIMAL;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
             return '';
         }
 
-        return match ($this->previewFormat) {
+        $formatted = match ($this->previewFormat) {
             self::FORMAT_DECIMAL => Craft::$app->getFormatter()->asDecimal($value, $this->decimals),
             self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals),
             default => $value,
         };
+
+        if ($this->prefix) {
+            $formatted = Markdown::processParagraph(Html::encode($this->prefix)) . $formatted;
+        }
+
+        if ($this->suffix) {
+            $formatted = $formatted . Markdown::processParagraph(Html::encode($this->suffix));
+        }
+
+        return $formatted;
     }
 
     /**
@@ -349,7 +426,19 @@ JS;
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
-            $value = 1234;
+            if (isset($this->min, $this->max)) {
+                $min = $this->min * (10 ^ $this->decimals);
+                $max = $this->max * (10 ^ $this->decimals);
+                if ($this->step) {
+                    $step = $this->step * (10 ^ $this->decimals);
+                    $value = mt_rand($min / $step, $max / $step) * $step;
+                } else {
+                    $value = mt_rand($min, $max);
+                }
+                $value /= 10 ^ $this->decimals;
+            } else {
+                $value = 1234;
+            }
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry());
@@ -374,5 +463,14 @@ JS;
             'type' => NumberType::getType(),
             'description' => $this->instructions,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'number'];
     }
 }

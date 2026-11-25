@@ -15,9 +15,11 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\db\TableSchema;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\ContentBlock;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
@@ -34,12 +36,14 @@ use ReflectionMethod;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
+use yii\db\Expression;
 use yii\di\Instance;
 
 /**
  * Garbage Collection service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->gc`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->getGc()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
@@ -50,6 +54,11 @@ class Gc extends Component
      * @event Event The event that is triggered when running garbage collection.
      */
     public const EVENT_RUN = 'run';
+
+    /**
+     * @var int The number of items that should be deleted in a single batch.
+     */
+    private const CHUNK_SIZE = 10000;
 
     /**
      * @var int the probability (parts per million) that garbage collection (GC) should be performed
@@ -110,7 +119,8 @@ class Gc extends Component
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
         $this->_deleteStaleElementActivity();
-        $this->_deleteStaleBulkElementOps();
+        $this->_deleteStaleBulkOpData();
+        $this->_deleteStaleOAuthData();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -126,6 +136,7 @@ class Gc extends Component
         $this->deletePartialElements(Address::class, Table::ADDRESSES, 'id');
         $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
+        $this->deletePartialElements(ContentBlock::class, Table::CONTENTBLOCKS, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
@@ -139,6 +150,7 @@ class Gc extends Component
 
         $this->_deleteUnsupportedSiteEntries();
         $this->deleteOrphanedNestedElements(Address::class, Table::ADDRESSES);
+        $this->deleteOrphanedNestedElements(ContentBlock::class, Table::CONTENTBLOCKS);
         $this->deleteOrphanedNestedElements(Entry::class, Table::ENTRIES);
 
         // Fire a 'run' event
@@ -150,8 +162,11 @@ class Gc extends Component
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
+        $this->_deleteOrphanedSearchIndexJobs();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
+        $this->_deleteOrphanedFkRows();
+        $this->_deletePointlessChangeData();
 
         $this->_hardDeleteStructures();
 
@@ -188,9 +203,7 @@ class Gc extends Component
         }
 
         $folders = (new Query())->select(['id', 'path'])->from([Table::VOLUMEFOLDERS])->where(['volumeId' => $volumeIds])->all();
-        usort($folders, function($a, $b) {
-            return substr_count($a['path'], '/') < substr_count($b['path'], '/');
-        });
+        usort($folders, fn($a, $b) => substr_count($a['path'], '/') < substr_count($b['path'], '/'));
 
         foreach ($folders as $folder) {
             VolumeFolder::deleteAll(['id' => $folder['id']]);
@@ -270,7 +283,9 @@ class Gc extends Component
             $ids = array_unique(array_merge($ids1, $ids2));
 
             if (!empty($ids)) {
-                Db::delete(Table::ELEMENTS, ['id' => $ids]);
+                foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
+                    Db::delete(Table::ELEMENTS, ['id' => $idsChunk]);
+                }
             }
         }
 
@@ -311,7 +326,6 @@ class Gc extends Component
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
-        /** @var string|ElementInterface $elementType */
         $this->_stdout(sprintf('    > deleting partial %s data ... ', $elementType::lowerDisplayName()));
 
         $ids = (new Query())
@@ -325,7 +339,9 @@ class Gc extends Component
             ->column();
 
         if (!empty($ids)) {
-            Db::delete(Table::ELEMENTS, ['id' => $ids]);
+            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
+                Db::delete(Table::ELEMENTS, ['id' => $idsChunk]);
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -365,8 +381,8 @@ class Gc extends Component
     {
         $this->_stdout('    > removing empty temp folders ... ');
 
-        $emptyFolders = (new Query())
-            ->select(['folders.id', 'folders.path'])
+        $emptyFolderIds = (new Query())
+            ->select(['folders.id'])
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
             ->where([
@@ -375,17 +391,12 @@ class Gc extends Component
             ])
             ->andWhere(['not', ['folders.parentId' => null]])
             ->andWhere(['not', ['folders.path' => null]])
-            ->pairs();
+            ->column();
 
-        $fs = Craft::createObject(Temp::class);
-
-        foreach ($emptyFolders as $emptyFolderPath) {
-            if ($fs->directoryExists($emptyFolderPath)) {
-                $fs->deleteDirectory($emptyFolderPath);
-            }
+        if (!empty($emptyFolderIds)) {
+            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds);
         }
 
-        VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -437,12 +448,56 @@ class Gc extends Component
     }
 
     /**
-     * Deletes any stale bulk element operation records.
+     * Deletes any stale bulk operation data.
      */
-    private function _deleteStaleBulkElementOps(): void
+    private function _deleteStaleBulkOpData(): void
     {
-        $this->_stdout('    > deleting stale bulk element operation records ... ');
-        Db::delete(Table::ELEMENTS_BULKOPS, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))]);
+        $this->_stdout('    > deleting stale bulk operation data ... ');
+        $condition = ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))];
+        foreach ([Table::BULKOPEVENTS, Table::ELEMENTS_BULKOPS] as $table) {
+            Db::delete($table, $condition);
+        }
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes expired and revoked OAuth credentials, and registered clients that can no longer be used.
+     */
+    private function _deleteStaleOAuthData(): void
+    {
+        $this->_stdout('    > deleting stale OAuth data ... ');
+        $now = Db::prepareDateForDb(new DateTime());
+        $stale = ['or', ['revoked' => true], ['<', 'expires_at', $now]];
+
+        Db::delete(Table::OAUTH_AUTH_CODES, $stale);
+        Db::delete(Table::OAUTH_REFRESH_TOKENS, $stale);
+
+        // Keep access tokens with a live refresh token, which would be deleted along with them
+        Db::delete(Table::OAUTH_ACCESS_TOKENS, [
+            'and',
+            $stale,
+            ['not in', 'id', (new Query())->select('access_token_id')->from(Table::OAUTH_REFRESH_TOKENS)],
+        ]);
+
+        // Dynamically registered clients (which have no provider) that have nothing live left, and were either revoked,
+        // or registered over a day ago but never authorized (`updated_at` is null until a client is first authorized).
+        // Registration is anonymous, so these would otherwise pile up.
+        Db::delete(Table::OAUTH_CLIENTS, [
+            'and',
+            ['provider' => null],
+            ['not in', 'id', (new Query())->select('client_id')->from(Table::OAUTH_ACCESS_TOKENS)],
+            ['not in', 'id', (new Query())->select('client_id')->from(Table::OAUTH_AUTH_CODES)],
+            [
+                'or',
+                ['revoked' => true],
+                [
+                    'and',
+                    ['<', 'created_at', Db::prepareDateForDb(new DateTime('1 day ago'))],
+                    ['updated_at' => null],
+                ],
+            ],
+        ]);
+
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -481,7 +536,9 @@ class Gc extends Component
         }
 
         if (!empty($deleteIds)) {
-            Db::delete(Table::ELEMENTS_SITES, ['id' => $deleteIds]);
+            foreach (array_chunk($deleteIds, self::CHUNK_SIZE) as $deleteIdsChunk) {
+                Db::delete(Table::ELEMENTS_SITES, ['id' => $deleteIdsChunk]);
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -491,17 +548,16 @@ class Gc extends Component
      * Deletes elements which have a `fieldId` value, but it’s set to an invalid field ID,
      * or they're missing a row in the `elements_owners` table.
      *
-     * @param string $elementType The element type
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type
      * @param string $table The extension table name
      * @param string $fieldFk The column name that contains the foreign key to `fields.id`
      * @since 5.4.2
      */
     public function deleteOrphanedNestedElements(string $elementType, string $table, string $fieldFk = 'fieldId'): void
     {
-        /** @var string|ElementInterface $elementType */
         $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
+        // IDs of nested elements where the owner no longer exists
         $ids1 = (new Query())
             ->select('el.id')
             ->from(['el' => Table::ELEMENTS])
@@ -514,6 +570,7 @@ class Gc extends Component
             ])
             ->column();
 
+        // IDs of nested elements where the field no longer exists
         $ids2 = (new Query())
             ->select('el.id')
             ->from(['el' => Table::ELEMENTS])
@@ -551,7 +608,9 @@ class Gc extends Component
                 ->column();
 
             if (!empty($ids)) {
-                Db::delete($table, ['id' => $ids]);
+                foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
+                    Db::delete($table, ['id' => $idsChunk]);
+                }
             }
         }
 
@@ -562,6 +621,13 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedSearchIndexJobs(): void
+    {
+        $this->_stdout('    > deleting orphaned search index jobs ... ');
+        Craft::$app->getSearch()->deleteOrphanedIndexJobs();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -577,7 +643,9 @@ class Gc extends Component
             ->column();
 
         if (!empty($ids)) {
-            Db::delete(Table::RELATIONS, ['id' => $ids]);
+            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
+                Db::delete(Table::RELATIONS, ['id' => $idsChunk]);
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -599,10 +667,120 @@ class Gc extends Component
             ->column();
 
         if (!empty($ids)) {
-            Db::delete(Table::STRUCTUREELEMENTS, ['id' => $ids]);
+            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
+                Db::delete(Table::STRUCTUREELEMENTS, ['id' => $idsChunk]);
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedFkRows(): void
+    {
+        $this->_stdout('    > deleting orphaned foreign key rows ... ');
+
+        // Find the orphaned rows a page at a time with plain SELECTs, which don't lock any rows,
+        // and delete each page in its own transaction.
+        // FK checks stay enabled, so the deletions cascade and set columns to NULL as the schema says,
+        // and other connections' writes only wait on the rows being deleted.
+        // (https://github.com/craftcms/cms/issues/20885)
+        $batchSize = 1000;
+
+        foreach ($this->db->getSchema()->getTableSchemas() as $table) {
+            /** @var TableSchema $table */
+            $extendedFkInfo = $table->getExtendedForeignKeys();
+            $counter = 0;
+            foreach ($table->foreignKeys as $fk) {
+                if ($extendedFkInfo[$counter]['deleteType'] === 'CASCADE') {
+                    $fk = array_merge($fk);
+                    $refTable = array_shift($fk);
+
+                    foreach ($fk as $fkColumn => $pkColumn) {
+                        // Identify the rows by their primary key, so each batch deletes at most $batchSize rows
+                        // (tables without one fall back to the FK value, which may match more rows).
+                        // Including the FK value means a row whose FK changed since the SELECT won't be deleted.
+                        $keyColumns = array_values(array_unique([...$table->primaryKey, $fkColumn]));
+                        $qualifiedKeyColumns = array_map(fn(string $column) => "t.$column", $keyColumns);
+                        $quotedKeyColumns = implode(', ', array_map(fn(string $column) => $this->db->quoteColumnName($column), $qualifiedKeyColumns));
+
+                        $query = (new Query())
+                            ->select($qualifiedKeyColumns)
+                            ->distinct()
+                            ->from(['t' => $table->name])
+                            ->leftJoin(['t2' => $refTable], "[[t2.$pkColumn]] = [[t.$fkColumn]]")
+                            ->where(['not', ["t.$fkColumn" => null]])
+                            ->andWhere(["t2.$pkColumn" => null])
+                            ->orderBy(array_fill_keys($qualifiedKeyColumns, SORT_ASC))
+                            ->limit($batchSize);
+                        $lastKey = null;
+
+                        do {
+                            $pageQuery = clone $query;
+                            if ($lastKey !== null) {
+                                // Continue after the last page, skipping any rows that couldn't be deleted
+                                $params = [];
+                                foreach (array_values($lastKey) as $i => $value) {
+                                    $params[":lastKey$i"] = $value;
+                                }
+                                $pageQuery->andWhere(new Expression(
+                                    sprintf('(%s) > (%s)', $quotedKeyColumns, implode(', ', array_keys($params))),
+                                    $params,
+                                ));
+                            }
+
+                            $keys = $pageQuery->all($this->db);
+                            if (empty($keys)) {
+                                break;
+                            }
+
+                            try {
+                                Db::delete($table->name, ['in', $keyColumns, $keys], db: $this->db);
+                            } catch (DbException $e) {
+                                // Most likely another foreign key restricts the deletion
+                                Craft::warning("Couldn't delete orphaned rows from $table->name: {$e->getMessage()}", __METHOD__);
+                            }
+
+                            $lastKey = end($keys);
+                        } while (count($keys) === $batchSize);
+                    }
+                }
+
+                $counter++;
+            }
+        }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deletePointlessChangeData(): void
+    {
+        $db = Craft::$app->getDb();
+        $schema = $db->getSchema();
+
+        foreach ([Table::CHANGEDATTRIBUTES, Table::CHANGEDFIELDS] as $table) {
+            $this->_stdout(sprintf('    > deleting pointless rows in the %s table ... ', $schema->getRawTableName($table)));
+
+            // fetch any rows in the table for canonical elements that don't have any drafts
+            $query = (new Query())
+                ->select('t.elementId')
+                ->from(['t' => $table])
+                ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[t.elementId]]')
+                ->leftJoin(['d' => Table::ELEMENTS], [
+                    'and',
+                    ['not', ['d.draftId' => null]],
+                    '[[d.canonicalId]] = [[e.id]]',
+                ])
+                ->where(['e.canonicalId' => null])
+                ->andWhere(['d.id' => null])
+                ->groupBy('t.elementId');
+
+            foreach (Db::batch($query) as $batch) {
+                $elementIds = array_column($batch, 'elementId');
+                Db::delete($table, ['elementId' => $elementIds]);
+            }
+
+            $this->_stdout("done\n", Console::FG_GREEN);
+        }
     }
 
     /**
@@ -615,7 +793,6 @@ class Gc extends Component
      */
     public function deleteOrphanedFieldLayouts(string $elementType, string $table, string $fk = 'fieldLayoutId'): void
     {
-        /** @var string|ElementInterface $elementType */
         $this->_stdout(sprintf('    > deleting orphaned %s field layouts ... ', $elementType::lowerDisplayName()));
 
         $ids = (new Query())
@@ -626,7 +803,9 @@ class Gc extends Component
             ->column();
 
         if (!empty($ids)) {
-            Db::delete(Table::FIELDLAYOUTS, ['id' => $ids]);
+            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
+                Db::delete(Table::FIELDLAYOUTS, ['id' => $idsChunk]);
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);

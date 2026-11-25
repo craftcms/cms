@@ -28,9 +28,9 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $elementId = $this->getElementId();
-        if ($elementId !== null) {
-            $query->andNotRelatedTo($elementId);
+        $elementIds = $this->getElementIds();
+        if (!empty($elementIds)) {
+            $query->andNotRelatedTo($elementIds);
         }
     }
 
@@ -39,8 +39,8 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
      */
     public function matchElement(ElementInterface $element): bool
     {
-        $elementId = $this->getElementId();
-        if (!$elementId) {
+        $elementIds = $this->getElementIds();
+        if (empty($elementIds)) {
             return true;
         }
 
@@ -51,7 +51,7 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())
             ->status(null)
-            ->notRelatedTo($elementId)
+            ->notRelatedTo($elementIds)
             ->exists();
     }
 }

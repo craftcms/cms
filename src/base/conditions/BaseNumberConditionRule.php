@@ -58,11 +58,13 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             self::OPERATOR_BETWEEN,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
+            self::OPERATOR_IN,
+            self::OPERATOR_NOT_IN,
         ];
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     protected function operatorLabel(string $operator): string
     {
@@ -128,7 +130,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * @inheritdoc
      */
-    protected function paramValue(): ?string
+    protected function paramValue(): string|array|null
     {
         if ($this->operator === self::OPERATOR_BETWEEN) {
             if (empty($this->value) && empty($this->maxValue)) {

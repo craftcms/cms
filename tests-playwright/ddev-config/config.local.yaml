@@ -1,0 +1,3 @@
+host_db_port: '33069'
+# if you wish to rename your test project from the default "playwright",
+#  you need to both add a name to this file and specify a matching value under PRIMARY_SITE_URL in the .env file

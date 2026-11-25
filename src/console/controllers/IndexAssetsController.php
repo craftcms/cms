@@ -297,7 +297,7 @@ class IndexAssetsController extends Controller
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
             /** @var Asset[] $assets */
-            $assets = Asset::find()->id($assetIds)->all();
+            $assets = Asset::find()->id($assetIds)->site('*')->unique()->all();
             foreach ($assets as $asset) {
                 Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;
@@ -343,9 +343,7 @@ class IndexAssetsController extends Controller
         }
 
         $selection = (int)$this->prompt('>', [
-            'validator' => function($input) use ($missingRecords) {
-                return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
-            },
+            'validator' => fn($input) => !$input || (is_numeric($input) && isset($missingRecords[$input - 1])),
         ]);
 
         return $selection ? $missingRecords[$selection - 1] : null;

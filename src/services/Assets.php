@@ -53,7 +53,7 @@ use yii\db\Expression;
 /**
  * Assets service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->getAssets()`]].
  *
  * @property-read VolumeFolder $currentUserTemporaryUploadFolder
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -109,7 +109,15 @@ class Assets extends Component
     private array $_userTempFolders = [];
 
     /**
+     * @see getTempAssetUploadFs()
+     */
+    private ?FsInterface $_tempAssetUploadFs = null;
+
+    /**
      * Returns a file by its ID.
+     *
+     * If no site ID is passed, the asset will be returned in the current site if it exists there,
+     * or in another site it exists in otherwise (e.g. for volumes with custom propagation).
      *
      * @param int $assetId
      * @param int|null $siteId
@@ -117,7 +125,17 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        if ($siteId !== null) {
+            return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        }
+
+        /** @var Asset|null */
+        return Asset::find()
+            ->id($assetId)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
+            ->one();
     }
 
     /**
@@ -146,8 +164,9 @@ class Assets extends Component
      * @param Asset $asset
      * @param string $pathOnServer
      * @param string $filename
+     * @param string|null $mimeType The default MIME type to use, if it can’t be determined based on the server path
      */
-    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename): void
+    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
@@ -162,6 +181,7 @@ class Assets extends Component
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
+        $asset->setMimeType(FileHelper::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
@@ -283,18 +303,42 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
-        $descendantFolders = $this->getAllDescendantFolders($folder);
+        $oldFolderPath = $folder->path;
+        $volume->renameDirectory(rtrim($oldFolderPath, '/'), $newName);
 
-        foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^' . $folder->path . '#', $newFolderPath, $descendantFolder->path);
-            $this->storeFolderRecord($descendantFolder);
-        }
-
-        // Now change the affected folder
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
+
+        // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder's
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            $childFolders = $this->findFolders(['parentId' => $parentIds]);
+            $parentIds = array_keys($childFolders);
+
+            foreach ($childFolders as $childFolder) {
+                $oldChildPath = $childFolder->path;
+                // Take the prefix by path segment, since case variants can differ in length
+                $oldPrefix = implode('/', array_slice(explode('/', $oldChildPath), 0, substr_count($oldFolderPath, '/'))) . '/';
+                if (mb_convert_case($oldPrefix, MB_CASE_FOLD) !== mb_convert_case($oldFolderPath, MB_CASE_FOLD)) {
+                    continue;
+                }
+
+                // Keep the rest of the path as stored, so it still matches the directories below the renamed one
+                $newChildPath = $newFolderPath . substr($oldChildPath, strlen($oldPrefix));
+
+                // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
+                if (
+                    $oldPrefix !== $oldFolderPath &&
+                    (!$volume->directoryExists(rtrim($newChildPath, '/')) || $volume->directoryExists(rtrim($oldChildPath, '/')))
+                ) {
+                    continue;
+                }
+
+                $childFolder->path = $newChildPath;
+                $this->storeFolderRecord($childFolder);
+            }
+        }
 
         return $newName;
     }
@@ -308,7 +352,7 @@ class Assets extends Component
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
-        $folders = [];
+        $allFolderIds = [];
 
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById((int)$folderId);
@@ -316,8 +360,11 @@ class Assets extends Component
                 continue;
             }
 
-            $folders[] = $folder;
+            $allFolderIds[] = $folder->id;
+            $descendants = $this->getAllDescendantFolders($folder, withParent: false);
+            array_push($allFolderIds, ...array_map(fn(VolumeFolder $folder) => $folder->id, $descendants));
 
+            // Delete the directory on the filesystem
             if ($folder->path && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
@@ -329,25 +376,18 @@ class Assets extends Component
             }
         }
 
-        /** @var Asset[] $assets */
-        $assets = Asset::find()->folderId($folderIds)->all();
-
+        // Delete the elements
+        $assetQuery = Asset::find()->folderId($allFolderIds)->site('*')->unique();
         $elementService = Craft::$app->getElements();
 
-        foreach ($assets as $asset) {
+        foreach (Db::each($assetQuery) as $asset) {
+            /** @var Asset $asset */
             $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
         }
 
-        foreach ($folders as $folder) {
-            $descendants = $this->getAllDescendantFolders($folder);
-            usort($descendants, static fn($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
-
-            foreach ($descendants as $descendant) {
-                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
-            }
-            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
-        }
+        // Delete the folder records
+        VolumeFolderRecord::deleteAll(['id' => $allFolderIds]);
     }
 
     /**
@@ -491,7 +531,7 @@ class Assets extends Component
      * @param string $orderBy
      * @param bool $withParent Whether the parent folder should be included in the results
      * @param bool $asTree Whether the folders should be returned hierarchically
-     * @return VolumeFolder[]
+     * @return array<int,VolumeFolder> The descendant folders, indexed by their IDs
      */
     public function getAllDescendantFolders(
         VolumeFolder $parentFolder,
@@ -549,7 +589,7 @@ class Assets extends Component
         $criteria->limit = 1;
         $folder = $this->findFolders($criteria);
 
-        if (is_array($folder) && !empty($folder)) {
+        if (!empty($folder)) {
             return array_pop($folder);
         }
 
@@ -684,7 +724,8 @@ class Assets extends Component
             return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
-        $transform = new ImageTransform([
+        $transform = Craft::createObject([
+            'class' => ImageTransform::class,
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -728,7 +769,8 @@ class Assets extends Component
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = new ImageTransform([
+            $transform = Craft::createObject([
+                'class' => ImageTransform::class,
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
@@ -815,9 +857,7 @@ class Assets extends Component
         }
 
         // Check whether a filename we'd want to use does not exist
-        $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
-        };
+        $canUse = static fn($filenameToTest) => !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
@@ -872,9 +912,11 @@ class Assets extends Component
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
+        $fullPath = trim($fullPath, '/\\');
+
         if ($fullPath !== '') {
             // If we don't have a folder matching these, create a new one
-            $parts = preg_split('/\\\\|\//', trim($fullPath, '/\\'));
+            $parts = preg_split('/\\\\|\//', $fullPath);
 
             // creep up the folder path
             $path = '';
@@ -945,7 +987,9 @@ class Assets extends Component
     {
         $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
         if (!$handle) {
-            return new Temp();
+            // Created via the DI container, so hosts can replace it, such as with shared storage for load-balanced
+            // servers. It's reused so Assets::isTempUploadFs() can recognize it whatever its class.
+            return $this->_tempAssetUploadFs ??= Craft::createObject(Temp::class);
         }
 
         $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
@@ -1068,7 +1112,7 @@ class Assets extends Component
             Asset::KIND_IMAGE => new ImagePreview($asset),
             Asset::KIND_PDF => new Pdf($asset),
             Asset::KIND_VIDEO => new Video($asset),
-            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_MARKDOWN, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
             default => null,
         };
     }

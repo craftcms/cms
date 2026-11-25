@@ -97,6 +97,10 @@
       "name": "West Sussex",
       "local_name": "West Sussex"
     },
+    "Westmorland and Furness": {
+      "name": "Westmorland and Furness",
+      "local_name": "Westmorland a Furness"
+    },
     "Worcestershire": {
       "name": "Worcestershire",
       "local_name": "Worcestershire"
@@ -652,6 +656,22 @@
     "Newry, Mourne and Down": {
       "name": "Newry, Mourne and Down",
       "local_name": "Newry, Mourne and Down"
+    },
+    "Aberdeen City": {
+      "name": "Aberdeen City",
+      "local_name": "Aberdeen City"
+    },
+    "Aberdeenshire": {
+      "name": "Aberdeenshire",
+      "local_name": "Sir Aberdein"
+    },
+    "Angus": {
+      "name": "Angus",
+      "local_name": "Angus"
+    },
+    "Argyll and Bute": {
+      "name": "Argyll and Bute",
+      "local_name": "Argyll a Bute"
     },
     "Clackmannanshire": {
       "name": "Clackmannanshire",

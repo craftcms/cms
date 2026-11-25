@@ -46,6 +46,19 @@ interface ElementActionInterface extends ConfigurableComponentInterface
     public function setElementType(string $elementType): void;
 
     /**
+     * Returns the ID the trigger element should have.
+     *
+     * This should be overridden with something unique if the same action can be
+     * included multiple times for the same elements.
+     *
+     * If this is overridden, ensure you configure the `Craft.ElementActionTrigger`
+     * JavaScript object with a `triggerId` setting, set to the same value.
+     *
+     * @return string
+     */
+    public function getTriggerId(): string;
+
+    /**
      * Returns the action’s trigger label.
      *
      * @return string The action’s trigger label

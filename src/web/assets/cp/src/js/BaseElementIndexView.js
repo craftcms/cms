@@ -60,8 +60,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
             filter: (target) => {
-              return !$(target).closest('a[href],.toggle,.btn,[role=button]')
-                .length;
+              return !$(target).closest(
+                'a[href],.toggle,.btn,[role=button],.move,craft-copy-attribute'
+              ).length;
             },
             checkboxMode: this.settings.checkboxMode,
             waitForDoubleClicks: this.settings.waitForDoubleClicks,
@@ -69,14 +70,26 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
           }
         );
 
+        this.updateInitialViewForSelectedElements($elements);
+
         this._handleEnableElements = (ev) => {
           this.elementSelect.addItems(
             this.filterSelectableElements($(ev.elements))
           );
+
+          for (let i = 0; i < $(ev.elements).length; i++) {
+            const $element = $(ev.elements).eq(i);
+            this.enableFocusableElements($element);
+          }
         };
 
         this._handleDisableElements = (ev) => {
           this.elementSelect.removeItems(ev.elements);
+
+          for (let i = 0; i < $(ev.elements).length; i++) {
+            const $element = $(ev.elements).eq(i);
+            this.disableFocusableElements($element);
+          }
         };
 
         this.elementIndex.on('enableElements', this._handleEnableElements);
@@ -88,9 +101,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         this._handleElementEditing = (ev) => {
           if (
             this.elementIndex.inlineEditing ||
-            $(ev.target).closest('a[href],button,[role=button]').length
+            $(ev.target).closest('a[href],button,[role=button],.move').length
           ) {
-            // Let the link/button do its thing
+            // Let the link/button/move handle do its thing
             return;
           }
 
@@ -107,7 +120,20 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             Garnish.hasAttr($element, 'data-editable') &&
             !$element.closest('.elementselect').length
           ) {
-            Craft.createElementEditor($element.data('type'), $element);
+            const slideout = Craft.createElementEditor(
+              $element.data('type'),
+              $element,
+              {
+                onLoad:
+                  this.elementIndex.settings.context === 'embedded-index'
+                    ? () => {
+                        slideout.elementEditor.on('update', () => {
+                          Craft.Preview.refresh();
+                        });
+                      }
+                    : null,
+              }
+            );
           }
         };
 
@@ -145,31 +171,84 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
+    /**
+     * Updates the initial view for selected elements
+     * @param $elements
+     */
+    updateInitialViewForSelectedElements: function ($elements) {
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+        if ($element.hasClass('disabled')) {
+          // mark as checked
+          this.getElementCheckbox($element).attr({
+            'aria-checked': 'true',
+          });
+
+          // remove other focusable elements from the tab order
+          this.disableFocusableElements($element);
+          continue;
+        }
+
+        if (!this.canSelectElement($element)) {
+          $element.find('.checkbox').remove();
+        }
+      }
+    },
+
+    /**
+     * Returns selectable elements
+     * @param $elements Elements to filter
+     * @returns {jQuery} A jQuery object containing the selectable elements
+     */
     filterSelectableElements: function ($elements) {
       const selectable = [];
 
       for (let i = 0; i < $elements.length; i++) {
         const $element = $elements.eq(i);
-        if ($element.hasClass('disabled')) {
-          // remove checkbox from tab order and mark as checked
-          $element.find('.checkbox').attr({
-            tabindex: '-1',
-            'aria-checked': 'true',
-          });
-          continue;
-        }
+
         if (this.canSelectElement($element)) {
           selectable.push($element[0]);
-        } else {
-          // make sure it doesn't have a checkbox
-          $element.find('.checkbox').remove();
         }
       }
 
       return $(selectable);
     },
 
+    /**
+     * Removes all focusable elements inside the given container from the focus order
+     * @param $container
+     */
+    disableFocusableElements: function ($container) {
+      const disabledAttributes = {
+        tabindex: '-1',
+        'data-focusable': true,
+      };
+      // Disable all focusable elements inside the disabled elements
+      const $focusable = Garnish.getKeyboardFocusableElements($container);
+
+      if ($focusable.length) {
+        $focusable.attr(disabledAttributes);
+      }
+      this.getElementCheckbox($container).attr(disabledAttributes);
+    },
+
+    /**
+     * Moves all focusable elements inside the given container into the default focus order
+     * @param $container
+     */
+    enableFocusableElements: function ($container) {
+      const $focusableElements = $container.find('[data-focusable]');
+
+      if (!$focusableElements.length) return;
+
+      $focusableElements.removeAttr('tabindex data-focusable');
+      this.getElementCheckbox($container).attr('tabindex', '0');
+    },
+
     canSelectElement: function ($element) {
+      if ($element.hasClass('disabled')) {
+        return false;
+      }
       if (this.settings.canSelectElement) {
         return this.settings.canSelectElement($element);
       }
@@ -252,6 +331,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
+    selectElementsById: function (ids) {
+      for (const id of ids) {
+        this.selectElementById(id);
+      }
+    },
+
     selectAllElements: function () {
       this.elementSelect.selectAll();
     },
@@ -298,6 +383,15 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      */
     canLoadMore: function () {
       if (!this.getMorePending() || !this.elementIndex.settings.batchSize) {
+        return false;
+      }
+
+      // A hidden scroll area (e.g. a closed element selector modal) reports a height of 0,
+      // which would otherwise look like the user has reached the bottom
+      if (
+        this.$scroller[0] !== Garnish.$win[0] &&
+        !this.$scroller.is(':visible')
+      ) {
         return false;
       }
 

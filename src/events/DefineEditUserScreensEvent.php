@@ -14,7 +14,7 @@ use craft\elements\User;
  * Class DefineEditUserScreensEvent
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 5.0.0
  */
 class DefineEditUserScreensEvent extends Event
 {

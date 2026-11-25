@@ -108,6 +108,9 @@ export default BaseDrag.extend(
 
       this.dragging = true;
       this.onDragStart();
+
+      // Mute activate events
+      Garnish.activateEventsMuted = true;
     },
 
     /**
@@ -266,6 +269,20 @@ export default BaseDrag.extend(
           callback
         );
       }
+    },
+
+    /**
+     * Fade out helpers
+     */
+    fadeOutHelpers: function () {
+      this.helpers.forEach(($draggeeHelper) => {
+        $draggeeHelper.velocity('fadeOut', {
+          duration: Garnish.FX_DURATION,
+          complete: function () {
+            $draggeeHelper.remove();
+          },
+        });
+      });
     },
 
     // Events

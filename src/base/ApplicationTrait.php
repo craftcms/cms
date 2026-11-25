@@ -39,13 +39,17 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AffiliatedSiteField;
 use craft\fieldlayoutelements\users\EmailField;
 use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
+use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\Session;
+use craft\helpers\Template as TemplateHelper;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
@@ -79,9 +83,11 @@ use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Icons;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
+use craft\services\PersonalAccessTokens;
 use craft\services\Plugins;
 use craft\services\PluginStore;
 use craft\services\ProjectConfig;
@@ -107,7 +113,7 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
-use craft\web\User as UserSession;
+use craft\web\UrlManager;
 use craft\web\View;
 use Illuminate\Support\Collection;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
@@ -116,6 +122,7 @@ use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
+use yii\base\ErrorException;
 use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\Exception;
@@ -124,7 +131,6 @@ use yii\caching\Cache;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
-use yii\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
 use yii\web\ServerErrorHttpException;
@@ -159,6 +165,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
+ * @property-read Icons $icons The icons service
  * @property-read Images $images The images service
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
@@ -168,6 +175,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
  * @property-read Path $path The path service
+ * @property-read PersonalAccessTokens $personalAccessTokens The personal access tokens service
  * @property-read PluginStore $pluginStore The plugin store service
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
@@ -185,6 +193,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
+ * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
  * @property-read Users $users The users service
@@ -206,6 +215,7 @@ use yii\web\ServerErrorHttpException;
  * @method Formatter getFormatter() Returns the formatter component.
  * @method I18N getI18n() Returns the internationalization (i18n) component.
  * @method Security getSecurity() Returns the security component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method View getView() Returns the view component.
  * @mixin WebApplication
  * @mixin ConsoleApplication
@@ -294,6 +304,8 @@ trait ApplicationTrait
      */
     private array $afterRequestCallbacks = [];
 
+    private string $_runtimePath;
+
     /**
      * Returns the application ID combined with the environment name.
      *
@@ -331,6 +343,30 @@ trait ApplicationTrait
         Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
         Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
         Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRuntimePath(): string
+    {
+        if (!isset($this->_runtimePath)) {
+            $path = $this->getPath()->getStoragePath() . DIRECTORY_SEPARATOR . 'runtime';
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
+            $this->setRuntimePath($path);
+        }
+
+        return $this->_runtimePath;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setRuntimePath($path): void
+    {
+        $this->_runtimePath = Craft::getAlias($path);
+        Craft::setAlias('@runtime', $this->_runtimePath);
     }
 
     /**
@@ -386,9 +422,7 @@ trait ApplicationTrait
         if ($useUserLanguage) {
             // If the user is logged in *and* has a primary language set, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
-            /** @var UserSession $user */
-            $user = $this->getUser();
-            $id = Session::get($user->idParam);
+            $id = Session::get($this->getUser()->idParam);
             if (
                 $id &&
                 ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
@@ -619,7 +653,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?CmsEdition
     {
-        $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
+        $licenseInfo = $this->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;
@@ -739,7 +773,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (App::normalizeBooleanValue(App::env('CRAFT_NO_TRIALS'))) {
             return false;
         }
 
@@ -1270,6 +1304,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the icons service.
+     *
+     * @return Icons The icons service
+     * @since 5.12.0
+     */
+    public function getIcons(): Icons
+    {
+        return $this->get('icons');
+    }
+
+    /**
      * Returns the images service.
      *
      * @return Images The images service
@@ -1317,6 +1362,23 @@ trait ApplicationTrait
     public function getMutex(): Mutex
     {
         return $this->get('mutex');
+    }
+
+    /** Returns the shared OAuth authorization service. @since 5.12.0 */
+    public function getOAuth(): \craft\services\OAuth
+    {
+        return $this->get('oauth');
+    }
+
+    /**
+     * Returns the personal access tokens service.
+     *
+     * @return PersonalAccessTokens The personal access tokens service
+     * @since 5.12.0
+     */
+    public function getPersonalAccessTokens(): PersonalAccessTokens
+    {
+        return $this->get('personalAccessTokens');
     }
 
     /**
@@ -1556,7 +1618,7 @@ trait ApplicationTrait
 
         // Register Collection::set() as an alias of put() - with support for bulk-setting values
         Collection::macro('set', function(mixed $values) {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             if (is_array($values)) {
                 foreach ($values as $key => $value) {
                     $this->put($key, $value);
@@ -1569,29 +1631,31 @@ trait ApplicationTrait
 
         // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
         Collection::macro('one', function() {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             return $this->first(...func_get_args());
         });
 
-        // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
-        // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
-        $this->getLog();
+        // Register Collection::render() for rendering collections of Renderable objects
+        Collection::macro('render', function(array $variables = []) {
+            assert($this instanceof Collection);
+            return TemplateHelper::render($this, $variables);
+        });
 
         // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
-        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+        $this->_setCraftEdition();
+
+        // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
+        // to avoid possible recursive fatal errors in the request initialization
+        $this->getRequest();
+        $this->getLog();
+
+        $isCpRequest = $this->getRequest()->getIsCpRequest();
 
         // Set the timezone
-        $this->_setTimeZone();
+        $this->_setTimeZone($isCpRequest);
 
         // Set the language
-        $this->updateTargetLanguage();
-
-        // Prevent browser caching if this is a control panel request
-        if ($this instanceof WebApplication && $request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
-        }
+        $this->updateTargetLanguage($isCpRequest);
 
         // Register the variable dumper
         VarDumper::setHandler(function($var) {
@@ -1621,6 +1685,10 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
+        if (!App::isEphemeral()) {
+            $this->ensureResourcePathExists();
+        }
+
         // Register field layout listeners
         $this->_registerFieldLayoutListener();
 
@@ -1646,10 +1714,22 @@ trait ApplicationTrait
     /**
      * Sets the system timezone.
      */
-    private function _setTimeZone(): void
+    private function _setTimeZone(bool $useUserTz): void
     {
-        /** @var WebApplication|ConsoleApplication $this */
-        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = null;
+
+        if ($useUserTz && $this instanceof WebApplication) {
+            // If the user is logged in *and* has a preferred time zone, use that
+            // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+            $id = Session::get($this->getUser()->idParam);
+            if ($id) {
+                $timeZone = $this->getUsers()->getUserPreference($id, 'timeZone');
+            }
+        }
+
+        if (!$timeZone) {
+            $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        }
 
         if ($timeZone) {
             $this->setTimeZone(App::parseEnv($timeZone));
@@ -1692,6 +1772,24 @@ trait ApplicationTrait
     }
 
     /**
+     * Ensures that the resources folder exists and is writable.
+     *
+     * @throws ErrorException
+     * @throws InvalidConfigException
+     * @throws Exception
+     */
+    protected function ensureResourcePathExists(): void
+    {
+        $generalConfig = $this->getConfig()->getGeneral();
+
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+
+        if (!@FileHelper::createDirectory($resourceBasePath)) {
+            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
+        }
+    }
+
+    /**
      * Register event listeners for field layouts.
      */
     private function _registerFieldLayoutListener(): void
@@ -1728,6 +1826,9 @@ trait ApplicationTrait
                     $event->fields[] = UserFullNameField::class;
                     $event->fields[] = PhotoField::class;
                     $event->fields[] = EmailField::class;
+                    if (Craft::$app->getIsMultiSite()) {
+                        $event->fields[] = AffiliatedSiteField::class;
+                    }
                     break;
             }
         });
@@ -1828,5 +1929,31 @@ trait ApplicationTrait
         return function() use ($id, $method) {
             return $this->get($id)->$method(...func_get_args());
         };
+    }
+
+    /**
+     * Set Craft's edition
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function _setCraftEdition(): void
+    {
+        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+    }
+
+    /**
+     * Ensure that edition is set.
+     *
+     * @return void
+     * @throws Exception
+     * @since 5.8.18
+     */
+    public function ensureEdition(): void
+    {
+        if (!isset($this->edition)) {
+            $this->_setCraftEdition();
+        }
     }
 }

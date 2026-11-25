@@ -8,6 +8,7 @@
 namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
+use Codeception\Test\TestCaseWrapper;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
@@ -134,9 +135,7 @@ class TestSetup
         $_REQUEST = [];
 
         UploadedFile::reset();
-        if (method_exists(Event::class, 'offAll')) {
-            Event::offAll();
-        }
+        Event::offAll();
 
         Craft::setLogger(null);
 
@@ -169,7 +168,7 @@ class TestSetup
     }
 
     /**
-     * @param class-string<Migration> $class
+     * @param class-string<Migration>|string $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      * @return bool
@@ -285,12 +284,13 @@ class TestSetup
      */
     public static function appType(): string
     {
-        $appType = 'web';
-        if (isset(CraftTest::$currentTest) && CraftTest::$currentTest instanceof ConsoleTest) {
-            $appType = 'console';
+        $test = CraftTest::$currentTest ?? null;
+        // Codeception 5 wraps unit tests
+        if ($test instanceof TestCaseWrapper) {
+            $test = $test->getTestCase();
         }
 
-        return $appType;
+        return $test instanceof ConsoleTest ? 'console' : 'web';
     }
 
     /**
@@ -327,7 +327,7 @@ class TestSetup
         ini_set('log_errors', '1');
         ini_set('error_log', $storagePath . '/logs/phperrors.log');
 
-        error_reporting(E_ALL);
+        error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
         ini_set('display_errors', '1');
         defined('YII_DEBUG') || define('YII_DEBUG', true);
         defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
@@ -455,7 +455,7 @@ class TestSetup
 
         $siteConfig = [
             'name' => 'Craft test site',
-            'handle' => 'default',
+            'handle' => 'defaultSite',
             'hasUrls' => true,
             'baseUrl' => self::SITE_URL,
             'language' => 'en-US',
@@ -491,7 +491,7 @@ class TestSetup
             'site' => $site,
         ]);
 
-        $migration->up();
+        $migration->up(true);
     }
 
     /**
@@ -504,7 +504,7 @@ class TestSetup
      */
     public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
     {
-        $moduleClass = $moduleClass ?? self::appClass();
+        $moduleClass ??= self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
         $mockApp = self::getMock($test, $moduleClass);

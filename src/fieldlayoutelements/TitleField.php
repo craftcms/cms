@@ -9,6 +9,8 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 
 /**
  * TitleField represents a Title field that can be included in field layouts.
@@ -89,5 +91,63 @@ class TitleField extends TextField
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Title');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        if (
+            $element &&
+            !$static &&
+            (!isset($element->slug) || ElementHelper::isTempSlug($element->slug))
+        ) {
+            $view = Craft::$app->getView();
+
+            $language = $element->getSite()->language;
+            $charMap = $language !== Craft::$app->language
+                ? StringHelper::asciiCharMap(true, $language)
+                : null;
+
+            $view->registerJsWithVars(fn($titleId, $slugId, $charMap) => <<<JS
+(() => {
+  const slugInput = $('#' + $slugId);
+  if (slugInput.length && !slugInput.val().length) {
+    new Craft.SlugGenerator($('#' + $titleId), slugInput, {
+        charMap: $charMap,
+    });
+  }
+})();
+JS, [
+                $view->namespaceInputId($this->id()),
+                $view->namespaceInputId('slug'),
+                $charMap,
+            ]);
+        }
+
+        return parent::formHtml($element, $static);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction();
+        }
+
+        return $items;
     }
 }

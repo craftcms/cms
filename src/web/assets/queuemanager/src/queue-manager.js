@@ -61,6 +61,25 @@ new Vue({
     }
   },
 
+  computed: {
+    /**
+     * Returns the active job’s data as syntax-highlighted HTML, if it’s valid JSON.
+     * @return {string|null}
+     */
+    highlightedJobData() {
+      const data = this.activeJob?.job;
+      if (typeof data !== 'string') {
+        return null;
+      }
+      try {
+        JSON.parse(data);
+      } catch (e) {
+        return null;
+      }
+      return Craft.highlighter.highlight(data, {lang: 'json'}).html;
+    },
+  },
+
   methods: {
     /**
      * Force-updates the job progress.
@@ -338,16 +357,12 @@ new Vue({
       switch (status) {
         case 1:
           return Craft.t('app', 'Pending');
-          break;
         case 2:
           return Craft.t('app', 'Reserved');
-          break;
         case 3:
           return Craft.t('app', 'Finished');
-          break;
         case 4:
           return Craft.t('app', 'Failed');
-          break;
         default:
           return '';
       }
@@ -359,19 +374,16 @@ new Vue({
      * @returns {string}
      */
     jobStatusIconClass(status) {
-      let c = 'status';
       switch (status) {
-        case 1:
-          c += ' orange';
-          break;
-        case 2:
-          c += ' green';
-          break;
-        case 4:
-          c += ' red';
-          break;
+        case 1: // pending
+          return 'status orange';
+        case 2: // reserved
+          return 'status green';
+        case 4: // failed
+          return 'status red';
+        default:
+          return '';
       }
-      return c;
     },
 
     /**
@@ -383,6 +395,8 @@ new Vue({
       switch (name) {
         case 'id':
           return Craft.t('app', 'ID');
+        case 'class':
+          return Craft.t('app', 'Class');
         case 'status':
           return Craft.t('app', 'Status');
         case 'progress':

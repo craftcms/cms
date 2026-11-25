@@ -8,8 +8,10 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\DefaultableFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\FieldInterface;
 use craft\console\Controller;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -21,6 +23,7 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\events\MultiElementActionEvent;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\helpers\Inflector;
@@ -62,18 +65,14 @@ class ResaveController extends Controller
     {
         // empty
         if ($to === ':empty:') {
-            return function() {
-                return '';
-            };
+            return fn() => '';
         }
 
         // object template
         if (str_starts_with($to, '=')) {
             $template = substr($to, 1);
             $view = Craft::$app->getView();
-            return function(ElementInterface $element) use ($template, $view) {
-                return $view->renderObjectTemplate($template, $element);
-            };
+            return fn(ElementInterface $element) => $view->renderObjectTemplate($template, $element);
         }
 
         // PHP arrow function
@@ -82,16 +81,14 @@ class ResaveController extends Controller
             $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
             return function(ElementInterface $element) use ($var, $php) {
                 if ($var) {
-                    $$var = $element;
+                    ${$var} = $element;
                 }
                 return eval($php);
             };
         }
 
         // attribute name
-        return static function(ElementInterface $element) use ($to) {
-            return $element->$to;
-        };
+        return static fn(ElementInterface $element) => $element->$to;
     }
 
     /**
@@ -101,22 +98,31 @@ class ResaveController extends Controller
     public bool $queue = false;
 
     /**
+     * @var int The number of entries that should be resaved per queue job, if --queue is passed.
+     * @since 5.7.0
+     */
+    public int $batchSize = 100;
+
+    /**
      * @var bool Whether to resave element drafts.
+     * Set to `null` if all elements should be resaved regardless of whether they’re drafts.
      * @since 3.6.5
      */
-    public bool $drafts = false;
+    public bool|string|null $drafts = null;
 
     /**
      * @var bool Whether to resave provisional element drafts.
+     * Set to `null` if all elements should be resaved regardless of whether they’re provisional drafts.
      * @since 3.7.0
      */
-    public bool $provisionalDrafts = false;
+    public bool|string|null $provisionalDrafts = null;
 
     /**
-     * @var bool Whether to resave element revisions.
+     * @var bool|string Whether to resave element revisions.
+     * Set to `null` if all elements should be resaved regardless of whether they’re revisions.
      * @since 3.7.35
      */
-    public bool $revisions = false;
+    public bool|string|null $revisions = null;
 
     /**
      * @var int|string|null The ID(s) of the elements to resave.
@@ -213,7 +219,7 @@ class ResaveController extends Controller
     public ?string $countryCode = null;
 
     /**
-     * @var string[] Only resave elements that have custom fields with these global field handles.
+     * @var string[]|FieldInterface[] Only resave elements that have custom fields with these global field handles.
      * @since 5.5.0
      */
     public array $withFields = [];
@@ -245,6 +251,12 @@ class ResaveController extends Controller
     public ?string $to = null;
 
     /**
+     * @var bool Sets the specified fields to their default values.
+     * @since 5.10.0
+     */
+    public bool $toDefault = false;
+
+    /**
      * @var bool Whether the `--set` attribute should only be set if it doesn’t have a value.
      * @since 3.7.29
      */
@@ -263,6 +275,7 @@ class ResaveController extends Controller
     {
         $options = parent::options($actionID);
         $options[] = 'queue';
+        $options[] = 'batchSize';
         $options[] = 'elementId';
         $options[] = 'uid';
         $options[] = 'site';
@@ -308,6 +321,7 @@ class ResaveController extends Controller
 
         $options[] = 'set';
         $options[] = 'to';
+        $options[] = 'toDefault';
         $options[] = 'ifEmpty';
         $options[] = 'ifInvalid';
 
@@ -321,6 +335,16 @@ class ResaveController extends Controller
     {
         if (!parent::beforeAction($action)) {
             return false;
+        }
+
+        // Can't default these properties to false because then yii\console\Controller::runAction() will
+        // typecast their values to booleans
+        foreach (['drafts', 'provisionalDrafts', 'revisions'] as $property) {
+            $this->$property ??= false;
+            if (is_string($this->$property)) {
+                $value = App::normalizeValue($this->$property);
+                $this->$property = $value !== null ? (bool)$value : null;
+            }
         }
 
         if (isset($this->propagateTo)) {
@@ -342,9 +366,49 @@ class ResaveController extends Controller
             }
         }
 
-        if (isset($this->set) && !isset($this->to)) {
-            $this->stderr('--to is required when using --set.' . PHP_EOL, Console::FG_RED);
+        if (isset($this->set) && !isset($this->to) && !$this->toDefault) {
+            $this->stderr('--to or --to-default is required when using --set.' . PHP_EOL, Console::FG_RED);
             return false;
+        }
+
+        if (!empty($this->withFields)) {
+            $fieldsService = Craft::$app->getFields();
+
+            foreach ($this->withFields as $i => $field) {
+                if (!$field instanceof FieldInterface) {
+                    $handle = $field;
+                    $field = $fieldsService->getFieldByHandle($handle);
+                    if (!$field) {
+                        $this->stderr("Invalid field: `$handle`" . PHP_EOL, Console::FG_RED);
+                        return false;
+                    }
+                }
+                $this->withFields[$i] = $field;
+            }
+        }
+
+        if ($this->toDefault) {
+            if (empty($this->withFields) && !isset($this->set)) {
+                $this->stderr('--with-fields or --set is required when using --to-default.' . PHP_EOL, Console::FG_RED);
+                return false;
+            }
+
+            $fieldsService = Craft::$app->getFields();
+
+            if (isset($this->set)) {
+                $field = $fieldsService->getFieldByHandle($this->set);
+                if (!$field) {
+                    $this->stderr("Invalid field handle: $this->set", Console::FG_RED);
+                    return false;
+                }
+            } else {
+                foreach ($this->withFields as $field) {
+                    if (!$field instanceof DefaultableFieldInterface) {
+                        $this->stderr("$field->handle doesn’t support --to-default." . PHP_EOL, Console::FG_RED);
+                        return false;
+                    }
+                }
+            }
         }
 
         return true;
@@ -616,10 +680,8 @@ class ResaveController extends Controller
      */
     public function hasTheFields(FieldLayout $fieldLayout): bool
     {
-        $fieldsService = Craft::$app->getFields();
-        foreach ($this->withFields as $handle) {
-            $field = $fieldsService->getFieldByHandle($handle);
-            if ($field && $fieldLayout->getFieldByUid($field->uid)) {
+        foreach ($this->withFields as $field) {
+            if ($fieldLayout->getFieldByUid($field->uid)) {
                 return true;
             }
         }
@@ -640,12 +702,15 @@ class ResaveController extends Controller
             Queue::push(new ResaveElements([
                 'elementType' => $elementType,
                 'criteria' => $criteria,
+                'withFields' => array_map(fn(FieldInterface $field) => $field->handle, $this->withFields),
                 'set' => $this->set,
                 'to' => $this->to,
+                'toDefault' => $this->toDefault,
                 'ifEmpty' => $this->ifEmpty,
                 'ifInvalid' => $this->ifInvalid,
                 'touch' => $this->touch,
                 'updateSearchIndex' => $this->updateSearchIndex,
+                'batchSize' => $this->batchSize,
             ]));
             $this->output($elementType::pluralDisplayName() . ' queued to be resaved.');
             return ExitCode::OK;
@@ -678,19 +743,14 @@ class ResaveController extends Controller
      */
     private function _baseCriteria(): array
     {
-        $criteria = [];
+        $criteria = [
+            'drafts' => $this->drafts,
+            'provisionalDrafts' => $this->provisionalDrafts,
+            'revisions' => $this->revisions,
+        ];
 
-        if ($this->drafts) {
+        if ($this->provisionalDrafts !== false && $this->drafts == false) {
             $criteria['drafts'] = true;
-        }
-
-        if ($this->provisionalDrafts) {
-            $criteria['drafts'] = true;
-            $criteria['provisionalDrafts'] = true;
-        }
-
-        if ($this->revisions) {
-            $criteria['revisions'] = true;
         }
 
         if ($this->elementId) {
@@ -728,7 +788,7 @@ class ResaveController extends Controller
     private function _resaveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
-        /** @var ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $query->elementType;
         $count = (int)$query->count();
 
@@ -774,7 +834,37 @@ class ResaveController extends Controller
                     }
 
                     try {
-                        if (isset($this->set)) {
+                        if ($this->toDefault) {
+                            if ($this->set) {
+                                $fields = [$element->getFieldLayout()?->getFieldByHandle($this->set)];
+                            } else {
+                                $fields = array_map(
+                                    fn(FieldInterface $field) => $element->getFieldLayout()?->getFieldByUid($field->uid),
+                                    $this->withFields,
+                                );
+                            }
+
+                            $fields = array_filter($fields, fn(?FieldInterface $field) => $field instanceof DefaultableFieldInterface);
+
+                            foreach ($fields as $field) {
+                                $set = true;
+                                if ($this->ifEmpty) {
+                                    if (!ElementHelper::isAttributeEmpty($element, $field->handle)) {
+                                        $set = false;
+                                    }
+                                } elseif ($this->ifInvalid) {
+                                    $element->setScenario(Element::SCENARIO_LIVE);
+                                    if ($element->validate("field:$field->handle")) {
+                                        $set = false;
+                                    }
+                                }
+
+                                if ($set) {
+                                    /** @var DefaultableFieldInterface $field */
+                                    $element->setFieldValue($field->handle, $field->getDefaultValue());
+                                }
+                            }
+                        } elseif (isset($this->set)) {
                             $set = true;
                             if ($this->ifEmpty) {
                                 if (!ElementHelper::isAttributeEmpty($element, $this->set)) {
@@ -823,7 +913,7 @@ class ResaveController extends Controller
         } else {
             $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
             $elementsService->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
-            $elementsService->resaveElements($query, true, !$this->revisions, $this->updateSearchIndex, $this->touch);
+            $elementsService->resaveElements($query, true, $this->revisions === false, $this->updateSearchIndex, $this->touch);
             $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
             $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
         }

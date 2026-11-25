@@ -94,7 +94,6 @@ class Schema extends \yii\db\pgsql\Schema
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            /** @phpstan-ignore-next-line */
             if (in_array($e->getCode(), ['25P01', '3B001'], true)) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
@@ -159,7 +158,7 @@ class Schema extends \yii\db\pgsql\Schema
             ->addArg('--file=', '{file}')
             ->addArg('--schema=', '{schema}');
 
-        $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
+        $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $format = $this->getBackupFormat();
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
@@ -390,7 +389,7 @@ ORDER BY i.relname, k';
      */
     private function _pgpasswordCommand(): string
     {
-        return App::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
+        return App::isWindows() ? "set PGPASSWORD='{password}' && " : "PGPASSWORD='{password}' ";
     }
 
     /**

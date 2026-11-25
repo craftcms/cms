@@ -34,14 +34,28 @@ Craft.ColorInput = Garnish.Base.extend(
         return;
       }
 
+      let isDisabled = false;
+      if (this.$container.parents('.input').hasClass('disabled')) {
+        isDisabled = true;
+      }
+      if (this.settings.alpha) {
+        // Only supported by some browsers, but harmless elsewhere
+        input.setAttribute('alpha', '');
+      }
+
       this.$colorContainer.removeClass('static');
       this.$colorInput = $(input)
         .addClass('color-preview-input')
         .attr({
           'aria-controls': this.$input.attr('id'),
           'aria-label': Craft.t('app', 'Color picker'),
+          'aria-labelledby': this.$input.attr('aria-labelledby'),
         })
         .appendTo(this.$colorPreview);
+
+      if (isDisabled) {
+        this.$colorInput.attr('disabled', '');
+      }
 
       if (this.settings.presets?.length) {
         const listId = `listbox-${Math.floor(Math.random() * 1000000)}`;
@@ -49,7 +63,7 @@ Craft.ColorInput = Garnish.Base.extend(
         const $list = $('<datalist/>', {
           id: listId,
         }).insertAfter(this.$colorInput);
-        for (let color of this.settings.presets) {
+        for (const color of this.settings.presets) {
           $('<option/>').text(color).appendTo($list);
         }
       }
@@ -66,7 +80,7 @@ Craft.ColorInput = Garnish.Base.extend(
     },
 
     updateColor: function () {
-      this.$input.val(this.$colorInput.val());
+      this.$input.val(Craft.ColorInput.toHex(this.$colorInput.val()));
       this.handleTextChange();
     },
 
@@ -90,14 +104,20 @@ Craft.ColorInput = Garnish.Base.extend(
       }
 
       // Now normalize it for the UI stuff
-      if (val.length === 3) {
-        val = val[0].repeat(2) + val[1].repeat(2) + val[2].repeat(2);
+      if (val.length === 3 || val.length === 4) {
+        val = val
+          .split('')
+          .map((char) => char.repeat(2))
+          .join('');
       }
 
-      if (val.match(/^[0-9a-f]{6}$/i)) {
+      if (val.match(/^[0-9a-f]{6}([0-9a-f]{2})?$/i)) {
         this.$colorPreview.css('background-color', `#${val}`);
         if (this.$colorInput) {
-          this.$colorInput.val(`#${val}`);
+          // Browsers that don’t support the alpha attribute only accept 6-digit hex values
+          this.$colorInput.val(
+            `#${this.$colorInput[0].alpha ? val : val.substring(0, 6)}`
+          );
         }
       } else {
         this.$colorPreview.css('background-color', '');
@@ -107,6 +127,39 @@ Craft.ColorInput = Garnish.Base.extend(
   {
     defaults: {
       presets: [],
+      alpha: false,
+    },
+
+    /**
+     * Converts a native color input value to a hex value (without the `#`).
+     *
+     * Color inputs with the `alpha` attribute serialize their values as `color(srgb r g b / a)`.
+     *
+     * @param {string} value
+     * @returns {string}
+     */
+    toHex: function (value) {
+      if (value[0] === '#') {
+        return value.substring(1);
+      }
+
+      const match = value.match(
+        /^color\(srgb\s+([\d.e+-]+)\s+([\d.e+-]+)\s+([\d.e+-]+)(?:\s*\/\s*([\d.e+-]+))?\)$/
+      );
+      if (!match) {
+        return value;
+      }
+
+      const hex = (n) =>
+        Math.round(Math.min(Math.max(parseFloat(n), 0), 1) * 255)
+          .toString(16)
+          .padStart(2, '0');
+
+      let val = hex(match[1]) + hex(match[2]) + hex(match[3]);
+      if (match[4] !== undefined && parseFloat(match[4]) < 1) {
+        val += hex(match[4]);
+      }
+      return val;
     },
 
     _browserSupportsColorInputs: null,

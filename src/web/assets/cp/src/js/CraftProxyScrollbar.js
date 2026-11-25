@@ -58,13 +58,13 @@ class CraftProxyScrollbar extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.proxy.remove();
+    this.proxy?.remove();
 
-    this.scroller.removeEventListener(
+    this.scroller?.removeEventListener(
       'scroll',
       this.syncScroll(this.scroller, this)
     );
-    this.scroller.removeEventListener(
+    this.scroller?.removeEventListener(
       'scroll',
       this.syncScroll(this, this.scroller)
     );

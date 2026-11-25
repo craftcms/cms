@@ -19,12 +19,19 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
     defaultListHtml: null,
 
     get listLength() {
-      return this.$iconList.find('li').length;
+      return this.$iconList.find('li:not(.icon-picker-modal--heading)').length;
     },
 
     init(container, settings) {
       this.$container = $(container);
       this.setSettings(settings, Craft.IconPicker.defaults);
+
+      if (this.$container.data('iconpicker')) {
+        console.warn('Double-instantiating an icon picker on an element');
+        this.$container.data('iconpicker').destroy();
+      }
+
+      this.$container.data('iconpicker', this);
 
       this.$preview = this.$container.children('.icon-picker--icon');
       this.$chooseBtn = this.$container.children('.icon-picker--choose-btn');
@@ -99,7 +106,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
         formObserver.checkForm();
       });
 
-      this.addListener(this.$iconList, 'click', (ev) => {
+      this.addListener(this.$iconList, 'click', async (ev) => {
         let $button;
         if (ev.target.nodeName === 'BUTTON') {
           $button = $(ev.target);
@@ -110,10 +117,13 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
           }
         }
 
-        this.selectIcon($button);
+        await this.selectIcon($button);
+        this.$chooseBtn.focus();
       });
 
-      this.modal = new Garnish.Modal($container);
+      this.modal = new Garnish.Modal($container, {
+        triggerElement: this.$chooseBtn,
+      });
       this.updateIcons();
     },
 
@@ -153,6 +163,7 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
             data: {
               search,
               freeOnly: this.settings.freeOnly,
+              sets: this.settings.sets,
             },
             cancelToken: this.cancelToken.token,
           }
@@ -177,11 +188,21 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       }
     },
 
-    selectIcon($button) {
-      this.modal.hide();
-      const name = $button.attr('title');
+    async selectIcon(icon) {
+      this.modal?.hide();
+
+      let name, html;
+
+      if (typeof icon === 'string') {
+        name = icon;
+        html = (await Craft.ui.icon(icon)).outerHTML;
+      } else {
+        name = icon.attr('data-value') || icon.attr('title');
+        html = $(icon).html();
+      }
+
       this.$preview
-        .html($button.html())
+        .html(html)
         .attr('title', name)
         .attr('aria-label', name)
         .attr('role', 'img');
@@ -189,8 +210,15 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       this.updateLangAttribute(this.$preview);
       this.$input.val(name);
       this.$chooseBtn.children('.label').text(Craft.t('app', 'Change'));
-      this.$chooseBtn.focus();
       this.$removeBtn.removeClass('hidden');
+      if (this.$container.hasClass('small')) {
+        this.$chooseBtn.addClass('hidden');
+      }
+
+      this.trigger('change', {
+        iconName: name,
+        iconHtml: html,
+      });
     },
 
     removeIcon() {
@@ -198,12 +226,23 @@ Craft.IconPicker = Craft.BaseInputGenerator.extend(
       this.$input.val('');
       this.$chooseBtn.children('.label').text(Craft.t('app', 'Choose'));
       this.$removeBtn.addClass('hidden');
-      this.$chooseBtn.focus();
+      if (this.$container.hasClass('small')) {
+        this.$chooseBtn.removeClass('hidden');
+        this.$chooseBtn.focus();
+      } else {
+        this.$chooseBtn.focus();
+      }
+
+      this.trigger('change', {
+        iconName: null,
+        iconHtml: null,
+      });
     },
   },
   {
     defaults: {
       freeOnly: false,
+      sets: null,
     },
   }
 );

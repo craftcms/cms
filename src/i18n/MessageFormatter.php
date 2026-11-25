@@ -27,7 +27,6 @@ class MessageFormatter extends \yii\i18n\MessageFormatter
         if (
             !class_exists(\MessageFormatter::class, false) ||
             !defined('INTL_ICU_VERSION') ||
-            /** @phpstan-ignore-next-line */
             version_compare(INTL_ICU_VERSION, '49', '<')
         ) {
             return $this->fallbackFormat($pattern, $params, $language);

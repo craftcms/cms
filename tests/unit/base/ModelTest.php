@@ -148,8 +148,8 @@ class ModelTest extends TestCase
         self::assertSame(null, (new ExampleModel(['nullableBoolParam' => '']))->nullableBoolParam);
         self::assertSame(null, (new ExampleModel(['nullableBoolParam' => null]))->nullableBoolParam);
         self::assertSame(false, (new ExampleModel(['boolParam' => null]))->boolParam);
-        self::assertSame(true, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
-        self::assertSame(true, (new ExampleModel(['boolParam' => '10']))->boolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => 'foo']))->boolParam);
+        self::assertSame(false, (new ExampleModel(['boolParam' => '10']))->boolParam);
         self::assertSame(true, (new ExampleModel(['boolParam' => true]))->boolParam);
         self::expectException(TypeError::class);
         new ExampleModel(['boolParam' => []]);

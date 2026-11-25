@@ -8,9 +8,11 @@
 namespace craft\i18n;
 
 use Craft;
+use craft\web\twig\AllowedInSandbox;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use ResourceBundle;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -24,6 +26,19 @@ use yii\base\InvalidArgumentException;
  */
 class Locale extends BaseObject
 {
+    /**
+     * Returns a locale’s language ID.
+     *
+     * @return string
+     * @since 5.12.0
+     */
+    public static function languageId(string $locale): string
+    {
+        $pos = strpos($locale, '-');
+        $lang = $pos !== false ? substr($locale, 0, $pos) : $locale;
+        return strtolower($lang);
+    }
+
     /**
      * @var int Positive prefix.
      */
@@ -225,7 +240,7 @@ class Locale extends BaseObject
     public const FORMAT_HUMAN = 'human';
 
     /**
-     * @var array The languages that use RTL orientation.
+     * @var array The languages that use RTL orientation, if ICU doesn’t have layout data for a locale.
      */
     private static array $_rtlLanguages = [
         'ar',
@@ -238,6 +253,7 @@ class Locale extends BaseObject
     /**
      * @var string|null The locale ID.
      */
+    #[AllowedInSandbox]
     public ?string $id = null;
 
     /**
@@ -291,13 +307,10 @@ class Locale extends BaseObject
      *
      * @return string This locale’s language ID.
      */
+    #[AllowedInSandbox]
     public function getLanguageID(): string
     {
-        if (($pos = strpos($this->id, '-')) !== false) {
-            return substr($this->id, 0, $pos);
-        }
-
-        return $this->id;
+        return static::languageId($this->id);
     }
 
     /**
@@ -307,6 +320,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s script ID, if it has one.
      */
+    #[AllowedInSandbox]
     public function getScriptID(): ?string
     {
         // Find sub tags
@@ -329,6 +343,7 @@ class Locale extends BaseObject
      *
      * @return string|null The locale’s territory ID, if it has one.
      */
+    #[AllowedInSandbox]
     public function getTerritoryID(): ?string
     {
         // Find sub tags
@@ -357,6 +372,7 @@ class Locale extends BaseObject
      * @param string|null $inLocale
      * @return string
      */
+    #[AllowedInSandbox]
     public function getDisplayName(?string $inLocale = null): string
     {
         if (isset($this->_displayName)) {
@@ -387,8 +403,16 @@ class Locale extends BaseObject
      *
      * @return string The language’s orientation.
      */
+    #[AllowedInSandbox]
     public function getOrientation(): string
     {
+        $bundle = ResourceBundle::create(str_replace('-', '_', $this->aliasOf ?? $this->id), 'ICUDATA');
+        $layout = $bundle['layout']['characters'] ?? null;
+
+        if (is_string($layout)) {
+            return $layout === 'right-to-left' ? 'rtl' : 'ltr';
+        }
+
         if (in_array($this->getLanguageID(), self::$_rtlLanguages, true)) {
             return 'rtl';
         }
@@ -666,6 +690,20 @@ class Locale extends BaseObject
         $locale = $this->aliasOf ?? $this->id;
         $formatter = new NumberFormatter("$locale@currency=$currency", NumberFormatter::CURRENCY);
         return $formatter->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
+    }
+
+    /**
+     * Returns the default currency for the locale.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getDefaultCurrency(): string
+    {
+        // h/t: https://stackoverflow.com/a/8325456
+        $locale = $this->aliasOf ?? $this->id;
+        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+        return $formatter->getTextAttribute(NumberFormatter::CURRENCY_CODE);
     }
 
     /**

@@ -14,9 +14,11 @@ use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 use UnitTester;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -389,6 +391,26 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider timeZoneAbbreviationProvider
+     * @param string|false $expected
+     * @param string|DateTimeZone $timeZone
+     * @param DateTime|null $date
+     */
+    public function testTimeZoneAbbreviation(
+        string|false $expected,
+        string|DateTimeZone $timeZone,
+        ?DateTimeInterface $date = null,
+    ): void {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            DateTimeHelper::timeZoneAbbreviation($timeZone);
+            return;
+        }
+
+        self::assertSame($expected, DateTimeHelper::timeZoneAbbreviation($timeZone, $date));
+    }
+
+    /**
      * @dataProvider isIsIso8601DataProvider
      * @param bool $expected
      * @param mixed $value
@@ -403,11 +425,16 @@ class DateTimeHelperTest extends TestCase
      * @param string $expected
      * @param string|int $duration
      * @param bool|null $showSeconds
+     * @param string|null $language
      * @throws Exception
      */
-    public function testHumanDuration(string $expected, string|int $duration, ?bool $showSeconds = null): void
-    {
-        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds));
+    public function testHumanDuration(
+        string $expected,
+        string|int $duration,
+        ?bool $showSeconds = null,
+        ?string $language = null,
+    ): void {
+        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds, $language));
     }
 
     /**
@@ -609,6 +636,16 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider timeToSecondsDataProvider
+     * @param int|null $expected
+     * @param int|string|DateTimeInterface|null $time
+     */
+    public function testTimeToSeconds(?int $expected, int|string|DateTimeInterface|null $time): void
+    {
+        self::assertSame($expected, DateTimeHelper::timeToSeconds($time));
+    }
+
+    /**
      * @return void
      */
     public function testFirstWeekDay(): void
@@ -669,10 +706,6 @@ class DateTimeHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public static function simpleDateTimeFormatsDataProvider(): array
     {
         return [
@@ -696,10 +729,24 @@ class DateTimeHelperTest extends TestCase
             [true, '1 year'],
             [true, '1 month'],
             [true, '1 minutes'],
+        ];
+    }
 
-            [false, ''],
-            [false, 'random string'],
-
+    /**
+     * @return array
+     */
+    public static function timeToSecondsDataProvider(): array
+    {
+        return [
+            [3600, 3600],
+            [3660, 3660],
+            [3661, 3661],
+            [3600, '01'],
+            [3660, '01:01'],
+            [3661, '01:01:01'],
+            [3661, new DateTime('2026-05-17 01:01:01', new DateTimeZone('UTC'))],
+            [3661, new DateTime('2026-05-17 01:01:01', new DateTimeZone('America/Los_Angeles'))],
+            [null, null],
         ];
     }
 
@@ -822,8 +869,20 @@ class DateTimeHelperTest extends TestCase
 
     /**
      * @return array
-     * @throws Exception
      */
+    public static function timeZoneAbbreviationProvider(): array
+    {
+        return [
+            ['UTC', 'UTC'],
+            ['UTC', new DateTimeZone('UTC')],
+            ['PST', 'America/Los_Angeles', new DateTime('2026-03-08 01:00:00-08:00')],
+            ['PDT', 'America/Los_Angeles', new DateTime('2026-03-08 02:00:00-08:00')],
+            ['-08:00', '-08:00'],
+            ['CDT', 'CDT', new DateTime('2026-07-01 12:00:00-05:00')],
+            [false, 'InvalidTimeZone'],
+        ];
+    }
+
     public static function isIsIso8601DataProvider(): array
     {
         return [
@@ -875,6 +934,8 @@ class DateTimeHelperTest extends TestCase
             ['27 minutes', 'PT10M999S'],
             ['0 seconds', 0],
             ['less than a minute', 0, false],
+            ['1,000 years', 'P1000Y', false],
+            ['1 000 ans', 'P1000Y', false, 'fr'],
         ];
     }
 
@@ -936,10 +997,6 @@ class DateTimeHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
     public static function toIso8601DataProvider(): array
     {
         $amsterdamTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Europe/Amsterdam'));

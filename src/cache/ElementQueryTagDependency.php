@@ -46,7 +46,7 @@ class ElementQueryTagDependency extends TagDependency
     protected function generateDependencyData($cache)
     {
         if ($this->elementQuery) {
-            $this->tags = $this->elementQuery->getCacheTags();
+            $this->tags = array_unique(array_merge($this->tags, $this->elementQuery->getCacheTags()));
         }
         return parent::generateDependencyData($cache);
     }

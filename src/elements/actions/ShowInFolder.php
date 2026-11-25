@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\base\ElementInterface;
 use craft\elements\Asset;
 use yii\base\Exception;
 
@@ -34,11 +33,7 @@ class ShowInFolder extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-
-        if ($elementType !== Asset::class) {
+        if ($this->elementType !== Asset::class) {
             throw new Exception("Show in folder is only available for Assets.");
         }
 

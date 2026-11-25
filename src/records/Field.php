@@ -21,6 +21,8 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $context Context
  * @property string|null $columnSuffix
  * @property string $instructions Instructions
+ * @property string|null $tip Tip
+ * @property string|null $warning Warning
  * @property bool $searchable Searchable
  * @property string $translationMethod Translation method
  * @property string $translationKeyFormat Translation key format

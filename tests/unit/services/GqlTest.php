@@ -45,6 +45,7 @@ use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\caching\TagDependency;
 
 class GqlTest extends TestCase
 {
@@ -86,7 +87,7 @@ class GqlTest extends TestCase
     public function testCreatingSchemaSuccess(): void
     {
         $schema = Craft::$app->getGql()->getSchemaDef();
-        self::assertInstanceOf('GraphQL\Type\Schema', $schema);
+        self::assertInstanceOf(\GraphQL\Type\Schema::class, $schema);
     }
 
     /**
@@ -209,7 +210,7 @@ class GqlTest extends TestCase
         });
 
         $directive = Craft::$app->getGql()->getSchemaDef()->getDirective(MockDirective::name());
-        self::assertInstanceOf('GraphQL\Type\Definition\Directive', $directive);
+        self::assertInstanceOf(\GraphQL\Type\Definition\Directive::class, $directive);
     }
 
     /**
@@ -225,7 +226,7 @@ class GqlTest extends TestCase
         MockType::getType();
 
         $mockType = Craft::$app->getGql()->getSchemaDef()->getType(MockType::getName());
-        self::assertInstanceOf('GraphQL\Type\Definition\ScalarType', $mockType);
+        self::assertInstanceOf(\GraphQL\Type\Definition\ScalarType::class, $mockType);
     }
 
     /**
@@ -415,6 +416,34 @@ class GqlTest extends TestCase
         $gql->saveSchema($schema);
         self::assertNull($gql->getCachedResult($cacheKey));
         $gql->deleteSchemaById($schema->id);
+    }
+
+    public function testCachedResultCollectsCacheInfo(): void
+    {
+        $gql = Craft::$app->getGql();
+        $cache = Craft::$app->getCache();
+        $cacheKey = 'testCachedResultCollectsCacheInfo';
+        $cacheValue = ['testValue'];
+
+        $cache->set($cacheKey, $cacheValue);
+        self::assertNull($gql->getCachedResult($cacheKey));
+
+        $gql->setCachedResult($cacheKey, $cacheValue, new TagDependency([
+            'tags' => ['testTag'],
+        ]), 60);
+
+        $elements = Craft::$app->getElements();
+        $elements->startCollectingCacheInfo();
+        $cachedResult = $gql->getCachedResult($cacheKey);
+        [$dependency, $duration] = $elements->stopCollectingCacheInfo();
+
+        self::assertSame($cacheValue, $cachedResult);
+        self::assertInstanceOf(TagDependency::class, $dependency);
+        self::assertContains('testTag', $dependency->tags);
+        self::assertContains(Gql::CACHE_TAG, $dependency->tags);
+        self::assertNotNull($duration);
+        self::assertGreaterThan(0, $duration);
+        self::assertLessThanOrEqual(60, $duration);
     }
 
     /**

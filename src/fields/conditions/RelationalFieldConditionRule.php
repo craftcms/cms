@@ -8,6 +8,8 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
+use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
 use yii\base\InvalidConfigException;
 
@@ -78,13 +80,21 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
+    protected function allowMultiple(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function operators(): array
     {
-        return array_filter([
+        return [
             self::OPERATOR_RELATED_TO,
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-        ]);
+        ];
     }
 
     /**
@@ -123,6 +133,45 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
             return;
         }
 
+        // If this is one of multiple instances of the relation field in the layout,
+        // look at the JSON values rather than the `relations` table data
+        // (see https://github.com/craftcms/cms/issues/17290)
+        $allInstances = $field->layoutElement?->getLayout()->getFields(fn(BaseField $field) => (
+            $field instanceof CustomField &&
+            $field->getFieldUid() === $this->_fieldUid
+        ));
+        if ($allInstances && count($allInstances) > 1) {
+            $valueSql = $field->getValueSql();
+            switch ($this->operator) {
+                case self::OPERATOR_RELATED_TO:
+                    $qb = Craft::$app->getDb()->getQueryBuilder();
+                    $query->andWhere([
+                        'or',
+                        ...array_map(fn(int $id) => $qb->jsonContains($valueSql, $id), $this->getElementIds()),
+                    ]);
+                    break;
+                case self::OPERATOR_NOT_EMPTY:
+                    $query->andWhere(
+                        [
+                            'and',
+                            ['not', [$valueSql => null]],
+                            ['not', [$valueSql => '[]']],
+                        ]
+                    );
+                    break;
+                case self::OPERATOR_EMPTY:
+                    $query->andWhere(
+                        [
+                            'or',
+                            [$valueSql => null],
+                            [$valueSql => '[]'],
+                        ]
+                    );
+                    break;
+            }
+            return;
+        }
+
         if ($this->operator === self::OPERATOR_RELATED_TO) {
             $this->traitModifyQuery($query);
         } else {
@@ -139,10 +188,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): int|string|null
+    protected function elementQueryParam(): array|null
     {
         // $this->operator will always be OPERATOR_RELATED_TO at this point
-        return $this->getElementId();
+        return $this->getElementIds();
     }
 
     /**

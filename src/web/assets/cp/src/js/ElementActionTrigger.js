@@ -39,9 +39,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
       this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
-      this.$trigger = $(
-        `#${this.elementIndex.namespaceId(settings.type)}-actiontrigger`
-      ).data('trigger', this);
+      const triggerId = settings.triggerId ?? `${settings.type}-actiontrigger`;
+      this.$trigger = $(`#${this.elementIndex.namespaceId(triggerId)}`).data(
+        'trigger',
+        this
+      );
 
       // Do we have a custom handler?
       if (this.settings.activate) {
@@ -110,7 +112,10 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.removeClass('disabled').removeAttr('aria-disabled');
+      const $button = this.$trigger.has('button,.btn').length
+        ? this.$trigger.find('button,.btn')
+        : this.$trigger;
+      $button.removeClass('disabled').removeAttr('aria-disabled');
       this.triggerEnabled = true;
     },
 
@@ -119,7 +124,10 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.addClass('disabled').attr('aria-disabled', 'true');
+      const $button = this.$trigger.has('button,.btn').length
+        ? this.$trigger.find('button,.btn')
+        : this.$trigger;
+      $button.addClass('disabled').attr('aria-disabled', 'true');
       this.triggerEnabled = false;
     },
 

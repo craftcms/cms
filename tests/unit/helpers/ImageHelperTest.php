@@ -214,6 +214,21 @@ class ImageHelperTest extends TestCase
         self::assertSame($expected, Image::imageSizeByStream($stream));
     }
 
+    public function testImageSizeByStreamUsesPrimaryIsoBmffProperty(): void
+    {
+        self::assertSame([640, 480], Image::imageSizeByStream(self::_isoBmffTestStream(
+            [[10, 10], [640, 480]],
+            [2]
+        )));
+    }
+
+    public function testImageSizeByStreamRejectsAmbiguousIsoBmffProperties(): void
+    {
+        self::assertFalse(Image::imageSizeByStream(self::_isoBmffTestStream(
+            [[10, 10], [640, 480]]
+        )));
+    }
+
     /**
      *
      */
@@ -256,8 +271,68 @@ class ImageHelperTest extends TestCase
             [[400, 300], fopen($dirnameFile3 . '/_data/assets/files/example-gif.gif', 'rb')],
             [[960, 640], fopen($dirnameFile3 . '/_data/assets/files/background.jpg', 'rb')],
             [[200, 200], fopen($dirnameFile3 . '/_data/assets/files/google.png', 'rb')],
+            [[33, 21], fopen($dirnameFile3 . '/_data/assets/files/example-bmp.bmp', 'rb')],
+            [[40, 30], fopen($dirnameFile3 . '/_data/assets/files/example-bmp-bottom-up.bmp', 'rb')],
+            [[5, 3], fopen($dirnameFile3 . '/_data/assets/files/example-bmp-core.bmp', 'rb')],
+            [[320, 240], fopen($dirnameFile3 . '/_data/assets/files/example-webp.webp', 'rb')],
+            [[640, 480], fopen($dirnameFile3 . '/_data/assets/files/example-webp-lossless.webp', 'rb')],
+            [[800, 600], fopen($dirnameFile3 . '/_data/assets/files/example-webp-alpha.webp', 'rb')],
+            [[572, 428], fopen($dirnameFile3 . '/_data/assets/files/example-heic.heic', 'rb')],
+            [[128, 72], fopen($dirnameFile3 . '/_data/assets/files/example-heif.heif', 'rb')],
+            [[640, 480], fopen($dirnameFile3 . '/_data/assets/files/example-avif.avif', 'rb')],
+            [[333, 217], fopen($dirnameFile3 . '/_data/assets/files/example-jxl.jxl', 'rb')],
+            [[333, 217], fopen($dirnameFile3 . '/_data/assets/files/example-jxl-container.jxl', 'rb')],
+            [[640, 480], fopen($dirnameFile3 . '/_data/assets/files/example-jxl-ratio.jxl', 'rb')],
+            [[128, 72], fopen($dirnameFile3 . '/_data/assets/files/example-jxl-div8.jxl', 'rb')],
             [false, fopen($dirnameFile3 . '/_data/assets/files/craft-logo.svg', 'rb')],
         ];
+    }
+
+    /**
+     * @param array<array{int,int}> $propertyDimensions
+     * @param int[] $primaryPropertyIndices
+     * @return resource
+     */
+    private static function _isoBmffTestStream(array $propertyDimensions, array $primaryPropertyIndices = [])
+    {
+        $stream = fopen('php://memory', 'r+');
+        fwrite($stream, self::_isoBmffTestData($propertyDimensions, $primaryPropertyIndices));
+        rewind($stream);
+
+        return $stream;
+    }
+
+    /**
+     * @param array<array{int,int}> $propertyDimensions
+     * @param int[] $primaryPropertyIndices
+     */
+    private static function _isoBmffTestData(array $propertyDimensions, array $primaryPropertyIndices): string
+    {
+        $ipco = '';
+        foreach ($propertyDimensions as $dimensions) {
+            $ipco .= self::_isoBmffBox('ispe', "\x00\x00\x00\x00" . pack('N2', $dimensions[0], $dimensions[1]));
+        }
+
+        $iprp = self::_isoBmffBox('ipco', $ipco);
+        if (!empty($primaryPropertyIndices)) {
+            $iprp .= self::_isoBmffFullBox('ipma', pack('NnC', 1, 1, count($primaryPropertyIndices)) . implode('', array_map('chr', $primaryPropertyIndices)));
+        }
+
+        return self::_isoBmffBox('ftyp', 'avif' . pack('N', 0) . 'avif') .
+            self::_isoBmffFullBox('meta',
+                self::_isoBmffFullBox('pitm', pack('n', 1)) .
+                self::_isoBmffBox('iprp', $iprp)
+            );
+    }
+
+    private static function _isoBmffFullBox(string $type, string $content): string
+    {
+        return self::_isoBmffBox($type, "\x00\x00\x00\x00" . $content);
+    }
+
+    private static function _isoBmffBox(string $type, string $content): string
+    {
+        return pack('N', strlen($content) + 8) . $type . $content;
     }
 
     /**
@@ -360,6 +435,8 @@ class ImageHelperTest extends TestCase
             [[28971, 14341], 28971.251, 0, 4.2891, 2.12321],
             [[2491030, 1233121], 0, 1233121.123213, 4.2891, 2.12321],
             [[12, 1233121], 12.12, 1233121.123213, 0, 4324],
+            // https://github.com/craftcms/cms/issues/16622
+            [[840, 484], 840, null, 1375, 793],
         ];
     }
 
@@ -373,6 +450,7 @@ class ImageHelperTest extends TestCase
             [true, 'jpeg'],
             [true, 'gif'],
             [true, 'png'],
+            [true, 'bmp'],
             [true, 'svg'],
             [true, 'SVG'],
             [false, '.SVG'],

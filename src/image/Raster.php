@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use Imagick;
+use ImagickException;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
@@ -29,7 +30,6 @@ use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
-use yii\base\ErrorException;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -253,12 +253,23 @@ class Raster extends Image
     public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
+        $width = $this->getWidth();
+        $height = $this->getHeight();
 
-        $scaleIfSmaller = $scaleIfSmaller ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller ??= Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
-        if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
-            $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
-            $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
+        if ($scaleIfSmaller || $width > $targetWidth || $height > $targetHeight) {
+            // go with the provided target dimensions if they both check out
+            if (
+                (int)round($targetWidth * $height / $width) !== $targetHeight &&
+                (int)round($targetHeight * $width / $height) !== $targetWidth
+            ) {
+                $factor = max($width / $targetWidth, $height / $targetHeight);
+                $targetWidth = round($width / $factor);
+                $targetHeight = round($height / $factor);
+            }
+
+            $this->resize($targetWidth, $targetHeight);
         }
 
         return $this;
@@ -277,7 +288,7 @@ class Raster extends Image
      */
     public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
     {
-        $upscale = $upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $upscale ??= Craft::$app->getConfig()->getGeneral()->upscaleImages;
 
         $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
@@ -329,26 +340,28 @@ class Raster extends Image
     public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
+        $width = $this->getWidth();
+        $height = $this->getHeight();
 
         // If upscaling is fine OR we have to downscale.
-        if ($scaleIfSmaller || ($this->getWidth() > $targetWidth && $this->getHeight() > $targetHeight)) {
+        if ($scaleIfSmaller || ($width > $targetWidth && $height > $targetHeight)) {
             // Scale first.
-            $factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
-            $newHeight = round($this->getHeight() / $factor);
-            $newWidth = round($this->getWidth() / $factor);
+            $factor = min($width / $targetWidth, $height / $targetHeight);
+            $newHeight = round($height / $factor);
+            $newWidth = round($width / $factor);
 
             $this->resize($newWidth, $newHeight);
         // If we need to upscale AND that's ok
-        } elseif (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
+        } elseif (($targetWidth > $width || $targetHeight > $height) && !$scaleIfSmaller) {
             // Figure the crop size reductions
-            $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
-            $newHeight = $this->getHeight();
-            $newWidth = $this->getWidth();
+            $factor = max($targetWidth / $width, $targetHeight / $height);
+            $newHeight = $height;
+            $newWidth = $width;
             $targetHeight = round($targetHeight / $factor);
             $targetWidth = round($targetWidth / $factor);
         } else {
-            $newHeight = $this->getHeight();
-            $newWidth = $this->getWidth();
+            $newHeight = $height;
+            $newWidth = $width;
         }
 
         if (is_array($cropPosition)) {
@@ -542,11 +555,12 @@ class Raster extends Image
      */
     public function setFill(string $fill = null): self
     {
-        $fill = $fill ?? 'transparent';
+        $fill ??= 'transparent';
         if ($fill === 'transparent') {
             $this->_fill = $this->_image->palette()->color('#ffffff', 0);
         } else {
-            $this->_fill = $this->_image->palette()->color($fill);
+            // set alpha to 100, otherwise it'll be set to 0 (fully transparent) for grayscale images
+            $this->_fill = $this->_image->palette()->color($fill, 100);
         }
 
         return $this;
@@ -559,27 +573,38 @@ class Raster extends Image
     {
         $extension = mb_strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
 
-        $options = $this->_getSaveOptions(null, $extension);
         $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($targetPath, PATHINFO_FILENAME) . '.' . pathinfo($targetPath, PATHINFO_EXTENSION);
+        $quality = null;
 
         try {
-            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
+            // PNG compression is lossless, so PNGs are always saved with the default quality (compression level).
+            // Searching for a level that matches the original file size can settle on level 0 (uncompressed).
+            if ($autoQuality && in_array($extension, ['jpeg', 'jpg'], true)) {
                 clearstatcache();
                 App::maxPowerCaptain();
 
-                $originalSize = filesize($this->_imageSourcePath);
-                $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
-                try {
+                if (Craft::$app->getImages()->getIsImagick() && method_exists(Imagick::class, 'getImageCompressionQuality')) {
+                    try {
+                        $image = new Imagick($this->_imageSourcePath);
+                        $quality = $image->getImageCompressionQuality();
+                    } catch (ImagickException) {
+                    }
+                }
+
+                if ($quality === null) {
+                    $originalSize = filesize($this->_imageSourcePath);
+                    $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
                     rename($tempFile, $targetPath);
-                } catch (ErrorException $e) {
-                    Craft::warning("Unable to rename \"$tempFile\" to \"$targetPath\": " . $e->getMessage(), __METHOD__);
+                    return true;
                 }
-            } else {
-                if (Craft::$app->getImages()->getIsImagick()) {
-                    ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
-                }
-                $this->_image->save($targetPath, $options);
             }
+
+            if (Craft::$app->getImages()->getIsImagick()) {
+                ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+            }
+
+            $options = $this->_getSaveOptions($quality, $extension);
+            $this->_image->save($targetPath, $options);
         } catch (RuntimeException $e) {
             throw new ImageException(Craft::t('app', 'Failed to save the image.'), $e->getCode(), $e);
         }
@@ -801,13 +826,22 @@ class Raster extends Image
         switch ($extension) {
             case 'jpeg':
             case 'jpg':
+                // ensure quality is between -1 and 100
+                // https://github.com/craftcms/cms/issues/16977
+                $quality = min(100, max(-1, $quality));
                 return ['jpeg_quality' => $quality, 'flatten' => true];
 
             case 'gif':
                 return ['animated' => $this->_isAnimated];
 
             case 'webp':
-                return ['animated' => $this->_isAnimated, 'webp_quality' => $quality];
+                $options = ['animated' => $this->_isAnimated];
+                if (Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
+                    $options['webp_quality'] = $quality;
+                } else {
+                    $options['webp_lossless'] = true;
+                }
+                return $options;
 
             case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
@@ -825,21 +859,28 @@ class Raster extends Image
                     'flatten' => false,
                 ];
 
-                if ($this->_imageSourcePath) {
-                    $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-                    // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
-                    // a valid format: http://www.imagemagick.org/script/formats.php
-                    // So 2 channel PNGs get converted to 4 channel.
-                    if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                        $format = 'png' . (8 * $pngInfo['channels']);
-                    } else {
-                        $format = 'png32';
-                    }
+                $pngInfo = $this->_imageSourcePath ? ImageHelper::pngImageInfo($this->_imageSourcePath) : false;
+                // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+                // a valid format: http://www.imagemagick.org/script/formats.php
+                // So 2 channel PNGs get converted to 4 channel.
+                if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
+                    $format = 'png' . (8 * $pngInfo['channels']);
                 } else {
                     $format = 'png32';
                 }
 
-                $options['png_format'] = $format;
+                // Imagine quantizes PNG8 images, which merges similar colors even when the image already fits in a
+                // palette, and PNG32 has 8 bits per sample, so 16-bit greyscale images would lose levels either way.
+                // Without a format, Imagick saves greyscale images and images that fit in a palette losslessly.
+                $isGreyscale = is_array($pngInfo) && in_array($pngInfo['color'], [0, 4], true);
+                $fitsPalette = (
+                    $format === 'png8' &&
+                    Craft::$app->getImages()->getIsImagick() &&
+                    $this->_image->getImagick()->getImageColors() <= 256
+                );
+                if (!$isGreyscale && !$fitsPalette) {
+                    $options['png_format'] = $format;
+                }
 
                 return $options;
 

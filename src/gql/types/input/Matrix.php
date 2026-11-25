@@ -13,6 +13,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -36,12 +37,15 @@ class Matrix extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
+            'description' => sprintf('Defines a block within the “%s” Matrix field’s data.', $context->name),
             'fields' => function() use ($context) {
                 // All the different field entry types now get wrapped in a container input.
                 // If two different entry types are passed, the selected entry type to parse is undefined.
                 $entryTypeContainerName = $context->handle . '_MatrixEntryContainerInput';
                 $entryContainerInputType = GqlEntityRegistry::createEntity($entryTypeContainerName, new InputObjectType([
                     'name' => $entryTypeContainerName,
+                    // Not enforced by GraphQL; tells GqlInputSchema the container accepts one entry type.
+                    'isOneOf' => true,
                     'fields' => function() use ($context) {
                         $entryInputTypes = [];
                         foreach ($context->getEntryTypes() as $entryType) {
@@ -55,6 +59,7 @@ class Matrix extends InputObjectType
                                             'id' => [
                                                 'name' => 'id',
                                                 'type' => Type::id(),
+                                                'description' => 'The ID of an existing entry in this field to update, or a unique key of your choice for a new entry, such as `new:1`. `sortOrder` refers to the entry by this ID or key.',
                                             ],
                                         ];
 
@@ -67,7 +72,7 @@ class Matrix extends InputObjectType
                                         }
 
                                         // Get the field input types
-                                        foreach ($entryType->getCustomFields() as $field) {
+                                        foreach (GqlHelper::filterMutableFields($entryType->getCustomFields()) as $field) {
                                             /** @var Field $field */
                                             $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
                                         }
@@ -85,10 +90,12 @@ class Matrix extends InputObjectType
                     'sortOrder' => [
                         'name' => 'sortOrder',
                         'type' => Type::listOf(QueryArgument::getType()),
+                        'description' => 'The IDs of the entries to keep, in order, including the keys of new entries. Entries that aren’t listed are removed from the field.',
                     ],
                     'entries' => [
                         'name' => 'entries',
                         'type' => Type::listOf($entryContainerInputType),
+                        'description' => 'The entries to create or update. Each item holds one entry, keyed by its entry type handle, with the entry’s `id`, `title`, and custom field values. Existing entries that aren’t included keep their content.',
                     ],
                 ];
             },

@@ -17,9 +17,17 @@ class TextFieldConditionRule extends BaseTextConditionRule implements FieldCondi
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): ?string
+    protected function elementQueryParam(): ?array
     {
-        return $this->paramValue();
+        $value = $this->paramValue();
+        if ($value === null) {
+            return null;
+        }
+
+        return [
+            'value' => $this->paramValue(),
+            'caseInsensitive' => true,
+        ];
     }
 
     /**

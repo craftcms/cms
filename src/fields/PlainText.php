@@ -8,13 +8,16 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 
 /**
@@ -23,7 +26,7 @@ use craft\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -139,10 +142,23 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig',
-            [
-                'field' => $this,
-            ]);
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig', [
+            'field' => $this,
+            'readOnly' => $readOnly,
+        ]);
     }
 
     /**
@@ -168,7 +184,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
                 $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
             }
 
-            $value = trim(preg_replace('/\R/u', "\n", $value));
+            $value = trim(StringHelper::convertLineBreaks($value));
         }
 
         return $value !== '' ? $value : null;
@@ -179,12 +195,23 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->_inputHtml($value, $element, false);
+    }
+
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
             'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
             'orientation' => $this->getOrientation($element),
+            'disabled' => $static,
         ]);
     }
 
@@ -207,8 +234,11 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if ($value !== null && !Craft::$app->getDb()->getSupportsMb4()) {
-            $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+        if ($value !== null) {
+            $value = StringHelper::escapeShortcodes($value);
+            if (!Craft::$app->getDb()->getSupportsMb4()) {
+                $value = StringHelper::emojiToShortcodes($value);
+            }
         }
         return $value;
     }
@@ -224,6 +254,22 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     /**
      * @inheritdoc
      */
+    public function getPreviewHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        $previewHtml = parent::getPreviewHtml($value, $element);
+
+        if (!$this->code) {
+            return $previewHtml;
+        }
+
+        return Html::tag('div', $previewHtml, [
+            'class' => 'code',
+        ]);
+    }
+    
+    /**
+     * @inheritdoc
+     */
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
@@ -231,5 +277,14 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'string'];
     }
 }

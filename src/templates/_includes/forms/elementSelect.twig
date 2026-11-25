@@ -9,8 +9,10 @@
 {% set sources = sources ?? null -%}
 {% set condition = condition ?? null -%}
 {% set criteria = criteria ?? null -%}
+{% set searchCriteria = searchCriteria ?? null %}
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
+{% set defaultPlacement = defaultPlacement ?? 'end' %}
 {% set viewMode = viewMode ?? 'list' %}
 {% set prevalidate = prevalidate ?? false %}
 {% set fieldId = fieldId ?? null %}
@@ -38,29 +40,33 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% set context = context ?? 'field' %}
+
+{% from "_includes/forms" import text %}
+
 {% tag 'div' with containerAttributes %}
     {% if maintainHierarchy %}
         {{ include('_elements/structurelist.twig', {
             id,
             elements,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
-    {% elseif viewMode == 'cards' %}
+    {% elseif viewMode in ['cards', 'cards-grid'] %}
         {{ include('_elements/cards.twig', {
             elements,
-            viewMode,
-            showInGrid: showCardsInGrid ?? false,
+            showInGrid: showInGrid ?? (viewMode == 'cards-grid'),
             disabled,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% else %}
         {{ include('_elements/list.twig', {
             elements,
-            viewMode,
+            size: size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small'),
+            inline: inline ?? (viewMode in ['list-inline', 'thumbs', 'large']),
             disabled,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% endif %}
@@ -74,6 +80,7 @@
                     'add',
                     'icon',
                     'dashed',
+                    'wrap',
                     disabled ? 'disabled',
                     limit and elements|length >= limit ? 'hidden',
                 ]|filter,
@@ -84,6 +91,18 @@
                     describedby: describedBy ?? false,
                 }
             }) }}
+            {% if searchCriteria %}
+                <div class="texticon search icon elementselect__search-input-wrapper">
+                    {{ text({
+                        width: 'auto',
+                        placeholder: 'Search'|t('app'),
+                        describedBy: describedBy ?? false,
+                        role: 'combobox',
+                        labelledBy: labelId ?? false,
+                    }) }}
+                    <div class="spinner hidden"></div>
+                </div>
+            {% endif %}
         {% endif %}
         <div class="spinner hidden"></div>
     </div>
@@ -94,11 +113,16 @@
         id: id|namespaceInputId,
         name: name ? name|namespaceInputName : null,
         elementType: elementType,
+        context,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
         referenceElementId: referenceElement.id ?? null,
+        referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+            ? referenceElement.getOwnerId()
+            : null,
         referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
+        searchCriteria,
         allowAdd: allowAdd,
         allowRemove: allowRemove,
         allowSelfRelations: allowSelfRelations ?? false,
@@ -106,17 +130,19 @@
         branchLimit: branchLimit ?? null,
         sourceElementId: sourceElementId,
         disabledElementIds: disabledElementIds ?? null,
+        defaultPlacement,
         viewMode: viewMode,
         single: single,
         limit: limit,
         showSiteMenu: showSiteMenu ?? false,
+        siteIds: siteIds ?? null,
         modalStorageKey: storageKey,
         fieldId: fieldId,
         sortable: sortable,
         showActionMenu: showActionMenu,
         prevalidate: prevalidate,
         modalSettings: modalSettings ?? {},
-    } %}
+    }|merge(jsSettings ?? {}) %}
 
     {% js %}
         new {{ jsClass }}({{ jsSettings|json_encode|raw }});

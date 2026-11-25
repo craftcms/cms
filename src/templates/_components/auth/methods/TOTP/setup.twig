@@ -24,7 +24,9 @@
     {% if qrCode is defined and qrCode is not empty %}
       <div class="field">
         <div class="heading"><strong>{{ 'QR Code' | t('app') }}</strong></div>
-        {{ qrCode|raw }}
+        <div id="qr-code-wrapper">
+          {{ qrCode|raw }}
+        </div>
       </div>
     {% endif %}
     {% if secret is defined and secret is not empty %}

@@ -21,7 +21,7 @@ use yii\base\Component;
 /**
  * Plugin Store service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getPluginStore()|`Craft::$app->pluginStore`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getPluginStore()|`Craft::$app->getPluginStore()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -194,6 +194,7 @@ class PluginStore extends Component
      */
     public function getTokenByUserId(int $userId): ?CraftIdToken
     {
+        // @phpstan-ignore mspirkovYii2.activeRecordConditionValidation (Unknown attribute "provider" for ActiveRecord craft\records\CraftIdToken in findOne() condition.)
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 
         if (!$record) {

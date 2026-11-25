@@ -68,6 +68,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             $view->setNamespace(null);
         }
 
+        $extraToolbarItems = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
         $notice = $behavior->noticeHtml ? $view->namespaceInputs($behavior->noticeHtml, $namespace) : null;
 
         $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
@@ -99,6 +100,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'bodyClass' => $behavior->slideoutBodyClass,
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
+            'extraToolbarItems' => $extraToolbarItems,
             'submitButtonLabel' => $behavior->submitButtonLabel,
             'actionMenu' => $this->_actionMenu($behavior, false, [
                 'withButton' => false,
@@ -127,6 +129,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $docTitle = $behavior->docTitle ?? strip_tags($behavior->title ?? '');
         $crumbs = (is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs) ?? [];
+        $toolbar = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
         $addlButtons = is_callable($behavior->additionalButtonsHtml) ? call_user_func($behavior->additionalButtonsHtml) : $behavior->additionalButtonsHtml;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
         $notice = is_callable($behavior->noticeHtml) ? call_user_func($behavior->noticeHtml) : $behavior->noticeHtml;
@@ -136,17 +139,19 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $errorSummary = is_callable($behavior->errorSummary) ? call_user_func($behavior->errorSummary) : $behavior->errorSummary;
 
         if (Craft::$app->getIsMultiSite() && isset($behavior->site)) {
+            $siteMenuItems = !empty($behavior->selectableSites)
+                ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
+                    'includeOmittedSites' => true,
+                ])
+                : [];
+
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
                 'label' => Craft::t('site', $behavior->site->name),
                 'menu' => [
                     'label' => Craft::t('app', 'Select site'),
-                    'items' => !empty($behavior->selectableSites)
-                        ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
-                            'includeOmittedSites' => true,
-                        ])
-                        : null,
+                    'items' => $siteMenuItems,
                 ],
             ]);
         }
@@ -175,11 +180,12 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     return $crumb;
                 }, $crumbs ?? []),
                 'contextMenu' => $this->_contextMenu($behavior),
+                'toolbar' => $toolbar,
                 'actionMenu' => $this->_actionMenu($behavior, config: [
                     'hiddenLabel' => Craft::t('app', 'Actions'),
                     'buttonAttributes' => [
                         'id' => 'action-btn',
-                        'class' => ['action-btn', 'hairline-dark'],
+                        'class' => ['action-btn', 'hairline-dark', 'm'],
                         'title' => Craft::t('app', 'Actions'),
                     ],
                 ]),

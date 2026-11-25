@@ -7,37 +7,45 @@ Craft.AssetsFieldSettings = Garnish.Base.extend({
   $useSingleFolderInput: null,
   $sourceInputs: null,
   $defaultUploadLocationSelect: null,
+  $showSearchInputField: null,
   $defaultUploadLocationOptions: null,
 
   init: function (
     useSingleFolderToggleId,
     sourcesFieldId,
-    defaultUploadLocationId
+    defaultUploadLocationId,
+    showSearchInputFieldId
   ) {
     this.$useSingleFolderInput = $(`#${useSingleFolderToggleId}`);
     this.$sourceInputs = $(`#${sourcesFieldId} input`);
     this.$defaultUploadLocationSelect = $(`#${defaultUploadLocationId}`);
+    this.$showSearchInputField = $(`#${showSearchInputFieldId}`);
     this.$defaultUploadLocationOptions =
       this.$defaultUploadLocationSelect.children('option');
     this.updateDefaultUploadLocationSelect();
 
     // Give CheckboxSelect a chance to register its change event first
     Garnish.requestAnimationFrame(() => {
-      this.addListener(
-        this.$useSingleFolderInput,
-        'change',
-        'updateDefaultUploadLocationSelect'
-      );
-      this.addListener(
-        this.$sourceInputs,
-        'change',
-        'updateDefaultUploadLocationSelect'
-      );
+      this.addListener(this.$useSingleFolderInput, 'change', () => {
+        this.updateDefaultUploadLocationSelect();
+
+        // Show/hide the "Show the source input" field
+        if (this.$useSingleFolderInput.attr('aria-checked') === 'true') {
+          this.$showSearchInputField.removeClass('hidden');
+        } else {
+          setTimeout(() => {
+            this.$sourceInputs.first().trigger('change');
+          }, 1);
+        }
+      });
+      this.addListener(this.$sourceInputs, 'change', () => {
+        this.updateDefaultUploadLocationSelect();
+      });
     });
   },
 
   updateDefaultUploadLocationSelect: function () {
-    if (this.$useSingleFolderInput.prop('checked')) {
+    if (this.$useSingleFolderInput.attr('aria-checked') === 'true') {
       return;
     }
 

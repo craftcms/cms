@@ -41,7 +41,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
      */
     public function getFilename(): string
     {
-        /** @var ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType;
         return $elementType::pluralLowerDisplayName();
     }

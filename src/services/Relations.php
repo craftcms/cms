@@ -21,7 +21,7 @@ use yii\base\Component;
 /**
  * Relations service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getRelations()|`Craft::$app->relations`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getRelations()|`Craft::$app->getRelations()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -39,10 +39,6 @@ class Relations extends Component
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds): void
     {
-        if (!is_array($targetIds)) {
-            $targetIds = [];
-        }
-
         // Get the unique, indexed target IDs, set to their 0-indexed sort orders
         $targetIds = array_flip(array_values(array_unique(array_filter($targetIds))));
 

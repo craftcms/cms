@@ -17,6 +17,7 @@ use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -152,17 +153,20 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     /**
      * @var string|null Name
      */
+    #[AllowedInSandbox]
     public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
+    #[AllowedInSandbox]
     public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public ?int $sortOrder = null;
 
     /**
@@ -187,7 +191,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
         $behaviors = parent::defineBehaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
-            'elementType' => __CLASS__,
+            'elementType' => self::class,
         ];
         return $behaviors;
     }
@@ -226,6 +230,13 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
             'except' => [self::SCENARIO_ESSENTIALS],
         ];
+
+        $rules[] = [['fieldLayout'], function() {
+            $fieldLayout = $this->getFieldLayout();
+            if (!$fieldLayout->validate()) {
+                $this->addModelErrors($fieldLayout, 'fieldLayout');
+            }
+        }];
 
         return $rules;
     }

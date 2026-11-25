@@ -288,7 +288,7 @@ JS, [$view->namespaceInputId($this->id)]);
                     'ext' => 'craft-cp, craft-condition',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
-                    'indicator' => sprintf('#%s', $view->namespaceInputId('spinner')),
+                    'indicator' => sprintf('#%s', $view->namespaceInputId("$this->id-spinner")),
                 ],
                 'data' => [
                     'condition-config' => Json::encode(array_merge($this->toArray(), [
@@ -325,7 +325,7 @@ JS, [$view->namespaceInputId($this->id)]);
                         }
 
                         $ruleValue = Json::encode($rule->getConfig());
-                        $labelId = 'type-label';
+                        $labelId = "$this->id-type-label";
 
                         $ruleHtml .=
                             // Rule type selector
@@ -341,12 +341,10 @@ JS, [$view->namespaceInputId($this->id)]);
                             Html::endTag('div') .
                             // Rule HTML
                             Html::tag('div', $rule->getHtml(), [
-                                'id' => 'rule-body',
                                 'class' => ['rule-body', 'flex-grow'],
                             ]) .
                             // Remove button
                             Html::beginTag('div', [
-                                'id' => 'rule-actions',
                                 'class' => ['rule-actions'],
                             ]) .
                             Html::button('', [
@@ -363,7 +361,6 @@ JS, [$view->namespaceInputId($this->id)]);
                             Html::endTag('div');
 
                         return Html::tag('fieldset', $ruleHtml, [
-                            'id' => 'condition-rule',
                             'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
                         ]);
                     }, 'conditionRules[' . $ruleNum . ']');
@@ -372,7 +369,6 @@ JS, [$view->namespaceInputId($this->id)]);
                     continue;
                 }
 
-
                 $ruleNum++;
             }
 
@@ -380,7 +376,6 @@ JS, [$view->namespaceInputId($this->id)]);
 
             // Sortable rules div
             $html .= Html::tag('div', $allRulesHtml, [
-                    'id' => 'condition-rules',
                     'class' => array_filter([
                         'condition',
                         $this->sortable ? 'sortable' : null,
@@ -408,7 +403,7 @@ JS, [$view->namespaceInputId($this->id)]);
                     'autofocus' => $autofocusAddButton,
                 ]) .
                 Html::tag('div', '', [
-                    'id' => 'spinner',
+                    'id' => "$this->id-spinner",
                     'class' => ['spinner'],
                 ]) .
                 Html::endTag('div'); // flex-nowrap
@@ -426,13 +421,11 @@ JS, [$view->namespaceInputId($this->id)]);
             if ($isHtmxRequest) {
                 if ($bodyHtml = $view->getBodyHtml()) {
                     $html .= html::tag('template', $bodyHtml, [
-                        'id' => 'body-html',
                         'class' => ['hx-body-html'],
                     ]);
                 }
                 if ($headHtml = $view->getHeadHtml()) {
                     $html .= html::tag('template', $headHtml, [
-                        'id' => 'head-html',
                         'class' => ['hx-head-html'],
                     ]);
                 }
@@ -470,6 +463,7 @@ JS,
         if ($rule) {
             $label = $rule->getLabel();
             $hint = $rule->getLabelHint();
+            $showHint = $rule->showLabelHint();
             $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
 
@@ -477,6 +471,7 @@ JS,
                 [
                     'label' => $label,
                     'hint' => $hint,
+                    'showHint' => $showHint,
                     'value' => $ruleValue,
                 ],
             ];
@@ -490,6 +485,7 @@ JS,
                 continue;
             }
             $hint = $selectableRule->getLabelHint();
+            $showHint = $selectableRule->showLabelHint();
             $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
 
@@ -497,6 +493,7 @@ JS,
                 $groupedRuleTypeOptions[$groupLabel][] = [
                     'label' => $label,
                     'hint' => $hint,
+                    'showHint' => $showHint,
                     'value' => $value,
                 ];
                 $labelsByGroup[$groupLabel][$key] = true;
@@ -524,7 +521,7 @@ JS,
                     $html = Html::beginTag('li');
 
                     $label = Html::encode($option['label']);
-                    if ($option['hint'] !== null) {
+                    if ($option['showHint'] && $option['hint'] !== null) {
                         $label .= ' ' .
                             Html::tag('span', sprintf('– %s', Html::encode($option['hint'])), [
                                 'class' => 'light',
@@ -545,9 +542,9 @@ JS,
                 Html::endTag('ul');
         }
 
-        $buttonId = 'type-btn';
-        $menuId = 'type-menu';
-        $inputId = 'type-input';
+        $buttonId = "$this->id-type-btn";
+        $menuId = "$this->id-type-menu";
+        $inputId = "$this->id-type-input";
 
         $view = Craft::$app->getView();
         $view->registerJsWithVars(

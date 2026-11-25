@@ -13,8 +13,11 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\types\DateTime;
+use craft\gql\types\EntryType as EntryTypeGqlType;
 use craft\gql\types\generators\EntryType;
+use craft\gql\types\Section as SectionGqlType;
 use craft\helpers\Gql;
+use craft\models\Section;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -69,7 +72,23 @@ class Entry extends Structure
      */
     public static function getFieldDefinitions(): array
     {
-        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields(), [
+        $gqlService = Craft::$app->getGql();
+        $entryArguments = EntryArguments::getArguments();
+        $allFieldArguments = EntryArguments::getContentArguments();
+        $sectionFieldArguments = [...$entryArguments];
+        $structureSectionFieldArguments = [...$entryArguments];
+
+        foreach (Gql::getSchemaContainedSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $entryTypeArguments = $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+                $sectionFieldArguments += $entryTypeArguments;
+                if ($section->type === Section::TYPE_STRUCTURE) {
+                    $structureSectionFieldArguments += $entryTypeArguments;
+                }
+            }
+        }
+
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields($sectionFieldArguments), [
             'canonicalId' => [
                 'name' => 'canonicalId',
                 'type' => Type::int(),
@@ -117,7 +136,7 @@ class Entry extends Structure
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
-                'description' => 'The ID of the entry’s owner elementt.',
+                'description' => 'The ID of the entry’s owner element.',
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
@@ -147,28 +166,28 @@ class Entry extends Structure
             ],
             'children' => [
                 'name' => 'children',
-                'args' => EntryArguments::getArguments(),
+                'args' => $structureSectionFieldArguments,
                 'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
                 'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'descendants' => [
                 'name' => 'descendants',
-                'args' => EntryArguments::getArguments(),
+                'args' => $structureSectionFieldArguments,
                 'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
                 'description' => 'The entry’s descendants, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'parent' => [
                 'name' => 'parent',
-                'args' => EntryArguments::getArguments(),
+                'args' => $structureSectionFieldArguments,
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'ancestors' => [
                 'name' => 'ancestors',
-                'args' => EntryArguments::getArguments(),
+                'args' => $structureSectionFieldArguments,
                 'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
                 'description' => 'The entry’s ancestors, if the section is a structure. Accepts the same arguments as the `entries` query.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
@@ -180,7 +199,10 @@ class Entry extends Structure
             ],
             'localized' => [
                 'name' => 'localized',
-                'args' => EntryArguments::getArguments(),
+                'args' => [
+                    ...$entryArguments,
+                    ...$allFieldArguments,
+                ],
                 'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
                 'description' => 'The same element in other locales.',
                 'complexity' => Gql::eagerLoadComplexity(),
@@ -188,20 +210,22 @@ class Entry extends Structure
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
-                'args' => EntryArguments::getArguments(),
+                'args' => [
+                    ...$entryArguments,
+                    ...$allFieldArguments,
+                ],
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
-                'args' => EntryArguments::getArguments(),
+                'args' => [
+                    ...$entryArguments,
+                    ...$allFieldArguments,
+                ],
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
-                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
-                },
+                'complexity' => fn($childrenComplexity, $args) => $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args),
             ],
             'enabledForSite' => [
                 'name' => 'enabledForSite',
@@ -214,10 +238,26 @@ class Entry extends Structure
     /**
      * @inheritdoc
      */
-    protected static function getConditionalFields(): array
+    private static function getConditionalFields(array $sectionFieldArguments): array
     {
         $fields = [];
-        if (Gql::canQueryUsers()) {
+        if (Gql::canSchema('settings.sections')) {
+            $fields['section'] = [
+                'name' => 'section',
+                'type' => SectionGqlType::getType(),
+                'description' => 'The section that contains the entry.',
+            ];
+        }
+
+        if (Gql::canSchema('settings.entrytypes')) {
+            $fields['type'] = [
+                'name' => 'type',
+                'type' => Type::nonNull(EntryTypeGqlType::getType()),
+                'description' => 'The entry’s entry type.',
+            ];
+        }
+
+        if (Gql::canQueryAllUsers()) {
             $fields = array_merge($fields, [
                 'authorId' => [
                     'name' => 'authorId',
@@ -226,7 +266,7 @@ class Entry extends Structure
                 ],
                 'author' => [
                     'name' => 'author',
-                    'type' => Type::listOf(User::getType()),
+                    'type' => User::getType(),
                     'description' => 'The primary entry author.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],
@@ -245,31 +285,31 @@ class Entry extends Structure
         }
 
         if (Gql::canQueryDrafts()) {
-            $fields = array_merge($fields, [
-                'draftCreator' => [
+            $fields = array_merge($fields, array_filter([
+                'draftCreator' => Gql::canQueryAllUsers() ? [
                     'name' => 'draftCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given draft.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
+                ] : null,
                 'drafts' => [
                     'name' => 'drafts',
-                    'args' => EntryArguments::getArguments(),
+                    'args' => $sectionFieldArguments,
                     'type' => Type::listOf(EntryInterface::getType()),
                     'description' => 'The drafts for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]);
+            ]));
         }
 
         if (Gql::canQueryRevisions()) {
-            $fields = array_merge($fields, [
-                'revisionCreator' => [
+            $fields = array_merge($fields, array_filter([
+                'revisionCreator' => Gql::canQueryAllUsers() ? [
                     'name' => 'revisionCreator',
                     'type' => User::getType(),
                     'description' => 'The creator of a given revision.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
-                ],
+                ] : null,
                 'currentRevision' => [
                     'name' => 'currentRevision',
                     'type' => EntryInterface::getType(),
@@ -278,12 +318,12 @@ class Entry extends Structure
                 ],
                 'revisions' => [
                     'name' => 'revisions',
-                    'args' => EntryArguments::getArguments(),
+                    'args' => $sectionFieldArguments,
                     'type' => Type::listOf(EntryInterface::getType()),
                     'description' => 'The revisions for the entry.',
                     'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
                 ],
-            ]);
+            ]));
         }
         return $fields;
     }

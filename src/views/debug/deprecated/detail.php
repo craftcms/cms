@@ -33,7 +33,7 @@ $logs = $panel->data;
             <tbody>
             <?php foreach ($logs as $log): ?>
                 <tr>
-                    <td><?= \yii\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message)) ?></td>
+                    <td><?= \craft\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message)) ?></td>
                     <td><code><?= str_replace('/', '/<wbr>', \craft\helpers\Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') ?></code>
                     </td>
                     <td><?php if ($log->id): ?><a

@@ -1,3 +1,7 @@
+{% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index', 'pane']) %}
+{% set returnUrl = returnUrl ?? null %}
+
 {% apply spaceless %}
   {% for element in elements %}
     {% tag 'li' with {
@@ -7,9 +11,11 @@
       },
     } %}
       {{ elementCard(element, {
-        context: context ?? 'index',
-        selectable: selectable,
-        sortable: sortable,
+        context,
+        selectable,
+        sortable,
+        hyperlink,
+        returnUrl,
       }) }}
     {% endtag %}
   {% endfor %}

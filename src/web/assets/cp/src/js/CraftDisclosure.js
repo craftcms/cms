@@ -1,7 +1,7 @@
 /**
  * Very simple disclosure trigger.
  *
- * Allows you to wrap a button[type="button"] and target an element to toggle the `is-open` class on.
+ * Allows you to wrap a button[type="button"] and target an element to toggle the `data-state` attribute on.
  * Set `aria-expanded` on the button
  */
 class CraftDisclosure extends HTMLElement {
@@ -12,33 +12,42 @@ class CraftDisclosure extends HTMLElement {
   }
 
   get target() {
-    return document.getElementById(this.trigger.getAttribute('aria-controls'));
+    const trigger = this.trigger;
+    if (trigger) {
+      return document.getElementById(trigger.getAttribute('aria-controls'));
+    }
   }
 
   connectedCallback() {
-    if (!this.trigger) {
+    const trigger = this.trigger;
+    if (!trigger) {
       console.error(`craft-disclosure elements must include a button`, this);
       return;
     }
 
     if (!this.target) {
       console.error(
-        `No target with id ${this.trigger.getAttribute(
+        `No target with id ${trigger.getAttribute(
           'aria-controls'
         )} found for disclosure. `,
-        this.trigger
+        trigger
       );
       return;
     }
 
-    this.cookieName = this.getAttribute('cookie-name');
-    this.state = this.getAttribute('state');
+    this.storageKey =
+      this.getAttribute('storage-key') ||
+      `disclosure:${trigger.getAttribute('aria-controls')}`;
+    this.storageMode = this.getAttribute('storage-mode') || 'localStorage';
+    this.persist = this.hasAttribute('persist');
 
-    if (!this.trigger.getAttribute('aria-expanded')) {
-      this.trigger.setAttribute('aria-expanded', 'false');
+    this.state = this.getInitialState();
+
+    if (!trigger.getAttribute('aria-expanded')) {
+      trigger.setAttribute('aria-expanded', 'false');
     }
 
-    this.trigger.addEventListener('click', this.toggle.bind(this));
+    trigger.addEventListener('click', this.toggle.bind(this));
 
     this.state === 'expanded' ? this.open() : this.close();
   }
@@ -58,7 +67,9 @@ class CraftDisclosure extends HTMLElement {
     }
   }
 
-  toggle() {
+  toggle(event) {
+    event.preventDefault();
+
     if (this.expanded) {
       this.close();
     } else {
@@ -66,15 +77,43 @@ class CraftDisclosure extends HTMLElement {
     }
   }
 
+  getInitialState() {
+    if (this.persist) {
+      if (this.storageMode === 'localStorage') {
+        return localStorage.getItem(this.storageKey) || 'expanded';
+      } else if (this.storageMode === 'cookies') {
+        return Craft.getCookie(this.storageKey) || 'expanded';
+      }
+    }
+
+    if (this.getAttribute('state')) {
+      return this.getAttribute('state');
+    }
+
+    return 'expanded';
+  }
+
+  storeState(state) {
+    if (this.storageMode === 'localStorage') {
+      localStorage.setItem(this.storageKey, state);
+    } else if (this.storageMode === 'cookies') {
+      Craft.setCookie(this.storageKey, state);
+    }
+  }
+
   handleOpen = () => {
-    this.trigger.setAttribute('aria-expanded', 'true');
+    const trigger = this.trigger;
+    const target = this.target;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'true');
+    }
     this.expanded = true;
-    this.target.dataset.state = 'expanded';
+    if (target) {
+      target.dataset.state = 'expanded';
+    }
     this.dispatchEvent(new CustomEvent('open'));
 
-    if (this.cookieName) {
-      Craft.setCookie(this.cookieName, 'expanded');
-    }
+    this.storeState('expanded');
   };
 
   open() {
@@ -82,14 +121,18 @@ class CraftDisclosure extends HTMLElement {
   }
 
   handleClose = () => {
-    this.trigger.setAttribute('aria-expanded', 'false');
+    const trigger = this.trigger;
+    const target = this.target;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+    }
     this.expanded = false;
-    this.target.dataset.state = 'collapsed';
+    if (target) {
+      target.dataset.state = 'collapsed';
+    }
     this.dispatchEvent(new CustomEvent('close'));
 
-    if (this.cookieName) {
-      Craft.setCookie(this.cookieName, 'collapsed');
-    }
+    this.storeState('collapsed');
   };
 
   close() {

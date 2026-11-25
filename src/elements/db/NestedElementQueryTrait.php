@@ -49,10 +49,12 @@ trait NestedElementQueryTrait
     public mixed $ownerId = null;
 
     /**
-     * @var ElementInterface|null The owner element specified by [[owner()]].
+     * @var array<int,array<int,ElementInterface>>|null The owner elements specified by [[owner()]] or [[primaryOwner()]],
+     * indexed by their IDs and site IDs.
      * @used-by owner()
+     * @used-by primaryOwner()
      */
-    private ?ElementInterface $_owner = null;
+    private ?array $_owners = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -128,6 +130,7 @@ trait NestedElementQueryTrait
     public function primaryOwnerId(mixed $value): static
     {
         $this->primaryOwnerId = $value;
+        $this->_owners = null;
         return $this;
     }
 
@@ -139,7 +142,10 @@ trait NestedElementQueryTrait
     public function primaryOwner(ElementInterface $primaryOwner): static
     {
         $this->primaryOwnerId = [$primaryOwner->id];
-        $this->siteId = $primaryOwner->siteId;
+        $this->_owners = [$primaryOwner->id => [$primaryOwner->siteId => $primaryOwner]];
+        if ($this->elementType::isLocalized()) {
+            $this->siteId = $primaryOwner->siteId;
+        }
         return $this;
     }
 
@@ -151,20 +157,32 @@ trait NestedElementQueryTrait
     public function ownerId(mixed $value): static
     {
         $this->ownerId = $value;
-        $this->_owner = null;
+        $this->_owners = null;
         return $this;
     }
 
     /**
      * @inheritdoc
+     *
+     * An array of owner elements can be passed as well. Each resulting {element} will have its owner
+     * set to the element with the matching ID (and site ID, if the {elements} are localized).
+     *
+     * @param ElementInterface|ElementInterface[] $owner The owner element(s)
      * @uses $ownerId
      * @since 5.0.0
      */
-    public function owner(ElementInterface $owner): static
+    public function owner(ElementInterface|array $owner): static
     {
-        $this->ownerId = [$owner->id];
-        $this->siteId = $owner->siteId;
-        $this->_owner = $owner;
+        $owners = is_array($owner) ? $owner : [$owner];
+        $this->_owners = [];
+        foreach ($owners as $o) {
+            $this->_owners[$o->id][$o->siteId] = $o;
+        }
+        $this->ownerId = array_keys($this->_owners);
+        if ($this->elementType::isLocalized()) {
+            $siteIds = array_values(array_unique(array_map(fn(ElementInterface $o) => $o->siteId, $owners)));
+            $this->siteId = count($siteIds) === 1 ? $siteIds[0] : $siteIds;
+        }
         return $this;
     }
 
@@ -190,16 +208,49 @@ trait NestedElementQueryTrait
         return $this;
     }
 
+    /**
+     * Returns whether the resulting elements will always have a field assigned to them.
+     *
+     * @since 5.12.0
+     */
+    protected function mustHaveField(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Returns whether the resulting elements will always have an owner assigned to them.
+     *
+     * @since 5.12.0
+     */
+    protected function mustHaveOwner(): bool
+    {
+        return true;
+    }
+
     private function applyNestedElementParams(string $fieldIdColumn, string $primaryOwnerIdColumn): void
     {
         $this->normalizeNestedElementParams();
 
-        if ($this->fieldId === false || $this->primaryOwnerId === false || $this->ownerId === false) {
+        $mustHaveField = $this->mustHaveField();
+        $mustHaveOwner = $this->mustHaveOwner();
+
+        if (
+            ($mustHaveField && $this->fieldId === false) ||
+            ($mustHaveOwner && ($this->primaryOwnerId === false || $this->ownerId === false)) ||
+            $this->fieldId === [] ||
+            $this->primaryOwnerId === [] ||
+            $this->ownerId === []
+        ) {
             throw new QueryAbortedException();
         }
 
-        if (!empty($this->fieldId) || !empty($this->ownerId) || !empty($this->primaryOwnerId)) {
+        if (isset($this->fieldId) || isset($this->ownerId) || isset($this->primaryOwnerId)) {
             // Join in the elements_owners table
+            $joinType = $mustHaveField || $this->fieldId || $this->ownerId || $this->primaryOwnerId
+                ? 'INNER JOIN'
+                : 'LEFT JOIN';
+
             $ownersCondition = [
                 'and',
                 '[[elements_owners.elementId]] = [[elements.id]]',
@@ -211,15 +262,16 @@ trait NestedElementQueryTrait
                     'elements_owners.ownerId',
                     'elements_owners.sortOrder',
                 ])
-                ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
-            $this->subQuery->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+                ->join($joinType, ['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
 
-            if ($this->fieldId) {
-                $this->subQuery->andWhere([$fieldIdColumn => $this->fieldId]);
+            $this->subQuery->join($joinType, ['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
+
+            if (isset($this->fieldId)) {
+                $this->subQuery->andWhere([$fieldIdColumn => $this->fieldId ?: null]);
             }
 
-            if ($this->primaryOwnerId) {
-                $this->subQuery->andWhere([$primaryOwnerIdColumn => $this->primaryOwnerId]);
+            if (isset($this->primaryOwnerId)) {
+                $this->subQuery->andWhere([$primaryOwnerIdColumn => $this->primaryOwnerId ?: null]);
             }
 
             // Ignore revision/draft blocks by default
@@ -227,7 +279,8 @@ trait NestedElementQueryTrait
             $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
 
             if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
-                $this->subQuery->innerJoin(
+                $this->subQuery->join(
+                    $joinType,
                     ['owners' => Table::ELEMENTS],
                     $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : "[[owners.id]] = [[$primaryOwnerIdColumn]]"
                 );
@@ -238,6 +291,10 @@ trait NestedElementQueryTrait
 
                 if (!$allowOwnerRevisions) {
                     $this->subQuery->andWhere(['owners.revisionId' => null]);
+                }
+
+                if ($this->ownerId === false) {
+                    $this->subQuery->andWhere(['owners.id' => null]);
                 }
             }
 
@@ -256,7 +313,7 @@ trait NestedElementQueryTrait
     }
 
     /**
-     * Normalizes the fieldId param to an array of IDs or null
+     * Normalizes the fieldId param to an array of IDs, false, or null
      */
     private function normalizeFieldId(): void
     {
@@ -278,22 +335,29 @@ trait NestedElementQueryTrait
     }
 
     /**
-     * Normalizes the primaryOwnerId param to an array of IDs or null
+     * Normalizes the primaryOwnerId param to an array of IDs, false, or null
      *
      * @param mixed $value
      * @return int[]|null|false
      */
     private function normalizeOwnerId(mixed $value): array|null|false
     {
-        if (empty($value)) {
-            return null;
+        if ($value === false) {
+            return false;
         }
+
+        if (empty($value)) {
+            return is_array($value) ? [] : null;
+        }
+
         if (is_numeric($value)) {
             return [$value];
         }
+
         if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
             return false;
         }
+
         return $value;
     }
 
@@ -302,8 +366,24 @@ trait NestedElementQueryTrait
      */
     public function createElement(array $row): ElementInterface
     {
-        if (isset($this->_owner)) {
-            $row['owner'] = $this->_owner;
+        if (!empty($this->_owners)) {
+            $firstOwnerSites = reset($this->_owners);
+            if (count($this->_owners) === 1 && count($firstOwnerSites) === 1) {
+                $owner = reset($firstOwnerSites);
+            } else {
+                $ownersBySite = $this->_owners[$row['ownerId'] ?? null] ?? [];
+                $owner = $this->elementType::isLocalized()
+                    ? ($ownersBySite[$row['siteId'] ?? null] ?? null)
+                    : (reset($ownersBySite) ?: null);
+            }
+
+            if ($owner) {
+                $row['owner'] = $owner;
+
+                if (isset($row['primaryOwnerId']) && $row['primaryOwnerId'] == $owner->id) {
+                    $row['primaryOwner'] = $owner;
+                }
+            }
         }
 
         return parent::createElement($row);
@@ -335,5 +415,28 @@ trait NestedElementQueryTrait
         }
 
         return $tags;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        $this->normalizeFieldId();
+
+        if ($this->fieldId) {
+            $fieldLayouts = [];
+            foreach ($this->fieldId as $fieldId) {
+                $field = Craft::$app->getFields()->getFieldById($fieldId);
+                if ($field instanceof ElementContainerFieldInterface) {
+                    foreach ($field->getFieldLayoutProviders() as $provider) {
+                        $fieldLayouts[] = $provider->getFieldLayout();
+                    }
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
     }
 }

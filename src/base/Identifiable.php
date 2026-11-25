@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\web\twig\AllowedInSandbox;
+
 /**
  * Identifiable defines the common interface to be implemented by components that
  * can be identified by an ID.
@@ -21,5 +23,6 @@ interface Identifiable
      *
      * @return string|int|null
      */
+    #[AllowedInSandbox]
     public function getId(): string|int|null;
 }

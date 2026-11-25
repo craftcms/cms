@@ -26,7 +26,7 @@ class AssetBundleEvent extends Event
     /**
      * @var int|null The position of the asset bundle
      */
-    public ?int $position;
+    public ?int $position = null;
 
     /**
      * @var AssetBundle The asset bundle instance

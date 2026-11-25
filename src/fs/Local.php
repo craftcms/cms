@@ -130,7 +130,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        if (Craft::$app->getSecurity()->isSystemDir($this->getRootPath())) {
+        if (Craft::$app->getSecurity()->isRestrictedDir($this->getRootPath())) {
             $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within or above system directories.'));
         }
     }
@@ -140,10 +140,23 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fs/Local/settings.twig',
-            [
-                'volume' => $this,
-            ]);
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/fs/Local/settings.twig', [
+            'volume' => $this,
+            'readOnly' => $readOnly,
+        ]);
     }
 
     /**
@@ -373,16 +386,18 @@ class Local extends Fs implements LocalFsInterface
      */
     public function renameDirectory(string $path, string $newName): void
     {
-        if (!is_dir($this->prefixPath($path))) {
+        $fullPath = $this->prefixPath($path);
+
+        if (!is_dir($fullPath)) {
             throw new FsObjectNotFoundException('No folder exists at path: ' . $path);
         }
 
-        $components = explode("/", $this->prefixPath($path));
+        $components = explode(DIRECTORY_SEPARATOR, $fullPath);
         array_pop($components);
         $components[] = $newName;
-        $newPath = implode("/", $components);
+        $newPath = implode(DIRECTORY_SEPARATOR, $components);
 
-        @rename($this->prefixPath($path), $newPath);
+        @rename($fullPath, $newPath);
     }
 
     /**
@@ -409,6 +424,8 @@ class Local extends Fs implements LocalFsInterface
      */
     protected function prefixPath(string $path = ''): string
     {
+        $path = FileHelper::normalizePath($path);
+
         if (!Path::ensurePathIsContained($path)) {
             throw new FsException("The path `$path` is not contained.");
         }

@@ -89,4 +89,43 @@ return [
         'uid' => 'section-1006---------------------uid',
         'entryTypes' => ['1011'],
     ],
+
+    // playwright
+    [
+        'id' => '1012',
+        'name' => 'Test Sorting',
+        'handle' => 'testSorting',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'uid' => 'section-1012---------------------uid',
+        'entryTypes' => ['1012'],
+    ],
+    [
+        'id' => '1013',
+        'name' => 'Test Matrix',
+        'handle' => 'testMatrix',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'uid' => 'section-1013---------------------uid',
+        'entryTypes' => ['1013', '1014', '1015', '1018', '1019', '1020', '1021', '1022', '1023'],
+    ],
+    [
+        'id' => '1014',
+        'name' => 'Test Init UI Elements',
+        'handle' => 'testInitUiElements',
+        'type' => 'channel',
+        'enableVersioning' => false,
+        'propagationMethod' => 'all',
+        'previewTargets' => [
+            [
+                'label' => 'Primary entry page',
+                'refresh' => '1',
+                'urlFormat' => '{url}',
+            ],
+        ],
+        'uid' => 'section-1014---------------------uid',
+        'entryTypes' => ['1017'],
+    ],
 ];

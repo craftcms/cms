@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\Html;
 use craft\test\TestCase;
+use LogicException;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -40,6 +41,16 @@ class HtmlHelperTest extends TestCase
     public function testEncodeSpaces(string $expected, string $str): void
     {
         self::assertSame($expected, Html::encodeSpaces($str));
+    }
+
+    /**
+     * @dataProvider disableInputsDataProvider
+     * @param string|null $expected
+     * @param callable|string|null $html
+     */
+    public function testDisableInputs(?string $expected, callable|string|null $html): void
+    {
+        self::assertSame($expected, Html::disableInputs($html));
     }
 
     /**
@@ -225,6 +236,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider decodeDoublesDataProvider
+     * @param string $expected
+     * @param string $html
+     */
+    public function testDecodeDoubles(string $expected, string $html): void
+    {
+        self::assertSame($expected, Html::decodeDoubles($html));
+    }
+
+    /**
      *
      */
     public function testUnwrapCondition(): void
@@ -288,6 +309,127 @@ class HtmlHelperTest extends TestCase
         $svg = Html::svg($contents, namespace: false);
         self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
+
+        // Stream wrapper URLs aren't allowed
+        self::assertSame('', Html::svg("file://$path"));
+    }
+
+    /**
+     * @dataProvider sanitizeSvgDataProvider
+     * @param string[] $expectedPresent Strings that should be present in the sanitized SVG
+     * @param string[] $expectedAbsent Strings that should not be present in the sanitized SVG
+     * @param string $svg
+     */
+    public function testSanitizeSvg(array $expectedPresent, array $expectedAbsent, string $svg): void
+    {
+        $sanitized = Html::sanitizeSvg($svg);
+
+        foreach ($expectedPresent as $string) {
+            self::assertStringContainsString($string, $sanitized);
+        }
+
+        foreach ($expectedAbsent as $string) {
+            self::assertStringNotContainsString($string, $sanitized);
+        }
+    }
+
+    /**
+     *
+     */
+    public function testSanitizeSvgWithEmptyString(): void
+    {
+        self::assertSame('', Html::sanitizeSvg(''));
+    }
+
+    /**
+     *
+     */
+    public function testSanitizeSvgWithoutSvgRoot(): void
+    {
+        $this->expectException(LogicException::class);
+        Html::sanitizeSvg('<div>Not an SVG</div>');
+    }
+
+    /**
+     *
+     */
+    public function testSanitizeSvgWithFixture(): void
+    {
+        $path = dirname(__DIR__, 2) . '/_data/assets/files/dirty-svg.svg';
+        $sanitized = Html::sanitizeSvg(file_get_contents($path));
+
+        // Legitimate content survives
+        self::assertStringContainsString('id="Symbols"', $sanitized);
+        self::assertStringContainsString('id="Shape"', $sanitized);
+
+        // Malicious/unknown content is stripped
+        self::assertStringNotContainsString('<script', $sanitized);
+        self::assertStringNotContainsString('alert(1)', $sanitized);
+        self::assertStringNotContainsString('<this', $sanitized);
+        self::assertStringNotContainsString('shouldn', $sanitized);
+    }
+
+    /**
+     * @return array
+     */
+    public static function sanitizeSvgDataProvider(): array
+    {
+        $xmlns = 'xmlns="http://www.w3.org/2000/svg"';
+        $xmlnsXlink = 'xmlns:xlink="http://www.w3.org/1999/xlink"';
+
+        return [
+            'script tags are removed' => [
+                [],
+                ['<script', 'alert(1)'],
+                "<svg $xmlns><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'event handler attributes are removed' => [
+                ['<rect'],
+                ['onclick', 'alert(1)'],
+                "<svg $xmlns><rect onclick=\"alert(1)\" width=\"1\" height=\"1\"/></svg>",
+            ],
+            'javascript: URIs are removed' => [
+                ['<a'],
+                ['javascript:'],
+                "<svg $xmlns $xmlnsXlink><a xlink:href=\"javascript:alert(1)\"><rect width=\"1\" height=\"1\"/></a></svg>",
+            ],
+            'comments are removed' => [
+                ['<rect'],
+                ['<!--', 'a sneaky comment'],
+                "<svg $xmlns><!-- a sneaky comment --><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'title tags are removed' => [
+                ['<rect'],
+                ['<title', 'My Title'],
+                "<svg $xmlns><title>My Title</title><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'desc tags are removed' => [
+                ['<rect'],
+                ['<desc', 'My Desc'],
+                "<svg $xmlns><desc>My Desc</desc><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'foreignObject and its contents are removed' => [
+                ['<rect'],
+                ['foreignObject', 'onload', 'alert(1)'],
+                "<svg $xmlns><foreignObject><div onload=\"alert(1)\">hi</div></foreignObject><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'unknown elements are removed' => [
+                ['<rect'],
+                ['<this', 'shouldn\'t be here'],
+                "<svg $xmlns><this>shouldn't be here</this><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+            'allowed elements and attributes are preserved' => [
+                ['<rect', 'width="1"', 'height="1"', 'fill="red"'],
+                [],
+                "<svg $xmlns><rect width=\"1\" height=\"1\" fill=\"red\"/></svg>",
+            ],
+            // filterUnits is manually added to the allowed attribute list via craft\image\SvgAllowedAttributes
+            'filterUnits attribute is preserved' => [
+                ['filterUnits="userSpaceOnUse"'],
+                [],
+                "<svg $xmlns><filter x=\"0\" y=\"0\" width=\"1\" height=\"1\" filterUnits=\"userSpaceOnUse\"><feGaussianBlur stdDeviation=\"2\"/></filter><rect width=\"1\" height=\"1\"/></svg>",
+            ],
+        ];
     }
 
     /**
@@ -325,6 +467,64 @@ class HtmlHelperTest extends TestCase
         return [
             ['foo%20bar', 'foo bar'],
             ['foo%20%20bar', 'foo  bar'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function disableInputsDataProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo">',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo" disabled>',
+            ],
+            [
+                '<input type="text" disabled>',
+                '<input type="text">',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                '<fieldset class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></fieldset>',
+                '<fieldset class="field"><div class="input ltr"><input type="text" name="foo"></div></fieldset>',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                null,
+                fn() => null,
+            ],
+            [
+                '',
+                fn() => '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                fn() => '<input type="text" name="foo">',
+            ],
+            // https://github.com/nystudio107/craft-retour/issues/329
+            [
+                '<style>foo { color: red; }</style><input type="text" name="foo" disabled>',
+                '<style>foo { color: red; }</style><input type="text" name="foo">',
+            ],
         ];
     }
 
@@ -499,7 +699,7 @@ class HtmlHelperTest extends TestCase
     {
         return [
             ['foo', '-foo-'],
-            ['foo-bar', 'foo--bar'],
+            ['foo--bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
             ['foo-bar-baz', 'foo bar baz'],
             ['foo.bar', 'foo.bar'],
@@ -594,6 +794,8 @@ class HtmlHelperTest extends TestCase
             ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar, #foo-bar .foo"></div>', '<div id="bar"></div><div data-reverse-target="#bar, #bar .foo"></div>', 'foo', false],
             ['<div id="foo-bar"></div><div data-target-prefix="#foo-"></div>', '<div id="bar"></div><div data-target-prefix="#"></div>', 'foo', false],
             ['<div id="foo-bar"></div><div data-target-prefix></div>', '<div id="bar"></div><div data-target-prefix></div>', 'foo', false],
+            // https://github.com/craftcms/cms/issues/18957
+            ['<div for=" "></div>', '<div for=" "></div>', 'foo', false],
         ];
     }
 
@@ -621,6 +823,18 @@ class HtmlHelperTest extends TestCase
             ['foo&lt;p&gt;bar<br>baz', 'foo<p>bar<br>baz'],
             ['This text goes within the &lt;title&gt; tag in the &lt;head&gt; of the HTML file.', 'This text goes within the <title> tag in the <head> of the HTML file.'],
             ['Foo &lt;p&gt; bar <input type="hidden"', 'Foo <p> bar <input type="hidden"'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function decodeDoublesDataProvider(): array
+    {
+        return [
+            ['&lt;p&gt;', '&lt;p&gt;'],
+            ['&lt;p&gt;', '&amp;lt;p&amp;gt;'],
+            ['&amp;lt;p&amp;gt;', '&amp;amp;lt;p&amp;amp;gt;'],
         ];
     }
 }

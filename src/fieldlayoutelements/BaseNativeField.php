@@ -127,22 +127,6 @@ abstract class BaseNativeField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function tip(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return $this->tip;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return $this->warning;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         return $this->orientation ?? parent::orientation($element, $static);

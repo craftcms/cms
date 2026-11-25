@@ -11,8 +11,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\Markdown as MarkdownHelper;
 use craft\helpers\StringHelper;
-use yii\helpers\Markdown as MarkdownHelper;
 
 /**
  * Markdown represents a UI element based on Markdown content can be included in field layouts.
@@ -102,12 +102,13 @@ class Markdown extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $content = MarkdownHelper::process(Html::encode($this->content));
-        if ($this->displayInPane) {
-            $content = Html::tag('div', $content, [
-                'class' => 'pane',
-            ]);
-        }
+        $content = Html::tag('div', MarkdownHelper::process(Html::encode(Craft::t('site', $this->content))), [
+            'class' => array_filter([
+                'markdown',
+                $this->displayInPane ? 'pane' : null,
+            ]),
+        ]);
+
         return Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 }

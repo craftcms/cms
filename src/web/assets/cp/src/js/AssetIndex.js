@@ -70,7 +70,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 .filter(
                   (source) =>
                     Garnish.hasAttr(source, 'data-folder-id') &&
-                    Garnish.hasAttr(source, 'data-can-move-peer-files-to')
+                    Garnish.hasAttr(source, 'data-can-move-to')
                 )
             );
             if (this.sourcePath.length <= 1) {
@@ -101,7 +101,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             Garnish.$bod.addClass('dragging');
             this.itemDrag.$draggee.closest('tr,li').addClass('draggee');
           },
-          onDragStop: () => {
+          onDragStop: async () => {
             Garnish.$bod.removeClass('dragging');
 
             const $draggee = this.itemDrag.$draggee;
@@ -127,30 +127,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             });
 
             const mover = new Craft.AssetMover();
-            mover
-              .moveFolders(folderIds, targetFolderId)
-              .then((totalFoldersMoved) => {
-                mover
-                  .moveAssets(assetIds, targetFolderId)
-                  .then((totalAssetsMoved) => {
-                    const totalItemsMoved =
-                      totalFoldersMoved + totalAssetsMoved;
-                    if (totalItemsMoved) {
-                      Craft.cp.displayNotice(
-                        Craft.t(
-                          'app',
-                          '{totalItems, plural, =1{Item} other{Items}} moved.',
-                          {
-                            totalItems: totalItemsMoved,
-                          }
-                        )
-                      );
-                      Craft.elementIndex.updateElements(true);
-                    } else {
-                      $draggee.closest('tr,li').removeClass('draggee');
-                    }
-                  });
-              });
+
+            const moveParams = await mover.getMoveParams(folderIds, assetIds);
+            if (!moveParams.proceed) {
+              $draggee.closest('tr,li').removeClass('draggee');
+              return;
+            }
+
+            const totalFoldersMoved = await mover.moveFolders(
+              folderIds,
+              targetFolderId,
+              this.currentFolderId
+            );
+            const totalAssetsMoved = await mover.moveAssets(
+              assetIds,
+              targetFolderId,
+              this.currentFolderId
+            );
+            const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
+            if (totalItemsMoved) {
+              mover.successNotice(
+                moveParams,
+                Craft.t(
+                  'app',
+                  '{totalItems, plural, =1{Item} other{Items}} moved.',
+                  {
+                    totalItems: totalItemsMoved,
+                  }
+                )
+              );
+              Craft.elementIndex.updateElements(true);
+            } else {
+              $draggee.closest('tr,li').removeClass('draggee');
+            }
           },
         });
 
@@ -303,15 +312,26 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.$uploadButton,
             options
           );
-          this.uploader.setParams({
-            folderId: this.currentFolderId,
-          });
+          this._setUploaderParams();
         } else {
           this.$uploadButton.addClass('disabled');
         }
       }
 
       this.base();
+    },
+
+    onSelectSite: function () {
+      // Keep uploads in sync with the selected site
+      this._setUploaderParams();
+      this.base();
+    },
+
+    _setUploaderParams: function () {
+      this.uploader?.setParams({
+        folderId: this.currentFolderId,
+        siteId: this.siteId,
+      });
     },
 
     onSourcePathChange: function () {
@@ -321,9 +341,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       this.currentFolderId = currentFolder?.folderId;
 
       if (!this.settings.foldersOnly && this.currentFolderId) {
-        this.uploader?.setParams({
-          folderId: this.currentFolderId,
-        });
+        this._setUploaderParams();
 
         // will the user be allowed to move items in this folder?
         const canMoveSubItems =
@@ -679,12 +697,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          $link.attr({
-            href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            role: 'button',
-            'aria-label': label,
-          });
-          this.addListener($link, 'activate', (ev) => {
+          const $newLink = $('<a class="label-link"/>')
+            .html($link.html())
+            .attr({
+              href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
+              role: 'button',
+              'aria-label': label,
+            });
+          $link.replaceWith($newLink);
+          this.addListener($newLink, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {
@@ -778,10 +799,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             },
           });
 
-          if (
-            currentFolder.canMove &&
-            this.getMoveTargetSourceKeys(true).length
-          ) {
+          if (currentFolder.canMove && this.getMoveTargetSourceKeys().length) {
             actions.push({
               label: Craft.t('app', 'Move folder'),
               onSelect: () => {
@@ -909,10 +927,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         });
     },
 
-    getMoveTargetSourceKeys: function (peerFiles) {
-      const attr = peerFiles
-        ? 'data-can-move-peer-files-to'
-        : 'data-can-move-to';
+    getMoveTargetSourceKeys: function () {
       return this.$sources
         .toArray()
         .filter((source) => {
@@ -920,7 +935,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
           return (
             volumeHandle &&
             volumeHandle !== 'temp' &&
-            Garnish.hasAttr(source, attr)
+            Garnish.hasAttr(source, 'data-can-move-to')
           );
         })
         .map((source) => $(source).data('key'));
@@ -936,7 +951,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       }
 
       new Craft.VolumeFolderSelectorModal({
-        sources: this.getMoveTargetSourceKeys(true),
+        sources: this.getMoveTargetSourceKeys(),
         showTitle: true,
         modalTitle: Craft.t('app', 'Move to'),
         selectBtnLabel: Craft.t('app', 'Move'),

@@ -9,6 +9,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
   $branchLimitField: null,
   $maxRelationsField: null,
   $minRelationsField: null,
+  $defaultPlacementField: null,
   $viewModeField: null,
 
   init: function (
@@ -18,6 +19,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
     branchLimitFieldId,
     minRelationsFieldId,
     maxRelationsFieldId,
+    defaultPlacementFieldId,
     viewModeFieldId
   ) {
     this.allowMultipleSources = allowMultipleSources;
@@ -30,6 +32,7 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
     this.$branchLimitField = $(`#${branchLimitFieldId}`);
     this.$minRelationsField = $(`#${minRelationsFieldId}`);
     this.$maxRelationsField = $(`#${maxRelationsFieldId}`);
+    this.$defaultPlacementField = $(`#${defaultPlacementFieldId}`);
     this.$viewModeField = $(`#${viewModeFieldId}`);
 
     this.updateLimitFields();
@@ -67,11 +70,14 @@ Craft.ElementFieldSettings = Garnish.Base.extend({
       this.$minRelationsField.addClass('hidden');
       this.$maxRelationsField.addClass('hidden');
       this.$branchLimitField.removeClass('hidden');
+      this.$defaultPlacementField.addClass('hidden');
+      this.$viewModeField.find('select').val('list').trigger('change');
       this.$viewModeField.addClass('hidden');
     } else {
       this.$branchLimitField.addClass('hidden');
       this.$minRelationsField.removeClass('hidden');
       this.$maxRelationsField.removeClass('hidden');
+      this.$defaultPlacementField.removeClass('hidden');
       this.$viewModeField.removeClass('hidden');
     }
   },

@@ -25,7 +25,7 @@ import UiLayerManager from './UiLayerManager.js';
  */
 
 // Bail if Garnish is already defined
-if (typeof Garnish !== 'undefined') {
+if (typeof window.Garnish !== 'undefined') {
   throw 'Garnish is already defined!';
 }
 
@@ -41,6 +41,7 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
+  activateEventsMuted: false,
   resizeEventsMuted: false,
 
   // Key code constants
@@ -962,6 +963,19 @@ Garnish = $.extend(Garnish, {
     callback();
     Garnish.resizeEventsMuted = resizeEventsMuted;
   },
+
+  /**
+   * Ensures that the given number is within a min/max range, and returns it.
+   *
+   * @param {number} num
+   * @param {number} min
+   * @param {number} max
+   */
+  within: function (num, min, max) {
+    num = Math.max(num, min);
+    num = Math.min(num, max);
+    return num;
+  },
 });
 
 Object.assign(Garnish, {
@@ -1028,16 +1042,12 @@ $.extend($.event.special, {
       var $elem = $(this);
 
       $elem.on({
-        'mousedown.garnish-activate': function (e) {
-          // Prevent buttons from getting focus on click
-          if (
-            e.currentTarget.nodeName === 'BUTTON' ||
-            e.currentTarget.role === 'button'
-          ) {
-            e.preventDefault();
-          }
-        },
         'click.garnish-activate': function (e) {
+          // Ignore if activate events are muted
+          if (Garnish.activateEventsMuted) {
+            return;
+          }
+
           const disabled = $elem.hasClass('disabled');
 
           // Don't interfere if this is a link and it was a Ctrl-click
@@ -1056,15 +1066,20 @@ $.extend($.event.special, {
             e.currentTarget.role === 'button'
           ) {
             e.preventDefault();
+            e.currentTarget.focus();
           }
 
           if (!disabled) {
-            $elem.trigger('activate');
+            $elem.trigger({
+              type: 'activate',
+              originalEvent: e,
+            });
           }
         },
         'keydown.garnish-activate': function (e) {
-          // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
+          // Ignore if activate events are muted, or the event was bubbled up, or if it wasn't the Space/Return key
           if (
+            Garnish.activateEventsMuted ||
             this !== $elem[0] ||
             ![Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
           ) {
@@ -1079,15 +1094,24 @@ $.extend($.event.special, {
           }
 
           if (!$elem.hasClass('disabled')) {
-            $elem.trigger('activate');
+            $elem.trigger({
+              type: 'activate',
+              originalEvent: e,
+            });
           }
         },
       });
 
       if (!$elem.hasClass('disabled')) {
-        $elem.attr('tabindex', '0');
+        // Make it focusable, unless the event is bubbling up to the body element
+        if ($elem[0] !== Garnish.$bod[0]) {
+          $elem.attr('tabindex', '0');
+        }
       } else {
-        $elem.removeAttr('tabindex');
+        // allow setting of tabindex attr if the element has a "read-only" class
+        if (!$elem.hasClass('read-only')) {
+          $elem.removeAttr('tabindex');
+        }
       }
     },
     teardown: function () {

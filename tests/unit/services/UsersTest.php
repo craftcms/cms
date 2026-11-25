@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\events\UserEvent;
 use craft\helpers\Db;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\mail\Message;
 use craft\services\Users;
@@ -504,6 +505,21 @@ class UsersTest extends TestCase
         );
     }
 
+    public function testConsolePasswordResetUrlForCpUser(): void
+    {
+        $this->tester->mockCraftMethods('request', [
+            'getIsConsoleRequest' => true,
+            'getIsCpRequest' => false,
+        ]);
+
+        // Users without control panel access get the front-end path
+        self::assertStringContainsString('/setpassword?code=', $this->users->getPasswordResetUrl($this->activeUser));
+
+        // Users with control panel access get the control panel path
+        $this->activeUser->admin = true;
+        self::assertStringContainsString('/adminustriggerus/set-password?code=', $this->users->getPasswordResetUrl($this->activeUser));
+    }
+
 
     /**
      * @param string $desiredKey
@@ -561,6 +577,72 @@ class UsersTest extends TestCase
     protected function getUser(?int $userId): ?User
     {
         return Craft::$app->getUsers()->getUserById($userId);
+    }
+
+    /**
+     * If nobody is logged in, there’s no session to preserve, so all of the user’s sessions should go.
+     */
+    public function testDestroyOtherSessions(): void
+    {
+        $this->_insertSession($this->activeUser->id, 'token-a');
+        $this->_insertSession($this->activeUser->id, 'token-b');
+        $this->_insertSession($this->lockedUser->id, 'token-other');
+
+        $this->users->destroyOtherSessions($this->activeUser);
+
+        self::assertSame(0, $this->_sessionCount($this->activeUser->id));
+
+        // Other users’ sessions should be left alone
+        self::assertSame(1, $this->_sessionCount($this->lockedUser->id));
+    }
+
+    /**
+     * The session the request was made from should survive, so users don’t sign themselves out.
+     */
+    public function testDestroyOtherSessionsPreservesCurrentSession(): void
+    {
+        $this->_insertSession($this->activeUser->id, 'token-current');
+        $this->_insertSession($this->activeUser->id, 'token-stale');
+
+        // Sign the user in, with `token-current` as their session token
+        $userSession = Craft::$app->getUser();
+        $userSession->setIdentity($this->activeUser);
+        Session::reset();
+        $this->tester->mockCraftMethods('session', [
+            'getHasSessionId' => fn() => true,
+            'get' => fn(string $key) => 'token-current',
+        ]);
+
+        try {
+            $this->users->destroyOtherSessions($this->activeUser);
+
+            $tokens = (new Query())
+                ->select(['token'])
+                ->from([Table::SESSIONS])
+                ->where(['userId' => $this->activeUser->id])
+                ->column();
+
+            self::assertSame(['token-current'], array_map('trim', $tokens));
+        } finally {
+            $userSession->setIdentity(null);
+            Session::reset();
+        }
+    }
+
+    private function _insertSession(int $userId, string $token): void
+    {
+        Db::insert(Table::SESSIONS, [
+            'userId' => $userId,
+            'token' => $token,
+        ]);
+    }
+
+    private function _sessionCount(int $userId): int
+    {
+        return (int)(new Query())
+            ->from([Table::SESSIONS])
+            ->where(['userId' => $userId])
+            ->count();
     }
 
     /**

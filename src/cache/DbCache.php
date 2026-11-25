@@ -9,6 +9,7 @@ namespace craft\cache;
 
 use Craft;
 use craft\db\Connection;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use Exception;
 use PDO;
@@ -31,9 +32,14 @@ class DbCache extends YiiDbCache
      */
     protected function setValue($key, $value, $duration): bool
     {
+        $enableSchemaCache = $this->db->enableSchemaCache;
+        // Writing schema metadata to this cache must not trigger another schema cache write.
+        $this->db->enableSchemaCache = false;
+
         try {
             // Make sure the table exists
-            $table = $this->db->getTableSchema($this->cacheTable);
+            // (outside of any query cache scope, since caching the introspection query would call setValue() again)
+            $table = $this->db->noCache(fn() => $this->db->getTableSchema($this->cacheTable));
             if (!$table) {
                 throw new InvalidConfigException(sprintf(
                     'The `%s` table doesn’t exist. Run the `setup/db-cache-table` command to create it.',
@@ -60,7 +66,7 @@ class DbCache extends YiiDbCache
             $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 Db::upsert($this->cacheTable, [
                     'id' => $key,
-                    'expire' => $duration > 0 ? $duration + time() : 0,
+                    'expire' => $duration > 0 ? DateTimeHelper::currentTimeStamp() + $duration : 0,
                     'data' => new PdoValue($value, PDO::PARAM_LOB),
                 ], db: $db);
             });
@@ -69,6 +75,8 @@ class DbCache extends YiiDbCache
         } catch (Throwable $e) {
             Craft::warning("Unable to update or insert cache data: {$e->getMessage()}", __METHOD__);
             return false;
+        } finally {
+            $this->db->enableSchemaCache = $enableSchemaCache;
         }
     }
 
@@ -79,11 +87,15 @@ class DbCache extends YiiDbCache
     {
         $this->gc();
 
+        $enableSchemaCache = $this->db->enableSchemaCache;
+        // Writing schema metadata to this cache must not trigger another schema cache write.
+        $this->db->enableSchemaCache = false;
+
         try {
             $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 Db::insert($this->cacheTable, [
                     'id' => $key,
-                    'expire' => $duration > 0 ? $duration + time() : 0,
+                    'expire' => $duration > 0 ? DateTimeHelper::currentTimeStamp() + $duration : 0,
                     'data' => new PdoValue($value, PDO::PARAM_LOB),
                 ], $db);
             });
@@ -91,6 +103,8 @@ class DbCache extends YiiDbCache
         } catch (Exception $e) {
             Craft::warning("Unable to insert cache data: {$e->getMessage()}", __METHOD__);
             return false;
+        } finally {
+            $this->db->enableSchemaCache = $enableSchemaCache;
         }
     }
 }

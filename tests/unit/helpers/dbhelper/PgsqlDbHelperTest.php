@@ -32,9 +32,7 @@ class PgsqlDbHelperTest extends TestCase
      */
     public function testTypeSupport(string $type, bool $supported): void
     {
-        $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
-        self::assertIsBool($isSupported);
     }
 
     /**

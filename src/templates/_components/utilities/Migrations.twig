@@ -35,7 +35,7 @@
                 <tr>
                     <td>{{ migrationName }}</td>
                     <td>{{ 'Applied'|t('app') }}</td>
-                    <td>{{ migration|datetime() }}</td>
+                    <td>{{ migration|datetime(withTimeZone: true) }}</td>
                 </tr>
             {% endfor %}
         </tbody>

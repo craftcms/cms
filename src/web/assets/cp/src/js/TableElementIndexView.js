@@ -88,7 +88,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set up the broadcast listener
     if (Craft.messageReceiver) {
       this._broadcastListener = (ev) => {
-        if (ev.data.event === 'saveElement') {
+        if (
+          ev.data.event === 'saveElement' ||
+          ev.data.event === 'replaceFile'
+        ) {
           const $rows = this.$table.find(
             `> tbody > tr[data-id="${ev.data.id}"]`
           );
@@ -103,7 +106,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                for (let attribute in data.attributeHtml) {
+                for (const attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row
                       .find(`> td[data-attr="${attribute}"]`)
@@ -149,12 +152,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         this.saveChanges()
           .then((data) => {
             if (data.errors) {
-              for (let elementId in data.errors) {
+              for (const elementId in data.errors) {
                 if (data.errors.hasOwnProperty(elementId)) {
                   const $row = this.$elementContainer.children(
                     `[data-id="${elementId}"]`
                   );
-                  for (let attribute in data.errors[elementId]) {
+                  for (const attribute in data.errors[elementId]) {
                     $row
                       .find(`[name*="${attribute}"]`)
                       .closest('td')
@@ -203,7 +206,11 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
-        if (event.keyCode === Garnish.RETURN_KEY) {
+        if (
+          event.keyCode === Garnish.RETURN_KEY &&
+          (event.target.nodeName !== 'TEXTAREA' ||
+            Garnish.isCtrlKeyPressed(event))
+        ) {
           this.$saveBtn.trigger('click');
         } else if (
           event.keyCode === Garnish.S_KEY &&
@@ -247,7 +254,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   serializeInputs: function () {
     const data = Garnish.getPostData(this.$elementContainer);
     const serialized = [];
-    for (let i in data) {
+    for (const i in data) {
       serialized.push(encodeURIComponent(`${i}=${data[i]}`));
     }
     return serialized.join('&');
@@ -300,7 +307,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   initTableHeaders: function () {
-    if (this.settings.sortable || this.elementIndex.inlineEditing) {
+    if (this.elementIndex.inlineEditing) {
       return;
     }
 
@@ -642,7 +649,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     this.elementIndex.updateElements();
 
     // No need for two spinners
-    this.elementIndex.setIndexAvailable();
+    this.elementIndex.hideIndexLoadingStyles();
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {

@@ -9,7 +9,11 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
+use craft\elements\Category;
+use craft\events\ConfigEvent;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
@@ -17,7 +21,9 @@ use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use Exception;
 use UnitTester;
+use yii\base\Exception as YiiException;
 use yii\base\NotSupportedException;
+use yii\mutex\FileMutex;
 use yii\mutex\Mutex as YiiMutex;
 
 /**
@@ -79,13 +85,11 @@ class ProjectConfigTest extends TestCase
      */
     protected function getProjectConfig(?array $internal = null, ?array $external = null, array $additionalConfig = []): ProjectConfig
     {
-        $internal = $internal ?? $this->internal;
-        $external = $external ?? static::$external;
+        $internal ??= $this->internal;
+        $external ??= static::$external;
 
         $mockConfig = [
-            'getExternalConfig' => function() use ($external) {
-                return new ReadOnlyProjectConfigData($external);
-            },
+            'getExternalConfig' => fn() => new ReadOnlyProjectConfigData($external),
             'getInternalConfig' => new ReadOnlyProjectConfigData($internal),
             'persistInternalConfigValues' => null,
             'removeInternalConfigValuesByPaths' => null,
@@ -216,6 +220,188 @@ class ProjectConfigTest extends TestCase
 
         $pc->remove('some.path');
         $pc->saveModifiedConfigData();
+    }
+
+    public function testSavingModifiedConfigDataOnlySavesNewChanges(): void
+    {
+        $persisted = [];
+        $pc = $this->getProjectConfig(null, null, [
+            'persistInternalConfigValues' => function(array $values) use (&$persisted) {
+                $persisted[] = array_keys($values);
+            },
+            'storeYamlHistory' => null,
+        ]);
+
+        $pc->set('some.path', 'value');
+        $pc->saveModifiedConfigData();
+        $pc->saveModifiedConfigData();
+        $pc->set('other.path', 'value');
+        $pc->saveModifiedConfigData();
+
+        $paths = array_values(array_intersect(array_merge(...$persisted), ['some.path', 'other.path']));
+        self::assertSame(['some.path', 'other.path'], $paths);
+    }
+
+    public function testSavingModifiedConfigDataReleasesLockWithoutChanges(): void
+    {
+        $mutexPath = Craft::$app->getPath()->getTempPath() . '/mutex-' . StringHelper::randomString(8);
+        Craft::$app->set('mutex', new FileMutex(['mutexPath' => $mutexPath]));
+        $otherProcess = new FileMutex(['mutexPath' => $mutexPath, 'autoRelease' => false]);
+        $pc = $this->getProjectConfig();
+
+        $pc->acquireLock();
+        self::assertFalse($otherProcess->acquire(ProjectConfig::MUTEX_NAME));
+
+        $pc->saveModifiedConfigData();
+        self::assertTrue($otherProcess->acquire(ProjectConfig::MUTEX_NAME));
+        $otherProcess->release(ProjectConfig::MUTEX_NAME);
+    }
+
+    public function testWritingYamlFilesReplacesFilesWithoutClearingFolderFirst(): void
+    {
+        $globalProjectConfig = Craft::$app->getProjectConfig();
+        $originalFolderName = $globalProjectConfig->folderName;
+        $globalProjectConfig->folderName = 'project-' . StringHelper::randomString(8);
+        $basePath = Craft::$app->getPath()->getProjectConfigPath();
+
+        $entryTypeUid = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+        $fieldUid = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+        $config = [
+            'dateModified' => 1,
+            'entryTypes' => [$entryTypeUid => ['handle' => 'foo']],
+            'fields' => [$fieldUid => ['handle' => 'body']],
+        ];
+        $pc = $this->make(ProjectConfig::class, [
+            'getCurrentWorkingConfig' => function() use (&$config) {
+                return new ProjectConfigData($config);
+            },
+        ]);
+        $listFiles = fn() => array_map(
+            fn($file) => substr($file, strlen($basePath) + 1),
+            FileHelper::findFiles($basePath, ['except' => ['.gitignore']]),
+        );
+
+        try {
+            file_put_contents("$basePath/.gitignore", '');
+            FileHelper::writeToFile("$basePath/entryTypes/Foo--$entryTypeUid.yaml", "handle: Foo\n");
+            FileHelper::writeToFile("$basePath/sections/old--cccccccc-cccc-4ccc-8ccc-cccccccccccc.yaml", "handle: old\n");
+            FileHelper::writeToFile("$basePath/project.yaml", "dateModified: 0\n");
+            FileHelper::writeToFile("$basePath/globalSets/old--eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.yaml", "handle: old\n");
+            FileHelper::createDirectory("$basePath/globalSets/.hidden");
+
+            $pc->writeYamlFiles(true);
+
+            $files = $listFiles();
+            sort($files);
+            self::assertSame([
+                "entryTypes/foo--$entryTypeUid.yaml",
+                "fields/body--$fieldUid.yaml",
+                'project.yaml',
+            ], $files);
+            self::assertFileExists("$basePath/.gitignore");
+            self::assertDirectoryDoesNotExist("$basePath/sections");
+            self::assertDirectoryExists("$basePath/globalSets/.hidden");
+
+            // A failed write leaves the existing files in place
+            $config['fields']['dddddddd-dddd-4ddd-8ddd-dddddddddddd'] = ['handle' => 'summary'];
+            chmod("$basePath/fields", 0555);
+            try {
+                $pc->writeYamlFiles(true);
+                self::fail('writeYamlFiles() should have failed');
+            } catch (YiiException $e) {
+                self::assertStringContainsString('is not writable', $e->getMessage());
+            }
+            self::assertFileExists("$basePath/entryTypes/foo--$entryTypeUid.yaml");
+            self::assertFileExists("$basePath/project.yaml");
+            self::assertTrue($pc->getHadFileWriteIssues());
+        } finally {
+            if (is_dir("$basePath/fields")) {
+                chmod("$basePath/fields", 0775);
+            }
+            FileHelper::removeDirectory($basePath);
+            Craft::$app->getCache()->delete(ProjectConfig::FILE_ISSUES_CACHE_KEY);
+            $globalProjectConfig->folderName = $originalFolderName;
+        }
+    }
+
+    public function testApplyingConfigChangesDoesNotExposePartialElementSourcesToSectionHandlers(): void
+    {
+        $projectConfig = new ProjectConfig();
+        $internalConfig = new ReadOnlyProjectConfigData([], $projectConfig);
+        $currentWorkingConfig = new ProjectConfigData([], $projectConfig);
+
+        $internalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_internalConfig');
+        $internalConfigProperty->setValue($projectConfig, $internalConfig);
+
+        $currentWorkingConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_currentWorkingConfig');
+        $currentWorkingConfigProperty->setValue($projectConfig, $currentWorkingConfig);
+
+        $incomingConfig = [
+            'elementSources' => [
+                'craft\\elements\\Category' => [[
+                    'defaultSort' => ['structure', 'asc'],
+                    'tableAttributes' => ['link'],
+                    'type' => 'native',
+                    'key' => 'group:bedad454-861f-4d7f-b0f6-40ce023cffc5',
+                    'disabled' => false,
+                ]],
+            ],
+            'sections' => [
+                'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' => [
+                    'siteSettings' => [
+                        'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' => [
+                            'hasUrls' => true,
+                            'uriFormat' => 'test/{slug}',
+                            'template' => 'test/_entry',
+                            'enabledByDefault' => true,
+                        ],
+                    ],
+                    'entryTypes' => ['cccccccc-cccc-cccc-cccc-cccccccccccc'],
+                ],
+            ],
+        ];
+
+        $externalConfig = new ReadOnlyProjectConfigData($incomingConfig, $projectConfig);
+        $externalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_externalConfig');
+        $externalConfigProperty->setValue($projectConfig, $externalConfig);
+
+        $originalProjectConfig = Craft::$app->getProjectConfig();
+        $originalElementSources = Craft::$app->getElementSources();
+        $handlerWasCalled = false;
+
+        Craft::$app->set('projectConfig', $projectConfig);
+        Craft::$app->set('elementSources', new \craft\services\ElementSources());
+
+        $projectConfig->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', function() use (&$handlerWasCalled) {
+            $handlerWasCalled = true;
+            Craft::$app->getElementSources()->getSources(Category::class);
+        });
+
+        try {
+            $projectConfig->applyConfigChanges($incomingConfig);
+        } finally {
+            Craft::$app->set('projectConfig', $originalProjectConfig);
+            Craft::$app->set('elementSources', $originalElementSources);
+        }
+
+        self::assertTrue($handlerWasCalled);
+    }
+
+    public function testParentHandlersFireWhenNestedValueCreatesParent(): void
+    {
+        $projectConfig = new ProjectConfig();
+        $internalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_internalConfig');
+        $internalConfigProperty->setValue($projectConfig, new ReadOnlyProjectConfigData($this->internal, $projectConfig));
+
+        $handled = [];
+        $projectConfig->onAdd('demo', function(ConfigEvent $event) use (&$handled) {
+            $handled[] = [$event->oldValue, $event->newValue];
+        });
+
+        $projectConfig->set('demo.child.key', 1);
+
+        self::assertSame([[null, ['child' => ['key' => 1]]]], $handled);
+        self::assertSame(['child' => ['key' => 1]], $projectConfig->get('demo'));
     }
 
     public function getConfigProvider(): array

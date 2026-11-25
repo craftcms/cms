@@ -46,6 +46,12 @@
         value: 'two',
     }) }}
 
+    <h2>Money</h2>
+    {{ forms.moneyField({
+        label: "Money field",
+        name: 'money',
+    }) }}
+
     <h2>Multi-select</h2>
 
     {{ forms.multiselectField({
@@ -85,30 +91,89 @@
         ]
     }) }}
 
+    <hr/>
+    <div>
+        <h2 id="lightswitches">Lightswitches</h2>
+        {{ forms.lightswitchField({
+            label: 'Default',
+            on: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Small',
+            small: true,
+            on: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Default',
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Small',
+            small: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Disabled',
+            disabled: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Indeterminate',
+            indeterminate: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Indeterminate (small)',
+            indeterminate: true,
+            small: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'With Labels',
+            on: true,
+            onLabel: 'On',
+            offLabel: 'Off'
+        }) }}
+
+        <div class="pane">
+            {{ forms.lightswitchField({
+                label: 'With Background',
+                on: true,
+            }) }}
+            {{ forms.lightswitchField({
+                label: 'With Background',
+                on: false,
+            }) }}
+            {{ forms.lightswitchField({
+                label: 'Disabled',
+                disabled: true,
+            }) }}
+        </div>
+    <hr/>
 {% endblock %}
 
 {% js %}
 var $content = $('#content');
 
 $content.append(Craft.ui.createCheckboxSelectField({
-    label: 'Checkbox select with “All” option (JS)',
-    options: [
-        { value: 'one', label: 'One' },
-        { value: 'two', label: 'Two' },
-        { value: 'three', label: 'Three' },
-    ],
-    showAllOption: true,
+  label: 'Checkbox select with “All” option (JS)',
+  options: [
+    {value: 'one', label: 'One'},
+    {value: 'two', label: 'Two'},
+    {value: 'three', label: 'Three'},
+  ],
+  showAllOption: true,
 }));
 
 $content.append(Craft.ui.createCheckboxSelectField({
-    label: 'Checkbox select without “All” option (JS)',
-    options: [
-        { value: 'one', label: 'One' },
-        { value: 'two', label: 'Two' },
-        { value: 'three', label: 'Three' },
-    ],
-    showAllOption: false,
+  label: 'Checkbox select without “All” option (JS)',
+  options: [
+    {value: 'one', label: 'One'},
+    {value: 'two', label: 'Two'},
+    {value: 'three', label: 'Three'},
+  ],
+  showAllOption: false,
 }));
 {% endjs %}
-
-

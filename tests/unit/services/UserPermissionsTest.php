@@ -8,6 +8,7 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
@@ -15,6 +16,8 @@ use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\services\ProjectConfig;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;
@@ -132,7 +135,7 @@ class UserPermissionsTest extends TestCase
     {
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -148,14 +151,38 @@ class UserPermissionsTest extends TestCase
         );
 
         $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
-            $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers']);
+        }, UserPermissionsEvent::class);
+
+        self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'viewUsers')
+        );
+        self::assertFalse(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
+        );
+
+        $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers', 'editUsers']);
         }, UserPermissionsEvent::class);
 
         self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
         self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'EDITUSERS')
+        );
+        self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
+        );
+
+        // Permissions removed outside the service are picked up after a reset
+        Db::delete(Table::USERPERMISSIONS_USERS, ['userId' => $user->id]);
+        self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
+        );
+        $this->userPermissions->reset();
+        self::assertFalse(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
     }
 
@@ -168,7 +195,7 @@ class UserPermissionsTest extends TestCase
         $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -199,7 +226,7 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
         }, UserGroupPermissionsEvent::class);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -217,6 +244,28 @@ class UserPermissionsTest extends TestCase
         self::assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
     }
 
+    /**
+     * @see https://github.com/craftcms/cms/issues/20595
+     */
+    public function testSaveTeamGroupPermissions(): void
+    {
+        Craft::$app->edition = CmsEdition::Team;
+
+        // getTeamGroup() creates the group in the database only
+        $group = Craft::$app->getUserGroups()->getTeamGroup();
+        $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid;
+        self::assertNull(Craft::$app->getProjectConfig()->get($path));
+
+        $this->userPermissions->saveGroupPermissions($group->id, ['viewUsers']);
+
+        self::assertEquals([
+            'description' => null,
+            'handle' => $group->handle,
+            'name' => $group->name,
+            'permissions' => ['viewusers'],
+        ], Craft::$app->getProjectConfig()->get($path));
+    }
+
 
     /**
      * @inheritdoc
@@ -228,5 +277,6 @@ class UserPermissionsTest extends TestCase
         parent::_before();
 
         $this->userPermissions = Craft::$app->getUserPermissions();
+        $this->userPermissions->reset();
     }
 }

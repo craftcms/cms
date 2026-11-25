@@ -85,16 +85,11 @@ class ElementFieldResolverTest extends TestCase
         $mockElement = $this->make(
             EntryElement::class, [
                 'postDate' => new DateTime(),
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume fields 'plainTextField' and 'typeface'
-                    return in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property;
-                },
-                'getSection' => function() use ($sectionHandle) {
-                    return $this->make(Section::class, ['handle' => $sectionHandle]);
-                },
-                'getType' => function() use ($typeHandle) {
-                    return $this->make(EntryType::class, ['handle' => $typeHandle]);
-                },
+                    in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property,
+                'getSection' => fn() => $this->make(Section::class, ['handle' => $sectionHandle]),
+                'getType' => fn() => $this->make(EntryType::class, ['handle' => $typeHandle]),
             ]
         );
 
@@ -114,10 +109,9 @@ class ElementFieldResolverTest extends TestCase
     {
         $mockElement = $this->make(
             AssetElement::class, [
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume a content field named 'plainTextField'
-                    return in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property;
-                },
+                    in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property,
             ]
         );
 
@@ -137,10 +131,9 @@ class ElementFieldResolverTest extends TestCase
     {
         $mockElement = $this->make(
             GlobalSetElement::class, [
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume a content field named 'plainTextField'
-                    return $property == 'plainTextField' ? 'ok' : $this->$property;
-                },
+                    $property == 'plainTextField' ? 'ok' : $this->$property,
                 'handle' => 'aHandle',
             ]
         );
@@ -163,13 +156,10 @@ class ElementFieldResolverTest extends TestCase
 
         $mockElement = $this->make(
             CategoryElement::class, [
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume a content field named 'plainTextField'
-                    return $property == 'plainTextField' ? 'ok' : $this->$property;
-                },
-                'getGroup' => function() use ($groupHandle) {
-                    return $this->make(CategoryGroup::class, ['handle' => $groupHandle]);
-                },
+                    $property == 'plainTextField' ? 'ok' : $this->$property,
+                'getGroup' => fn() => $this->make(CategoryGroup::class, ['handle' => $groupHandle]),
             ]
         );
 
@@ -191,13 +181,10 @@ class ElementFieldResolverTest extends TestCase
 
         $mockElement = $this->make(
             CategoryElement::class, [
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume a content field named 'plainTextField'
-                    return $property == 'plainTextField' ? 'ok' : $this->$property;
-                },
-                'getGroup' => function() use ($groupHandle) {
-                    return $this->make(CategoryGroup::class, ['handle' => $groupHandle]);
-                },
+                    $property == 'plainTextField' ? 'ok' : $this->$property,
+                'getGroup' => fn() => $this->make(CategoryGroup::class, ['handle' => $groupHandle]),
             ]
         );
 
@@ -219,22 +206,19 @@ class ElementFieldResolverTest extends TestCase
 
         $mockElement = $this->make(
             Entry::class, [
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume a content field named 'firstSubfield'
-                    return match ($property) {
+                    match ($property) {
                         'firstSubfield' => 'ok',
-                        'ownerId' => 80,
-                        'typeId' => 99,
-                        default => $this->$property,
-                    };
-                },
+                    'ownerId' => 80,
+                    'typeId' => 99,
+                    default => $this->$property,
+                    },
                 'fieldId' => 1000,
                 'ownerId' => 80,
                 'typeId' => 99,
                 'getTypeId' => 99,
-                'getType' => function() use ($typeHandle) {
-                    return $this->make(EntryType::class, ['handle' => $typeHandle]);
-                },
+                'getType' => fn() => $this->make(EntryType::class, ['handle' => $typeHandle]),
             ]
         );
 
@@ -254,24 +238,19 @@ class ElementFieldResolverTest extends TestCase
     {
         $mockElement = $this->make(
             UserElement::class, [
-                '__get' => function($property) {
+                '__get' => fn($property) =>
                     // Assume a content field named 'plainTextField'
-                    return $property == 'shortBio' ? 'ok' : $this->$property;
-                },
+                    $property == 'shortBio' ? 'ok' : $this->$property,
                 'username' => 'admin',
-                'getPreferences' => function() {
-                    return [
-                        'aPreference' => 'value',
-                        'timeZone' => 'Fiji',
-                    ];
-                },
-                'getGroups' => function() {
-                    return [
-                        new UserGroup(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
-                        new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
-                        new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
-                    ];
-                },
+                'getPreferences' => fn() => [
+                    'aPreference' => 'value',
+                    'timeZone' => 'Fiji',
+                ],
+                'getGroups' => fn() => [
+                    new UserGroup(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
+                    new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
+                    new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
+                ],
             ]
         );
 
@@ -294,9 +273,7 @@ class ElementFieldResolverTest extends TestCase
                     return 'ok';
                 },
             ]),
-            'getTransformByHandle' => function($handle): ImageTransform {
-                return new ImageTransform(['handle' => $handle]);
-            },
+            'getTransformByHandle' => fn($handle): ImageTransform => new ImageTransform(['handle' => $handle]),
         ]);
 
         Craft::$app->set('imageTransforms', $imageTransformService);
@@ -352,14 +329,10 @@ class ElementFieldResolverTest extends TestCase
         return [
             // Entries
             [
-                EntryGqlType::class, 'sectionHandle', function($source) {
-                    return $source->getSection()->handle;
-                },
+                EntryGqlType::class, 'sectionHandle', fn($source) => $source->getSection()->handle,
             ],
             [
-                EntryGqlType::class, 'typeHandle', function($source) {
-                    return $source->getType()->handle;
-                },
+                EntryGqlType::class, 'typeHandle', fn($source) => $source->getType()->handle,
             ],
             [EntryGqlType::class, 'typeface', true],
             [EntryGqlType::class, 'missingProperty', false],
@@ -393,9 +366,7 @@ class ElementFieldResolverTest extends TestCase
             [CategoryGqlType::class, 'missingProperty', false],
             [CategoryGqlType::class, 'plainTextField', true],
             [
-                CategoryGqlType::class, 'groupHandle', function($source) {
-                    return $source->getGroup()->handle;
-                },
+                CategoryGqlType::class, 'groupHandle', fn($source) => $source->getGroup()->handle,
             ],
         ];
     }
@@ -406,9 +377,7 @@ class ElementFieldResolverTest extends TestCase
             [TagGqlType::class, 'missingProperty', false],
             [TagGqlType::class, 'plainTextField', true],
             [
-                TagGqlType::class, 'groupHandle', function($source) {
-                    return $source->getGroup()->handle;
-                },
+                TagGqlType::class, 'groupHandle', fn($source) => $source->getGroup()->handle,
             ],
         ];
     }
@@ -423,9 +392,7 @@ class ElementFieldResolverTest extends TestCase
             [EntryGqlType::class, 'ownerId', true],
             [EntryGqlType::class, 'typeId', true],
             [
-                EntryGqlType::class, 'typeHandle', function($source) {
-                    return $source->getType()->handle;
-                },
+                EntryGqlType::class, 'typeHandle', fn($source) => $source->getType()->handle,
             ],
         ];
     }
@@ -437,9 +404,7 @@ class ElementFieldResolverTest extends TestCase
             [UserGqlType::class, 'shortBio', true],
             [UserGqlType::class, 'username', true],
             [
-                UserGqlType::class, 'preferences', function($source) {
-                    return Json::encode($source->getPreferences());
-                },
+                UserGqlType::class, 'preferences', fn($source) => Json::encode($source->getPreferences()),
             ],
         ];
     }

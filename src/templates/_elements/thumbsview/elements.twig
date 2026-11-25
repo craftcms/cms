@@ -1,5 +1,8 @@
-{% apply spaceless %}
+{% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index', 'pane']) %}
+{% set returnUrl = returnUrl ?? null %}
 
+{% apply spaceless %}
   {% for element in elements %}
     {% tag 'li' with {
       class: element.id in disabledElementIds ? 'disabled' : null,
@@ -12,6 +15,8 @@
         size: 'large',
         selectable: selectable,
         sortable: sortable,
+        hyperlink,
+        returnUrl,
       }) }}
     {% endtag %}
   {% endfor %}
