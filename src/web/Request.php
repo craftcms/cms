@@ -1422,6 +1422,51 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * @inheritdoc
+     *
+     * Requests that come from the same origin are accepted without a CSRF token. When the
+     * <config5:csrfOriginOnly> config setting is enabled, CSRF tokens aren’t checked at all.
+     */
+    public function validateCsrfToken($clientSuppliedToken = null): bool
+    {
+        if (
+            !$this->enableCsrfValidation ||
+            in_array($this->getMethod(), $this->csrfTokenSafeMethods, true) ||
+            $this->_isSameOrigin()
+        ) {
+            return true;
+        }
+
+        if (Craft::$app->getConfig()->getGeneral()->csrfOriginOnly) {
+            return false;
+        }
+
+        return parent::validateCsrfToken($clientSuppliedToken);
+    }
+
+    /**
+     * Returns whether the browser says the request comes from the same origin.
+     *
+     * Browsers only send `Sec-Fetch-Site` to HTTPS and `localhost` origins, so `Origin` is checked
+     * for requests without it, such as from plain-HTTP local dev sites like `http://my-site.test`.
+     */
+    private function _isSameOrigin(): bool
+    {
+        $secFetchSite = $this->getHeaders()->get('Sec-Fetch-Site');
+        if ($secFetchSite !== null) {
+            return $secFetchSite === 'same-origin';
+        }
+
+        $origin = $this->getHeaders()->get('Origin');
+        if ($origin === null || $origin === 'null') {
+            return false;
+        }
+
+        $hostInfo = $this->getHostInfo();
+        return $hostInfo !== null && strcasecmp(rtrim($origin, '/'), $hostInfo) === 0;
+    }
+
+    /**
      * Returns whether the request will accept a given content type.
      *
      * @param string $contentType The MIME type. Can include `*` as a wildcard character,

@@ -603,6 +603,11 @@ EOD;
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        if (($reason = Craft::$app->getComposer()->getUnavailableReason()) !== null) {
+            $this->stderr($reason . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $moduleInstalled = class_exists('craft\cloud\Module');
         $message = $this->markdownToAnsi(sprintf('%s the `craftcms/cloud` extension …',
             $moduleInstalled ? 'Updating' : 'Installing',
@@ -653,6 +658,12 @@ EOD;
      */
     private function _outputCommand(string $command): void
     {
+        // The script’s path is inside the DDEV container, so it wouldn’t help from the host’s terminal
+        if (App::isDdev()) {
+            $this->stdout(PHP_EOL . '    ' . App::craftCommand($command) . PHP_EOL . PHP_EOL);
+            return;
+        }
+
         $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!App::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);

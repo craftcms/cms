@@ -224,6 +224,27 @@ class ClearCaches extends Utility
                 },
             ],
             [
+                'key' => 'html-purifier',
+                'label' => Craft::t('app', 'HTML Purifier caches'),
+                'info' => Craft::t('app', 'Contents of {path}', [
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getHtmlPurifierCachePath(false), Craft::getAlias('@root'))),
+                ]),
+                'action' => function() use ($pathService) {
+                    // Keep the directory itself, which requests that are purifying may be using
+                    try {
+                        FileHelper::clearDirectory($pathService->getHtmlPurifierCachePath(false));
+                    } catch (InvalidArgumentException) {
+                        // the directory doesn't exist
+                    }
+
+                    // Craft before 5.13, and yii\helpers\HtmlPurifier, cache them directly in storage/runtime/
+                    $runtimePath = $pathService->getRuntimePath();
+                    foreach (['HTML', 'CSS', 'URI'] as $type) {
+                        FileHelper::removeDirectory($runtimePath . DIRECTORY_SEPARATOR . $type);
+                    }
+                },
+            ],
+            [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
                 'info' => Craft::t('app', 'Contents of {path}', [

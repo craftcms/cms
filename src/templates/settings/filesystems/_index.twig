@@ -69,6 +69,7 @@ let config = {
 
 {% if not readOnly %}
     config['deleteAction'] = 'fs/remove';
+    config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('filesystem', id);
 {% endif %}
 
 new Craft.VueAdminTable(config);

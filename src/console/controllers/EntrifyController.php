@@ -22,6 +22,7 @@ use craft\fields\BaseRelationField;
 use craft\fields\Categories;
 use craft\fields\Entries;
 use craft\fields\Tags;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
@@ -803,7 +804,7 @@ class EntrifyController extends Controller
 
     private function _deployTip(string $action, string $handle): void
     {
-        $command = "php craft entrify/$action $handle --section={$this->_section->handle}";
+        $command = App::craftCommand("entrify/$action $handle --section={$this->_section->handle}");
 
         if (!$this->_forSingle) {
             $command .= " --entry-type={$this->_entryType->handle} --author={$this->_author->username}";

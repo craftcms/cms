@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\console\Controller;
 use craft\elements\Entry;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -271,10 +272,11 @@ MD));
 
         $this->success(sprintf(<<<EOD
 Entry types merged. Commit `%s`
-and your project config changes, and run `craft up` on other environments
+and your project config changes, and run `%s` on other environments
 for the changes to take effect.
 EOD,
-            FileHelper::relativePath($migrationPath)
+            FileHelper::relativePath($migrationPath),
+            App::craftCommand('up'),
         ));
 
         return ExitCode::OK;

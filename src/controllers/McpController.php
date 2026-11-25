@@ -3,10 +3,10 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\filters\BasicHttpAuthLogin;
 use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\mcp\AssetUploads;
 use craft\mcp\HttpTransportMiddleware;
 use craft\mcp\ServerFactory;
 use craft\web\Controller;
@@ -15,8 +15,8 @@ use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Mcp\Server;
 use Mcp\Server\Transport\StreamableHttpTransport;
+use yii\base\ActionEvent;
 use yii\filters\RateLimiter;
-use yii\web\HttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -58,8 +58,8 @@ class McpController extends Controller
         }
 
         // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute(),
-        // and not on the control panel’s own host. Upload URLs use the authenticated server’s endpoint, wherever it is.
-        if (!in_array($action->id, ['authenticated', 'upload'], true) && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
+        // and not on the control panel’s own host.
+        if ($action->id !== 'authenticated' && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
             throw new NotFoundHttpException();
         }
 
@@ -74,9 +74,29 @@ class McpController extends Controller
             $session->enableAutoLogin = false;
             $session->setIdentity(null);
 
+            // When BasicHttpAuthLogin applies to this request, its credentials authenticate the user instead of an
+            // access token. Its filters run here, before the access token check, and with the session disabled, so
+            // they check the credentials rather than reusing a signed-in session.
+            $event = new ActionEvent($action);
+            foreach ([...array_values(Craft::$app->getBehaviors()), ...array_values($this->getBehaviors())] as $behavior) {
+                if ($behavior instanceof BasicHttpAuthLogin) {
+                    $behavior->beforeFilter($event);
+                    if (!$event->isValid) {
+                        return false;
+                    }
+                }
+            }
+
             try {
-                $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp', scopes: $scopes));
-                Craft::$app->get('mcp')->tokenScopes = $scopes;
+                if ($session->getIdentity() !== null) {
+                    // Check the account state and resource permissions, as for access tokens. Basic auth isn't
+                    // scoped, so the user's permissions alone determine their access.
+                    $session->setIdentity($oauth->authorizedUser((string)$session->getId(), 'mcp'));
+                    Craft::$app->get('mcp')->tokenScopes = array_keys($oauth->getResource('mcp')->scopes);
+                } else {
+                    $session->setIdentity($oauth->authenticate(ServerRequest::fromGlobals(), 'mcp', scopes: $scopes));
+                    Craft::$app->get('mcp')->tokenScopes = $scopes;
+                }
             } catch (OAuthServerException $exception) {
                 $this->response->getHeaders()->set('WWW-Authenticate', 'Bearer resource_metadata="' . $oauth->resourceMetadataUrl('mcp') . '", scope="' . implode(' ', array_keys($oauth->getResource('mcp')->scopes)) . '"');
                 $this->response->setStatusCode(401);
@@ -88,16 +108,10 @@ class McpController extends Controller
             // Authenticated users go through the same checks as any other signed-in request, including control
             // panel access for control panel requests.
             $this->allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
-        } elseif ($action->id === 'public' || $action->id === 'upload') {
+        } elseif ($action->id === 'public') {
             Craft::$app->getUser()->enableSession = false;
             Craft::$app->getUser()->enableAutoLogin = false;
             Craft::$app->getUser()->setIdentity(null);
-
-            // The single-use token authorizes uploads, which the user requested via the authenticated server,
-            // so they work while the system is offline too
-            if ($action->id === 'upload') {
-                $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-            }
         }
 
         return parent::beforeAction($action);
@@ -125,35 +139,6 @@ class McpController extends Controller
 
         $servers = Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class);
         return $this->handle($this->request->getIsOptions() ? $servers->preflight() : $servers->public());
-    }
-
-    /**
-     * Receives a file for an upload URL created by the `assets_upload_url` tool. The token in the URL
-     * authorizes the request, and each upload accepts a single file.
-     */
-    public function actionUpload(string $uploadId): Response
-    {
-        try {
-            $this->requireToken();
-
-            if (!$this->request->getIsPut() && !$this->request->getIsPost()) {
-                throw new MethodNotAllowedHttpException('Send the file as the body of a PUT request.');
-            }
-
-            $stream = fopen('php://input', 'rb');
-
-            try {
-                $size = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class)->receiveUpload($uploadId, $stream);
-            } finally {
-                fclose($stream);
-            }
-        } catch (HttpException $exception) {
-            // Upload clients such as curl don't ask for JSON, so the error handler would render an HTML page
-            $this->response->setStatusCode($exception->statusCode);
-            return $this->asJson(['error' => $exception->getMessage()]);
-        }
-
-        return $this->asJson(['upload_id' => $uploadId, 'size' => $size]);
     }
 
     /** Lists the discoverable servers in an AI Catalog, for `/.well-known/ai-catalog.json`, per SEP-2127. */

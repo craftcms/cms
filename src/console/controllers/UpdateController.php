@@ -232,7 +232,7 @@ class UpdateController extends Controller
             Craft::warning($e->getMessage(), __METHOD__);
             $this->stdout('failed' . PHP_EOL, Console::FG_YELLOW);
             $this->stderr(
-                'Run `php craft update/info` to retry the license refresh.' . PHP_EOL,
+                'Run `' . App::craftCommand('update/info') . '` to retry the license refresh.' . PHP_EOL,
                 Console::FG_YELLOW,
             );
         }
@@ -275,6 +275,11 @@ class UpdateController extends Controller
      */
     private function _allowUpdates(): bool
     {
+        if (($reason = Craft::$app->getComposer()->getUnavailableReason()) !== null) {
+            $this->stderr($reason . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->allowUpdates && !$this->force) {
             if (!$this->interactive) {

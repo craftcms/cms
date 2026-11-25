@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\db\Table;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\ElementCollection;
 use craft\helpers\App;
 use craft\helpers\Component;
@@ -24,7 +23,6 @@ use craft\helpers\Queue;
 use craft\queue\jobs\ReplaceRelations;
 use craft\services\ElementSources;
 use craft\web\Controller;
-use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -155,15 +153,10 @@ class DeleteElementsController extends Controller
             $elements = $elements->filter(fn(NestedElementInterface $element) => $this->elementOwnedByPrimaryOwner($element));
         }
 
-        $blockers = Collection::make($this->elementType::deletionBlockers($elements, $this->hardDelete))
-            ->filter(fn(DeletionBlockerInterface $blocker) => $blocker->isActive())
-            ->map(fn(DeletionBlockerInterface $blocker) => [
-                'summary' => $blocker->getSummary(),
-                'details' => $blocker->getDetails(),
-                'actions' => $blocker->getActions(),
-            ])
-            ->values()
-            ->all();
+        $deletionBlockers = Craft::$app->getDeletionBlockers();
+        $blockers = $deletionBlockers->getBlockerData(
+            $deletionBlockers->getElementBlockers($this->elementType, $elements, $this->hardDelete),
+        );
 
         $elementPreview = Cp::elementPreviewHtml(
             elements: $this->elements->all(),

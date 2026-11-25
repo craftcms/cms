@@ -65,6 +65,7 @@ let config = {
 
 {% if not readOnly %}
     config['deleteAction'] = 'image-transforms/delete';
+    config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('image-transform', id);
 {% endif %}
 
 new Craft.VueAdminTable(config);

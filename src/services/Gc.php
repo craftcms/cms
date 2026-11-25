@@ -121,6 +121,7 @@ class Gc extends Component
         $this->_deleteStaleElementActivity();
         $this->_deleteStaleBulkOpData();
         $this->_deleteStaleOAuthData();
+        $this->_deleteExpiredUploads();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -457,6 +458,16 @@ class Gc extends Component
         foreach ([Table::BULKOPEVENTS, Table::ELEMENTS_BULKOPS] as $table) {
             Db::delete($table, $condition);
         }
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes expired uploads and their staged files.
+     */
+    private function _deleteExpiredUploads(): void
+    {
+        $this->_stdout('    > deleting expired uploads ... ');
+        Craft::$app->getUploads()->deleteExpiredUploads();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

@@ -4,7 +4,7 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '5.12.4',
-    'schemaVersion' => '5.12.0.2',
+    'schemaVersion' => '5.13.0.2',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -46,6 +46,9 @@ return [
         ],
         'dashboard' => [
             'class' => craft\services\Dashboard::class,
+        ],
+        'deletionBlockers' => [
+            'class' => craft\services\DeletionBlockers::class,
         ],
         'deprecator' => [
             'class' => craft\services\Deprecator::class,
@@ -149,6 +152,9 @@ return [
         ],
         'updates' => [
             'class' => craft\services\Updates::class,
+        ],
+        'uploads' => [
+            'class' => craft\services\Uploads::class,
         ],
         'urlManager' => [
             'class' => craft\web\UrlManager::class,

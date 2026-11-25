@@ -143,9 +143,15 @@ class Html extends \yii\helpers\Html
      */
     public static function csrfInput(array $options = []): string
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->enableCsrfProtection && $generalConfig->csrfOriginOnly) {
+            // Tokens are never checked
+            return '';
+        }
+
         $request = Craft::$app->getRequest();
         $async = ArrayHelper::remove($options, 'async')
-            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+            ?? ($request->getIsSiteRequest() && $generalConfig->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();

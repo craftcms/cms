@@ -51,6 +51,7 @@ let config = {
 
 {% if not readOnly %}
     config['deleteAction'] = 'globals/delete-set';
+    config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('global-set', id);
     config['reorderAction'] = '{{ globalSets|length > 1 ? 'globals/reorder-sets' : ''}}';
 {% endif %}
 

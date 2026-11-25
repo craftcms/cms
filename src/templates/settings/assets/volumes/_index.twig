@@ -57,6 +57,7 @@ let config = {
 
 {% if not readOnly %}
     config['deleteAction'] = 'volumes/delete-volume';
+    config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('volume', id);
     config['reorderAction'] = '{{ volumes|length > 1 ? 'volumes/reorder-volumes' : ''}}';
 {% endif %}
 

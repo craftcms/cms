@@ -111,7 +111,7 @@ class GraphqlController extends Controller
         // Add CORS headers
         $headers = $this->response->getHeaders();
         $headers->setDefault('Access-Control-Allow-Credentials', 'true');
-        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
+        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Gql-Token, X-Craft-Token');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
@@ -289,8 +289,9 @@ class GraphqlController extends Controller
             return $schema;
         }
 
-        // OAuth requests were authenticated by beforeAction()
-        if (isset($this->_oauthScopes)) {
+        // OAuth requests were authenticated by beforeAction(). When an X-Craft-Gql-Token header is present, its token
+        // determines the schema, so the access token only logs the user in.
+        if (isset($this->_oauthScopes) && !$requestHeaders->has('x-craft-gql-token')) {
             return $gqlService->getSchemaForUser(static::currentUser(), in_array(GqlService::SCOPE_WRITE, $this->_oauthScopes, true));
         }
 
@@ -348,6 +349,23 @@ class GraphqlController extends Controller
 
     private function _token(GqlService $gqlService): ?GqlToken
     {
+        // A GraphQL token in an X-Craft-Gql-Token header takes precedence, so requests can pair it with an OAuth
+        // access token in the Authorization header
+        $headerToken = $this->request->getHeaders()->get('x-craft-gql-token');
+        if ($headerToken !== null) {
+            try {
+                $token = $gqlService->getTokenByAccessToken($headerToken);
+            } catch (InvalidArgumentException) {
+                $token = null;
+            }
+
+            if (!$token?->getIsValid()) {
+                throw new BadRequestHttpException('Invalid X-Craft-Gql-Token header');
+            }
+
+            return $token;
+        }
+
         $bearerToken = $this->request->getBearerToken();
 
         if ($bearerToken) {

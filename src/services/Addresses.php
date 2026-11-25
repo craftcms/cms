@@ -213,7 +213,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
                 'fields' => $fields,
             ]);
             $this->trigger(self::EVENT_DEFINE_USED_FIELDS, $event);
-            return $event->fields;
+            return array_unique($event->fields);
         }
 
         return $fields;
@@ -238,7 +238,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
                 'fields' => $fields,
             ]);
             $this->trigger(self::EVENT_DEFINE_USED_SUBDIVISION_FIELDS, $event);
-            return $event->fields;
+            return array_unique($event->fields);
         }
 
         return $fields;

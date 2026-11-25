@@ -4,11 +4,11 @@ namespace crafttests\unit\mcp;
 
 use Craft;
 use craft\mcp\AssetUploads;
-use craft\mutex\NullMutex;
 use CraftCms\UrlValidator\UrlValidator;
 use Mcp\Exception\ToolCallException;
 use PHPUnit\Framework\TestCase;
 use yii\console\Application;
+use yii\web\NotFoundHttpException;
 
 /** Exercises file-reference admission before any file is handed to asset persistence. */
 class AssetUploadsTest extends TestCase
@@ -84,24 +84,14 @@ class AssetUploadsTestApplication extends Application
         };
     }
 
-    public function getAssets(): object
+    public function getUploads(): object
     {
         return new class() {
-            public function getTempAssetUploadFs(): object
+            public function claim(): never
             {
-                return new class() {
-                    public function fileExists(): bool
-                    {
-                        return false;
-                    }
-                };
+                throw new NotFoundHttpException('Upload not found.');
             }
         };
-    }
-
-    public function getMutex(): NullMutex
-    {
-        return new NullMutex();
     }
 
     public function getPath(): object

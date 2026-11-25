@@ -58,6 +58,7 @@ import './js/DeleteUserModal.js';
 import './js/DynamicGenerator.js';
 import './js/EditableTable.js';
 import './js/ElementActionTrigger.js';
+import './js/DeletionBlockersModal.js';
 import './js/ElementDeletionManager.js';
 import './js/ElementEditor.js';
 import './js/ElementFieldSettings.js';
@@ -105,6 +106,7 @@ import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
 import './js/Uploader.js';
+import './js/UploadSessionUploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 

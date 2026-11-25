@@ -243,6 +243,7 @@ JS, [
                         'action' => 'fields/delete-field',
                         'redirect' => 'settings/fields',
                         'destructive' => true,
+                        'deletionBlockers' => ['type' => 'field', 'id' => $field->id],
                         'confirm' => Craft::t('app', 'Are you sure you want to delete “{name}”?', [
                             'name' => $field->name,
                         ]),
