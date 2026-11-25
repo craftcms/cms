@@ -136,7 +136,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
+        return sprintf('\\%s|\\%s<int, \\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
     #[Override]

@@ -136,7 +136,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class,
+        return sprintf('\\%s|\\%s<int, \\%s>', ElementQueryInterface::class, ElementCollection::class,
             ElementInterface::class);
     }
 
