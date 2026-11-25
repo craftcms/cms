@@ -12,9 +12,9 @@
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
-- Twig’s deprecation warnings are now logged by the deprecator, along with Twig extensions, token parsers, and nodes that won’t be compatible with Twig 4.
-- Added `CraftCms\Cms\Deprecator\Deprecator::logTwigDeprecation()`.
-- Added `CraftCms\Cms\Twig\Compiler`.
+- Twig’s deprecation warnings are now logged by the deprecator, along with Twig extensions, token parsers, and nodes that won’t be compatible with Twig 4. ([#21111](https://github.com/craftcms/cms/pull/21111), [#21114](https://github.com/craftcms/cms/pull/21114))
+- Added `CraftCms\Cms\Deprecator\Deprecator::logTwigDeprecation()`. ([#21111](https://github.com/craftcms/cms/pull/21111), [#21114](https://github.com/craftcms/cms/pull/21114))
+- Added `CraftCms\Cms\Twig\Compiler`. ([#21111](https://github.com/craftcms/cms/pull/21111), [#21114](https://github.com/craftcms/cms/pull/21114))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `Craft.Grid::queueRefreshCols()`. ([#21062](https://github.com/craftcms/cms/pull/21062))
