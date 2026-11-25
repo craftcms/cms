@@ -31,10 +31,12 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
         $compiler->addDebugInfo($this);
 
         if ($this->getAttribute('capture')) {
+            $var = $compiler->getVarName();
             $compiler
-                ->write("ob_start();\n")
-                ->subcompile($value)
-                ->write("$method(ob_get_clean()");
+                ->write("\$$var = ")
+                ->subcompile(new CaptureNode($value, $this->getTemplateLine()))
+                ->raw("\n")
+                ->write("$method(\$$var");
         } else {
             $compiler
                 ->write("$method(")

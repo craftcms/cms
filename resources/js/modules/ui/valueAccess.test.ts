@@ -97,6 +97,21 @@ describe('acceptsValue', () => {
     ).toBe(true);
     expect(takes(money, {value: '2,000.01', locale: 'en-US'})).toBe(false);
     expect(takes(money, {value: '1,9x9', locale: 'en-US'})).toBe(false);
+    // Number fields format their values for a locale too.
+    const formatted = control('craft:number', {
+      min: 1000,
+      max: 2000,
+      locale: 'de-DE',
+    });
+    expect(takes(formatted, {value: '1.999,50', locale: 'de-DE'})).toBe(true);
+    expect(takes(formatted, {value: '1,999.50', locale: 'en-US'})).toBe(true);
+    expect(takes(formatted, {value: '2.000,01', locale: 'de-DE'})).toBe(false);
+    expect(takes(formatted, {value: null, locale: 'de-DE'})).toBe(true);
+    expect(takes(formatted, '1999.5')).toBe(false);
+    // A native number input can't hold a formatted number.
+    expect(
+      takes(control('craft:number', {}), {value: '1,999', locale: 'en-US'})
+    ).toBe(false);
   });
 
   it('takes only the options a choice offers', () => {

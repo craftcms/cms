@@ -19,14 +19,17 @@ class TagNode extends Node
     #[Override]
     public function compile(Compiler $compiler): void
     {
+        $var = $compiler->getVarName();
+
         $compiler
             ->addDebugInfo($this)
-            ->write("ob_start();\n")
-            ->subcompile($this->getNode('content'))
+            ->write("\$$var = ")
+            ->subcompile(new CaptureNode($this->getNode('content'), $this->getTemplateLine()))
+            ->raw("\n")
             /** @see Html::tag() */
             ->write('yield '.Html::class.'::tag(')
             ->subcompile($this->getNode('name'))
-            ->raw(', ob_get_clean()');
+            ->raw(", \$$var");
 
         if ($this->hasNode('options')) {
             $compiler
@@ -34,6 +37,8 @@ class TagNode extends Node
                 ->subcompile($this->getNode('options'));
         }
 
-        $compiler->raw(");\n");
+        $compiler
+            ->raw(");\n")
+            ->write("unset(\$$var);\n");
     }
 }

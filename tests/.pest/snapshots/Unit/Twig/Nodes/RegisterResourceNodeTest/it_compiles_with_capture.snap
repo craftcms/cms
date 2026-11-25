@@ -1,4 +1,6 @@
 // line 1
-ob_start();
-yield "body { color: red; }";
-\Craft::$app->getView()->registerCss(ob_get_clean());
+$_v0 = \Twig\Extension\CoreExtension::captureOutput((function () use (&$context, &$macros, $blocks) {
+    yield "body { color: red; }";
+    return; yield;
+})());
+\Craft::$app->getView()->registerCss($_v0);

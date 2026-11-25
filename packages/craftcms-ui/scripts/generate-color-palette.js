@@ -1,4 +1,3 @@
-import {writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {fileURLToPath} from 'url';
 import {
@@ -6,8 +5,10 @@ import {
   lightTheme,
   darkTheme,
   staticTheme,
+  statusColors,
+  formControlColors,
 } from '../src/styles/color-definitions.js';
-import {BLACK_CONTENTS_SELECTOR} from './utils.js';
+import {BLACK_CONTENTS_SELECTOR, writeFileIfChanged} from './utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -36,6 +37,12 @@ function colorsToCssVariables(colors, customPrefix = null) {
   return result;
 }
 
+function keyedToCssVariables(colors) {
+  return colors
+    .map(({name, value}) => `  --color-${name}: ${value};`)
+    .join('\n');
+}
+
 function printStyles() {
   let lines = [];
   const lightColors = colorsToCssVariables(lightTheme.contrastColors);
@@ -51,6 +58,10 @@ function printStyles() {
   // light marker keeps inheriting whatever it sits in.
   lines.push("\n:root,\n:host,\n[data-theme='light'] {");
   lines.push(lightColors);
+  lines.push(`  /* Status and form control colors */`);
+  lines.push(
+    keyedToCssVariables([...statusColors.light, ...formControlColors.light])
+  );
   lines.push(`  /* Static colors */\n`);
   lines.push(staticColors);
   lines.push('}\n');
@@ -61,10 +72,14 @@ function printStyles() {
   );
   lines.push(`[data-theme='dark'],\n${BLACK_CONTENTS_SELECTOR} {`);
   lines.push(darkColors);
+  lines.push(`  /* Status and form control colors */`);
+  lines.push(
+    keyedToCssVariables([...statusColors.dark, ...formControlColors.dark])
+  );
   lines.push('}\n');
 
-  writeFileSync(OUT_FILE, lines.join('\n'));
-  console.log(`Generated ${OUT_FILE}`);
+  const changed = writeFileIfChanged(OUT_FILE, lines.join('\n'));
+  console.log(`${changed ? 'Generated' : 'Unchanged'} ${OUT_FILE}`);
 }
 
 printStyles();

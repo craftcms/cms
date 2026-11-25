@@ -186,9 +186,36 @@ const text: UiValueAcceptor = (control, {value}) => {
   );
 };
 
-const number: UiValueAcceptor = (control, snapshot) =>
-  isBlank(snapshot.value) ||
-  (isNumeric(snapshot.value) && text(control, snapshot));
+const number: UiValueAcceptor = (control, snapshot) => {
+  const {value} = snapshot;
+  const {locale, min, max} = propsOf(control);
+
+  if (isBlank(value)) {
+    return true;
+  }
+
+  // Raw numbers go in native number inputs, and numbers formatted for the
+  // locale they were entered in, such as `1,999`, in the controls that format
+  // them, which would read a raw `1999.5` in their own locale.
+  if (!isRecord(value)) {
+    return (
+      typeof locale !== 'string' && isNumeric(value) && text(control, snapshot)
+    );
+  }
+
+  const amount = isScalar(value.value)
+    ? moneyAmount(
+        String(value.value),
+        typeof value.locale === 'string' ? value.locale : undefined
+      )
+    : null;
+
+  return (
+    typeof locale === 'string' &&
+    (isBlank(value.value) ||
+      (amount !== null && withinBounds(amount, min, max)))
+  );
+};
 
 const textarea: UiValueAcceptor = (control, {value}) => {
   const {maxLength, singleLine} = propsOf(control);

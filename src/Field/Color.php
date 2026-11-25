@@ -323,7 +323,7 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
                 if ($value === null) {
                     return;
                 }
-                new ColorRule(allowAlpha: true)->validate($attribute, $value, $fail);
+                new ColorRule(allowAlpha: true)->validate($this->getUiLabel(), $value, $fail);
 
                 if (
                     (! $this->allowCustomColors || (! $this->allowCustomAlpha && $value->getAlpha() < 1)) &&
