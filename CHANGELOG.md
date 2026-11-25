@@ -10,7 +10,7 @@
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
-- “Copied” notifications can now be minimized below other notifications, and stay minimized until something new is copied. ([#18726](https://github.com/craftcms/cms/issues/18726))
+- “Copied” notifications can now be minimized below other notifications, and stay minimized until something new is copied. ([#18726](https://github.com/craftcms/cms/issues/18726), [#21109](https://github.com/craftcms/cms/pull/21109))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
