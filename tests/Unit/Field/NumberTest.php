@@ -50,6 +50,8 @@ test('the control shows the value formatted for the formatting locale, and reads
     'grouped integer' => [[], 104233, 'en-US', '104,233'],
     'zero padded to the decimals' => [['decimals' => 2], 0, 'en-US', '0.00'],
     'German separators' => [['decimals' => 2], 1234.5, 'de-DE', '1.234,50'],
+    'Swedish minus sign' => [['decimals' => 2, 'min' => null], -1234.5, 'sv-SE', "\u{2212}1\u{00A0}234,50"],
+    'Arabic digits' => [['decimals' => 2], 1234.5, 'ar-EG', "\u{0661}\u{066C}\u{0662}\u{0663}\u{0664}\u{066B}\u{0665}\u{0660}"],
     'unformatted, with the locale’s decimal symbol' => [['decimals' => 2, 'previewFormat' => Number::FORMAT_NONE], 1234.5, 'de-DE', '1234,50'],
 ]);
 
@@ -60,4 +62,19 @@ test('the control keeps a native number input when the field has a step', functi
 
     expect($props['inputType'])->toBe('number')
         ->and($props)->not->toHaveKey('locale');
+});
+
+test('the control posts a bare number without a locale, as a raw number', function () {
+    $html = I18N::withLocale('en-US', 'de-DE', function () {
+        $payload = app(UiResolver::class)->resolve(
+            Ui::make([UiField::make()->control(new Number(['decimals' => 1])->uiControl(new FieldContext('number', 1)))]),
+            new UiContext(namespace: 'fields', values: ['fields' => ['number' => 1234.5]]),
+        );
+
+        return app(UiHtmlRenderer::class)->render($payload);
+    });
+    $crawler = new Crawler($html);
+
+    expect($crawler->filter('input[name="fields[number]"]')->attr('value'))->toBe('1234.5')
+        ->and($crawler->filter('input[name="fields[number][locale]"]'))->toHaveCount(0);
 });

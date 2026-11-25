@@ -32,13 +32,13 @@
 
   // Without a locale, the control is a native number input holding the raw
   // number. With one, it's a text input holding the number formatted for that
-  // locale, posted alongside it.
+  // locale, posted alongside it. A bare number is still raw.
   const locale = computed(() => {
-    if (!props.control.props.locale) {
+    if (!props.control.props.locale || !isRecord(props.value)) {
       return undefined;
     }
 
-    return isRecord(props.value) && typeof props.value.locale === 'string'
+    return typeof props.value.locale === 'string'
       ? props.value.locale
       : props.control.props.locale;
   });
@@ -63,7 +63,8 @@
     }
 
     const value = input.value;
-    let caret = input.selectionStart;
+    const start = input.selectionStart;
+    let caret = start;
     let filtered = '';
     let index = 0;
 
@@ -72,7 +73,7 @@
         /[\p{Nd}\p{Zs}.,'’\u066b\u066c\u061c\u200e\u200f\u2212-]/u.test(char)
       ) {
         filtered += char;
-      } else if (caret !== null && index < caret) {
+      } else if (caret !== null && start !== null && index < start) {
         caret -= char.length;
       }
 

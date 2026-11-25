@@ -70,13 +70,38 @@ describe('NumberControl', () => {
     expect(input.value).toBe('1.234,5');
     expect(input.selectionStart).toBe(3);
 
+    // Each dropped character before the caret moves it back once.
+    input.value = '1ab23';
+    input.setSelectionRange(3, 3);
+    input.dispatchEvent(new InputEvent('input', {bubbles: true}));
+
+    expect(input.value).toBe('123');
+    expect(input.selectionStart).toBe(1);
+
     input.value = '';
     input.dispatchEvent(new InputEvent('input', {bubbles: true}));
 
     expect(updates).toEqual([
       {value: '1.234,5', locale: 'de-DE'},
+      {value: '123', locale: 'de-DE'},
       {value: null, locale: 'de-DE'},
     ]);
+  });
+
+  it('treats a bare number as raw, even with a locale', async () => {
+    const {input, locale, updates} = await mountNumber(
+      {inputType: 'text', locale: 'de-DE'},
+      '1234.5'
+    );
+
+    expect(input.name).toBe('fields[weight]');
+    expect(input.value).toBe('1234.5');
+    expect(locale).toBeNull();
+
+    input.value = '1234.56';
+    input.dispatchEvent(new InputEvent('input', {bubbles: true}));
+
+    expect(updates).toEqual(['1234.56']);
   });
 
   it('holds a raw number in a native number input without a locale', async () => {
