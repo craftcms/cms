@@ -475,6 +475,7 @@
 - Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving` should be used instead.
 
 #### Helpers
+- Added `CraftCms\Cms\Database\Expr`. ([#21113](https://github.com/craftcms/cms/pull/21113))
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\DateTimeHelper`.
 - Added `CraftCms\Cms\Support\File`.
