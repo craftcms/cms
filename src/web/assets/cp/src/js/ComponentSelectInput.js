@@ -398,10 +398,18 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         actions.push({
           icon: async () => await Craft.ui.icon('arrows-rotate'),
           label: Craft.t('app', 'Replace'),
-          callback: () => {
-            const menu = this.$addBtn.disclosureMenu().data('disclosureMenu');
+          callback: (el) => {
+            // don't use `this` in case the chip ends up getting assigned to a different component select
+            const componentSelect = $(el)
+              .closest('.menu')
+              .data('disclosureMenu')
+              .$trigger.closest('.componentselect')
+              .data('componentSelect');
+            const menu = componentSelect.$addBtn
+              .disclosureMenu()
+              .data('disclosureMenu');
             menu.$alignmentElement = $component;
-            this.$replacedComponent = $component;
+            componentSelect.$replacedComponent = $component;
             menu.show();
           },
         });
