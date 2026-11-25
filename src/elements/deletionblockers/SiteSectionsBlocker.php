@@ -9,6 +9,7 @@ namespace craft\elements\deletionblockers;
 
 use Craft;
 use craft\elements\Entry;
+use craft\helpers\Html;
 use craft\models\Section;
 use craft\models\Site;
 
@@ -21,6 +22,11 @@ use craft\models\Site;
  */
 class SiteSectionsBlocker extends BaseResolvableDeletionBlocker
 {
+    /**
+     * @var Section[]
+     */
+    private array $sections = [];
+
     /**
      * Constructor
      */
@@ -45,7 +51,42 @@ class SiteSectionsBlocker extends BaseResolvableDeletionBlocker
 
     public function getResolutionLabel(): string
     {
-        return Craft::t('app', 'Continue');
+        return Craft::t('app', 'Transfer or delete later');
+    }
+
+    public function getActions(): array
+    {
+        $this->getItems();
+        $actions = [];
+
+        // Each section can be deleted, after addressing its own blockers
+        foreach ($this->sections as $section) {
+            $actions[] = [
+                'icon' => 'trash',
+                'label' => Craft::t('app', 'Delete {name}', ['name' => $section->getUiLabel()]),
+                'destructive' => true,
+                'callback' => Html::jsWithVars(fn($id, $message) => <<<JS
+(async () => {
+  const result = await Craft.DeletionBlockersModal.confirm('section', $id);
+  if (!result || (!result.confirmed && !confirm($message))) {
+    reject();
+    return;
+  }
+  await Craft.sendActionRequest('POST', 'sections/delete-section', {data: {id: $id}});
+  await blocker.manager.refresh();
+  reject();
+})().catch((e) => {
+  Craft.cp.displayError(e?.response?.data?.message);
+  reject();
+});
+JS, [
+                    $section->id,
+                    Craft::t('app', 'Are you sure you want to delete “{name}”?', ['name' => $section->getUiLabel()]),
+                ]),
+            ];
+        }
+
+        return [...$actions, ...parent::getActions()];
     }
 
     protected function getResolvedMessage(): string
@@ -73,6 +114,7 @@ class SiteSectionsBlocker extends BaseResolvableDeletionBlocker
                 ->status(null)
                 ->count();
 
+            $this->sections[] = $section;
             $items[] = [
                 'label' => $section->getUiLabel(),
                 'count' => $count,

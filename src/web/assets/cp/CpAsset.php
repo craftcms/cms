@@ -320,6 +320,7 @@ JS;
             'Next Page',
             'No limit',
             'Notes',
+            'Nothing is blocking the deletion anymore.',
             'Notice',
             'Number of columns',
             'OK',

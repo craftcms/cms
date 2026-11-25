@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Chippable;
 use craft\base\ElementInterface;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -31,6 +32,7 @@ use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Entries as EntriesField;
 use craft\fields\Tags as TagsField;
+use craft\helpers\Html;
 use craft\models\Section;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -192,12 +194,14 @@ class DeletionBlockers extends Component
             ],
             'filesystem' => [
                 new FilesystemUsageBlocker($subject),
+                new FilesystemUsageBlocker($subject, true),
             ],
             'section' => [
                 new TrashedElementsBlocker(
                     Entry::class,
                     ['sectionId' => $subject->id],
                     fn(int $num) => Craft::t('app', 'The section contains {num, number} {num, plural, =1{entry} other{entries}}.', ['num' => $num]),
+                    ['additionalActions' => $this->moveEntriesActions($subject)],
                 ),
                 new SourceUsageBlocker(
                     EntriesField::class,
@@ -307,6 +311,69 @@ class DeletionBlockers extends Component
         }
 
         return $blockers;
+    }
+
+    /**
+     * Returns a “Move entries” action for a section’s blocker, if another section accepts all of its entries’ types.
+     */
+    private function moveEntriesActions(Section $section): array
+    {
+        $entryIds = Entry::find()
+            ->sectionId($section->id)
+            ->drafts(null)
+            ->draftOf(false)
+            ->andWhere(['elements.canonicalId' => null])
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->ids();
+        if (empty($entryIds)) {
+            return [];
+        }
+
+        $typeIds = array_unique(array_map('intval', (new Query())
+            ->select(['typeId'])
+            ->from(Table::ENTRIES)
+            ->where(['id' => $entryIds])
+            ->column()));
+        $siteIds = array_keys($section->getSiteSettings());
+        $user = Craft::$app->getUser()->getIdentity();
+
+        // The same checks EntriesController::actionMoveToSectionModalData() makes
+        $hasTarget = false;
+        foreach (Craft::$app->getEntries()->getAllSections() as $other) {
+            if (
+                $other->id !== $section->id &&
+                $other->type !== Section::TYPE_SINGLE &&
+                isset($other->getSiteSettings()[$siteIds[0]]) &&
+                $user?->can("saveEntries:$other->uid") &&
+                empty(array_diff($typeIds, array_map(fn($entryType) => $entryType->id, $other->getEntryTypes())))
+            ) {
+                $hasTarget = true;
+                break;
+            }
+        }
+        if (!$hasTarget) {
+            return [];
+        }
+
+        return [
+            [
+                'icon' => 'arrow-right',
+                'label' => Craft::t('app', 'Move entries'),
+                'callback' => Html::jsWithVars(fn($entryIds, $siteId, $sectionUid) => <<<JS
+new Craft.EntryMover($entryIds, null, {
+  siteId: $siteId,
+  currentSectionUid: $sectionUid,
+  onMove: async () => {
+    await blocker.manager.refresh();
+    reject();
+  },
+  onCancel: () => reject(),
+});
+JS, [$entryIds, $siteIds[0], $section->uid]),
+            ],
+        ];
     }
 
     /**

@@ -14,9 +14,10 @@ use craft\models\Volume;
 use yii\base\BaseObject;
 
 /**
- * FilesystemUsageBlocker lists the volumes that store their files or transforms on a filesystem.
+ * FilesystemUsageBlocker lists the volumes that store their assets, or their asset transforms, in a filesystem.
  *
- * It can’t be resolved from the deletion modal. The volumes have to be moved to another filesystem first.
+ * It can’t be resolved from the deletion modal. Each volume has an Edit button, and the blocker goes away once the
+ * volumes use another filesystem.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.13.0
@@ -24,20 +25,20 @@ use yii\base\BaseObject;
 class FilesystemUsageBlocker extends BaseObject implements DeletionBlockerInterface
 {
     /**
-     * @var bool Whether the blocker’s details should be expanded when the modal opens.
-     */
-    public bool $expandDetails = true;
-
-    /**
      * @var Volume[]
      */
     private array $volumes;
 
     /**
      * Constructor
+     *
+     * @param FsInterface $fs The filesystem
+     * @param bool $transforms Whether to list the volumes that store asset transforms in the filesystem, rather than
+     * assets
      */
     public function __construct(
         protected readonly FsInterface $fs,
+        protected readonly bool $transforms = false,
         array $config = [],
     ) {
         parent::__construct($config);
@@ -47,10 +48,7 @@ class FilesystemUsageBlocker extends BaseObject implements DeletionBlockerInterf
     {
         $this->volumes = array_values(array_filter(
             Craft::$app->getVolumes()->getAllVolumes(),
-            fn(Volume $volume) => in_array($this->fs->handle, [
-                $volume->getFsHandle(),
-                $volume->getTransformFsHandle(),
-            ], true),
+            fn(Volume $volume) => ($this->transforms ? $volume->getTransformFsHandle() : $volume->getFsHandle()) === $this->fs->handle,
         ));
 
         parent::init();
@@ -63,21 +61,33 @@ class FilesystemUsageBlocker extends BaseObject implements DeletionBlockerInterf
 
     public function getSummary(): string
     {
-        return Craft::t('app', 'The filesystem is used by {num, number} {num, plural, =1{volume} other{volumes}}. Choose another filesystem for {num, plural, =1{it} other{them}} first.', [
+        if ($this->transforms) {
+            return Craft::t('app', '{num, number} {num, plural, =1{volume stores} other{volumes store}} asset transforms in this filesystem.', [
+                'num' => count($this->volumes),
+            ]);
+        }
+
+        return Craft::t('app', '{num, number} {num, plural, =1{volume stores} other{volumes store}} assets in this filesystem.', [
             'num' => count($this->volumes),
         ]);
     }
 
     public function getDetails(): ?string
     {
-        return Html::ul(array_map(fn(Volume $volume) => Html::a(
-            Html::encode($volume->getUiLabel()),
-            $volume->getCpEditUrl(),
-        ), $this->volumes), ['encode' => false]);
+        return null;
     }
 
     public function getActions(): array
     {
-        return [];
+        // Edit each volume in a slideout, and refresh the blockers once it's saved
+        return array_map(fn(Volume $volume) => [
+            'icon' => 'pencil',
+            'label' => Craft::t('app', 'Edit {name}', ['name' => $volume->getUiLabel()]),
+            'callback' => Html::jsWithVars(fn($id) => <<<JS
+const slideout = new Craft.CpScreenSlideout('volumes/edit-volume', {params: {volumeId: $id}});
+slideout.on('submit', () => blocker.manager.refresh());
+slideout.on('close', () => reject());
+JS, [$volume->id]),
+        ], $this->volumes);
     }
 }

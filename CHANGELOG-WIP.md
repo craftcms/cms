@@ -67,6 +67,7 @@
 - Fixed a bug where deletion blocker actions that post to a controller action didn’t send the deletion params. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added the `deletionBlockers` option to `Craft.submitForm()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added the `deletionBlockerType` setting to `Craft.AdminTable`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- `Craft.EntryMover` now accepts a `settings` argument, and its `elementIndex` argument can be `null`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - `Craft.VueAdminTable`’s `beforeDelete` setting can now resolve to `{confirmed: true}` to continue without showing the confirmation message. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\base\ApplicationTrait::getUploads()`.
 - Added `craft\base\TemporaryUploadUrlInterface`.

@@ -191,7 +191,13 @@ class DeletionBlockersTest extends TestCase
             ksort($counts);
             self::assertSame(['Blocker Anything' => 0, 'Blocker Related' => 2], $counts);
             self::assertSame('2 elements relate to blockerBlog entries.', array_column($usage->getItems(), 'description', 'label')['Blocker Related']);
-            self::assertSame('The section contains 2 entries.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
+            $entries = $this->activeBlocker($blockers, TrashedElementsBlocker::class);
+            self::assertSame('The section contains 2 entries.', $entries->getSummary());
+
+            // Blog’s Article entries can’t go anywhere else, but Pages’ Page entries can move to Blog
+            self::assertNotContains('Move entries', array_column($entries->getActions(), 'label'));
+            $pageEntries = $this->activeBlocker($this->blockers('section', $this->pages), TrashedElementsBlocker::class);
+            self::assertContains('Move entries', array_column($pageEntries->getActions(), 'label'));
         } finally {
             Craft::$app->getFields()->deleteField($anything);
         }
@@ -233,7 +239,9 @@ class DeletionBlockersTest extends TestCase
         $fsService = Craft::$app->getFs();
         $fs = $fsService->createFilesystem(['type' => Local::class, 'name' => 'Blocker Fs', 'handle' => 'blockerFs', 'path' => sys_get_temp_dir() . '/blocker-fs']);
         self::assertTrue($fsService->saveFilesystem($fs), json_encode($fs->getErrors()));
-        $volume = new Volume(['name' => 'Blocker Volume', 'handle' => 'blockerVolume', 'fsHandle' => 'blockerFs', 'transformFsHandle' => 'blockerFs']);
+        $transformFs = $fsService->createFilesystem(['type' => Local::class, 'name' => 'Blocker Transforms', 'handle' => 'blockerTransforms', 'path' => sys_get_temp_dir() . '/blocker-transforms']);
+        self::assertTrue($fsService->saveFilesystem($transformFs), json_encode($transformFs->getErrors()));
+        $volume = new Volume(['name' => 'Blocker Volume', 'handle' => 'blockerVolume', 'fsHandle' => 'blockerFs', 'transformFsHandle' => 'blockerTransforms']);
         self::assertTrue(Craft::$app->getVolumes()->saveVolume($volume), json_encode($volume->getErrors()));
         $field = new AssetsField(['name' => 'Blocker Images', 'handle' => 'blockerImages', 'sources' => ["volume:$volume->uid"]]);
         Craft::$app->getFields()->saveField($field);
@@ -241,12 +249,15 @@ class DeletionBlockersTest extends TestCase
         $photoVolumeUid = $projectConfig->get('users.photoVolumeUid');
 
         try {
-            $blocker = $this->activeBlockers($this->blockers('filesystem', $fs));
-            self::assertCount(1, $blocker);
-            self::assertInstanceOf(FilesystemUsageBlocker::class, $blocker[0]);
-            self::assertSame('The filesystem is used by 1 volume. Choose another filesystem for it first.', $blocker[0]->getSummary());
-            // There’s nothing to resolve from the modal
-            self::assertSame([], $blocker[0]->getActions());
+            // Volumes that store assets and transforms in a filesystem get separate blockers
+            foreach ([[$fs, '1 volume stores assets in this filesystem.'], [$transformFs, '1 volume stores asset transforms in this filesystem.']] as [$subject, $summary]) {
+                $blocker = $this->activeBlockers($this->blockers('filesystem', $subject));
+                self::assertCount(1, $blocker);
+                self::assertInstanceOf(FilesystemUsageBlocker::class, $blocker[0]);
+                self::assertSame($summary, $blocker[0]->getSummary());
+                // The only actions edit the volumes; nothing resolves the blocker from the modal
+                self::assertSame(['Edit Blocker Volume'], array_column($blocker[0]->getActions(), 'label'));
+            }
             self::assertSame([], $this->activeBlockers($this->blockers('filesystem', $fsService->createFilesystem(['type' => Local::class, 'handle' => 'blockerUnused']))));
 
             $usage = $this->activeBlocker($this->blockers('volume', $volume), SourceUsageBlocker::class);
@@ -262,6 +273,7 @@ class DeletionBlockersTest extends TestCase
             Craft::$app->getFields()->deleteField($field);
             Craft::$app->getVolumes()->deleteVolume($volume);
             $fsService->removeFilesystem($fs);
+            $fsService->removeFilesystem($transformFs);
         }
     }
 

@@ -17,6 +17,7 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
     type: null,
     id: null,
     modal: null,
+    $heading: null,
     $blockersContainer: null,
     $submitBtn: null,
     blockers: null,
@@ -81,7 +82,10 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
 
     showModal: async function (data) {
       this.createModal(data);
+      await this.showBlockers(data);
+    },
 
+    showBlockers: async function (data) {
       for (const blocker of data.blockers) {
         this.blockers.push(
           new Craft.DeletionBlockersModal.Blocker(this, blocker)
@@ -90,6 +94,38 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+    },
+
+    /**
+     * Reloads the blockers, such as after a blocker action changed what the deletion affects.
+     *
+     * Blocker callbacks can call it with `blocker.manager.refresh()`.
+     */
+    refresh: async function () {
+      let data;
+      try {
+        data = await this.loadBlockers();
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return;
+      }
+
+      for (const blocker of this.blockers) {
+        blocker.destroy();
+      }
+      this.blockers = [];
+      this.$blockersContainer.empty();
+      this.$submitBtn.toggleClass('disabled', data.blockers.length !== 0);
+
+      if (!data.blockers.length) {
+        this.$heading.text(
+          Craft.t('app', 'Nothing is blocking the deletion anymore.')
+        );
+        return;
+      }
+
+      this.$heading.html(this.getHeadingHtml(data));
+      await this.showBlockers(data);
     },
 
     getHeadingHtml: function (data) {
@@ -138,7 +174,7 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
         class: 'body',
       }).appendTo($container);
 
-      $('<h1/>', {
+      this.$heading = $('<h1/>', {
         class: 'flex flex-inline items-center gap-xs',
         html: this.getHeadingHtml(data),
       }).appendTo($body);

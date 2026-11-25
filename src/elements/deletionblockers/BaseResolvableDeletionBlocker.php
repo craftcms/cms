@@ -28,6 +28,12 @@ abstract class BaseResolvableDeletionBlocker extends BaseObject implements Resol
     public bool $expandDetails = true;
 
     /**
+     * @var array Action buttons to show before the one that resolves the blocker, such as one that moves the elements
+     * somewhere else. See [[DeletionBlockerInterface::getActions()]] for the keys each one can have.
+     */
+    public array $additionalActions = [];
+
+    /**
      * @var array{label: string, count: int|null, description: string}[]
      */
     private array $items;
@@ -65,6 +71,7 @@ abstract class BaseResolvableDeletionBlocker extends BaseObject implements Resol
     public function getActions(): array
     {
         return [
+            ...$this->additionalActions,
             [
                 'icon' => $this->isDestructive() ? 'trash' : 'xmark',
                 'label' => $this->getResolutionLabel(),
