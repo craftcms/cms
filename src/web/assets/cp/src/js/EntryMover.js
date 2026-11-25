@@ -10,6 +10,8 @@ Craft.EntryMover = Garnish.Base.extend({
   entryIds: null,
   currentSectionUid: null,
   elementIndex: null,
+  settings: null,
+  moved: false,
 
   $sectionsListContainer: null,
   $sectionsList: null,
@@ -17,17 +19,28 @@ Craft.EntryMover = Garnish.Base.extend({
   $selectBtn: null,
   sectionSelect: null,
 
-  init(entryIds, elementIndex) {
+  /**
+   * @param {number[]} entryIds
+   * @param {Craft.BaseElementIndex|null} elementIndex The element index the move is triggered from, if any
+   * @param {Object} [settings] Used when there’s no element index: `siteId`, `currentSectionUid`, `onMove`, and `onCancel`
+   */
+  init(entryIds, elementIndex, settings = {}) {
     this.entryIds = entryIds;
     this.elementIndex = elementIndex;
+    this.settings = settings;
 
-    // get uid of the section from which we're triggering this move;
-    let sourceKey = elementIndex.$source.data('key');
-    let sourceUid = null;
-    if (sourceKey.indexOf('section:') === 0) {
-      sourceUid = sourceKey.substring(8);
+    if (elementIndex) {
+      // get uid of the section from which we're triggering this move;
+      let sourceKey = elementIndex.$source.data('key');
+      let sourceUid = null;
+      if (sourceKey.indexOf('section:') === 0) {
+        sourceUid = sourceKey.substring(8);
+      }
+      this.currentSectionUid = sourceUid;
+    } else {
+      this.currentSectionUid = settings.currentSectionUid ?? null;
     }
-    this.currentSectionUid = sourceUid;
+
     this.createModal();
   },
 
@@ -73,7 +86,13 @@ Craft.EntryMover = Garnish.Base.extend({
     this.addListener(this.$cancelBtn, 'activate', 'cancel');
     this.addListener(this.$selectBtn, 'activate', 'selectSection');
 
-    this.modal = new Garnish.Modal($container);
+    this.modal = new Garnish.Modal($container, {
+      onHide: () => {
+        if (!this.moved) {
+          this.settings.onCancel?.();
+        }
+      },
+    });
     this.getCompatibleSections();
   },
 
@@ -88,7 +107,9 @@ Craft.EntryMover = Garnish.Base.extend({
     Craft.sendActionRequest('POST', 'entries/move-to-section-modal-data', {
       data: {
         entryIds: this.entryIds,
-        siteId: this.elementIndex.siteId,
+        siteId: this.elementIndex
+          ? this.elementIndex.siteId
+          : this.settings.siteId,
         currentSectionUid: this.currentSectionUid,
       },
       cancelToken: this.cancelToken.token,
@@ -151,9 +172,13 @@ Craft.EntryMover = Garnish.Base.extend({
         Craft.cp.displaySuccess(response.data.message);
         Craft.cp.announce(response.data.message);
 
-        this.elementIndex.updateElements();
-        this.elementIndex.$elements.attr('tabindex', '-1').focus();
+        this.moved = true;
+        if (this.elementIndex) {
+          this.elementIndex.updateElements();
+          this.elementIndex.$elements.attr('tabindex', '-1').focus();
+        }
         this.modal.hide();
+        this.settings.onMove?.();
       })
       .catch((e) => {
         Craft.cp.displayError(e?.response?.data?.message);

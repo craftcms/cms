@@ -52,6 +52,7 @@
         columns: columns,
         container: '#tokens-vue-admin-table',
         deleteAction: 'graphql/delete-token',
+        beforeDelete: (id) => Craft.DeletionBlockersModal.confirm('graphql-token', id),
         emptyMessage: Craft.t('app', 'No GraphQL tokens exist yet.'),
         tableData: {{ tableData|json_encode|raw }}
     });

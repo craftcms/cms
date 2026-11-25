@@ -32,6 +32,7 @@ new Craft.VueAdminTable({
     columns: columns,
     container: '#schemas-vue-admin-table',
     deleteAction: 'graphql/delete-schema',
+    beforeDelete: (id) => Craft.DeletionBlockersModal.confirm('graphql-schema', id),
     tableData: {{ tableData|json_encode|raw }}
 });
 {% endjs %}

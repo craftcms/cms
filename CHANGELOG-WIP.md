@@ -22,6 +22,10 @@
 
 ### Control Panel
 
+- Deleting configuration in the control panel now lists where it’s used and what the deletion affects. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Filesystems can no longer be deleted from the control panel while a volume uses them. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Plugins can now show deletion blockers for any configuration deleted in the control panel. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Soft-deleting elements no longer asks for a second confirmation after the deletion blockers modal. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - The control panel is now available in Croatian, and its Indonesian, Kyrgyz, and Welsh translations are now complete. Previously, most of their strings were shown in English.
 
 ### Development
@@ -46,6 +50,30 @@
 - Added `craft\helpers\ElementHelper::getProvisionalDraftUser()`. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - Added `craft\helpers\HtmlPurifier::enableDefinitionCache()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
 - Added `craft\services\Path::getHtmlPurifierCachePath()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
+- Added `craft\elements\deletionblockers\BaseResolvableDeletionBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\EntryTypeUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\FieldUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\FilesystemUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\ResolvableDeletionBlockerInterface`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\SiteSectionsBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\SourceUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\TrashedElementsBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\UserGroupUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\UserPhotoVolumeBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\base\ApplicationTrait::getDeletionBlockers()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\controllers\DeletionBlockersController`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\events\DefineDeletionBlockersEvent`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\events\RegisterDeletionSubjectTypesEvent`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\services\DeletionBlockers`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- `craft\controllers\DeleteElementsController::actionDeletionBlockers()` now gets blockers via `craft\services\DeletionBlockers::getElementBlockers()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\services\Fields::countElementsWithValues()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `Craft.DeletionBlockersModal`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- `Craft.ElementDeletionManager` now extends `Craft.DeletionBlockersModal`, and `Craft.ElementDeletionManager.Blocker` is now an alias of `Craft.DeletionBlockersModal.Blocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Fixed a bug where deletion blocker actions that post to a controller action didn’t send the deletion params. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added the `deletionBlockers` option to `Craft.submitForm()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added the `deletionBlockerType` setting to `Craft.AdminTable`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- `Craft.EntryMover` now accepts a `settings` argument, and its `elementIndex` argument can be `null`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- `Craft.VueAdminTable`’s `beforeDelete` setting can now resolve to `{confirmed: true}` to continue without showing the confirmation message. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\base\ApplicationTrait::getUploads()`.
 - Added `craft\base\TemporaryUploadUrlInterface`.
 - Added `craft\controllers\UploadsController`.

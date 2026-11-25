@@ -146,6 +146,10 @@ class EntryTypesController extends Controller
                 $response->addAltAction(Craft::t('app', 'Delete'), [
                     'action' => 'entry-types/delete',
                     'destructive' => true,
+                    'deletionBlockers' => ['type' => 'entry-type', 'id' => $entryType->id],
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete “{name}” and all entries of that type?', [
+                        'name' => $entryType->getUiLabel(),
+                    ]),
                 ]);
             }
 

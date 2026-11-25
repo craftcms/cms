@@ -893,6 +893,66 @@ class Fields extends Component
     }
 
     /**
+     * Returns how many elements have a value for any of the given fields in a field layout.
+     *
+     * Drafts, revisions, and trashed elements aren’t counted. Returns `null` if a field stores its values
+     * somewhere other than the elements’ content and isn’t a Matrix field.
+     *
+     * @param FieldLayout $layout The field layout
+     * @param FieldInterface[] $fields Field instances from the layout, as returned by [[FieldLayout::getCustomFields()]]
+     * @return int|null
+     * @since 5.13.0
+     */
+    public function countElementsWithValues(FieldLayout $layout, array $fields): ?int
+    {
+        if (!isset($layout->id) || empty($fields)) {
+            return 0;
+        }
+
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+        $conditions = ['or'];
+        $nestedFieldIds = [];
+
+        foreach ($fields as $field) {
+            if ($field::dbType() !== null && isset($field->layoutElement)) {
+                // Empty values can be stored as empty strings, arrays, objects, or JSON null
+                $valueSql = $qb->jsonExtract('elements_sites.content', [$field->layoutElement->uid]);
+                $conditions[] = sprintf("%s IS NOT NULL AND %s NOT IN ('', '[]', '{}', 'null')", $valueSql, $valueSql);
+            } elseif ($field instanceof MatrixField) {
+                $nestedFieldIds[] = $field->id;
+            } else {
+                return null;
+            }
+        }
+
+        if (!empty($nestedFieldIds)) {
+            $conditions[] = ['exists', (new Query())
+                ->from(['owners' => Table::ELEMENTS_OWNERS])
+                ->innerJoin(['nested' => Table::ENTRIES], '[[nested.id]] = [[owners.elementId]]')
+                ->innerJoin(['nestedElements' => Table::ELEMENTS], '[[nestedElements.id]] = [[nested.id]]')
+                ->where('[[owners.ownerId]] = [[elements.id]]')
+                ->andWhere([
+                    'nested.fieldId' => $nestedFieldIds,
+                    'nestedElements.dateDeleted' => null,
+                ]),
+            ];
+        }
+
+        return (int)(new Query())
+            ->from(['elements' => Table::ELEMENTS])
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
+            ->where([
+                'elements.fieldLayoutId' => $layout->id,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
+                'elements.canonicalId' => null,
+                'elements.dateDeleted' => null,
+            ])
+            ->andWhere($conditions)
+            ->count('DISTINCT [[elements.id]]');
+    }
+
+    /**
      * @return array<int,FieldLayout[]>
      */
     private function allFieldUsages(): array
