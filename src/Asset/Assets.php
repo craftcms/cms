@@ -96,6 +96,8 @@ class Assets
      *
      * Each asset will be returned once, in the requested site if it exists there, or in another site
      * it exists in otherwise (e.g. for volumes with custom propagation).
+     *
+     * @return AssetQuery<Asset>
      */
     public function findAcrossSites(): AssetQuery
     {
@@ -432,6 +434,7 @@ class Assets
         return $disk;
     }
 
+    /** @return AssetQuery<Asset> */
     public function createTempAssetQuery(): AssetQuery
     {
         return new AssetQuery()->volumeId(':empty:');

@@ -41,6 +41,7 @@ class MissingAltText implements Check
             : 'Craft’s “Generate alt text” AI task isn’t set up. An administrator can set it up in Settings → AI Connections, so images get alt text when they’re uploaded or analyzed.';
     }
 
+    /** @return AssetQuery<Asset> */
     private function query(): AssetQuery
     {
         return Asset::find()

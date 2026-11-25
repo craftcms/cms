@@ -30,7 +30,9 @@ use Override;
 use function CraftCms\Cms\currentUser;
 
 /**
- * @extends ElementQuery<Asset>
+ * @template T of Asset
+ *
+ * @extends ElementQuery<T>
  *
  * @since 6.0.0
  */
