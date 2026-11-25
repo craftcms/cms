@@ -59,6 +59,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
 - Asset selector modals’ index adapters now have `refresh()` and `selectElements()` methods. ([#21036](https://github.com/craftcms/cms/issues/21036))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
+- Fixed a bug where elements selected in Link fields weren’t shown as chips, and couldn’t be edited, copied, replaced, or removed from an action menu. ([#21025](https://github.com/craftcms/cms/pull/21025))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
 - Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> didn’t save element editor slideouts opened from full-page element editors. ([#21021](https://github.com/craftcms/cms/pull/21021))
