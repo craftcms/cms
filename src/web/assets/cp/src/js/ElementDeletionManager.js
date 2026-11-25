@@ -74,7 +74,8 @@ Craft.ElementDeletionManager = Craft.DeletionBlockersModal.extend(
     },
 
     onSubmit: async function (data) {
-      await this.confirmAndDelete(data.totalElements);
+      // The blocker modal was the confirmation
+      await this.confirmAndDelete(data.totalElements, true);
     },
 
     onHide: function () {
@@ -83,9 +84,8 @@ Craft.ElementDeletionManager = Craft.DeletionBlockersModal.extend(
       }
     },
 
-    confirmAndDelete: async function (totalElements) {
-      const message = this.getConfirmationMessage(totalElements);
-      if (!confirm(message)) {
+    confirmAndDelete: async function (totalElements, confirmed = false) {
+      if (!confirmed && !confirm(this.getConfirmationMessage(totalElements))) {
         this.settings.onCancel();
         return;
       }

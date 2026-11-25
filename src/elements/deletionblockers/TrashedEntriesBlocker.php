@@ -82,6 +82,7 @@ class TrashedEntriesBlocker extends BaseResolvableDeletionBlocker
                     ...$this->criteria,
                     'drafts' => null,
                     'draftOf' => false,
+                    'savedDraftsOnly' => false,
                     'status' => null,
                 ],
             ],

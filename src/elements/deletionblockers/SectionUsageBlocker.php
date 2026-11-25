@@ -66,7 +66,7 @@ class SectionUsageBlocker extends BaseResolvableDeletionBlocker
         foreach (Craft::$app->getFields()->getFieldsByType(EntriesField::class) as $field) {
             /** @var EntriesField $field */
             $offersSection = $field->sources === '*' || (
-                is_array($field->sources) && array_intersect($sources, $field->sources)
+                is_array($field->sources) && array_intersect(['*', ...$sources], $field->sources)
             );
             if (!$offersSection) {
                 continue;
