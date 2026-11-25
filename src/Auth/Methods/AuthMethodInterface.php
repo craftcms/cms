@@ -42,7 +42,7 @@ interface AuthMethodInterface extends ComponentInterface
      * and call `Craft.authMethodSetup.refresh()` to refresh the method’s info and actions in the main window.
      *
      * ```php
-     * Craft::$app->view->registerJsWithVars(fn($containerId, $class) => <<<JS
+     * \CraftCms\Cms\Support\Facades\HtmlStack::jsWithVars(fn($containerId, $class) => <<<JS
      *   // ...
      *   Craft.Slideout.instances[$containerId].showSuccess();
      *   Craft.authMethodSetup.refresh();

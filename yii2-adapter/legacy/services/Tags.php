@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -105,6 +106,12 @@ class Tags extends Component
     private function _tagGroups(): MemoizableArray
     {
         if (!isset($this->_tagGroups)) {
+            if (!DeprecatedConcepts::supportsTags()) {
+                $this->_tagGroups = new MemoizableArray([]);
+
+                return $this->_tagGroups;
+            }
+
             $records = TagGroupRecord::find()
                 ->orderBy(['name' => SORT_ASC])
                 ->all();

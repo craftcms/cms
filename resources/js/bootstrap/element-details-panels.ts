@@ -25,6 +25,8 @@ export interface ElementDetailsPanelDescriptor {
   id: string;
   label: string;
   icon: string;
+  /** SVG markup shown in place of `icon`, such as a plugin's own icon. */
+  iconSvg?: string;
   component: Component;
   /** Optional controls rendered at the end of the panel header. */
   headerActionsComponent?: Component;
@@ -111,3 +113,10 @@ export function createElementDetailsPanelRegistry(): ElementDetailsPanelRegistry
 }
 
 export const elementDetailsPanelRegistry = createElementDetailsPanelRegistry();
+
+/** Adds a panel to the details column of every element editor it's visible in. */
+export function registerElementDetailsPanel(
+  descriptor: ElementDetailsPanelDescriptor
+): void {
+  elementDetailsPanelRegistry.register(descriptor);
+}

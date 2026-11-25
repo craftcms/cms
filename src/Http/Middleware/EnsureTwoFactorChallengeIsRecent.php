@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Url;
@@ -26,7 +27,10 @@ readonly class EnsureTwoFactorChallengeIsRecent
     /** Maximum number of seconds a pending 2FA session may remain open. */
     private const int TTL = 300;
 
-    public function __construct(private GeneralConfig $generalConfig) {}
+    public function __construct(
+        private GeneralConfig $generalConfig,
+        private AuthMethods $auth,
+    ) {}
 
     public function handle(Request $request, Closure $next): mixed
     {
@@ -36,7 +40,7 @@ readonly class EnsureTwoFactorChallengeIsRecent
             return $next($request);
         }
 
-        Session::forget(['user.id', 'user.login_id', 'user.remember', 'user.pending_2fa_at']);
+        $this->auth->setUser(null);
 
         if ($request->wantsJson()) {
             return new JsonResponse(['message' => t('Your verification session has expired. Please sign in again.')], 419);

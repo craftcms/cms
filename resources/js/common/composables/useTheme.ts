@@ -9,9 +9,21 @@ import type {CraftData} from './useCraftData';
 const THEME_COOKIE = 'CraftTheme';
 
 /**
+ * Remembers the signed-in user's preference, matching
+ * `Theme::PREFERENCE_COOKIE`, so logged-out pages such as the login page keep
+ * showing the theme the last user chose.
+ */
+const PREFERENCE_COOKIE = 'CraftThemePreference';
+
+function setCookie(name: string, value: string): void {
+  document.cookie = `${name}=${value}; path=/; max-age=31536000; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`;
+}
+
+/**
  * Applies the control panel theme as `data-theme="dark"` on `<html>`, when the
- * user chose Dark, or System — the default, and what logged-out pages use — and
- * the operating system is dark. Read from the shared page props, so saving the preference takes effect
+ * user chose Dark, or System — the default — and the operating system is dark.
+ * Logged-out pages get the last signed-in user's preference from the server.
+ * Read from the shared page props, so saving the preference takes effect
  * without a full reload, and System follows the operating system as it changes.
  */
 export function useTheme(): void {
@@ -39,6 +51,10 @@ export function useTheme(): void {
       delete document.documentElement.dataset.theme;
     }
 
-    document.cookie = `${THEME_COOKIE}=${dark ? 'dark' : 'light'}; path=/; max-age=31536000; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`;
+    setCookie(THEME_COOKIE, dark ? 'dark' : 'light');
+
+    if (page.props?.craft?.currentUser) {
+      setCookie(PREFERENCE_COOKIE, theme);
+    }
   });
 }

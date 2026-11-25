@@ -66,7 +66,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     {
         $response->format = Response::FORMAT_JSON;
 
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
 
         if ($behavior->prepareScreen) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');
@@ -205,7 +205,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 }
                 return $action;
             }, $altActions ?? []),
-            'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl,
+            'saveShortcutRedirect' => $behavior->saveShortcutRedirectUrl
+                ? Crypt::encrypt($behavior->saveShortcutRedirectUrl)
+                : null,
             'contentNotice' => $notice,
             'content' => $content,
             'details' => $sidebar,

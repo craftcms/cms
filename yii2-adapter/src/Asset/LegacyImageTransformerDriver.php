@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -26,13 +26,12 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 {
     public function __construct(
         private readonly string $transformer,
-        private readonly bool $immediately = false,
     ) {
     }
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition($this->transformer);
+        return new AssetTransformDriverDefinition();
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -44,7 +43,7 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
         $asset = $this->legacyAsset($request->asset);
         $transform = new ImageTransform()->setInlineParameters($request->parameters);
 
-        event($event = new TransformGenerating($asset, $transform));
+        event($event = new TransformGenerating($asset, clone $transform));
 
         if ($event->url !== null) {
             return self::result($asset, $transform, Html::encodeSpaces($event->url));
@@ -52,10 +51,10 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 
         $url = Craft::$app->getImageTransforms()
             ->getImageTransformer($this->transformer)
-            ->getTransformUrl($asset, $transform, $this->immediately);
+            ->getTransformUrl($asset, $transform, $request->immediately ?? false);
         $url = Html::encodeSpaces($url);
 
-        event(new AfterGenerateTransform($asset, $transform, $url));
+        event(new TransformGenerated($asset, $transform, $url));
 
         return self::result($asset, $transform, $url);
     }

@@ -1,11 +1,12 @@
-import {isHttpError, t} from '@craftcms/ui';
+import {appendBodyHtml, appendHeadHtml, isHttpError, t} from '@craftcms/ui';
 import {normalizeClass} from 'vue';
 import type {PaginationData} from '@/common/types';
 import type {QueryParams} from '@/common/types/query';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
 import type {InlineEditableRow} from '@/modules/elements/index/composables/useInlineEditing';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
-import {craft, type CopiedElementInfo} from '@/modules/matrix/clipboard';
+import {elementTypeName} from '@/common/craft/element-types';
+import type {CopiedElementInfo} from '@/modules/elements/clipboard';
 
 export type NestedElement = CraftCms.Cms.Element.Data.NestedElementCard &
   InlineEditableRow &
@@ -93,6 +94,14 @@ export type NestedElementsProps = {
   index?: NestedIndexOptions | null;
 };
 
+/** Adds the scripts and styles an index payload's elements need to the page. */
+export async function appendPayloadAssets(
+  payload: Pick<NestedContentIndexData, 'headHtml' | 'bodyHtml'>
+): Promise<void> {
+  await appendHeadHtml(payload.headHtml ?? '');
+  await appendBodyHtml(payload.bodyHtml ?? '');
+}
+
 export function nestedOwnerParams(
   manager: NestedElementsManager,
   ownerId: number
@@ -175,9 +184,9 @@ export function nestedPasteLabel(
   count: number,
   position?: 'above' | 'before'
 ): string {
-  const names = craft().elementTypeNames[elementType ?? ''];
   const type =
-    names?.[count === 1 ? 2 : 3] ?? t(count === 1 ? 'element' : 'elements');
+    elementTypeName(elementType ?? '', count !== 1) ??
+    t(count === 1 ? 'element' : 'elements');
   const label = position
     ? t(position === 'above' ? 'Paste {type} above' : 'Paste {type} before', {
         type,

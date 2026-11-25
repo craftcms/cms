@@ -1,9 +1,8 @@
 import {Base, type ModalSettings} from '@craftcms/garnish';
+import {t} from '@craftcms/ui/utilities/translate';
 
-declare const Craft: any;
-
-/** A `craft-radio-group`; its `modelValue` is the checked radio's value. */
-type ChoiceGroup = HTMLElement & {modelValue: string};
+/** A `craft-radio-group`; its `value` is the checked radio's value. */
+type ChoiceGroup = HTMLElement & {value: string};
 
 /** A `craft-checkbox`. */
 type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
@@ -12,7 +11,7 @@ type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
 type PromptDialog = HTMLElement & {
   label: string;
   noHeader: boolean;
-  opened: boolean;
+  open: boolean;
 };
 
 interface PromptChoice {
@@ -158,10 +157,10 @@ export class PromptHandler extends Base {
     for (const choice of choices) {
       const radio = document.createElement('craft-radio') as HTMLElement & {
         label: string;
-        choiceValue: string;
+        value: string;
       };
       radio.label = choice.title;
-      radio.choiceValue = choice.value;
+      radio.value = choice.value;
       choiceGroup.append(radio);
     }
 
@@ -170,8 +169,7 @@ export class PromptHandler extends Base {
     ) as ApplyToRemainingCheckbox;
     applyToRemaining.hidden = !itemsToGo;
     if (itemsToGo) {
-      applyToRemaining.label = Craft.t(
-        'app',
+      applyToRemaining.label = t(
         'Apply this to the {number} remaining conflicts?',
         {number: itemsToGo}
       );
@@ -184,7 +182,7 @@ export class PromptHandler extends Base {
     const cancelBtn = document.createElement('craft-button');
     cancelBtn.slot = 'footer';
     cancelBtn.setAttribute('type', 'button');
-    cancelBtn.textContent = Craft.t('app', 'Cancel');
+    cancelBtn.textContent = t('Cancel');
 
     const submitBtn = document.createElement('craft-button') as HTMLElement & {
       disabled: boolean;
@@ -192,20 +190,17 @@ export class PromptHandler extends Base {
     submitBtn.slot = 'footer';
     submitBtn.setAttribute('type', 'button');
     submitBtn.setAttribute('variant', 'primary');
-    submitBtn.textContent = Craft.t('app', 'OK');
+    submitBtn.textContent = t('OK');
     submitBtn.disabled = true;
 
     dialog.append(body, cancelBtn, submitBtn);
 
-    this.addListener(choiceGroup, 'model-value-changed', () => {
-      submitBtn.disabled = !choiceGroup.modelValue;
+    this.addListener(choiceGroup, 'change', () => {
+      submitBtn.disabled = !choiceGroup.value;
     });
 
     this.addListener(submitBtn, 'click', () => {
-      this._selectPromptChoice(
-        choiceGroup.modelValue ?? '',
-        applyToRemaining.checked
-      );
+      this._selectPromptChoice(choiceGroup.value, applyToRemaining.checked);
     });
 
     this.addListener(cancelBtn, 'click', () => {
@@ -222,7 +217,7 @@ export class PromptHandler extends Base {
     });
 
     this.getPromptMount().append(dialog);
-    dialog.opened = true;
+    dialog.open = true;
   }
 
   _selectPromptChoice(choice: string, applyToRemaining: boolean): void {
@@ -233,7 +228,7 @@ export class PromptHandler extends Base {
       dialog.addEventListener('craft-after-hide', () => dialog.remove(), {
         once: true,
       });
-      dialog.opened = false;
+      dialog.open = false;
     }
 
     this.#promptCallback(choice, applyToRemaining);

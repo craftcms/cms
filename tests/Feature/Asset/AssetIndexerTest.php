@@ -52,7 +52,6 @@ it('can create an indexing session', function () {
 
     $session = $this->indexer->createIndexingSession(
         volumeList: [$volumeData],
-        cacheRemoteImages: false,
         isCli: true,
         listEmptyFolders: false,
     );
@@ -61,7 +60,6 @@ it('can create an indexing session', function () {
     expect($session->id)->not()->toBeNull();
     expect($session->totalEntries)->toBe(0);
     expect($session->processedEntries)->toBe(0);
-    expect($session->cacheRemoteImages)->toBeFalse();
     expect($session->isCli)->toBeTrue();
     expect($session->listEmptyFolders)->toBeFalse();
     expect($session->actionRequired)->toBeFalse();
@@ -278,6 +276,25 @@ it('skips completed and in-progress entries when getting next entry', function (
     expect($second->uri)->toBe('images/photo.jpg');
 });
 
+it('reclaims entries abandoned while processing', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData]);
+    $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, $volumeData);
+    $first = $this->indexer->getNextIndexEntry($session);
+    $this->indexer->transitionIndexEntry($first->id, AssetIndexStatus::Processing);
+
+    $this->travel(299)->seconds();
+    expect($this->indexer->getNextIndexEntry($session)->id)->not->toBe($first->id);
+
+    $this->travel(2)->seconds();
+    $reclaimed = $this->indexer->getNextIndexEntry($session);
+    expect($reclaimed->id)->toBe($first->id)
+        ->and($reclaimed->claim())->toBeTrue()
+        ->and($reclaimed->status)->toBe(AssetIndexStatus::Processing)
+        ->and($reclaimed->claim())->toBeFalse();
+});
+
 it('rejects a second claim for the same entry', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);
@@ -437,14 +454,12 @@ it('stores session options correctly', function () {
 
     $session = $this->indexer->createIndexingSession(
         volumeList: [$volumeData],
-        cacheRemoteImages: true,
         isCli: false,
         listEmptyFolders: true,
     );
 
     $record = AssetIndexingSession::findOrFail($session->id);
 
-    expect($record->cacheRemoteImages)->toBeTrue();
     expect($record->isCli)->toBeFalse();
     expect($record->listEmptyFolders)->toBeTrue();
 });
@@ -473,7 +488,6 @@ it('can start an indexing session with files on disk', function () {
 
     $session = $this->indexer->startIndexingSession(
         volumes: [$volumeData->id],
-        cacheRemoteImages: false,
         listEmptyFolders: false,
     );
 
@@ -500,7 +514,6 @@ it('sets processIfRootEmpty when volume has no files', function () {
 
     $session = $this->indexer->startIndexingSession(
         volumes: [$volumeData->id],
-        cacheRemoteImages: false,
         listEmptyFolders: false,
     );
 
@@ -518,7 +531,6 @@ it('stores scoped disk listings as volume-relative paths', function () {
 
         $session = $this->indexer->startIndexingSession(
             volumes: [$volumeData->id],
-            cacheRemoteImages: false,
             listEmptyFolders: false,
         );
 
@@ -573,7 +585,7 @@ it('skips directories starting with underscore in index list', function () {
 function createIndexerTestVolume(array $attributes = []): Volume
 {
     return Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         ...$attributes,
     ]);
 }
@@ -889,7 +901,7 @@ describe('remote images', function () {
         });
         config()->set('filesystems.disks.remote-test-disk', ['driver' => 'remote-test', 'root' => $root]);
 
-        $this->volumeData = resolveIndexerVolumeData(createIndexerTestVolume(['fs' => 'remote-test-disk']));
+        $this->volumeData = resolveIndexerVolumeData(createIndexerTestVolume(['disk' => 'remote-test-disk']));
         $this->session = $this->indexer->createIndexingSession([$this->volumeData], isCli: true);
 
         $image = imagecreatetruecolor(100, 100);

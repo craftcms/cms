@@ -84,7 +84,7 @@ run parallel discovery lanes when available:
 
 - core and packages (`src/`, `packages/`);
 - Yii2 compatibility (`yii2-adapter/`);
-- UI, templates, scripts, and tooling (`resources/`, `scripts/`, `tests-playwright/`);
+- UI, templates, scripts, and tooling (`resources/`, `scripts/`, `tests/Browser/`);
 - a cross-cutting pattern sweep.
 
 For ordinary audits, prefer a few high-confidence candidates over a large

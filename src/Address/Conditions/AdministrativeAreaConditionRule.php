@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Conditions;
 
+use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
@@ -38,6 +39,23 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
 
     public string $countryCode = 'US';
 
+    public function __construct(object|array $config = [])
+    {
+        parent::__construct($config);
+
+        // Craft 5.12 and earlier stored GB counties by their names rather than ISO codes
+        if ($this->countryCode === 'GB' && $this->getValues() !== []) {
+            $codesByName = array_flip((new BaseSubdivisionRepository)->getList(['GB'], 'en')) + [
+                'Bristol, City of' => 'BST',
+                'Edinburgh, City of' => 'EDH',
+                'London, City of' => 'LND',
+                'Durham, County' => 'DUR',
+                'Vale of Glamorgan, The' => 'VGL',
+            ];
+            $this->setValues(array_map(static fn (string $value): string => $codesByName[$value] ?? $value, $this->getValues()));
+        }
+    }
+
     /** @return array<string, mixed> */
     #[Override]
     public function getConfig(): array
@@ -65,7 +83,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         $administrativeAreas = Addresses::getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
         // Allow custom states that are currently in the administrative areas list to remain in the list.
         foreach ($this->getValues() as $val) {
-            if (! in_array($val, $administrativeAreas)) {
+            if (! array_key_exists($val, $administrativeAreas)) {
                 $administrativeAreas[$val] = $val;
             }
         }

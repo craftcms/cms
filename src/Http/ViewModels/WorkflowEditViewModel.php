@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Http\Controllers\Settings\WorkflowsController;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Table;
@@ -54,7 +55,7 @@ class WorkflowEditViewModel extends ViewModel
         ));
     }
 
-    /** @return list<array{type: string, label: string, settings: array<string, mixed>, settingsUi: UiPayload|null}> */
+    /** @return list<array{type: string, label: string, icon: string|null, settings: array<string, mixed>, settingsUi: UiPayload|null}> */
     public function stageTypes(): array
     {
         return $this->workflowStageTypes->types()
@@ -66,6 +67,7 @@ class WorkflowEditViewModel extends ViewModel
                 return [
                     'type' => $type,
                     'label' => $type::displayName(),
+                    'icon' => $stage instanceof Iconic ? $stage->getIcon() : null,
                     'settings' => $stage->getSettings(),
                     'settingsUi' => $this->settingsUi($stage),
                 ];

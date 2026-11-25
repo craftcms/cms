@@ -10,9 +10,11 @@ use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -20,10 +22,13 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -32,9 +37,9 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class ElementSelect extends Control
+class ElementSelect extends Control implements ReadableValueControl, WritableValueControl
 {
-    #[\Override]
+    #[Override]
     protected mixed $value = [];
 
     /** @var class-string<ElementInterface>|null */
@@ -63,6 +68,15 @@ class ElementSelect extends Control
     /** @var array<string, mixed>|null */
     private ?array $selectionCondition = null;
 
+    /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
+    private ?array $referenceElement = null;
+
+    /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
+    private ?array $search = null;
+
+    /** @var list<int> */
+    private array $disabledElementIds = [];
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -82,6 +96,9 @@ class ElementSelect extends Control
 
     private ?ChipThumbSize $thumbSize = null;
 
+    /** @var array{ids: array<int, true>, elements: array<int, ElementInterface>}|null The elements loaded by {@see loadElements()} */
+    private ?array $loadedElements = null;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         $editable = $attributes['name'] !== null;
@@ -97,6 +114,16 @@ class ElementSelect extends Control
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
+            // The modal only needs the reference element's IDs, so pass them through rather than loading it again
+            'jsSettings' => $control->props['referenceElement'] ?? [],
+            // Sent by AssetSelect, as the Vue control passes them to the selector modal
+            'modalSettings' => array_filter([
+                'indexSettings' => isset($control->props['showFolders'])
+                    ? ['showFolders' => (bool) $control->props['showFolders']]
+                    : null,
+                'defaultSource' => $control->props['defaultSource'] ?? null,
+                'defaultSourcePath' => $control->props['defaultSourcePath'] ?? null,
+            ], fn (mixed $setting) => $setting !== null),
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
@@ -110,6 +137,26 @@ class ElementSelect extends Control
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
         ]));
+    }
+
+    /**
+     * The chips draw from the presentations of the elements the control was rendered with, so its value is read along
+     * with them.
+     *
+     * @return list<string>
+     */
+    #[Override]
+    public function valueProps(): array
+    {
+        // The element type too, so the elements can be drawn again once copied.
+        return ['elements', 'elementType'];
+    }
+
+    /** Elements are only copied between controls that select the same element type, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->elementType;
     }
 
     public function component(): string
@@ -225,6 +272,76 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * Sets the element the selection condition is evaluated against, such as the element being edited, for rules
+     * that refer to it.
+     */
+    public function referenceElement(?ElementInterface $element): static
+    {
+        $this->referenceElement = $element?->id ? [
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+            'referenceElementSiteId' => $element->siteId,
+        ] : null;
+
+        return $this;
+    }
+
+    /**
+     * Shows a search input that relates the elements matching `$criteria` it finds, in the site `$siteId`. `null`
+     * criteria hide it.
+     *
+     * @param  array<string, mixed>|null  $criteria
+     */
+    public function search(?array $criteria, ?int $siteId = null): static
+    {
+        $this->search = $criteria === null ? null : ['criteria' => $criteria, 'siteId' => $siteId];
+
+        return $this;
+    }
+
+    /**
+     * Sets the elements that can’t be selected, such as the element being edited when the field doesn’t allow self
+     * relations.
+     *
+     * @param  list<int>  $ids
+     */
+    public function disabledElementIds(array $ids): static
+    {
+        $this->disabledElementIds = $ids;
+
+        return $this;
+    }
+
+    /**
+     * Loads the elements of many values at once, such as a table column’s cells, so copies of the control drawing
+     * those values don’t each query for their own.
+     *
+     * @param  array<mixed>  $values
+     */
+    public function loadElements(array $values): static
+    {
+        if ($this->elementType === null) {
+            throw new InvalidArgumentException('ElementSelect Controls require an element type.');
+        }
+
+        $ids = [];
+        foreach ($values as $value) {
+            foreach (self::ids($value) as $id) {
+                $ids[(int) $id] = true;
+            }
+        }
+
+        $elements = [];
+        foreach (self::elements($this->elementType, array_keys($ids), $this->maintainHierarchy) as $element) {
+            $elements[$element->id] = $element;
+        }
+
+        $this->loadedElements = ['ids' => $ids, 'elements' => $elements];
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -299,14 +416,14 @@ class ElementSelect extends Control
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function props(mixed $value = null): array
     {
         if ($this->elementType === null) {
             throw new InvalidArgumentException('ElementSelect Controls require an element type.');
         }
 
-        $elements = self::elements($this->elementType, $value, $this->maintainHierarchy);
+        $elements = $this->loadedElementsFor($value) ?? self::elements($this->elementType, $value, $this->maintainHierarchy);
         $thumbSize = self::resolveThumbSize($this->viewMode, $this->thumbSize);
 
         return [
@@ -314,6 +431,7 @@ class ElementSelect extends Control
             'customElement' => self::customElement($this->elementType),
             'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode, $thumbSize), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
+            'elementPluralDisplayName' => $this->elementType::pluralLowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
             'context' => $this->context,
@@ -326,6 +444,9 @@ class ElementSelect extends Control
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
+            ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
+            ...($this->search !== null ? ['search' => $this->search] : []),
+            ...($this->disabledElementIds !== [] ? ['disabledElementIds' => $this->disabledElementIds] : []),
         ];
     }
 
@@ -431,7 +552,7 @@ class ElementSelect extends Control
      * Resolved here rather than on the client because the status definitions,
      * their labels and their colors are all element-type concerns.
      *
-     * @return array{fill: string, label: string, draft: bool}|null
+     * @return array{fill: string, shape?: string, label: string, draft: bool}|null
      */
     private static function statusPayload(ElementInterface $element): ?array
     {
@@ -456,6 +577,7 @@ class ElementSelect extends Control
 
         return [
             'fill' => $color instanceof Color ? $color->value : (string) $color,
+            'shape' => app(StatusHtml::class)->statusShape($status),
             'label' => (string) ($definition['label'] ?? ucfirst($status)),
             'draft' => false,
         ];
@@ -467,11 +589,8 @@ class ElementSelect extends Control
      */
     private static function elements(string $elementType, mixed $value, bool $withStructure = false): array
     {
-        if (is_int($value) || is_string($value) && $value !== '') {
-            $value = [$value];
-        }
-
-        if (! is_array($value) || $value === []) {
+        $value = self::ids($value);
+        if ($value === []) {
             return [];
         }
 
@@ -489,6 +608,41 @@ class ElementSelect extends Control
             ->id(array_values($value))
             ->fixedOrder()
             ->all();
+    }
+
+    /**
+     * Returns a value’s elements from those loaded by {@see loadElements()}, or `null` if they weren’t loaded.
+     *
+     * @return list<ElementInterface>|null
+     */
+    private function loadedElementsFor(mixed $value): ?array
+    {
+        if ($this->loadedElements === null) {
+            return null;
+        }
+
+        $elements = [];
+        foreach (self::ids($value) as $id) {
+            if (! isset($this->loadedElements['ids'][(int) $id])) {
+                return null;
+            }
+
+            if (isset($this->loadedElements['elements'][(int) $id])) {
+                $elements[] = $this->loadedElements['elements'][(int) $id];
+            }
+        }
+
+        return $elements;
+    }
+
+    /** @return array<int|string> */
+    private static function ids(mixed $value): array
+    {
+        if (is_int($value) || is_string($value) && $value !== '') {
+            return [$value];
+        }
+
+        return is_array($value) ? $value : [];
     }
 
     /** @param class-string<ElementInterface> $elementType */

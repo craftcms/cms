@@ -38,6 +38,11 @@ trait QueriesSites
     protected function initQueriesSites(): void
     {
         $this->beforeQuery(static function (ElementQuery $elementQuery) {
+            // A nested condition leaves the default site to the query it’s nested in
+            if ($elementQuery->isNestedCondition && $elementQuery->siteId === null) {
+                return;
+            }
+
             // Make sure the siteId param is set
             try {
                 if (! $elementQuery->elementType::isLocalized()) {

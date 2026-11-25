@@ -84,7 +84,7 @@ class Group extends Container
         if ($node->props['collapsible'] ?? false) {
             return Html::tag('craft-disclosure', $children->toHtml(), [
                 'label' => $label,
-                'opened' => $node->props['expanded'] ?? false,
+                'open' => $node->props['expanded'] ?? false,
                 ...$attributes,
             ]);
         }

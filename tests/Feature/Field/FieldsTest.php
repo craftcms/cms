@@ -256,6 +256,41 @@ it('can save a field', function () {
     expect(FieldModel::count())->toBe(1);
 });
 
+it('rejects a field handle that another field in the same context uses', function () {
+    $this->fields->saveField($existing = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+    ]));
+
+    $duplicate = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Other Plain Text',
+        'handle' => 'plainText',
+    ]);
+
+    $resaved = $this->fields->createField([
+        'type' => PlainText::class,
+        'id' => $existing->id,
+        'uid' => $existing->uid,
+        'name' => 'Renamed Plain Text',
+        'handle' => 'plainText',
+    ]);
+
+    $otherContext = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+        'context' => 'matrixBlockType:'.Str::uuid(),
+    ]);
+
+    expect($this->fields->saveField($duplicate))->toBeFalse()
+        ->and($duplicate->errors()->has('handle'))->toBeTrue()
+        ->and($this->fields->saveField($resaved))->toBeTrue()
+        ->and($this->fields->saveField($otherContext))->toBeTrue()
+        ->and(FieldModel::count())->toBe(2);
+});
+
 it('saves a field’s default tip and warning', function () {
     $this->fields->saveField($this->fields->createField([
         'type' => PlainText::class,
@@ -337,6 +372,15 @@ it('can hard delete a field layout by id', function () {
     expect(FieldLayoutModel::withTrashed()->find($layout->id))->toBeNull()
         ->and($this->fields->getLayoutById($layout->id))->toBeNull();
 });
+
+it('leaves saved field layouts alone when deleting an unsaved layout', function (bool $hardDelete) {
+    $savedLayout = FieldLayout::make(EntryElement::class);
+    $this->fields->saveLayout($savedLayout);
+
+    $this->fields->deleteLayout(FieldLayout::make(EntryElement::class), $hardDelete);
+
+    expect(FieldLayoutModel::find($savedLayout->id))->not()->toBeNull();
+})->with(['soft delete' => false, 'hard delete' => true]);
 
 it('rejects saving a content block field whose nested layout references itself', function () {
     $fieldUid = (string) Str::uuid();
@@ -629,6 +673,30 @@ it('returns laravel-style pagination metadata for table data', function () {
         ->and($pagination['next_page_url'])->toBeNull();
 });
 
+it('counts each saved layout that includes a field once in table data', function () {
+    $fieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $unusedFieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $element = fn (FieldModel $field, ?string $handle = null) => [
+        'type' => CustomFieldElement::class,
+        'uid' => Str::uuid()->toString(),
+        'fieldUid' => $field->uid,
+        'handle' => $handle,
+    ];
+    $config = fn (array ...$tabs) => ['tabs' => array_map(fn (array $elements) => ['name' => 'Tab', 'elements' => $elements], $tabs)];
+
+    // Twice in one layout, once in a layout without a provider, and once in a deleted layout
+    FieldLayoutModel::factory()->create(['config' => $config([$element($fieldModel)], [$element($fieldModel, 'again')])]);
+    FieldLayoutModel::factory()->create(['type' => AssetElement::class, 'config' => $config([$element($fieldModel)])]);
+    FieldLayoutModel::factory()->create(['config' => $config([$element($fieldModel), $element($unusedFieldModel)])])->delete();
+    $this->fields->refreshFields();
+
+    [, $tableData] = $this->fields->getTableData(1, 100, null);
+    $usages = array_column($tableData, 'usages', 'id');
+
+    expect($usages[$fieldModel->id])->toBe('2 layouts')
+        ->and($usages[$unusedFieldModel->id])->toBeNull();
+});
+
 test('field layouts', function () {
     $field = FieldModel::factory()->create([
         'name' => 'Plain Text',
@@ -656,6 +724,18 @@ test('field layouts', function () {
 
     expect($savedLayout?->getTabs())->toHaveCount(1)
         ->and($savedLayout?->getTab('Updated'))->toBeInstanceOf(FieldLayoutTab::class);
+});
+
+test('an element type without a saved layout gets the same layout element UIDs in every request', function () {
+    $uids = fn (Fields $fields): array => collect($fields->getLayoutByType(User::class)->getTabs())
+        ->flatMap(fn (FieldLayoutTab $tab) => $tab->getElements())
+        ->pluck('uid')
+        ->all();
+
+    expect($this->fields->getLayoutByType(User::class, false))->toBeNull()
+        ->and($uids($this->fields))->not->toBeEmpty()->each->toBeString()
+        // A new instance has nothing cached, like the next request.
+        ->and($uids(app()->build(Fields::class)))->toBe($uids($this->fields));
 });
 
 it('knows the field handles that saved layouts give fields', function () {

@@ -7,8 +7,10 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Gql\Http\Middleware\AuthenticateAccessToken as AuthenticateGqlAccessToken;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\App\AboutCraftController;
 use CraftCms\Cms\Http\Controllers\App\CpAlertsController;
 use CraftCms\Cms\Http\Controllers\App\HealthCheckController;
 use CraftCms\Cms\Http\Controllers\App\LicensesController;
@@ -31,7 +33,6 @@ use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConditionsController;
-use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
@@ -39,7 +40,7 @@ use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityTimelineController;
-use CraftCms\Cms\Http\Controllers\Elements\CopyElementValuesController;
+use CraftCms\Cms\Http\Controllers\Elements\CompareFieldChangesController;
 use CraftCms\Cms\Http\Controllers\Elements\CreateElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementController;
 use CraftCms\Cms\Http\Controllers\Elements\DeleteElementsController;
@@ -53,6 +54,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexContro
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalMatchController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PasteableElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
@@ -171,7 +173,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
 
         // GQL API
-        Route::any('graphql/api', GqlApiController::class);
+        // Access tokens are authenticated before the control panel and maintenance mode checks
+        Route::allowDuringMaintenance()->middleware(AuthenticateGqlAccessToken::class)->any('graphql/api', GqlApiController::class);
 
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
@@ -218,6 +221,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('addresses/fields', [AddressesController::class, 'fields']);
 
         // App
+        Route::get('app/about', AboutCraftController::class);
         Route::post('app/get-cp-alerts', [CpAlertsController::class, 'index']);
         Route::post('app/shun-cp-alert', [CpAlertsController::class, 'destroy']);
         Route::post('app/set-license-shun-cookie', [LicensesController::class, 'setShunCookie']);
@@ -289,7 +293,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('elements/update-field-layout', UpdateFieldLayoutController::class);
         Route::post('elements/duplicate', [DuplicateElementController::class, 'duplicate']);
         Route::post('elements/bulk-duplicate', [DuplicateElementController::class, 'bulkDuplicate']);
-        Route::post('elements/copy-values-from-site', CopyElementValuesController::class);
+        Route::post('elements/compare-field-changes', CompareFieldChangesController::class);
 
         // AI assistant
         Route::middleware('can:'.Assistant::PERMISSION)->group(function () {
@@ -318,6 +322,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
         Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::post('element-selector-modals/matches', ElementSelectorModalMatchController::class);
         Route::post('element-selects/pasteable', PasteableElementsController::class);
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
@@ -407,9 +412,9 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('dashboard/refresh-widget-settings', [WidgetsController::class, 'refreshSettings']);
         Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
         Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
+        Route::post('dashboard/change-widget-color', [WidgetsController::class, 'updateColor']);
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
-        Route::post('dashboard/send-support-request', CraftSupportController::class);
         Route::post('charts/get-new-users-data', [NewUsersController::class, 'data'])->middleware('can:viewUsers');
 
         // Volumes

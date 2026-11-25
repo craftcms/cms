@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Field;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\BaseRelationField as CoreBaseRelationField;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Ui;
@@ -15,6 +16,7 @@ use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldSettings;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
 use CraftCms\Yii2Adapter\Ui\Contracts\LegacySettingsComponent;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 
 abstract class BaseRelationField extends CoreBaseRelationField implements LegacyField, LegacySettingsComponent
 {
@@ -26,6 +28,24 @@ abstract class BaseRelationField extends CoreBaseRelationField implements Legacy
     }
     use LegacySettingsUi {
         settingsUi as private legacySettingsUi;
+    }
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->init();
+    }
+
+    /**
+     * Initializes the field after it’s configured, as Yii’s `BaseObject` did.
+     */
+    public function init(): void
+    {
+    }
+
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return parent::normalizeValueFromRequest(app(LegacyHtml::class)->capturedFieldValue($value, $this->handle, $element?->getFieldParamNamespace()), $element);
     }
 
     public function settingsUi(UiContext $context = new UiContext()): Ui

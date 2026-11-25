@@ -32,6 +32,7 @@ use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Models\WorkflowRun;
 use CraftCms\Cms\Workflow\Workflows;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -89,7 +90,11 @@ class ElementDraftsController
             abort(403, 'User not authorized to save this element.');
         }
 
+        $provisionalDraftLock = null;
+
         if (! $element->getIsDraft() && $provisional) {
+            $provisionalDraftLock = $this->lockProvisionalDraft($element, $this->request->craftUser()?->getCraftUserId());
+
             // Make sure a provisional draft doesn't already exist for this element/user combo
             $existingProvisionalDraft = $element::find()
                 ->provisionalDrafts()
@@ -177,6 +182,8 @@ class ElementDraftsController
         } catch (Throwable $e) {
             DB::rollBack();
             throw $e;
+        } finally {
+            $provisionalDraftLock?->release();
         }
 
         if ($applyWithoutReview) {
@@ -235,9 +242,11 @@ class ElementDraftsController
         // Make sure the user is authorized to preview the draft
         SessionAuth::authorize("previewDraft:$element->draftId");
 
+        // Saving an element with a workflow makes a draft of the changes, which still needs to be submitted for review
+        // there, so it goes there rather than wherever saving the element would.
         return new ElementResponse()->success($element, t('{type} saved.', [
             'type' => t('Draft'),
-        ]), $data, true, $element->isProvisionalDraft ? null : $element->getCpEditUrl());
+        ]), $data, true, $element->isProvisionalDraft ? null : $element->getCpEditUrl(), overridePostedRedirect: $convertedByWorkflow);
     }
 
     /**
@@ -295,30 +304,50 @@ class ElementDraftsController
 
         Gate::authorize('createDrafts', $element);
 
-        // Make sure a provisional draft doesn't already exist for this element/user combo
-        $provisionalId = $element::find()
-            ->provisionalDrafts()
-            ->draftOf($element->id)
-            ->draftCreator($this->request->craftUser()?->getCraftUserId())
-            ->site('*')
-            ->status(null)
-            ->ids()[0] ?? null;
+        $userId = $this->request->craftUser()?->getCraftUserId();
+        $lock = $this->lockProvisionalDraft($element, $userId);
 
-        if ($provisionalId) {
-            return $this->asSuccess(data: [
-                'elementId' => $provisionalId,
-            ]);
+        try {
+            // Make sure a provisional draft doesn't already exist for this element/user combo
+            $provisionalId = $element::find()
+                ->provisionalDrafts()
+                ->draftOf($element->id)
+                ->draftCreator($userId)
+                ->site('*')
+                ->status(null)
+                ->ids()[0] ?? null;
+
+            if ($provisionalId) {
+                return $this->asSuccess(data: [
+                    'elementId' => $provisionalId,
+                ]);
+            }
+
+            $draft = $this->drafts->createDraft(
+                canonical: $element,
+                creatorId: $userId,
+                provisional: true,
+            );
+        } finally {
+            $lock->release();
         }
-
-        $draft = $this->drafts->createDraft(
-            canonical: $element,
-            creatorId: $this->request->craftUser()?->getCraftUserId(),
-            provisional: true,
-        );
 
         return $this->asSuccess(data: [
             'elementId' => $draft->id,
         ]);
+    }
+
+    /**
+     * Locks a user's provisional draft of an element until the caller releases it.
+     *
+     * Without it, two requests can both find no provisional draft and create one each.
+     */
+    private function lockProvisionalDraft(ElementInterface $element, ?int $userId): Lock
+    {
+        $lock = Cache::lock("provisional-draft:$element->id:$userId", 15);
+        $lock->block(5);
+
+        return $lock;
     }
 
     public function apply(): Response
@@ -425,18 +454,6 @@ class ElementDraftsController
             $elementToSave->setDirtyFields($element->getDirtyFields(), false);
         }
 
-        // Validate and save the draft
-        if ($elementToSave->enabled && $elementToSave->getEnabledForSite()) {
-            $elementToSave->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
-
-        // if we're about to apply an unpublished draft, set propagateRequired to true
-        if ($isUnpublishedDraft) {
-            $elementToSave->propagateRequired = true;
-        }
-
-        $elementToSave->applyingDraft = true;
-
         // If the field layout ID changed, save all content
         $saveContent = $elementToSave->getFieldLayout()?->id !== $oldFieldLayoutId;
 
@@ -449,11 +466,7 @@ class ElementDraftsController
 
         $saved = false;
         try {
-            $saved = $this->elements->saveElement(
-                element: $elementToSave,
-                crossSiteValidate: $crossSiteValidate,
-                saveContent: $saveContent,
-            );
+            $saved = $this->drafts->saveDraftForApplying($elementToSave, $crossSiteValidate, $saveContent);
         } finally {
             if ($validateOnly) {
                 $saved ? DB::commit() : DB::rollBack();
@@ -483,7 +496,6 @@ class ElementDraftsController
             return new ElementResponse()->applyDraftFailure($element);
         }
 
-        $elementToSave->applyingDraft = false;
         $elementToApply = $validateOnly ? $elementToSave : $element;
 
         if (! $isUnpublishedDraft) {
@@ -505,7 +517,6 @@ class ElementDraftsController
         }
 
         try {
-            $elementToApply->propagateRequired = false;
             $canonical = $this->drafts->applyDraft($elementToApply, $attributes);
         } catch (InvalidElementException $exception) {
             return new ElementResponse()->applyDraftFailure($exception->element);
@@ -516,22 +527,6 @@ class ElementDraftsController
         }
 
         $this->elementActivity->trackActivity($canonical, ElementActivityType::Save);
-
-        if (! $this->request->expectsJson()) {
-            // Tell all browser windows about the element save
-            session()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $canonical->id,
-            ]);
-
-            if (! $isUnpublishedDraft) {
-                session()->broadcastToJs([
-                    'event' => 'deleteDraft',
-                    'canonicalId' => $element->getCanonicalId(),
-                    'draftId' => $element->draftId,
-                ]);
-            }
-        }
 
         $message = match (true) {
             $isUnpublishedDraft => t('{type} created.', [
@@ -571,15 +566,6 @@ class ElementDraftsController
             : t('{type} deleted.', [
                 'type' => t('Draft'),
             ]);
-
-        if (! $this->request->acceptsJson()) {
-            // Tell all browser windows about the draft deletion
-            session()->broadcastToJs([
-                'event' => 'deleteDraft',
-                'canonicalId' => $element->getCanonicalId(),
-                'draftId' => $element->draftId,
-            ]);
-        }
 
         return new ElementResponse()->success($element, $message);
     }

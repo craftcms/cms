@@ -121,6 +121,11 @@ trait HasCanonical
         }
 
         $this->_canonical = $element;
+
+        // It's also what getCanonical(true) finds, as that prefers this element's site.
+        if ($element->siteId === $this->siteId) {
+            $this->_canonicalAnySite = $element;
+        }
     }
 
     #[ElementProperty(ElementPropertyType::Int, 'Returns the {element}’s canonical ID.', readable: true, writable: false, requires: ElementCapability::Drafts)]

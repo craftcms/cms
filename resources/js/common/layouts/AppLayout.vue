@@ -29,6 +29,7 @@
   withDefaults(defineProps<ScreenProps>(), {
     saveDisabled: undefined,
     handlesReadOnly: undefined,
+    hideFooter: undefined,
   });
 
   const slots = defineSlots<ScreenSlots>();

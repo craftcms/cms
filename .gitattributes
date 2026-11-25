@@ -30,7 +30,6 @@
 /artisan export-ignore
 /boost.json export-ignore
 /composer.lock export-ignore
-/crowdin.yml export-ignore
 /docs/ export-ignore
 /opencode.json export-ignore
 /package.json export-ignore
@@ -38,7 +37,6 @@
 /phpstan.neon export-ignore
 /phpunit.xml.dist export-ignore
 /pint.json export-ignore
-/playwright.config.js export-ignore
 /pnpm-lock.yaml export-ignore
 /pnpm-workspace.yaml export-ignore
 /postcss.config.js export-ignore
@@ -48,7 +46,6 @@
 /scripts/ export-ignore
 /testbench.yaml export-ignore
 /tests/ export-ignore
-/tests-playwright/ export-ignore
 /tsconfig.json export-ignore
 /vite.config.js export-ignore
 

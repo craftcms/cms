@@ -77,7 +77,15 @@ readonly class SignInProvidersController
 
         abort_if(! $definition = $this->oauth->getProviderDefinition($provider), 404);
 
-        $this->oauth->unlinkIdentity($currentUser->asElement(), $definition);
+        $user = $currentUser->asElement();
+
+        if (! $this->oauth->canUnlinkIdentity($user, $definition)) {
+            return $this->asFailure(t('You can’t disconnect {provider} because it’s the only way to sign in to your account.', [
+                'provider' => $definition->name,
+            ]));
+        }
+
+        $this->oauth->unlinkIdentity($user, $definition);
 
         return $this->asSuccess(t('{provider} disconnected.', [
             'provider' => $definition->name,

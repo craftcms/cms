@@ -17,7 +17,7 @@ return GeneralConfig::create()
 
 - `maxUploadFileSize` limits the complete file, independently of PHP’s per-request limit.
 - `tempAssetUploadDisk` selects the Laravel disk used for temporary Assets and user photos.
-- `uploadSessionDisk` selects the Laravel disk where upload sessions stage incoming bytes. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP.
+- `uploadSessionDisk` selects the Laravel disk where upload sessions stage incoming bytes. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP. It defaults to the local `craft-tmp` disk, so sites that run on more than one server must set it to a disk that every server shares.
 - `uploadChunkSize` defaults to 8 MiB for PHP uploads, capped by `post_max_size`. Lower it if your proxy or web server has a smaller request limit. S3 uses Uppy’s default part sizes: at least 5 MiB, increasing as needed to stay within 10,000 parts.
 - `uploader` optionally selects a registered transport driver. By default, Craft chooses S3 multipart for Laravel S3 disks and tus for other disks.
 - `uploadSessionDuration` defaults to 24 hours of inactivity. Craft garbage collection removes expired uploads.
@@ -139,10 +139,12 @@ The contract has five methods:
 - `complete()` verifies the stored bytes and returns an `UploadedFile` on the temporary disk. It must tolerate retries after storage completion.
 - `abort()` removes incomplete transfers and completed temporary objects. It must tolerate retries.
 
-Register the matching frontend transport in your plugin’s JavaScript, after the uploads entry has loaded. A plugin with a fixed endpoint only needs setup:
+Register the matching frontend transport in your plugin’s JavaScript. In the control panel, import `Uploads` from `@craftcms/cp`. A plugin with a fixed endpoint only needs setup:
 
 ```js
-Craft.Uploads.registerTransport('cloud', (uppy) => {
+import {Uploads} from '@craftcms/cp';
+
+Uploads.registerTransport('cloud', (uppy) => {
   uppy.use(CloudUploadPlugin, {endpoint: '/cloud/upload'});
 });
 ```
@@ -150,7 +152,7 @@ Craft.Uploads.registerTransport('cloud', (uppy) => {
 If configuration varies per file, return a preparation callback:
 
 ```js
-Craft.Uploads.registerTransport('cloud', (uppy) => {
+Uploads.registerTransport('cloud', (uppy) => {
   uppy.use(CloudUploadPlugin);
 
   return (fileId, {session}) => {
@@ -179,7 +181,7 @@ The registration callback configures one shared Uppy instance per transport. It 
 
 The request helper handles cancellation and normalizes backend errors; it only accepts same-origin URLs. Call `beginCompletion()` before an irreversible storage commit. Custom plugins advertise pause/resume support through Uppy’s `capabilities.resumableUploads` state and handle its per-file pause/resume events. Use the Uppy plugin lifecycle for transfer progress, failure, retry, and cancellation; Craft retains session creation and finalization. Uppy owns concurrency; queued files remain in the uploading state. Store session settings per file, since files with different destinations and headers share the instance.
 
-`registerTransport` is also exported from `resources/js/uploads.ts`. The control panel exposes `Craft.Uploads` automatically; standalone pages must load the uploads entry. An existing registration can be replaced before its first use. Attempting to replace it after its Uppy instance has been created throws an error. An unregistered name fails explicitly.
+Pages outside the control panel don’t have `@craftcms/cp`. They load the `resources/js/uploads.ts` entry and use `Craft.Uploads.registerTransport()` instead. An existing registration can be replaced before its first use. Attempting to replace it after its Uppy instance has been created throws an error. An unregistered name fails explicitly.
 
 The shared transfer endpoint loads and locks the session, verifies ownership and expiry, and reauthorizes the destination before calling `handleRequest()`. It persists the uploader’s session changes afterward. DELETE requests are reserved for cleanup: ownership is still checked, but expiry and destination authorization are skipped. Uploaders must reject non-cleanup operations sent with DELETE. The S3 transport uses DELETE to request an abort signature and POST for other signatures. Frontend request helpers should pass `{signal: null}` for cleanup after cancellation.
 
@@ -187,9 +189,9 @@ Custom uploaders implement the same contract; no protocol-specific interfaces or
 
 Uploaders are cached by name. Keep upload-specific state on the session and resolve its disk through `Filesystems::disk($session->disk)`. Keep provider credentials on the server.
 
-Craft handles session ownership and expiry; Uppy handles transfer retries and progress. The built-in tus endpoint supports HEAD, PATCH, termination, and expiration. Craft creates sessions through its JSON endpoints, so the tus creation extension is not exposed. The selected handler authorizes the destination and processes the completed file. The control panel exposes its native picker through `Craft.Uploaders.Uploader`. Core modules import `Uploader` from `resources/js/modules/uploader/uploader.ts`. Its constructor receives an `HTMLElement` and plain `UploaderSettings`; file inputs, drop zones, and paste zones accept native elements or arrays of elements. Completion and progress use the `on` callbacks.
+Craft handles session ownership and expiry; Uppy handles transfer retries and progress. The built-in tus endpoint supports HEAD, PATCH, termination, and expiration. Craft creates sessions through its JSON endpoints, so the tus creation extension is not exposed. The selected handler authorizes the destination and processes the completed file. Plugins import the control panel's native picker as `Uploader` from `@craftcms/cp`, and the Yii2 adapter also exposes it to legacy scripts as `Craft.Uploaders.Uploader`. Core modules import `Uploader` from `resources/js/modules/uploader/uploader.ts`. Its constructor receives an `HTMLElement` and plain `UploaderSettings`; file inputs, drop zones, and paste zones accept native elements or arrays of elements. Completion and progress use the `on` callbacks.
 
-Legacy uploader subclasses, filesystem-specific picker overrides, and jQuery upload events are no longer supported. Integrations customize file transfers through the backend uploader contract and `Craft.Uploads.registerTransport()`.
+Legacy uploader subclasses, filesystem-specific picker overrides, and jQuery upload events are no longer supported. Integrations customize file transfers through the backend uploader contract and `Uploads.registerTransport()`.
 
 ## Migrating existing integrations
 
@@ -197,4 +199,4 @@ The `assets/upload` and `assets/replace-file` multipart endpoints have been remo
 
 After a filename conflict, use `assets/resolve-upload-conflict` to replace an existing asset or unindexed file with the already-uploaded asset. Supply `sourceAssetId` and either `assetId` or `targetFilename`. This endpoint does not receive file bytes.
 
-The `users/upload-user-photo` endpoint now starts a JSON upload session instead of accepting multipart `photo` data. Existing user-save form payloads remain supported separately. Craft 6 branding uses `cpIconUrl` and `cpLogoUrl`; the removed rebrand upload endpoints are not restored.
+The `users/upload-user-photo` endpoint now starts a JSON upload session instead of accepting multipart `photo` data. Existing user-save form payloads remain supported separately. Craft 6 branding uses `cpIconPath` and `cpLogoPath`; the removed rebrand upload endpoints are not restored.

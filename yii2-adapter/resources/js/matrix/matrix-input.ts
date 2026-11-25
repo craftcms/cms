@@ -22,7 +22,8 @@ import {
   prefersReducedMotion,
   scrollContainerToElement,
 } from '@craftcms/garnish';
-import {createPasteButton, t, type CraftButton} from '@craftcms/ui';
+import {createPasteButton} from '@/modules/ui/legacy/buttons';
+import {t, type CraftButton} from '@craftcms/ui';
 import {MatrixEntry} from './matrix-entry';
 import {flashNewBlock} from '@/modules/matrix/new-block';
 import {containerMatrixInputs} from './support';

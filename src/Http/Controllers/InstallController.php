@@ -58,6 +58,17 @@ readonly class InstallController
             abort(503, 'Debug mode must be enabled to install Craft.');
         }
 
+        // Don’t mistake a database that can’t be reached for one that Craft isn’t installed in
+        try {
+            DB::connection()->getPdo();
+        } catch (SQLiteDatabaseDoesNotExistException) {
+            // The database hasn’t been created yet
+        } catch (PDOException) {
+            if (DB::getConfig('database')) {
+                abort(503, 'Craft can’t connect to the database.');
+            }
+        }
+
         // Return a 404 if Craft is already installed
         if (Cms::isInstalled()) {
             abort(404, 'Craft is already installed');
@@ -99,15 +110,23 @@ readonly class InstallController
                 'label' => $locale->getDisplayName(app()->getLocale()),
                 'selected' => $locale->id === $defaultSiteLanguage,
             ])),
-            'timezone' => Inertia::defer(function () {
+            'timezoneOptions' => Inertia::defer(function () {
                 $timezoneOptions = SelectOptions::getTimeZoneOptions();
+                $envOptions = SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value'));
 
-                return array_merge($timezoneOptions, SelectOptions::getEnvOptions(array_column($timezoneOptions, 'value')));
+                // Put the city in the label, so it can be searched for and still shows once selected
+                $timezoneOptions = array_map(fn (array $option) => [
+                    'value' => $option['value'],
+                    'label' => isset($option['data']['hint']) ? "{$option['label']} – {$option['data']['hint']}" : $option['label'],
+                ], $timezoneOptions);
+
+                return array_merge($timezoneOptions, $envOptions);
             }),
             'baseUrlTextExpanderTriggers' => SelectOptions::getEnvTextExpanderTriggers(true, fn ($value) => Str::isUrl($value)),
             'defaultSystemName' => $defaultSystemName,
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
+            'defaultTimezone' => $this->defaultTimezone(),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'dbConfig' => [
                 'driver' => $this->dbDriver($dbConfig['driver'] ?? null),
@@ -181,8 +200,15 @@ readonly class InstallController
         $path = app()->environmentFilePath();
 
         // Should we set the new DB config values?
+        $dbData = null;
         if ($request->has('db.driver')) {
-            $data = $this->validateDbData($request->input('db'));
+            if (! $this->canControlDbConfig()) {
+                return new JsonResponse([
+                    'message' => 'The database connection settings can’t be changed.',
+                ], 400);
+            }
+
+            $data = $dbData = $this->validateDbData($request->input('db'));
 
             if ($data['driver'] === 'sqlite') {
                 try {
@@ -194,10 +220,7 @@ readonly class InstallController
                 }
             }
 
-            // Set and save the new DB config values
-            $this->writeDbEnv($data, $path);
-
-            // Update the db component based on new values
+            // Update the db component based on the new values, but don’t save them until Craft is installed with them
             Config::set('database.default', $data['driver']);
             Config::set("database.connections.{$data['driver']}", array_merge(
                 Config::get("database.connections.{$data['driver']}") ?? [],
@@ -223,7 +246,8 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
+        // Laravel doesn’t load .env while the config is cached, so `$APP_URL` wouldn’t resolve to what we write
+        if ($siteUrl && ! in_array($siteUrl[0], ['@', '$']) && ! app()->configurationIsCached()) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
                 $siteUrl = '$APP_URL';
@@ -263,6 +287,11 @@ readonly class InstallController
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
+        // Now save the new DB config values
+        if ($dbData !== null) {
+            $this->writeDbEnv($dbData, $path);
+        }
+
         $redirect = Cms::config()->postCpLoginRedirect;
 
         return new JsonResponse(['redirect' => Url::cpUrl($redirect)]);
@@ -270,18 +299,9 @@ readonly class InstallController
 
     private function canControlDbConfig(): bool
     {
-        // If this is ephemeral storage, then we can't be writing to a .env file
-        if (app()->isEphemeral()) {
-            return false;
-        }
-
-        // If the .env file doesn't exist, we definitely can't do anything about it
-        if (! file_exists(app()->environmentFilePath())) {
-            return false;
-        }
-
-        // Nothing else to worry about, thanks to `CRAFT_X` environment variable overrides
-        return true;
+        return ! app()->configurationIsCached()
+            && is_file(app()->environmentFilePath())
+            && is_writable(app()->environmentFilePath());
     }
 
     /**

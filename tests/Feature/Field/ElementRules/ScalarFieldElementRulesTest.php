@@ -62,6 +62,16 @@ test('invalid scalar field values add element errors', function (string $handle,
     ['colorField', Color::class, ['allowCustomColors' => true, 'allowCustomAlpha' => true], '#ff00008'],
 ]);
 
+test('time range errors name the field', function () {
+    $result = EntryModel::factory()
+        ->withField('timeField', Time::class, ['name' => 'Opening time', 'min' => '09:00', 'max' => '17:00'], value: '18:00')
+        ->createElementWithFields(save: false);
+
+    $result->element->validate();
+
+    expect($result->element->errors()->first('timeField'))->toBe("Opening time must be no later than 5:00\u{202F}PM.");
+});
+
 test('JSON request values preserve user data and reject malformed input', function (string $raw, bool $valid) {
     $result = EntryModel::factory()
         ->withField('jsonField', Json::class, value: new JsonData(['existing' => 'value']))

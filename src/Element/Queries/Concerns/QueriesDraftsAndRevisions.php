@@ -114,6 +114,15 @@ trait QueriesDraftsAndRevisions
     /** @param ElementQuery<*> $elementQuery */
     private function applyDraftParams(ElementQuery $elementQuery): void
     {
+        if ($elementQuery->isNestedCondition) {
+            $this->rejectNestedJoinParams($elementQuery, [
+                'releaseId' => $elementQuery->releaseId !== null,
+                'draftCreator' => (bool) $elementQuery->draftCreator,
+                'provisionalDrafts' => $elementQuery->provisionalDrafts !== null,
+                'savedDraftsOnly' => $elementQuery->savedDraftsOnly,
+            ]);
+        }
+
         if ($elementQuery->releaseId !== null) {
             $elementQuery->drafts = true;
         }
@@ -124,16 +133,23 @@ trait QueriesDraftsAndRevisions
             return;
         }
 
-        $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
-        $elementQuery->query->join(Table::DRAFTS.' as drafts', 'drafts.id', 'elements.draftId', type: $joinType);
+        // A nested condition can’t add the drafts join to the outer query, so it narrows by the draft ID instead
+        if ($elementQuery->isNestedCondition) {
+            if ($elementQuery->drafts === true) {
+                $elementQuery->whereNotNull('elements.draftId');
+            }
+        } else {
+            $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
+            $elementQuery->query->join(Table::DRAFTS.' as drafts', 'drafts.id', 'elements.draftId', type: $joinType);
 
-        $elementQuery->query->addSelect([
-            'elements.draftId as draftId',
-            'drafts.creatorId as draftCreatorId',
-            'drafts.provisional as isProvisionalDraft',
-            'drafts.name as draftName',
-            'drafts.notes as draftNotes',
-        ]);
+            $elementQuery->query->addSelect([
+                'elements.draftId as draftId',
+                'drafts.creatorId as draftCreatorId',
+                'drafts.provisional as isProvisionalDraft',
+                'drafts.name as draftName',
+                'drafts.notes as draftNotes',
+            ]);
+        }
 
         if ($elementQuery->draftId) {
             $elementQuery->where('elements.draftId', $elementQuery->draftId);
@@ -206,21 +222,34 @@ trait QueriesDraftsAndRevisions
     /** @param ElementQuery<*> $elementQuery */
     private function applyRevisionParams(ElementQuery $elementQuery): void
     {
+        if ($elementQuery->isNestedCondition) {
+            $this->rejectNestedJoinParams($elementQuery, [
+                'revisionCreator' => (bool) $elementQuery->revisionCreator,
+            ]);
+        }
+
         if ($elementQuery->revisions === false) {
             $elementQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.revisionId')));
 
             return;
         }
 
-        $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
-        $elementQuery->query->join(Table::REVISIONS.' as revisions', 'revisions.id', 'elements.revisionId', type: $joinType);
+        // A nested condition can’t add the revisions join to the outer query, so it narrows by the revision ID instead
+        if ($elementQuery->isNestedCondition) {
+            if ($elementQuery->revisions === true) {
+                $elementQuery->whereNotNull('elements.revisionId');
+            }
+        } else {
+            $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
+            $elementQuery->query->join(Table::REVISIONS.' as revisions', 'revisions.id', 'elements.revisionId', type: $joinType);
 
-        $elementQuery->query->addSelect([
-            'elements.revisionId as revisionId',
-            'revisions.creatorId as revisionCreatorId',
-            'revisions.num as revisionNum',
-            'revisions.notes as revisionNotes',
-        ]);
+            $elementQuery->query->addSelect([
+                'elements.revisionId as revisionId',
+                'revisions.creatorId as revisionCreatorId',
+                'revisions.num as revisionNum',
+                'revisions.notes as revisionNotes',
+            ]);
+        }
 
         if ($elementQuery->revisionId) {
             $elementQuery->where('elements.revisionId', $elementQuery->revisionId);
@@ -232,6 +261,25 @@ trait QueriesDraftsAndRevisions
 
         if ($elementQuery->revisionCreator) {
             $elementQuery->where('revisions.creatorId', $elementQuery->revisionCreator);
+        }
+    }
+
+    /**
+     * Throws if a nested where() closure sets a param that needs the drafts or revisions join, which a nested
+     * condition can’t add to the outer query.
+     *
+     * @param  ElementQuery<*>  $elementQuery
+     * @param  array<string, bool>  $params  Whether each param is set
+     */
+    private function rejectNestedJoinParams(ElementQuery $elementQuery, array $params): void
+    {
+        foreach ($params as $param => $isSet) {
+            if ($isSet) {
+                throw new InvalidArgumentException(sprintf(
+                    'The `%s` param can’t be set in a nested where() closure, because it needs a join a nested condition can’t add. Set it on the outer query instead.',
+                    $param,
+                ));
+            }
         }
     }
 

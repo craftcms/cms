@@ -21,6 +21,39 @@ import SelectMenu from './SelectMenu.js';
 import UiLayerManager from './UiLayerManager.js';
 
 /**
+ * Every element inside `container` in the order it renders: a component's
+ * open shadow root in place of its children, and each slot's assigned
+ * elements (or its fallback content) where the slot is. A child no slot takes
+ * isn't rendered, so it isn't included.
+ *
+ * Keep in sync with `renderedElements()` and `trapFocusWithin()` in
+ * `packages/craftcms-garnish/src/utils/focus.ts`.
+ * @param {Element} container
+ * @return {Element[]}
+ */
+function renderedElements(container) {
+  const elements = [];
+
+  const visitChildren = (parent) => {
+    let children = parent.shadowRoot?.children ?? parent.children;
+    // Assigned text hides the fallback content too, so check nodes, not elements.
+    if (
+      parent instanceof HTMLSlotElement &&
+      parent.assignedNodes({flatten: true}).length
+    ) {
+      children = parent.assignedElements({flatten: true});
+    }
+    for (const child of children) {
+      elements.push(child);
+      visitChildren(child);
+    }
+  };
+
+  visitChildren(container);
+  return elements;
+}
+
+/**
  * @namespace Garnish
  */
 
@@ -465,22 +498,40 @@ function initialize() {
     trapFocusWithin: function (container) {
       const $container = $(container);
       this.releaseFocusWithin($container);
+      // The stops are the keyboard-focusable elements in the order they
+      // render, including a component's shadow controls and slotted content.
+      // A heading focused from code (`tabindex="-1"`) isn't one, and focus
+      // before the first stop or after the last wraps too.
       $container.on('keydown.focus-trap', function (ev) {
         if (ev.keyCode === Garnish.TAB_KEY) {
-          const $focusableElements = $container.find(':focusable');
-          const index = $focusableElements.index(ev.target);
+          const elements = renderedElements(ev.currentTarget);
+          const firstIndex = elements.findIndex((element) =>
+            Garnish.isKeyboardFocusable(element)
+          );
 
           // Exit focus trap if no focusable elements are inside
-          if ($focusableElements.length === 0) return;
+          if (firstIndex === -1) return;
 
-          if (index === 0 && ev.shiftKey) {
+          let lastIndex = elements.length - 1;
+          while (!Garnish.isKeyboardFocusable(elements[lastIndex])) {
+            lastIndex--;
+          }
+
+          // The control itself, not the component its event was retargeted
+          // to. The container isn't in the list, so focus parked on it counts
+          // as before the first stop. An event from jQuery's `.trigger()` has
+          // no native event, so it falls back to the target.
+          const focused = ev.originalEvent?.composedPath?.()[0] ?? ev.target;
+          const targetIndex = elements.indexOf(focused);
+
+          if (ev.shiftKey && targetIndex <= firstIndex) {
             ev.preventDefault();
             ev.stopPropagation();
-            $focusableElements.last().focus();
-          } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
+            elements[lastIndex].focus();
+          } else if (!ev.shiftKey && targetIndex >= lastIndex) {
             ev.preventDefault();
             ev.stopPropagation();
-            $focusableElements.first().focus();
+            elements[firstIndex].focus();
           }
         }
       });

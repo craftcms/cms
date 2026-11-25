@@ -8,6 +8,7 @@ use CraftCms\Cms\Ai\Assistant\AssistantAgent;
 use CraftCms\Cms\Ai\Assistant\Crafty;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\ShowElements;
+use CraftCms\Cms\Ai\Assistant\ShowField;
 use CraftCms\Cms\Ai\Http\Controllers\AssistantController;
 use CraftCms\Cms\Ai\Jobs\NameConversation;
 use CraftCms\Cms\Ai\Settings;
@@ -167,7 +168,7 @@ it('looks things up with Craft’s MCP tools, and shows the conversation again',
 it('offers the MCP tools the user can use, asking for approval before those that change anything', function () {
     $tools = offeredTools();
 
-    expect(array_keys($tools))->toContain('elements_get', 'elements_update', 'content-model_audit')
+    expect(array_keys($tools))->toContain('elements_get', 'elements_update', 'content_model_audit')
         ->and($tools['elements_get']->shouldRequestApproval(new ToolRequest))->toBeNull()
         ->and($tools['elements_update']->shouldRequestApproval(new ToolRequest))->not->toBeNull();
 
@@ -175,7 +176,7 @@ it('offers the MCP tools the user can use, asking for approval before those that
 
     expect(array_keys(offeredTools()))
         ->toContain('elements_get')
-        ->not->toContain('content-model_audit');
+        ->not->toContain('content_model_audit');
 });
 
 it('waits for the user to approve a tool call that changes anything, then resumes with their answer', function (bool $approved) {
@@ -220,7 +221,7 @@ it('shows the elements the user can view as chips, which only the chat gets, lea
 
     foreach ([$streamed, $reloaded] as $shown) {
         expect($shown['elements'])->toHaveCount(1)
-            ->and($shown['elements'][0])->toMatchArray(['id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
+            ->and($shown['elements'][0])->toMatchArray(['elementType' => Entry::class, 'id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
             ->and($shown['elements'][0]['actions'])->not->toBeEmpty();
     }
 
@@ -229,6 +230,25 @@ it('shows the elements the user can view as chips, which only the chat gets, lea
 
     expect(Json::decode(app(ShowElements::class)->handle(new ToolRequest(['elements' => [['type' => 'entries', 'id' => $hidden->id]]])))['elements'])
         ->toBe([]);
+});
+
+it('shows a tool call that threw as failed, while it streams and once the conversation is shown again', function () {
+    $this->partialMock(ShowField::class)->shouldReceive('handle')->andThrow(new RuntimeException('The field is gone.'));
+    AssistantAgent::fake([
+        new ToolCall('call_1', ShowField::NAME, ['fieldId' => 1]),
+        'I couldn’t find it.',
+    ]);
+    $threadId = (string) Str::uuid();
+
+    $events = chatEvents(chat($threadId, 'Where’s the body field?')->assertOk());
+    $streamed = array_find($events, static fn (array $event): bool => $event['type'] === 'TOOL_CALL_RESULT');
+
+    expect($streamed['state'])->toBe('output-error')
+        ->and($streamed['content'])->toContain('The field is gone.');
+
+    getJson(action([AssistantController::class, 'show'], ['threadId' => $threadId]))
+        ->assertJsonPath('messages.1.parts.0.state', 'error')
+        ->assertJsonPath('messages.1.parts.1.content', 'I couldn’t find it.');
 });
 
 it('ends the reply once the assistant has asked a question, as the answer is the user’s next message', function () {
@@ -257,6 +277,7 @@ it('shows up to three elements as cards and more as a list of chips, unless the 
     $result = Json::decode($tool->forDisplay($tool->handle(new ToolRequest(array_filter(['elements' => $elements, 'view' => $view])))));
 
     expect($result['view'])->toBe($shown)
+        ->and($result['thumbSize'])->toBe($shown === 'cards' ? null : 'sm')
         ->and($result['elements'][0])->toHaveKey($shown === 'cards' ? 'cardHeaderHtml' : 'status')
         ->and($result['elements'][0])->not->toHaveKey($shown === 'cards' ? 'status' : 'cardHeaderHtml');
 })->with([
@@ -286,6 +307,7 @@ it('gives the model a tool’s structured content, or describes the content it c
 ]);
 
 it('searches craftcms.com’s docs without asking for approval, offering its tools from the cache on later turns', function () {
+    cache()->forget('craftcms-mcp-tools');
     Http::fake(['craftcms.com/mcp' => static function (HttpRequest $request) {
         $message = $request->data();
 
@@ -317,6 +339,7 @@ it('searches craftcms.com’s docs without asking for approval, offering its too
 });
 
 it('goes without craftcms.com’s tools while craftcms.com can’t be reached', function () {
+    cache()->forget('craftcms-mcp-tools');
     Http::fake(['craftcms.com/mcp' => Http::failedConnection()]);
 
     expect(array_filter(array_keys(offeredTools()), static fn (string $name): bool => str_starts_with($name, 'craftcms_')))->toBe([]);
@@ -563,13 +586,13 @@ it('won’t continue or show another user’s conversation', function () {
 
 class ResultContentCapability
 {
-    #[McpTool(name: 'test.result.structured')]
+    #[McpTool(name: 'test_result_structured')]
     public function structured(): CallToolResult
     {
         return new CallToolResult(content: [], structuredContent: ['url' => 'https://example.com/a', 'title' => 'Café']);
     }
 
-    #[McpTool(name: 'test.result.blocks')]
+    #[McpTool(name: 'test_result_blocks')]
     public function blocks(): CallToolResult
     {
         return new CallToolResult(content: [

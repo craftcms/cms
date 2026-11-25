@@ -1,13 +1,14 @@
 {% extends "_layouts/message" %}
 {% set title = "Can’t run Craft CMS"|t('app') %}
+{% set ownHeading = true %}
 
 {% block message %}
-    <h2>{{ title }} :(</h2>
+    <h1 class="mb-sm">{{ title }} :(</h1>
 
     {% if reqCheck.result['summary']['errors'] > 0 %}
         <p>{{ "Your server doesn’t meet the following requirements to run Craft CMS:"|t('app') }}</p>
 
-        <ul class="bullets">
+        <ul class="ps-lg list-disc my-md">
             {% set results = reqCheck.getResult() %}
             {% for req in results['requirements'] %}
                 {% if req['error'] == true %}

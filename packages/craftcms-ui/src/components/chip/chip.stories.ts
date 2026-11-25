@@ -42,6 +42,7 @@ type Story = StoryObj<any>;
 
 /** Every `size` value, for the size stories below. */
 const chipSizes = [
+  {size: 'xsmall', label: 'X-Small'},
   {size: 'auto', label: 'Auto'},
   {size: 'small', label: 'Small'},
   {size: 'medium', label: 'Medium'},
@@ -239,10 +240,11 @@ export const Icon: Story = {
 };
 
 /**
- * The four `size` values on a bare chip. `small`, the default, is as tall as
+ * The five `size` values on a bare chip. `small`, the default, is as tall as
  * a small suffix button so adding one doesn't change its height; `auto` has
- * the same padding without that minimum. `medium` and `large` add more
- * padding and a larger thumbnail.
+ * the same padding without that minimum. `xsmall` is as tall as a labeled
+ * badge, with its smaller text. `medium` and `large` add more padding and a
+ * larger thumbnail.
  */
 export const Sizes: Story = {
   parameters: {controls: {disable: true}},
@@ -360,6 +362,33 @@ export const SizesWithContent: Story = {
           </craft-chip>
         `
       )}
+    </div>
+  `,
+};
+
+/**
+ * `rounded` rounds the chip's ends fully, and its thumbnail with them. At
+ * `xsmall`, a rounded chip sits among badges as one of them.
+ */
+export const Rounded: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center"
+    >
+      <craft-chip size="xsmall" rounded show-status>
+        <craft-status slot="status" status="live"></craft-status>
+        Welcome to Craft 6
+      </craft-chip>
+      <craft-chip size="xsmall" rounded show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
+        Showcase image
+      </craft-chip>
+      <craft-badge fill="gray" no-prefix>Badge</craft-badge>
+      <craft-chip rounded show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
+        Small
+      </craft-chip>
     </div>
   `,
 };

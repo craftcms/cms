@@ -181,7 +181,7 @@ class EditElementController
             ];
         }
 
-        $previewToken = $previewTargets ? Str::random(32, extendedChars: true) : null;
+        $previewToken = $previewTargets ? Str::random(32) : null;
 
         $notice = match (true) {
             $element->isProvisionalDraft => $this->draftNotice(...),
@@ -617,12 +617,7 @@ class EditElementController
 
         $settings = $jsSettingsFn();
 
-        if ($this->request->inertia()) {
-            // The Vue slideout builds its own `Craft.ElementEditor`, but can't
-            // receive settings the jQuery way: that script looks the container
-            // up by id and runs before Vue has put the panel in the document.
-            $response->screenData(['elementEditorSettings' => $settings]);
-        } elseif ($this->isSlideout()) {
+        if ($this->isSlideout()) {
             HtmlStack::jsWithVars(fn ($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [

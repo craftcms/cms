@@ -11,6 +11,7 @@
   } from '../link-field/craft-link-field';
   import type {UiControlPayload} from './types';
   import {inputName} from './runtime';
+  import {useUiPreview} from './uiPreview';
 
   type LinkControlProps = {
     types: LinkTypeConfig[];
@@ -50,6 +51,7 @@
   const linkField = ref<HTMLElement>();
   const draft = ref<LinkValue | null>(null);
   let restoreFocusTo: HTMLElement | null = null;
+  const previewing = useUiPreview();
   let resuming = false;
 
   const hasValue = computed(() => Boolean(props.value?.value));
@@ -63,10 +65,10 @@
   const buttonText = computed(() =>
     hasValue.value ? t('Edit link') : t('Add link')
   );
-  // `defaultLabel` is only for display.
+  // `defaultLabel` and `element` are only for display.
   const formValues = computed(() =>
     Object.entries(props.value ?? {})
-      .filter(([key]) => key !== 'defaultLabel')
+      .filter(([key]) => key !== 'defaultLabel' && key !== 'element')
       .map(([key, value]) => ({
         key,
         value: typeof value === 'boolean' ? (value ? '1' : '') : (value ?? ''),
@@ -215,10 +217,9 @@
         ref="popover"
         class="craft-link-popover"
         :for="buttonId"
-        :label="t('Link')"
         placement="bottom-start"
-        @craft-show="onShow"
-        @craft-after-show="onAfterShow"
+        @craft-show.self="onShow"
+        @craft-after-show.self="onAfterShow"
       >
         <div slot="content" class="p-2">
           <craft-link-field
@@ -228,6 +229,7 @@
             .showLabelField="control.props.showLabelField"
             .advancedFields="control.props.advancedFields"
             .disabled="!editable"
+            .previewing="previewing"
             @apply="apply"
             @cancel="close"
             @element-select-start="suspend"
@@ -246,6 +248,7 @@
       .showLabelField="control.props.showLabelField"
       .advancedFields="control.props.advancedFields"
       .disabled="!editable"
+      .previewing="previewing"
       @link-change="change"
     />
   </div>

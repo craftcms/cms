@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -62,7 +63,7 @@ it('sets the CP-relative path for legacy URL generation', function () {
 
 it('renders with a default source', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -73,7 +74,7 @@ it('renders with a default source', function () {
 
 it('sends the bare index to the first source it lists', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'disk' => 'disk:test-disk',
         'handle' => 'firstvolume',
     ]);
 
@@ -86,7 +87,7 @@ it('sends the bare index to the first source it lists', function () {
 
 it('leaves an index that names its source where it is', function () {
     Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'disk' => 'disk:test-disk',
         'handle' => 'firstvolume',
     ]);
 
@@ -97,7 +98,7 @@ it('leaves an index that names its source where it is', function () {
 
 it('preloads existing thumbnail indexes for the displayed assets', function (int $sourceWidth, int $sourceHeight, array $transforms) {
     Queue::fake();
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $folder = Folders::getRootFolderByVolumeId($volume->id);
     $imageTransformer = new ImageTransformer;
 
@@ -152,8 +153,70 @@ it('preloads existing thumbnail indexes for the displayed assets', function (int
     'square' => [600, 600, [[30, 30], [60, 60]]],
 ]);
 
+it('preloads thumbnail indexes for the assets that no ThumbUrlResolving listener handles', function () {
+    Queue::fake();
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $folder = Folders::getRootFolderByVolumeId($volume->id);
+    $imageTransformer = new ImageTransformer;
+    $assets = [];
+
+    foreach (['font.ttf', 'image-1.jpg', 'image-2.jpg'] as $filename) {
+        $assets[] = $asset = Asset::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => $filename,
+            'kind' => 'image',
+            'width' => 800,
+            'height' => 400,
+            'dateModified' => now()->subMinute(),
+        ]);
+
+        foreach ([30, 60] as $size) {
+            $imageTransformer->getTransformIndex($asset, new ImageTransform([
+                'width' => $size,
+                'height' => $size,
+                'mode' => 'fit',
+            ]));
+        }
+    }
+
+    $fontId = $assets[0]->id;
+    $requests = [];
+    Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use ($fontId, &$requests): void {
+        $requests[] = [$event->asset->id, $event->width];
+
+        if ($event->asset->id === $fontId) {
+            $event->url = "https://example.test/specimen-{$event->width}.png";
+        }
+    });
+
+    $queries = [];
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, Table::IMAGETRANSFORMINDEX)) {
+            $queries[] = $query;
+        }
+    });
+
+    $response = get(route('craft.cp.assets.index', ['defaultSource' => $volume->handle, 'viewMode' => 'table']), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(3, 'props.data');
+
+    $imageIds = [$assets[1]->id, $assets[2]->id];
+    $titles = array_column($response->json('props.data'), 'title', 'id');
+
+    expect($queries)->toHaveCount(2)
+        ->and(array_map(fn (QueryExecuted $query): array => array_values(array_filter($query->bindings, is_int(...))), $queries))
+        ->each->toEqualCanonicalizing($imageIds)
+        ->and($titles[$fontId])->toContain('https://example.test/specimen-30.png')
+        ->and($requests)->toEqualCanonicalizing([
+            [$fontId, 30], [$fontId, 60],
+            [$imageIds[0], 30], [$imageIds[0], 60],
+            [$imageIds[1], 30], [$imageIds[1], 60],
+        ]);
+});
+
 it('preserves custom thumbnail URLs without resolving the configured transformer', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $asset = Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -162,7 +225,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         'width' => 800,
         'height' => 400,
     ]);
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     $requests = [];
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests): void {
         $requests[] = [$event->asset->id, $event->width, $event->height];
@@ -177,7 +240,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
 });
 
 it('preserves thumbnail overrides on asset subclasses', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -186,7 +249,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
         'width' => 800,
         'height' => 400,
     ]);
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     Event::listen(QueryForTableAttributePreparing::class, function (QueryForTableAttributePreparing $event): void {
         if ($event->elementType === AssetElement::class) {
             $event->query->elementType = CustomThumbnailIndexAsset::class;
@@ -200,7 +263,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
 });
 
 it('reports thumbnail jobs created while rendering the requested page data', function (bool $inertia, bool $queueOnly) {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     Asset::factory()->createElement([
         'volumeId' => $volume->id,
         'folderId' => Folders::getRootFolderByVolumeId($volume->id)->id,
@@ -256,7 +319,7 @@ it('reports thumbnail jobs created while rendering the requested page data', fun
 
 it('includes a volume’s subfolders in the index results', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -283,7 +346,7 @@ it('includes a volume’s subfolders in the index results', function () {
 
 it('links folder labels in the card and thumb views', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     Folders::ensureFolderByFullPathAndVolume('a-subfolder', Volumes::getVolumeById($volumeModel->id));
@@ -307,7 +370,7 @@ it('links folder labels in the card and thumb views', function () {
 
 it('scopes the results to the subfolder named in the path', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -332,7 +395,7 @@ it('scopes the results to the subfolder named in the path', function () {
 
 it('passes the route path segment through as defaultSource', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -351,7 +414,7 @@ it('passes the route path segment through as defaultSource', function () {
 
 it('shows the volume breadcrumb when selecting a source from the sidebar', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
         'name' => 'Test volume',
     ]);
@@ -367,7 +430,7 @@ it('shows the volume breadcrumb when selecting a source from the sidebar', funct
 
 it('provides current-folder actions and moves relative to its parent', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     $volume = Volumes::getVolumeById($volumeModel->id);
@@ -400,7 +463,7 @@ it('provides current-folder actions and moves relative to its parent', function 
 
 it('optionally searches the current folder’s descendants', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     $volume = Volumes::getVolumeById($volumeModel->id);
@@ -434,7 +497,7 @@ it('optionally searches the current folder’s descendants', function () {
 
 it('offers descendant search after redirecting to the implicitly selected default volume', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     Folders::ensureFolderByFullPathAndVolume('child', Volumes::getVolumeById($volumeModel->id));
@@ -448,9 +511,33 @@ it('offers descendant search after redirecting to the implicitly selected defaul
         ->assertJsonPath('props.canSearchSubfolders', true);
 });
 
+it('lets plugins add buttons for the folder on screen', function () {
+    $volumeModel = Volume::factory()->create([
+        'disk' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $folder = Folders::ensureFolderByFullPathAndVolume('parent', Volumes::getVolumeById($volumeModel->id));
+
+    Event::listen(function (FolderActionsResolving $event) {
+        $event->actions[] = [
+            'label' => "Generate in {$event->folder->name} ({$event->context})",
+            'action' => ['type' => 'event', 'name' => 'my-plugin:generate', 'detail' => ['folderId' => $event->folder->id]],
+        ];
+    });
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume/parent']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('folderActions', 1)
+            ->where('folderActions.0.label', 'Generate in parent (index)')
+            ->where('folderActions.0.action.detail.folderId', $folder->id)
+            ->where('breadcrumbs.1.items', fn ($items): bool => ! $items->contains('label', 'Generate in parent (index)'))
+        );
+});
+
 it('provides folder actions separately from element actions', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     Folders::ensureFolderByFullPathAndVolume('managed', Volumes::getVolumeById($volumeModel->id));
@@ -472,7 +559,7 @@ it('provides folder actions separately from element actions', function () {
 
 it('limits the Move folder picker to volumes folders can move into', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     Folders::ensureFolderByFullPathAndVolume('managed', Volumes::getVolumeById($volumeModel->id));
@@ -491,7 +578,7 @@ it('limits the Move folder picker to volumes folders can move into', function ()
 
 it('hands asset file actions to the page as client events', function () {
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     $root = Folders::getRootFolderByVolumeId($volumeModel->id);
@@ -517,7 +604,7 @@ it('hands asset file actions to the page as client events', function () {
 
 it('offers Show in folder only when searching subfolders', function (array $query, bool $offered) {
     Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
 
@@ -535,7 +622,7 @@ it('offers Show in folder only when searching subfolders', function (array $quer
 it('gives asset rows what their file actions need', function () {
     Queue::fake();
     $volumeModel = Volume::factory()->create([
-        'fs' => 'test-disk',
+        'disk' => 'test-disk',
         'handle' => 'testvolume',
     ]);
     $rootFolderId = Folders::getRootFolderByVolumeId($volumeModel->id)->id;
@@ -572,7 +659,7 @@ class CustomThumbnailIndexAsset extends AssetElement
 
 it('gives the index a header trail like every other index has', function () {
     $volume = Volume::factory()->create([
-        'fs' => 'disk:test-disk',
+        'disk' => 'disk:test-disk',
         'handle' => 'testvolume',
         'name' => 'Test Volume',
     ]);

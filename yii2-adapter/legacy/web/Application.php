@@ -416,6 +416,12 @@ class Application extends \yii\web\Application
 
         app()->instance('request', $originalRequest);
 
+        // Like Craft 5, give URL rules registered for the original path the first chance to handle it,
+        // so a controller action can re-render a form with the route params a failed action set.
+        if (($route = $this->getUrlManager()->parseRequest($this->getRequest())) !== false) {
+            return $this->runAction($route[0], $route[1]) ?? $this->getResponse();
+        }
+
         $template = $originalRequest->isSiteRequest()
             ? app(Sites::class)->getRequestPath($originalRequest)
             : $originalRequest->craftPath();
@@ -459,11 +465,11 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(): void
     {
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
         $request = $this->getRequest();
 
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Aliases::get($generalConfig->resourceBaseUrl ?? '@web/cpresources'), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Aliases::get($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;

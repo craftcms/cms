@@ -22,7 +22,7 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
 
     /**
      * Returns the link type’s unique identifier, which will be stored within
-     * Link fields’ [[\craft\fields\Link::types]] settings.
+     * Link fields’ [[\CraftCms\Cms\Field\Link::$types]] settings.
      */
     abstract public static function id(): string;
 
@@ -93,15 +93,6 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
             'kind' => 'custom',
         ];
     }
-
-    /**
-     * Returns the input HTML that should be shown when this link type is selected.
-     *
-     * @param  Link  $field  The Link field
-     * @param  string|null  $value  The current value, if this link type was previously selected.
-     * @param  string  $containerId  The ID of the input’s container div.
-     */
-    abstract public function inputHtml(Link $field, ?string $value, string $containerId): string;
 
     abstract public function validateValue(string $value, ?string &$error = null): bool;
 

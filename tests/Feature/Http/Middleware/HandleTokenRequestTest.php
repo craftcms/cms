@@ -116,3 +116,12 @@ it('resolves the site from the tokenized URL rather than the token route', funct
         ->assertOk()
         ->assertContent($site->handle);
 });
+
+it('prevents caching token responses on routes outside Craft’s middleware', function () {
+    Route::get('host-route', fn () => response('host')->setPublic()->setMaxAge(3600));
+    $token = app(RouteTokens::class)->createToken('host-route');
+
+    $response = get('/?'.Cms::config()->tokenParam.'='.$token)->assertOk();
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
+});

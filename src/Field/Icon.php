@@ -6,12 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
@@ -39,7 +37,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {
     /**
      * @var array<string, array{name: string, terms: string, pro: bool, styles: list<string>}> Info about the available icons
@@ -206,6 +204,11 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             return new IconData($name, [], $set);
         }
 
+        // Only allow icon names, not file paths, URLs, or SVG markup
+        if (! preg_match('/^[\da-z\-]+$/', $value)) {
+            return null;
+        }
+
         return new IconData($value, self::iconStyles($value));
     }
 
@@ -216,20 +219,6 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             ->freeOnly(! $this->includeProIcons)
             ->sets($this->iconSets)
             ->value($context->value instanceof IconData ? $context->value->serialize() : $context->value);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        /** @var IconData|null $value */
-        return FormFields::iconPickerHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value?->serialize(),
-            'freeOnly' => ! $this->includeProIcons,
-            'sets' => $this->iconSets,
-        ]);
     }
 
     #[Override]

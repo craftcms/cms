@@ -18,7 +18,7 @@ readonly class MaintenanceMode
 
     /** @return array{enabled: bool} */
     #[McpTool(
-        name: 'maintenance-mode.get',
+        name: 'maintenance_mode_get',
         description: 'Returns whether the system is in maintenance mode.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -30,7 +30,7 @@ readonly class MaintenanceMode
 
     /** @return array{enabled: true} */
     #[McpTool(
-        name: 'maintenance-mode.enable',
+        name: 'maintenance_mode_enable',
         description: 'Puts the system into maintenance mode, as the General settings do. Visitors and users without access while the system is off are shown a maintenance page.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]
@@ -44,7 +44,7 @@ readonly class MaintenanceMode
 
     /** @return array{enabled: false} */
     #[McpTool(
-        name: 'maintenance-mode.disable',
+        name: 'maintenance_mode_disable',
         description: 'Takes the system out of maintenance mode.',
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: true),
     )]

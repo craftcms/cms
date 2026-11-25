@@ -7,6 +7,19 @@ import {
   setNotifications,
 } from './store';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 type NotificationData = CraftCms.Cms.Cp.Data.NotificationData;
 
 function notification(id: string, unread: boolean): NotificationData {
@@ -58,13 +71,12 @@ describe('notifications store', () => {
 
   it('puts them back when the server can’t mark them', async () => {
     post.mockRejectedValue(new Error('Offline'));
-    const displayError = vi.fn();
-    vi.stubGlobal('Craft', {cp: {displayError}});
+    vi.stubGlobal('Craft', {cp: {}});
 
     await markNotificationsRead(['a', 'b']);
     vi.unstubAllGlobals();
 
     expect(getNotifications().filter(({unread}) => unread)).toHaveLength(2);
-    expect(displayError).toHaveBeenCalledOnce();
+    expect(messages.showError).toHaveBeenCalledOnce();
   });
 });

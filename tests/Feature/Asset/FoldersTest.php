@@ -2,13 +2,35 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderCreated;
+use CraftCms\Cms\Asset\Events\FolderCreating;
+use CraftCms\Cms\Asset\Events\FolderRenamed;
+use CraftCms\Cms\Asset\Events\FolderRenaming;
+use CraftCms\Cms\Asset\Events\FoldersDeleted;
+use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
+use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\Local\LocalFilesystemAdapter as LocalFlysystemAdapter;
 
 beforeEach(function () {
     $this->folders = app(Folders::class);
@@ -25,7 +47,7 @@ it('is a singleton', function () {
 });
 
 it('can get a folder by id', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Test Folder',
@@ -44,7 +66,7 @@ it('returns null for non-existent folder id', function () {
 });
 
 it('caches folder by id lookups', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Cached Folder',
@@ -66,7 +88,7 @@ it('caches folder by id lookups', function () {
 });
 
 it('can get a folder by uid', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'UID Folder',
@@ -83,7 +105,7 @@ it('returns null for non-existent folder uid', function () {
 });
 
 it('can find folders by criteria', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Folder A',
@@ -102,7 +124,7 @@ it('can find folders by criteria', function () {
 });
 
 it('can find folders with string order criteria', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Bravo',
@@ -123,7 +145,7 @@ it('can find folders with string order criteria', function () {
 });
 
 it('can find folders with descending order', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Alpha',
@@ -144,7 +166,7 @@ it('can find folders with descending order', function () {
 });
 
 it('can find folders with array order criteria', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Bravo',
@@ -165,7 +187,7 @@ it('can find folders with array order criteria', function () {
 });
 
 it('can find a single folder', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Single',
@@ -182,7 +204,7 @@ it('returns null when findFolder matches nothing', function () {
 });
 
 it('can find folder by path containing a comma', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'my,folder',
@@ -199,7 +221,7 @@ it('can find folder by path containing a comma', function () {
 });
 
 it('can get root folder by volume id', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
     $this->folders = app(Folders::class);
@@ -213,7 +235,7 @@ it('can get root folder by volume id', function () {
 });
 
 it('creates root folder if it does not exist', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
 
     expect(VolumeFolderModel::where('volumeId', $volume->id)->count())->toBe(0);
 
@@ -231,7 +253,7 @@ it('returns null for root folder of non-existent volume', function () {
 });
 
 it('can get total folders', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->count(3)->create(['volumeId' => $volume->id]);
 
     expect($this->folders->getTotalFolders(['volumeId' => $volume->id]))->toBe(3);
@@ -240,14 +262,14 @@ it('can get total folders', function () {
 it('can check if folders exist', function () {
     expect($this->folders->foldersExist(['name' => 'nonexistent']))->toBeFalse();
 
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     VolumeFolderModel::factory()->create(['volumeId' => $volume->id, 'name' => 'exists']);
 
     expect($this->folders->foldersExist(['volumeId' => $volume->id]))->toBeTrue();
 });
 
 it('can get all descendant folders', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -282,7 +304,7 @@ it('can get all descendant folders', function () {
 });
 
 it('can get descendant folders as tree', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -326,7 +348,7 @@ it('can get descendant folders as tree', function () {
 });
 
 it('can exclude parent from descendant folders', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -363,7 +385,7 @@ it('can exclude parent from descendant folders', function () {
 });
 
 it('can store a new folder record', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
 
     $folder = new VolumeFolder;
     $folder->volumeId = $volume->id;
@@ -382,7 +404,7 @@ it('can store a new folder record', function () {
 });
 
 it('refreshes lookups after updating and deleting an existing folder record', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Original',
@@ -415,8 +437,217 @@ it('refreshes lookups after updating and deleting an existing folder record', fu
         ->and($this->folders->getRootFolderByVolumeId($volume->id)->id)->not->toBe($model->id);
 });
 
+it('renames subfolders whose paths differ in case from the renamed folder', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $disk = Storage::disk('test-disk');
+    $disk->deleteDirectory('');
+
+    // `uploads/moved/` lives inside `Uploads/`, as it would on case-insensitive storage, while
+    // `uploads/separate/` is a separate directory on case-sensitive storage
+    foreach (['Uploads/moved/nested', 'Uploads/photos/trip', 'Uploads/separate/inside', 'uploads/separate', 'Ⱥ/moved', 'Straße/moved'] as $directory) {
+        $disk->makeDirectory($directory);
+    }
+
+    $store = function (int $parentId, string $path) use ($volume): int {
+        $folder = new VolumeFolder([
+            'name' => basename($path),
+            'parentId' => $parentId,
+            'volumeId' => $volume->id,
+            'path' => $path,
+        ]);
+        $this->folders->storeFolderModel($folder);
+
+        return $folder->id;
+    };
+
+    $folder = $store($root->id, 'Uploads/');
+    $folderIds = [
+        'moved' => $movedId = $store($folder, 'uploads/moved/'),
+        'nested' => $store($movedId, 'uploads/moved/nested/'),
+        'photos' => $photosId = $store($folder, 'Uploads/Photos/'),
+        'trip' => $store($photosId, 'Uploads/photos/trip/'),
+        'separate' => $separateId = $store($folder, 'uploads/separate/'),
+        'inside' => $store($separateId, 'Uploads/separate/inside/'),
+        'recordOnly' => $store($folder, 'Uploads/record-only/'),
+        // `Ⱥ` and `ⱥ` differ in byte length, and `ß` and `SS` in character count
+        'unicodeMoved' => $store($unicodeFolder = $store($root->id, 'Ⱥ/'), 'ⱥ/moved/'),
+        'foldedMoved' => $store($foldedFolder = $store($root->id, 'Straße/'), 'STRASSE/moved/'),
+    ];
+
+    try {
+        $this->folders->renameFolderById($folder, 'Renamed');
+        $this->folders->renameFolderById($unicodeFolder, 'Unicode');
+        $this->folders->renameFolderById($foldedFolder, 'Folded');
+
+        $paths = VolumeFolderModel::whereIn('id', $folderIds)->pluck('path', 'id');
+
+        expect(array_map(fn (int $id) => $paths[$id], $folderIds))->toBe([
+            'moved' => 'Renamed/moved/',
+            'nested' => 'Renamed/moved/nested/',
+            'photos' => 'Renamed/Photos/',
+            'trip' => 'Renamed/photos/trip/',
+            // On case-insensitive storage, `uploads/separate` was inside `Uploads` and moved along with it
+            'separate' => $disk->directoryExists('uploads/separate') ? 'uploads/separate/' : 'Renamed/separate/',
+            'inside' => 'Renamed/separate/inside/',
+            'recordOnly' => 'Renamed/record-only/',
+            'unicodeMoved' => 'Unicode/moved/',
+            'foldedMoved' => 'Folded/moved/',
+        ]);
+    } finally {
+        $disk->deleteDirectory('');
+    }
+});
+
+it('moves transforms of assets in a renamed folder and its subfolders on remote storage, whichever site it’s renamed from', function () {
+    // Only Laravel’s local adapter gets its transforms’ `fileExists` checked against the disk
+    Storage::extend('folders-test-remote', function ($app, array $config) {
+        $adapter = new LocalFlysystemAdapter($config['root']);
+
+        return new FilesystemAdapter(new Flysystem($adapter), $adapter, $config);
+    });
+    config()->set('filesystems.disks.remote-disk', [
+        'driver' => 'folders-test-remote',
+        'root' => storage_path('framework/testing/folders-test/remote-disk'),
+        'url' => 'https://remote.test/media',
+    ]);
+    $disk = Storage::disk('remote-disk');
+    $disk->deleteDirectory('');
+
+    $volume = Volume::factory()->create([
+        'disk' => 'remote-disk',
+        'hasUrls' => true,
+        'propagationMethod' => PropagationMethod::Custom->value,
+    ]);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Été',
+        'path' => 'Été/',
+    ]);
+    $createImage = function (string $subfolderPath) use ($volume, $folder, $disk): int {
+        $subfolder = VolumeFolderModel::factory()->create([
+            'volumeId' => $volume->id,
+            'parentId' => $folder->id,
+            'name' => basename($subfolderPath),
+            'path' => $subfolderPath,
+        ]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $subfolder->id,
+            'filename' => 'beach.jpg',
+            'kind' => 'image',
+            'width' => 1200,
+            'height' => 800,
+            'dateModified' => now()->subMinute(),
+        ]);
+        $disk->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+        return $asset->id;
+    };
+    $assetIds = [$createImage('Été/Trips/'), $createImage('été/Beaches/')];
+    $transformers = app(AssetTransformers::class);
+    $transformPath = fn (int $assetId) => rawurldecode(Str::after(strtok($transformers->withImmediateTransforms(
+        fn () => $transformers->transform(Asset::find()->id($assetId)->one(), ['width' => 100])->url,
+    ), '?'), 'https://remote.test/media/'));
+
+    $indexIds = fn () => DB::table(Table::IMAGETRANSFORMINDEX)->whereIn('assetId', $assetIds)->orderBy('id')->pluck('id')->all();
+
+    try {
+        $oldPaths = array_map($transformPath, $assetIds);
+        $oldIndexIds = $indexIds();
+        expect($oldPaths[0])->toStartWith('_'.$volume->uid.'/Été/Trips/')
+            ->and($oldPaths[1])->toStartWith('_'.$volume->uid.'/été/Beaches/');
+
+        // On case-insensitive storage, `été/Beaches` is inside `Été`
+        if (! $disk->fileExists('Été/Beaches/beach.jpg')) {
+            $disk->move('été/Beaches/beach.jpg', 'Été/Beaches/beach.jpg');
+            $disk->deleteDirectory('été');
+        }
+
+        // The assets only exist in the primary site
+        $primarySite = Sites::getPrimarySite();
+        Sites::setCurrentSite(Site::factory()->create()->id);
+        $this->folders->renameFolderById($folder->id, 'Summer');
+        Sites::setCurrentSite($primarySite);
+
+        $newPaths = array_map($transformPath, $assetIds);
+
+        expect($newPaths)->toBe([
+            str_replace('/Été/', '/Summer/', $oldPaths[0]),
+            str_replace('/été/', '/Summer/', $oldPaths[1]),
+        ])
+            ->and($disk->allFiles('_'.$volume->uid))->toEqualCanonicalizing($newPaths)
+            ->and($indexIds())->toBe($oldIndexIds);
+    } finally {
+        $disk->deleteDirectory('');
+    }
+});
+
+it('clears caches that depend on a renamed folder’s assets, including ones rebuilt during the rename', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $folder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Photos',
+        'path' => 'Photos/',
+    ]);
+    $subfolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $folder->id,
+        'name' => 'Trips',
+        'path' => 'Photos/Trips/',
+    ]);
+    $otherFolder = VolumeFolderModel::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'Other',
+        'path' => 'Other/',
+    ]);
+    $assetIds = [
+        AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $folder->id])->id,
+        AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $subfolder->id])->id,
+    ];
+    $otherAssetId = AssetModel::factory()->create(['volumeId' => $volume->id, 'folderId' => $otherFolder->id])->id;
+    Storage::disk('test-disk')->makeDirectory('Photos/Trips');
+
+    // Caches the asset’s folder path the way a `{% cache %}` tag would
+    $elementCaches = app(ElementCaches::class);
+    $cache = function (int $assetId) use ($elementCaches): void {
+        $elementCaches->startCollectingCacheInfo();
+        $folderPath = Asset::find()->id($assetId)->status(null)->one()->folderPath;
+        [$dependency] = $elementCaches->stopCollectingCacheInfo();
+        DependencyCache::forever("asset-$assetId", $folderPath, $dependency);
+    };
+    array_map($cache, [...$assetIds, $otherAssetId]);
+
+    // A request made after the files moved but before the folder records change caches the first asset again
+    $recached = false;
+    VolumeFolderModel::saving(function () use (&$recached, $cache, $assetIds) {
+        if (! $recached) {
+            $recached = true;
+            $cache($assetIds[0]);
+        }
+    });
+
+    try {
+        expect(DependencyCache::get("asset-{$assetIds[1]}"))->toBe('Photos/Trips/');
+
+        $this->folders->renameFolderById($folder->id, 'Albums');
+
+        expect($recached)->toBeTrue()
+            ->and(DependencyCache::get("asset-{$assetIds[0]}"))->toBeNull()
+            ->and(DependencyCache::get("asset-{$assetIds[1]}"))->toBeNull()
+            ->and(DependencyCache::get("asset-$otherAssetId"))->toBe('Other/');
+    } finally {
+        Storage::disk('test-disk')->deleteDirectory('');
+    }
+});
+
 it('can ensure folder by full path and volume', function () {
-    $volumeModel = Volume::factory()->create(['fs' => 'test-disk']);
+    $volumeModel = Volume::factory()->create(['disk' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
     app()->forgetInstance(Volumes::class);
@@ -436,7 +667,7 @@ it('can ensure folder by full path and volume', function () {
 });
 
 it('reuses existing folders in ensureFolderByFullPathAndVolume', function () {
-    $volumeModel = Volume::factory()->create(['fs' => 'test-disk']);
+    $volumeModel = Volume::factory()->create(['disk' => 'test-disk']);
 
     app()->forgetInstance(Folders::class);
     app()->forgetInstance(Volumes::class);
@@ -451,7 +682,7 @@ it('reuses existing folders in ensureFolderByFullPathAndVolume', function () {
 });
 
 it('can apply :empty: criteria for null columns', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $root = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Root',
@@ -473,7 +704,7 @@ it('can apply :empty: criteria for null columns', function () {
 });
 
 it('resets caches', function () {
-    $volume = Volume::factory()->create(['fs' => 'test-disk']);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
     $model = VolumeFolderModel::factory()->create([
         'volumeId' => $volume->id,
         'name' => 'Cached',
@@ -491,4 +722,103 @@ it('creates a folder query builder', function () {
     $query = $this->folders->createFolderQuery();
 
     expect($query)->toBeInstanceOf(Builder::class);
+});
+
+it('dispatches folder events when creating, renaming, and deleting folders', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $disk = Storage::disk('test-disk');
+    $disk->deleteDirectory('');
+    $events = [];
+    $renamingFrom = null;
+    Event::listen([FolderCreated::class, FolderRenaming::class, FolderRenamed::class, FoldersDeleted::class], function (object $event) use (&$events, &$renamingFrom) {
+        $events[] = $event;
+        $renamingFrom ??= $event instanceof FolderRenaming ? $event->folder->name : null;
+    });
+
+    try {
+        $folder = new VolumeFolder([
+            'name' => 'Parent',
+            'parentId' => $root->id,
+            'volumeId' => $volume->id,
+            'path' => 'Parent/',
+        ]);
+        $this->folders->createFolder($folder);
+        $child = $this->folders->ensureFolderByFullPathAndVolume('Parent/Child', app(Volumes::class)->getVolumeById($volume->id));
+        $this->folders->renameFolderById($folder->id, 'Renamed');
+        $this->folders->deleteFoldersByIds($folder->id);
+
+        expect($events)->toHaveCount(5)
+            ->and($events[0])->toBeInstanceOf(FolderCreated::class)
+            ->and($events[0]->folder->id)->toBe($folder->id)
+            ->and($events[1])->toBeInstanceOf(FolderCreated::class)
+            ->and($events[1]->folder->id)->toBe($child->id)
+            ->and($events[2])->toBeInstanceOf(FolderRenaming::class)
+            ->and($renamingFrom)->toBe('Parent')
+            ->and($events[2]->newName)->toBe('Renamed')
+            ->and($events[3])->toBeInstanceOf(FolderRenamed::class)
+            ->and($events[3]->folder->path)->toBe('Renamed/')
+            ->and($events[4])->toBeInstanceOf(FoldersDeleted::class)
+            ->and($events[4]->folderIds)->toEqualCanonicalizing([$folder->id, $child->id]);
+    } finally {
+        $disk->deleteDirectory('');
+    }
+});
+
+it('lets listeners prevent folders from being created or renamed', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $disk = Storage::disk('test-disk');
+    $disk->deleteDirectory('');
+    Event::listen(FolderCreating::class, fn (FolderCreating $event) => $event->isValid = $event->folder->name !== 'Blocked');
+    Event::listen(FolderRenaming::class, fn (FolderRenaming $event) => $event->isValid = false);
+    $created = [];
+    Event::listen(FolderCreated::class, function (FolderCreated $event) use (&$created) {
+        $created[] = $event->folder->name;
+    });
+    Event::listen(FolderRenamed::class, fn () => throw new RuntimeException('FolderRenamed was dispatched.'));
+
+    try {
+        $blocked = new VolumeFolder([
+            'name' => 'Blocked',
+            'parentId' => $root->id,
+            'volumeId' => $volume->id,
+            'path' => 'Blocked/',
+        ]);
+
+        expect(fn () => $this->folders->createFolder($blocked))->toThrow(AssetOperationException::class)
+            ->and($disk->directoryExists('Blocked'))->toBeFalse()
+            ->and(VolumeFolderModel::where('path', 'Blocked/')->exists())->toBeFalse()
+            ->and($created)->toBe([]);
+
+        $folder = $this->folders->ensureFolderByFullPathAndVolume('Kept', app(Volumes::class)->getVolumeById($volume->id), justRecord: false);
+
+        expect(fn () => $this->folders->renameFolderById($folder->id, 'Renamed'))->toThrow(AssetOperationException::class)
+            ->and($disk->directoryExists('Kept'))->toBeTrue()
+            ->and(VolumeFolderModel::find($folder->id)->name)->toBe('Kept');
+    } finally {
+        $disk->deleteDirectory('');
+    }
+});
+
+it('gives FolderCreated listeners the folder as it was saved', function () {
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $root = $this->folders->getRootFolderByVolumeId($volume->id);
+    $names = [];
+    Event::listen(FolderCreated::class, function (FolderCreated $event) use (&$names) {
+        $names[] = $event->folder->name;
+    });
+
+    DB::transaction(function () use ($volume, $root) {
+        $folder = new VolumeFolder([
+            'name' => 'Saved',
+            'parentId' => $root->id,
+            'volumeId' => $volume->id,
+            'path' => 'saved/',
+        ]);
+        $this->folders->storeFolderModel($folder);
+        $folder->name = 'Changed';
+    });
+
+    expect($names)->toBe(['Saved']);
 });

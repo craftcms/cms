@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\Passport;
 
 beforeEach(function () {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     config()->set('filesystems.disks.transform-preview', [
@@ -28,7 +28,7 @@ beforeEach(function () {
     Storage::fake('transform-preview');
     Queue::fake();
 
-    $this->volume = Volume::factory()->create(['fs' => 'transform-preview']);
+    $this->volume = Volume::factory()->create(['disk' => 'transform-preview']);
     $this->asset = Asset::factory()->createElement([
         'volumeId' => $this->volume->id,
         'filename' => 'source.jpg',
@@ -39,14 +39,15 @@ beforeEach(function () {
 
 it('returns usable preview URLs through MCP for named and inline transforms', function (
     array|string $transform,
-    ?string $transformer,
+    bool $immediate,
 ): void {
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'name' => 'Preview',
-        'handle' => 'preview',
-        'driver' => 'craft',
-        'settings' => ['generateTransformsBeforePageLoad' => true],
-    ]));
+    if ($immediate) {
+        config()->set('filesystems.disks.transform-preview.asset_transformer', [
+            'driver' => 'craft',
+            'generate_transforms_before_page_load' => true,
+        ]);
+    }
+
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
         'name' => 'Thumbnail',
         'handle' => 'thumbnail',
@@ -60,12 +61,11 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
     );
 
     $result = McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.transform-url',
-        'arguments' => array_filter([
+        'name' => 'assets_transform_url',
+        'arguments' => [
             'uid' => $this->asset->uid,
             'transform' => $transform,
-            'transformer' => $transformer,
-        ], static fn (mixed $value): bool => $value !== null),
+        ],
     ])
         ->assertOk()
         ->assertJsonPath('result.isError', false)
@@ -74,7 +74,7 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
         ->assertJsonPath('result.structuredContent.height', 80)
         ->json('result.structuredContent');
 
-    Queue::assertPushedTimes(GenerateImageTransform::class, $transformer === null ? 1 : 0);
+    Queue::assertPushedTimes(GenerateImageTransform::class, $immediate ? 0 : 1);
 
     $response = $this->get($result['url'])
         ->assertOk()
@@ -84,9 +84,38 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
     expect($dimensions[0])->toBe(160)
         ->and($dimensions[1])->toBe(80);
 })->with([
-    'named transform with deferred generation' => ['thumbnail', null],
-    'inline transform with an immediate transformer override' => [['width' => 160, 'height' => 80, 'format' => 'png'], 'preview'],
+    'named transform with deferred generation' => ['thumbnail', false],
+    'inline transform on a disk that generates immediately' => [['width' => 160, 'height' => 80, 'format' => 'png'], true],
 ]);
+
+it('returns absolute transform URLs for volumes with root-relative URLs', function (): void {
+    $root = storage_path('framework/testing/transform-relative-'.uniqid());
+    config()->set('filesystems.disks.transform-relative', [
+        'driver' => 'local',
+        'root' => $root,
+        'url' => '/transforms',
+        'asset_transformer' => ['driver' => 'craft', 'generate_transforms_before_page_load' => true],
+    ]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => Volume::factory()->create(['disk' => 'transform-relative', 'hasUrls' => true])->id,
+        'filename' => 'café.png',
+    ]);
+    Storage::disk('transform-relative')->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/google.png'));
+
+    try {
+        $url = McpRequest::send($this, 'tools/call', [
+            'name' => 'assets_transform_url',
+            'arguments' => ['id' => $asset->id, 'transform' => ['width' => 160]],
+        ])
+            ->assertOk()
+            ->assertJsonPath('result.isError', false)
+            ->json('result.structuredContent.url');
+    } finally {
+        File::deleteDirectory($root);
+    }
+
+    expect($url)->toStartWith(Sites::getPrimarySite()->getBaseUrl().'transforms/');
+});
 
 it('requires asset view permission before generating a preview', function (): void {
     $user = User::query()->firstOrFail();
@@ -96,7 +125,7 @@ it('requires asset view permission before generating a preview', function (): vo
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     Cms::config()->allowAdminChanges = false;
     $params = [
-        'name' => 'assets.transform-url',
+        'name' => 'assets_transform_url',
         'arguments' => ['id' => $this->asset->id, 'transform' => ['width' => 160]],
     ];
 
@@ -122,7 +151,7 @@ it('requires asset view permission before generating a preview', function (): vo
 
 it('converts transform validation failures into MCP tool errors', function (): void {
     McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.transform-url',
+        'name' => 'assets_transform_url',
         'arguments' => ['id' => $this->asset->id, 'transform' => ['width' => 0]],
     ])
         ->assertOk()

@@ -7,12 +7,14 @@ import '../button/button.js';
 import '../checkbox/checkbox.js';
 import '../badge/badge.js';
 import '../truncate/truncate.js';
-import {contrast} from '../../../test/contrast';
+import '../field/field.js';
+import {backdropOf, contrast} from '../../../test/contrast';
 import {
   HARD_IMAGES,
   MANY_ATTRIBUTES,
   type CoverImage,
 } from '../../../test/cover-fixtures';
+import type CraftChip from '../chip/chip.js';
 import type CraftCard from './card.js';
 import type {Luminance} from './cover.js';
 
@@ -262,9 +264,9 @@ it.each([['data-color="white"'], ['']])(
 );
 
 it.each([
-  ['dark', 0.15],
-  ['light', 0.1],
-])('gives a card the %s theme’s shadow', async (theme, alpha) => {
+  ['dark', 'rgba(2, 6, 20, 0.15)'],
+  ['light', 'rgba(34, 44, 82, 0.1)'],
+])('gives a card the %s theme’s shadow', async (theme, color) => {
   document.body.innerHTML = `
     <div data-theme="${theme}">
       <craft-card>Body</craft-card>
@@ -276,7 +278,7 @@ it.each([
     card.shadowRoot!.querySelector('.card')!
   ).boxShadow;
 
-  expect(shadow).toContain(`rgba(0, 0, 0, ${alpha})`);
+  expect(shadow).toContain(color);
 });
 
 it('gives a selected uncolored card a dark header in the dark theme', async () => {
@@ -345,13 +347,14 @@ it('keeps a black card’s body text readable on a light page, selected or not',
   }
 });
 
-it('pads its body with the container padding, or the same value without it', async () => {
+it('pads its body by its own width', async () => {
   document.body.innerHTML = `
-    <craft-card id="fallback">Body</craft-card>
-    <div style="--cp-container-padding: 40px">
-      <craft-card id="container">Body</craft-card>
-    </div>
-    <div id="spacing" style="padding: var(--c-spacing-lg)"></div>`;
+    <craft-card id="narrow" style="width: 300px">Body</craft-card>
+    <craft-card id="mid" style="width: 602px">Body</craft-card>
+    <craft-card id="wide" style="width: 1000px">Body</craft-card>
+    <div style="--c-card-padding-inline: 40px">
+      <craft-card id="custom" style="width: 1000px">Body</craft-card>
+    </div>`;
   const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
   await Promise.all(cards.map((card) => card.updateComplete));
   const padding = (id: string) =>
@@ -359,11 +362,86 @@ it('pads its body with the container padding, or the same value without it', asy
       document.getElementById(id)!.shadowRoot!.querySelector('.card-body')!
     ).paddingInlineStart;
 
-  expect(padding('fallback')).toBe(
-    getComputedStyle(document.getElementById('spacing')!).paddingInlineStart
-  );
-  expect(padding('fallback')).not.toBe('0px');
-  expect(padding('container')).toBe('40px');
+  expect(padding('narrow')).toBe('16px');
+  expect(padding('mid')).toBe('20px');
+  expect(padding('wide')).toBe('24px');
+  expect(padding('custom')).toBe('40px');
+});
+
+it('spaces a card’s title, attributes and status badges', async () => {
+  // As `ElementHtml::cardContentHtml()` renders a card's content.
+  document.body.innerHTML = `
+    <div id="sm" style="block-size: var(--c-spacing-sm)"></div>
+    <div id="xs" style="block-size: var(--c-spacing-xs)"></div>
+    <craft-card style="inline-size: 300px">
+      <div class="card-content">
+        <div class="card-heading" id="heading">Title</div>
+        <div class="card-body">
+          <div class="card-attribute-preview" id="text1">First text</div>
+          <div class="card-attribute-preview" id="text2">Second text</div>
+          <div class="card-attribute-preview" id="styled">
+            <div class="inline-chips no-truncate"><craft-chip size="small">Styled</craft-chip></div>
+          </div>
+          <div class="card-attribute-preview" id="plain"><craft-chip size="small" appearance="plain">Plain</craft-chip></div>
+          <div class="card-attribute-preview" id="text3">Third text</div>
+          <ul id="badges"><li>Live</li></ul>
+        </div>
+      </div>
+    </craft-card>`;
+  const chips = [...document.querySelectorAll<CraftChip>('craft-chip')];
+  await Promise.all(chips.map((chip) => chip.updateComplete));
+  const box = (id: string) =>
+    document.getElementById(id)!.getBoundingClientRect();
+  const gap = (above: string, below: string) =>
+    box(below).top - box(above).bottom;
+  const sm = box('sm').height;
+  const xs = box('xs').height;
+
+  // The tokens resolve, so a 0 gap below is the rule, not a missing token.
+  expect(sm).toBeGreaterThan(xs);
+  expect(xs).toBeGreaterThan(0);
+
+  // The title is set off from the attributes.
+  expect(gap('heading', 'text1')).toBeCloseTo(sm, 1);
+  // Text attributes stack like lines of text.
+  expect(gap('text1', 'text2')).toBeCloseTo(0, 1);
+  // A chip with a border and fill gets room on both sides…
+  expect(gap('text2', 'styled')).toBeCloseTo(sm, 1);
+  expect(gap('styled', 'plain')).toBeCloseTo(sm, 1);
+  // …but a plain one reads as text, and is as tall as a line of it.
+  expect(gap('plain', 'text3')).toBeCloseTo(0, 1);
+  expect(box('plain').height).toBeCloseTo(box('text3').height, 1);
+  // The status badges are their own group, a little further off.
+  expect(gap('text3', 'badges')).toBeCloseTo(sm + xs, 1);
+});
+
+it('shows a chip attribute in full on a cover card, but caps text at a line', async () => {
+  // “Last edited by” and “Parent” are a bare chip, with no `no-truncate`
+  // wrapper. The card sets `data-cover="body"` on its body's children.
+  document.body.innerHTML = `
+    <craft-card style="inline-size: 300px">
+      <div class="card-content" data-cover="body">
+        <div class="card-heading">Title</div>
+        <div class="card-body">
+          <div class="card-attribute-preview" id="chip"><craft-chip size="small">Chip</craft-chip></div>
+          <div class="card-attribute-preview" id="text">${'Long text '.repeat(20)}</div>
+        </div>
+      </div>
+    </craft-card>`;
+  const chip = document.querySelector<CraftChip>('craft-chip')!;
+  await chip.updateComplete;
+  const chipBox = chip
+    .shadowRoot!.querySelector('[part~="chip"]')!
+    .getBoundingClientRect();
+  const preview = document.getElementById('chip')!.getBoundingClientRect();
+  const text = document.getElementById('text')!;
+  const lineHeight = parseFloat(getComputedStyle(text).lineHeight);
+
+  // The chip is taller than a line, so a one-line cap would cut it off.
+  expect(chipBox.height).toBeGreaterThan(lineHeight);
+  expect(preview.height).toBeGreaterThanOrEqual(chipBox.height - 0.5);
+  // Text is still capped.
+  expect(text.getBoundingClientRect().height).toBeCloseTo(lineHeight, 0);
 });
 
 it('gives a header the same height with or without actions', async () => {
@@ -434,7 +512,7 @@ it.each([
   'keeps a hovered header control readable on a selected card in the %s theme (%s)',
   async (theme, color) => {
     document.body.innerHTML = `
-      <div data-theme="${theme}">
+      <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
         <craft-card ${color} active>
           <div slot="header">
             <craft-button variant="plain" inherit icon="ellipsis" aria-label="Actions"></craft-button>
@@ -448,9 +526,9 @@ it.each([
     await userEvent.hover(button);
     const style = getComputedStyle(button);
 
-    expect(contrast(style.color, style.backgroundColor)).toBeGreaterThanOrEqual(
-      3
-    );
+    expect(
+      contrast(style.color, style.backgroundColor, backdropOf(button))
+    ).toBeGreaterThanOrEqual(3);
     await userEvent.unhover(button);
   }
 );
@@ -562,7 +640,7 @@ it('gives what’s in a tinted card the card’s color, but not in a neutral one
   const tokens = {
     '--c-text-default': '--c-color-orange-on-quiet',
     '--c-form-control-border-color': '--c-color-orange-border-normal',
-    '--c-tab-border-active': '--c-color-orange-on-quiet',
+    '--c-tab-indicator-fill-active': '--c-color-orange-on-quiet',
     '--c-color-neutral-border-quiet': '--c-color-orange-border-quiet',
     '--c-color-neutral-fill-normal': '--c-color-orange-fill-normal',
   };
@@ -612,8 +690,8 @@ it('keeps a neutral card nested in a tinted one, and what’s in it, neutral', a
         resolve('outside', `var(${token})`)
       );
     }
-    expect(resolve(id, 'var(--c-tab-border-active, red)'), id).toBe(
-      resolve('outside', 'var(--c-tab-border-active, red)')
+    expect(resolve(id, 'var(--c-tab-indicator-fill-active, red)'), id).toBe(
+      resolve('outside', 'var(--c-tab-indicator-fill-active, red)')
     );
   }
 
@@ -1331,3 +1409,26 @@ it.each(COVER_IMAGES.map((image) => [image.name, image] as const))(
     expect(await coverContrast(card)).toEqual({shortfalls: [], clipped: []});
   }
 );
+
+it.each([
+  ['narrow', '20rem'],
+  ['wide', '60rem'],
+])('marks a changed field along a %s card’s edge', async (_case, width) => {
+  document.body.innerHTML = `
+      <craft-card style="inline-size: ${width}">
+        <craft-field label="Title" status="modified" status-label="Modified">
+          <input slot="input">
+        </craft-field>
+      </craft-card>`;
+  const card = document.querySelector('craft-card')!;
+  const field = document.querySelector('craft-field')!;
+  await field.updateComplete;
+  const indicator = field.shadowRoot!.querySelector(
+    '.form-field__status-indicator'
+  )!;
+  const edge = card
+    .shadowRoot!.querySelector('.card-body')!
+    .getBoundingClientRect().left;
+
+  expect(indicator.getBoundingClientRect().left).toBeCloseTo(edge, 0);
+});

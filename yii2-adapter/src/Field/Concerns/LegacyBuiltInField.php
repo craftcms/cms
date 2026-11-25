@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Field\Concerns;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Field\Field as CoreField;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Support\Html;
@@ -17,6 +18,8 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
+use CraftCms\Yii2Adapter\Ui\LegacyHtml;
+use ReflectionMethod;
 
 trait LegacyBuiltInField
 {
@@ -32,8 +35,6 @@ trait LegacyBuiltInField
         settingsUi as private legacySettingsUi;
     }
 
-    private ControlMode $legacyInputMode = ControlMode::Editable;
-
     public function settingsUi(UiContext $context = new UiContext()): Ui
     {
         if (static::class !== self::class) {
@@ -45,18 +46,30 @@ trait LegacyBuiltInField
 
     public function uiControl(FieldContext $context): Control
     {
-        if (static::class !== self::class) {
-            $previousMode = $this->legacyInputMode;
-            $this->legacyInputMode = $context->ui->mode === ControlMode::Editable ? $context->mode : $context->ui->mode;
-
-            try {
-                return $this->legacyUiControl($context);
-            } finally {
-                $this->legacyInputMode = $previousMode;
-            }
+        if ($this->rendersLegacyInput($context->inline)) {
+            return $this->legacyUiControl($context);
         }
 
         return parent::uiControl($context);
+    }
+
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    {
+        return parent::normalizeValueFromRequest($this->capturedRequestValue($value, $element), $element);
+    }
+
+    /**
+     * Returns a posted value from the flat input map a plugin subclass's legacy input HTML captured.
+     *
+     * Aliases whose parent narrows `normalizeValueFromRequest()`'s return type override it to call this.
+     */
+    private function capturedRequestValue(mixed $value, ?ElementInterface $element): mixed
+    {
+        if (!$this->rendersLegacyInput() && !$this->rendersLegacyInput(true)) {
+            return $value;
+        }
+
+        return app(LegacyHtml::class)->capturedFieldValue($value, $this->handle, $element?->getFieldParamNamespace());
     }
 
     public function getSettingsHtml(): ?string
@@ -106,19 +119,12 @@ trait LegacyBuiltInField
 
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        if (static::class !== self::class) {
-            $previousMode = $this->legacyInputMode;
-            $this->legacyInputMode = ControlMode::ReadOnly;
-
-            try {
-                return $this->legacyStaticHtml($value, $element);
-            } finally {
-                $this->legacyInputMode = $previousMode;
-            }
+        if ($this->rendersLegacyInput()) {
+            return $this->legacyStaticHtml($value, $element);
         }
 
         $context = new UiContext(mode: ControlMode::ReadOnly);
-        $control = parent::uiControl(new FieldContext(
+        $control = $this->uiControl(new FieldContext(
             path: $this->handle,
             value: $value,
             element: $element,
@@ -131,5 +137,25 @@ trait LegacyBuiltInField
         );
 
         return app(UiHtmlRenderer::class)->render($payload);
+    }
+
+    /**
+     * Whether a plugin subclass renders its own input HTML.
+     *
+     * Built-in field types no longer implement `inputHtml()`, so a subclass
+     * gets the core control unless it overrides `inputHtml()` or the hook that
+     * calls it.
+     */
+    private function rendersLegacyInput(bool $inline = false): bool
+    {
+        if (static::class === self::class) {
+            return false;
+        }
+
+        $declaringClass = fn(string $method): string => new ReflectionMethod($this, $method)->class;
+
+        return $declaringClass('inputHtml') !== CoreField::class || ($inline
+            ? $declaringClass('getInlineInputHtml') !== CoreField::class
+            : $declaringClass('getInputHtml') !== self::class);
     }
 }

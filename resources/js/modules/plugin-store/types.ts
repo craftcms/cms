@@ -9,9 +9,16 @@ export interface PluginStoreContext {
   canTestEditions: boolean;
   phpVersion: string;
   composerPhpVersion: string | null;
+  /** Whether composer.json already requires `craftcms/yii2-adapter`, so installs leave its constraint alone. */
+  yii2AdapterRequired: boolean;
   allowUpdates: boolean;
+  allowPurchases: boolean;
   cmsLicenseKey: string | null;
   craftIdEndpoint: string;
+  /** The command that installs a plugin in this environment, without its handle, such as `php artisan craft:plugin:install`. */
+  pluginInstallCommand: string;
+  /** How Composer is run in this environment, such as `composer` or `ddev composer`. */
+  composerExecutable: string;
 }
 
 export interface PluginEditionFeature {
@@ -70,6 +77,8 @@ export interface Plugin extends PluginSummary {
   repository: string;
   version: string;
   latestCompatibleVersion: string | null;
+  /** Whether the latest compatible release requires or suggests `craftcms/yii2-adapter`. */
+  requiresYii2Adapter?: boolean;
   phpVersionCompatible: boolean;
   incompatiblePhpVersion: 'php' | 'composer' | null;
   phpConstraint: string | null;

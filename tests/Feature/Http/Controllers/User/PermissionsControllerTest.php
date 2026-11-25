@@ -13,6 +13,7 @@ use CraftCms\Cms\User\Events\UserGroupsAssigning;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -43,10 +44,14 @@ test('index is forbidden when edition is not above team', function () {
     Edition::set(Edition::Solo);
 
     get(cp_url('myaccount/permissions'))->assertForbidden();
+    get(cp_url('myaccount/preferences'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.showPermissions', false));
 
     Edition::set(Edition::Pro);
 
-    get(cp_url('myaccount/permissions'))->assertOk();
+    get(cp_url('myaccount/permissions'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.showPermissions', true));
 });
 
 it('can store permissions and groups', function () {
@@ -320,4 +325,16 @@ test('group veto reports failure without completing the edit', function () {
 
     expect(UserGroups::getGroupsByUserId(currentUser()->id))->toHaveCount(0);
     Event::assertNotDispatched(GroupsAndPermissionsAssigned::class);
+});
+
+it('shows the user’s status and actions in the header, as their profile does', function () {
+    Edition::set(Edition::Pro);
+    $user = UserModel::factory()->createElement(['admin' => false]);
+
+    get(cp_url("users/$user->id/permissions"))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('users/Permissions')
+            ->where('screen.userHeader.statusLabelHtml', fn (string $html) => str_contains($html, t('Active')))
+            ->where('screen.userHeader.actionMenu', fn (Collection $items) => $items->pluck('label')->contains(t('Suspend'))));
 });

@@ -10,7 +10,6 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -55,7 +54,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements DefaultableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
     /**
      * @var bool Whether the field should support multiple selections
@@ -658,18 +657,11 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 $parts[] = Html::tag('div', Icons::svg($value->icon), [
                     'class' => ['cp-icon', 'small'],
                     'style' => array_filter([
-                        '--icon-color' => $value->color,
+                        'color' => $value->color,
                     ]),
                 ]);
             } elseif (isset($value->color)) {
-                $parts[] = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                    Html::tag('div', attributes: [
-                        'class' => 'color-preview',
-                        'style' => [
-                            'background-color' => $value->color,
-                        ],
-                    ]).
-                    Html::endTag('div');
+                $parts[] = Html::tag('craft-indicator', '', ['fill' => $value->color]);
             }
             // Custom values have no label
             $parts[] = Html::tag('div', $value->label
@@ -677,7 +669,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 : (string) $value->value
             );
 
-            return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'gap-xs']])
+            return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'items-center', 'gap-sm']])
                 .implode('', $parts)
                 .Html::endTag('div');
         }

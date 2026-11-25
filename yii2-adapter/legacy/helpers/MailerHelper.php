@@ -14,10 +14,10 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use yii\base\Event;
 use yii\base\Model;
 use function CraftCms\Cms\t;
@@ -36,7 +36,8 @@ class MailerHelper
      *
      * Mailer transports must implement [[TransportAdapterInterface]]. [[BaseTransportAdapter]] provides a base implementation.
      *
-     * As of Craft 6, custom transport registration is ignored and Laravel mail drivers are used instead.
+     * As of Craft 6, registered transport types aren’t listed anywhere. A transport adapter saved in the project config
+     * is still used, through the `craft-transport` Laravel mailer, until a Laravel mailer is configured.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -84,7 +85,7 @@ class MailerHelper
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        if (!in_array($type, self::allMailerTransportTypes(), true)) {
+        if (!is_subclass_of($type, TransportAdapterInterface::class)) {
             throw self::_unsupportedTransportException($type);
         }
 
@@ -216,7 +217,7 @@ class MailerHelper
 
     private static function _warnIgnoredTransports(): void
     {
-        Deprecator::log(
+        LegacyUsage::record(
             'MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS',
             'Custom mailer transport adapters are ignored. Configure Laravel mail drivers instead.',
         );
@@ -225,7 +226,7 @@ class MailerHelper
     private static function _unsupportedTransportException(string $type): MissingComponentException
     {
         return new MissingComponentException(sprintf(
-            'Mailer transport adapter "%s" is no longer supported. Configure a Laravel mailer/driver in your application config or environment instead.',
+            'Mailer transport adapter "%s" isn’t available. Configure a Laravel mailer/driver in your application config or environment instead.',
             $type,
         ));
     }

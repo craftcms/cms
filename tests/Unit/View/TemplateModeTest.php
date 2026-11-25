@@ -73,6 +73,23 @@ it('restores original mode even when callback throws', function () {
     expect(TemplateMode::get())->toBe(TemplateMode::Site);
 });
 
+it('takes the control panel views out of the view finder in site mode', function () {
+    $hostViews = sys_get_temp_dir().'/template-mode-host-views';
+    @mkdir($hostViews);
+    file_put_contents("$hostViews/app.blade.php", 'host app');
+    view()->getFinder()->addLocation($hostViews);
+    TemplateMode::set(TemplateMode::Site);
+
+    $hostApp = realpath("$hostViews/app.blade.php");
+
+    expect(realpath(view()->getFinder()->find('app')))->toBe($hostApp);
+
+    $cpApp = TemplateMode::with(TemplateMode::Cp, fn () => view()->getFinder()->find('app'));
+
+    expect(realpath($cpApp))->not->toBe($hostApp)
+        ->and(realpath(view()->getFinder()->find('app')))->toBe($hostApp);
+});
+
 it('returns correct default template extensions', function () {
     expect(TemplateMode::Cp->defaultTemplateExtensions())->toBe(['twig', 'html', 'blade.php']);
 

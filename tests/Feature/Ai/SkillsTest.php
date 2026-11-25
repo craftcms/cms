@@ -47,7 +47,7 @@ beforeEach(function () {
 function mcpUser(array $permissions): void
 {
     enableMcp();
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::factory()->withPermissions(['accessCp', 'useCraftMcp', 'editSite:'.Sites::getPrimarySite()->uid, ...$permissions])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
@@ -189,12 +189,12 @@ it('lets MCP clients create, edit, and delete skills, refusing a title another s
     mcpUser(['accessUtilities', 'utility:ai-guidance']);
     $voice = skill('Voice');
 
-    $created = McpRequest::send($this, 'tools/call', ['name' => 'skills.create', 'arguments' => ['title' => 'Teaser', 'description' => 'Use for teasers.', 'instructions' => 'Write a teaser.']])
+    $created = McpRequest::send($this, 'tools/call', ['name' => 'skills_create', 'arguments' => ['title' => 'Teaser', 'description' => 'Use for teasers.', 'instructions' => 'Write a teaser.']])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.instructions', 'Write a teaser.');
 
     expect($created->json('result.structuredContent.cpEditUrl'))->toBe(Url::cpUrl('ai-skills/'.$created->json('result.structuredContent.id')));
-    McpRequest::send($this, 'tools/call', ['name' => 'skills.update', 'arguments' => ['id' => $voice->id, 'description' => 'Use for anything written.']])
+    McpRequest::send($this, 'tools/call', ['name' => 'skills_update', 'arguments' => ['id' => $voice->id, 'description' => 'Use for anything written.']])
         ->assertOk()
         ->assertJsonPath('result.isError', false);
 
@@ -204,10 +204,10 @@ it('lets MCP clients create, edit, and delete skills, refusing a title another s
     ])
         ->and($voice->refresh()->body)->toBe('Instructions for Voice.');
 
-    McpRequest::send($this, 'tools/call', ['name' => 'skills.update', 'arguments' => ['id' => $voice->id, 'title' => 'Teaser']])
+    McpRequest::send($this, 'tools/call', ['name' => 'skills_update', 'arguments' => ['id' => $voice->id, 'title' => 'Teaser']])
         ->assertOk()
         ->assertJsonPath('result.isError', true);
-    McpRequest::send($this, 'tools/call', ['name' => 'skills.delete', 'arguments' => ['id' => $voice->id]])
+    McpRequest::send($this, 'tools/call', ['name' => 'skills_delete', 'arguments' => ['id' => $voice->id]])
         ->assertOk()
         ->assertJsonPath('result.structuredContent', ['deleted' => true, 'id' => $voice->id]);
 
@@ -216,12 +216,12 @@ it('lets MCP clients create, edit, and delete skills, refusing a title another s
 
 it('only links MCP clients to edit skills if the user can use the control panel', function () {
     enableMcp();
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::factory()->withPermissions(['useCraftMcp', 'accessUtilities', 'utility:ai-guidance'])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
 
-    McpRequest::send($this, 'tools/call', ['name' => 'skills.create', 'arguments' => ['title' => 'Teaser', 'description' => 'Use for teasers.', 'instructions' => 'Write a teaser.']])
+    McpRequest::send($this, 'tools/call', ['name' => 'skills_create', 'arguments' => ['title' => 'Teaser', 'description' => 'Use for teasers.', 'instructions' => 'Write a teaser.']])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.title', 'Teaser')
         ->assertJsonPath('result.structuredContent.cpEditUrl', null);
@@ -231,15 +231,15 @@ it('only offers MCP clients the skills to manage, and links to edit them, if the
     mcpUser([]);
     skill('Voice');
 
-    $tools = McpRequest::send($this, 'tools/list')->assertOk()->json('result.tools.*.name');
+    $tools = array_column(McpRequest::tools($this), 'name');
 
-    McpRequest::send($this, 'tools/call', ['name' => 'skills.list', 'arguments' => []])
+    McpRequest::send($this, 'tools/call', ['name' => 'skills_list', 'arguments' => []])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.skills.0.cpEditUrl', null);
-    expect($tools)->toContain('skills.list')
-        ->not->toContain('skills.create')
-        ->not->toContain('skills.update')
-        ->not->toContain('skills.delete');
+    expect($tools)->toContain('skills_list')
+        ->not->toContain('skills_create')
+        ->not->toContain('skills_update')
+        ->not->toContain('skills_delete');
 });
 
 it('lets the assistant manage skills, but not load them as MCP clients do', function () {

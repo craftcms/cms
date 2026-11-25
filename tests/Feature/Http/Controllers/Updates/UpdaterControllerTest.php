@@ -3,17 +3,24 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Events\BackupCreating;
+use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -85,6 +92,39 @@ test('finish requires encrypted update data', function () {
     get('/')->assertServiceUnavailable();
 });
 
+test('finish only turns off maintenance mode that an update turned on', function (bool $turnedOnByAdmin) {
+    $maintenance = app(Maintenance::class);
+    $turnedOnByAdmin ? $maintenance->set(true, 60) : $maintenance->startUpdate();
+    auth()->logout();
+
+    // The index hands out data anonymously
+    $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');
+    postJson(action([UpdaterController::class, 'finish']), compact('data'))->assertOk();
+
+    expect($maintenance->isEnabled())->toBe($turnedOnByAdmin);
+
+    if ($turnedOnByAdmin) {
+        expect(app()->maintenanceMode()->data()['retry'])->toBe(60);
+    }
+})->with([
+    'turned on by an admin' => [true],
+    'turned on by an update' => [false],
+]);
+
+test('a forced update leaves maintenance mode turned on by an admin as it was', function () {
+    $maintenance = app(Maintenance::class);
+    $maintenance->set(true, 60);
+    $data = Crypt::encrypt(Json::encode([
+        'migrate' => ['craft'],
+    ]));
+
+    postJson(action([UpdaterController::class, 'forceUpdate']), compact('data'))->assertOk();
+    postJson(action([UpdaterController::class, 'finish']), compact('data'))->assertOk();
+
+    expect($maintenance->isEnabled())->toBeTrue()
+        ->and(app()->maintenanceMode()->data()['retry'])->toBe(60);
+});
+
 test('index returns Inertia Updater page', function () {
     post(action([UpdaterController::class, 'index']), [
         'install' => [
@@ -96,12 +136,33 @@ test('index returns Inertia Updater page', function () {
     ])
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('updater/Index')
-            ->has('title')
+            ->where('title', 'Updater')
             ->has('initialState')
             ->where('initialState.nextUrl', action([UpdaterController::class, 'precheck']))
             ->where('initialState.finishUrl', action([UpdaterController::class, 'finish']))
             ->has('returnUrl')
         );
+});
+
+test('aborting after a failed backup turns maintenance mode off', function () {
+    $updates = Mockery::mock(app(Updates::class));
+    $updates->shouldReceive('areMigrationsPending')->andReturn(true);
+    app()->instance(Updates::class, $updates);
+    Event::listen(BackupCreating::class, fn () => throw new RuntimeException('Backup failed'));
+    app(Maintenance::class)->startUpdate();
+    $data = Crypt::encrypt(Json::encode(['migrate' => ['craft']]));
+
+    $abort = postJson(action([UpdaterController::class, 'backup']), ['data' => $data])
+        ->assertOk()
+        ->json('options.0');
+
+    expect($abort['label'])->toBe(t('Abort the update'));
+
+    postJson($abort['nextUrl'], ['data' => $data])
+        ->assertOk()
+        ->assertJsonPath('finished', true);
+
+    expect(app()->isDownForMaintenance())->toBeFalse();
 });
 
 test('finish returns a control panel return URL', function (?string $returnUrl, string $expected) {
@@ -137,6 +198,19 @@ test('finish preserves full return URLs', function (string $returnUrl) {
     'root-relative URL' => ['/admin/login'],
 ]);
 
+test('serverCheck clears compiled views when no migrations are pending', function () {
+    File::ensureDirectoryExists(config('view.compiled'));
+    $staleView = config('view.compiled').'/stale-compiled-view.php';
+    File::put($staleView, '<?php echo $headHtml->toHtml(); ?>');
+
+    postJson(action([UpdaterController::class, 'serverCheck']), [
+        'data' => $this->hashedData,
+    ])->assertOk()
+        ->assertJsonPath('finished', true);
+
+    expect(File::exists($staleView))->toBeFalse();
+});
+
 it('renders without the navigation while a Craft update is pending', function () {
     // The nav tree is built from sections, volumes and the rest, so a
     // migration that hasn't run yet can leave it querying columns the database
@@ -152,4 +226,128 @@ it('renders without the navigation while a Craft update is pending', function ()
     post(cp_url('updates'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.nav', []));
+});
+
+test('data encrypted with the app key can’t reach Composer anonymously', function (string $action) {
+    // The `|hash` filter encrypts any string with the app key
+    $composer = $this->mock(Composer::class);
+    $composer->shouldNotReceive('install');
+    $composer->shouldNotReceive('uninstall');
+    auth()->logout();
+
+    postJson(action([UpdaterController::class, $action]), [
+        'data' => Crypt::encrypt(Json::encode([
+            'requirements' => ['foo/bar' => '1.0.0'],
+            'current' => ['foo/bar' => '1.0.0'],
+            'packageName' => 'foo/bar',
+        ])),
+    ])->assertForbidden();
+})->with(['composerInstall', 'composerRemove', 'revert']);
+
+test('data encrypted with the app key reaches Composer for users who can perform updates', function () {
+    // Updates from a Craft version that predates updater keys hand the next step data encrypted with the app key
+    $this->partialMock(Composer::class)
+        ->shouldReceive('install')->once()->with(['foo/bar' => '1.0.0'], Mockery::any());
+
+    $response = postJson(action([UpdaterController::class, 'composerInstall']), [
+        'data' => Crypt::encrypt(Json::encode([
+            'requirements' => ['foo/bar' => '1.0.0'],
+            'reverted' => false,
+        ])),
+    ])->assertOk();
+
+    // Responses stay encrypted with the app key, so a version that predates updater keys can take the next step
+    expect(Json::decode(Crypt::decrypt($response->json('data'))))->toHaveKey('requirements');
+});
+
+test('Composer actions need updates and admin changes to be allowed', function (string $action, string $setting) {
+    $composer = $this->mock(Composer::class);
+    $composer->shouldNotReceive('install');
+    $composer->shouldNotReceive('uninstall');
+    Cms::config()->$setting = false;
+
+    postJson(action([UpdaterController::class, $action]), [
+        'data' => $this->hashedData,
+    ])->assertForbidden();
+})->with(['composerInstall', 'composerRemove', 'revert'])->with(['allowUpdates', 'allowAdminChanges']);
+
+test('pending migrations can still be finished anonymously with updates disabled', function () {
+    Cms::config()->allowUpdates = false;
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+    auth()->logout();
+
+    postJson(action([UpdaterController::class, 'migrate']), [
+        'data' => Crypt::encrypt(Json::encode(['migrate' => []])),
+    ])->assertOk()
+        ->assertJsonPath('finished', true);
+});
+
+test('missing Composer stops self-updates before maintenance mode', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    post(action([UpdaterController::class, 'index']), [
+        'install' => ['craft' => '100.0.0'],
+        'packageNames' => ['craft' => 'craftcms/cms'],
+    ])->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('initialState.error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->missing('initialState.nextUrl'));
+
+    expect(app()->isDownForMaintenance())->toBeFalse();
+});
+
+test('Composer steps return an actionable state when Composer disappears', function (string $action) {
+    $composer = $this->partialMock(Composer::class);
+    $composer->shouldReceive('getIsAvailable')->andReturnFalse();
+    $composer->shouldNotReceive('install');
+    $composer->shouldNotReceive('uninstall');
+
+    postJson(action([UpdaterController::class, $action]), [
+        'data' => $this->hashedData,
+    ])->assertOk()
+        ->assertJsonPath('error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->assertJsonPath('options.0.nextUrl', action([UpdaterController::class, $action]));
+})->with(['composerInstall', 'composerRemove', 'revert']);
+
+test('retrying a rollback restores previous versions without restarting the update', function () {
+    $available = false;
+    $composer = $this->partialMock(Composer::class);
+    $composer->shouldReceive('getIsAvailable')->andReturnUsing(function () use (&$available): bool {
+        return $available;
+    });
+    $composer->shouldReceive('install')->once()->with(['craftcms/cms' => '6.0.0'], Mockery::type('callable'));
+    $data = Crypt::encrypt(Json::encode([
+        'install' => ['craft' => '100.0.0'],
+        'requirements' => ['craftcms/cms' => '100.0.0'],
+        'current' => ['craftcms/cms' => '6.0.0'],
+        'reverted' => false,
+    ]));
+    app()->maintenanceMode()->activate([]);
+
+    $retry = postJson(action([UpdaterController::class, 'revert']), compact('data'))
+        ->assertOk()->json();
+
+    $available = true;
+
+    postJson($retry['options'][0]['nextUrl'], ['data' => $retry['data']])
+        ->assertOk()
+        ->assertJsonPath('nextUrl', action([UpdaterController::class, 'finish']))
+        ->assertJsonPath('status', 'The update was reverted successfully.');
+});
+
+test('updater data can’t be replayed to another updater controller', function () {
+    $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');
+
+    postJson(action([UpdaterController::class, 'finish']), compact('data'))->assertOk();
+
+    postJson(action([RemoveController::class, 'finish']), compact('data'))
+        ->assertJsonValidationErrors(['data']);
+});
+
+test('precheck rejects data with nothing to update', function () {
+    // The updater index hands this out anonymously when there's nothing to update
+    auth()->logout();
+    $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');
+
+    postJson(action([UpdaterController::class, 'precheck']), compact('data'))
+        ->assertJsonValidationErrors(['data']);
 });

@@ -140,7 +140,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
 
         event($event = new AddressUsedFieldsResolving($countryCode, $fields));
 
-        return $event->fields;
+        return array_values(array_unique($event->fields));
     }
 
     /**
@@ -156,7 +156,7 @@ readonly class Addresses implements FieldLayoutProviderInterface
 
         event($event = new AddressUsedSubdivisionFieldsResolving($countryCode, $fields));
 
-        return $event->fields;
+        return array_values(array_unique($event->fields));
     }
 
     /**

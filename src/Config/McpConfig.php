@@ -16,7 +16,7 @@ class McpConfig extends BaseConfig
     /** @var list<string> */
     public array $middleware = [];
 
-    /** Additional instructions appended to the full admin MCP guidance returned by info.get. */
+    /** Additional instructions appended to the full admin MCP guidance returned by info_get. */
     public string $instructions = '';
 
     /** @param array<string, mixed>|string $value */

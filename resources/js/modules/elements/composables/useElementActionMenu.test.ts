@@ -7,6 +7,7 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
 import {openUiModal} from '@/modules/ui/open-ui-modal';
 import {
   createElementActionMenu,
@@ -14,9 +15,24 @@ import {
   type ElementActionMenuItem,
 } from './useElementActionMenu';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 vi.mock('@/common/slideouts', () => ({openSlideout: vi.fn()}));
 vi.mock('@/modules/image-editor/open-image-editor-dialog', () => ({
-  openImageEditorDialog: vi.fn(),
+  openImageEditorDialog: vi.fn(async () => ({
+    closed: new Promise<void>(() => {}),
+  })),
 }));
 vi.mock('@/modules/ui/open-ui-modal', () => ({openUiModal: vi.fn()}));
 
@@ -49,11 +65,7 @@ describe('useElementActionMenu', () => {
     window.Craft = Object.assign(Object.create(null), {
       csrfTokenName: 'CRAFT_CSRF_TOKEN',
       csrfTokenValue: 'token-value',
-      elevatedSessionManager: {
-        // Stands in for the password prompt: run the guarded work straight away.
-        requireElevatedSession: vi.fn((onSuccess: () => void) => onSuccess()),
-      },
-      cp: {displayError: vi.fn()},
+      cp: {},
     });
   });
 
@@ -136,8 +148,39 @@ describe('useElementActionMenu', () => {
     expect(options).toEqual({opener: element});
   });
 
+  it('dispatches an event behavior on the window with its detail and trigger', () => {
+    container = document.createElement('div');
+    container.innerHTML = '<craft-action-item></craft-action-item>';
+    document.body.append(container);
+    const element = container.querySelector('craft-action-item')!;
+    const listener = vi.fn();
+    window.addEventListener('my-plugin:open', listener);
+    const [item] = createElementActionMenu()([
+      {
+        label: 'Open my editor',
+        behavior: {
+          type: 'event',
+          name: 'my-plugin:open',
+          detail: {elementId: 12},
+        },
+      },
+    ]);
+    if (!item || !('onClick' in item) || !item.onClick) {
+      throw new Error('Expected a button action.');
+    }
+    element.addEventListener('click', item.onClick);
+
+    (element as HTMLElement).click();
+    window.removeEventListener('my-plugin:open', listener);
+
+    expect(listener).toHaveBeenCalledOnce();
+    const {detail} = listener.mock.calls[0]![0] as CustomEvent;
+    expect(detail.elementId).toBe(12);
+    expect(detail.trigger).toBe(element);
+  });
+
   it("opens the sidebar's entry type rather than the saved one", () => {
-    window.Craft!.getCpUrl = vi.fn((path: string) => `/admin/${path}`);
+    window.Craft!.baseCpUrl = '/admin';
     const toActionItems = createElementActionMenu({
       currentEntryTypeId: () => 7,
     });
@@ -210,7 +253,11 @@ describe('useElementActionMenu', () => {
     expect(post).not.toHaveBeenCalled();
   });
 
-  it('re-authenticates before a submit behavior that asks for it', () => {
+  it('re-authenticates before a submit behavior that asks for it', async () => {
+    // Stands in for the password prompt: confirm straight away.
+    const requireElevatedSession = vi
+      .spyOn(elevatedSessionManager, 'require')
+      .mockResolvedValue(true);
     const post = vi.spyOn(router, 'post').mockImplementation(() => undefined);
 
     const menu = mount([
@@ -227,12 +274,12 @@ describe('useElementActionMenu', () => {
 
     activate(menu);
 
-    expect(
-      window.Craft.elevatedSessionManager.requireElevatedSession
-    ).toHaveBeenCalled();
-    expect(post).toHaveBeenCalledWith('/actions/users/impersonate', {
-      userId: 5,
-    });
+    expect(requireElevatedSession).toHaveBeenCalled();
+    await vi.waitFor(() =>
+      expect(post).toHaveBeenCalledWith('/actions/users/impersonate', {
+        userId: 5,
+      })
+    );
   });
 
   it('submits a download as a real form, so the browser handles the file', () => {
@@ -384,10 +431,7 @@ describe('useElementActionMenu', () => {
     beforeEach(() => {
       actionPost.mockReset();
       deletionManagers.length = 0;
-      window.Craft!.cp = {
-        displayError: vi.fn(),
-        displayNotice: vi.fn(),
-      } as never;
+      window.Craft!.cp = {} as never;
     });
 
     it('submits without visiting, then reloads the panel', async () => {
@@ -412,9 +456,7 @@ describe('useElementActionMenu', () => {
       expect(actionPost).toHaveBeenCalledWith('/actions/elements/validate', {
         elementId: 5,
       });
-      expect(window.Craft!.cp!.displayNotice).toHaveBeenCalledWith(
-        'Entry is valid.'
-      );
+      expect(messages.showNotice).toHaveBeenCalledWith('Entry is valid.');
       expect(slideout.saved).toHaveBeenCalledWith({
         draft: true,
         data: {message: 'Entry is valid.'},
@@ -455,7 +497,7 @@ describe('useElementActionMenu', () => {
       });
 
       await vi.waitFor(() =>
-        expect(window.Craft!.cp!.displayError).toHaveBeenCalledWith(
+        expect(messages.showError).toHaveBeenCalledWith(
           'Couldn’t validate entry.'
         )
       );

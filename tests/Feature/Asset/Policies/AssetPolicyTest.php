@@ -32,7 +32,7 @@ beforeEach(function () {
         'uid' => ASSET_POLICY_VOLUME_UID,
         'name' => 'Test Volume',
         'handle' => 'testVolume',
-        'fs' => 'asset-policy-test',
+        'disk' => 'asset-policy-test',
     ]);
 
     $this->volume = new Volume([
@@ -58,7 +58,8 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    expect(Gate::getPolicyFor(Asset::class))->toBeInstanceOf(AssetPolicy::class);
+    expect(Gate::getPolicyFor(Asset::class))->toBeInstanceOf(AssetPolicy::class)
+        ->and(Gate::getPolicyFor(createAssetTestAsset($this->volume)))->toBeInstanceOf(AssetPolicy::class);
 });
 
 it('returns false for folder view', function () {
@@ -233,6 +234,13 @@ it('allows view for temp upload filesystem regardless of permissions', function 
     $result = $this->policy->view($user, $asset);
 
     expect($result)->toBeTrue();
+});
+
+it('allows saving own uploads on temp upload filesystem regardless of permissions', function () {
+    $user = createAssetTestUser([]);
+
+    expect($this->policy->save($user, createAssetTestAssetWithTempFs($this->volume, uploaderId: $user->id)))->toBeTrue()
+        ->and($this->policy->save($user, createAssetTestAssetWithTempFs($this->volume, uploaderId: User::factory()->create()->id)))->toBeFalse();
 });
 
 it('allows delete for temp upload filesystem regardless of permissions', function () {

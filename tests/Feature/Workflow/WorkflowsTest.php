@@ -142,6 +142,7 @@ it('renders registered stage types and inline settings forms', function () {
     $automaticApproval = collect($payload['stageTypes'])->firstWhere('type', AutomaticApprovalStage::class);
 
     expect($userReview['label'])->toBe('User Review')
+        ->and($userReview['icon'])->toBe('user-magnifying-glass')
         ->and($userReview['settings'])->toBe([
             'approvalsRequired' => 1,
             'approvalMode' => 'total',
@@ -151,6 +152,7 @@ it('renders registered stage types and inline settings forms', function () {
         ->and($userReview['settingsUi']->nodes[0]->children[0]->control->component)->toBe('craft:user-group-select')
         ->and($automaticApproval)->toMatchArray([
             'label' => 'Automatic Approval',
+            'icon' => null,
             'settings' => [],
             'settingsUi' => null,
         ]);
@@ -944,6 +946,17 @@ it('links review notifications to the workflow panel', function () {
     $notification = $this->reviewers[0]->notifications()->latest()->firstOrFail();
     expect($notification->data['title'])->toBe('Review requested')
         ->and($notification->data['url'])->toEndWith('#workflow');
+});
+
+it('names untitled drafts in review notifications', function () {
+    $this->draft->title = null;
+    expect(Elements::saveElement($this->draft, runValidation: false, updateSearchIndex: false))->toBeTrue();
+    $group = reviewerGroup([$this->reviewers[0]]);
+    workflowFor($this->entry, [userReviewStage('Review', $group)]);
+    submitAs($this->workflows, $this->draft, $this->author);
+
+    expect($this->reviewers[0]->notifications()->latest()->firstOrFail()->data['message'])
+        ->toBe('“Untitled entry” is awaiting your approval in Review.');
 });
 
 it('requests user review after an asynchronous stage advances', function () {

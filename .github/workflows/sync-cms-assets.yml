@@ -62,8 +62,8 @@ jobs:
           vp run build:all
 
           test -f cms-assets/resources/build/manifest.json || { echo "::error::Missing cms-assets/resources/build/manifest.json"; exit 1; }
-          test -f cms-assets/resources/legacy/cp/dist/cp.js || { echo "::error::Missing cms-assets/resources/legacy/cp/dist/cp.js"; exit 1; }
-          test -f cms-assets/resources/legacy/cp/dist/css/cp.css || { echo "::error::Missing cms-assets/resources/legacy/cp/dist/css/cp.css"; exit 1; }
+          test -f cms-assets/resources/legacy/cpcompat/dist/craft.js || { echo "::error::Missing cms-assets/resources/legacy/cpcompat/dist/craft.js"; exit 1; }
+          test -f cms-assets/resources/legacy/theme/dist/cp.css || { echo "::error::Missing cms-assets/resources/legacy/theme/dist/cp.css"; exit 1; }
           test -f cms-assets/resources/icons/index.php || { echo "::error::Missing cms-assets/resources/icons/index.php"; exit 1; }
 
       - name: Monorepo Split

@@ -26,8 +26,8 @@ if (Edition::get()->registersFrontendUserRoutes()) {
 
     /*
      * These paths can be localized per site, so a route is registered for every
-     * site's value. Changing them or the sites requires re-running `route:cache`
-     * on installs that cache routes.
+     * site's value. Changing them requires re-running `route:cache` on installs
+     * that cache routes.
      */
     if (Cms::isInstalled()) {
         foreach ($routes->localizedConfigPaths('getLoginPath') as $path) {
@@ -64,7 +64,7 @@ if (OAuth::isAvailable()) {
 }
 
 if (! is_null(Cms::config()->setPasswordRequestPath)) {
-    Route::allowDuringMaintenance()->get('.well-known/change-password', function (Sites $sites) {
+    Route::allowDuringMaintenance()->rootOnly()->get('.well-known/change-password', function (Sites $sites) {
         $uri = Cms::config()->getSetPasswordRequestPath($sites->getCurrentSite()->handle);
 
         abort_if(is_null($uri), 404);
@@ -74,7 +74,7 @@ if (! is_null(Cms::config()->setPasswordRequestPath)) {
 }
 
 // Signals support for passkeys without leaking the CP URL, per https://www.w3.org/TR/passkey-endpoints/.
-Route::get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
+Route::rootOnly()->get('.well-known/passkey-endpoints', fn () => new JsonResponse((object) []));
 
 // Route::fallback() only registers GET/HEAD by default
 Route::any('{fallbackPlaceholder}', SiteRouteController::class)

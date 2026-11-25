@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -190,21 +189,6 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
         return $value;
     }
 
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return FormFields::rangeHtml([
-            'id' => $this->getInputId(),
-            'name' => $this->handle,
-            'suffix' => $this->suffix,
-            'step' => $this->step,
-            'min' => $this->min,
-            'max' => $this->max,
-            'value' => $value,
-            'labelId' => $this->getLabelId(),
-        ]);
-    }
-
     /** @return list<string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
@@ -219,6 +203,13 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
     public function getElementConditionRuleType(): string
     {
         return NumberFieldConditionRule::class;
+    }
+
+    /** @return 'start'|'end' */
+    #[Override]
+    public function tableAttributeAlignment(): string
+    {
+        return 'end';
     }
 
     #[Override]

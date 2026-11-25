@@ -326,6 +326,14 @@ class FieldLayout extends Component
 
             foreach ($tab->getElements() as $elementIndex => $element) {
                 $components["tabs.$tabIndex.elements.$elementIndex"] = $element;
+
+                if ($element instanceof CustomField) {
+                    try {
+                        $element->getField();
+                    } catch (FieldNotFoundException) {
+                        $this->errors()->add("tabs.$tabIndex.elements.$elementIndex.fieldUid", t('Field “{uid}” doesn’t exist.', ['uid' => $element->getFieldUid()]));
+                    }
+                }
             }
 
             foreach ($components as $path => $component) {
@@ -348,7 +356,7 @@ class FieldLayout extends Component
                     'handle' => $field->handle,
                 ]));
             } elseif (isset($handles[$field->handle])) {
-                $fail(t('{attribute} "{value}" has already been taken.', [
+                $fail(t('{attribute} “{value}” has already been taken.', [
                     'attribute' => t('Handle'),
                     'value' => $field->handle,
                 ]));
@@ -382,7 +390,7 @@ class FieldLayout extends Component
             $error = $validator->fails() ? $validator->errors()->first('handle') : null;
 
             if ($error === null && isset($handles[$field['handle']])) {
-                $error = t('{attribute} "{value}" has already been taken.', [
+                $error = t('{attribute} “{value}” has already been taken.', [
                     'attribute' => t('Handle'),
                     'value' => $field['handle'],
                 ]);
@@ -1392,7 +1400,7 @@ class FieldLayout extends Component
             'value' => $key,
         ]);
 
-        if (is_callable($html)) {
+        if (! is_string($html) && is_callable($html)) {
             return $html();
         }
 

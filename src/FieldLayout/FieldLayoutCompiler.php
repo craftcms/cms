@@ -172,6 +172,7 @@ class FieldLayoutCompiler
             globalErrors: $context->globalErrors,
             mode: $context->mode,
             refreshable: $context->refreshable,
+            preview: $context->preview,
         );
     }
 }

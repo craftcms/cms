@@ -12,16 +12,23 @@ use CraftCms\Cms\Blade\Directives\PageLifecycleDirective;
 use CraftCms\Cms\Blade\Directives\PaginationDirective;
 use CraftCms\Cms\Blade\Directives\ResourceDirective;
 use CraftCms\Cms\Blade\Directives\ResponseDirective;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Foundation\Bootstrap\BootProviders;
+use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobPopping;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Factory;
 use Override;
+use Throwable;
 
 /**
  * @since 6.0.0
@@ -54,11 +61,33 @@ class ViewServiceProvider extends ServiceProvider
          */
         if ($this->app->runningInConsole()) {
             TemplateMode::set(TemplateMode::Cp);
+
+            /**
+             * The queue worker forgets the scoped Context, and the mode with it, before it pops each job.
+             */
+            Event::listen(JobPopping::class, function (): void {
+                if (! Context::hasHidden(TemplateMode::class)) {
+                    TemplateMode::set(TemplateMode::Cp);
+                }
+            });
         }
 
         $this->registerTemplateRoots();
         $this->registerTemplateGlobals();
         $this->registerBladeDirectives();
+        $this->registerErrorPages();
+    }
+
+    private function registerErrorPages(): void
+    {
+        // Registered once every provider has booted, so other exception render callbacks run first.
+        $this->app->booted(function (): void {
+            $handler = $this->app->make(ExceptionHandler::class);
+
+            if ($handler instanceof Handler) {
+                $handler->renderable(fn (Throwable $e, Request $request) => $this->app->make(ErrorPages::class)->render($e, $request, $handler));
+            }
+        });
     }
 
     private function registerTemplateGlobals(): void
@@ -68,6 +97,8 @@ class ViewServiceProvider extends ServiceProvider
                 $view->with($key, $value);
             }
         });
+
+        View::composer('app', HandleInertiaRequests::class);
     }
 
     private function registerTemplateRoots(): void
@@ -76,13 +107,7 @@ class ViewServiceProvider extends ServiceProvider
             /** @var Factory $factory */
             $factory = $this->app->make(ViewFactory::class);
 
-            foreach (TemplateMode::get()->templateRoots() as $namespace => $roots) {
-                $factory->addNamespace($namespace, $roots);
-
-                foreach ($roots as $root) {
-                    $factory->prependLocation($root);
-                }
-            }
+            $this->app->make(TemplateRoots::class)->addToViewFactory($factory, TemplateMode::get());
         });
     }
 

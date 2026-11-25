@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplaced;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
@@ -16,6 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Filesystem\RemoteFileDownloader;
 use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -24,6 +26,7 @@ use CraftCms\Cms\Support\Url;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Override;
@@ -158,9 +161,17 @@ class Asset extends ElementMutationResolver
         }
 
         /** @var AssetElement $element */
+        // Handle the upload before populating the rest of the asset, so field layout conditions that depend on the
+        // file (such as its filename) can be evaluated. Make sure the user can save the asset first, though.
+        if ($element->id) {
+            $this->requireUserAuthorization($element, 'save');
+        }
+
+        $uploaded = ! empty($fileInformation) && $this->handleUpload($element, $fileInformation);
+
         $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
-        if (! empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
+        if ($uploaded) {
             $element->ruleset->useScenario($element->id
                 ? AssetRules::SCENARIO_REPLACE
                 : AssetRules::SCENARIO_CREATE
@@ -257,6 +268,23 @@ class Asset extends ElementMutationResolver
         }
         $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false));
         $asset->avoidFilenameConflicts = true;
+
+        // Set the file info the asset will have once saved, so field layout conditions are evaluated against the
+        // uploaded file. (The asset recalculates these from the temp file when it’s saved.)
+        $asset->kind = AssetsHelper::getFileKindByExtension($filename);
+
+        if ($asset->kind === FileKind::Image->value) {
+            [$width, $height] = ImageHelper::imageSize($tempPath);
+            $asset->setWidth($width ?: null);
+            $asset->setHeight($height ?: null);
+        } else {
+            $asset->setWidth(null);
+            $asset->setHeight(null);
+        }
+
+        $asset->size = filesize($tempPath) ?: null;
+        $modifiedTime = filemtime($tempPath);
+        $asset->dateModified = $modifiedTime ? Date::createFromTimestampUTC($modifiedTime) : null;
 
         return true;
     }

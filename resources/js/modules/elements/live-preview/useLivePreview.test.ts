@@ -18,7 +18,6 @@ function payload(overrides: Partial<ElementPreview> = {}): ElementPreview {
     paramValue: 'param-1',
     siteTokenParam: 'siteToken',
     siteToken: null,
-    iframeResizerOptions: false,
     ...overrides,
   };
 }

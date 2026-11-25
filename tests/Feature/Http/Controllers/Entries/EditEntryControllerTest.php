@@ -6,6 +6,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
 use Workbench\App\Workflow\AutomaticApprovalStage;
 
@@ -162,6 +164,27 @@ it('compiles the meta fields into a sidebar UI', function () {
                     && ($postDate['props']['icon'] ?? null) === 'calendar';
             })
             ->where('metadataHtml', fn (?string $html) => is_string($html) && $html !== '')
+            ->etc()
+        );
+});
+
+it('lets meta field listeners change the sidebar UI', function () {
+    Event::listen(function (EntryMetaFieldsResolving $event) {
+        unset($event->fields['postDate'], $event->fields['expiryDate']);
+    });
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarUi.nodes', function (Collection $nodes) {
+                $paths = $nodes
+                    ->map(fn (array $node) => implode('.', $node['control']['path'] ?? []))
+                    ->all();
+
+                return in_array('slug', $paths, true)
+                    && ! in_array('postDate', $paths, true)
+                    && ! in_array('expiryDate', $paths, true);
+            })
             ->etc()
         );
 });
@@ -348,8 +371,8 @@ it('ends the breadcrumbs with a revision switcher instead of naming the draft in
         );
 });
 
-it('caps the context menu at five revisions, listing every draft', function () {
-    foreach (range(1, 7) as $i) {
+it('caps the context menu at ten revisions, listing every draft', function () {
+    foreach (range(1, 12) as $i) {
         app(Drafts::class)->createDraft($this->entry, auth()->id(), name: "Draft $i");
         app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
     }
@@ -370,12 +393,28 @@ it('caps the context menu at five revisions, listing every draft', function () {
                         ->takeWhile(fn (array $item): bool => ($item['type'] ?? null) === 'link');
                 };
 
-                return $group('Drafts')->count() === 7
-                    && $group('Recent Revisions')->count() === 5;
+                return $group('Drafts')->count() === 12
+                    && $group('Recent Revisions')->count() === 10;
             })
             ->etc()
         );
 });
+
+it('links to every revision only when the context menu leaves some out', function (int $revisions, bool $linked) {
+    foreach (range(1, $revisions) as $i) {
+        app(Revisions::class)->createRevision($this->entry, auth()->id(), "Revision $i", force: true);
+    }
+
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('contextMenu.items', fn (Collection $items) => $items->pluck('label')->contains('View all revisions') === $linked)
+            ->etc()
+        );
+})->with([
+    'not when it lists them all' => [3, false],
+    'when there are more than it lists' => [12, true],
+]);
 
 it('renders a provisional draft in the Inertia editor', function () {
     $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), provisional: true);
@@ -712,8 +751,11 @@ it('links reviewers from the canonical entry to drafts awaiting their review', f
     Sections::refreshSections();
     $draft = app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Homepage refresh');
     app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Not submitted');
+    $withdrawn = app(Drafts::class)->createDraft($this->entry, $author->id, name: 'Withdrawn');
     actingAs($author);
     app(Workflows::class)->submitForReview($draft);
+    $withdrawnRun = app(Workflows::class)->submitForReview($withdrawn);
+    app(Workflows::class)->prepareForEditing($withdrawn, $withdrawnRun->id);
     actingAs($reviewer);
 
     get($this->entry->getCpEditUrl())
@@ -855,7 +897,6 @@ it('gives Live Preview untokenized targets and the token the View links share', 
             ->where('preview.targets.0.refresh', true)
             ->where('preview.tokenParams.canonicalId', $this->entry->id)
             ->where('preview.token', fn (string $token) => strlen($token) === 32)
-            ->where('preview.iframeResizerOptions', false)
             ->etc()
         );
 });

@@ -14,7 +14,14 @@ import {jq} from '@/common/utils/jquery';
  * `.data('linkField')` jQuery seam (kept because the pair hands off across the
  * still-jQuery field markup). Booted from `Link.php`.
  */
+const linkFields = new WeakMap<Element, LinkField>();
+
 export class LinkField extends Base {
+  /** The Link field booted on `container`, for the inline scripts that need it. */
+  static forContainer(container: Element | null | undefined): LinkField | null {
+    return container ? (linkFields.get(container) ?? null) : null;
+  }
+
   container: HTMLElement | null = null;
 
   #labelInput: HTMLInputElement | null = null;
@@ -40,7 +47,8 @@ export class LinkField extends Base {
       return;
     }
 
-    // Legacy back-reference, read by LinkInput via jQuery `.data('linkField')`.
+    linkFields.set(this.container, this);
+    // Legacy back-reference for jQuery code reading `.data('linkField')`
     jq()?.(this.container).data('linkField', this);
 
     const typeSelect =

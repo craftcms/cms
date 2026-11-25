@@ -23,6 +23,15 @@ export default css`
   }
 
   /*
+   * Room beside each label for its hover fill. The gap between tabs shrinks to
+   * make up for it, so the labels sit only a little further apart.
+   */
+  :host(:not([appearance='fill'])) {
+    --c-tab-padding-inline: var(--c-spacing-md);
+    --c-tabs-tab-gap: var(--c-spacing-md);
+  }
+
+  /*
    * The rule lives on the strip rather than the tablist so it runs under the
    * overflow menu too, which sits beside the tablist rather than inside it.
    * It's declared as four zero-width edges so a placement only has to move the
@@ -53,6 +62,7 @@ export default css`
   }
 
   .tabs__tab-group {
+    display: flex;
     flex: 1;
     min-width: 0;
     gap: var(--c-tabs-tab-gap, var(--c-spacing-lg));
@@ -83,8 +93,8 @@ export default css`
     --_tab-text-wrap: nowrap;
   }
 
-  /* Overrides LionTabs' bold, which would otherwise beat the tab's own
-     selected weight and its width-reserving label copy. */
+  /* Beats any selected weight from outside the tab, which would otherwise
+     fight the tab's own and its width-reserving label copy. */
   .tabs__tab-group ::slotted([slot='tab'][selected]) {
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
@@ -139,6 +149,14 @@ export default css`
     display: none;
   }
 
+  .tabs__panels ::slotted([slot='panel']) {
+    display: none;
+  }
+
+  .tabs__panels ::slotted([slot='panel'][selected]) {
+    display: block;
+  }
+
   ::slotted([slot='panel']) {
     --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
   }
@@ -182,6 +200,9 @@ export default css`
     --c-tab-indicator-inline-size: calc(2rem / 16);
     /* Stacked tabs sit closer together than a row of them. */
     --c-tabs-tab-gap: var(--c-spacing-md);
+    /* Keeps a hovered tab's fill clear of the rule; the indicator is pulled
+       back across the gap to sit on the rule. */
+    --_strip-padding: var(--c-spacing-md);
   }
 
   :host(:is([placement='inline-start'], [placement='inline-end'])) .tabs {
@@ -191,6 +212,7 @@ export default css`
   :host(:is([placement='inline-start'], [placement='inline-end']))
     .tabs__strip {
     align-items: stretch;
+    min-inline-size: var(--c-tabs-strip-min-inline-size, calc(120rem / 16));
     border-block-end-width: 0;
   }
 
@@ -206,10 +228,11 @@ export default css`
 
   :host([placement='inline-start']) {
     --c-tab-indicator-inset-inline-start: auto;
-    --c-tab-indicator-inset-inline-end: -1px;
+    --c-tab-indicator-inset-inline-end: calc(-1px - var(--_strip-padding));
   }
 
   :host([placement='inline-start']) .tabs__strip {
+    padding-inline-end: var(--_strip-padding);
     border-inline-end-width: 1px;
   }
 
@@ -222,11 +245,12 @@ export default css`
   }
 
   :host([placement='inline-end']) {
-    --c-tab-indicator-inset-inline-start: -1px;
+    --c-tab-indicator-inset-inline-start: calc(-1px - var(--_strip-padding));
     --c-tab-indicator-inset-inline-end: auto;
   }
 
   :host([placement='inline-end']) .tabs__strip {
+    padding-inline-start: var(--_strip-padding);
     border-inline-start-width: 1px;
   }
 
@@ -236,10 +260,13 @@ export default css`
    * against the track. The underline indicator isn't drawn.
    */
   :host([appearance='fill']) {
+    /* The fill appearance has its own hover state. */
+    --c-tab-fill-hover: transparent;
     --_track-padding: var(--c-spacing-sm);
     --_tab-radius: var(--c-form-control-radius);
-    --c-tab-border-active: transparent;
-    --c-tab-spacing-inline: var(--c-spacing-md);
+    --c-tab-indicator-fill-active: transparent;
+    --c-tab-padding-inline: var(--c-spacing-md);
+    --c-tab-padding-block: 0.25em;
     --c-tabs-tab-gap: var(--_track-padding);
   }
 

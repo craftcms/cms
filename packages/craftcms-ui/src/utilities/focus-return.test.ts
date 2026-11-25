@@ -187,6 +187,27 @@ describe('focusReturnFor', () => {
     expect(resolve()).toBe(replacement.invoker);
   });
 
+  it('prefers a popover’s button linked with for over a slotted invoker', () => {
+    const {host, item} = menu();
+    const popover = document.createElement('craft-popover');
+    popover.setAttribute('for', 'view');
+    popover.append(...host.children);
+    const view = document.createElement('button');
+    view.id = 'view';
+    document.body.append(view, popover);
+
+    expect(focusReturnFor(item)()).toBe(view);
+  });
+
+  it('does not throw for an item in a detached popover linked with for', () => {
+    const {host, item} = menu();
+    const popover = document.createElement('craft-popover');
+    popover.setAttribute('for', 'view');
+    popover.append(host.querySelector('[slot="content"]')!);
+
+    expect(focusReturnFor(item)()).toBeNull();
+  });
+
   it('returns null when nothing can take focus', () => {
     const {host, item} = menu('field:menu');
     document.body.append(host);

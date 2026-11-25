@@ -3,10 +3,12 @@ import {
   createApp,
   defineComponent,
   h,
+  inject,
   nextTick,
   provide,
   reactive,
   shallowRef,
+  type Component,
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {router} from '@inertiajs/vue3';
@@ -24,6 +26,7 @@ import {SlideoutControllerKey} from '@/common/slideouts/types';
 import {useReleasePreviewScope} from '@/modules/releases/releaseEditor';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import {registerUiComponents} from '@/modules/ui/register';
+import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
 import ElementEditor from './ElementEditor.vue';
 
 const state = vi.hoisted(() => ({
@@ -72,6 +75,8 @@ vi.mock('@/bootstrap/element-details-panels', () => ({
 
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
+let backgroundField: HTMLElement | undefined;
+let screenProps: ReturnType<typeof createScreenPropsStore>['props'];
 
 beforeEach(() => {
   state.editor = {
@@ -156,12 +161,18 @@ beforeEach(() => {
 afterEach(() => {
   app.unmount();
   container.remove();
+  backgroundField?.remove();
+  backgroundField = undefined;
   state.activePreview = null;
 });
 
 function mount(
   mode: ScreenMode,
-  {previewedReleaseId}: {previewedReleaseId?: number} = {}
+  {
+    previewedReleaseId,
+    workflowActionsOnly,
+  }: {previewedReleaseId?: number; workflowActionsOnly?: boolean} = {},
+  elementEditorProps?: {formWrapper?: Component}
 ): void {
   const Root = defineComponent({
     setup: () => {
@@ -173,9 +184,15 @@ function mount(
         provide(SlideoutControllerKey, {} as never);
       }
 
+      // Docked beside a release's preview.
+      if (workflowActionsOnly) {
+        provide(SlideoutControllerKey, {workflowActionsOnly} as never);
+      }
+
       provideLayoutSlotRegistry();
       const screen = createScreenPropsStore();
       provide(ScreenPropsStoreKey, screen);
+      screenProps = screen.props;
 
       return () =>
         h('div', [
@@ -186,9 +203,11 @@ function mount(
               : null
           ),
           h(LayoutSlotOutlet, {name: 'content-notices'}),
-          h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
+          h('div', {'data-toolbar-meta': ''}, [
+            h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
+          ]),
           h(LayoutSlotOutlet, {name: 'content-toolbar-actions'}),
-          h(ElementEditor),
+          h(ElementEditor, elementEditorProps),
           h(ContentFooter, {
             ...screen.props,
             readOnly: false,
@@ -305,6 +324,40 @@ it('titles its error summary for the element rather than for settings', async ()
   expect(summary?.textContent).not.toContain('settings');
 });
 
+it('links a slideout error to its own field', async () => {
+  const fieldIdWithoutScope = fieldId(['fields', 'a11yDate']);
+  backgroundField = document.createElement('craft-field');
+  backgroundField.id = fieldIdWithoutScope;
+  document.body.insertBefore(backgroundField, container);
+  const FieldWrapper = defineComponent({
+    props: {editor: Object, region: String},
+    setup() {
+      const fieldIdScope = inject(UiFieldIdScope, undefined);
+      const id = scopedId(fieldIdScope, fieldId(['fields', 'a11yDate']));
+
+      return () => h('div', [h('craft-field', {id})]);
+    },
+  });
+  state.editor.errorPaths = (key: string) => [['fields', key]];
+  Object.assign(state.editor.form, {
+    hasErrors: true,
+    errors: {a11yDate: 'The *Date* field is required.'},
+  });
+
+  mount('slideout', {}, {formWrapper: FieldWrapper});
+  await nextTick();
+  await nextTick();
+
+  const field = container.querySelector<HTMLElement>('craft-field')!;
+  const link = container.querySelector<HTMLAnchorElement>(
+    'craft-callout[variant="danger"] a'
+  );
+  expect(field.id).not.toBe(fieldIdWithoutScope);
+  expect(link?.getAttribute('href')).toBe(`#${field.id}`);
+  expect(document.getElementById(field.id)).toBe(field);
+  expect(link?.textContent?.trim()).toBe('The Date field is required.');
+});
+
 const release = {
   id: 6,
   name: 'Launch',
@@ -330,7 +383,6 @@ function withPreviewTargets(): void {
     paramValue: 'param',
     siteTokenParam: 'siteToken',
     siteToken: null,
-    iframeResizerOptions: false,
   };
 }
 
@@ -431,11 +483,11 @@ it('describes a revision with its own notice alone', async () => {
 });
 
 it.each([
-  ['a revision', 'readOnly', 'readOnly', false],
-  ['a draft locked for review', 'disabled', 'editable', true],
+  ['a revision', 'readOnly', false],
+  ['a draft locked for review', 'editable', true],
 ] as const)(
-  'renders the fields of %s as %s',
-  async (_, expected, controlMode, reviewLocked) => {
+  'renders the fields of %s read-only, keeping them legible',
+  async (_, controlMode, reviewLocked) => {
     state.editor.workflowReviewLocked = computed(() => reviewLocked);
     state.editor.props.readOnly = controlMode === 'readOnly';
     state.editor.errors = computed(() => []);
@@ -469,8 +521,8 @@ it.each([
       HTMLElement & {readOnly: boolean; disabled: boolean}
     >('craft-field')!;
     expect({readOnly: field.readOnly, disabled: field.disabled}).toEqual({
-      readOnly: expected === 'readOnly',
-      disabled: expected === 'disabled',
+      readOnly: true,
+      disabled: false,
     });
   }
 );
@@ -593,19 +645,19 @@ it('asks before editing a reviewed draft in a scheduled release', async () => {
   mount('page');
   await nextTick();
 
-  const dialog = container.querySelector<HTMLElement & {opened?: boolean}>(
+  const dialog = container.querySelector<HTMLElement & {open?: boolean}>(
     'craft-dialog'
   )!;
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
 
   findButton('Start editing')!.click();
-  await vi.waitFor(() => expect(dialog.opened).toBe(true));
+  await vi.waitFor(() => expect(dialog.open).toBe(true));
   expect(dialog.textContent).toContain(
     'Unless it’s approved again before “Spring launch” publishes, the release will fail to publish.'
   );
 
   findButton('Cancel')!.click();
-  await vi.waitFor(() => expect(dialog.opened).toBe(false));
+  await vi.waitFor(() => expect(dialog.open).toBe(false));
   expect(state.editor.startEditingDraft).not.toHaveBeenCalled();
 });
 
@@ -624,14 +676,14 @@ it('doesn’t ask before editing a draft that already blocks its scheduled relea
   mount('page');
   await nextTick();
 
-  const dialog = container.querySelector<HTMLElement & {opened?: boolean}>(
+  const dialog = container.querySelector<HTMLElement & {open?: boolean}>(
     'craft-dialog'
   )!;
   findButton('Start editing')!.click();
   await nextTick();
   await nextTick();
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
 });
 
 it.each([
@@ -676,3 +728,30 @@ it.each([
     expect(container.textContent?.includes('Spring launch')).toBe(shown);
   }
 );
+
+it('leaves out an empty footer beside a release’s preview, moving the autosave status up', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.autosave.status.value = 'saving';
+
+  mount('slideout', {workflowActionsOnly: true});
+  await nextTick();
+
+  expect(screenProps.hideFooter).toBe(true);
+  expect(container.querySelector('[data-toolbar-meta]')?.textContent).toContain(
+    'Saving…'
+  );
+});
+
+it('keeps the footer beside a release’s preview while a workflow action is available', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.props.editorActions.primary = {
+    label: 'Request review',
+    panelId: 'workflow',
+  };
+
+  mount('slideout', {workflowActionsOnly: true});
+  await nextTick();
+
+  expect(screenProps.hideFooter).toBeFalsy();
+  expect(findButton('Request review')).toBeDefined();
+});

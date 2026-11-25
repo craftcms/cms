@@ -2,27 +2,76 @@
 
 declare(strict_types=1);
 
+use Composer\InstalledVersions;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\UnitTestCase;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
+use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Playwright\Playwright;
+use Pest\Browser\Playwright\Servers\PlaywrightNpmServer;
+use Pest\Browser\ServerManager;
+use Pest\Browser\Support\PackageJsonDirectory;
+use Pest\Browser\Support\Port;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\DomCrawler\Crawler;
+use Workbench\Database\Seeders\ContentSeeder;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
+uses(BrowserTestCase::class)->in('Browser');
+
+// Collect cycles in bounded batches, rather than during each application boot.
+$testsSinceCollection = 0;
+pest()->beforeAll(fn () => gc_disable())
+    ->afterEach(function () use (&$testsSinceCollection) {
+        if (++$testsSinceCollection >= 50) {
+            gc_collect_cycles();
+            $testsSinceCollection = 0;
+        }
+    })
+    ->afterAll(fn () => gc_enable())
+    ->in('Feature', 'Unit');
+
+// pest-plugin-browser 5.2.0 and earlier start the Playwright server with `sh -c` and no `exec`, so stopping it at the
+// end of the run ends only the shell. Node keeps running, along with any copy of Pest's output pipe it inherited, so
+// `pest | tail` never returns. Starting it with `exec` makes the shell and the server one process. Remove this once
+// a release includes the fix (https://github.com/pestphp/pest-plugin-browser/pull/281); a fixed release adds its own
+// `exec`, and `exec exec` fails.
+if (PHP_OS_FAMILY !== 'Windows' && version_compare(InstalledVersions::getVersion('pestphp/pest-plugin-browser') ?? '', '5.2.0.0', '<=')) {
+    (fn () => $this->playwright ??= PlaywrightNpmServer::create(
+        PackageJsonDirectory::find(),
+        'exec ./node_modules/.bin/playwright run-server --host %s --port %d --mode launchServer',
+        Playwright::host() ?? ServerManager::DEFAULT_HOST,
+        Port::find(),
+        'Listening on',
+    ))->call(ServerManager::instance());
+}
 
 // MCP routes follow the MCP settings, and tests start from cached routes registered before any settings existed.
 pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
+
+// Tests that exercise the external MCP server explicitly clear this cache.
+pest()->beforeEach(fn () => cache()->put('craftcms-mcp-tools', []))->in('Feature/Ai');
 
 /**
  * Saves MCP settings, enabling the authenticated server by default, and registers the routes they call for.
@@ -159,9 +208,119 @@ expect()->extend('toContainTag', function (string $tag, array $attributes = []) 
     return $this;
 });
 
-beforeEach(function () {
-    app()->forgetInstance(GeneralConfig::class);
-});
+/**
+ * Opens a control panel page in the browser, once its main landmark has rendered.
+ *
+ *     visitCp('settings/sections')->assertSee('Sections');
+ */
+function visitCp(string $path = ''): AwaitableWebpage
+{
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    return visit('/'.ltrim("$cpTrigger/".ltrim($path, '/'), '/'))->assertPresent('main[id]');
+}
+
+/**
+ * Asserts the page has thrown no JavaScript errors. Chromium's “ResizeObserver loop” notice is left out: it reports
+ * that a resize observer's callback ran out of frame time, not an error in the page, and it comes and goes.
+ */
+function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
+{
+    return $page->assertScript(<<<'JS'
+        window.__pestBrowser.jsErrors
+            .map(error => error.message)
+            .filter(message => ! message.startsWith('ResizeObserver loop'))
+        JS, []);
+}
+
+/**
+ * Asserts axe finds no accessibility issues on the page, down to minor ones.
+ *
+ * Axe's WCAG rules all run. Of its best-practice rules, only those that check a requirement in
+ * `.github/instructions/a11y.instructions.md` run: heading order, content inside landmarks, one main landmark, an
+ * `h1`, and a working skip link. The others are advice that the control panel's layout doesn't always follow on
+ * purpose, such as a details column nested in an editor pane.
+ *
+ * The browser tests turn on the “Underline links” preference (see `BrowserTestCase`), so `link-in-text-block` checks
+ * the case where someone relies on it. Without it, links in running text are told apart by color alone.
+ *
+ * Axe runs once the CSS transitions and animations that end have ended. Halfway through a fade, such as a message
+ * appearing, text has less contrast than it will have, and axe reports it. Scroll-driven animations and the
+ * navigation progress bar's script animation aren't waited for. Axe takes longer than the usual
+ * assertion timeout on large pages, such as project config with the workbench content, so it gets 30 seconds.
+ *
+ * `$outsideLandmarks` names popups that legacy code attaches to `<body>`, outside every landmark, such as the field
+ * layout designer's field library. The landmark check skips them; every other rule still checks them.
+ *
+ * @param  list<string>  $outsideLandmarks
+ */
+function assertNoAccessibilityIssues(AwaitableWebpage $page, array $outsideLandmarks = []): AwaitableWebpage
+{
+    $page->script((string) file_get_contents(InstalledVersions::getInstallPath('pestphp/pest-plugin-browser').'/resources/js/axe.min.js'));
+    $page->script(sprintf(<<<'JS'
+        ((bestPractices, outsideLandmarks) => axe.configure({
+            rules: [
+                ...axe.getRules(['best-practice'])
+                    .filter(rule => ! bestPractices.includes(rule.ruleId))
+                    .map(rule => ({id: rule.ruleId, enabled: false})),
+                ...outsideLandmarks.length
+                    ? [{id: 'region', selector: `body *:not(${outsideLandmarks.map(s => `${s}, ${s} *`).join(', ')})`}]
+                    : [],
+            ],
+        }))(['heading-order', 'region', 'landmark-one-main', 'page-has-heading-one', 'skip-link'], %s)
+        JS, Json::encode($outsideLandmarks)));
+    $page->script(<<<'JS'
+        Promise.all(document.getAnimations()
+            .filter(animation => (animation instanceof CSSTransition || animation instanceof CSSAnimation)
+                && animation.timeline === document.timeline
+                && animation.effect?.getComputedTiming().iterations !== Infinity)
+            .map(animation => animation.finished.catch(() => {})))
+        JS);
+
+    $timeout = Playwright::timeout();
+    Playwright::setTimeout(30_000);
+
+    try {
+        return $page->assertNoAccessibilityIssues(3);
+    } finally {
+        Playwright::setTimeout($timeout);
+    }
+}
+
+/**
+ * Seeds the workbench's sample content, as in a site someone has worked on. Each test's database is rolled back but
+ * its files aren't, so the volumes get a disk of their own, removed after the test.
+ */
+function seedWorkbenchContent(): void
+{
+    $root = public_path('test-assets');
+    File::deleteDirectory($root);
+    config()->set('filesystems.disks.assets.root', $root);
+    config()->set('filesystems.disks.assets.url', '/test-assets');
+
+    test()->seed(ContentSeeder::class);
+    test()->beforeApplicationDestroyed(fn () => File::deleteDirectory($root));
+}
+
+/**
+ * The path of an element's edit page, as `visitCp()` takes it.
+ */
+function cpEditPath(ElementInterface $element): string
+{
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    return ltrim(str_replace("/$cpTrigger/", '/', (string) parse_url((string) $element->getCpEditUrl(), PHP_URL_PATH)), '/');
+}
+
+/**
+ * Asserts a control panel page renders with the given heading, no JavaScript errors and no accessibility issues.
+ */
+function assertCpPageRenders(string $path, string $heading): void
+{
+    test()->withoutExceptionHandling();
+
+    assertNoAccessibilityIssues(assertNoJavaScriptErrors(visitCp($path))->assertSeeIn('#main h1', $heading));
+}
 
 function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void
 {
@@ -185,6 +344,24 @@ function flattenUiNodes(array $nodes): array
     return $flattened;
 }
 
+/**
+ * The `autocomplete` attribute of each input and select a field layout element renders, by name.
+ *
+ * @return array<string, string|null>
+ */
+function renderedAutocompletes(BaseField $field, ?ElementInterface $element): array
+{
+    $context = new UiContext;
+    $node = $field->uiNode(new FieldLayoutElementContext($element, $context));
+    $payload = app(UiResolver::class)->resolve(Ui::make([$node]), $context);
+    $inputs = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('input:not([type="hidden"]), select');
+
+    return array_combine(
+        $inputs->each(fn (Crawler $input) => $input->attr('name')),
+        $inputs->each(fn (Crawler $input) => $input->attr('autocomplete')),
+    );
+}
+
 function buildExpectedUrl(string $url, string $scheme): string
 {
     $siteUrl = "$scheme://localhost/";
@@ -192,4 +369,11 @@ function buildExpectedUrl(string $url, string $scheme): string
     $cpUrl = $cpTrigger === '' ? rtrim($siteUrl, '/') : rtrim($siteUrl, '/')."/$cpTrigger";
 
     return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
+}
+
+function passportKey(): OpenSSLAsymmetricKey
+{
+    static $key = openssl_pkey_new(['private_key_bits' => 2048]);
+
+    return $key;
 }

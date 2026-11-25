@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -40,12 +41,14 @@ class ModalIndexViewModel extends ContentIndexViewModel
     /**
      * @param  class-string<ElementInterface>  $elementType
      * @param  list<string>|null  $restrictToSources  Source keys the opener allows, or null for all of them.
+     * @param  bool  $readOnly  Lists elements without selecting them, linking each to its edit page, to embed the index in a screen.
      */
     public function __construct(
         string $elementType,
         ElementIndexRequest $request,
         private readonly ?array $restrictToSources = null,
         ?string $page = null,
+        private readonly bool $readOnly = false,
     ) {
         parent::__construct($elementType, $request, $page);
     }
@@ -154,7 +157,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
     protected function titleLinkHtml(ElementInterface $element): string
     {
         if (! $element instanceof Asset || ! $element->isFolder) {
-            return $this->chipHtml($element);
+            return $this->readOnly ? parent::titleLinkHtml($element) : $this->chipHtml($element);
         }
 
         $folderUrl = $this->folderUrl($element);
@@ -162,6 +165,12 @@ class ModalIndexViewModel extends ContentIndexViewModel
         return $folderUrl === null
             ? $this->chipHtml($element)
             : $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
+    }
+
+    #[\Override]
+    protected function linksToElements(): bool
+    {
+        return $this->readOnly;
     }
 
     /**
@@ -199,9 +208,16 @@ class ModalIndexViewModel extends ContentIndexViewModel
             && $this->canSearchSubfolders();
     }
 
-    /** Whether the folder on screen has subfolders for a search to reach. */
+    /**
+     * Whether the folder on screen has subfolders for a search to reach. Not when the opener hides folders, such as
+     * an Assets field restricted to a single folder.
+     */
     public function canSearchSubfolders(): bool
     {
+        if ($this->request->has('showFolders') && ! $this->request->boolean('showFolders')) {
+            return false;
+        }
+
         return ($this->folder() ?? $this->sourceRootFolder())?->getHasChildren() ?? false;
     }
 
@@ -225,14 +241,18 @@ class ModalIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * The trail from the volume's root to the folder being listed, so the
+     * The trail from the source's folder to the folder being listed, so the
      * modal can lead back up. Empty unless a volume source is selected.
+     *
+     * A source can be a subfolder, such as an Assets field's restricted
+     * location, so the trail stops there rather than at the volume's root.
      *
      * @return list<array{label: string, folderId: int, url: ?string}>
      */
     public function folderBreadcrumbs(): array
     {
-        $current = $this->folder() ?? $this->sourceRootFolder();
+        $root = $this->sourceRootFolder();
+        $current = $this->folder() ?? $root;
         $crumbs = [];
 
         while ($current !== null) {
@@ -243,15 +263,35 @@ class ModalIndexViewModel extends ContentIndexViewModel
                 'folderId' => (int) $current->id,
                 'url' => ($uri = $current->getSourcePathInfo()['uri'] ?? null) !== null ? Url::cpUrl($uri) : null,
             ]);
-            $current = $current->getParent();
+            $current = $current->id === $root?->id ? null : $current->getParent();
         }
 
         return $crumbs;
     }
 
     /**
-     * The folder named by the request's `folderId`, if it's a subfolder of the
-     * selected volume source that the user can view.
+     * The buttons plugins add beside “Upload files” for the folder on screen,
+     * as on the assets index. None in the folder picker, which chooses
+     * folders rather than acting on them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function folderActions(): array
+    {
+        $folder = $this->folder() ?? $this->sourceRootFolder();
+
+        if ($folder === null || $this->request->boolean('foldersOnly')) {
+            return [];
+        }
+
+        event($event = new FolderActionsResolving($folder, ElementSources::CONTEXT_MODAL));
+
+        return $event->actions;
+    }
+
+    /**
+     * The folder named by the request's `folderId`, if it's within the
+     * selected volume source's folder and the user can view it.
      */
     private function folder(): ?VolumeFolder
     {
@@ -273,6 +313,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
         if (
             $folder === null ||
             $folder->volumeId !== $root->volumeId ||
+            ! str_starts_with((string) $folder->path, (string) $root->path) ||
             Gate::denies('viewContents', $folder)
         ) {
             return null;
@@ -308,11 +349,17 @@ class ModalIndexViewModel extends ContentIndexViewModel
     {
         $folderUrl = $this->folderLinkUrl($element);
 
-        return $folderUrl === null ? [] : [
-            'hyperlink' => true,
-            'hyperlinkUrl' => $folderUrl,
-            'hyperlinkAttributes' => ['data-folder-link' => true],
-        ];
+        if ($folderUrl !== null) {
+            return [
+                'hyperlink' => true,
+                'hyperlinkUrl' => $folderUrl,
+                'hyperlinkAttributes' => ['data-folder-link' => true],
+            ];
+        }
+
+        $editUrl = $this->readOnly && ! $element->trashed ? $this->editUrl($element) : null;
+
+        return $editUrl === null ? [] : ['hyperlink' => true, 'hyperlinkUrl' => $editUrl];
     }
 
     /**
@@ -359,6 +406,24 @@ class ModalIndexViewModel extends ContentIndexViewModel
             page: $this->page,
             restrictTo: $this->restrictToSources,
         )->all();
+    }
+
+    /**
+     * A source the opener didn't allow, such as an Assets field's upload location in a volume it doesn't list,
+     * falls back to the first allowed one. Folders nested within an allowed source are allowed too.
+     */
+    #[\Override]
+    protected function allowsSource(string $sourceKey): bool
+    {
+        if ($this->restrictToSources === null) {
+            return true;
+        }
+
+        return array_any($this->sources(), function (array $source) use ($sourceKey): bool {
+            $allowedKey = $source['keyPath'] ?? $source['key'] ?? null;
+
+            return is_string($allowedKey) && $source['type'] !== ElementSources::TYPE_HEADING && ($sourceKey === $allowedKey || str_starts_with($sourceKey, "$allowedKey/"));
+        });
     }
 
     /** @return list<array<string, mixed>> */

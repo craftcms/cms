@@ -20,7 +20,6 @@ describe('checkbox select', function () {
         $host = $crawler->filter('craft-checkbox-select');
 
         expect($host->attr('id'))->toBe('sources')
-            ->and($host->attr('class'))->toBe('cp-checkbox-select')
             ->and($host->attr('name'))->toBe('sources')
             ->and($crawler->filter('craft-checkbox-select > input[type="hidden"][data-empty]')->attr('name'))->toBe('sources')
             ->and($crawler->filter('craft-checkbox-select > div.cp-checkbox-select__item input')->attr('value'))->toBe('a');

@@ -42,6 +42,48 @@ export function contrast(
   return (lighter! + 0.05) / (darker! + 0.05);
 }
 
+/**
+ * What's painted behind `element`: every background on its way up the
+ * flattened tree, composited over white, as an `rgb()` string.
+ */
+export function backdropOf(element: Element): string {
+  const layers: string[] = [];
+
+  for (let node = parentOf(element); node; node = parentOf(node)) {
+    layers.unshift(getComputedStyle(node).backgroundColor);
+  }
+
+  let backdrop = '#fff';
+
+  for (const layer of layers) {
+    backdrop = over(layer, backdrop);
+  }
+
+  return backdrop;
+}
+
+/** The element `node` is painted inside: its slot, its parent or its host. */
+function parentOf(node: Element): Element | null {
+  return (
+    node.assignedSlot ??
+    node.parentElement ??
+    ((node.getRootNode() as ShadowRoot).host || null)
+  );
+}
+
+/** `color` painted over `backdrop`, as an `rgb()` string. */
+export function over(color: string, backdrop: string): string {
+  return `rgb(${paint(color, backdrop).join(', ')})`;
+}
+
+/** Whether `color` paints anything at all. */
+export function isPainted(color: string): boolean {
+  return (
+    paint(color, '#000').some((channel) => channel !== 0) ||
+    paint(color, '#fff').some((channel) => channel !== 255)
+  );
+}
+
 /** Loads the document-level token stylesheets the components read. */
 export async function loadTokens(): Promise<void> {
   await import('../src/styles/shared/color-palette.css');

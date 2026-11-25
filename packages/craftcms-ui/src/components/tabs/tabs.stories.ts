@@ -26,8 +26,7 @@ type CraftTabsArgs = CraftTabs & typeof args;
 const meta = {
   title: 'Components/Tabs',
   component: 'craft-tabs',
-  // `selected-index` is Lion's, so it is not in the manifest and is declared
-  // alongside the generated set.
+  // Declared by hand for the number control's minimum.
   argTypes: {
     ...argTypes,
     selectedIndex: {
@@ -71,15 +70,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<CraftTabsArgs>;
 
-/*
- * These play functions are the real test bed for the Lion-driven behavior:
- * it bootstraps from a `slotchange`, which happy-dom never fires, so
- * tabs.test.ts can only cover the wrapper. See the note at the top of that
- * file.
- */
-
 /**
- * Sends an arrow key to a tab. Lion navigates on `keyup`, and this dispatches
+ * Sends an arrow key to a tab. The strip navigates on `keyup`, and this dispatches
  * the event at the tab directly rather than going through `userEvent.keyboard`,
  * which routes to whatever the *browser* considers focused — unreliable here,
  * since the story runs in an iframe that may not hold system focus.
@@ -305,8 +297,8 @@ export const SelectedIndex: Story = {
 };
 
 /**
- * Disabled tabs can't be clicked and are skipped by arrow-key navigation. Lion
- * also moves the initial selection off a disabled first tab.
+ * Disabled tabs can't be clicked and are skipped by arrow-key navigation. The
+ * strip also moves the initial selection off a disabled first tab.
  */
 export const Disabled: Story = {
   render: () => html`
@@ -411,18 +403,6 @@ const OVERFLOW_LABELS = [
  * Storybook viewport to watch tabs move in and out of the menu.
  */
 export const Overflow: Story = {
-  parameters: {
-    a11y: {
-      config: {
-        // This story opens the overflow menu and leaves it open, so the scan
-        // reaches Lion's overlay wrapper — a `<dialog role="none">` it creates
-        // to position the content without adding a second dialog around it.
-        // The role is deliberate on Lion's side and the element is not ours to
-        // change; the menu inside it carries the real semantics.
-        rules: [{id: 'aria-allowed-role', enabled: false}],
-      },
-    },
-  },
   render: () => html`
     <div style="max-inline-size: 26rem; resize: horizontal; overflow: auto;">
       <craft-tabs label="Entry settings">
@@ -480,7 +460,7 @@ export const Overflow: Story = {
     // in the menu.
     // The menu closes behind the selection, and focus lands on the tab that
     // just came back into the strip.
-    await expect((menu as {opened?: boolean}).opened).toBe(false);
+    await expect((menu as {open?: boolean}).open).toBe(false);
     await expect(target.hasAttribute('hidden')).toBe(false);
     await expect(target.getAttribute('aria-selected')).toBe('true');
     await expect(document.activeElement).toBe(target);

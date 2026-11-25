@@ -27,12 +27,16 @@
         href: UsersController.edit['/{cpTrigger?}/myaccount']().url,
         label: t('Profile'),
       },
-      {
-        href: PermissionsController.index[
-          '/{cpTrigger?}/myaccount/permissions'
-        ]().url,
-        label: t('Permissions'),
-      },
+      ...(currentUser.value?.showPermissions
+        ? [
+            {
+              href: PermissionsController.index[
+                '/{cpTrigger?}/myaccount/permissions'
+              ]().url,
+              label: t('Permissions'),
+            },
+          ]
+        : []),
       {
         href: PreferencesController.index().url,
         label: t('Preferences'),
@@ -89,5 +93,11 @@
 <style scoped>
   .user-menu__button {
     --c-button-radius: var(--c-radius-full);
+  }
+
+  /* Pressed, the button takes the loud fill, so the initials take the text
+     color that goes with it. */
+  .user-menu__button[active] {
+    --c-text-default: var(--c-color-on-loud);
   }
 </style>

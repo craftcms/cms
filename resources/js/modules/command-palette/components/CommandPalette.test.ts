@@ -19,6 +19,19 @@ import {
 } from '../registry';
 import CommandPalette from './CommandPalette.vue';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const state = vi.hoisted(() => ({
   page: null as any,
   visit: vi.fn(),
@@ -176,7 +189,7 @@ describe('CommandPalette', () => {
   beforeEach(() => {
     (window as any).Craft = {
       systemUid: 'test',
-      cp: {displayError: vi.fn(), displayNotice: vi.fn()},
+      cp: {},
     };
     localStorage.setItem(
       'Craft-test.commandPalette.recentPages',
@@ -480,6 +493,55 @@ describe('CommandPalette', () => {
     expect(option('Maintenance')).toBeTruthy();
     expect(selected(input)).toBe('Enable maintenance mode');
     expect(document.activeElement).toBe(button);
+  });
+
+  it('keeps the top result selected when results that rank above it come in', async () => {
+    const entries = deferred();
+    get.mockImplementation(async (url: string) =>
+      url === '/palette/entries'
+        ? entries.promise
+        : ({
+            data: {
+              providers: [{handle: 'entries', label: 'Entries'}],
+              actions: [
+                serverAction(
+                  'enable-maintenance-mode',
+                  'Enable maintenance mode'
+                ),
+              ],
+            },
+          } as never)
+    );
+    const input = await open();
+    await type(input, 'maintenance');
+    expect(selected(input)).toBe('Enable maintenance mode');
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    entries.resolve({
+      data: {results: [serverAction('entry-maintenance', 'Maintenance')]},
+    });
+    await flush();
+
+    const options = [...document.querySelectorAll('[role="option"]')].map(
+      (option) => option.textContent?.trim()
+    );
+    expect(options.indexOf('Maintenance')).toBeLessThan(
+      options.findIndex((label) => label?.startsWith('Enable maintenance mode'))
+    );
+    expect(selected(input)).toBe('Enable maintenance mode');
+  });
+
+  it('scrolls back to the top result when the query changes', async () => {
+    const input = await open();
+    await type(input, 'mode');
+    const results = document.querySelector<HTMLElement>(
+      '.command-palette__results'
+    )!;
+    results.scrollTop = 300;
+
+    await type(input, 'maintenance mode');
+
+    expect(results.scrollTop).toBe(0);
   });
 
   it('moves focus to the search box when the result whose actions have it goes', async () => {
@@ -1045,7 +1107,7 @@ describe('CommandPalette', () => {
     await flush();
 
     expect(isCommandPaletteOpen.value).toBe(true);
-    expect((window as any).Craft.cp.displayError).toHaveBeenCalledWith('Nope');
+    expect(messages.showError).toHaveBeenCalledWith('Nope');
   });
 
   it('finishes opening when the shortcut opened it before it was mounted', async () => {

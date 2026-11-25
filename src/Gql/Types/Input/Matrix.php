@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Types\Input;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Error\UserError;
@@ -58,7 +59,7 @@ class Matrix extends InputObjectType
                                         }
 
                                         // Get the field input types
-                                        foreach ($entryType->getCustomFields() as $field) {
+                                        foreach (GqlHelper::filterMutableFields($entryType->getCustomFields()) as $field) {
                                             /** @var Field $field */
                                             $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
                                         }

@@ -1,6 +1,10 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 
 async function createButton(
   attrs: Record<string, string> = {},
@@ -83,6 +87,32 @@ describe('craft-button link mode', () => {
     expect(a.getAttribute('target')).toBe('_blank');
     expect(a.getAttribute('rel')).toBe('noopener');
     expect(a.textContent).toContain('Opens in a new window');
+  });
+
+  it('names an icon-only link with the host’s aria-label', async () => {
+    const element = await createButton(
+      {href: '/settings', 'aria-label': 'Open Settings'},
+      ''
+    );
+    const a = anchor(element)!;
+    expect(computeAccessibleName(a)).toBe('Open Settings');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(content(element)!.classList.contains('a11y-error')).toBe(false);
+
+    element.setAttribute('aria-label', 'Open Users');
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(computeAccessibleName(a)).toBe('Open Users');
+  });
+
+  it('describes a labeled link to another host as opening in a new window', async () => {
+    const element = await createButton(
+      {href: 'https://craftcms.com/', 'aria-label': 'Craft website'},
+      ''
+    );
+    const a = anchor(element)!;
+    expect(computeAccessibleName(a)).toBe('Craft website');
+    expect(computeAccessibleDescription(a)).toBe('Opens in a new window');
   });
 
   it('keeps its own target for a link to another host', async () => {
@@ -205,12 +235,43 @@ describe('craft-button link semantics', () => {
     expect(element.type).toBe('button');
   });
 
-  it('keeps Lion button semantics when there is no href', async () => {
+  it('is a button and a tab stop when there is no href', async () => {
     const element = await createButton();
     expect(element.getAttribute('role')).toBe('button');
     expect(element.tabIndex).toBe(0);
-    // Defaults to "button" even though we extend LionButtonSubmit.
     expect(element.type).toBe('button');
+  });
+
+  it('keeps a role its author set', async () => {
+    const element = await createButton({role: 'tab'});
+    expect(element.getAttribute('role')).toBe('tab');
+  });
+
+  it('says it is disabled until it is enabled again', async () => {
+    const element = await createButton({disabled: ''});
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+
+    element.disabled = false;
+    await element.updateComplete;
+
+    expect(element.hasAttribute('aria-disabled')).toBe(false);
+    expect(element.tabIndex).toBe(0);
+  });
+
+  it('keeps an aria-disabled its author set on an enabled button', async () => {
+    const element = await createButton({'aria-disabled': 'true'});
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+    expect(element.tabIndex).toBe(0);
+  });
+
+  it('ignores click() while disabled', async () => {
+    const element = await createButton({disabled: ''});
+    const onClick = vi.fn();
+    element.addEventListener('click', onClick);
+
+    element.click();
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('honors an explicit type="submit"', async () => {
@@ -304,13 +365,6 @@ describe('craft-button link semantics', () => {
 });
 
 describe('craft-button actions', () => {
-  it('parses a JSON action attribute into the action property', async () => {
-    const element = await createButton({
-      action: '{"type":"event","name":"craft:test"}',
-    });
-    expect(element.action).toEqual({type: 'event', name: 'craft:test'});
-  });
-
   it('runs an event action on click, with trigger and sourceEvent in the detail', async () => {
     const element = await createButton({
       action:
@@ -637,7 +691,7 @@ describe('craft-button icon spacing', () => {
 
 describe('craft-button press state', () => {
   it('clears the press when a native drag ends instead of a mouseup', async () => {
-    // A drag handle never gets the mouseup Lion waits for; without this it
+    // A drag handle never gets the mouseup the press waits for; without this it
     // stays `active`, looking selected, until the next click anywhere.
     const button = await createButton();
 

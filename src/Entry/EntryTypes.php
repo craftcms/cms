@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
+use CraftCms\Cms\Activity\OperationTypes\EntryTypeOperation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -48,7 +49,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -64,7 +64,7 @@ class EntryTypes
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * they’ve been resaved. (You can resave entries manually by running the `resave:entries` console command.)
      * :::
      */
     public bool $autoResaveEntries = true;
@@ -94,7 +94,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryTypes = Craft::$app->entries->getEntryTypesBySectionId(1);
+     * $entryTypes = \CraftCms\Cms\Support\Facades\EntryTypes::getEntryTypesBySectionId(1);
      * ```
      *
      *
@@ -171,7 +171,7 @@ class EntryTypes
         // `craft:up` reads entry types (to diff project config) before running
         // pending migrations, so a DB that hasn't been migrated yet doesn't
         // have these columns.
-        $columns = Schema::getColumnListing(Table::ENTRYTYPES);
+        $columns = DB::getReadSchemaBuilder()->getColumnListing(Table::ENTRYTYPES);
 
         if (in_array('showPostDateField', $columns, true)) {
             $query->addSelect('showPostDateField');
@@ -190,7 +190,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryTypes = Craft::$app->entries->getAllEntryTypes();
+     * $entryTypes = \CraftCms\Cms\Support\Facades\EntryTypes::getAllEntryTypes();
      * ```
      *
      * @return Collection<int, EntryType>
@@ -206,7 +206,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryType = Craft::$app->entries->getEntryTypeById(1);
+     * $entryType = \CraftCms\Cms\Support\Facades\EntryTypes::getEntryTypeById(1);
      * ```
      */
     public function getEntryTypeById(int $entryTypeId, bool $withTrashed = false): ?EntryType
@@ -245,7 +245,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $entryType = Craft::$app->entries->getEntryTypeByHandle('article');
+     * $entryType = \CraftCms\Cms\Support\Facades\EntryTypes::getEntryTypeByHandle('article');
      * ```
      */
     public function getEntryTypeByHandle(string $entryTypeHandle): ?EntryType
@@ -435,10 +435,12 @@ class EntryTypes
                     ->where('entries.deletedWithEntryType', true)
                     ->get();
 
-                $entriesBySection = $entries->groupBy('sectionId');
-                foreach ($entriesBySection as $sectionEntries) {
-                    Elements::restoreElements($sectionEntries->all());
-                }
+                EntryTypeOperation::for($entryTypeModel->id, $entryTypeModel->name)->scope(function () use ($entries): void {
+                    $entriesBySection = $entries->groupBy('sectionId');
+                    foreach ($entriesBySection as $sectionEntries) {
+                        Elements::restoreElements($sectionEntries->all());
+                    }
+                });
             });
         }
 
@@ -473,7 +475,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $success = Craft::$app->entries->deleteEntryTypeById(1);
+     * $success = \CraftCms\Cms\Support\Facades\EntryTypes::deleteEntryTypeById(1);
      * ```
      *
      *
@@ -498,7 +500,7 @@ class EntryTypes
      * ---
      *
      * ```php
-     * $success = Craft::$app->entries->deleteEntryType($entryType);
+     * $success = \CraftCms\Cms\Support\Facades\EntryTypes::deleteEntryType($entryType);
      * ```
      *
      *

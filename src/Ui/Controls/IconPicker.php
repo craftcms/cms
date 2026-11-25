@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Ui\Controls;
 use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 
@@ -15,7 +17,7 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
  *
  * @since 6.0.0
  */
-class IconPicker extends Control
+class IconPicker extends Control implements ReadableValueControl, WritableValueControl
 {
     private bool $freeOnly = false;
 

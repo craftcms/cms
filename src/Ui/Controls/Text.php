@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\Input;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -13,7 +15,7 @@ use Illuminate\Support\Arr;
 /**
  * @since 6.0.0
  */
-class Text extends Control
+class Text extends Control implements ReadableValueControl, WritableValueControl
 {
     use HasTextExpander;
 
@@ -33,6 +35,8 @@ class Text extends Control
 
     private bool $autofocus = false;
 
+    private bool $selectOnFocus = false;
+
     private bool|string|null $autocomplete = null;
 
     private bool $autocorrect = true;
@@ -44,6 +48,10 @@ class Text extends Control
     private ?string $dir = null;
 
     private bool $monospace = false;
+
+    private bool $enlarged = false;
+
+    private ?string $prefix = null;
 
     private ?string $suffix = null;
 
@@ -65,8 +73,11 @@ class Text extends Control
             ->autocorrect((bool) ($control->props['autocorrect'] ?? true))
             ->autocapitalize((bool) ($control->props['autocapitalize'] ?? true))
             ->inputSize($control->props['size'] ?? null)
+            ->width(isset($control->props['size']) ? 'auto' : null)
             ->orientation($control->props['dir'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
+            ->size(($control->props['enlarged'] ?? false) ? 'large' : null)
+            ->prefix($control->props['prefix'] ?? null)
             ->suffix($control->props['suffix'] ?? null)
             ->disabled($attributes['disabled'] || ($attributes['readonly'] && ($control->props['inputType'] ?? 'text') === 'range'))
             ->readOnly($attributes['readonly'])
@@ -142,6 +153,21 @@ class Text extends Control
         return $this;
     }
 
+    /**
+     * Select the control's value whenever it's focused, so it can be typed over.
+     */
+    public function selectOnFocus(bool $selectOnFocus = true): static
+    {
+        $this->selectOnFocus = $selectOnFocus;
+
+        return $this;
+    }
+
+    /**
+     * Sets the input’s `autocomplete` attribute, which is `off` unless set.
+     *
+     * Pass `true` for `on`, or a token such as `name` or `email` when the input collects the current user’s own data.
+     */
     public function autocomplete(bool|string $autocomplete): static
     {
         $this->autocomplete = $autocomplete;
@@ -184,6 +210,21 @@ class Text extends Control
         return $this;
     }
 
+    /** Renders the control larger, for values worth reading at a glance. */
+    public function enlarged(bool $enlarged = true): static
+    {
+        $this->enlarged = $enlarged;
+
+        return $this;
+    }
+
+    public function prefix(?string $prefix): static
+    {
+        $this->prefix = $prefix;
+
+        return $this;
+    }
+
     public function suffix(?string $suffix): static
     {
         $this->suffix = $suffix;
@@ -218,12 +259,15 @@ class Text extends Control
             'placeholder' => $this->placeholder,
             'inputMode' => $this->inputMode,
             'autofocus' => $this->autofocus ?: null,
+            'selectOnFocus' => $this->selectOnFocus ?: null,
             'autocomplete' => $this->autocomplete,
             'autocorrect' => $this->autocorrect ? null : false,
             'autocapitalize' => $this->autocapitalize ? null : false,
             'size' => $this->size,
             'dir' => $this->dir,
             'monospace' => $this->monospace ?: null,
+            'enlarged' => $this->enlarged ?: null,
+            'prefix' => $this->prefix,
             'suffix' => $this->suffix,
             ...$this->textExpanderProps(),
         ]);

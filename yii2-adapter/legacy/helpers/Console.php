@@ -9,10 +9,10 @@ namespace craft\helpers;
 
 use Craft;
 use craft\console\MarkdownParser;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\console\Controller;
 use const STDOUT;
@@ -153,18 +153,17 @@ class Console extends \yii\helpers\Console
      * Outputs a terminal command.
      *
      * @param string $command The command to output
-     * @param bool $withScriptName Whether the current script name (e.g. `craft`) should be prepended to the command.
+     * @param bool $withScriptName Whether `$command` is a Craft console command that should be run the way
+     * [[TerminalCommands::craft()]] returns it for the current environment (e.g. `php artisan craft:`). Its name
+     * may use slashes, such as `migrate/all`.
      * @since 3.0.38
      */
     public static function outputCommand(string $command, bool $withScriptName = true): void
     {
         if ($withScriptName) {
-            try {
-                $file = Craft::$app->getRequest()->getScriptFilename();
-            } catch (InvalidConfigException) {
-                $file = 'craft';
-            }
-            $command = $file . ' ' . $command;
+            $command = app(TerminalCommands::class)->craft(
+                preg_replace_callback('/^\S+/', fn(array $match) => str_replace('/', ':', $match[0]), $command),
+            );
         }
 
         if (static::isColorEnabled()) {

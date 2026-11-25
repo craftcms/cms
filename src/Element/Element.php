@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use ArrayIterator;
-use BadMethodCallException;
+use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
@@ -28,7 +28,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;
 use Throwable;
@@ -76,9 +75,6 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
     use Concerns\Structurable;
     use Concerns\TracksChanges;
     use LegacyConstants;
-    use Macroable {
-        __call as macroCall;
-    }
 
     /**
      * @since 3.3.6
@@ -298,6 +294,8 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
 
     public function __clone()
     {
+        parent::__clone();
+
         // Mark all fields as dirty
         $this->_allDirty = true;
         $this->_hasNewParent = null;
@@ -422,11 +420,44 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
             return $this->isFieldEmpty(substr($name, 13));
         }
 
-        try {
-            return $this->macroCall($name, $params);
-        } catch (BadMethodCallException) {
+        $macro = static::findMacro($name);
+
+        if ($macro === null) {
             return parent::__call($name, $params);
         }
+
+        if ($macro instanceof Closure) {
+            $macro = $macro->bindTo($this, static::class);
+        }
+
+        return $macro(...$params);
+    }
+
+    /**
+     * Forwards static calls that aren’t macros to a new element query, as Eloquent models do,
+     * so `Entry::section('blog')->all()` works like `Entry::find()->section('blog')->all()`.
+     *
+     * Like the other macro methods, this has no return type, so element classes that use Laravel’s
+     * `Macroable` trait again stay compatible.
+     *
+     * @param  string  $method
+     * @param  array<int, mixed>  $parameters
+     * @return mixed
+     */
+    #[Override]
+    public static function __callStatic($method, $parameters)
+    {
+        $macro = static::findMacro($method);
+
+        if ($macro === null) {
+            return static::find()->{$method}(...$parameters);
+        }
+
+        if ($macro instanceof Closure) {
+            $macro = $macro->bindTo(null, static::class);
+        }
+
+        return $macro(...$parameters);
     }
 
     /**
@@ -669,9 +700,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         }
     }
 
+    /**
+     * Validates the element’s custom field values.
+     *
+     * Revisions are copies of content that was already saved, so their field values aren’t validated.
+     */
     protected function validateCustomFields(): void
     {
-        if (! Cms::isInstalled() || ! ($fieldLayout = $this->getFieldLayout())) {
+        if (! Cms::isInstalled() || $this->getIsRevision() || ! ($fieldLayout = $this->getFieldLayout())) {
             return;
         }
 

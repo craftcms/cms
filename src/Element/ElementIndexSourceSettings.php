@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\Sites;
 
 use function CraftCms\Cms\t;
 
@@ -22,7 +24,7 @@ readonly class ElementIndexSourceSettings
      * @param  array<string, mixed>|null  $source
      * @param  list<array<string, mixed>>  $viewModes
      * @param  list<array{label: string, value: string, defaultDir: string, fixedDir?: string}>  $sortOptions
-     * @param  list<array{label: string, value: string}>  $tableColumns
+     * @param  list<array{label: string, value: string, align: 'start'|'end'}>  $tableColumns
      * @param  list<string>  $defaultTableColumns
      * @param  list<array{field: string, direction: string}>  $defaultSort
      * @param  list<FieldLayout>|null  $fieldLayouts
@@ -67,10 +69,45 @@ readonly class ElementIndexSourceSettings
         array $criteria,
         array $config,
     ): self {
+        return self::fromConfig($elementType, $owner, $attribute, $criteria, $config);
+    }
+
+    /**
+     * Builds the settings for an embedded index that lists elements matching fixed criteria,
+     * without an owner element.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $criteria
+     * @param  array<string, mixed>  $config
+     */
+    public static function forCriteria(string $elementType, array $criteria, array $config): self
+    {
+        return self::fromConfig($elementType, null, null, $criteria, [...$config, 'static' => (bool) ($config['readOnly'] ?? false)]);
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $criteria
+     * @param  array<string, mixed>  $config
+     */
+    private static function fromConfig(
+        string $elementType,
+        ?ElementInterface $owner,
+        ?string $attribute,
+        array $criteria,
+        array $config,
+    ): self {
+        $nested = $owner !== null;
         $fieldLayouts = array_values(array_filter(
             $config['fieldLayouts'] ?? [],
             fn (mixed $layout): bool => $layout instanceof FieldLayout,
         ));
+
+        // Without an owner, the element type’s own field layouts stand in for the source’s, as they do for `__IMP__`
+        if (! $nested && $fieldLayouts === []) {
+            $fieldLayouts = $elementType::fieldLayouts(null);
+        }
+
         $allowedViewModes = array_map(
             fn (mixed $mode): string => $mode instanceof ElementIndexViewMode ? $mode->value : (string) $mode,
             $config['allowedViewModes'] ?? [],
@@ -79,6 +116,19 @@ readonly class ElementIndexSourceSettings
             fn (mixed $column): mixed => is_array($column) ? ($column[0] ?? null) : $column,
             $config['defaultTableColumns'] ?? [],
         ), is_string(...)));
+
+        if (! $nested && $defaultTableColumns === []) {
+            $defaultTableColumns = ElementSources::getTableAttributes(
+                elementType: $elementType,
+                sourceKey: self::NESTED_KEY,
+                fieldLayouts: $fieldLayouts ?: null,
+            )
+                ->map(fn (array $attribute): string => $attribute[0])
+                ->reject(fn (string $attribute): bool => $attribute === 'title')
+                ->values()
+                ->all();
+        }
+
         $indexState = app(ElementIndexState::class);
         $sortOptions = [];
 
@@ -87,12 +137,14 @@ readonly class ElementIndexSourceSettings
         }
 
         $sourceSortOptions = [
-            'sortOrder' => [
-                'label' => t('Order'),
-                'attribute' => 'sortOrder',
-                'defaultDir' => 'asc',
-                'fixedDir' => 'asc',
-            ],
+            ...($nested ? [
+                'sortOrder' => [
+                    'label' => t('Order'),
+                    'attribute' => 'sortOrder',
+                    'defaultDir' => 'asc',
+                    'fixedDir' => 'asc',
+                ],
+            ] : []),
             ...ElementSources::getSourceSortOptions($elementType, self::NESTED_KEY, $fieldLayouts)->all(),
         ];
 
@@ -105,7 +157,9 @@ readonly class ElementIndexSourceSettings
                 'field' => $config['defaultSort'][0],
                 'direction' => ($config['defaultSort'][1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
             ]]
-            : [['field' => 'sortOrder', 'direction' => 'asc']];
+            : [$nested
+                ? ['field' => 'sortOrder', 'direction' => 'asc']
+                : ['field' => 'dateCreated', 'direction' => 'desc']];
         $static = (bool) ($config['static'] ?? false);
 
         return new self(
@@ -115,8 +169,14 @@ readonly class ElementIndexSourceSettings
                 'key' => self::NESTED_KEY,
                 'label' => t('All elements'),
                 'hasThumbs' => $elementType::hasThumbs(),
+                // The index query falls back to the source's `status` criteria when no status is picked.
+                // Request params can override these, so `EmbeddedElementIndexScope::restrictQuery()` also
+                // applies the index's criteria as a subquery, which they can only narrow.
+                ...($nested ? [] : ['criteria' => $criteria]),
             ],
-            siteId: (int) $criteria['siteId'],
+            siteId: is_numeric($criteria['siteId'] ?? null)
+                ? (int) $criteria['siteId']
+                : (app(RequestedSite::class)->get() ?? Sites::getCurrentSite())->id,
             viewModes: array_values(array_filter(
                 $elementType::indexViewModes(),
                 fn (array $mode): bool => $allowedViewModes === [] || in_array($mode['mode'], $allowedViewModes, true),
@@ -125,17 +185,21 @@ readonly class ElementIndexSourceSettings
             tableColumns: $indexState
                 ->tableColumns($elementType)
                 ->merge(ElementSources::getTableAttributesForFieldLayouts(collect($fieldLayouts)))
-                ->map(fn (array $column, string $key): array => ['label' => $column['label'], 'value' => $key])
+                ->map(fn (array $column, string $key): array => [
+                    'label' => $column['label'],
+                    'value' => $key,
+                    'align' => $column['align'] ?? 'start',
+                ])
                 ->values()
                 ->all(),
             defaultTableColumns: $defaultTableColumns,
             defaultSort: $defaultSort,
-            defaultViewMode: (string) ($config['defaultViewMode'] ?? ElementIndexViewMode::Cards->value),
+            defaultViewMode: (string) ($config['defaultViewMode'] ?? ($nested ? ElementIndexViewMode::Cards : ElementIndexViewMode::Table)->value),
             pageSize: max(1, (int) ($config['pageSize'] ?? 50)),
             showHeaderColumn: (bool) ($config['showHeaderColumn'] ?? true),
             fieldLayouts: $fieldLayouts,
             actionsEnabled: ! $static,
-            preserveQueryOrderFor: ['sortOrder'],
+            preserveQueryOrderFor: $nested ? ['sortOrder'] : [],
             owner: $owner,
             attribute: $attribute,
             criteria: $criteria,
@@ -153,9 +217,7 @@ readonly class ElementIndexSourceSettings
     {
         return [
             'showHeaderColumn' => $this->showHeaderColumn,
-            ...($this->owner !== null
-                ? ['static' => $this->static]
-                : ($this->fieldLayouts !== null ? ['fieldLayouts' => $this->fieldLayouts] : [])),
+            ...($this->owner !== null ? ['static' => $this->static] : []),
         ];
     }
 

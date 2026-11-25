@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\Support\McpCapabilities;
 
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
+use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\Settings;
 use Mcp\Capability\Attribute\McpPrompt;
@@ -20,18 +21,25 @@ readonly class Example
     public function __construct(private Settings $settings) {}
 
     /** @return array{endpoint: string, greeting: string} */
-    #[McpTool(name: 'example.greet', title: 'Greet a visitor', description: 'Returns a greeting for the supplied name.')]
+    #[McpTool(name: 'example_greet', title: 'Greet a visitor', description: 'Returns a greeting for the supplied name.')]
     #[PublicMcp]
     public function greet(string $name): array
     {
         return ['endpoint' => $this->settings->publicRoute, 'greeting' => "Hello, $name!"];
     }
 
-    #[McpTool(name: 'example.manage')]
+    #[McpTool(name: 'example_manage')]
     #[RequiresPermission('manageExample')]
     public function manage(): string
     {
         return 'Managed example';
+    }
+
+    #[McpTool(name: 'example_http')]
+    #[RequiresHttp]
+    public function http(): string
+    {
+        return 'HTTP only';
     }
 
     #[McpResource(uri: 'example://welcome', name: 'example-welcome', title: 'Welcome message')]

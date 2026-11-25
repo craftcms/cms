@@ -2,8 +2,9 @@
   import '@craftcms/ui/components/field-group/field-group';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui';
+  import {inject} from 'vue';
   import UiNodeList from './UiNodeList.vue';
-  import {uiTabPanelId} from './runtime';
+  import {scopedId, UiFieldIdScope, uiTabPanelId} from './runtime';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   const props = defineProps<{
@@ -23,8 +24,10 @@
     (event: 'change', change: UiChange): void;
   }>();
 
+  const idScope = inject(UiFieldIdScope, undefined);
+
   function id(): string {
-    return uiTabPanelId(props.node.uid!, props.scope);
+    return scopedId(idScope, uiTabPanelId(props.node.uid!, props.scope));
   }
 </script>
 
@@ -33,7 +36,6 @@
     :id="id()"
     :class="{hidden: initiallyHidden}"
     :role="tabButtonId ? 'tabpanel' : undefined"
-    :aria-label="node.props.label"
     :aria-labelledby="tabButtonId"
     :data-id="id()"
     :data-ui-tab="node.uid"
@@ -48,7 +50,11 @@
     <craft-field-group
       v-else-if="!deferred"
       separated
-      style="--c-field-group-separator-spacing: var(--cp-container-padding)"
+      style="
+        --c-field-group-separator-spacing: calc(
+          var(--cp-container-padding) / 2
+        );
+      "
     >
       <UiNodeList
         :nodes="node.children ?? []"

@@ -347,7 +347,7 @@ describe('HeightConditionRule', function () {
 
 describe('VolumeConditionRule', function () {
     it('matchElement returns true when the asset’s volume is in the selected values', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
         $asset = AssetModel::factory()->createElement(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);
 
@@ -362,8 +362,8 @@ describe('VolumeConditionRule', function () {
     });
 
     it('matchElement returns false when the asset’s volume is not in the selected values', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
-        $volume2 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
         $asset = AssetModel::factory()->createElement(['volumeId' => $volume2->id, 'folderId' => $folder2->id]);
 
@@ -378,8 +378,8 @@ describe('VolumeConditionRule', function () {
     });
 
     it('modifyQuery filters assets by volume', function () {
-        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
-        $volume2 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['disk' => 'test-disk']);
         $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
         $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
         AssetModel::factory()->create(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);
@@ -397,6 +397,35 @@ describe('VolumeConditionRule', function () {
 
         expect($query->count())->toBe(1)
             ->and($query->one()->volumeId)->toBe($volume1->id);
+    });
+
+    it('modifyQuery excludes assets in the selected volumes', function () {
+        $volume1 = Volume::factory()->create(['disk' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['disk' => 'test-disk']);
+        $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
+        $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
+        AssetModel::factory()->create(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);
+        AssetModel::factory()->create(['volumeId' => $volume2->id, 'folderId' => $folder2->id]);
+
+        app()->forgetInstance(Volumes::class);
+
+        $condition = new AssetCondition(Asset::class);
+        $rule = $condition->createConditionRule(VolumeConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [$volume1->uid];
+
+        $query = Asset::find()->volumeId([$volume1->id, $volume2->id]);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->count())->toBe(1)
+            ->and($query->one()->volumeId)->toBe($volume2->id);
+
+        $rule->values = app(Volumes::class)->getAllVolumes()->pluck('uid')->all();
+
+        $query = Asset::find()->volumeId([$volume1->id, $volume2->id]);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->count())->toBe(0);
     });
 });
 

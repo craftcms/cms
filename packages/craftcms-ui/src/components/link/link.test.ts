@@ -80,10 +80,9 @@ describe('craft-link', () => {
     ).toBe('link');
   });
 
-  it('names the details after the kind of link', async () => {
+  it('heads the details with the kind of link', async () => {
     const element = await createLink();
 
-    expect(query(element, 'craft-popover')!.getAttribute('label')).toBe('Link');
     expect(query(element, '.details__heading')!.textContent).toBe('Link');
   });
 

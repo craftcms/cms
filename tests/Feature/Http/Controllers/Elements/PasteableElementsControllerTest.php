@@ -80,7 +80,7 @@ it('finds assets in a volume’s subfolders, which the selector can open', funct
         'root' => storage_path('framework/testing/pasteable-elements-test/test-disk'),
     ]);
 
-    $volume = Volumes::getVolumeById(Volume::factory()->create(['fs' => 'test-disk'])->id);
+    $volume = Volumes::getVolumeById(Volume::factory()->create(['disk' => 'test-disk'])->id);
     $folder = Folders::ensureFolderByFullPathAndVolume('nested/deeper', $volume);
     $asset = AssetModel::factory()->createElement([
         'volumeId' => $volume->id,
@@ -89,11 +89,14 @@ it('finds assets in a volume’s subfolders, which the selector can open', funct
         'kind' => 'text',
     ]);
 
-    $elements = ($this->pasteable)([
+    $paste = fn (array $payload) => collect(($this->pasteable)([
         'elementType' => Asset::class,
-        'sources' => ["volume:$volume->uid"],
         'elementIds' => [$asset->id],
-    ]);
+        ...$payload,
+    ]))->pluck('id')->all();
+    $nested = Folders::findFolder(['volumeId' => $volume->id, 'path' => 'nested/']);
 
-    expect(collect($elements)->pluck('id')->all())->toBe([$asset->id]);
+    expect($paste(['sources' => ["volume:$volume->uid"]]))->toBe([$asset->id])
+        ->and($paste(['sources' => ["volume:$volume->uid/folder:$nested->uid"]]))->toBe([$asset->id])
+        ->and($paste(['sources' => ["volume:$volume->uid"], 'showFolders' => false]))->toBe([]);
 });

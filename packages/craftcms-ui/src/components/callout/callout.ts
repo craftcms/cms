@@ -8,6 +8,7 @@ import {Paddable} from '@src/mixins/Paddable.js';
 import variantsStyles from '@src/styles/variants.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
+import {scheduleMeasure} from '@src/utilities/frame';
 import {
   hasSlotted,
   LightDomController,
@@ -24,7 +25,7 @@ import {
  *
  * @slot - The callout's body content.
  * @slot title - Title content, shown above the body. Takes precedence over the
- *   `title` attribute, which is the shorthand for the same region.
+ *   `label` attribute, which is the shorthand for the same region.
  * @slot icon - Leading artwork, replacing the icon the variant would supply.
  *   Slotted content is honored even when no icon name resolves, and is
  *   suppressed entirely by `hide-icon`.
@@ -88,8 +89,12 @@ export default class CraftCallout extends Paddable(LitElement, {
   /**
    * Title text, shown above the body. A shorthand for the `title` slot; slot
    * it instead when the title needs markup.
+   *
+   * Named `label` rather than `title` on purpose, as on `craft-pane`: `title`
+   * is a global HTML attribute, so it would paint a native browser tooltip
+   * over the whole callout and be announced in addition to the visible title.
    */
-  @property() override title: string = '';
+  @property() label: string = '';
 
   /**
    * Name of the icon to show, replacing the one the variant would supply.
@@ -138,6 +143,64 @@ export default class CraftCallout extends Paddable(LitElement, {
    */
   private _lightDom = new LightDomController(this);
 
+  /** Re-reads the first line's font when the text reflows, as when a web font loads. */
+  private _textObserver?: ResizeObserver;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this._textObserver = new ResizeObserver(() =>
+      scheduleMeasure(this.syncFirstLineFont)
+    );
+    this.updateComplete.then(() => {
+      const text = this.renderRoot.querySelector('.callout__text');
+      if (text) {
+        this._textObserver?.observe(text);
+      }
+    });
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._textObserver?.disconnect();
+    this._textObserver = undefined;
+  }
+
+  protected override updated(): void {
+    scheduleMeasure(this.syncFirstLineFont);
+  }
+
+  /**
+   * Gives the icon column's strut the font of the first line of text, so the
+   * icon centers on that line even when it's a slotted heading set larger
+   * than the callout's own text.
+   */
+  private syncFirstLineFont = () => {
+    const strut = this.renderRoot.querySelector<HTMLElement>('.callout__strut');
+    if (!strut) {
+      return;
+    }
+
+    const slot =
+      this.renderRoot.querySelector<HTMLSlotElement>('slot[name="title"]') ??
+      this.renderRoot.querySelector<HTMLSlotElement>(
+        '.callout__description slot'
+      );
+    const text = firstText(slot?.assignedNodes({flatten: true}) ?? []);
+    // Text slotted straight into the callout takes its font from the slot.
+    const parent =
+      text?.parentElement === this ? text.assignedSlot : text?.parentElement;
+    const style = parent ? getComputedStyle(parent) : null;
+    const fontFamily = style?.fontFamily ?? '';
+    const fontSize = style?.fontSize ?? '';
+    const lineHeight = style?.lineHeight ?? '';
+
+    return () => {
+      strut.style.fontFamily = fontFamily;
+      strut.style.fontSize = fontSize;
+      strut.style.lineHeight = lineHeight;
+    };
+  };
+
   protected override willUpdate(): void {
     this.resolvedIcon = this.icon ?? this.getDefaultIcon();
   }
@@ -158,7 +221,7 @@ export default class CraftCallout extends Paddable(LitElement, {
   }
 
   protected override render(): unknown {
-    const hasTitle = this.title || hasSlotted(this, 'title');
+    const hasTitle = this.label || hasSlotted(this, 'title');
     // A slotted icon counts even when there's no name to resolve — it's the
     // consumer bringing their own artwork.
     const hasIcon =
@@ -177,19 +240,21 @@ export default class CraftCallout extends Paddable(LitElement, {
       >
         <div class="callout__body">
           ${hasIcon
-            ? html`<slot name="icon" class="callout__icon">
-                ${this.resolvedIcon
-                  ? html`<craft-icon
-                      name="${this.resolvedIcon}"
-                      style="font-size: 0.9em"
-                    ></craft-icon>`
-                  : nothing}
-              </slot>`
+            ? html`<span class="callout__icon">
+                <span class="callout__strut" aria-hidden="true">&#8203;</span>
+                <slot name="icon">
+                  ${this.resolvedIcon
+                    ? html`<craft-icon
+                        name="${this.resolvedIcon}"
+                      ></craft-icon>`
+                    : nothing}
+                </slot>
+              </span>`
             : nothing}
           <div class="callout__text">
             ${hasTitle
               ? html`<div class="callout__title">
-                  <slot name="title">${this.title}</slot>
+                  <slot name="title">${this.label}</slot>
                 </div>`
               : nothing}
 
@@ -199,10 +264,30 @@ export default class CraftCallout extends Paddable(LitElement, {
           </div>
         </div>
 
-        <div class="callout__action"><slot name="action"></slot></div>
+        ${hasSlotted(this, 'action')
+          ? html`<div class="callout__action"><slot name="action"></slot></div>`
+          : nothing}
       </div>
     `;
   }
+}
+
+/** The first text node with something in it, in document order. */
+function firstText(nodes: Iterable<Node>): Text | null {
+  for (const node of nodes) {
+    if (node instanceof Text) {
+      if (node.data.trim()) {
+        return node;
+      }
+    } else if (node instanceof Element) {
+      const text = firstText(node.childNodes);
+      if (text) {
+        return text;
+      }
+    }
+  }
+
+  return null;
 }
 
 if (!customElements.get('craft-callout')) {

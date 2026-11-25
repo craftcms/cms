@@ -14,7 +14,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
+use CraftCms\Cms\Release\Activity\ReleaseOperation;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
@@ -38,7 +38,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -310,7 +309,9 @@ class Releases
 
         return DB::transaction(function () use ($release, $publishAt, $actor): Release {
             $release = $this->lockRelease($release->id);
-            $this->ensureMutable($release);
+            if (! $release->status->canTransitionTo(ReleaseStatus::Scheduled)) {
+                throw new ReleaseException(t('Scheduled and completed releases cannot be changed.'));
+            }
             $items = $this->lockReleaseDrafts($release);
             if (! $actor->can('publishReleases')) {
                 throw new ReleaseException(t('You are not allowed to schedule releases.'), Response::HTTP_FORBIDDEN);
@@ -323,10 +324,9 @@ class Releases
                 throw new ReleaseException(t('The release is not ready to be scheduled.'));
             }
 
-            $release->update([
+            $release->transitionTo(ReleaseStatus::Scheduled, [
                 'publishedAt' => $publishAt,
                 'scheduledById' => $actor->getCraftUserId(),
-                'status' => ReleaseStatus::Scheduled,
                 'lastError' => null,
             ]);
 
@@ -340,14 +340,13 @@ class Releases
 
         return DB::transaction(function () use ($release): Release {
             $release = $this->lockRelease($release->id);
-            if ($release->status !== ReleaseStatus::Scheduled) {
+            if (! $release->status->canTransitionTo(ReleaseStatus::Draft)) {
                 throw new ReleaseException(t('Only scheduled releases can be unscheduled.'));
             }
 
-            $release->update([
+            $release->transitionTo(ReleaseStatus::Draft, [
                 'publishedAt' => null,
                 'scheduledById' => null,
-                'status' => ReleaseStatus::Draft,
                 'lastError' => null,
             ]);
 
@@ -436,17 +435,43 @@ class Releases
 
     private function publishRelease(Release $release, bool $scheduledExecution, ?CraftUser $actor = null): Release
     {
-        [$publishedRelease, $failedRelease, $publicationFailure] = DB::transaction(function () use ($release, $scheduledExecution, $actor): array {
+        try {
+            [$publishedRelease, $failedRelease, $publicationFailure] = $this->publishReleaseInTransaction($release, $scheduledExecution, $actor);
+        } catch (Throwable $exception) {
+            $this->failStrandedPublication($release->id, $exception);
+
+            throw $exception;
+        }
+
+        if ($publicationFailure instanceof Throwable) {
+            $this->notifyPublicationFailure($failedRelease, $publicationFailure);
+
+            throw $publicationFailure;
+        }
+
+        try {
+            event(new ReleasePublished($publishedRelease));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $publishedRelease;
+    }
+
+    /**
+     * Publishes the release inside a transaction. If a draft fails to publish, the release moves to Failed.
+     *
+     * @return array{Release|null, Release|null, Throwable|null} the published release, or the failed release and its error
+     */
+    private function publishReleaseInTransaction(Release $release, bool $scheduledExecution, ?CraftUser $actor): array
+    {
+        return DB::transaction(function () use ($release, $scheduledExecution, $actor): array {
             $release = $this->lockRelease($release->id);
-            $allowedStatuses = $scheduledExecution
-                ? [ReleaseStatus::Scheduled]
-                : [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed];
+            if ($scheduledExecution && $release->status !== ReleaseStatus::Scheduled) {
+                throw new ReleaseNotDue(t('The release is no longer scheduled.'));
+            }
 
-            if (! in_array($release->status, $allowedStatuses, true)) {
-                if ($scheduledExecution) {
-                    throw new ReleaseNotDue(t('The release is no longer scheduled.'));
-                }
-
+            if (! $release->status->canTransitionTo(ReleaseStatus::Publishing)) {
                 throw new ReleaseException(t('This release cannot be published in its current state.'));
             }
 
@@ -478,8 +503,7 @@ class Releases
                 }
 
                 $release->refresh();
-                $release->update([
-                    'status' => ReleaseStatus::Failed,
+                $release->transitionTo(ReleaseStatus::Failed, [
                     'lastError' => $exception->getMessage(),
                     'publishAttempts' => $release->publishAttempts + 1,
                 ]);
@@ -487,20 +511,32 @@ class Releases
                 return [null, $release->refresh(), $exception];
             }
         }, 3);
+    }
 
-        if ($publicationFailure instanceof Throwable) {
-            $this->notifyPublicationFailure($failedRelease, $publicationFailure);
+    /**
+     * Moves a release that's still publishing to Failed after its publication threw.
+     *
+     * Publishing is normally set and resolved in one transaction, so it's never committed. When something commits
+     * the transaction early, such as a MySQL statement with an implicit commit, the release would otherwise stay
+     * Publishing, and nothing can publish, schedule or delete a release in that status.
+     */
+    private function failStrandedPublication(int $releaseId, Throwable $exception): void
+    {
+        $release = Release::query()->find($releaseId);
 
-            throw $publicationFailure;
+        if ($release?->status !== ReleaseStatus::Publishing) {
+            return;
         }
 
         try {
-            event(new ReleasePublished($publishedRelease));
-        } catch (Throwable $exception) {
-            report($exception);
+            $release->transitionTo(ReleaseStatus::Failed, ['lastError' => $exception->getMessage()]);
+        } catch (Throwable $transitionException) {
+            report($transitionException);
+
+            return;
         }
 
-        return $publishedRelease;
+        $this->notifyPublicationFailure($release, $exception);
     }
 
     /** @param Collection<int, ReleaseItem> $items */
@@ -512,41 +548,39 @@ class Releases
             throw new ReleaseException(t('The release has no drafts.'));
         }
 
-        $release->update([
-            'status' => ReleaseStatus::Publishing,
+        $release->transitionTo(ReleaseStatus::Publishing, [
             'lastError' => null,
             'publishAttempts' => $release->publishAttempts + 1,
         ]);
 
-        foreach ($items as $item) {
-            if ($item->draftId === null) {
-                throw new ReleaseException(t('The draft no longer exists.'));
+        // Group all activity from publishing the release, including structure moves
+        ReleaseOperation::for($release)->scope(function () use ($items): void {
+            foreach ($items as $item) {
+                if ($item->draftId === null) {
+                    throw new ReleaseException(t('The draft no longer exists.'));
+                }
+
+                $draft = $this->freshDraft((int) $item->draftId);
+                if (! $draft::trackChanges() && ElementHelper::isOutdated($draft)) {
+                    throw new ReleaseException(t('The live element changed after this draft was prepared.'));
+                }
+
+                if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
+                    app(Elements::class)->mergeCanonicalChanges($draft);
+                }
+
+                $this->ensureReadyWorkflow($draft, true);
+                $item->update(['draftId' => null]);
+                $canonical = $this->validateAndApplyDraft($draft);
+                $item->update([
+                    'draftId' => null,
+                    'publishedElementId' => $canonical->id,
+                    'publishedAt' => now(),
+                ]);
             }
+        });
 
-            $draft = $this->freshDraft((int) $item->draftId);
-            if (! $draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                throw new ReleaseException(t('The live element changed after this draft was prepared.'));
-            }
-
-            if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                app(Elements::class)->mergeCanonicalChanges($draft);
-            }
-
-            $this->ensureReadyWorkflow($draft, true);
-            $item->update(['draftId' => null]);
-            $canonical = Context::scope(
-                fn (): ElementInterface => $this->validateAndApplyDraft($draft),
-                hidden: [ReleaseDraftPublished::ContextRelease => ['id' => $release->id, 'name' => $release->name]],
-            );
-            $item->update([
-                'draftId' => null,
-                'publishedElementId' => $canonical->id,
-                'publishedAt' => now(),
-            ]);
-        }
-
-        $release->update([
-            'status' => ReleaseStatus::Published,
+        $release->transitionTo(ReleaseStatus::Published, [
             'publishedAt' => now(),
             'lastError' => null,
         ]);
@@ -831,9 +865,11 @@ class Releases
     /** Returns a scheduled release to a draft once it has no drafts left to publish. */
     private function unscheduleIfEmpty(Release $release): void
     {
+        // Deleting a draft can already have unscheduled the release through withElementDeletion()
+        $release->refresh();
+
         if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
-            $release->update([
-                'status' => ReleaseStatus::Draft,
+            $release->transitionTo(ReleaseStatus::Draft, [
                 'publishedAt' => null,
                 'scheduledById' => null,
                 'lastError' => null,
@@ -858,21 +894,9 @@ class Releases
             ->first($this->workflows->requiresApproval(...));
         $draftToApply = $workflowDraft !== null ? clone $workflowDraft : $draft;
 
-        if ($draftToApply->enabled && $draftToApply->getEnabledForSite()) {
-            $draftToApply->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
+        $drafts = app(Drafts::class);
 
-        if ($draftToApply->getIsUnpublishedDraft()) {
-            $draftToApply->propagateRequired = true;
-        }
-
-        $draftToApply->applyingDraft = true;
-        $saved = app(Elements::class)->saveElement(
-            element: $draftToApply,
-            crossSiteValidate: Sites::isMultiSite(),
-        );
-
-        if (! $saved) {
+        if (! $drafts->saveDraftForApplying($draftToApply, Sites::isMultiSite())) {
             // Cross-site errors link to the invalid site for the element editor;
             // a release reports them as text in its error, notifications and MCP.
             $errors = array_map(
@@ -885,10 +909,7 @@ class Releases
             );
         }
 
-        $draftToApply->applyingDraft = false;
-        $draftToApply->propagateRequired = false;
-
-        return app(Drafts::class)->applyDraft($draftToApply);
+        return $drafts->applyDraft($draftToApply);
     }
 
     /** @return list<ElementInterface> */

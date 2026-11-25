@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Cp as CpHelper;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
@@ -14,7 +15,6 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Http\Responses\BridgedScreen;
 use CraftCms\Cms\License\License;
-use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
@@ -24,7 +24,6 @@ use CraftCms\Cms\View\LegacyScreenFragments;
 use DateTimeInterface;
 use Deprecated;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Stringable;
 
@@ -58,6 +57,14 @@ class Cp extends Component
     public function getTheme(): string
     {
         return Theme::forUser(currentUserElement())->value;
+    }
+
+    /**
+     * Returns the control panel icon’s HTML, or `null` if neither the `cpIconPath` nor the `cpIconUrl` setting is set.
+     */
+    public function iconHtml(): ?string
+    {
+        return CpHelper::iconHtml();
     }
 
     /**
@@ -139,56 +146,7 @@ class Cp extends Component
     /** @return array<string, mixed>|null */
     public function trialInfo(): ?array
     {
-        $issues = collect(app(License::class)->issues([
-            LicenseKeyStatus::Trial->value,
-            LicenseKeyStatus::Astray->value,
-            'wrong_edition',
-        ]));
-
-        if ($issues->isEmpty()) {
-            return null;
-        }
-
-        $cmsIssues = $issues->filter(fn ($issue) => in_array($issue[2]['type'], ['cms-edition', 'cms-renewal']));
-        $pluginEditionIssues = $issues->filter(fn ($issue) => $issue[2]['type'] === 'plugin-edition');
-        $pluginRenewalIssues = $issues->filter(fn ($issue) => $issue[2]['type'] === 'plugin-renewal');
-
-        $names = $cmsIssues->map(fn ($issue) => $issue[0])->all();
-        foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
-            $count = $group->count();
-            if ($count === 1) {
-                $names[] = $group->first()[0];
-            } elseif ($count !== 0) {
-                if ($group->first()[2]['type'] === 'plugin-edition') {
-                    $name = t('{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
-                        'count' => $count,
-                    ]);
-                } else {
-                    $name = t('{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
-                        'count' => $count,
-                    ]);
-                }
-                if (empty($names)) {
-                    $name = ucfirst($name);
-                }
-                $names[] = $name;
-            }
-        }
-
-        $message = t('{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
-            'names' => collect($names)->sentence(),
-            'total' => $issues->count(),
-        ]);
-
-        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = Uri::of("$consoleUrl/cart/new")
-            ->withQuery(['items' => $issues->map(fn ($issue) => $issue[2])->all()])
-            ->value();
-
-        return [
-            'message' => $message,
-            'cartUrl' => $cartUrl,
-        ];
+        return app(License::class)->trialInfo();
     }
 
     /**
@@ -327,7 +285,7 @@ class Cp extends Component
     {
         event($event = new FormActionsResolving($formActions ?? []));
 
-        return $event->formActions;
+        return $event->formActions ?: null;
     }
 
     /**
@@ -354,6 +312,16 @@ class Cp extends Component
     }
 
     /**
+     * The control panel's JavaScript config, which `_layouts/base` writes into its document as `window.Craft`.
+     *
+     * @return array<string, mixed>
+     */
+    public function config(): array
+    {
+        return CpHelper::config()->all();
+    }
+
+    /**
      * The layout `_layouts/cp` should extend for this render.
      *
      * `_layouts/basecp.twig` — the document — unless the response layer has
@@ -368,6 +336,20 @@ class Cp extends Component
     }
 
     /**
+     * Whether this render is handing its fragments to the Inertia shell rather
+     * than building a document of its own.
+     *
+     * What the shell draws for itself, the screen leaves out — its save
+     * controls above all, which the shell renders in the content footer.
+     *
+     * @see LegacyScreenFragments
+     */
+    public function collectsScreenFragments(): bool
+    {
+        return app(LegacyScreenFragments::class)->enabled();
+    }
+
+    /**
      * The marker `_layouts/elementindex` puts in its own content block.
      *
      * @see BridgedScreen::CONTENT_SENTINEL
@@ -375,20 +357,6 @@ class Cp extends Component
     public function elementIndexSentinel(): string
     {
         return BridgedScreen::CONTENT_SENTINEL;
-    }
-
-    /**
-     * Whether this render is collecting fragments rather than drawing a page.
-     *
-     * A layout asks when the answer changes what it should render — an element
-     * index skips the legacy toolbar and boot JS when the control panel shell
-     * is going to supply its own.
-     *
-     * @see LegacyScreenFragments
-     */
-    public function screenCollecting(): bool
-    {
-        return app(LegacyScreenFragments::class)->enabled();
     }
 
     /**

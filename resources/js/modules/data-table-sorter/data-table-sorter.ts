@@ -8,9 +8,8 @@ declare const $: any;
 /**
  * DataTableSorter — a port of `Craft.DataTableSorter` onto `@craftcms/garnish`
  * `DragSort`. Row-reorders a `<table>`'s `<tbody>`, cloning the dragged row into
- * a matching-width helper table. Booted by `Craft.AdminTable` and the modern
- * editable-table module (both via `new Craft.DataTableSorter(...)`), so exposed
- * on `window.Craft`.
+ * a matching-width helper table. The editable-table module imports it; the
+ * legacy `Craft.AdminTable` reaches it as `Craft.DataTableSorter`.
  */
 // Module-level (a `static defaults` would collide with `DragSort.defaults`,
 // a full `DragSortSettings`).

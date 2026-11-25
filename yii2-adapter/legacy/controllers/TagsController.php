@@ -189,7 +189,7 @@ class TagsController extends Controller
         $search = trim($this->request->getBodyParam('search'));
         $tagGroupId = $this->request->getBodyParam('tagGroupId');
         $excludeIds = $this->request->getBodyParam('excludeIds', []);
-        $allowSimilarTags = Cms::config()->allowSimilarTags;
+        $allowSimilarTags = \craft\config\GeneralConfig::current()->allowSimilarTags;
 
         /** @var Tag[] $tags */
         $tags = Tag::find()

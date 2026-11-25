@@ -3,6 +3,7 @@
   import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
   import {usePage} from '@inertiajs/vue3';
   import {computed, onScopeDispose, shallowRef} from 'vue';
+  import EditionBadge from '@/common/components/EditionBadge.vue';
   import EditionController from '@actions/EditionController';
   import StoreContainer from '@/modules/plugin-store/components/StoreContainer.vue';
   import {getCmsEditions} from '@/modules/plugin-store/api';
@@ -111,8 +112,10 @@
 
     <ul v-else class="cms-editions">
       <li v-for="card in cards" :key="card.edition.handle" class="cms-edition">
-        <div class="grid gap-sm">
-          <h2 class="m-0">{{ card.edition.name }}</h2>
+        <div class="grid gap-md">
+          <h2 class="cp-h2">
+            <EditionBadge :edition="card.edition.name" size="large" />
+          </h2>
           <p v-if="card.description" class="m-0">{{ card.description }}</p>
         </div>
 

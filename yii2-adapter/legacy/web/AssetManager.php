@@ -13,7 +13,6 @@ use Craft;
 use craft\errors\DbConnectException;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Url;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -43,11 +42,20 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * @inheritdoc
      */
+    public function init(): void
+    {
+        $basePath = Aliases::get($this->basePath);
+        parent::init();
+        // Yii resolves basePath with realpath(), which is false until publish() creates the directory
+        $this->basePath = $this->basePath ?: FileHelper::normalizePath($basePath);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function publish($path, $options = []): array
     {
-        if (app()->isEphemeral()) {
-            return [$path, $this->getPublishedUrl($path)];
-        }
+        FileHelper::createDirectory($this->basePath, $this->dirMode);
 
         return parent::publish($path, $options);
     }
@@ -72,7 +80,7 @@ class AssetManager extends \yii\web\AssetManager
             return $this->_addBuildIdParam(craftAsset($assetPath));
         }
 
-        if ($publish === true && !app()->isEphemeral()) {
+        if ($publish === true) {
             [, $url] = $this->publish($path);
         } else {
             $url = parent::getPublishedUrl($path);
@@ -182,7 +190,7 @@ class AssetManager extends \yii\web\AssetManager
 
     private function _addBuildIdParam($url): string
     {
-        $generalConfig = Cms::config();
+        $generalConfig = \craft\config\GeneralConfig::current();
         if ($generalConfig->buildId) {
             return Url::urlWithParams($url, ['buildId' => $generalConfig->buildId]);
         }

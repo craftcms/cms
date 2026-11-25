@@ -48,7 +48,7 @@ readonly class ServerFactory
     {
         return $this->builder(
             discoverer: $this->publicCapabilities,
-            instructions: 'Use craft-context-get to inspect allowed public content, then craft-query to query element types that the site administrator has explicitly exposed. Paginated element queries default to limit 100 and cap it at 500; use limit and offset for subsequent pages. Explicitly selected nested fields expand one level, with at most 100 nested elements across all fields of a record. Query larger nested collections separately.',
+            instructions: 'Use craft_context_get to inspect allowed public content, then craft_query to query element types that the site administrator has explicitly exposed. Paginated element queries default to limit 100 and cap it at 500; use limit and offset for subsequent pages. Explicitly selected nested fields expand one level, with at most 100 nested elements across all fields of a record. Query larger nested collections separately.',
         )->setSession(new Psr16SessionStore($this->cache, 'craft-mcp-public-'))->build();
     }
 

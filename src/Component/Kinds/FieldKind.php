@@ -38,7 +38,7 @@ readonly class FieldKind extends TypeRegistryKind
 
     public function usage(): string
     {
-        return 'configuration.create with type: fields takes the class as attributes.type and its settings as attributes.settings.';
+        return 'configuration_create with type: fields takes the class as attributes.type and its settings as attributes.settings.';
     }
 
     protected function registry(): TypeRegistry

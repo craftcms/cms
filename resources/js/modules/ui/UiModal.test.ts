@@ -4,6 +4,19 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import UiModal from './UiModal.vue';
 import {UiTableRefresh} from './runtime';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const renderer = vi.hoisted(() => ({
   refreshTable: undefined as (() => void) | undefined,
 }));
@@ -72,7 +85,7 @@ describe('UiModal', () => {
 
   beforeEach(() => {
     (window as any).Craft = {
-      cp: {displayError: vi.fn(), displayNotice: vi.fn()},
+      cp: {},
     };
     get.mockResolvedValue({data: {ui: {nodes: [], values: {}}}});
     submitted.length = 0;
@@ -107,9 +120,7 @@ describe('UiModal', () => {
       details: {a: {accept: '2'}},
       thingId: 4,
     });
-    expect((window as any).Craft.cp.displayNotice).toHaveBeenCalledWith(
-      'Received'
-    );
+    expect(messages.showNotice).toHaveBeenCalledWith('Received');
     expect(submitted).toEqual([{message: 'Received', ok: true}]);
   });
 
@@ -119,9 +130,7 @@ describe('UiModal', () => {
     mount({onClose: closed});
     await flush();
 
-    expect((window as any).Craft.cp.displayError).toHaveBeenCalledWith(
-      'Not found'
-    );
+    expect(messages.showError).toHaveBeenCalledWith('Not found');
     expect(closed).toHaveBeenCalled();
   });
 

@@ -30,9 +30,9 @@ readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
-    public const string VERSION = '6.0.0-alpha.20';
+    public const string VERSION = '6.0.0-beta.2';
 
-    public const string SCHEMA_VERSION = '6.0.0.33';
+    public const string SCHEMA_VERSION = '6.0.0.44';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 
@@ -225,7 +225,7 @@ readonly class Cms
         }
 
         try {
-            DB::connection()->getPdo();
+            DB::connection()->getReadPdo();
         } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if (! app()->runningInConsole()) {
                 Log::error('There was a problem connecting to the database: '.$e->getMessage(), [__METHOD__]);

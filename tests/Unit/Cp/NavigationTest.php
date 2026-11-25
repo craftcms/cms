@@ -349,7 +349,12 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
     $sources->shouldReceive('getPages')->andReturn(collect(['Entries']));
     $sources->shouldReceive('getPageSettings')->andReturn([]);
     $sources->shouldReceive('getSources')->andReturn(collect([
-        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'label' => 'Singles'],
+        [
+            'type' => ElementSources::TYPE_NATIVE,
+            'key' => 'section:def',
+            'label' => 'Home',
+            'data' => ['handle' => 'home'],
+        ],
         ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Channels'],
         [
             'type' => ElementSources::TYPE_NATIVE,
@@ -378,9 +383,9 @@ it('hangs an element type\'s sources off its nav item, grouped by heading', func
     $entries = findNavItem($navigation->getTree(), 'Entries');
     $children = collect($entries->subnav);
 
-    expect($children->pluck('label')->all())->toBe(['Singles', 'Channels'])
-        ->and($children->firstWhere('label', 'Singles')->href)
-        ->toEndWith('/content/entries/singles');
+    expect($children->pluck('label')->all())->toBe(['Home', 'Channels'])
+        ->and($children->firstWhere('label', 'Home')->href)
+        ->toEndWith('/content/entries/home');
 
     $channels = $children->firstWhere('label', 'Channels');
 

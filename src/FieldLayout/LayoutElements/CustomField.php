@@ -11,7 +11,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
@@ -87,8 +86,6 @@ class CustomField extends BaseField
     public ?string $oldFieldUid = null;
 
     private ?FieldInterface $_field = null;
-
-    private ?FieldInterface $_sourceField = null;
 
     private ?string $_fieldUid = null;
 
@@ -496,7 +493,6 @@ class CustomField extends BaseField
      */
     public function setField(FieldInterface $field): void
     {
-        $this->_sourceField = $field;
         $this->_field = clone $field;
         $this->_fieldUid = $this->_field->uid;
         $this->_field->layoutElement = $this;
@@ -531,7 +527,6 @@ class CustomField extends BaseField
     {
         $this->_fieldUid = $uid;
         $this->_field = null;
-        $this->_sourceField = null;
 
         $this->getLayout()?->reset();
     }
@@ -908,12 +903,10 @@ class CustomField extends BaseField
     protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
         try {
-            $this->getField();
+            $field = $this->getField();
         } catch (FieldNotFoundException) {
             return null;
         }
-
-        $field = $this->_sourceField;
 
         if ($field instanceof MissingField) {
             return MissingControl::make(['fields', $this->attribute()])
@@ -1000,18 +993,6 @@ class CustomField extends BaseField
         }
 
         return $field->getTranslationDescription($element);
-    }
-
-    #[Override]
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        try {
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            return false;
-        }
-
-        return $field instanceof CrossSiteCopyableFieldInterface && $field->getIsTranslatable($element);
     }
 
     /** @return list<array<string, mixed>> */

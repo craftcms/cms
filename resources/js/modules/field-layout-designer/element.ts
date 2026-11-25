@@ -8,13 +8,14 @@ import {
 import type {Tab} from './tab';
 import {type ActionMenuItem, t} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
-
-declare const Craft: any;
+import {uuid} from '@/common/craft/strings';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
+import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM
- * port of the legacy `Craft.FieldLayoutDesigner.Element`. jQuery survives only at
- * Craft seams (`Craft.ui.*`, `Craft.*Slideout`). The action menu uses the
+ * port of the legacy `Craft.FieldLayoutDesigner.Element`. The action menu uses the
  * `craft-action-menu` web component.
  */
 export class Element extends Base {
@@ -44,7 +45,7 @@ export class Element extends Base {
     // New element?
     const isNew = !this.uid;
     if (isNew) {
-      this.uid = Craft.uuid();
+      this.uid = uuid();
       this.config = Object.assign(JSON.parse($container.dataset.config), {
         uid: this.uid,
       });
@@ -93,21 +94,25 @@ export class Element extends Base {
       hasAttr(this.$container, 'data-has-custom-width');
 
     if (this.hasCustomWidth) {
-      const widthSlider = document.createElement('craft-slide-picker');
-      widthSlider.setAttribute('label', Craft.t('app', 'Width'));
-      widthSlider.setAttribute('label-sr-only', '');
-      widthSlider.setAttribute('value-unit', '%');
+      const widthSlider = document.createElement('craft-slide-picker-button');
+      widthSlider.sliderLabel = t('Width');
+      // Describes the width button by its field, "Body", to tell the width
+      // buttons apart. Settings that rename the field rebuild the element,
+      // which runs this again.
+      widthSlider.itemLabel = this.getLabel() ?? '';
+      widthSlider.valueLabel = (num) => t('{num}% width', {num});
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
       widthSlider.setAttribute('step', '25');
-      widthSlider.setAttribute('model-value', `${this.config.width || 100}`);
+      widthSlider.setAttribute('value', `${this.config.width || 100}`);
+      widthSlider.setAttribute('flush', 'inline-end');
 
       if (this.tab.designer.settings!.readOnly) {
         widthSlider.setAttribute('readonly', '');
       }
 
       widthSlider.addEventListener('change', () => {
-        const width = widthSlider.modelValue;
+        const width = widthSlider.value;
         this.updateConfig((config: any) => {
           config.width = width;
           return config;
@@ -122,7 +127,7 @@ export class Element extends Base {
     this.hasSettings = hasAttr(this.$container, 'data-has-settings');
 
     const menu = document.createElement('craft-action-menu');
-    menu.label = Craft.t('app', 'Actions');
+    menu.label = t('Actions');
     // Disable the generated (default ellipsis) invoker when read-only.
     menu.disabled = readOnly;
     // Anchor the settings slideout (focus return) to the menu element, since the
@@ -143,7 +148,7 @@ export class Element extends Base {
 
       if (this.hasSettings && !readOnly) {
         items.push({
-          label: Craft.t('app', 'Settings'),
+          label: t('Settings'),
           icon: 'gear',
           onClick: () => {
             this.createSettings();
@@ -159,7 +164,7 @@ export class Element extends Base {
         }
         if (!this.config.required) {
           items.push({
-            label: Craft.t('app', 'Make required'),
+            label: t('Make required'),
             icon: 'asterisk',
             iconColor: 'rose',
             onClick: () => {
@@ -168,7 +173,7 @@ export class Element extends Base {
           });
         } else {
           items.push({
-            label: Craft.t('app', 'Make optional'),
+            label: t('Make optional'),
             icon: 'custom-icons/asterisk-slash',
             iconColor: 'gray',
             onClick: () => {
@@ -189,7 +194,7 @@ export class Element extends Base {
         }
         if (hasPrev) {
           items.push({
-            label: Craft.t('app', 'Move up'),
+            label: t('Move up'),
             icon: 'arrow-up',
             onClick: () => {
               this.moveUp();
@@ -198,7 +203,7 @@ export class Element extends Base {
         }
         if (hasNext) {
           items.push({
-            label: Craft.t('app', 'Move down'),
+            label: t('Move down'),
             icon: 'arrow-down',
             onClick: () => {
               this.moveDown();
@@ -212,7 +217,7 @@ export class Element extends Base {
           items.push({type: 'hr'});
         }
         items.push({
-          label: Craft.t('app', 'Remove'),
+          label: t('Remove'),
           icon: 'xmark-large',
           variant: 'danger',
           onClick: () => {
@@ -225,6 +230,16 @@ export class Element extends Base {
     };
 
     this.$container.appendChild(menu);
+
+    // Pull the actions button's icon up against the width picker, which is
+    // flush on that side too.
+    if (this.hasCustomWidth) {
+      void menu.updateComplete.then(() => {
+        menu
+          .querySelector(':scope > craft-button[slot="invoker"]')
+          ?.setAttribute('flush', 'inline-start');
+      });
+    }
   }
 
   onSelect(): void {
@@ -264,19 +279,16 @@ export class Element extends Base {
   async createSettings(): Promise<void> {
     let data;
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'fields/render-layout-component-settings',
         {
-          data: {
-            ...this.settingsRequestData(),
-            config: this.config,
-          },
+          ...this.settingsRequestData(),
+          config: this.config,
         }
       );
       data = response.data;
     } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 
@@ -347,21 +359,18 @@ export class Element extends Base {
     let data;
 
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'fields/apply-layout-element-settings',
         {
-          data: {
-            ...this.settingsRequestData(),
-            config,
-            settings,
-          },
+          ...this.settingsRequestData(),
+          config,
+          settings,
         }
       );
       data = response.data;
     } catch (e: any) {
       // The settings panel renders field errors from the rejection.
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 

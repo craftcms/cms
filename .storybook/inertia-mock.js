@@ -136,9 +136,26 @@ export const router = {
   replace(url, options) {
     console.log('[Storybook] router.replace:', url, options);
   },
+  prefetch(url, options) {
+    console.log('[Storybook] router.prefetch:', url, options);
+  },
   on(event, callback) {
     console.log('[Storybook] router.on:', event);
     return () => {};
+  },
+};
+
+/**
+ * Mock config, with Inertia's defaults for the keys the CP reads
+ */
+const configValues = {'prefetch.cacheFor': 30_000, 'prefetch.hoverDelay': 75};
+
+export const config = {
+  get(key) {
+    return configValues[key];
+  },
+  set(key, value) {
+    configValues[key] = value;
   },
 };
 

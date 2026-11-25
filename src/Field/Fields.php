@@ -57,10 +57,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use PDO;
+use Ramsey\Uuid\Uuid;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -123,6 +123,14 @@ class Fields
      */
     private ?MemoizableArray $_layouts = null;
 
+    /**
+     * The layouts made for element types that don’t have one saved, so each type’s is the same one every time it’s
+     * asked for.
+     *
+     * @var array<class-string<ElementInterface>, FieldLayout>
+     */
+    private array $_defaultLayouts = [];
+
     /** @var array<string, FieldInterface> */
     private array $_savingFields = [];
 
@@ -166,16 +174,12 @@ class Fields
             $fieldUids[$row->uid] = true;
         }
 
-        foreach ($this->_layoutConfigs() as $config) {
-            foreach ($config['tabs'] ?? [] as $tab) {
-                foreach ($tab['elements'] ?? [] as $element) {
-                    if (
-                        isset($element['handle'], $fieldUids[$element['fieldUid'] ?? '']) &&
-                        is_a($element['type'] ?? '', CustomField::class, true)
-                    ) {
-                        $handles[$element['handle']] = true;
-                    }
-                }
+        // The same pass finds the generated field handles, so save them too
+        [$layoutFieldHandles, $this->_allGeneratedFieldHandles] = $this->_layoutHandles();
+
+        foreach ($layoutFieldHandles as [$handle, $fieldUid]) {
+            if (isset($fieldUids[$fieldUid])) {
+                $handles[$handle] = true;
             }
         }
 
@@ -193,17 +197,40 @@ class Fields
             return $this->_allGeneratedFieldHandles;
         }
 
-        $handles = [];
+        return $this->_allGeneratedFieldHandles = $this->_layoutHandles()[1];
+    }
 
-        foreach ($this->_layoutConfigs() as $config) {
+    /**
+     * Reads the layouts’ handles in one pass: the custom field elements’ handle overrides with their field UIDs, which
+     * [[allFieldHandles()]] matches against the fields, and the generated field handles.
+     *
+     * A stored element without a handle override has `"handle":null`, so a layout whose JSON has no `handle` key with
+     * another value has neither, and isn’t decoded.
+     *
+     * @return array{list<array{mixed, mixed}>, array<string, bool>}
+     */
+    private function _layoutHandles(): array
+    {
+        $fieldHandles = [];
+        $generatedHandles = [];
+
+        foreach ($this->_layoutConfigs('/"handle"\s*:(?!\s*null)/') as $config) {
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    if (isset($element['handle']) && is_a($element['type'] ?? '', CustomField::class, true)) {
+                        $fieldHandles[] = [$element['handle'], $element['fieldUid'] ?? ''];
+                    }
+                }
+            }
+
             foreach ($config['generatedFields'] ?? [] as $generatedField) {
                 if (! empty($generatedField['handle'])) {
-                    $handles[$generatedField['handle']] = true;
+                    $generatedHandles[$generatedField['handle']] = true;
                 }
             }
         }
 
-        return $this->_allGeneratedFieldHandles = $handles;
+        return [$fieldHandles, $generatedHandles];
     }
 
     /**
@@ -404,7 +431,7 @@ class Fields
     /**
      * Returns a memoizable array of fields.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return MemoizableArray<FieldInterface>
      */
@@ -435,7 +462,7 @@ class Fields
     /**
      * Returns all fields within a field context(s).
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, FieldInterface> The fields
      */
@@ -447,7 +474,7 @@ class Fields
     /**
      * Returns all fields that store content in the `elements_sites.content` table.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, FieldInterface> The fields
      */
@@ -460,7 +487,7 @@ class Fields
     /**
      * Returns all fields that don’t store content in the `elements_sites.content` table.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, FieldInterface> The fields
      */
@@ -484,7 +511,7 @@ class Fields
      * @template T of FieldInterface
      *
      * @param  class-string<T>  $type  The field type
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return Collection<int, T> The fields
      */
@@ -530,7 +557,7 @@ class Fields
      * ```
      *
      * @param  string  $handle  The field’s handle
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\CraftCms\Cms\Field\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
@@ -543,7 +570,7 @@ class Fields
      * Returns whether a field exists with a given handle and context.
      *
      * @param  string  $handle  The field handle
-     * @param  string|null  $context  The field context (defauts to [[\craft\services\Fields::$fieldContext]])
+     * @param  string|null  $context  The field context (defauts to [[\CraftCms\Cms\Field\Fields::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
@@ -938,23 +965,47 @@ class Fields
     }
 
     /**
-     * @return array<int,FieldLayout[]>
+     * Returns how many saved field layouts include each field, by field ID.
+     *
+     * Reads the layouts’ stored configs rather than building every layout, applying the same filters a built layout’s
+     * custom fields would: the element must be a custom field, from an enabled plugin if any, for a field that exists.
+     *
+     * @return array<int,int>
      */
-    private function allFieldUsages(): array
+    private function fieldUsageCounts(): array
     {
-        $usages = [];
+        $fieldIdsByUid = [];
+        foreach ($this->_fields(false)->raw() as $row) {
+            $fieldIdsByUid[$row->uid] = (int) $row->id;
+        }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            $uniqueFieldIds = [];
-            foreach ($layout->getCustomFields() as $field) {
-                $uniqueFieldIds[$field->id] = true;
+        $isIncluded = [];
+        $counts = [];
+
+        foreach ($this->_layoutConfigs() as $config) {
+            $layoutFieldIds = [];
+
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    $type = $element['type'] ?? null;
+                    $fieldId = $fieldIdsByUid[$element['fieldUid'] ?? ''] ?? null;
+
+                    if (! is_string($type) || $fieldId === null) {
+                        continue;
+                    }
+
+                    if ($isIncluded[$type] ??= is_a($type, CustomField::class, true) && ComponentHelper::validateComponentClass($type)) {
+                        $layoutFieldIds[$fieldId] = true;
+                    }
+                }
             }
-            foreach (array_keys($uniqueFieldIds) as $fieldId) {
-                $usages[$fieldId][] = $layout;
+
+            foreach (array_keys($layoutFieldIds) as $fieldId) {
+                $counts[$fieldId] = ($counts[$fieldId] ?? 0) + 1;
             }
         }
 
-        return $usages;
+        return $counts;
     }
 
     // Layouts
@@ -992,12 +1043,17 @@ class Fields
     /**
      * Returns the saved field layouts' configs, without building the layouts.
      *
+     * @param  string|null  $pattern  A regular expression that a config stored as JSON must match to be decoded and returned
      * @return iterable<array<string, mixed>>
      */
-    private function _layoutConfigs(): iterable
+    private function _layoutConfigs(?string $pattern = null): iterable
     {
         foreach ($this->_layouts()->raw() as $row) {
             $config = $row->config ?? null;
+
+            if (is_string($config) && $pattern !== null && ! preg_match($pattern, $config)) {
+                continue;
+            }
 
             yield is_string($config) ? JsonHelper::decode($config) : (array) $config;
         }
@@ -1080,7 +1136,31 @@ class Fields
         $layout = $this->_layouts()->firstWhere('type', $type);
 
         if (! $layout && $create) {
-            return new FieldLayout(['type' => $type]);
+            return $this->_defaultLayouts[$type] ??= $this->defaultLayout($type);
+        }
+
+        return $layout;
+    }
+
+    /**
+     * Returns a layout for an element type that doesn’t have one saved. Its UIDs are derived from the type and their
+     * positions, so they’re the same in every request, and one version of an element can be paired with another
+     * field by field.
+     *
+     * @param  class-string<ElementInterface>  $type
+     */
+    private function defaultLayout(string $type): FieldLayout
+    {
+        $layout = new FieldLayout(['type' => $type]);
+        $uid = fn (string $name): string => Uuid::uuid5(Uuid::NAMESPACE_URL, "craft:default-field-layout:$type$name")->toString();
+        $layout->uid = $uid('');
+
+        foreach ($layout->getTabs() as $tabIndex => $tab) {
+            $tab->uid = $uid(":$tabIndex");
+
+            foreach ($tab->getElements() as $elementIndex => $element) {
+                $element->uid = $uid(":$tabIndex:$elementIndex");
+            }
         }
 
         return $layout;
@@ -1356,6 +1436,10 @@ class Fields
      */
     public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
+        if (! $layout->id) {
+            return false;
+        }
+
         event(new FieldLayoutDeleting($layout));
 
         if ($hardDelete) {
@@ -1561,7 +1645,7 @@ class Fields
         $result = $paginator->getCollection();
 
         $tableData = [];
-        $usages = $this->allFieldUsages();
+        $usageCounts = $this->fieldUsageCounts();
 
         foreach ($result as $item) {
             $field = $this->createField((array) $item);
@@ -1580,9 +1664,9 @@ class Fields
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
                     'icon' => $field instanceof Iconic ? Icons::resolveIconData($field->getIcon()) : null,
                 ],
-                'usages' => isset($usages[$field->id])
+                'usages' => isset($usageCounts[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [
-                        'count' => count($usages[$field->id]),
+                        'count' => $usageCounts[$field->id],
                     ])
                     : null,
             ];
@@ -1661,7 +1745,7 @@ class Fields
      */
     private function hasTipAndWarningColumns(): bool
     {
-        return Schema::hasColumn(Table::FIELDS, 'tip');
+        return DB::getReadSchemaBuilder()->hasColumn(Table::FIELDS, 'tip');
     }
 
     private function _createLayoutQuery(bool $withTrashed = false): Builder

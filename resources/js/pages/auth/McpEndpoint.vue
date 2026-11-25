@@ -88,7 +88,7 @@
           </p>
         </header>
 
-        <craft-input-copy .modelValue="url" monospace>
+        <craft-input-copy .value="url" monospace>
           <label slot="label">{{ t('Server URL') }}</label>
         </craft-input-copy>
 

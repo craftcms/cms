@@ -24,6 +24,7 @@ class PreloadSinglesNode extends Node
         }
 
         $compiler
+            /** @see Template::preloadSingles() */
             ->write(sprintf(
                 "%s::preloadSingles([%s], \$context);\n",
                 Template::class,

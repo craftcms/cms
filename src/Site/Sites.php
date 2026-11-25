@@ -240,17 +240,15 @@ class Sites
         }
     }
 
+    /**
+     * Returns the request’s path relative to its site’s base URL, such as `news/story` for
+     * `https://example.com/fr/news/story` on a site whose base URL is `https://example.com/fr/`.
+     *
+     * @param  Site|null  $site  Deprecated and unused. Requests for site routes already leave out the site’s base path.
+     */
     public function getRequestPath(Request $request, ?Site $site = null): string
     {
-        $path = trim($request->decodedPath(), '/');
-        $site ??= $this->getCurrentSite();
-        $basePath = trim((string) parse_url((string) $site->getBaseUrl(), PHP_URL_PATH), '/');
-
-        if ($basePath !== '' && str_starts_with($path.'/', $basePath.'/')) {
-            return ltrim(substr($path, strlen($basePath)), '/');
-        }
-
-        return $path;
+        return trim($request->decodedPath(), '/');
     }
 
     /**
@@ -705,19 +703,21 @@ class Sites
                 $muteEvents = $this->projectConfig->muteEvents;
                 $this->projectConfig->muteEvents = true;
 
-                foreach ($this->projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
-                    if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
-                        $sectionConfig['siteSettings'][$transferContentToSite->uid] = Arr::pull($sectionConfig['siteSettings'],
-                            $site->uid);
-                        $this->projectConfig->set(
-                            path: ProjectConfig::PATH_SECTIONS.'.'.$sectionUid,
-                            value: $sectionConfig,
-                            message: 'Prune site settings',
-                        );
+                try {
+                    foreach ($this->projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
+                        if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
+                            $sectionConfig['siteSettings'][$transferContentToSite->uid] = Arr::pull($sectionConfig['siteSettings'],
+                                $site->uid);
+                            $this->projectConfig->set(
+                                path: ProjectConfig::PATH_SECTIONS.'.'.$sectionUid,
+                                value: $sectionConfig,
+                                message: 'Prune site settings',
+                            );
+                        }
                     }
+                } finally {
+                    $this->projectConfig->muteEvents = $muteEvents;
                 }
-
-                $this->projectConfig->muteEvents = $muteEvents;
 
                 // Get all of the entry IDs in those sections
                 $entryIds = DB::table(Table::ENTRIES)

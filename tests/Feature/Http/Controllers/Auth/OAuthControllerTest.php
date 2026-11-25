@@ -9,7 +9,9 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\SignInProvidersController;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Url;
@@ -23,6 +25,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -118,6 +121,14 @@ describe('redirect flow', function () {
             ->and(session('url.intended'))->toContain(app(GeneralConfig::class)->getPostCpLoginRedirect());
     });
 
+    test('redirect sends inertia visits to the provider with a full page load', function () {
+        configureOAuthControllerProvider();
+
+        get(oauthControllerRedirectUrl(true), ['X-Inertia' => 'true'])
+            ->assertConflict()
+            ->assertHeader('X-Inertia-Location', 'https://provider.test/oauth/authorize');
+    });
+
     test('unknown providers return 404', function () {
         get('oauth/missing')->assertNotFound();
     });
@@ -127,7 +138,7 @@ describe('callback flow', function () {
     test('callback rejects user creation without maintenance access', function (bool $isCpRequest) {
         configureOAuthControllerProvider([
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
         app()->maintenanceMode()->activate([]);
 
@@ -178,7 +189,7 @@ describe('callback flow', function () {
 
         configureOAuthControllerProvider([
             'groups' => [$group->handle],
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
 
         completeOAuthControllerCallback([
@@ -194,6 +205,27 @@ describe('callback flow', function () {
             ->and($user->active)->toBeTrue()
             ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-1', $user->id))->toBeTrue()
             ->and(oauthControllerHasGroupAssignment($user->id, $group->id))->toBeTrue();
+    });
+
+    test('redirect and callback work under the base path of a site', function () {
+        Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
+        Sites::refreshSites();
+        Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
+        configureOAuthControllerProvider(['controlsAccess' => true]);
+        FakeOAuthProvider::$fakeUser = FakeOAuthProvider::fakeUser([
+            'id' => 'provider-user-fr',
+            'email' => 'oauth-fr@example.com',
+        ]);
+
+        get('https://localhost/fr/oauth/test/redirect')
+            ->assertRedirect('https://provider.test/oauth/authorize');
+        get('https://localhost/fr/oauth/test/callback')
+            ->assertRedirect();
+
+        $user = User::find()->email('oauth-fr@example.com')->status(null)->first();
+
+        expect(Auth::id())->toBe($user?->id)
+            ->and(oauthControllerHasLinkedIdentity('test', 'provider-user-fr', $user->id))->toBeTrue();
     });
 
     test('callback blocks new user creation when policy disallows it', function (array $scenario) {
@@ -232,7 +264,7 @@ describe('callback flow', function () {
 
         configureOAuthControllerProvider([
             'createsUsers' => true,
-            'activatesUsers' => true,
+            'controlsAccess' => true,
         ]);
 
         completeOAuthControllerCallback([

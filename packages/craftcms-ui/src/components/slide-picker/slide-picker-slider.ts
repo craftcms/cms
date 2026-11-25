@@ -1,6 +1,5 @@
-import {DisabledWithTabIndexMixin} from '@lion/ui/core.js';
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import styles from './slide-picker-slider.styles.js';
 
@@ -12,14 +11,12 @@ import styles from './slide-picker-slider.styles.js';
  * `craft-slide-picker`, which supplies all three and drives this.
  *
  * Like a native input, it holds its value as a string and fires `input` when a
- * person changes it, which is what Lion's field listens for.
+ * person changes it, which is what the picker listens for.
  *
  * @fires input - A person changed the value. Doesn't bubble; the picker
  *   announces the change from its own element.
  */
-export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
-  LitElement
-) {
+export default class CraftSlidePickerSlider extends LitElement {
   static override styles = [styles];
 
   /** Lowest selectable value. */
@@ -30,11 +27,30 @@ export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
   @property({type: Number}) step = 10;
   /** The selected value, as a string, the way a native input holds it. */
   @property() value = '';
+  /** Takes the slider out of the tab order and stops it changing. */
+  @property({type: Boolean, reflect: true}) disabled = false;
   /** Shows the value without letting it be changed. */
   @property({type: Boolean, reflect: true, attribute: 'readonly'})
   readOnly = false;
   /** Announces a value, as `aria-valuetext` and each segment's tooltip. */
   @property({attribute: false}) valueText: (value: number) => string = String;
+
+  /**
+   * The value the pointer is previewing, or null. Tracked here rather than
+   * left to `:hover`: browsers don't reliably restyle the segments before the
+   * hovered one, and leave a preview behind once the pointer has gone.
+   */
+  @state() private preview: number | null = null;
+
+  /** The value just clicked, shown as selected rather than previewed until the pointer enters another segment. */
+  #justSelected: number | null = null;
+
+  /** Drops the preview when the slider is hidden, as when its popover closes. */
+  #resizeObserver = new ResizeObserver(([entry]) => {
+    if (entry && entry.contentRect.width === 0) {
+      this.#endPreview();
+    }
+  });
 
   constructor() {
     super();
@@ -44,6 +60,34 @@ export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
   override connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'slider');
+    this.#resizeObserver.observe(this);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.#resizeObserver.disconnect();
+    this.#endPreview();
+  }
+
+  #startPreview(event: PointerEvent, value: number) {
+    // A tap has no hover, so it would leave a preview behind.
+    if (event.pointerType === 'touch' || value === this.#justSelected) {
+      return;
+    }
+
+    this.#justSelected = null;
+    this.preview = value;
+  }
+
+  #endPreview = () => {
+    this.#justSelected = null;
+    this.preview = null;
+  };
+
+  #select(value: number) {
+    this.#setValue(value);
+    this.#justSelected = value;
+    this.preview = null;
   }
 
   get #editable(): boolean {
@@ -120,11 +164,23 @@ export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
     this.setAttribute('aria-valuetext', this.valueText(this.#number));
     this.setAttribute('aria-readonly', String(this.readOnly));
     this.setAttribute('aria-disabled', String(this.disabled));
+
+    if (changed.has('disabled')) {
+      this.tabIndex = this.disabled ? -1 : 0;
+    }
   }
 
   override render() {
+    const preview = this.#editable ? this.preview : null;
+
     return html`
-      <div class="slide-picker">
+      <div
+        class=${classMap({
+          'slide-picker': true,
+          'is-previewing': preview !== null,
+        })}
+        @pointerleave=${this.#endPreview}
+      >
         ${this.#values().map((segmentValue) => {
           return html`
             <span
@@ -132,9 +188,12 @@ export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
                 'slide-picker__segment': true,
                 'is-active': segmentValue <= this.#number,
                 'is-last-active': segmentValue === this.#number,
+                'is-previewed': preview !== null && segmentValue <= preview,
               })}
               aria-hidden="true"
-              @click=${() => this.#setValue(segmentValue)}
+              @pointerenter=${(event: PointerEvent) =>
+                this.#startPreview(event, segmentValue)}
+              @click=${() => this.#select(segmentValue)}
               title=${this.valueText(segmentValue)}
               >${nothing}</span
             >

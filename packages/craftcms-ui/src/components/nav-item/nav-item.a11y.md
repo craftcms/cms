@@ -25,7 +25,7 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - [x] The flyout toggle carries `aria-expanded`, `aria-controls` pointing at the flyout, and an `aria-label` naming its branch. Per WCAG 4.1.2 (Name, Role, Value). Verified by `opens the flyout from its own disclosure instead` in `nav-item.test.ts`.
 - [x] A row with a flyout carries `aria-expanded` and `aria-controls` on its own link or button, not on the positioning anchor, and a childless row carries neither. Per WCAG 4.1.2 (Name, Role, Value). Verified by `tells a screen reader that a labeled item discloses a flyout`, `points the rail item at the flyout it expands`, `keeps the anchor out of the flyout aria, which it cannot carry` and `leaves a childless item without a disclosure to announce` in `nav-item.test.ts`.
 - [ ] Only a button carries `aria-expanded`, as in the Disclosure Navigation Menu example. Per WCAG 4.1.2 (Name, Role, Value). Known deviation: a link row with a flyout also carries it, although activating the link navigates rather than toggling the flyout.
-- [ ] The flyout panel isn't announced as an unnamed dialog. Per WCAG 4.1.2 (Name, Role, Value). Known gap: `craft-popover` gives its panel `role="dialog"`, and the item sets no `label` on it.
+- [ ] The flyout panel isn't announced as an unnamed dialog. Per WCAG 4.1.2 (Name, Role, Value). Known gap, inherited from `craft-popover`; see `popover.a11y.md`.
 
 ### Keyboard and focus
 
@@ -57,3 +57,5 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - 4.1.2 (Name, Role, Value): give every item label text, including collapsed ones. See [Accessibility](./NavItem.mdx#accessibility).
 - 2.4.4 (Link Purpose (In Context)): use `href` for anything that goes somewhere, and `button` only for actions. See [Accessibility](./NavItem.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `current` and `active` to match the page. See [Accessibility](./NavItem.mdx#accessibility).
+- 1.4.11 (Non-text Contrast): keep a `--c-nav-item-icon-color` at 3:1 against the nav's background. See [Accessibility](./NavItem.mdx#accessibility).
+- 2.5.8 (Target Size (Minimum)): keep `--c-nav-item-size` at 24px or more. See [Accessibility](./NavItem.mdx#accessibility).

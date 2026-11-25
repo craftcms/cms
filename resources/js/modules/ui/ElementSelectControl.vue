@@ -1,23 +1,41 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {
+    computed,
+    defineAsyncComponent,
+    nextTick,
+    reactive,
+    ref,
+    useId,
+    watch,
+  } from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
   import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
-  import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
-  import {openSlideout} from '@/common/slideouts';
-  import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+  import {useUiPreview} from './uiPreview';
+  import {openElementEditor} from '@/modules/elements/open-element-editor';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
+  import RelationSearch from './element-select/RelationSearch.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {elementFocusTarget} from './element-select/elementFocusTarget';
+  import {useElementPresentations} from '@/modules/elements/element-presentations';
+  import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import type {
     ElementPresentation,
     ElementSelectProps,
   } from './element-select/types';
+
+  // Only Assets fields that allow uploads render it, so it brings Uppy with it
+  // on demand.
+  const AssetUploadButton = defineAsyncComponent(
+    () => import('@/pages/assets/AssetUploadButton.vue')
+  );
 
   const props = defineProps<{
     control: UiControlPayload<ElementSelectProps>;
@@ -112,10 +130,46 @@
     return Number(value);
   }
 
+  /** The site an element is drawn in. */
+  function siteOf(id: number): number | string | null | undefined {
+    return (
+      providedPresentations.value.get(id)?.siteId ??
+      presentations.get(id)?.siteId ??
+      (props.control.props.criteria.siteId as number | string | null)
+    );
+  }
+
+  /**
+   * Elements drawn through the page's shared cache, so they're refetched when
+   * they're saved, here or in another tab. The server's renders seed it; the
+   * one the field mounted with only fills gaps, since it may be older.
+   */
+  const cached = useElementPresentations(
+    () => ({
+      elementType: props.control.props.elementType,
+      viewMode: props.control.props.viewMode,
+      thumbSize: props.control.props.thumbSize,
+    }),
+    () => ids.value.map((id) => ({id, siteId: Number(siteOf(id)) || null}))
+  );
+  /** Elements fetched since the server last rendered the field. */
+  const loaded = new Set<number>();
+  watch(
+    () => props.control.props.elements,
+    (elements, previous) => {
+      loaded.clear();
+      cached.seed(elements, props.control.props.criteria.siteId, {
+        replace: previous !== undefined,
+      });
+    },
+    {immediate: true}
+  );
+
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
+      cached.get(id, siteOf(id)) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
@@ -131,11 +185,41 @@
    *
    * It's only worth offering when more than one element can be related — a
    * single-relation field has nothing to bulk-act on. A `null` limit is
-   * unlimited, so it counts as more than one.
+   * unlimited, so it counts as more than one. A read-only field offers it too:
+   * its selection can still be copied, just not removed.
    */
-  const selectable = computed(() => props.editable && limit.value !== 1);
+  const selectable = computed(() => limit.value !== 1);
 
   const viewMode = computed(() => props.control.props.viewMode);
+
+  /**
+   * Elements selected without a presentation, such as ones pasted in, which
+   * come as IDs alone, are fetched, so they draw as themselves rather than as
+   * their IDs. Each is fetched once until the server renders the field again.
+   */
+  watch(
+    ids,
+    (current) => {
+      // One that leaves loses its cached presentation, so it's fetched again
+      // if it comes back.
+      loaded.forEach((id) => current.includes(id) || loaded.delete(id));
+      const missing = current.filter(
+        (id) =>
+          !loaded.has(id) &&
+          !cached.get(id, siteOf(id)) &&
+          !providedPresentations.value.has(id) &&
+          !presentations.has(id)
+      );
+
+      if (missing.length) {
+        missing.forEach((id) => loaded.add(id));
+        cached
+          .load(missing.map((id) => ({id, siteId: Number(siteOf(id)) || null})))
+          .catch(() => {});
+      }
+    },
+    {immediate: true}
+  );
 
   /**
    * What the card and thumb bodies draw, in the field's current order.
@@ -157,11 +241,17 @@
     }))
   );
 
+  // Refetched presentations redraw the same elements without losing focus.
+  useFocusThroughRedraw(
+    () => dropZone.value,
+    listData,
+    () => ids.value.join()
+  );
+
   const list = useElementList({
     ids,
     viewMode,
     selectable,
-    readOnly: () => !props.editable,
   });
 
   const {selectedIds, isSelected, prune: pruneSelection} = list.selection;
@@ -286,6 +376,19 @@
    * reason for being async: a page full of relation fields shouldn't pay for the
    * element index unless someone actually opens one.
    */
+  /** The element being edited and its owners, when the field can't relate them. */
+  const unrelatable = computed(
+    () => props.control.props.disabledElementIds ?? []
+  );
+
+  /**
+   * A branch limit of one means a new choice replaces the old one, as it does
+   * in Craft 5.
+   */
+  const replacesBranch = computed(
+    () => maintainHierarchy.value && props.control.props.branchLimit === 1
+  );
+
   async function openSelector(replacing: number | null = null): Promise<void> {
     const {createElementSelectorModal} =
       await import('@/modules/element-selector-modal/create-element-selector-modal');
@@ -298,6 +401,8 @@
             limit.value -
               (replacing === null ? ids.value.length : ids.value.length - 1)
           );
+    /** The element chosen last, which takes focus once the field is full. */
+    let chosenLast: number | undefined;
 
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
@@ -306,15 +411,35 @@
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
+        ...props.control.props.referenceElement,
         showSiteMenu: props.control.props.showSiteMenu,
         indexSettings: {showFolders: props.control.props.showFolders ?? true},
+        defaultSource: props.control.props.defaultSource,
+        defaultSourcePath: props.control.props.defaultSourcePath,
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.
-        disabledElementIds: ids.value.filter((id) => id !== replacing),
+        disabledElementIds: [
+          ...ids.value.filter((id) => id !== replacing),
+          ...unrelatable.value,
+        ],
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
-        triggerElement: () => addButton.value,
+        // A full field has no Add button: the element chosen last takes focus,
+        // else the one being replaced, else the last one. The field itself is
+        // the last resort, as it still says which panel a slideout opened from
+        // the modal nests in.
+        triggerElement: () => {
+          const focusId = chosenLast ?? replacing ?? ids.value.at(-1);
+
+          return (
+            addButton.value ??
+            (focusId === undefined
+              ? null
+              : elementFocusTarget(dropZone.value, focusId)) ??
+            dropZone.value
+          );
+        },
         onSelect: (elements) => {
           const chosen = remember(
             elements as unknown as Array<Record<string, unknown>>
@@ -324,29 +449,69 @@
             return;
           }
 
-          // A branch limit of one means a new choice replaces the old one, as
-          // it does in Craft 5.
           const current =
-            maintainHierarchy.value &&
-            props.control.props.branchLimit === 1 &&
-            replacing === null
-              ? []
-              : ids.value;
+            replacesBranch.value && replacing === null ? [] : ids.value;
 
-          void relate(
-            withinLimit(
-              replacing === null
-                ? [...current, ...chosen]
-                : current.flatMap((id) => (id === replacing ? chosen : [id]))
-            ),
-            presentation(chosen[0]!).siteId
+          const next = withinLimit(
+            replacing === null
+              ? [...current, ...chosen]
+              : current.flatMap((id) => (id === replacing ? chosen : [id]))
           );
+          chosenLast = next.filter((id) => chosen.includes(id)).pop();
+
+          void relate(next, presentation(chosen[0]!).siteId);
         },
       }
     );
 
     modal.on('close', () => modal.destroy());
     await modal.show();
+  }
+
+  // ───────────────────────────── search ─────────────────────────────
+
+  const search = ref<InstanceType<typeof RelationSearch> | null>(null);
+
+  /**
+   * The field, if it shows a search input. Previews show in modals, which the
+   * slideout a new entry opens in can't open over, so they don't create any.
+   */
+  const searchField = computed(() => {
+    const field = props.control.props;
+
+    return field.search
+      ? {
+          ...field,
+          search: field.search,
+          createSection: previewing ? null : field.createSection,
+        }
+      : null;
+  });
+
+  /**
+   * Relates an element the search input found or created. Focus stays in the
+   * search input, unless the field is now full and it's gone, in which case it
+   * moves to the element, as it does for a pasted one.
+   */
+  async function relateFound(element: ElementPresentation): Promise<void> {
+    if (ids.value.includes(element.id)) {
+      return;
+    }
+
+    presentations.set(element.id, element);
+    void relate(
+      withinLimit([...(replacesBranch.value ? [] : ids.value), element.id]),
+      element.siteId
+    );
+    await nextTick();
+
+    if (search.value?.isConnected()) {
+      search.value.focus();
+
+      return;
+    }
+
+    elementFocusTarget(dropZone.value, element.id)?.focus();
   }
 
   // ───────────────────────────── pasting ─────────────────────────────
@@ -371,6 +536,11 @@
     },
     container: dropZone,
     fallbackFocus: addButton,
+  });
+
+  usePasteElementsShortcut(dropZone, {
+    canPaste: () => pasteable.candidates.value.length > 0,
+    paste: () => pasteable.paste(),
   });
 
   // ───────────────────────────── chip actions ─────────────────────────────
@@ -402,8 +572,14 @@
     t('Edit {type}', {type: props.control.props.elementDisplayName})
   );
 
+  /**
+   * Previews show in modals, which slideouts can't open over, so their
+   * elements can't be edited.
+   */
+  const previewing = useUiPreview();
+
   function canEditElement(value: number | string): boolean {
-    return presentation(value).canEdit === true;
+    return !previewing && presentation(value).canEdit === true;
   }
 
   /**
@@ -416,9 +592,10 @@
         listData.value.map((element) => [
           element.id,
           chipMenu(element, menuField.value, {
-            edit: list.isCards.value
-              ? undefined
-              : {label: editLabel.value, open: () => openEditor(element.id)},
+            edit:
+              list.isCards.value || previewing
+                ? undefined
+                : {label: editLabel.value, open: () => openEditor(element.id)},
             replace: () => void openSelector(element.id),
             remove: () =>
               removeIds(
@@ -457,26 +634,20 @@
 
   /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
-    const element = presentation(value);
-    const href =
-      element.cpEditUrl ??
-      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
-        undefined,
-        {
-          query: {
-            elementType: props.control.props.elementType,
-            elementId: element.id,
-            siteId: element.siteId ?? null,
-          },
-        }
-      );
+    if (previewing) {
+      return;
+    }
 
-    void openSlideout(href, {
-      // Registering a handler keeps a save from reloading the page behind,
-      // which would throw away the owner's unsaved edits.
-      onSaved: ({data}) =>
-        replaceAsset(data?.replacedAssetId, data?.newAssetId),
-    });
+    void openElementEditor(
+      presentation(value),
+      props.control.props.elementType,
+      {
+        // Registering a handler keeps a save from reloading the page behind,
+        // which would throw away the owner's unsaved edits.
+        onSaved: ({data}) =>
+          replaceAsset(data?.replacedAssetId, data?.newAssetId),
+      }
+    );
   }
 
   /** An image saved as a new asset takes the edited asset's place. */
@@ -521,6 +692,8 @@
           :actions="bulkActions"
           :total="ids.length"
           :limit="limit"
+          :element-display-name="control.props.elementDisplayName"
+          :element-plural-display-name="control.props.elementPluralDisplayName"
         />
         <div class="elements-stage">
           <ElementList
@@ -530,7 +703,6 @@
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
-            :read-only="!editable"
             :sortable="sortable"
             @edit="(element) => openEditor(element.id)"
             @reorder="reorder"
@@ -575,7 +747,7 @@
 
       <div
         v-if="editable && !atLimit"
-        class="flex gap-md"
+        class="flex flex-wrap gap-md"
         :class="{'pt-md': ids.length > 0}"
       >
         <craft-button
@@ -590,11 +762,19 @@
           {{ control.props.selectionLabel }}
         </craft-button>
 
+        <RelationSearch
+          v-if="searchField"
+          ref="search"
+          :field="searchField"
+          :exclude-ids="[...ids, ...unrelatable]"
+          @select="relateFound"
+        />
+
         <AssetUploadButton
           v-if="control.props.canUpload !== undefined"
           variant="dashed"
           :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
+          :params="control.props.uploadParams ?? undefined"
           :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"

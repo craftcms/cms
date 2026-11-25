@@ -18,21 +18,37 @@ interface ElementIndexSortContext {
   sortOptions?: Array<SortOption>;
 }
 
-/** Keep valid, unique sort items in priority order. */
-function normalizeSort(
-  items: Array<SortItem> | Record<string, SortItem> | undefined
-): Array<SortItem> {
+/**
+ * Keeps valid, unique sort items in priority order. A `score` sort only
+ * counts in first place, and then on its own; `withoutScore` drops it
+ * entirely, for indexes that never sort by relevance.
+ */
+export function normalizeSort(
+  items: unknown,
+  {withoutScore = false}: {withoutScore?: boolean} = {}
+): Array<{field: string; direction: SortItem['direction']}> {
   // `sort` round-trips through query params as an index-keyed object
   // (`{0: {...}}`), so persisted/rehydrated state can come back as an object
   // rather than an array. Coerce to an array before filtering.
-  const list = Array.isArray(items) ? items : items ? Object.values(items) : [];
+  const list: unknown[] = Array.isArray(items)
+    ? items
+    : items instanceof Object
+      ? Object.values(items)
+      : [];
   const seen = new Set<string>();
-  const normalized = list.filter((item) => {
-    if (!item?.field || seen.has(item.field)) {
+  const normalized = list.filter((item): item is SortItem => {
+    const {field, direction} = (item ?? {}) as Partial<SortItem>;
+    if (
+      typeof field !== 'string' ||
+      !field ||
+      (direction !== 'asc' && direction !== 'desc') ||
+      seen.has(field) ||
+      (withoutScore && field === 'score')
+    ) {
       return false;
     }
 
-    seen.add(item.field);
+    seen.add(field);
     return true;
   });
 

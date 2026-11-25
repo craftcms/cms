@@ -153,7 +153,7 @@ class ElementPolicy
         $userElement = $user->asElement();
 
         return match ($ability) {
-            'view' => $field->canViewElement($element, $userElement),
+            'view', 'copy' => $field->canViewElement($element, $userElement),
             'save' => $this->checkNestedSaveAuthorization($element, $userElement, $field),
             'delete' => $field->canDeleteElement($element, $userElement),
             'duplicate', 'duplicateAsDraft' => $field->canDuplicateElement($element, $userElement),

@@ -342,6 +342,39 @@ async function readBody(
   }
 }
 
+/**
+ * The response header that lists messages for every open control panel tab,
+ * such as element saves, as JSON.
+ */
+const BROADCAST_HEADER = 'X-Craft-Broadcast';
+
+/**
+ * Hands each message in a response's `X-Craft-Broadcast` header to the
+ * control panel as a `craft:broadcast` event, which it broadcasts. An event,
+ * so it reaches the control panel from every copy of this module, such as the
+ * legacy bundle's.
+ */
+function relayBroadcasts(headers: Headers): void {
+  const value = headers.get(BROADCAST_HEADER);
+
+  if (!value || typeof window === 'undefined') {
+    return;
+  }
+
+  let messages: unknown;
+  try {
+    messages = JSON.parse(value);
+  } catch {
+    return;
+  }
+
+  if (Array.isArray(messages)) {
+    messages.forEach((detail) =>
+      window.dispatchEvent(new CustomEvent('craft:broadcast', {detail}))
+    );
+  }
+}
+
 function responseHeaders(response: Response): Record<string, string> {
   const headers: Record<string, string> = {};
   response.headers.forEach((value, name) => {
@@ -416,6 +449,9 @@ async function dispatch<T, D>(
         config
       );
     }
+
+    // Whether or not the request succeeded, what it changed has changed.
+    relayBroadcasts(fetchResponse.headers);
 
     const validateStatus =
       config.validateStatus === undefined

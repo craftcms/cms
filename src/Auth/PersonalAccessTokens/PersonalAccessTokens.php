@@ -19,6 +19,8 @@ use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Scope;
 use Laravel\Passport\Token;
+use League\OAuth2\Server\CryptKey;
+use LogicException;
 use RuntimeException;
 
 /**
@@ -116,6 +118,27 @@ class PersonalAccessTokens
             ...$this->scopeGroups()->flatMap(fn (ScopeGroup $group) => $group->scopes)->all(),
             ...Passport::scopes()->mapWithKeys(fn (Scope $scope): array => [$scope->id => $scope->description])->all(),
         ]);
+    }
+
+    /**
+     * Whether Passport has valid signing keys, so tokens can be issued and verified.
+     *
+     * The keys are loaded the way Passport loads them: from the `passport.private_key` and `passport.public_key`
+     * config settings, or else from the key files that `passport:keys` creates.
+     */
+    public function hasKeys(): bool
+    {
+        foreach (['private', 'public'] as $type) {
+            $key = str_replace('\\n', "\n", (string) config("passport.{$type}_key"));
+
+            try {
+                new CryptKey($key ?: 'file://'.Passport::keyPath("oauth-$type.key"), keyPermissionsCheck: false);
+            } catch (LogicException) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

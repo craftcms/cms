@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Components;
 
 use CraftCms\Cms\Cp\Concerns\HasDisabled;
 use CraftCms\Cms\Cp\Concerns\HasId;
+use CraftCms\Cms\Cp\Concerns\HasSize;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Stringable;
@@ -31,6 +32,7 @@ class Textarea extends ViewComponent
 {
     use HasDisabled;
     use HasId;
+    use HasSize;
 
     protected ?string $name = null;
 
@@ -39,6 +41,8 @@ class Textarea extends ViewComponent
     protected ?int $maxlength = null;
 
     protected int $rows = 2;
+
+    protected ?int $maxRows = 30;
 
     protected ?int $cols = null;
 
@@ -91,6 +95,14 @@ class Textarea extends ViewComponent
     public function rows(int $rows): static
     {
         $this->rows = $rows;
+
+        return $this;
+    }
+
+    /** Number of lines the textarea can auto-grow to. Defaults to `30`; `null` removes the limit. */
+    public function maxRows(?int $maxRows): static
+    {
+        $this->maxRows = $maxRows;
 
         return $this;
     }
@@ -192,17 +204,21 @@ class Textarea extends ViewComponent
     {
         return [
             'monospace' => $this->monospace,
-            // Lion pushes these host properties onto the slotted textarea
-            // when the element upgrades (LionTextarea::updated()),
-            // overwriting the server-rendered attributes with its defaults —
-            // so any non-default value must also live on the host. The
-            // native textarea keeps them too, for pre-upgrade correctness
-            // (form posts, CSS).
+            'size' => $this->getSize(),
+            // The component pushes the host properties it's given onto the
+            // slotted textarea, and styles itself from them. The native
+            // textarea keeps them too, for pre-upgrade correctness (form
+            // posts, CSS).
             'placeholder' => $this->placeholder !== null && $this->placeholder !== '' ? $this->placeholder : null,
             'name' => $this->name !== null && $this->name !== '' ? $this->name : null,
             'disabled' => $this->isDisabled(),
             'readonly' => $this->readOnly,
             'rows' => $this->rows !== 2 ? $this->rows : null,
+            'max-rows' => match ($this->maxRows) {
+                30 => null,
+                null => 'none',
+                default => $this->maxRows,
+            },
         ];
     }
 

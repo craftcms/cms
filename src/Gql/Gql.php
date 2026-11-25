@@ -11,7 +11,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Eloquent\EloquentElements;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -46,6 +48,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -72,12 +75,15 @@ use GraphQL\Validator\Rules\ValidationRule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
 use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
@@ -342,6 +348,12 @@ class Gql
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $this->elementCaches->startCollectingCacheInfo();
 
+                // Field layout user conditions may be based on the user’s own content, so invalidate cached results
+                // when the user is saved
+                if ($schema->user) {
+                    $this->elementCaches->collectCacheTags(["element::{$schema->user->id}"]);
+                }
+
                 $result = GraphQL::executeQuery(
                     $schemaDef,
                     $query,
@@ -530,6 +542,16 @@ class Gql
         $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
+        // Eloquent elements
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            $label = $elementType::pluralDisplayName();
+            $queries[$label]["{$elementType::gqlScope()}:read"] = [
+                'label' => t('Query for {type}', ['type' => $elementType::pluralLowerDisplayName()]),
+                'authenticated' => fn (User $user): bool => $elementType::canViewIndex($user),
+            ];
+            $mutations[$label] ??= [];
+        }
+
         event($event = new GqlSchemaComponentsResolving(
             queries: $queries,
             mutations: $mutations,
@@ -615,11 +637,19 @@ class Gql
     }
 
     /**
-     * Returns a hash of a user’s current permissions.
+     * Returns a hash of a user’s current permissions, including whether the model policies of Eloquent element types
+     * let them view the type’s index, as a policy can base that on anything.
      */
     private function userPermissionsHash(User $user): string
     {
         $permissions = $user->admin ? ['*'] : app(UserPermissions::class)->getPermissionsByUserId($user->id)->all();
+
+        foreach (app(EloquentElements::class)->types() as $elementType) {
+            if (Gate::getPolicyFor($elementType::modelClass()) !== null) {
+                $permissions[] = "policy:{$elementType::gqlScope()}:".($elementType::canViewIndex($user) ? 'allow' : 'deny');
+            }
+        }
+
         sort($permissions);
 
         return md5(implode(',', $permissions));
@@ -731,7 +761,7 @@ class Gql
 
     public function generateToken(): string
     {
-        return Str::random(32, extendedChars: true);
+        return Str::random(32);
     }
 
     /**
@@ -761,8 +791,12 @@ class Gql
 
             $muteEvents = $this->projectConfig->muteEvents;
             $this->projectConfig->muteEvents = false;
-            $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
-            $this->projectConfig->muteEvents = $muteEvents;
+
+            try {
+                $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
+            } finally {
+                $this->projectConfig->muteEvents = $muteEvents;
+            }
         }
 
         $this->_saveTokenInternal($token);
@@ -1081,7 +1115,7 @@ class Gql
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = Cms::config()->devMode;
+        $devMode = app()->hasDebugModeEnabled();
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1161,10 +1195,24 @@ class Gql
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
 
-            // Results for authenticated requests are limited to what the user can access, so vary them by the
-            // user’s current permissions as well
-            if ($schema->user) {
-                $cacheKey .= '::'.$this->userPermissionsHash($schema->user);
+            // Results for logged-in users can include their provisional drafts and depend on their permissions (such as
+            // with `editable: true`, or authenticated schemas), so vary them by the user and their current permissions
+            $user = $schema->user ?? currentUserElement();
+
+            if ($user) {
+                $cacheKey .= "::$user->id::".$this->userPermissionsHash($user);
+
+                // Field layout user conditions are commonly based on the user’s groups as well
+                $groupIds = array_map(fn (UserGroup $group) => $group->id, $user->getGroups());
+                sort($groupIds);
+                $cacheKey .= '::'.implode(',', $groupIds);
+            }
+
+            // Preview tokens can swap in another user’s provisional drafts
+            $previewUserId = Context::getHidden(Drafts::CONTEXT_PREVIEW_USER_ID);
+
+            if ($previewUserId !== null && $previewUserId !== $user?->id) {
+                $cacheKey .= "::provisional:$previewUserId";
             }
         } catch (Throwable $e) {
             report($e);

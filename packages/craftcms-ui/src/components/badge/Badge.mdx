@@ -38,6 +38,15 @@ Reach for these when the color carries meaning, so intent survives a palette ret
 
 <Canvas of={BadgeStories.SemanticColors} sourceState="shown" />
 
+## Shape
+
+`shape` sets the default indicator's shape (`circle`, `square`, `triangle` or
+`diamond`), which it takes on when the user turns on the "Use shapes to
+represent statuses" preference. For a status badge, set it with
+`statusShape()`, as with [Indicator](?path=/docs/components-indicator--docs).
+
+<Canvas of={BadgeStories.Shapes} sourceState="shown" />
+
 ## Replacing the Indicator
 
 The `prefix` slot holds the indicator, so slotting your own content replaces it — an icon, or a marker of your own:
@@ -56,6 +65,8 @@ craft-badge {
 
 Its colors come from the generic colorable tokens — `--c-color-fill-quiet` for the surface, `--c-color-border-quiet` for the border, `--c-color-on-quiet` for the text.
 Because `fill` scopes those tokens, change a badge's color through `fill` rather than by overriding them.
+
+Icons slotted into a neutral badge take `--c-badge-icon-color`, which is the text color in the light theme and white in the dark theme and in black badges. Tinted badges' icons take their tint, and an icon with a `color` of its own keeps it.
 
 ## Accessibility
 

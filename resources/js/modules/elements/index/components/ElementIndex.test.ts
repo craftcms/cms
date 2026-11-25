@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 it('keeps range selection across table and cards, skips disabled rows, and clears its anchor', async () => {
-  vi.stubGlobal('Craft', {systemUid: 'selection', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'selection'});
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => new Response('<svg></svg>'))

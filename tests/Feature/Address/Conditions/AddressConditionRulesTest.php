@@ -165,6 +165,27 @@ describe('AdministrativeAreaConditionRule', function () {
         expect($results)->toHaveCount(1);
         expect($results[0]->administrativeArea)->toBe('CA');
     });
+
+    it('normalizes GB county names from Craft 5 to their ISO codes', function () {
+        $condition = new AddressCondition(Address::class);
+        $rule = $condition->createConditionRule([
+            'class' => AdministrativeAreaConditionRule::class,
+            'operator' => 'in',
+            'values' => ['Surrey', 'Durham, County', 'Custom'],
+            'countryCode' => 'GB',
+        ]);
+
+        expect($rule->getValues())->toBe(['SRY', 'DUR', 'Custom'])
+            ->and($rule->matchElement(AddressModel::factory()->createElement(['countryCode' => 'GB', 'administrativeArea' => 'SRY'])))->toBeTrue();
+
+        $other = $condition->createConditionRule([
+            'class' => AdministrativeAreaConditionRule::class,
+            'values' => ['Surrey'],
+            'countryCode' => 'US',
+        ]);
+
+        expect($other->getValues())->toBe(['Surrey']);
+    });
 });
 
 describe('FieldConditionRule', function () {

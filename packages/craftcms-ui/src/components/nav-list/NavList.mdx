@@ -11,6 +11,16 @@ import * as NavListStories from './nav-list.stories';
 
 It contributes two things and nothing else: the `<ul>` semantics, and the spacing between items. The items carry their own appearance.
 
+## Appearance
+
+`appearance="tabs"` lays the items out as a horizontal strip, ruled off from the content below it and marking the current page with a bar on that rule — the look of a tab row, over links that still go somewhere.
+
+<Canvas of={NavListStories.Tabs} sourceState="shown" />
+
+Set it on the list, not on the items: the list passes it down to them, so the rule along the bottom and the bar marking the current page always belong to the same strip.
+
+Reach for it where a plugin or a section has a handful of its own pages and the strip is the whole navigation for them. It draws a tab row; it doesn't make one. A strip that switches between views of a single page is [Tabs](?path=/docs/components-tabs--docs), which has the panels, the keyboard handling and the tab roles that go with it.
+
 ## Why the List Matters
 
 A run of links in a `<div>` is announced one at a time, with no sense of how many there are or where you are among them. Inside a list, a screen reader says "list, 5 items" and numbers them as you move.
@@ -23,7 +33,7 @@ The list doesn't render a navigation landmark. Wrap the top-level list in a `<na
 
 Slot only `craft-nav-item`s into the list. Each item exposes itself as a list item; any other element sits inside the `<ul>` without one, which breaks the list and its count.
 
-Don't add `role="menu"`, `role="menubar"` or arrow-key handling around the list. It's site navigation: Tab moves through the links, and a branch's subnav opens from its own button.
+Don't add `role="menu"`, `role="menubar"` or arrow-key handling around the list. It's site navigation: Tab moves through the links, and a branch's subnav opens from its own button. That holds for a `tabs` strip too — it looks like a tab row, but each item is a link to another page, so Tab moves through them and none of them carries a `tab` role.
 
 ## Properties
 

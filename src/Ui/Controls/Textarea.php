@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\Textarea as TextareaComponent;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -13,7 +15,7 @@ use Illuminate\Support\Arr;
 /**
  * @since 6.0.0
  */
-class Textarea extends Control
+class Textarea extends Control implements ReadableValueControl, WritableValueControl
 {
     use HasTextExpander;
 
@@ -24,6 +26,8 @@ class Textarea extends Control
     private ?string $placeholder = null;
 
     private bool $monospace = false;
+
+    private bool $enlarged = false;
 
     private bool $singleLine = false;
 
@@ -37,6 +41,7 @@ class Textarea extends Control
             ->maxlength($control->props['maxLength'] ?? null)
             ->placeholder($control->props['placeholder'] ?? null)
             ->monospace((bool) ($control->props['monospace'] ?? false))
+            ->size(($control->props['enlarged'] ?? false) ? 'large' : null)
             ->disabled($attributes['disabled'])
             ->readOnly($attributes['readonly'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
@@ -82,6 +87,14 @@ class Textarea extends Control
         return $this;
     }
 
+    /** Renders the control larger, for values worth reading at a glance. */
+    public function enlarged(bool $enlarged = true): static
+    {
+        $this->enlarged = $enlarged;
+
+        return $this;
+    }
+
     /**
      * Keeps the value to a single line, while letting it wrap. Line breaks can't be typed, and pasted ones become spaces.
      */
@@ -106,6 +119,7 @@ class Textarea extends Control
             'maxLength' => $this->maxLength,
             'placeholder' => $this->placeholder,
             'monospace' => $this->monospace ?: null,
+            'enlarged' => $this->enlarged ?: null,
             'singleLine' => $this->singleLine ?: null,
             ...$this->textExpanderProps(),
         ]);

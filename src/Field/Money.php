@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Gql\Types\Money as MoneyType;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
@@ -50,7 +47,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Money extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Money extends Field implements DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -222,8 +219,9 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         return MoneyControl::make($context->path)
             ->currency($this->currency)
-            ->min($this->min)
-            ->max($this->max)
+            // Bounds are held in the currency's minor units, such as cents.
+            ->min($this->decimalSetting($this->min))
+            ->max($this->decimalSetting($this->max))
             ->size($this->size)
             ->showCurrency($this->showCurrency)
             ->value([
@@ -325,45 +323,6 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
         return $money->getAmount();
     }
 
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        if ($value === null) {
-            // Override the initial value being set to null by _includes/forms/field
-            DeltaRegistry::setInitialValue($this->handle, [
-                'locale' => I18N::getFormattingLocale()->id,
-                'value' => '',
-            ]);
-        }
-
-        $decimals = null;
-
-        if ($value instanceof MoneyLibrary) {
-            $decimals = $this->subunits($value->getCurrency());
-            $value = MoneyHelper::toNumber($value);
-        }
-
-        $decimals ??= $this->subunits();
-
-        $defaultValue = null;
-        if (isset($this->defaultValue)) {
-            $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
-        }
-
-        return FormFields::moneyInputHtml([
-            'id' => $this->getInputId(),
-            'name' => $this->handle,
-            'size' => $this->size,
-            'currency' => $this->currency,
-            'showCurrency' => $this->showCurrency,
-            'decimals' => $decimals,
-            'defaultValue' => $defaultValue,
-            'describedBy' => $this->describedBy,
-            'field' => $this,
-            'value' => $value,
-        ]);
-    }
-
     public function currencyLabel(): string
     {
         return t('({currencyCode}) {currencySymbol}', [
@@ -402,6 +361,13 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getElementConditionRuleType(): string
     {
         return MoneyFieldConditionRule::class;
+    }
+
+    /** @return 'start'|'end' */
+    #[Override]
+    public function tableAttributeAlignment(): string
+    {
+        return 'end';
     }
 
     #[Override]

@@ -414,7 +414,8 @@ class Table implements Node
     /**
      * Adds a "View" menu for showing, hiding and reordering columns, and choosing the sort
      * of any sortable {@see columns()}. The first column is always shown. Every other
-     * column starts visible unless its key is in `$hiddenByDefault`.
+     * column starts visible unless its key is in `$hiddenByDefault`. A {@see deletable()}
+     * table's actions column isn't listed, and stays last.
      *
      * @param  list<string>  $hiddenByDefault
      */

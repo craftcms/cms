@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Extensions;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
+use Countable;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
@@ -28,6 +29,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Template;
+use CraftCms\Cms\Support\Facades\Twig as TwigFacade;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
@@ -38,6 +40,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasEveryBinary;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasSomeBinary;
+use CraftCms\Cms\Twig\Nodes\Expressions\NonStringCoercingInputTest;
 use CraftCms\Cms\Twig\NodeVisitors\EventTagAdder;
 use CraftCms\Cms\Twig\NodeVisitors\EventTagFinder;
 use CraftCms\Cms\Twig\NodeVisitors\GetAttrAdjuster;
@@ -84,13 +87,16 @@ use Reflector;
 use SimpleXMLElement;
 use SoapClient;
 use SQLite3;
+use Stringable;
 use Symfony\Component\Process\Process;
 use Throwable;
+use Traversable;
 use Twig\Environment as TwigEnvironment;
 use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -113,6 +119,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
         private readonly PageLifecycle $pageLifecycle,
+        private readonly ?TwigEnvironment $environment = null,
     ) {}
 
     public static function arraySome(TwigEnvironment $env, mixed $array, mixed $arrow, bool $isSandboxed = false): mixed
@@ -192,28 +199,36 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     #[Override]
     public function getTests(): array
     {
+        // These tests never convert the value they test to a string, so the sandbox shouldn’t check its __toString()
+        $typeTest = ['node_class' => NonStringCoercingInputTest::class];
+
         return [
-            new TwigTest('array', fn ($obj): bool => is_array($obj)),
-            new TwigTest('boolean', fn ($obj): bool => is_bool($obj)),
-            new TwigTest('callable', fn ($obj): bool => is_callable($obj)),
-            new TwigTest('countable', fn ($obj): bool => is_countable($obj)),
-            new TwigTest('empty', function ($obj): bool {
+            new TwigTest('array', fn ($obj): bool => is_array($obj), $typeTest),
+            new TwigTest('boolean', fn ($obj): bool => is_bool($obj), $typeTest),
+            new TwigTest('callable', fn ($obj): bool => is_callable($obj), $typeTest),
+            new TwigTest('countable', fn ($obj): bool => is_countable($obj), $typeTest),
+            new TwigTest('empty', function (bool $isSandboxed, $obj): bool {
                 if ($obj instanceof Component) {
                     // assume the IteratorAggregate implementation was not intentional
                     return false;
                 }
 
+                // testEmpty() only converts Stringable values to strings when they aren't countable or traversable
+                if ($isSandboxed && $obj instanceof Stringable && ! $obj instanceof Countable && ! $obj instanceof Traversable) {
+                    ($this->environment ?? TwigFacade::get())->getExtension(SandboxExtension::class)->getSecurityPolicy()->checkMethodAllowed($obj, '__toString');
+                }
+
                 return CoreExtension::testEmpty($obj);
-            }),
-            new TwigTest('float', fn ($obj): bool => is_float($obj)),
-            new TwigTest('instance of', fn ($obj, $class) => $obj instanceof $class),
-            new TwigTest('integer', fn ($obj): bool => is_int($obj)),
-            new TwigTest('missing', fn ($obj) => $obj instanceof MissingComponentInterface),
-            new TwigTest('numeric', fn ($obj): bool => is_numeric($obj)),
-            new TwigTest('object', fn ($obj): bool => is_object($obj)),
-            new TwigTest('resource', fn ($obj): bool => is_resource($obj)),
-            new TwigTest('scalar', fn ($obj): bool => is_scalar($obj)),
-            new TwigTest('string', fn ($obj): bool => is_string($obj)),
+            }, [...$typeTest, 'needs_is_sandboxed' => true]),
+            new TwigTest('float', fn ($obj): bool => is_float($obj), $typeTest),
+            new TwigTest('instance of', fn ($obj, $class) => $obj instanceof $class, $typeTest),
+            new TwigTest('integer', fn ($obj): bool => is_int($obj), $typeTest),
+            new TwigTest('missing', fn ($obj) => $obj instanceof MissingComponentInterface, $typeTest),
+            new TwigTest('numeric', fn ($obj): bool => is_numeric($obj), $typeTest),
+            new TwigTest('object', fn ($obj): bool => is_object($obj), $typeTest),
+            new TwigTest('resource', fn ($obj): bool => is_resource($obj), $typeTest),
+            new TwigTest('scalar', fn ($obj): bool => is_scalar($obj), $typeTest),
+            new TwigTest('string', fn ($obj): bool => is_string($obj), $typeTest),
         ];
     }
 
@@ -263,6 +278,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('default', $this->defaultFilter(...), ['node_class' => DefaultFilter::class]),
             new TwigFilter('filesize', $this->filesizeFilter(...)),
             new TwigFilter('float', 'floatval'),
+            new TwigFilter('hexdec', 'hexdec'),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('json_encode', $this->jsonEncodeFilter(...)),
             new TwigFilter('json_decode', Json::decode(...)),

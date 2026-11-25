@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {uuid} from '@/common/craft/strings';
   /**
    * The "Customize sources" modal: a source list on the left and the selected
    * source's settings on the right.
@@ -34,6 +35,7 @@
     type SourcesResponse,
     type SourceType,
   } from './types';
+  import {showError} from '@/modules/messages/messages';
 
   const props = defineProps<{
     isActive: boolean;
@@ -60,9 +62,6 @@
   };
 
   const {announce} = useAnnouncer();
-
-  // `uuid` lives on the legacy `Craft` global and isn't described by CraftStatic.
-  const craft = Craft as typeof Craft & {uuid(): string};
 
   const loading = ref(false);
   /**
@@ -161,7 +160,7 @@
         // heading instead of being dropped.
         key:
           source.key ??
-          (source.type === 'heading' ? `heading:${craft.uuid()}` : null),
+          (source.type === 'heading' ? `heading:${uuid()}` : null),
         type: source.type,
         label:
           (source.type === 'heading' ? source.heading : source.label) ?? '',
@@ -175,7 +174,7 @@
       loaded.value = true;
       void select(initialSource());
     } catch (error: any) {
-      Craft.cp?.displayError?.(error?.response?.data?.message);
+      showError(error?.response?.data?.message);
     } finally {
       loading.value = false;
     }
@@ -223,7 +222,7 @@
         ui = await fetchUi(source.key, source.type);
       } catch (error: any) {
         failedUiKey.value = source.key;
-        Craft.cp?.displayError?.(error?.response?.data?.message);
+        showError(error?.response?.data?.message);
         return;
       }
 
@@ -278,6 +277,10 @@
 
     if (leaf === 'label' || leaf === 'heading') {
       source.label = String(valueAt(values, change.path) ?? '');
+    }
+
+    if (leaf === 'enabled' && change.path.at(-2) === source.key) {
+      source.enabled = valueAt(values, change.path);
     }
 
     if (leaf === 'attr' && change.path.at(-2) === 'defaultSort' && source.key) {
@@ -338,7 +341,7 @@
   }
 
   async function add(type: 'heading' | 'custom'): Promise<void> {
-    const key = `${type}:${craft.uuid()}`;
+    const key = `${type}:${uuid()}`;
 
     // Listed straight away, with its settings loading in beside it.
     sources.value.push({
@@ -533,7 +536,7 @@
       if (responseErrors) {
         setErrors(responseErrors);
       } else {
-        Craft.cp?.displayError?.(error?.response?.data?.message);
+        showError(error?.response?.data?.message);
       }
 
       saving.value = false;
@@ -544,7 +547,10 @@
   function isEnabled(source: SourceRow): boolean {
     if (source.type !== 'native') return true;
 
-    const enabled = settingsFor(source).enabled;
+    const enabled =
+      source.enabled !== undefined
+        ? source.enabled
+        : settingsFor(source).enabled;
 
     return !(
       enabled === false ||
@@ -622,6 +628,7 @@
     width="5xl"
     height="40rem"
     resizable
+    storage-key="CustomizeSourcesModal.size"
     @close="emit('close')"
     @submit="save"
   >
@@ -675,6 +682,12 @@
             :item-id="sourceId"
             :label="(source) => source.label"
             :sublabel="(source) => source.handle"
+            :status="
+              (source) =>
+                isEnabled(source)
+                  ? null
+                  : {status: 'disabled', label: t('Disabled')}
+            "
             :item-type="(source) => source.type"
             :selected="selectedKey"
             :disabled="(source) => !source.key"

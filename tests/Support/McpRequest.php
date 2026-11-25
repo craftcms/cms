@@ -7,34 +7,42 @@ namespace CraftCms\Cms\Tests\Support;
 use CraftCms\Cms\Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
+use Mcp\Schema\Request\CallToolRequest;
 use Mcp\Schema\Wire\McpHeader;
+use Mcp\Server\RequestContext;
+use Mcp\Server\Session\InMemorySessionStore;
+use Mcp\Server\Session\Session;
 
 class McpRequest
 {
-    /** @param array<string, mixed> $params */
-    public static function send(TestCase $test, string $method, array $params = []): TestResponse
+    /**
+     * @param  array<string, mixed>  $params
+     * @param  array<string, string>  $headers
+     */
+    public static function send(TestCase $test, string $method, array $params = [], array $headers = []): TestResponse
     {
         Route::getRoutes()->getByName('craft.mcp.server')->flushController();
 
         return $test->postJson(
             route('craft.mcp.server'),
             self::payload($method, $params),
-            self::headers($method, $params['name'] ?? $params['uri'] ?? null),
+            [...self::headers($method, $params['name'] ?? $params['uri'] ?? null), ...$headers],
         );
     }
 
     /**
      * Lists every tool on the authenticated server, following pagination cursors.
      *
+     * @param  array<string, string>  $headers
      * @return list<array<string, mixed>>
      */
-    public static function tools(TestCase $test): array
+    public static function tools(TestCase $test, array $headers = []): array
     {
         $tools = [];
         $cursor = null;
 
         do {
-            $result = self::send($test, 'tools/list', $cursor === null ? [] : ['cursor' => $cursor])
+            $result = self::send($test, 'tools/list', $cursor === null ? [] : ['cursor' => $cursor], $headers)
                 ->assertOk()
                 ->json('result');
             $tools = [...$tools, ...$result['tools']];
@@ -72,5 +80,15 @@ class McpRequest
             McpHeader::METHOD => $method,
             McpHeader::NAME => $name,
         ], static fn (?string $value): bool => $value !== null);
+    }
+
+    /**
+     * Returns the request context of a tool call, for calling a tool’s method directly.
+     *
+     * @param  array<string, mixed>  $arguments
+     */
+    public static function context(string $tool, array $arguments = []): RequestContext
+    {
+        return new RequestContext(new Session(new InMemorySessionStore), new CallToolRequest($tool, $arguments));
     }
 }

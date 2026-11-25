@@ -112,6 +112,18 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Removes the `*Name*` emphasis markers that validation messages put around a field's name.
+     *
+     * Only paired markers on one line are removed; a lone asterisk is kept.
+     *
+     * @since 6.0.0
+     */
+    public static function stripEmphasis(string $str): string
+    {
+        return preg_replace('/(\*+)([^*\n]+)\1/', '$2', $str) ?? $str;
+    }
+
+    /**
      * Detects whether the given string has any 4-byte UTF-8 characters.
      *
      * @param  string  $str  The string to process.
@@ -481,17 +493,15 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
-     * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
-     * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
-     * cryptographically secure string. If you need a cryptographically secure string, use
-     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
+     * Generates a cryptographically secure random string of uppercase and lowercase latin letters and digits. If
+     * $extendedChars is false, the string only contains lowercase latin letters.
      *
      * @param  int  $length  The length of the random string. Defaults to 36.
-     * @param  bool  $extendedChars  Whether to include symbols in the random string.
+     * @param  bool  $extendedChars  Whether to include uppercase letters and digits in the random string.
      * @return string The randomly generated string.
      */
     #[Override]
-    public static function random($length = 36, bool $extendedChars = false): string
+    public static function random($length = 36, bool $extendedChars = true): string
     {
         if (static::$randomStringFactory) {
             return (static::$randomStringFactory)($length);

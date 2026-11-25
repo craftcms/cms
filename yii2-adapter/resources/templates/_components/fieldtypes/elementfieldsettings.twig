@@ -174,26 +174,25 @@
 {% if field.allowMultipleSources %}
 {% js %}
 (() => {
-  const $sourcesField = $('#{{ 'sources-field'|namespaceInputId }}');
-  const $inputs = $sourcesField.find('input');
-  const $searchField = $('#{{ 'show-search-input-field'|namespaceInputId }}');
+  const sourcesField = document.getElementById('{{ 'sources-field'|namespaceInputId }}');
+  const searchField = document.getElementById('{{ 'show-search-input-field'|namespaceInputId }}');
+  if (!sourcesField || !searchField) {
+    return;
+  }
 
   const updateSearchField = function() {
     let showSearchField = false;
-    if (!$sourcesField.is(':visible')) {
+    if (!sourcesField.getClientRects().length) {
       showSearchField = true;
     } else {
       let foundChecked = false;
-      for (let i = 0; i < $inputs.length; i++) {
-        const $input = $inputs.eq(i);
-        const val = $input.val();
-        const checked = $input.prop('checked');
-        if (val === '*') {
-          if (checked) {
+      for (const input of sourcesField.querySelectorAll('input')) {
+        if (input.value === '*') {
+          if (input.checked) {
             showSearchField = false;
             break;
           }
-        } else if (checked) {
+        } else if (input.checked) {
           if (foundChecked) {
             showSearchField = false;
             break;
@@ -204,14 +203,10 @@
       }
     }
 
-    if (showSearchField) {
-      $searchField.removeClass('hidden');
-    } else {
-      $searchField.addClass('hidden');
-    }
+    searchField.classList.toggle('hidden', !showSearchField);
   };
 
-  $inputs.on('change', () => {
+  sourcesField.addEventListener('change', () => {
     updateSearchField();
   });
 

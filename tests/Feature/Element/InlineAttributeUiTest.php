@@ -169,3 +169,15 @@ it('allows inherited protected HTML overrides to call the native parent', functi
     expect(new Crawler($html)->filter('[data-plugin]')->count())->toBe(1)
         ->and(inlineAttributePayload($html)['values']['slug'])->toBe($entry->slug);
 });
+
+it('shows the element’s own HTML for attributes it renders itself without an inline input', function () {
+    $plugin = new class extends Entry
+    {
+        protected function attributeHtml(string $attribute): string
+        {
+            return $attribute === 'customerEmail' ? 'customer@example.com' : parent::attributeHtml($attribute);
+        }
+    };
+
+    expect((string) $plugin->getInlineAttributeInputHtml('customerEmail'))->toBe('customer@example.com');
+});

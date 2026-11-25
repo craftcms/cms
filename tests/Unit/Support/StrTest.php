@@ -61,8 +61,8 @@ test('convertToUtf8', function (string $expected, string $string) {
     ['😂😁', '😂😁'],
     ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
     ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
-    ['Café terrace', "Caf\xe9 terrace"],
-    ['“Quoted”', "\x93Quoted\x94"],
+    'Latin-1 text' => ['Café terrace', "Caf\xe9 terrace"],
+    'Windows-1252 quotes' => ['“Quoted”', "\x93Quoted\x94"],
 ]);
 
 test('convertToUtf8 accepts explicit source encoding', function () {
@@ -225,30 +225,24 @@ test('lower', function (string $expected, string $string, ?string $language = nu
     ['istanbul', 'Istanbul'],
 ]);
 
-test('random', function (int $length = 36, bool $extendedChars = false) {
-    $random = Str::random($length, $extendedChars);
-    $len = strlen($random);
-
-    expect($len)->toBe($length);
-
-    $validChars = $extendedChars
-        ? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"'
-        : 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-
-    foreach (str_split($random) as $char) {
-        expect($validChars)->toContain($char);
-    }
-})->with([
-    [],
-    [50, false],
-    [55, true],
-]);
+test('random', function () {
+    expect(Str::random())->toMatch('/^[a-zA-Z0-9]{36}$/')
+        ->and(Str::random(55, true))->toMatch('/^[a-zA-Z0-9]{55}$/')
+        ->and(Str::random(50, false))->toMatch('/^[a-z]{50}$/')
+        ->and(implode('', array_map(fn () => Str::random(), range(1, 10))))->toMatch('/[A-Z0-9]/');
+});
 
 test('shortcodesToEmoji', function (string $expected, string $str) {
     expect(Str::shortcodesToEmoji($str))->toBe($expected);
 })->with([
     ['Baby you light my 🔥! 😃', 'Baby you light my :fire:! :smiley:'],
     ['Test — em – en - dashes 🤞', 'Test — em – en - dashes :hand_with_index_and_middle_fingers_crossed:'],
+]);
+
+test('stripEmphasis', function (string $expected, string $str) {
+    expect(Str::stripEmphasis($str))->toBe($expected);
+})->with([
+    ['Blocks is invalid.', '**Blocks** is invalid.'],
 ]);
 
 test('title', function (string $expected, string $string, ?string $language = null) {
@@ -327,7 +321,7 @@ test('stripPrivateAndUnassignedChars', function (string $expected, string $str) 
     ['Apple', "\u{F8FF}Apple"],
     ['ab', "a\u{E000}\u{F0000}\u{10FFFD}b"],
     ['ab', "a\u{0378}b"],
-    ['ab', "a\u{FFFE}b"],
+    'Unicode noncharacter' => ['ab', "a\u{FFFE}b"],
     ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
 ]);
 

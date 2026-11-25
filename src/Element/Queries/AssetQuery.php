@@ -19,6 +19,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
@@ -252,12 +253,9 @@ class AssetQuery extends ElementQuery
     #[Override]
     protected function fieldLayouts(): Collection
     {
-        if (! $this->volumeId) {
-            return parent::fieldLayouts();
-        }
-
-        if ($this->volumeId === ':empty:') {
-            return parent::fieldLayouts();
+        if (! $this->volumeId || $this->volumeId === ':empty:') {
+            // Asset field layouts always have the base Asset type, even when the query returns a subclass
+            return Fields::getLayoutsByType(Asset::class);
         }
 
         $fieldLayouts = [];

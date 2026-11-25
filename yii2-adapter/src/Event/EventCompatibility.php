@@ -19,6 +19,7 @@ use craft\helpers\Cp as CpHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\FieldLayout;
 use craft\services\Addresses;
+use craft\services\Assets as LegacyAssets;
 use craft\services\Auth;
 use craft\services\Dashboard;
 use craft\services\Drafts;
@@ -75,6 +76,7 @@ readonly class EventCompatibility
         Entry::registerEvents();
         new NestedElementManagerEventCompatibility()->boot();
         \craft\elements\User::registerEvents();
+        \craft\elements\db\ElementQuery::registerEvents();
 
         /**
          * FieldLayouts
@@ -97,6 +99,7 @@ readonly class EventCompatibility
          * Services
          */
         Addresses::registerEvents();
+        LegacyAssets::registerEvents();
         Auth::registerEvents();
         Connection::registerEvents();
         Drafts::registerEvents();

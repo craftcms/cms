@@ -71,10 +71,10 @@
   const noteMessage = computed(() => {
     return props.invert
       ? t(
-          "Make sure you're not overwriting changes in the YAML files that were made on another environment."
+          'Make sure you’re not overwriting changes in the YAML files that were made on another environment.'
         )
       : t(
-          'Make sure you\'ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.',
+          'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.',
           {
             url: 'https://craftcms.com/docs/5.x/system/project-config.html#environment-setup',
           }
@@ -86,7 +86,7 @@
   <div class="project-config-utility grid grid-cols-1 gap-8">
     <!-- YAML Changes Section -->
     <section class="config-section">
-      <h2 class="mb-2">{{ sectionTitle }}</h2>
+      <h2 class="cp-h2 mb-2">{{ sectionTitle }}</h2>
       <p v-html="sectionDescription"></p>
 
       <div class="mt-3">
@@ -144,7 +144,7 @@
               class="block my-md"
             >
               {{
-                t("There aren't any pending project config changes to apply.")
+                t('There aren’t any pending project config changes to apply.')
               }}
             </craft-callout>
             <div class="buttons">
@@ -176,7 +176,7 @@
     <!-- Rebuild Config Section -->
     <template v-if="!readOnly">
       <section class="config-section">
-        <h2 class="mb-2">{{ t('Rebuild the Config') }}</h2>
+        <h2 class="cp-h2 mb-2">{{ t('Rebuild the Config') }}</h2>
         <p>
           {{
             t(
@@ -219,7 +219,7 @@
 
     <!-- Loaded Config Section -->
     <section class="config-section">
-      <h2 class="mb-2">{{ t('Loaded Project Config Data') }}</h2>
+      <h2 class="cp-h2 mb-2">{{ t('Loaded Project Config Data') }}</h2>
       <!-- craft-pane makes its own scroll container the tab stop -->
       <craft-pane
         variant="code"

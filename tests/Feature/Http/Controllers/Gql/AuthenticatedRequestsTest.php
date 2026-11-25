@@ -4,17 +4,26 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Gql as GqlFacade;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Contracts\Auth\Factory;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\ClientRepository;
@@ -24,7 +33,7 @@ use function CraftCms\Cms\action_url;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     openssl_pkey_export($key, $privateKey);
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
@@ -120,7 +129,24 @@ it('rejects invalid access tokens and tokens without a GraphQL scope', function 
 
         return UserModel::findOrFail($user->id)->createToken('MCP', ['mcp:read'])->accessToken;
     }],
+    'user suspended after the token was issued' => [function (User $user): string {
+        $token = gqlUserToken($user);
+        Users::suspendUser($user);
+
+        return $token;
+    }],
 ]);
+
+it('keeps the request’s site token out of its OAuth discovery metadata', function (): void {
+    $headers = ['X-Craft-Site-Token' => Crypt::encrypt((string) Sites::getPrimarySite()->id)];
+
+    $resource = $this->getJson('https://localhost/.well-known/oauth-protected-resource/actions/graphql/api', $headers)
+        ->assertOk()
+        ->assertJsonPath('resource', 'https://localhost/actions/graphql/api')
+        ->json();
+
+    expect($resource['authorization_servers'])->toBe(['https://localhost/actions/graphql']);
+});
 
 it('lets OAuth clients discover, register for, and use the API with the access level the user chooses', function (?string $access, array $granted, bool $canDelete): void {
     $challenge = gqlAsUser('not.a.jwt', '{ __typename }')->assertUnauthorized()->headers->get('WWW-Authenticate');
@@ -184,3 +210,121 @@ it('lets OAuth clients discover, register for, and use the API with the access l
     'read only by default' => [null, ['graphql:read'], false],
     'read and write' => ['graphql:write', ['graphql:read', 'graphql:write'], true],
 ]);
+
+it('lets OAuth clients discover the API’s OAuth endpoints', function (bool $headlessMode, bool $cpRequest): void {
+    Cms::config()->headlessMode = $headlessMode;
+    $apiPath = ($cpRequest ? Cms::config()->cpTrigger.'/' : '').'actions/graphql/api';
+
+    $challenge = $this->postJson("/$apiPath", ['query' => '{ __typename }'], ['Authorization' => 'Bearer not.a.jwt'])
+        ->assertUnauthorized()
+        ->headers->get('WWW-Authenticate');
+    preg_match('/resource_metadata="([^"]+)"/', $challenge, $match);
+
+    $resource = $this->getJson($match[1])->assertOk()->json();
+    $issuer = parse_url($resource['authorization_servers'][0]);
+    $metadata = $this->getJson("{$issuer['scheme']}://{$issuer['host']}/.well-known/oauth-authorization-server{$issuer['path']}")
+        ->assertOk()
+        ->json();
+
+    expect($resource['resource'])->toEndWith('://localhost/actions/graphql/api')
+        ->and($metadata['issuer'])->toBe($resource['authorization_servers'][0]);
+    $this->postJson($metadata['token_endpoint'])->assertStatus(400);
+    $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
+    $this->get($metadata['authorization_endpoint'])->assertStatus(400);
+})->with([
+    'in headless mode' => [true, false],
+    'from its control panel action URL' => [false, true],
+]);
+
+it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
+    Cms::config()->enableGraphqlCaching = true;
+    $schema = new GqlSchema(['name' => 'Front end', 'scope' => GqlHelper::createFullAccessSchema()->scope]);
+    GqlFacade::saveSchema($schema);
+    GqlFacade::saveToken(new GqlToken(['name' => 'Front end', 'schemaId' => $schema->id, 'accessToken' => 'front-end', 'enabled' => true]));
+
+    // The user has no permissions, so the schema can only come from the GraphQL token
+    $user = UserModel::factory()->createElement(['admin' => false]);
+    $draft = app(Drafts::class)->createDraft($this->peer, $user->id, provisional: true);
+    $draft->title = 'Unsaved changes';
+    Elements::saveElement($draft);
+    $userToken = gqlUserToken($user);
+    $published = $this->peer->title;
+    $title = function (array $headers): ?string {
+        app(Factory::class)->forgetGuards();
+
+        return graphQL("{ entry(id: {$this->peer->id}, withProvisionalDrafts: true) { title } }", $headers)
+            ->assertOk()
+            ->json('data.entry.title');
+    };
+
+    // Results are cached, so the user's provisional drafts must not leak into other requests. Save the pending project
+    // config first, so the cache keys don't change between requests.
+    app(ProjectConfig::class)->saveModifiedConfigData();
+    expect($title(['X-Craft-Gql-Token' => 'front-end', 'Authorization' => "Bearer $userToken"]))->toBe('Unsaved changes')
+        ->and($title(['X-Craft-Gql-Token' => 'front-end']))->toBe($published)
+        // Without the GraphQL token, the schema is the user's own, which can't query entries
+        ->and($title(['Authorization' => "Bearer $userToken"]))->toBeNull();
+
+    // Results that depend on the user's permissions change with them
+    $editable = fn (): array => graphQL('{ entries(section: "news", editable: true) { id } }', [
+        'X-Craft-Gql-Token' => 'front-end',
+        'Authorization' => "Bearer $userToken",
+    ])->assertOk()->json('data.entries');
+    app(Factory::class)->forgetGuards();
+    expect($editable())->toBe([]);
+    app(UserPermissions::class)->saveUserPermissions($user->id, ["viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}"]);
+    app(Factory::class)->forgetGuards();
+    expect($editable())->toEqualCanonicalizing([['id' => (string) $this->own->id], ['id' => (string) $this->peer->id]]);
+
+    app(Factory::class)->forgetGuards();
+    graphQL('{ __typename }', ['X-Craft-Gql-Token' => 'nope', 'Authorization' => "Bearer $userToken"])->assertBadRequest();
+    app(Factory::class)->forgetGuards();
+    graphQL('{ __typename }', ['X-Craft-Gql-Token' => 'front-end', 'Authorization' => 'Bearer aaa.bbb.ccc'])->assertUnauthorized();
+
+    // The same goes for users authenticated by their session
+    app(Factory::class)->forgetGuards();
+    actingAs(UserModel::findOrFail($user->id), Cms::config()->getAuthGuard());
+    graphQL("{ entry(id: {$this->peer->id}, withProvisionalDrafts: true) { title } }", ['X-Craft-Gql-Token' => 'front-end'])
+        ->assertOk()
+        ->assertJsonPath('data.entry.title', 'Unsaved changes');
+});
+
+it('requires control panel access for access tokens sent to the control panel’s action URL', function (): void {
+    $cpPath = '/'.Cms::config()->cpTrigger.'/actions/graphql/api';
+    $request = function (string $token, string $path = '/actions/graphql/api'): TestResponse {
+        app(Factory::class)->forgetGuards();
+
+        return $this->postJson($path, ['query' => '{ ping }'], ['Authorization' => "Bearer $token"]);
+    };
+    $siteUser = UserModel::factory()->createElement(['admin' => false]);
+
+    $request(gqlUserToken($siteUser), $cpPath)->assertForbidden();
+    $request(gqlUserToken($this->editor), $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
+    $request(gqlUserToken($siteUser))->assertOk()->assertJsonPath('data.ping', 'pong');
+});
+
+it('requires offline access for access tokens while the system is offline', function (): void {
+    $cpPath = '/'.Cms::config()->cpTrigger.'/actions/graphql/api';
+    $request = function (string $token, string $path = '/actions/graphql/api'): TestResponse {
+        app(Factory::class)->forgetGuards();
+
+        return $this->postJson($path, ['query' => '{ ping }'], ['Authorization' => "Bearer $token"]);
+    };
+    $user = fn (array $permissions) => UserModel::factory()->withPermissions($permissions)->createElement(['admin' => false]);
+    $tokens = [
+        'none' => gqlUserToken($user([])),
+        'site' => gqlUserToken($user(['accessSiteWhenSystemIsOff'])),
+        'cp' => gqlUserToken($user(['accessCp'])),
+        'cpOffline' => gqlUserToken($user(['accessCp', 'accessCpWhenSystemIsOff'])),
+    ];
+    app()->maintenanceMode()->activate([]);
+
+    try {
+        $request($tokens['none'])->assertServiceUnavailable();
+        $request($tokens['site'])->assertOk()->assertJsonPath('data.ping', 'pong');
+        $request($tokens['cp'], $cpPath)->assertServiceUnavailable();
+        $request($tokens['cpOffline'], $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
+    } finally {
+        app()->maintenanceMode()->deactivate();
+    }
+});

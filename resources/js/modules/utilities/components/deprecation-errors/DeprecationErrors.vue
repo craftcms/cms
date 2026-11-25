@@ -36,7 +36,7 @@
           wrap: true,
         },
       }),
-      columnHelper.date('lastOccurrence'),
+      columnHelper.date('lastOccurrence', {header: t('Last Occurrence')}),
       columnHelper.display({
         id: 'stackTrace',
         header: t('Stack Trace'),

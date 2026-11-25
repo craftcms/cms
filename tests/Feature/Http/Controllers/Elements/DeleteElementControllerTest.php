@@ -153,6 +153,51 @@ describe('destroyForSite', function () {
             ->and(entryQuery()->id($entry->id)->siteId($secondarySite->id)->status(null)->exists())->toBeFalse();
     });
 
+    it('returns 400 when deleting an entry for the only site it exists in', function () {
+        $secondarySite = Site::factory()->create();
+        $section = Section::factory()
+            ->withSites($secondarySite)
+            ->withEntryTypes($entryType = EntryType::factory()->create())
+            ->create([
+                'propagationMethod' => PropagationMethod::Custom,
+            ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
+
+        postJson(action([DeleteElementController::class, 'destroyForSite']), [
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+        ])->assertBadRequest();
+
+        expect(entryQuery()->id($entry->id)->siteId($entry->siteId)->status(null)->exists())->toBeTrue();
+    });
+
+    it('returns 400 when deleting a provisional draft for the only site its canonical entry exists in', function () {
+        $secondarySite = Site::factory()->create();
+        $section = Section::factory()
+            ->withSites($secondarySite)
+            ->withEntryTypes($entryType = EntryType::factory()->create())
+            ->create([
+                'propagationMethod' => PropagationMethod::Custom,
+            ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+        $draft->setEnabledForSite([$entry->siteId => true, $secondarySite->id => true]);
+        expect(ElementsFacade::saveElement($draft))->toBeTrue();
+
+        postJson(action([DeleteElementController::class, 'destroyForSite']), [
+            'elementId' => $entry->id,
+            'siteId' => $entry->siteId,
+        ])->assertBadRequest();
+
+        expect(entryQuery()->id($entry->id)->siteId($entry->siteId)->status(null)->exists())->toBeTrue();
+    });
+
     it('returns the draft label when deleting a saved draft for a site', function () {
         $secondarySite = Site::factory()->create();
         $section = Section::factory()

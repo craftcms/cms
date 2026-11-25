@@ -11,22 +11,24 @@ The field supplies the label, instructions, notices, and errors around a slotted
 - [x] When the slotted control is itself a form control component, the label names the native control inside it rather than the wrapper. Per WCAG 4.1.2 (Name, Role, Value). Verified by `labels a nested form control instead of its wrapper` in `field.test.ts` and `labels nested native controls` in `field.browser.test.ts`.
 - [x] A nested combobox's input and its listbox each get the field label as their name, without the label repeated. Per WCAG 4.1.2 (Name, Role, Value). Verified by `labels a nested combobox and its listbox once (multiple: %s)` in `field.browser.test.ts`.
 - [x] The control's accessible name matches the visible label text. Per WCAG 2.5.3 (Label in Name). Verified by `labels nested native controls` in `field.browser.test.ts`.
-- [x] A slotted control built on Lion is handed the label, instructions and errors, and is named and described by them. The host doesn't become a group. Per WCAG 1.3.1 (Info and Relationships), 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Verified by `hands its label and descriptions to a custom control built on LionField` in `field.browser.test.ts`.
+- [x] A slotted control built on `FormControl` is handed the label, instructions and errors, and is named and described by them. The host doesn't become a group. Per WCAG 1.3.1 (Info and Relationships), 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Verified by `hands its label and descriptions to a custom control built on FormControl` in `field.browser.test.ts`.
 - [x] With `fieldset`, or when the slotted element isn't a form control, the host gets `role="group"` named by the label through `aria-labelledby`, and the label drops its `for`. Unsetting `fieldset` restores the label association. Per WCAG 1.3.1 (Info and Relationships). Verified by `uses group semantics for a composite control wrapper`, `exposes group semantics on the host` and `restores the label association when fieldset is unset` in `field.test.ts`.
 - [x] `label-sr-only` hides the label visually but keeps it as the control's accessible name. Per WCAG 4.1.2 (Name, Role, Value). Verified by `leaves no space above the input for a visually hidden label` in `field.browser.test.ts` and `visually hides the whole heading when the label is all it has` in `field.test.ts`.
 - [x] `instructions-sr-only` hides the instructions visually but keeps them in the input's accessible description, for a field whose placeholder repeats them, as a placeholder alone isn't reliably announced and disappears once there's text. Per WCAG 1.3.1 (Info and Relationships). Verified by `visually hides the instructions but keeps them in the description` in `field.test.ts`.
 - [ ] Field actions are grouped with `role="group"` and the name "Field actions". Per WCAG 1.3.1 (Info and Relationships). Not yet verified. `groups slotted actions` in `field.test.ts` checks the role but not the name.
-- [ ] The translation indicator sits inside the label node, so its name may be folded into the control's accessible name, and it puts a button inside a `<label>`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
+- [ ] The translation indicator sits inside the label node, so its name may be folded into the control's accessible name, and it puts a button (in `craft-info-icon`'s shadow root) inside a `<label>`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 
 ### Forms and validation
 
 - [x] Instructions, tip, warning, and feedback are each linked into the control's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Verified by `links help text, tip, warning and feedback to the input` in `field.test.ts`.
+- [x] A control slotted in `after`, such as an input for a custom value, keeps its own label and is described by the instructions and errors too. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Verified by `describes a control after the main one by its instructions and errors, keeping its own label` in `field.browser.test.ts`.
 - [ ] In group mode, instructions, notices, and feedback are linked into the host's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships). Not yet verified.
 - [x] `required` adds visually hidden "Required" text inside the label, and the asterisk is `aria-hidden`, so the requirement is in the label text and not conveyed by the symbol or its color alone. Removing `required` removes both. Per WCAG 1.3.1 (Info and Relationships), 1.4.1 (Use of Color) and 3.3.2 (Labels or Instructions). Verified by `renders the required text inside the label` and `removes the indicator when required is unset` in `field.test.ts`.
 - [x] Errors are rendered as text in the `feedback` slot and linked to the control through `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Verified by `links help text, tip, warning and feedback to the input` in `field.test.ts`.
 - [ ] When the field has errors, the control is marked `aria-invalid="true"`, and the attribute is removed once they clear. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Known gap: `has-errors` only changes styling, and nothing sets `aria-invalid`.
 - [x] Tip and warning notices start with visually hidden "Tip:" and "Warning:" text, so their kind isn't carried by the callout's icon or color alone. Per WCAG 1.1.1 (Non-text Content) and 1.4.1 (Use of Color). Verified by `renders tip and warning content inside callouts` in `field.test.ts`.
 - [x] Read-only state is shown as a "Read Only" text badge in the heading. Per WCAG 1.4.1 (Use of Color). Verified by `renders the badge in the heading when read-only` in `field.test.ts`.
+- [x] The "Read Only" badge takes the theme's neutral colors, with its text at 4.5:1 against its fill in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `draws the read-only badge as a quiet chip with 4.5:1 text in the %s theme` in `field.browser.test.ts`.
 
 ### Announcements
 
@@ -35,8 +37,8 @@ The field supplies the label, instructions, notices, and errors around a slotted
 
 ### Keyboard and focus
 
-- [x] The translation indicator is a button named by `translation-description`. It's reachable with Tab, opens its tooltip on focus, closes it with Escape while keeping focus, and Tab then moves on to the control. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order), 4.1.2 (Name, Role, Value) and 1.4.13 (Content on Hover or Focus). Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
-- [x] The translation indicator is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
+- [x] The translation indicator is a `craft-info-icon` whose button is named by `translation-description`. It's reachable with Tab, opens its tooltip on Enter, closes it with Escape while keeping focus, and Tab then moves on to the control. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order) and 4.1.2 (Name, Role, Value). Verified by `explains a translatable field in an info icon, opened and closed from the keyboard` in `field.browser.test.ts`.
+- [ ] The translation indicator is at least 24×24 CSS px, or has enough space around it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: `craft-info-icon`'s button is only as big as its icon, about 16×13 CSS px, and beside a visible label a flush action button that follows it starts within 12px of its center.
 
 ### Visual
 
@@ -46,7 +48,7 @@ The field supplies the label, instructions, notices, and errors around a slotted
 
 ### Reflow and zoom
 
-- [ ] At a 320px viewport and at 200% zoom, the heading wraps and the control shrinks to fit, with nothing clipped or overlapping. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. The actions group is absolutely positioned at the end of the heading, so a long label may run under it.
+- [ ] At a 320px viewport and at 200% zoom, the heading wraps and the control shrinks to fit, with nothing clipped or overlapping. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. With the label visually hidden, the actions group is absolutely positioned at the end of the heading, so other heading content may run under it.
 
 ## Depends on usage
 
@@ -56,4 +58,4 @@ The field supplies the label, instructions, notices, and errors around a slotted
 - 3.3.3 (Error Suggestion): write errors that say how to fix the value. See [Accessibility](./Field.mdx#accessibility).
 - 3.3.1 (Error Identification): on submit, move focus to the first invalid control. See [Accessibility](./Field.mdx#accessibility).
 - 1.3.1 (Info and Relationships): use `fieldset` when several controls answer one question. See [Accessibility](./Field.mdx#accessibility).
-- 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value): build a custom single control on Lion. Otherwise the field can only name a group around it. See [Custom Controls](./Field.mdx#custom-controls).
+- 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value): build a custom single control on `FormControl`. Otherwise the field can only name a group around it. See [Custom Controls](./Field.mdx#custom-controls).

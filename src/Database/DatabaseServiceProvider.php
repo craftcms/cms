@@ -62,11 +62,38 @@ class DatabaseServiceProvider extends ServiceProvider
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
         Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
         Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+        /**
+         * Commits the current transaction, even if MySQL already committed it implicitly after a schema change.
+         *
+         * An empty transaction stands in for the one MySQL ended, so Laravel completes the commit normally,
+         * running its `afterCommit` callbacks.
+         */
+        Connection::macro('commitSchemaChanges', function (): void {
+            /** @var Connection $this */
+            if ($this->transactionLevel() === 1 && ! $this->getPdo()->inTransaction()) {
+                $this->getPdo()->beginTransaction();
+            }
+
+            $this->commit();
+        });
         Connection::macro('driverLabel', fn () => match (true) {
             $this->isMaria() => 'MariaDB',
             $this->isMysql() => 'MySQL',
             $this->isSqlite() => 'SQLite',
             default => 'PostgreSQL',
+        });
+        /**
+         * Laravel's schema builder always introspects the write connection. Craft checks columns
+         * while serving requests, so this one introspects the read connection when the connection
+         * would read from it, which keeps those checks working when only the read replica is up.
+         */
+        Connection::macro('getReadSchemaBuilder', function (): SchemaBuilder {
+            /** @var Connection $this */
+            if ($this->getReadPdo() === $this->getRawPdo()) {
+                return $this->getSchemaBuilder();
+            }
+
+            return DB::connection($this->getName().'::read')->getSchemaBuilder();
         });
         Connection::macro('supportsMb4', function () {
             if (Context::hasHidden('craft.supportsMb4')) {

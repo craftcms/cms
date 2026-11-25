@@ -33,7 +33,18 @@ use function CraftCms\Cms\template;
  */
 class Template extends BaseUiElement
 {
-    private static Environment $twig;
+    private static ?Environment $twig = null;
+
+    /**
+     * Forgets the Twig environment, whose extensions hold request-scoped services, so a long-lived worker creates a
+     * new one for each request.
+     *
+     * @internal
+     */
+    public static function forgetTwig(): void
+    {
+        self::$twig = null;
+    }
 
     public string $template = '';
 
@@ -121,23 +132,19 @@ class Template extends BaseUiElement
                 ->width($this->width);
         }
 
-        $templateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Site);
-        $twig = Twig::get();
-        Twig::set(self::twig());
-
         try {
-            $fragment = HtmlStack::capture(fn (): string => trim(template($this->template, [
-                'element' => $context->element,
-                'static' => true,
-            ], templateMode: TemplateMode::from($this->templateMode))));
+            $fragment = TemplateMode::with(TemplateMode::Site, fn () => Twig::with(
+                self::twig(),
+                TemplateMode::Site,
+                fn () => HtmlStack::capture(fn (): string => trim(template($this->template, [
+                    'element' => $context->element,
+                    'static' => true,
+                ], templateMode: TemplateMode::from($this->templateMode)))),
+            ));
         } catch (Throwable $exception) {
             return Callout::make($this->uid, $exception->getMessage())
                 ->variant('danger')
                 ->width($this->width);
-        } finally {
-            Twig::set($twig);
-            TemplateMode::set($templateMode);
         }
 
         if ($fragment->html === '') {
@@ -150,12 +157,12 @@ class Template extends BaseUiElement
 
     private static function twig(): Environment
     {
-        if (! isset(self::$twig)) {
-            TemplateMode::with(TemplateMode::Site, function () {
-                self::$twig = Twig::create();
-                self::$twig->addExtension(new CpExtension);
-            });
-        }
+        self::$twig ??= TemplateMode::with(TemplateMode::Site, function (): Environment {
+            $twig = Twig::create();
+            $twig->addExtension(new CpExtension);
+
+            return $twig;
+        });
 
         return self::$twig;
     }

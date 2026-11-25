@@ -10,7 +10,9 @@ import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast, loadTokens} from '../../../test/contrast';
 import type CraftCombobox from '../combobox/combobox.js';
 import '../combobox/combobox.js';
+import '../chip/chip.js';
 import '../icon/icon.js';
+import '../indicator/indicator.js';
 import './option.js';
 import '../../styles/cp.css';
 
@@ -76,7 +78,7 @@ function background(element: HTMLElement, popup: HTMLElement): string {
 
 describe('semantics', () => {
   it('exposes each option with its selected state', async () => {
-    await openCombobox((c) => (c.modelValue = 'cherry'));
+    await openCombobox((c) => (c.value = 'cherry'));
 
     await expect
       .element(page.getByRole('option', {name: /^Cherry/, selected: true}))
@@ -95,7 +97,7 @@ describe('semantics', () => {
     options[1]!.click();
     await settle();
 
-    expect(control.modelValue).toBe('');
+    expect(control.value).toBe('');
   });
 
   it('takes its name from its content, then its hint, then its suffix, leaving out an unlabeled icon', async () => {
@@ -125,7 +127,7 @@ describe('visual', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it('draws the label at 4.5:1 and the hint at 4.5:1, at rest, hovered, highlighted and selected', async () => {
       const {options, popup} = await openCombobox(
-        (c) => (c.modelValue = 'cherry'),
+        (c) => (c.value = 'cherry'),
         theme
       );
       const [apple, , cherry] = options;
@@ -159,9 +161,7 @@ describe('visual', () => {
   });
 
   it('marks only the selected option with a check mark, hidden from assistive technology', async () => {
-    const {control, options} = await openCombobox(
-      (c) => (c.modelValue = 'cherry')
-    );
+    const {control, options} = await openCombobox((c) => (c.value = 'cherry'));
     const [apple, , cherry] = options;
     const check = cherry!.shadowRoot!.querySelector<HTMLElement>('.check');
 
@@ -177,7 +177,7 @@ describe('visual', () => {
       .not.toBeInTheDocument();
     expect(apple!.shadowRoot!.querySelector('.check')).toBeNull();
 
-    control.modelValue = 'apple';
+    control.value = 'apple';
     await settle();
 
     expect(apple!.shadowRoot!.querySelector('.check')).not.toBeNull();
@@ -187,7 +187,7 @@ describe('visual', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it('fills the highlighted option at 3:1 against the rest, but not the selected one, whose check mark reaches 3:1', async () => {
       const {options, popup} = await openCombobox(
-        (c) => (c.modelValue = 'cherry'),
+        (c) => (c.value = 'cherry'),
         theme
       );
       const [apple, , cherry] = options;
@@ -224,13 +224,60 @@ describe('visual', () => {
     });
   });
 
+  it.each(['light', 'dark'])(
+    'keeps a chip’s label and status dot visible on a highlighted option, in the %s theme',
+    async (theme) => {
+      document.body.innerHTML = `
+        <div data-theme="${theme}" role="listbox" aria-label="Entries">
+          <craft-option active>
+            <craft-chip appearance="plain">
+              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <div>Poster archive</div>
+            </craft-chip>
+          </craft-option>
+          <craft-option active>
+            <craft-chip data-color="white" appearance="outline-fill">
+              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <div>Poster archive</div>
+            </craft-chip>
+          </craft-option>
+        </div>`;
+      await settle();
+      const [plain, white] = [
+        ...document.querySelectorAll<HTMLElement>('craft-chip'),
+      ].map((chip) => {
+        const dot = chip
+          .querySelector('craft-indicator')!
+          .shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+        return {
+          label: getComputedStyle(chip.querySelector('div')!).color,
+          ring: getComputedStyle(dot).borderTopColor,
+          dot: getComputedStyle(dot).backgroundColor,
+          fill: getComputedStyle(
+            chip.shadowRoot!.querySelector<HTMLElement>('.cp-chip')!
+          ).backgroundColor,
+        };
+      });
+      const highlight = getComputedStyle(
+        document.querySelector('craft-option')!
+      ).backgroundColor;
+
+      // A plain chip sits on the highlight, so it takes its colors.
+      expect(contrast(plain!.label, highlight)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(plain!.ring, highlight)).toBeGreaterThanOrEqual(3);
+
+      // A white chip is its own surface, so it keeps the page's.
+      expect(contrast(white!.label, white!.fill)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(white!.dot, white!.fill)).toBeGreaterThanOrEqual(3);
+      expect(white!.ring).toBe('rgba(0, 0, 0, 0)');
+    }
+  );
+
   it('keeps the highlighted and selected options visible in forced colors mode', async () => {
     await cdp().send('Emulation.setEmulatedMedia', {
       features: [{name: 'forced-colors', value: 'active'}],
     });
-    const {options, popup} = await openCombobox(
-      (c) => (c.modelValue = 'cherry')
-    );
+    const {options, popup} = await openCombobox((c) => (c.value = 'cherry'));
     const [apple, , cherry] = options;
     await userEvent.keyboard('{ArrowDown}');
     await settle();

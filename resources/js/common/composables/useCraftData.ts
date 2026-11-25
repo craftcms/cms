@@ -2,6 +2,7 @@ import {computed, type Ref} from 'vue';
 import {toRefs} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
 import type {BreadcrumbItem} from '@/common/types';
+import type {CreatableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
 
 export interface CpUser {
   username: string | null;
@@ -12,6 +13,8 @@ export interface CpUser {
   photoColors: [string, string];
   name: string | null;
   admin: boolean;
+  /** The "Use shapes to represent statuses" accessibility preference. */
+  useShapes: boolean;
   /** The "Underline links" accessibility preference. */
   underlineLinks: boolean;
   /** Whether the user can use the AI assistant, and it can run. */
@@ -22,6 +25,8 @@ export interface CpUser {
   aiGuidanceUrl: string | null;
   /** The same utility’s Skills page, if the user can use it. */
   aiSkillsUrl: string | null;
+  /** Whether the user's account has a Permissions screen. */
+  showPermissions: boolean;
   /** Whether the user's account has a Tokens screen. */
   showTokens: boolean;
 }
@@ -33,7 +38,10 @@ export interface CraftData {
   csrfTokenName: string | null;
   system: {
     name: string;
+    /** The control panel icon's decorative HTML: an inline SVG or an `<img>`. */
     icon: string | null;
+    /** The sign-in screens' logo's decorative HTML: an inline SVG or an `<img>`. */
+    logo: string | null;
   };
   app: {
     version: string;
@@ -42,6 +50,11 @@ export interface CraftData {
       handle: 'solo' | 'team' | 'pro' | 'enterprise';
       value: 0 | 1 | 2 | 3;
     };
+    /**
+     * Whether the “About Craft CMS” view has updates or trials to act on, as
+     * far as Craft knows without checking.
+     */
+    needsAttention: boolean;
   };
   site: {
     id: number;
@@ -55,14 +68,15 @@ export interface CraftData {
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
+    allowUpdates: boolean;
     cpTrigger: string | null;
     actionTrigger: string | null;
     csrfTokenName: string | null;
-    cpLogoUrl: string | null;
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
+    creatableSections: CreatableSection[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
   /**

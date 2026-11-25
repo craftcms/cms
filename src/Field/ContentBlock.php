@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -409,9 +410,36 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             ->ui(app(FieldLayoutCompiler::class)->ui(
                 $context->value->getFieldLayout(),
                 $context->value,
-                new UiContext,
+                new UiContext(namespace: $context->resolvedPath(), preview: $context->ui->preview),
             ))
             ->value([]);
+    }
+
+    /**
+     * Moves the errors validation copied from an invalid block, keyed `handle.attribute`, onto the controls the block
+     * shows them on.
+     */
+    #[Override]
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        $blockErrors = [];
+        $prefix = "{$this->handle}.";
+
+        foreach ($errors as $key => $messages) {
+            if (str_starts_with((string) $key, $prefix)) {
+                $blockErrors[substr((string) $key, strlen($prefix))] = $messages;
+            }
+        }
+
+        if ($blockErrors === [] || ! ($block = $element->getFieldValue($this->handle)) instanceof ContentBlockElement) {
+            return $errors;
+        }
+
+        foreach (array_keys($blockErrors) as $attribute) {
+            unset($errors[$prefix.$attribute]);
+        }
+
+        return $this->addNestedUiErrors($errors, $block, $blockErrors, $this->handle);
     }
 
     #[Override]
@@ -507,8 +535,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             if (count($sameSiteElements) > 1) {
                 $query = ContentBlockElement::find()
                     ->fieldId($this->id)
-                    ->ownerId(array_map(fn (ElementInterface $e) => $e->id, $sameSiteElements))
-                    ->siteId($element->siteId)
+                    ->owner($sameSiteElements)
                     ->indexBy('ownerId');
 
                 // If the owner element is a revision, allow revision content blocks to be returned as
@@ -525,16 +552,17 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
-                    if ($contentBlock) {
-                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
-                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan(
                         handle: $handle,
                     ));
                 }
 
-                /** @phpstan-ignore-next-line */
-                return $element->getEagerLoadedElements($handle)?->first() ?? $this->createContentBlockElement($element);
+                // a clone isn't among the queried elements, so the batch load won't have set its content block
+                $eagerLoadedContentBlocks = $element->getEagerLoadedElements($handle);
+                if ($eagerLoadedContentBlocks !== null) {
+                    /** @phpstan-ignore-next-line */
+                    return $eagerLoadedContentBlocks->first() ?? $this->createContentBlockElement($element);
+                }
             }
         }
 
@@ -830,14 +858,15 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
 
         if (isset($value['fields'])) {
-            foreach ($value['fields'] as $fieldHandle => $fieldValue) {
-                try {
-                    if ($fromRequest) {
-                        $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                    } else {
+            if ($fromRequest) {
+                // Respect field layout conditions
+                ElementHelper::setNestedFieldValuesFromRequest($contentBlock, $value['fields']);
+            } else {
+                foreach ($value['fields'] as $fieldHandle => $fieldValue) {
+                    try {
                         $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (InvalidFieldException) {
                     }
-                } catch (InvalidFieldException) {
                 }
             }
         }

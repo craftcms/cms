@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type {Selectable} from '@/common/composables/useSelectable';
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {
@@ -31,6 +33,7 @@
   import {
     nestedCreateChoices,
     nestedIndexParams,
+    nestedOwnerParams,
     type NestedElementsProps,
     type NestedElement,
     type NestedIndexElement,
@@ -139,7 +142,9 @@
   canInteractWithOrder = computed(
     () => canReorder.value && !busy.value && !loading.value
   );
-  const {selection, selectedIds, clearSelection} = queryState.selection;
+  const {selectedIds, clearSelection} = queryState.selection;
+  // Nested elements always have numeric ids.
+  const selection = queryState.selection.selection as Selectable<number>;
 
   operations = useNestedElementOperations({
     elements,
@@ -158,6 +163,11 @@
     busy,
     error,
     ownerId: preparedOwnerId,
+  });
+
+  usePasteElementsShortcut(container, {
+    canPaste: () => operations.canPaste.value,
+    paste: () => operations.paste(),
   });
   const actions = useNestedElementActions({
     elements,
@@ -258,11 +268,7 @@
       | false = false;
     await operations.mutate(async (ownerId) => {
       result = await saveInlineElements(body, {
-        ...nestedIndexParams(
-          currentManager,
-          ownerId,
-          props.control.index?.initial
-        ),
+        ...nestedOwnerParams(currentManager, ownerId),
         elementType: currentManager.elementType,
         siteId: currentManager.ownerSiteId,
         context: 'embeddedIndex',

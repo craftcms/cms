@@ -10,7 +10,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Stringable;
 use Override;
+use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\CoreExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
@@ -37,6 +39,7 @@ class TextTwigExtension extends AbstractExtension
             new TwigFilter('title', $this->titleFilter(...)),
             new TwigFilter('truncate', $this->truncateFilter(...)),
             new TwigFilter('upper', $this->upperFilter(...)),
+            new TwigFilter('url_encode', $this->urlEncodeFilter(...), ['needs_is_sandboxed' => true]),
             new TwigFilter('widont', $this->widontFilter(...), ['is_safe' => ['html']]),
         ];
     }
@@ -45,7 +48,7 @@ class TextTwigExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('randomString', Str::random(...)),
+            new TwigFunction('randomString', fn (int $length = 36, bool $extendedChars = false): string => Str::random($length, $extendedChars)),
             new TwigFunction('uuid', Str::uuid(...)),
             new TwigFunction('uuid7', Str::uuid7(...)),
         ];
@@ -121,6 +124,25 @@ class TextTwigExtension extends AbstractExtension
     public function upperFilter(?string $string, ?string $language = null): string
     {
         return Str::upper($string ?? '', $language);
+    }
+
+    /**
+     * URL-encodes a string, or an array as a query string.
+     *
+     * @throws RuntimeError if an array contains objects in a sandboxed environment
+     */
+    public function urlEncodeFilter(bool $isSandboxed, mixed $url): string
+    {
+        // http_build_query() encodes objects’ public properties without any sandbox checks
+        if ($isSandboxed && is_array($url)) {
+            array_walk_recursive($url, function (mixed $value) {
+                if (is_object($value)) {
+                    throw new RuntimeError('Arrays passed to the "url_encode" filter must not contain objects in sandbox mode.');
+                }
+            });
+        }
+
+        return CoreExtension::urlencode($url);
     }
 
     public function encencFilter(mixed $str): string

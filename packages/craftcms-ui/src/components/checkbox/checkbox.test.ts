@@ -80,7 +80,7 @@ describe('SSR hydration', () => {
     expect(input.checked).toBe(true);
   });
 
-  it('still toggles through Lion after hydration', async () => {
+  it('still toggles after hydration', async () => {
     const element = await createFromMarkup(`
       <craft-checkbox>
         <input slot="input" type="checkbox" name="agree" value="1">
@@ -114,7 +114,7 @@ describe('SSR hydration', () => {
 
   it('mirrors a direct input.disabled write and allows selecting afterwards', async () => {
     // The legacy "All" handler re-enables options via `.prop({checked, disabled})`
-    // with no events; a stale host `disabled` would make Lion swallow the
+    // with no events; a stale host `disabled` would block the
     // next user toggle.
     const element = await createFromMarkup(`
       <craft-checkbox>
@@ -175,5 +175,106 @@ describe('SSR hydration', () => {
 
     expect(input.name).toBe('agree');
     expect(input.checked).toBe(true);
+  });
+});
+
+describe('semantics', () => {
+  it('names the input with its label and describes it with its help text', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="Enable indexing" help-text="Search engines may index it."></craft-checkbox>'
+    );
+    const input = element.querySelector('input')!;
+    const label = element.querySelector<HTMLElement>('[slot="label"]')!;
+    const helpText = element.querySelector<HTMLElement>('[slot="help-text"]')!;
+
+    expect(label.getAttribute('for')).toBe(input.id);
+    expect(input.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(input.getAttribute('aria-describedby')).toBe(helpText.id);
+  });
+
+  it('marks the input required and invalid', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="Agree" required invalid></craft-checkbox>'
+    );
+    const input = element.querySelector('input')!;
+
+    expect(input.getAttribute('aria-required')).toBe('true');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+
+    element.invalid = false;
+    await element.updateComplete;
+
+    expect(input.hasAttribute('aria-invalid')).toBe(false);
+  });
+
+  it('shows indeterminate on the input', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="All" indeterminate></craft-checkbox>'
+    );
+
+    expect(element.querySelector('input')!.indeterminate).toBe(true);
+  });
+
+  it('stops being indeterminate once the user clicks it', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="All" indeterminate></craft-checkbox>'
+    );
+    const input = element.querySelector('input')!;
+
+    input.click();
+    await element.updateComplete;
+
+    expect(input.checked).toBe(true);
+    expect(input.indeterminate).toBe(false);
+    expect(element.indeterminate).toBe(false);
+  });
+});
+
+describe('events', () => {
+  it("fires the input's own events when the user toggles it", async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="Agree"></craft-checkbox>'
+    );
+    const seen: string[] = [];
+    element.addEventListener('input', () =>
+      seen.push(`input:${element.checked}`)
+    );
+    element.addEventListener('change', () =>
+      seen.push(`change:${element.checked}`)
+    );
+
+    element.querySelector('input')!.click();
+
+    expect(seen).toEqual(['input:true', 'change:true']);
+  });
+
+  it('is silent when checked from code, and reflects the new state', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox label="Agree"></craft-checkbox>'
+    );
+    const seen: string[] = [];
+    element.addEventListener('input', () => seen.push('input'));
+    element.addEventListener('change', () => seen.push('change'));
+
+    element.checked = true;
+    await element.updateComplete;
+
+    expect(seen).toEqual([]);
+    expect(element.querySelector('input')!.checked).toBe(true);
+    expect(element.hasAttribute('checked')).toBe(true);
+  });
+
+  it('posts its value from the input', async () => {
+    const element = await createFromMarkup(
+      '<craft-checkbox name="kinds[]" value="image" checked></craft-checkbox>'
+    );
+    const input = element.querySelector('input')!;
+
+    expect(element.value).toBe('image');
+    expect([input.name, input.value, input.checked]).toEqual([
+      'kinds[]',
+      'image',
+      true,
+    ]);
   });
 });

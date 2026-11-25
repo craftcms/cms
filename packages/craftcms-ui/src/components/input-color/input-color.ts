@@ -1,6 +1,7 @@
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import CraftInput from '../input/input.js';
+import {emitChange} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import styles from './input-color.styles.js';
 
@@ -201,50 +202,41 @@ export default class CraftInputColor extends CraftInput {
     };
   }
 
-  /**
-   * Parses the typed hex string into the model value.
-   */
-  override parser(value: string) {
-    return normalizeColorValue(value);
+  /** The color as hex digits, without a leading `#`. */
+  override get value(): string {
+    return super.value;
+  }
+
+  override set value(value: string) {
+    super.value = normalizeColorValue(value);
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.#normalizeInput();
+    this._control?.addEventListener('input', this.#normalizeInput);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this._control?.removeEventListener('input', this.#normalizeInput);
   }
 
   /**
-   * Formats the model value for display in the field.
+   * Normalizes the value the input arrives with, such as server-rendered
+   * markup's, and what is typed as it arrives, so a value with or without a
+   * leading `#` lands the same way. Emits no event of its own.
    */
-  override formatter(value: unknown) {
-    return normalizeColorValue(value);
-  }
+  #normalizeInput = (): void => {
+    const input = this._control;
 
-  /**
-   * Serializes the model value for form submission.
-   */
-  override serializer(value: unknown) {
-    return normalizeColorValue(value);
-  }
-
-  /**
-   * Restores a model value from its serialized form.
-   */
-  override deserializer(value: string) {
-    return normalizeColorValue(value);
-  }
-
-  /**
-   * Normalizes what is typed before it is parsed, so a value pasted with or
-   * without a leading `#` lands the same way.
-   */
-  override preprocessor(value: string) {
-    const normalizedValue = normalizeColorValue(value);
-
-    if (normalizedValue === value) {
-      return undefined;
+    if (input && normalizeColorValue(input.value) !== input.value) {
+      this.value = input.value;
     }
-
-    return normalizedValue;
-  }
+  };
 
   protected get _expandedHexValue(): string | null {
-    return expandedHexValue(this.modelValue);
+    return expandedHexValue(this.value);
   }
 
   /**
@@ -271,16 +263,23 @@ export default class CraftInputColor extends CraftInput {
   }
 
   protected _handlePickerInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const normalizedValue = normalizeColorValue(
-      colorPickerValueToHex(input.value)
+    // The picker's own `input` event then carries on out of the shadow root,
+    // with this component as its target.
+    this.value = colorPickerValueToHex(
+      (event.target as HTMLInputElement).value
     );
-    const wasHandlingUserInput = this._isHandlingUserInput;
+  }
 
-    this._isHandlingUserInput = true;
-    this.modelValue = normalizedValue;
-    this.value = normalizedValue;
-    this._isHandlingUserInput = wasHandlingUserInput;
+  /**
+   * The picker's `change` isn't composed, so it stays in the shadow root. The
+   * commit is announced from the text input instead, as a typed one is.
+   */
+  protected _handlePickerChange(event: Event) {
+    this._handlePickerInput(event);
+
+    if (this._control) {
+      emitChange(this._control);
+    }
   }
 
   protected _pickerTemplate() {
@@ -300,6 +299,7 @@ export default class CraftInputColor extends CraftInput {
         ?disabled="${this.disabled}"
         list=${presets.length ? this._pickerListId : nothing}
         @input="${this._handlePickerInput}"
+        @change="${this._handlePickerChange}"
       />
       ${presets.length
         ? html`

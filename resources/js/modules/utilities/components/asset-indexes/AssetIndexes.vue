@@ -12,7 +12,6 @@
       existingSessions?: Array<IndexingSession>;
       volumeOptions?: Array<CheckboxOption>;
       dateFormat?: string;
-      isEphemeral?: boolean;
     }>(),
     {volumeOptions: () => [], existingSessions: () => []}
   );
@@ -23,7 +22,6 @@
 
   const form = reactive({
     volumes: ['*', ...props.volumeOptions.map((v) => v.value)],
-    cacheImages: false,
     listEmptyFolders: false,
     analyzeImages: false,
   });
@@ -47,29 +45,8 @@
       :allow-select-all="true"
     />
 
-    <h2 class="text-sm mb-2 mt-6">{{ t('Options') }}</h2>
+    <h2 class="cp-h4 mb-2 mt-6">{{ t('Options') }}</h2>
     <div class="grid gap-3">
-      <template v-if="!isEphemeral">
-        <craft-switch
-          name="cacheImages"
-          :label="t('Cache remote images')"
-          .checked="form.cacheImages"
-          @change="
-            form.cacheImages = ($event.target as HTMLInputElement).checked
-          "
-        >
-          <div slot="help-text">
-            {{ t('Download copies of remote images to the local filesystem.') }}
-            <template v-if="isEphemeral">
-              <br />
-              <em>{{
-                t('This option is disabled for ephemeral environments.')
-              }}</em>
-            </template>
-          </div>
-        </craft-switch>
-      </template>
-
       <craft-switch
         name="listEmptyFolders"
         :label="t('List empty folders')"

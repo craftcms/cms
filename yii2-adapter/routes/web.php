@@ -6,9 +6,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Route\Routes as CraftRoutes;
-use CraftCms\Yii2Adapter\Http\ExcludeCsrfValidationForLegacyController;
 use CraftCms\Yii2Adapter\Http\FallbackTransformController;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\LooseEndsController;
 use CraftCms\Yii2Adapter\Http\SavePluginSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +26,17 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         ->get('assets/generate-fallback-transform', FallbackTransformController::class);
 }
 
+Route::middleware(['web', 'craft', 'craft.cp', 'auth', 'can:accessCp'])
+    ->prefix($routes->cpTriggerRoutePrefix())
+    ->post('utilities/yii2-loose-ends/usages/{id}/resolve', [LooseEndsController::class, 'resolve'])
+    ->whereNumber('id')
+    ->name('craft.cp.utilities.yii2-loose-ends.resolve');
+
+Route::middleware(['web', 'craft', 'craft.cp', 'auth', 'can:accessCp'])
+    ->prefix($routes->cpTriggerRoutePrefix())
+    ->post('utilities/yii2-loose-ends/fix', [LooseEndsController::class, 'fix'])
+    ->name('craft.cp.utilities.yii2-loose-ends.fix');
+
 Route::middleware([
     'web',
     'craft',
@@ -40,7 +51,6 @@ Route::middleware([
 foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
     Route::middleware([
         'craft',
-        ExcludeCsrfValidationForLegacyController::class,
         ...$middleware,
         LegacyMiddleware::class,
     ])
@@ -67,7 +77,6 @@ Route::middleware([
     'craft.cp',
     'auth',
     'can:accessCp',
-    ExcludeCsrfValidationForLegacyController::class,
     LegacyMiddleware::class,
 ])
     ->name('craft.cp.legacy')

@@ -50,6 +50,8 @@ test('unique', function (bool $generic) {
     expect($query()->site('*')->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
     expect($query()->site('*')->preferSites([$site2->id, $site1->id])->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
     expect($query()->site('*')->preferSites([$site2->handle, $site1->handle])->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
+    expect($query()->site('*')->preferSites([])->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
+    expect($query()->site('*')->preferSites(['nonexistent'])->unique()->pluck('elements_sites.siteId', 'elements.id')->sortKeys()->all())->toBe($preferredSites);
     expect($query()->site('*')->unique()->orderBy('elements.id')->offset(1)->limit(1)->pluck('elements.id')->all())->toBe([$otherEntry->id]);
 
     $entry->element->siteSettings()->where('siteId', $site1->id)->update(['title' => 'Only matching site']);

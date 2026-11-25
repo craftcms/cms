@@ -93,6 +93,8 @@ class Input extends ViewComponent
 
     protected bool|string|null $expanded = null;
 
+    protected string|Stringable|null $prefix = null;
+
     protected string|Stringable|null $suffix = null;
 
     protected ?string $descriptionId = null;
@@ -317,6 +319,18 @@ class Input extends ViewComponent
     }
 
     /**
+     * Display-only text rendered in the `prefix` slot, such as a currency
+     * symbol, with a hidden description ("Value prefixed by …") linked via
+     * `aria-describedby`.
+     */
+    public function prefix(string|Stringable|null $prefix): static
+    {
+        $this->prefix = $prefix;
+
+        return $this;
+    }
+
+    /**
      * Display-only unit suffix rendered in the `suffix` slot, with a hidden
      * description ("Value suffixed by …") linked via `aria-describedby`.
      */
@@ -327,7 +341,7 @@ class Input extends ViewComponent
         return $this;
     }
 
-    /** Id of the suffix description element; defaults to `{id}-desc`. */
+    /** Id of the prefix and suffix description element; defaults to `{id}-desc`, or a generated id without an `id`. */
     public function descriptionId(?string $descriptionId): static
     {
         $this->descriptionId = $descriptionId;
@@ -412,10 +426,8 @@ class Input extends ViewComponent
             'monospace' => $this->monospace,
             'inline-suffix' => $this->inlineSuffix,
             'hidden-input' => $this->hiddenInput,
-            // Lion pushes these host properties onto the slotted input when
-            // the element upgrades (LionInput::updated()), overwriting the
-            // server-rendered attributes with its defaults — so any
-            // non-default value must also live on the host. The native input
+            // The component pushes the host properties it's given onto the
+            // slotted input, and styles itself from them. The native input
             // keeps them too, for pre-upgrade correctness (form posts,
             // password masking, CSS).
             'type' => $this->type !== 'text' ? $this->type : null,
@@ -431,7 +443,7 @@ class Input extends ViewComponent
     #[\Override]
     protected function renderSlots(): string
     {
-        return $this->inputHtml().$this->suffixHtml().parent::renderSlots();
+        return $this->descriptionHtml().$this->prefixHtml().$this->inputHtml().$this->suffixHtml().parent::renderSlots();
     }
 
     protected function inputHtml(): string
@@ -472,7 +484,7 @@ class Input extends ViewComponent
                 'labelledby' => $this->labelledBy,
                 'describedby' => implode(' ', array_filter([
                     $this->describedBy,
-                    $this->hasSuffix() ? $this->getDescriptionId() : null,
+                    $this->hasPrefix() || $this->hasSuffix() ? $this->getDescriptionId() : null,
                 ])) ?: null,
                 'expanded' => is_bool($expanded) ? ($expanded ? 'true' : 'false') : $expanded,
             ],
@@ -488,30 +500,58 @@ class Input extends ViewComponent
     }
 
     /**
-     * Renders the suffix into the web component's `suffix` slot, plus a
-     * hidden description span the input's `aria-describedby` points at
-     * (mirroring the legacy suffix markup).
+     * Renders the hidden description the input's `aria-describedby` points
+     * at, saying which prefix and suffix surround the value (mirroring the
+     * legacy markup).
      */
-    protected function suffixHtml(): string
+    protected function descriptionHtml(): string
     {
-        if ($this->suffix === null || (string) $this->suffix === '') {
+        if (! $this->hasPrefix() && ! $this->hasSuffix()) {
             return '';
         }
 
-        $descriptionId = $this->getDescriptionId();
+        $text = implode(' ', array_filter([
+            $this->hasPrefix() ? t('Value prefixed by “{prefix}”.', ['prefix' => (string) $this->prefix]) : null,
+            $this->hasSuffix() ? t('Value suffixed by “{suffix}”.', ['suffix' => (string) $this->suffix]) : null,
+        ]));
 
-        return
-            ($descriptionId !== null
-                ? Html::tag('span', Html::encode(t('Value suffixed by “{suffix}”.', ['suffix' => (string) $this->suffix])), [
-                    'id' => $descriptionId,
-                    'hidden' => true,
-                ])
-                : '').
-            Html::tag('div', Html::encode((string) $this->suffix), [
-                'slot' => 'suffix',
-                'class' => ['label', 'light'],
-                'aria' => ['hidden' => 'true'],
-            ]);
+        return Html::tag('span', Html::encode($text), [
+            'id' => $this->getDescriptionId(),
+            'hidden' => true,
+        ]);
+    }
+
+    /** Renders the prefix into the web component's `prefix` slot. */
+    protected function prefixHtml(): string
+    {
+        if (! $this->hasPrefix()) {
+            return '';
+        }
+
+        return Html::tag('div', Html::encode((string) $this->prefix), [
+            'slot' => 'prefix',
+            'class' => ['label', 'light'],
+            'aria' => ['hidden' => 'true'],
+        ]);
+    }
+
+    /** Renders the suffix into the web component's `suffix` slot. */
+    protected function suffixHtml(): string
+    {
+        if (! $this->hasSuffix()) {
+            return '';
+        }
+
+        return Html::tag('div', Html::encode((string) $this->suffix), [
+            'slot' => 'suffix',
+            'class' => ['label', 'light'],
+            'aria' => ['hidden' => 'true'],
+        ]);
+    }
+
+    protected function hasPrefix(): bool
+    {
+        return $this->prefix !== null && (string) $this->prefix !== '';
     }
 
     protected function hasSuffix(): bool
@@ -527,7 +567,7 @@ class Input extends ViewComponent
 
         $id = $this->getId();
 
-        return $id !== null ? "$id-desc" : null;
+        return $id !== null ? "$id-desc" : $this->descriptionId = sprintf('input-desc-%s', mt_rand());
     }
 
     protected function getOrientation(): string

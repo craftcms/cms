@@ -4,8 +4,14 @@ import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
-declare const Craft: any;
+/** The owner's controls that the preview card reflects. */
+const APPEARANCE_KEYS = ['name', 'color', 'icon', 'showStatusField'] as const;
+type AppearanceKey = (typeof APPEARANCE_KEYS)[number];
 
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
@@ -33,6 +39,12 @@ export class CardViewDesigner extends Base {
    * operating system, say).
    */
   themeObserver = new MutationObserver(() => void this.updatePreview());
+  /**
+   * Watches for the owner's Name, Color, and Icon controls while some are
+   * missing, as a form can render them after the card view designer, such as
+   * in an Appearance tab whose fields render once it's first shown.
+   */
+  appearanceControlObserver: MutationObserver | null = null;
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
@@ -105,6 +117,7 @@ export class CardViewDesigner extends Base {
 
     this.listenToCheckboxEvents();
     this.listenToAppearanceControls();
+    this.observeAppearanceControls();
     this.disablePreviewLinks();
     this.syncIconThumbOption();
     this.syncPreviewAppearance();
@@ -160,29 +173,68 @@ export class CardViewDesigner extends Base {
   }
 
   /**
-   * The Name, Color, and Icon controls of the component that owns the layout
-   * (an entry type, say), when its edit form has them.
+   * The Name, Color, Icon, and Show the Status field controls of the
+   * component that owns the layout (an entry type, say), when its edit form
+   * has them.
    */
-  appearanceControl(key: 'name' | 'color' | 'icon'): HTMLElement | null {
+  appearanceControl(key: AppearanceKey): HTMLElement | null {
     return (this.$container.closest('form') ?? document).querySelector(
       `[data-ui-control-path='["${key}"]']`
     );
   }
 
-  /** Reflects changes to the Name, Color, and Icon controls in the preview card. */
+  /** Reflects changes to the owner's appearance controls in the preview card. */
   listenToAppearanceControls(): void {
     // The container may not be in the form yet, so listen on the document.
-    document.addEventListener('model-value-changed', this.onAppearanceChange);
+    // Text controls report changes with `input`, switches with `change`.
+    document.addEventListener('input', this.onAppearanceChange);
+    document.addEventListener('change', this.onAppearanceChange);
   }
 
-  // The control's field re-dispatches the event, so it may come from either.
+  /** The owner's appearance controls that haven't rendered yet. */
+  missingAppearanceControls(): string[] {
+    return (['name', 'color', 'icon'] as const).filter(
+      (key) => !this.appearanceControl(key)
+    );
+  }
+
+  /**
+   * Syncs the icon thumb source and the preview as the owner's appearance
+   * controls render, for owners with an icon, like entry types.
+   */
+  observeAppearanceControls(): void {
+    let missing = this.missingAppearanceControls().length;
+    if (!this.iconThumbOption || missing === 0) {
+      return;
+    }
+
+    this.appearanceControlObserver = new MutationObserver(() => {
+      const nowMissing = this.missingAppearanceControls().length;
+      if (nowMissing < missing) {
+        missing = nowMissing;
+        this.syncIconThumbOption();
+        this.syncPreviewAppearance();
+      }
+      if (nowMissing === 0) {
+        this.appearanceControlObserver?.disconnect();
+        this.appearanceControlObserver = null;
+      }
+    });
+    // The container may not be in the form yet, so watch the whole page.
+    this.appearanceControlObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  // Typing reaches here from the native input inside the control.
   onAppearanceChange = (ev: Event): void => {
     const target = ev.target;
     if (
       target instanceof Node &&
-      (['name', 'color', 'icon'] as const).some((key) => {
+      APPEARANCE_KEYS.some((key) => {
         const control = this.appearanceControl(key);
-        return control !== null && target.contains(control);
+        return control !== null && control.contains(target);
       })
     ) {
       this.syncIconThumbOption();
@@ -193,16 +245,17 @@ export class CardViewDesigner extends Base {
   /** The value of the Name, Color, or Icon control, or `''` if there isn't one. */
   appearanceValue(key: 'name' | 'color' | 'icon'): string {
     return String(
-      (this.appearanceControl(key) as any)?.modelValue ?? ''
+      (this.appearanceControl(key) as {value?: unknown} | null)?.value ?? ''
     ).trim();
   }
 
   /**
    * Offers the owner's icon as a thumb source only while an icon is selected.
+   * Until the Icon control renders, the thumb sources stay as they were saved.
    */
   syncIconThumbOption(): void {
     const option = this.iconThumbOption;
-    if (!option || !this.$thumbSources) {
+    if (!option || !this.$thumbSources || !this.appearanceControl('icon')) {
       return;
     }
 
@@ -232,6 +285,8 @@ export class CardViewDesigner extends Base {
     if (!card) {
       return;
     }
+
+    this.syncPreviewStatus();
 
     // Only for owners with a color or icon, like entry types, whose elements'
     // cards show the owner in their headers.
@@ -282,6 +337,32 @@ export class CardViewDesigner extends Base {
       label.append(nameElement);
     }
     header.append(label);
+  }
+
+  /**
+   * Shows the preview card's status badge and the sample chip's status
+   * indicator only while the owner's Show the Status field control is on, as
+   * its elements' cards and chips show their status.
+   */
+  syncPreviewStatus(): void {
+    const control = this.appearanceControl('showStatusField') as
+      | (HTMLElement & {checked?: boolean})
+      | null;
+    if (!control) {
+      return;
+    }
+
+    const show = Boolean(control.checked);
+    this.$previewContainer
+      .querySelectorAll('[data-cvd-status]')
+      .forEach((element: HTMLElement) => {
+        element.hidden = !show;
+      });
+
+    const chip = this.$previewContainer.querySelector('craft-chip.cvd-chip');
+    if (chip?.querySelector(':scope > [data-cvd-status]')) {
+      chip.toggleAttribute('show-status', show);
+    }
   }
 
   /**
@@ -353,14 +434,14 @@ export class CardViewDesigner extends Base {
 
   updateCardViewConfig(): void {
     this.designer.updateConfig((config: any) => {
-      config.cardView = this.$libraryContainer.modelValue;
+      config.cardView = this.$libraryContainer.value;
       return config;
     });
   }
 
   async updatePreview(): Promise<void> {
     this.$previewContainer.classList.add('loading');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    announce(t('Loading'));
 
     if (this.abortController) {
       this.abortController.abort();
@@ -370,35 +451,32 @@ export class CardViewDesigner extends Base {
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
+      response = await actionClient.post(
         'fields/render-card-preview',
         {
-          signal: this.abortController.signal,
-          data: {
-            fieldLayoutConfig: {
-              ...this.designer.config,
-              // Not part of `this.designer.config` (that lives at
-              // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
-              // needs a `type` on the layout config to instantiate a sample element.
-              type: this.designer.settings!.elementType,
-              generatedFields:
-                document
-                  .querySelector('craft-generated-fields-table')
-                  ?.serialize() ?? [],
-            },
+          fieldLayoutConfig: {
+            ...this.designer.config,
+            // Not part of `this.designer.config` (that lives at
+            // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
+            // needs a `type` on the layout config to instantiate a sample element.
+            type: this.designer.settings!.elementType,
+            generatedFields:
+              document
+                .querySelector('craft-generated-fields-table')
+                ?.serialize() ?? [],
           },
-        }
+        },
+        {signal: this.abortController.signal}
       );
     } catch (e: any) {
       if (!isCancel(e)) {
-        Craft.cp.displayError(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
         throw e;
       }
       // otherwise the request was canceled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      announce(t('Loading complete'));
       this.abortController = null;
     }
 
@@ -484,7 +562,7 @@ export class CardViewDesigner extends Base {
   }
 
   thumbSources(): string[] {
-    return this.$thumbSources?.modelValue ?? [];
+    return this.$thumbSources?.value ?? [];
   }
 
   manageThumbnails(): void {
@@ -574,10 +652,9 @@ export class CardViewDesigner extends Base {
     this.abortController?.abort();
     this.previewCardObserver.disconnect();
     this.themeObserver.disconnect();
-    document.removeEventListener(
-      'model-value-changed',
-      this.onAppearanceChange
-    );
+    this.appearanceControlObserver?.disconnect();
+    document.removeEventListener('input', this.onAppearanceChange);
+    document.removeEventListener('change', this.onAppearanceChange);
 
     if (this.$container) {
       cvdData.delete(this.$container);

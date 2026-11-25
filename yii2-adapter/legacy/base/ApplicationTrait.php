@@ -59,6 +59,7 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
+use craft\services\Uploads;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -76,8 +77,9 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -90,7 +92,6 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
-use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
@@ -147,6 +148,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Tags $tags The tags service
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
+ * @property-read Uploads $uploads The uploads service
  * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
@@ -423,6 +425,22 @@ trait ApplicationTrait
     }
 
     /**
+     * Runs the callbacks registered with [[onAfterRequest()]] so far, without triggering [[EVENT_AFTER_REQUEST]].
+     *
+     * @internal Queue workers call this after each job, as they run many before their own request ends.
+     */
+    public function runAfterRequestCallbacks(): void
+    {
+        $event = new Event();
+        $event->sender = $this;
+        $event->name = self::EVENT_AFTER_REQUEST;
+
+        while ($callback = array_shift($this->afterRequestCallbacks)) {
+            $callback($event);
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function trigger($name, ?Event $event = null)
@@ -450,7 +468,7 @@ trait ApplicationTrait
      */
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
-        DeprecatorFacade::log('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
+        LegacyUsage::record('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
 
         return \CraftCms\Cms\Support\Facades\Sites::isMultiSite($refresh, $withTrashed);
     }
@@ -590,7 +608,7 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        DeprecatorFacade::log('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
+        LegacyUsage::record('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
 
         return !app()->isDownForMaintenance();
     }
@@ -614,7 +632,7 @@ trait ApplicationTrait
      */
     public function enableMaintenanceMode(): bool
     {
-        app()->maintenanceMode()->activate([]);
+        app(Maintenance::class)->startUpdate();
 
         return true;
     }
@@ -627,7 +645,7 @@ trait ApplicationTrait
      */
     public function disableMaintenanceMode(): bool
     {
-        app()->maintenanceMode()->deactivate();
+        app(Maintenance::class)->finishUpdate();
 
         return true;
     }
@@ -977,7 +995,7 @@ trait ApplicationTrait
      */
     public function getFields(): Fields
     {
-        DeprecatorFacade::log('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
+        LegacyUsage::record('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
 
         return $this->get('fields');
     }
@@ -1003,7 +1021,7 @@ trait ApplicationTrait
      */
     public function getFormattingLocale(): \craft\i18n\Locale
     {
-        DeprecatorFacade::log('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
+        LegacyUsage::record('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
 
         return $this->get('formattingLocale');
     }
@@ -1077,7 +1095,7 @@ trait ApplicationTrait
      */
     public function getLocale(): \craft\i18n\Locale
     {
-        DeprecatorFacade::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
+        LegacyUsage::record('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
 
         return $this->get('locale');
     }
@@ -1207,7 +1225,7 @@ trait ApplicationTrait
      */
     public function getSites(): Sites
     {
-        DeprecatorFacade::log('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
+        LegacyUsage::record('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
 
         return $this->get('sites');
     }
@@ -1270,6 +1288,18 @@ trait ApplicationTrait
     public function getTokens(): Tokens
     {
         return $this->get('tokens');
+    }
+
+    /**
+     * Returns the uploads service.
+     *
+     * @return Uploads The uploads service
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Uploads} instead.
+     */
+    public function getUploads(): Uploads
+    {
+        return $this->get('uploads');
     }
 
     /**
@@ -1382,10 +1412,6 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
-        if (!app()->isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
-
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1394,22 +1420,6 @@ trait ApplicationTrait
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
-        }
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws InvalidConfigException
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = Cms::config();
-
-        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath ?? '@webroot/cpresources');
-
-        if (! @FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
     }
 

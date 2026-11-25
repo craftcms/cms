@@ -10,7 +10,6 @@ use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Override;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @since 6.0.0
@@ -22,7 +21,7 @@ class IndexOneAssetCommand extends Command implements PromptsForMissingInput
 
     #[Override]
     protected $signature = 'craft:index-assets:one
-        {handle : The handle of the volume to index. You can optionally provide a volume sub-path, e.g. `php craft index-assets/one volume-handle/path/to/folder`.}
+        {handle : The handle of the volume to index. You can optionally provide a volume sub-path, e.g. `craft:index-assets:one volume-handle/path/to/folder`.}
         {startAt=0 : Index of the asset to start with.}
         {--createMissingAssets=true : Auto-create new asset records when missing.}
         {--deleteMissingAssets=false : Delete all the asset records that have their files missing.}
@@ -35,20 +34,6 @@ class IndexOneAssetCommand extends Command implements PromptsForMissingInput
 
     #[Override]
     protected $aliases = ['index-assets/one', 'index-assets'];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        if (! app()->isEphemeral()) {
-            $this->getDefinition()->addOption(new InputOption(
-                name: 'cacheRemoteImages',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Cache remote-stored images in the process.',
-                default: 'false',
-            ));
-        }
-    }
 
     public function handle(Volumes $volumes): void
     {

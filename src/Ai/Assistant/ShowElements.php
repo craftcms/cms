@@ -111,7 +111,8 @@ readonly class ShowElements implements Tool
 
     /**
      * Returns a result of the tool for the chat to show: each element with its card or chip, as the element select
-     * control sends them, as of now. Elements the user can no longer view are left out.
+     * control sends them, as of now, with its class, which the chat refetches it by once it’s saved, as relation fields
+     * do. Elements the user can no longer view are left out.
      */
     public function forDisplay(string $result): string
     {
@@ -129,11 +130,20 @@ readonly class ShowElements implements Tool
             $found = is_array($item) ? $this->elements->find($item) : null;
 
             if ($found !== null) {
-                $shown[] = Arr::only(ElementSelect::presentation($found[1], $mode), self::VIEW_KEYS[$view]);
+                $shown[] = [
+                    'elementType' => $found[1]::class,
+                    ...Arr::only(ElementSelect::presentation($found[1], $mode), self::VIEW_KEYS[$view]),
+                ];
             }
         }
 
-        return Json::encode([...$decoded, 'view' => $view, 'elements' => $shown]);
+        return Json::encode([
+            ...$decoded,
+            'view' => $view,
+            // Which the chat asks for when it refetches them, as relation fields drawing them the same way do.
+            'thumbSize' => ElementSelect::resolveThumbSize($mode)?->value,
+            'elements' => $shown,
+        ]);
     }
 
     public function schema(JsonSchema $schema): array
@@ -141,7 +151,7 @@ readonly class ShowElements implements Tool
         return [
             'elements' => $schema->array()
                 ->items($schema->object([
-                    'type' => $schema->string()->description('The element type, as elements.schema lists it, such as entries.')->required(),
+                    'type' => $schema->string()->description('The element type, as elements_schema lists it, such as entries.')->required(),
                     'id' => $schema->integer()->description('The element’s ID.')->required(),
                     'siteId' => $schema->integer()->description('The site to show it in. Defaults to the primary site.'),
                 ]))

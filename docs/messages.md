@@ -352,19 +352,15 @@ window.dispatchEvent(
 );
 ```
 
-`Craft.cp.displayNotification()` still returns the `Craft.CP.Notification` instance, so existing
+`Craft.cp.displayNotification()` (with the Yii2 adapter) still returns the notification, so existing
 code that calls `.close()` or listens for `show` keeps working.
 
 ## The Default Display
 
-The default display is the stack of messages in a corner of the screen. It's drawn by
-`Craft.CP.Notification` (in `packages/craftcms-legacy/cp/src/js/CP.js`) into the `<cp-messages>`
-element, and styled by `resources/css/messages.css`. It's modelled on
+The default display is the stack of messages in a corner of the screen. Each message is a
+`Notification` (`resources/js/modules/messages/notification.ts`), drawn into the `<cp-messages>`
+element, which manages the stack, and styled by `resources/css/messages.css`. It's modelled on
 [Sonner](https://sonner.emilkowal.ski).
-
-> The renderer is still the legacy class because code holds on to the instance `display*()`
-> returns (to call `.close()` or listen for `show`), and the "Entry copied." card extends it.
-> Porting it is deferred; the queue in front of it doesn't depend on how it draws.
 
 ### Stacking
 

@@ -14,6 +14,11 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useScreenContentReady} from '@/common/composables/screen';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {Tabs} from '@/modules/tabs';
+  import {
+    type LegacySaveShortcutProps,
+    useLegacySaveShortcut,
+  } from './legacySaveShortcut';
 
   const props = defineProps<{
     content?: string | null;
@@ -25,6 +30,10 @@
     contextMenu?: string | null;
     actionButton?: string | null;
     actionMenu?: string | null;
+    fullPageForm?: boolean;
+    mainFormAttributes?: LegacySaveShortcutProps['mainFormAttributes'];
+    formActions?: LegacySaveShortcutProps['formActions'];
+    saveShortcutRedirect?: string | null;
     additionalButtons?: string | null;
     sidebar?: string | null;
     bodyClass?: Array<string> | string | null;
@@ -49,6 +58,11 @@
 
   const fragment = (html?: string | null) =>
     html ? {html, headHtml: '', bodyHtml: ''} : null;
+
+  /** Whether the screen's own save controls belong in the content footer. */
+  const savesFromFooter = computed(
+    () => Boolean(props.fullPageForm) && Boolean(props.actionButton)
+  );
 
   /**
    * Screens whose behavior is driven from JS — the element editor, notably —
@@ -123,6 +137,8 @@
     }
   }
 
+  useLegacySaveShortcut(() => props);
+
   function releaseLegacyReadyJs(): void {
     resyncLegacyCp();
     (window as any).Craft?.flushReady?.();
@@ -190,23 +206,17 @@
   });
 
   /**
-   * Boots the legacy tab controller over the injected tabs fragment.
+   * Boots the tab controller over the injected tabs fragment.
    *
-   * `Craft.Tabs` is never auto-initialized — it's constructed explicitly, the
-   * way `cp-screen-slideout` does for the same fragment. Without this the tab
-   * strip renders but selecting a tab does nothing, because nothing is
-   * toggling `.hidden` on the panes the legacy content declares.
+   * It's constructed explicitly, the way `cp-screen-slideout` does for the
+   * same fragment. Without this the tab strip renders but selecting a tab does
+   * nothing, because nothing is toggling `.hidden` on the panes the legacy
+   * content declares.
    */
-  let tabManager: any = null;
+  let tabManager: Tabs | null = null;
 
   function bootTabs(element: HTMLElement): void {
     fragmentReady();
-
-    const Tabs = (window as any).Craft?.Tabs;
-
-    if (!Tabs) {
-      return;
-    }
 
     const pane = (element.querySelector('.pane-tabs') ??
       element) as HTMLElement;
@@ -214,7 +224,7 @@
     tabManager = new Tabs(pane);
 
     const paneFor = (ev: any): HTMLElement | null => {
-      const href = ev?.$tab?.attr?.('href');
+      const href = ev?.tab?.getAttribute('href');
 
       return href ? document.querySelector<HTMLElement>(href) : null;
     };
@@ -228,7 +238,7 @@
   }
 
   onBeforeUnmount(() => {
-    tabManager?.destroy?.();
+    tabManager?.destroy();
     tabManager = null;
   });
 </script>
@@ -241,9 +251,23 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="actionButton || actionMenu" name="content-actions">
+  <!-- A full-page form's `actionButton` is the screen's own save controls:
+       Craft 5 drew them in the header, and this shell draws save controls in
+       the content footer, so they go there and stand in for the shell's. -->
+  <LayoutSlot v-if="savesFromFooter" name="primary-action">
     <HtmlFragmentRenderer
-      v-if="actionButton"
+      class="flex flex-wrap items-center gap-md"
+      :fragment="fragment(actionButton)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot
+    v-if="(actionButton && !savesFromFooter) || actionMenu"
+    name="content-actions"
+  >
+    <HtmlFragmentRenderer
+      v-if="actionButton && !savesFromFooter"
       class="flex flex-wrap items-center gap-md"
       :fragment="fragment(actionButton)"
       @ready="fragmentReady"

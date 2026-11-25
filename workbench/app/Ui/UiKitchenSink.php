@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Workbench\App\Ui;
 
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Address;
@@ -37,6 +40,7 @@ use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Controls\Time;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Nodes\Callout;
+use CraftCms\Cms\Ui\Nodes\ElementIndex;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\Heading;
@@ -98,6 +102,7 @@ class UiKitchenSink
         ],
         'nodes' => [
             'callout' => Callout::class,
+            'element-index' => ElementIndex::class,
             'field' => Field::class,
             'group' => Group::class,
             'heading' => Heading::class,
@@ -201,6 +206,11 @@ class UiKitchenSink
                 'Picker' => $this->control('Color', Color::make('color')->value('#3b82f6')),
                 'Presets' => $this->control('Color', Color::make('color')
                     ->presets(['#ef4444', '#22c55e', '#3b82f6'])
+                    ->value('#3b82f6')),
+                'Presets only' => $this->control('Color', Color::make('color')
+                    ->presets(['#ef4444', '#22c55e', '#3b82f6'])
+                    ->presetLabels(['#ef4444' => 'Red', '#22c55e' => 'Green'])
+                    ->custom(false)
                     ->value('#3b82f6')),
             ];
         }
@@ -643,6 +653,20 @@ class UiKitchenSink
                     Heading::make('heading-level-4', 'Level 4')->level(4),
                     Heading::make('heading-level-5', 'Level 5')->level(5),
                     Heading::make('heading-level-6', 'Level 6')->level(6),
+                ]),
+            ];
+        }
+
+        if ($component === ElementIndex::class) {
+            $posts = EmbeddedElementIndex::make(Entry::class)
+                ->criteria(['sectionId' => Sections::getSectionByHandle('posts')?->id])
+                ->defaultTableColumns(['postDate', 'field:'.Fields::getFieldByHandle('body')?->uid])
+                ->pageSize(5);
+
+            return [
+                'Posts' => Ui::make([$posts->storageKey('kitchen-sink:posts')->uiNode('element-index-posts')]),
+                'Read-only' => Ui::make([
+                    (clone $posts)->storageKey('kitchen-sink:posts-read-only')->readOnly()->uiNode('element-index-read-only'),
                 ]),
             ];
         }

@@ -179,7 +179,7 @@ class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        $namespace = Str::random(10);
+        $namespace = Str::random(10, extendedChars: false);
 
         if ($this->prepareModal) {
             $containerId = $request->header('X-Craft-Container-Id');
@@ -192,7 +192,7 @@ class CpModalResponse implements Responsable
         $content = InputNamespace::namespaceInputs(function () {
             $components = [];
             if ($this->contentHtml) {
-                $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
+                $components[] = ! is_string($this->contentHtml) && is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
             }
             if ($this->ui !== null) {
                 $components[] = app(UiHtmlRenderer::class)->render(

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -9,9 +10,11 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\File;
 use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
@@ -37,9 +40,16 @@ dataset('routes', [
     'installPlugin',
     'precheck',
     'recheckComposer',
-    'composerInstall',
-    'composerRemove',
     'finish',
+]);
+
+test('project config syncs never run Composer', function (string $action) {
+    postJson(cp_url("config-sync/$action"), [
+        'data' => $this->hashedData,
+    ])->assertNotFound();
+})->with([
+    BaseUpdaterController::ACTION_COMPOSER_INSTALL,
+    BaseUpdaterController::ACTION_COMPOSER_REMOVE,
 ]);
 
 it('uses normal CP routes', function (string $action) {
@@ -95,6 +105,14 @@ test('apply-yaml-changes', function () {
         ->assertSee('dashboard'); // return url
 });
 
+test('apply-yaml-changes with force restores forceUpdate afterward', function () {
+    postJson(action([ConfigSyncController::class, 'applyYamlChanges']), [
+        'data' => Crypt::encrypt(Json::encode(['force' => true])),
+    ])->assertOk();
+
+    expect(app(ProjectConfig::class)->forceUpdate)->toBeFalse();
+});
+
 test('regenerate-yaml', function () {
     postJson(action([ConfigSyncController::class, 'regenerateYaml']), [
         'data' => $this->hashedData,
@@ -102,6 +120,23 @@ test('regenerate-yaml', function () {
         ->assertOk()
         ->assertSee('All done!')
         ->assertSee('dashboard'); // return url
+});
+
+test('regenerate-yaml reports when the project config files can’t be written', function () {
+    $blocker = config_path('craft/project-config-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
+    File::put($blocker, '');
+    app(ProjectConfig::class)->folderName = 'project-config-write-blocker/project';
+
+    try {
+        postJson(action([ConfigSyncController::class, 'regenerateYaml']), [
+            'data' => $this->hashedData,
+        ])
+            ->assertOk()
+            ->assertJsonPath('error', t('Project config YAML files can’t be written in this environment.'));
+    } finally {
+        File::delete($blocker);
+    }
 });
 
 test('uninstall-plugin', function () {

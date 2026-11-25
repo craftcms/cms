@@ -14,6 +14,8 @@ class MacroableTestComponent extends Component
     public mixed $stored = null;
 }
 
+class ScopedMacroTestComponent extends Component {}
+
 class ArrayableTestComponent extends Component
 {
     public ?DateTime $dateCreated = null;
@@ -25,6 +27,22 @@ class ArrayableTestComponent extends Component
 
 beforeEach(function () {
     MacroableTestComponent::flushMacros();
+});
+
+test('scopes macros to the component class they are registered on', function () {
+    ScopedMacroTestComponent::macro('scopedOnly', fn () => static::class);
+    Component::macro('everyComponent', fn () => $this::class);
+
+    try {
+        expect(new ScopedMacroTestComponent()->scopedOnly())->toBe(ScopedMacroTestComponent::class)
+            ->and(ArrayableTestComponent::hasMacro('scopedOnly'))->toBeFalse()
+            ->and(fn () => new ArrayableTestComponent()->scopedOnly())->toThrow(BadMethodCallException::class)
+            ->and(new ArrayableTestComponent()->everyComponent())->toBe(ArrayableTestComponent::class);
+    } finally {
+        Component::flushMacros();
+    }
+
+    expect(ScopedMacroTestComponent::hasMacro('scopedOnly'))->toBeFalse();
 });
 
 test('can get property from macro getter', function () {

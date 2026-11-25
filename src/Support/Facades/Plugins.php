@@ -15,6 +15,7 @@ use Override;
  * @method static string|null getPluginHandleByClass(string $class)
  * @method static \CraftCms\Cms\Plugin\Contracts\PluginInterface[] getAllPlugins()
  * @method static void publishPluginAssets()
+ * @method static void registerPublishablesFromProjectConfigFiles()
  * @method static bool enablePlugin(string $handle)
  * @method static bool disablePlugin(string $handle)
  * @method static bool installPlugin(string $handle, string|null $edition = null)
@@ -44,6 +45,7 @@ use Override;
  * @method static void addStyle(string $handle, string $path)
  * @method static void addScript(string $handle, string $path)
  * @method static string getAssetsHtml()
+ * @method static string|null getViteManifestHash()
  *
  * @see \CraftCms\Cms\Plugin\Plugins
  */

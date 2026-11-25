@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\View\TemplateMode;
+use Error;
 use Exception;
+use ReflectionClass;
 use ReflectionProperty;
 use Throwable;
+use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Template;
 
@@ -48,11 +52,18 @@ readonly class TwigExceptionMapper
             $trace = $trace->slice($viewIndex + 1);
         }
 
-        $trace = $trace->all();
+        // `Exception` and `Error` each declare their own private properties.
+        $baseClass = $exception instanceof Exception ? Exception::class : Error::class;
+        new ReflectionProperty($baseClass, 'trace')->setValue($exception, $trace->all());
 
-        if ($exception instanceof Exception) {
-            $traceProperty = new ReflectionProperty('Exception', 'trace');
-            $traceProperty->setValue($exception, $trace);
+        $location = $this->resolveTemplatePathAndLine($exception->getFile(), $exception->getLine());
+
+        if ($location !== false) {
+            new ReflectionProperty($baseClass, 'file')->setValue($exception, $location[0]);
+
+            if ($location[1] !== null) {
+                new ReflectionProperty($baseClass, 'line')->setValue($exception, $location[1]);
+            }
         }
 
         return $exception;
@@ -91,9 +102,11 @@ readonly class TwigExceptionMapper
             return false;
         }
 
-        $template = new $class(Twig::get());
-        $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: $src->getName();
+        // Only the compiled class's metadata is needed, and its constructor could load other templates, such as traits,
+        // that the current template mode can't resolve
+        /** @var Template $template */
+        $template = new ReflectionClass($class)->newInstanceWithoutConstructor();
+        $templatePath = $this->resolveSourcePath($template, $contents) ?? $template->getTemplateName();
         $templateLine = null;
 
         if ($line !== null) {
@@ -106,5 +119,57 @@ readonly class TwigExceptionMapper
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Returns the source path of a compiled template.
+     *
+     * Outside debug mode, compiled templates don't store their source path, and Twig asks the loader for it, which
+     * resolves the template name for the current template mode. The template may have been rendered in another mode,
+     * where the same name can resolve to a different template, so this prefers the mode whose environment compiles the
+     * template name to the same class. That class also depends on settings that can change while rendering, such as the
+     * escaping strategy, so when no mode matches it, the path is used if only one mode resolves the name.
+     */
+    private function resolveSourcePath(Template $template, string $compiledCode): ?string
+    {
+        if (! str_contains($compiledCode, 'Source::createWithLazyPath(')) {
+            return $template->getSourceContext()->getPath() ?: null;
+        }
+
+        $class = $template::class;
+        $name = $template->getTemplateName();
+        $modes = array_unique([TemplateMode::get(), TemplateMode::Site, TemplateMode::Cp], SORT_REGULAR);
+        $paths = [];
+
+        foreach ($modes as $mode) {
+            $result = TemplateMode::with($mode, function () use ($mode, $name, $class): ?array {
+                $twig = Twig::get($mode);
+
+                try {
+                    $path = $twig->getLoader()->getSourceContext($name)->getPath();
+                } catch (LoaderError) {
+                    return null;
+                }
+
+                return $path === '' ? null : [$path, $twig->getTemplateClass($name) === $class];
+            });
+
+            if ($result === null) {
+                continue;
+            }
+
+            [$path, $compiledHere] = $result;
+
+            if ($compiledHere) {
+                return $path;
+            }
+
+            $paths[] = $path;
+        }
+
+        // Both modes can resolve the name to the same file, such as when a plugin registers the same template root for both
+        $paths = array_unique($paths);
+
+        return count($paths) === 1 ? $paths[0] : null;
     }
 }

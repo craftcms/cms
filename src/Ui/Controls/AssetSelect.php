@@ -24,9 +24,28 @@ class AssetSelect extends ElementSelect
 {
     private bool $canUpload = false;
 
-    private ?int $uploadFolderId = null;
+    /** @var array<string, int> */
+    private array $uploadParams = [];
 
     private bool $showFolders = true;
+
+    private ?string $defaultSource = null;
+
+    /** @var list<array<string, mixed>>|null */
+    private ?array $defaultSourcePath = null;
+
+    /**
+     * Sets the source and folder path the selector modal opens in, such as the field's upload location.
+     *
+     * @param  list<array<string, mixed>>|null  $path  The folders' source path info, from the source's folder down
+     */
+    public function defaultSource(?string $source, ?array $path = null): static
+    {
+        $this->defaultSource = $source;
+        $this->defaultSourcePath = $path;
+
+        return $this;
+    }
 
     public function showFolders(bool $showFolders = true): static
     {
@@ -42,9 +61,15 @@ class AssetSelect extends ElementSelect
         return $this;
     }
 
-    public function uploadFolderId(?int $uploadFolderId): static
+    /**
+     * Sets the destination parameters uploads are sent with, such as a `folderId`, or a `fieldId` with an `elementId`
+     * and `siteId`.
+     *
+     * @param  array<string, int>  $uploadParams
+     */
+    public function uploadParams(array $uploadParams): static
     {
-        $this->uploadFolderId = $uploadFolderId;
+        $this->uploadParams = $uploadParams;
 
         return $this;
     }
@@ -56,8 +81,10 @@ class AssetSelect extends ElementSelect
         return [
             ...parent::props($value),
             'canUpload' => $this->canUpload,
-            'uploadFolderId' => $this->uploadFolderId,
+            'uploadParams' => $this->uploadParams ?: null,
             'showFolders' => $this->showFolders,
+            'defaultSource' => $this->defaultSource,
+            'defaultSourcePath' => $this->defaultSourcePath,
         ];
     }
 }

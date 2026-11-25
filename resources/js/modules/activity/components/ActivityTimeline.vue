@@ -68,9 +68,12 @@
           :key="group.key"
           :data-activity-day="group.key"
         >
-          <h4 class="activity-timeline__day">
+          <component
+            :is="`h${props.dayHeadingLevel ?? 4}`"
+            class="activity-timeline__day"
+          >
             <span class="activity-timeline__day-label">{{ group.label }}</span>
-          </h4>
+          </component>
           <component
             v-for="(event, index) in group.events"
             :key="event.id"
@@ -149,7 +152,6 @@
     padding-inline: var(--c-spacing-md);
     border: 1px solid var(--c-color-border-quiet);
     border-radius: var(--c-radius-full);
-    background-color: var(--c-surface-default);
   }
 
   section:first-of-type .activity-timeline__day {
@@ -177,8 +179,12 @@
     padding-inline: var(--cp-container-padding);
     background: linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--c-surface-default) 0%, transparent),
-      var(--c-surface-default) var(--c-spacing-lg)
+      color-mix(
+        in srgb,
+        var(--cp-details-bg, var(--c-surface-default)) 0%,
+        transparent
+      ),
+      var(--cp-details-bg, var(--c-surface-default)) var(--c-spacing-lg)
     );
     position: relative;
     z-index: 1;

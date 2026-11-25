@@ -13,7 +13,10 @@ afterEach(() => {
 });
 
 async function mount(
-  state: Pick<CraftCms.Cms.Update.Data.UpdaterState, 'error' | 'errorDetails'>
+  state: Pick<
+    CraftCms.Cms.Update.Data.UpdaterState,
+    'error' | 'errorDetails' | 'options'
+  >
 ): Promise<HTMLElement> {
   const initialState = {data: '', finishUrl: '', ...state};
   root = document.createElement('div');
@@ -45,4 +48,35 @@ it('renders error output as text, keeping the paragraph and code formatting', as
     '<b>composer</b>'
   );
   expect(paragraphs[1]!.innerHTML).toBe('then retry<br>now');
+});
+
+it('leaves for the option’s return URL when a finished option is chosen', async () => {
+  vi.useFakeTimers();
+  const location = {href: ''} as Location;
+  const locationSpy = vi
+    .spyOn(window, 'location', 'get')
+    .mockReturnValue(location);
+
+  const root = await mount({
+    error: 'The plugin couldn’t be installed.',
+    options: [
+      {
+        label: 'Leave it uninstalled',
+        status: 'All done!',
+        finished: true,
+        returnUrl: '/admin/plugin-store',
+      },
+      {label: 'Remove it', nextUrl: '/actions/remove'},
+    ],
+  });
+
+  root.querySelector<HTMLElement>('.updater-options craft-button')!.click();
+  await nextTick();
+
+  expect(root.querySelector('.updater-options')).toBeNull();
+  vi.advanceTimersByTime(750);
+  expect(location.href).toBe('/admin/plugin-store');
+
+  locationSpy.mockRestore();
+  vi.useRealTimers();
 });

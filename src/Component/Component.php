@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Component;
 
 use ArrayAccess;
+use BadMethodCallException;
+use Closure;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
@@ -21,6 +23,9 @@ use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use ReflectionMethod;
+use RuntimeException;
+use Throwable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
@@ -41,6 +46,33 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     use Macroable;
     use MacroableMagicMethods;
     use Validates;
+
+    /**
+     * The registered macros, by the class they were registered on, so a macro registered on a component class
+     * applies to it and its subclasses, and one registered on this class applies to every component.
+     *
+     * Laravel’s `Macroable` keeps one array for a class and all of its subclasses. Its `mixin()` still works,
+     * since it registers through `macro()`. The macro methods below have no return types, like `Macroable`’s,
+     * so subclasses that use `Macroable` again stay compatible.
+     *
+     * @var array<class-string, array<string, object|callable>>
+     */
+    protected static array $macrosByClass = [];
+
+    /**
+     * Every registered macro by name, in the format of Laravel’s `Macroable`, for tools that read it, such as
+     * Larastan. Macros are looked up in [[$macrosByClass]].
+     *
+     * @var array<string, object|callable>
+     */
+    protected static $macros = [];
+
+    /**
+     * The result of [[fields()]], by class and by the names of the object’s initialized properties.
+     *
+     * @var array<class-string, array<string, array<string, string|callable>>>
+     */
+    private static array $fieldsByShape = [];
 
     /** @param array<string, mixed>|object $config */
     public function __construct(array|object $config = [])
@@ -81,12 +113,28 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         return true;
     }
 
-    /** @return array<string, string|callable> */
+    /**
+     * The fields only depend on the class and on which of the object’s properties are initialized, so they’re built
+     * once for each, unless a subclass overrides [[formatDateFields()]]. Building them reads every public property,
+     * which runs property hooks such as `$ruleset`’s.
+     *
+     * @return array<string, string|callable>
+     */
     public function fields(): array
     {
-        $fields = Arr::except($this->traitFields(), ['ruleset']);
+        $shape = implode(',', array_keys(get_mangled_object_vars($this)));
 
-        return $this->formatDateFields($fields);
+        if (isset(self::$fieldsByShape[static::class][$shape])) {
+            return self::$fieldsByShape[static::class][$shape];
+        }
+
+        $fields = $this->formatDateFields(Arr::except($this->traitFields(), ['ruleset']));
+
+        if (new ReflectionMethod($this, 'formatDateFields')->class === self::class) {
+            self::$fieldsByShape[static::class][$shape] = $fields;
+        }
+
+        return $fields;
     }
 
     /**
@@ -121,6 +169,111 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         }
 
         return $fields;
+    }
+
+    /**
+     * Register a macro for this class and its subclasses.
+     *
+     * @param  string  $name
+     * @param  object|callable  $macro
+     *
+     * @param-closure-this static  $macro
+     *
+     * @return void
+     */
+    public static function macro($name, $macro)
+    {
+        static::$macrosByClass[static::class][$name] = $macro;
+        static::$macros[$name] = $macro;
+    }
+
+    /**
+     * Checks if a macro is registered on this class or a parent class.
+     *
+     * @param  string  $name
+     * @return bool
+     */
+    public static function hasMacro($name)
+    {
+        return static::findMacro($name) !== null;
+    }
+
+    /**
+     * Flush the macros registered on this class and its subclasses.
+     *
+     * @return void
+     */
+    public static function flushMacros()
+    {
+        static::$macrosByClass = array_filter(
+            static::$macrosByClass,
+            fn (string $class) => ! is_a($class, static::class, true),
+            ARRAY_FILTER_USE_KEY,
+        );
+
+        static::$macros = array_merge(...array_values(static::$macrosByClass));
+    }
+
+    /**
+     * Dynamically handle static calls to macros.
+     *
+     * @param  string  $method
+     * @param  array<int, mixed>  $parameters
+     * @return mixed
+     *
+     * @throws BadMethodCallException
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        $macro = static::findMacro($method) ?? throw new BadMethodCallException(sprintf(
+            'Method %s::%s does not exist.', static::class, $method,
+        ));
+
+        if ($macro instanceof Closure) {
+            $macro = $macro->bindTo(null, static::class);
+        }
+
+        return $macro(...$parameters);
+    }
+
+    /**
+     * Dynamically handle calls to macros.
+     *
+     * @param  string  $method
+     * @param  array<int, mixed>  $parameters
+     * @return mixed
+     *
+     * @throws BadMethodCallException
+     */
+    public function __call($method, $parameters)
+    {
+        $macro = static::findMacro($method) ?? throw new BadMethodCallException(sprintf(
+            'Method %s::%s does not exist.', static::class, $method,
+        ));
+
+        if ($macro instanceof Closure) {
+            try {
+                $macro = $macro->bindTo($this, static::class) ?? throw new RuntimeException;
+            } catch (Throwable) {
+                $macro = $macro->bindTo(null, static::class);
+            }
+        }
+
+        return $macro(...$parameters);
+    }
+
+    /**
+     * Returns the macro registered under a name on this class or the closest parent class.
+     */
+    protected static function findMacro(string $name): object|callable|null
+    {
+        for ($class = static::class; $class !== false; $class = get_parent_class($class)) {
+            if (isset(static::$macrosByClass[$class][$name])) {
+                return static::$macrosByClass[$class][$name];
+            }
+        }
+
+        return null;
     }
 
     public function __get(string $name): mixed

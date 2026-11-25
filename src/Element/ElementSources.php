@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -225,7 +226,12 @@ class ElementSources
                 ->keyBy('key')
                 ->all();
 
-            $firstPage = $sourceConfigs[0]['page'] ?? null;
+            // Sources that aren't saved yet, such as new sections', go on the
+            // first page with an enabled source, which is the first one shown.
+            $firstPage = Arr::first(
+                $sourceConfigs,
+                fn (array $source) => $source['type'] !== self::TYPE_HEADING && ! ($source['disabled'] ?? false),
+            )['page'] ?? $sourceConfigs[0]['page'] ?? null;
 
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
@@ -602,7 +608,8 @@ class ElementSources
                 'defaultViewMode' => $s['defaultViewMode'] ?? null,
                 ...match ($s['type'] ?? self::TYPE_NATIVE) {
                     self::TYPE_CUSTOM => [
-                        'label' => $s['label'] ?? null,
+                        // Blank labels post as null; store them as '' as Craft 5 did.
+                        'label' => $s['label'] ?? '',
                         'condition' => ($s['condition'] ?? false)
                             ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
                             : null,
@@ -906,10 +913,19 @@ class ElementSources
                                 // The handle was overridden, so it gets its own table attribute
                                 $attributes["fieldInstance:$layoutElement->uid"] = [
                                     'label' => t($layoutElement->label(), category: 'site'),
+                                    'align' => $field instanceof Field ? $field->tableAttributeAlignment() : 'start',
                                 ];
                             }
                         }
                     }
+                }
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $attributes["generatedField:{$field['uid']}"] = [
+                        'label' => t($field['name'], category: 'site'),
+                    ];
                 }
             }
         }
@@ -927,6 +943,7 @@ class ElementSources
             $labels = array_unique(array_map(fn (CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : t($field->name, category: 'site'),
+                'align' => $field instanceof Field ? $field->tableAttributeAlignment() : 'start',
             ];
         }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -12,7 +11,6 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Combobox;
@@ -90,56 +88,6 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
         }
 
         return $control;
-    }
-
-    #[\Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->inputHtmlInternal($value, $element, false);
-    }
-
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        /** @var SingleOptionFieldData $value */
-        $options = $this->translatedOptions(true, $value, $element);
-
-        $hasBlankOption = false;
-        foreach ($options as &$option) {
-            if (isset($option['value']) && $option['value'] === '') {
-                $option['value'] = '__blank__';
-                $hasBlankOption = true;
-            }
-            if (isset($option['label']) && $option['label'] === '') {
-                $option['label'] = ' ';
-            }
-        }
-
-        if (! $value->valid) {
-            if (! $static) {
-                DeltaRegistry::setInitialValue($this->handle, $this->encodeValue($value->value));
-            }
-
-            $default = $this->defaultValue();
-            if ($default !== null) {
-                $value = $this->normalizeValue($default, null);
-            } else {
-                $value = null;
-
-                // Add a blank option to the beginning if one doesn't already exist
-                if (! $hasBlankOption) {
-                    array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
-                }
-            }
-        }
-
-        return FormFields::selectizeHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $this->encodeValue($value),
-            'options' => $options,
-            'disabled' => $static,
-        ]);
     }
 
     /** @return string|list<string> */

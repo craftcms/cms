@@ -43,6 +43,7 @@ use craft\fields\Url;
 use craft\fields\Users;
 use craft\models\FieldLayout as LegacyFieldLayout;
 use craft\models\FieldLayoutForm;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -53,6 +54,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\Controls\Color as ColorControl;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -67,6 +69,7 @@ use CraftCms\Yii2Adapter\Ui\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use CraftCms\Yii2Adapter\Ui\Nodes\LegacyHtmlField;
+use DateTime;
 use Mockery;
 use Override;
 use Symfony\Component\DomCrawler\Crawler;
@@ -269,6 +272,62 @@ it('round-trips zero, one, and multiple named roots through a flat map', functio
     ],
 ]);
 
+it('reads a field’s value from the flat input map its HTML captured', function(array $captured, string $handle, mixed $expected, ?string $paramNamespace = null) {
+    expect(app(LegacyHtml::class)->capturedFieldValue($captured, $handle, $paramNamespace))->toBe($expected);
+})->with([
+    'a value with nested fields named like the field, at its param namespace' => [
+        ['fields[content][blocks][b1][fields][content]' => 'x'],
+        'content',
+        ['blocks' => ['b1' => ['fields' => ['content' => 'x']]]],
+        'fields',
+    ],
+    'a nested entry’s field at its param namespace' => [
+        ['fields[links][entries][abc][fields][links]' => '', 'fields[links][entries][abc][fields][links][]' => ['2', '3']],
+        'links',
+        ['2', '3'],
+        'fields.links.entries.uid:abc.fields',
+    ],
+    'more selections than max_input_vars' => [
+        ['fields[target]' => null, 'fields[target][]' => array_map(strval(...), range(1, 1001))],
+        'target',
+        array_map(strval(...), range(1, 1001)),
+    ],
+    'a list with empty values the request made null' => [
+        ['fields[options]' => null, 'fields[options][]' => ['a', null]],
+        'options',
+        ['a', ''],
+    ],
+    'a value keyed by the field’s handle' => [
+        ['fields[width][width]' => '12'],
+        'width',
+        ['width' => '12'],
+    ],
+    'a nested field with its Matrix field’s handle' => [
+        ['fields[links][entries][abc][fields][links]' => '', 'fields[links][entries][abc][fields][links][]' => ['2', '3']],
+        'links',
+        ['2', '3'],
+    ],
+]);
+
+it('reads editable table rows from their UI payload', function() {
+    $legacyHtml = app(LegacyHtml::class);
+    $html = '<input type="hidden" name="fields[hours]" value="">' . FormFields::editableTableHtml([
+        'name' => 'fields[hours]',
+        'cols' => [
+            'day' => ['heading' => '', 'type' => 'heading'],
+            'open' => ['heading' => 'Open', 'type' => 'time'],
+        ],
+        'rows' => [
+            2 => ['day' => 'Tuesday', 'open' => ['value' => new DateTime('2026-01-06 08:15')]],
+            0 => ['day' => 'Sunday', 'open' => ['value' => null]],
+        ],
+        'staticRows' => true,
+    ]);
+
+    expect($legacyHtml->expand($legacyHtml->parse($html)))
+        ->toBe(['fields' => ['hours' => [2 => ['open' => '08:15'], 0 => ['open' => '']]]]);
+});
+
 it('maps legacy field modes to their established hooks', function(LegacyHtmlMode $mode, string $expected, ControlMode $controlMode) {
     $field = new LegacyHookField();
     $element = Mockery::mock(Entry::class);
@@ -370,6 +429,15 @@ it('preserves legacy hooks on public field aliases', function() {
         ->and(method_exists(PlainText::class, 'getSettingsHtml'))->toBeTrue()
         ->and($control)->toBeInstanceOf(LegacyHtmlControl::class)
         ->and($control->props()['fragment']['html'])->toContain('built-in-alias');
+});
+
+it('renders the core control for built-in field subclasses that don’t render their own input', function() {
+    $context = fn(bool $inline = false) => new FieldContext(path: ['fields', 'body'], ui: new UiContext(), inline: $inline);
+
+    expect(new class(['handle' => 'tone']) extends Color {
+    }->uiControl($context()))->toBeInstanceOf(ColorControl::class)
+        ->and(new InlineHtmlOverrideField(['handle' => 'body'])->uiControl($context()))->not->toBeInstanceOf(LegacyHtmlControl::class)
+        ->and(new InlineHtmlOverrideField(['handle' => 'body'])->uiControl($context(true)))->toBeInstanceOf(LegacyHtmlControl::class);
 });
 
 it('preserves legacy hooks on each built-in field alias', function(string $fieldClass) {

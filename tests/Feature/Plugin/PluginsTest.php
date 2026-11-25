@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginInstalling;
@@ -269,7 +270,7 @@ it('cleanly republishes configured files for enabled plugins', function () {
     }
 });
 
-it('ignores missing transaction exceptions during uninstall commits', function () {
+it('allows implicit commits during uninstall', function () {
     $this->plugins->enablePlugin('test-plugin');
 
     $manager = DB::getFacadeRoot();
@@ -283,9 +284,9 @@ it('ignores missing transaction exceptions during uninstall commits', function (
     $connections->setValue($manager, $resolvedConnections);
 
     $connectionMock
-        ->shouldReceive('commit')
+        ->shouldReceive('commitSchemaChanges')
         ->once()
-        ->andThrow(new PDOException('There is no active transaction'));
+        ->andReturnUsing(fn () => $connection->commit());
 
     try {
         $this->plugins->uninstallPlugin('test-plugin');
@@ -302,6 +303,45 @@ it('cannot uninstall a plugin that is not enabled', function () {
 
     $this->plugins->uninstallPlugin('test-plugin');
 })->throws(InvalidPluginException::class, 'Uninstalling disabled plugins is not allowed.');
+
+it('can force uninstall a plugin whose package was removed', function () {
+    DB::table(Table::PLUGINS)->insert([
+        'handle' => 'removed-plugin',
+        'version' => '1.0.0',
+        'schemaVersion' => '1.0.0',
+        'installDate' => now(),
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+        'uid' => Str::uuid(),
+    ]);
+
+    DB::table(Table::MIGRATIONS)->insert([
+        'track' => 'plugin:removed-plugin',
+        'migration' => 'm000000_000000_removed_plugin',
+        'batch' => 1,
+    ]);
+
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_PLUGINS.'.removed-plugin', [
+        'edition' => 'standard',
+        'enabled' => true,
+        'schemaVersion' => '1.0.0',
+    ]);
+
+    app()->forgetInstance(Plugins::class);
+    $plugins = app(Plugins::class);
+
+    expect($plugins->isPluginInstalled('removed-plugin'))->toBeTrue()
+        ->and($plugins->getPlugin('removed-plugin'))->toBeNull();
+
+    expect(fn () => $plugins->uninstallPlugin('removed-plugin'))
+        ->toThrow(InvalidPluginException::class);
+
+    expect($plugins->uninstallPlugin('removed-plugin', force: true))->toBeTrue()
+        ->and($plugins->isPluginInstalled('removed-plugin'))->toBeFalse()
+        ->and(DB::table(Table::PLUGINS)->where('handle', 'removed-plugin')->exists())->toBeFalse()
+        ->and(DB::table(Table::MIGRATIONS)->where('track', 'plugin:removed-plugin')->exists())->toBeFalse()
+        ->and(app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS.'.removed-plugin'))->toBeNull();
+});
 
 it('cannot switch to an edition that doesnt exist', function () {
     expect($this->plugins->getPlugin('test-plugin')->edition)->toBe('standard');
@@ -506,7 +546,7 @@ it('does not read file overrides without installed information', function () {
     expect($this->plugins->createPlugin('test-plugin')->getSettings()->foo)->toBeNull();
 });
 
-it('saves submitted overrides and omitted file values without mutating configuration input', function () {
+it('saves submitted settings without overridden file values or mutating configuration input', function () {
     app()->offsetUnset(TestPlugin::class);
     $input = new TestPluginSettings()->foo('File foo')->bar('File bar');
     Config::set('craft.test-plugin', $input);
@@ -518,12 +558,26 @@ it('saves submitted overrides and omitted file values without mutating configura
 
     expect($plugin->getSettings())->toBe($settings)
         ->and($settings->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'File bar'])
-        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'File bar', 'foo' => 'Submitted'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe([])
         ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File foo', 'bar' => 'File bar'])
         ->and($input->validationData())->toBe(['foo' => 'File foo', 'bar' => 'File bar']);
 });
 
-it('saves full validation data even when configuration data is customized', function () {
+it('keeps stored values of settings overridden by configuration when saving', function (array $stored, array $expected) {
+    app(ProjectConfig::class)->set('plugins.test-plugin.settings', $stored);
+    Config::set('craft.test-plugin', ['bar' => 'File bar']);
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => $stored]);
+
+    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'Submitted', 'bar' => 'File bar']))->toBeTrue();
+
+    expect($plugin->getSettings()->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'File bar'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe($expected);
+})->with([
+    'stored' => [['foo' => 'CP foo', 'bar' => 'CP bar'], ['bar' => 'CP bar', 'foo' => 'Submitted']],
+    'not stored' => [['foo' => 'CP foo'], ['foo' => 'Submitted']],
+]);
+
+it('saves validation data outside the configured settings when configuration data is customized', function () {
     app()->offsetUnset(TestPlugin::class);
     $plugin = new class(app()) extends TestPlugin
     {
@@ -551,7 +605,7 @@ it('saves full validation data even when configuration data is customized', func
 
     expect($plugin->getSettings()->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'Saved bar'])
         ->and($plugin->getSettings()->configData())->toBe(['foo' => 'Config foo'])
-        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'Saved bar', 'foo' => 'Submitted'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'Saved bar'])
         ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'Config foo'])
         ->and($input->validationData())->toBe(['foo' => 'Input foo', 'bar' => 'Input bar']);
 });

@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\CustomNavigations;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\Models\Field as FieldModel;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Mcp\Capabilities\Configuration;
 use CraftCms\Cms\Mcp\Enums\ConfigurationOperation;
 use CraftCms\Cms\Mcp\Enums\ConfigurationType;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Fields as FieldsService;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Conditions\AdminConditionRule;
@@ -20,6 +28,7 @@ use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 use CraftCms\Cms\Workflow\UserReview\UserReviewStage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
 use Mcp\Capability\Discovery\SchemaValidator;
@@ -27,11 +36,11 @@ use Mcp\Exception\ToolCallException;
 
 beforeEach(function (): void {
     Edition::set(Edition::Pro);
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $this->call = fn (string $operation, array $arguments = []): TestResponse => McpRequest::send($this, 'tools/call', [
-        'name' => "configuration.$operation",
+        'name' => "configuration_$operation",
         'arguments' => $arguments,
     ])->assertOk();
     $this->operate = fn (string $operation, string $type, array $arguments = []): array => ($this->call)($operation, ['type' => $type, ...$arguments])
@@ -62,8 +71,42 @@ it('manages configuration records using the shared operations', function (string
     'user groups' => ['user-groups', ['name' => 'Editors', 'handle' => 'editors', 'description' => 'Editorial staff'], ['handle' => 'authors', 'description' => null], ['name' => 'Editors']],
     'image transforms' => ['image-transforms', ['name' => 'Thumbnail', 'handle' => 'thumbnail', 'width' => 200, 'height' => 100, 'quality' => 80, 'mode' => 'fit'], ['handle' => 'small', 'width' => null], ['height' => 100, 'quality' => 80, 'mode' => 'fit']],
     'site groups' => ['site-groups', ['name' => 'Archive'], ['name' => 'Legacy'], []],
-    'asset transformers' => ['asset-transformers', ['name' => 'Local', 'handle' => 'local', 'driver' => 'craft'], ['handle' => 'localImages'], ['name' => 'Local', 'driver' => 'craft']],
 ]);
+
+it('refuses updates and deletes based on an outdated revision without changing the record', function (): void {
+    $layout = fn (string $handle): array => ['tabs' => [['name' => 'Content', 'elements' => [
+        ['type' => CustomField::class, 'fieldUid' => Field::factory()->create(['handle' => $handle, 'type' => PlainText::class])->uid],
+    ]]]];
+    $layoutA = $layout('fieldA');
+    $layoutB = $layout('fieldB');
+    $identifier = ['handle' => 'article'];
+    $created = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']]);
+    $read = ($this->operate)('get', 'entry-types', ['identifier' => $identifier]);
+
+    $updated = ($this->operate)('update', 'entry-types', ['identifier' => $identifier, 'attributes' => ['fieldLayout' => $layoutA], 'expectedRevision' => $read['revision']]);
+
+    foreach ([
+        ['update', ['attributes' => ['fieldLayout' => $layoutB]]],
+        ['delete', []],
+    ] as [$operation, $arguments]) {
+        ($this->call)($operation, ['type' => 'entry-types', 'identifier' => $identifier, ...$arguments, 'expectedRevision' => $read['revision']])
+            ->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.content.0.text', "The entry-types record has changed since revision {$read['revision']} was read, so nothing was changed. Read it again with configuration_get, redo your change on the current values, and pass the new revision.");
+    }
+
+    app(ProjectConfig::class)->reset();
+    $current = ($this->operate)('get', 'entry-types', ['identifier' => $identifier]);
+
+    expect($read['revision'])->toBe($created['revision'])
+        ->and($current['revision'])->toBe($updated['revision'])->not->toBe($read['revision'])
+        ->and($current['item']['fieldLayout']['config']['tabs'][0]['elements'][0]['fieldUid'])->toBe($layoutA['tabs'][0]['elements'][0]['fieldUid'])
+        ->and(collect(($this->operate)('list', 'entry-types')['items'])->firstWhere('handle', 'article')['revision'])->toBe($current['revision']);
+
+    $replaced = ($this->operate)('update', 'entry-types', ['identifier' => $identifier, 'attributes' => ['fieldLayout' => $layoutB], 'expectedRevision' => $current['revision']]);
+
+    expect($replaced['item']['fieldLayout']['config']['tabs'][0]['elements'][0]['fieldUid'])->toBe($layoutB['tabs'][0]['elements'][0]['fieldUid'])
+        ->and(($this->operate)('delete', 'entry-types', ['identifier' => $identifier, 'expectedRevision' => $replaced['revision']]))->toBe(['type' => 'entry-types', 'deleted' => true]);
+});
 
 it('manages workflows, keeping stages that aren’t replaced', function (): void {
     $group = UserGroup::factory()->create();
@@ -78,28 +121,76 @@ it('manages workflows, keeping stages that aren’t replaced', function (): void
     ($this->call)('update', ['type' => 'workflows', 'identifier' => ['id' => $created['id']], 'attributes' => ['stages' => [[...$stage, 'settings' => []]]]])
         ->assertJsonPath('result.isError', true);
 
-    $section = Section::factory()->create(['workflowId' => $created['id']]);
+    $entryType = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']])['item'];
+    $section = ($this->operate)('create', 'sections', ['attributes' => [
+        'name' => 'News',
+        'handle' => 'news',
+        'entryTypes' => [$entryType['id']],
+        'siteSettings' => [['siteId' => Sites::getPrimarySite()->id, 'hasUrls' => false]],
+        'workflow' => $created['id'],
+    ]])['item'];
+
+    expect($section['workflow'])->toBe($created['uid'])
+        ->and(Section::query()->find($section['id'])->workflowId)->toBe($created['id']);
 
     ($this->call)('delete', ['type' => 'workflows', 'identifier' => ['id' => $created['id']]])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'This workflow cannot be deleted while it is assigned to a section.');
 
-    $section->update(['workflowId' => null]);
+    ($this->call)('update', ['type' => 'sections', 'identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => '00000000-0000-4000-8000-000000000000']])
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', 'Workflow not found.');
+    expect(Section::query()->find($section['id'])->workflowId)->toBe($created['id']);
 
-    expect(($this->operate)('delete', 'workflows', ['identifier' => ['uid' => $created['uid']]]))->toBe(['type' => 'workflows', 'deleted' => true]);
+    expect(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['name' => 'Articles']])['item']['workflow'])->toBe($created['uid'])
+        ->and(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => null]])['item']['workflow'])->toBeNull()
+        ->and(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => $created['uid']]])['item']['workflow'])->toBe($created['uid']);
+
+    ($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => null]]);
+
+    expect(Section::query()->find($section['id'])->workflowId)->toBeNull()
+        ->and(($this->operate)('delete', 'workflows', ['identifier' => ['uid' => $created['uid']]]))->toBe(['type' => 'workflows', 'deleted' => true]);
 });
 
 it('explains that workflows require Craft Pro', function (): void {
+    $group = UserGroup::factory()->create();
+    $workflow = ($this->operate)('create', 'workflows', ['attributes' => ['name' => 'Review', 'stages' => [
+        ['name' => 'Editor review', 'type' => UserReviewStage::class, 'settings' => ['userGroups' => [$group->uid], 'approvalsRequired' => 1, 'approvalMode' => 'total']],
+    ]]])['item'];
+    $entryType = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']])['item'];
+    $sectionAttributes = fn (string $handle): array => [
+        'name' => $handle,
+        'handle' => $handle,
+        'entryTypes' => [$entryType['id']],
+        'siteSettings' => [['siteId' => Sites::getPrimarySite()->id, 'hasUrls' => false]],
+        'workflow' => $workflow['uid'],
+    ];
+    $section = ($this->operate)('create', 'sections', ['attributes' => $sectionAttributes('news')])['item'];
+
     Edition::set(Edition::Team);
 
     $types = collect(($this->call)('schema')->json('result.structuredContent.types'))->keyBy('type');
 
-    expect($types['asset-transformers']['operations'])->not->toBeEmpty()
+    expect($types)->not->toHaveKey('asset-transformers')
         ->and($types['workflows'])->toBe(['type' => 'workflows', 'operations' => [], 'requiredEdition' => 'Craft Pro']);
 
     ($this->call)('list', ['type' => 'workflows'])
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'The workflows configuration type requires Craft Pro. This site runs Craft Team.');
+
+    foreach ([
+        ['create', ['attributes' => $sectionAttributes('blog')]],
+        ['update', ['identifier' => ['id' => $section['id']], 'attributes' => ['name' => 'Articles', 'workflow' => $workflow['id']]]],
+    ] as [$operation, $arguments]) {
+        ($this->call)($operation, ['type' => 'sections', ...$arguments])
+            ->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.content.0.text', 'Workflows require Craft Pro.');
+    }
+
+    expect(Section::query()->where('handle', 'blog')->exists())->toBeFalse()
+        ->and(Section::query()->find($section['id'])->only(['name', 'workflowId']))->toBe(['name' => 'news', 'workflowId' => $workflow['id']])
+        ->and(($this->operate)('update', 'sections', ['identifier' => ['id' => $section['id']], 'attributes' => ['workflow' => null]])['item']['workflow'])->toBeNull()
+        ->and(Section::query()->find($section['id'])->workflowId)->toBeNull();
 });
 
 it('manages CP navigations as the trees the navigation builder edits', function (): void {
@@ -223,16 +314,6 @@ it('needs the whole CP navigation tree, so nodes left out keep their changes', f
     $removed = ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => array_slice($tree, 0, -1)]])['item'];
 
     expect(array_column($removed['tree'], 'id'))->not->toContain('custom-docs');
-});
-
-it('refuses asset transformer changes Craft doesn’t allow', function (): void {
-    ($this->call)('create', ['type' => 'asset-transformers', 'attributes' => ['name' => 'Remote', 'handle' => 'remote', 'driver' => 'nope']])
-        ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Unknown asset transform driver [nope]. Available drivers: craft.');
-
-    ($this->call)('delete', ['type' => 'asset-transformers', 'identifier' => ['handle' => 'craft']])
-        ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'The Craft asset transformer cannot be deleted.');
 });
 
 it('separates a section lookup handle from its new handle and preserves section settings', function (): void {
@@ -363,9 +444,9 @@ it('keeps read-only admin discovery usable while refusing configuration writes',
         expect($type['operations'])->toBe(['list', 'get']);
     }
 
-    McpRequest::send($this, 'tools/call', ['name' => 'configuration.create', 'arguments' => [
+    McpRequest::send($this, 'tools/call', ['name' => 'configuration_create', 'arguments' => [
         'type' => 'site-groups', 'attributes' => ['name' => 'New group'],
-    ]])->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration.create".');
+    ]])->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration_create".');
     ($this->call)('schema', ['type' => 'sites', 'operation' => 'delete'])->assertJsonPath('result.isError', true);
 
     expect(fn () => app(Configuration::class)->schema(ConfigurationType::Sites, ConfigurationOperation::Delete))
@@ -376,6 +457,48 @@ it('does not expose configuration to users without admin access', function (): v
     $user = User::factory()->withPermissions(['accessCp'])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
-    McpRequest::send($this, 'tools/call', ['name' => 'configuration.list', 'arguments' => ['type' => 'sites']])
-        ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration.list".');
+    McpRequest::send($this, 'tools/call', ['name' => 'configuration_list', 'arguments' => ['type' => 'sites']])
+        ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "configuration_list".');
+});
+
+it('rejects nonexistent section sources and layout fields before saving', function (): void {
+    $missing = '00000000-0000-4000-8000-000000000000';
+    $entryType = ($this->operate)('create', 'entry-types', ['attributes' => ['name' => 'Article', 'handle' => 'article']])['item'];
+    $section = ($this->operate)('create', 'sections', ['attributes' => [
+        'name' => 'News',
+        'handle' => 'news',
+        'type' => 'channel',
+        'entryTypes' => [$entryType['id']],
+        'siteSettings' => [['siteId' => Sites::getPrimarySite()->id, 'hasUrls' => false]],
+    ]])['item'];
+    $rejects = fn (string $operation, array $arguments, string $message) => ($this->call)($operation, $arguments)
+        ->assertJsonPath('result.isError', true)
+        ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_contains($text, $message));
+    $entries = fn (array $sources, string $handle = 'related'): array => ['type' => 'fields', 'attributes' => [
+        'type' => EntriesField::class,
+        'name' => 'Related',
+        'handle' => $handle,
+        'settings' => ['sources' => $sources],
+    ]];
+
+    $rejects('create', $entries(['*', "section:$missing"]), "Source “section:{$missing}” doesn’t exist.");
+    expect(FieldModel::query()->where('handle', 'related')->exists())->toBeFalse();
+
+    $field = ($this->operate)('create', 'fields', $entries(["section:{$section['uid']}"]))['item'];
+    ($this->operate)('create', 'fields', $entries(['*'], 'anything'));
+
+    $rejects('update', ['type' => 'fields', 'identifier' => ['id' => $field['id']], 'attributes' => [
+        'settings' => ['sources' => ["section:{$section['uid']}", 'section:archive']],
+    ]], 'section:archive');
+    FieldsService::refreshFields();
+    expect(FieldsService::getFieldById($field['id'])->sources)->toBe(["section:{$section['uid']}"]);
+
+    $layout = fn (string $fieldUid): array => ['tabs' => [['name' => 'Content', 'elements' => [
+        ['type' => CustomField::class, 'fieldUid' => $field['uid']],
+        ['type' => CustomField::class, 'fieldUid' => $fieldUid],
+    ]]]];
+    $rejects('update', ['type' => 'entry-types', 'identifier' => ['uid' => $entryType['uid']], 'attributes' => [
+        'fieldLayout' => $layout($missing),
+    ]], "Field “{$missing}” doesn’t exist.");
+    expect(DB::table(Table::FIELDLAYOUTS)->pluck('config')->implode(','))->not->toContain($missing);
 });

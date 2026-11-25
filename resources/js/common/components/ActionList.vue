@@ -21,6 +21,7 @@
    * renders items a caller places itself — `ActionMenu` uses it for the items
    * inside its own `content` slot.
    */
+  import {config, router} from '@inertiajs/vue3';
   import {computed, type Component} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
@@ -28,6 +29,7 @@
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
   import type {
     ActionItem,
+    ActionItemBadge,
     ActionItemButton,
     ActionItemGroup,
     ActionItemLink,
@@ -47,6 +49,7 @@
     external?: boolean;
     label?: string;
     status?: string;
+    badge?: ActionItemBadge;
     onClick?: (event: Event) => void;
     /**
      * Everything optional, with the unset keys left out entirely. Binding an
@@ -60,6 +63,9 @@
      */
     attrs: Record<string, unknown>;
   }
+
+  /** How long a nav item's page, fetched while it's pointed at, is kept. */
+  const NAV_PREFETCH_CACHE_FOR = '5s';
 
   const {
     actions = [],
@@ -193,6 +199,7 @@
           external: link.external || Boolean(link.target),
           label: action.label,
           status: isItem ? action.status : undefined,
+          badge: isItem ? action.badge : undefined,
           onClick: action.onClick,
           attrs: defined({...attrs, target: link.target, size}),
         },
@@ -204,6 +211,7 @@
         kind: 'button',
         label: action.label,
         status: isItem ? action.status : undefined,
+        badge: isItem ? action.badge : undefined,
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
@@ -333,31 +341,6 @@
     return action.type === 'group' ? undefined : action.status;
   }
 
-  /**
-   * An external link to another site, rather than a full page load within this
-   * one. A branch keeps its suffix slot for the toggle, so it isn't marked.
-   */
-  function leavesSite(action: NavItem): boolean {
-    const href = hrefOf(action);
-
-    if (
-      action.type !== 'link' ||
-      !action.external ||
-      !href ||
-      childrenOf(action).length
-    ) {
-      return false;
-    }
-
-    try {
-      return (
-        new URL(href, window.location.href).origin !== window.location.origin
-      );
-    } catch {
-      return false;
-    }
-  }
-
   function countOf(action: NavItem): number | undefined {
     return action.type === 'group' ? undefined : action.count;
   }
@@ -436,6 +419,46 @@
       as: 'craft-nav-item',
       '.external': external,
       inertia: !external,
+      // Fetched on press, as other links are, and kept only briefly: long
+      // enough to cover the wait for the click, not so long that the page
+      // could be out of date when it's shown.
+      prefetch: 'click',
+      cacheFor: NAV_PREFETCH_CACHE_FOR,
+      ...(shared.href && !external ? hoverPrefetchHandlers(shared.href) : {}),
+    };
+  }
+
+  let hoverPrefetch: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * Pointing at a nav item says where you're going well before the click, so
+   * the page is fetched then, and is usually there by the time you click.
+   *
+   * Inertia's `Link` can't do this alongside fetching on press: given both
+   * modes, it drops the press, so a click quicker than the hover delay waited
+   * for the click to fetch, then fetched the page a second time once the delay
+   * ran out. This fetches the page the same way `Link` does, so whichever
+   * starts first, the other and the click's visit reuse it.
+   */
+  function hoverPrefetchHandlers(href: string): Record<string, unknown> {
+    const cancel = () => clearTimeout(hoverPrefetch);
+
+    return {
+      onMouseenter: () => {
+        cancel();
+        hoverPrefetch = setTimeout(
+          () =>
+            router.prefetch(
+              href,
+              {method: 'get'},
+              {cacheFor: NAV_PREFETCH_CACHE_FOR}
+            ),
+          config.get('prefetch.hoverDelay')
+        );
+      },
+      onMouseleave: cancel,
+      // The press fetches it now; `Link` keeps `mousedown` to itself.
+      onPointerdown: cancel,
     };
   }
 
@@ -493,13 +516,6 @@
       ></craft-indicator>
 
       {{ labelOf(action) }}
-
-      <craft-icon
-        v-if="leavesSite(action)"
-        slot="suffix"
-        name="arrow-up-right-from-square"
-        :label="t('External site')"
-      ></craft-icon>
 
       <craft-badge-indicator
         v-if="countOf(action)"
@@ -580,6 +596,19 @@
           :fill="action.status"
         ></craft-indicator>
         {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
       </component>
 
       <CpLink
@@ -595,6 +624,19 @@
           :fill="action.status"
         ></craft-indicator>
         {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
       </CpLink>
 
       <component
@@ -610,12 +652,31 @@
           :fill="action.status"
         ></craft-indicator>
         {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
       </component>
     </template>
   </template>
 </template>
 
 <style scoped lang="css">
+  /* Beside the label it's about, rather than across at the item's far end. */
+  .action-list__badge {
+    margin-inline-start: var(--c-spacing-xs);
+    vertical-align: middle;
+  }
+
   /* Matching what `craft-action-menu` applies inline to the separators in a
      menu, for the lists that aren't in one. */
   .action-list__separator {

@@ -1,8 +1,7 @@
 import {t} from '@craftcms/ui';
 import {FileUpload, type UploadOptions} from '@/upload-client';
 import {createFileUploadNotification} from './upload-notification';
-
-declare const Craft: any;
+import {showError} from '@/modules/messages/messages';
 
 interface UploadCallbacks<Result> {
   queued?: () => void;
@@ -68,7 +67,7 @@ export class UploadQueue<
         retry: () => this.retry(job),
         cancel: () =>
           this.cancel(job).catch((error) =>
-            Craft.cp.displayError(uploadErrorMessage(error))
+            showError(uploadErrorMessage(error))
           ),
         pause: () => {
           if (job.upload.canPause) {
@@ -115,7 +114,7 @@ export class UploadQueue<
     const results = await Promise.allSettled(cancellations);
     for (const result of results) {
       if (result.status === 'rejected') {
-        Craft.cp.displayError(uploadErrorMessage(result.reason));
+        showError(uploadErrorMessage(result.reason));
       }
     }
   }

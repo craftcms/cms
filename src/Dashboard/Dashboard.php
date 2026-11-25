@@ -10,12 +10,13 @@ use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
+use CraftCms\Cms\Dashboard\Widgets\AboutCraft as AboutCraftWidget;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
 use CraftCms\Cms\Dashboard\Widgets\Custom as CustomWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
-use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\User\Models\User;
 use DateTimeInterface;
 use Exception;
@@ -37,10 +38,17 @@ use function CraftCms\Cms\currentUser;
  * @since 6.0.0
  */
 #[Singleton]
-readonly class Dashboard
+class Dashboard
 {
+    /**
+     * The widget type that {@see doesUserHaveWidget()} reports the user doesn’t have,
+     * while {@see isWidgetTypeAvailable()} checks it.
+     */
+    private ?string $availabilityCheckType = null;
+
     public function __construct(
-        private CustomWidgets $customWidgets,
+        private readonly CustomWidgets $customWidgets,
+        private readonly WidgetTypes $widgetTypes,
     ) {}
 
     /**
@@ -48,7 +56,7 @@ readonly class Dashboard
      *
      * @template T of WidgetInterface
      *
-     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, color?: string|null, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @return T
      */
     public function createWidget(string|array $config): WidgetInterface
@@ -80,6 +88,33 @@ readonly class Dashboard
     }
 
     /**
+     * Returns whether the current user is allowed to use widgets of the given type.
+     *
+     * The type must be registered with {@see WidgetTypes}, and selectable for the current user.
+     * Unlike calling `isSelectable()` directly, this ignores whether the user already has a widget of that type,
+     * so it can be used to check the user’s existing widgets.
+     *
+     * @param  string  $type  The widget type
+     */
+    public function isWidgetTypeAvailable(string $type): bool
+    {
+        /** @var class-string<WidgetInterface>|null $widgetType */
+        $widgetType = $this->widgetTypes->types()->first(fn (string $registered) => $registered === $type);
+
+        if ($widgetType === null) {
+            return false;
+        }
+
+        $this->availabilityCheckType = $widgetType;
+
+        try {
+            return $widgetType::isSelectable();
+        } finally {
+            $this->availabilityCheckType = null;
+        }
+    }
+
+    /**
      * Returns whether the current user has a widget of the given type.
      *
      * @param  class-string<WidgetInterface>  $type  The widget type
@@ -87,6 +122,10 @@ readonly class Dashboard
      */
     public function doesUserHaveWidget(string $type): bool
     {
+        if ($type === $this->availabilityCheckType) {
+            return false;
+        }
+
         $widgets = $this->getUserWidgets();
 
         if ($widgets === false) {
@@ -154,6 +193,7 @@ readonly class Dashboard
             $widgetModel = $this->getUserWidgetModelById($widget->id);
 
             $widgetModel->type = $widget::class;
+            $widgetModel->color = $widget->color;
             $widgetModel->settings = $widget->getSettings();
 
             if ($isNewWidget) {
@@ -270,6 +310,20 @@ readonly class Dashboard
     }
 
     /**
+     * Changes the color of a widget.
+     *
+     * @param  Color|null  $color  The widget’s new color, or `null` for none
+     */
+    public function changeWidgetColor(int $widgetId, ?Color $color): bool
+    {
+        $this->getUserWidgetModelById($widgetId)->update([
+            'color' => $color?->value,
+        ]);
+
+        return true;
+    }
+
+    /**
      * Adds the default widgets to the logged-in user.
      */
     private function addDefaultUserWidgets(): void
@@ -284,11 +338,6 @@ readonly class Dashboard
         // Craft Support widget
         if ($user->isAdmin()) {
             $this->saveWidget($this->createWidget(CraftSupportWidget::class));
-        }
-
-        // Updates widget
-        if ($user->can('performUpdates')) {
-            $this->saveWidget($this->createWidget(UpdatesWidget::class));
         }
 
         // Craft News feed widget
@@ -308,6 +357,11 @@ readonly class Dashboard
                 ],
             ]));
         });
+
+        // About Craft CMS widget, last, which also says whether updates are available
+        if ($user->isAdmin() || $user->can('performUpdates')) {
+            $this->saveWidget($this->createWidget(AboutCraftWidget::class));
+        }
 
         User::where('id', $user->getCraftUserId())->update([
             'hasDashboard' => true,

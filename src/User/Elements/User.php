@@ -45,9 +45,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -89,7 +87,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Traits\Macroable;
+use JsonSerializable;
 use LogicException;
 use Override;
 use Stringable;
@@ -117,7 +115,7 @@ use function CraftCms\Cms\t;
  * @since 6.0.0
  */
 #[Ruleset(UserRules::class)]
-class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, MustVerifyEmailContract
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, CraftUser, HasLocalePreference, JsonSerializable, MustVerifyEmailContract
 {
     use Authenticatable {
         getAuthPassword as getAuthPasswordAuthenticatable;
@@ -129,7 +127,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use ConfirmsPasswords;
     use HasNames;
     use LegacyConstants;
-    use Macroable;
     use Notifiable;
 
     public const string GQL_TYPE_NAME = 'User';
@@ -193,6 +190,16 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         'photoId',
         'suspended',
         'unverifiedEmail',
+    ];
+
+    /**
+     * These attributes are left out of the user’s array and JSON representations.
+     */
+    public const array HIDDEN_ATTRIBUTES = [
+        'currentPassword',
+        'newPassword',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -380,15 +387,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     public function __construct($config = [])
     {
         parent::__construct($config);
-
-        // Is this user in cooldown mode, and are they past their window?
-        if (
-            $this->locked &&
-            Cms::config()->cooldownDuration &&
-            ! $this->getRemainingCooldownTime()
-        ) {
-            Users::unlockUser($this);
-        }
 
         // Convert IDNA ASCII to Unicode
         if ($this->username) {
@@ -946,6 +944,25 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $names;
     }
 
+    /**
+     * Leaves [[HIDDEN_ATTRIBUTES]] out of the user’s array and JSON representations.
+     */
+    #[Override]
+    public function fields(): array
+    {
+        return Arr::except(parent::fields(), self::HIDDEN_ATTRIBUTES);
+    }
+
+    /**
+     * Encodes the user with [[fields()]], so `json_encode()` and Twig’s `json_encode` filter leave out its secrets too.
+     *
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
     #[Override]
     public function extraFields(): array
     {
@@ -1295,7 +1312,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return match (true) {
             $status !== self::STATUS_ENABLED => $status,
             $this->suspended => self::STATUS_SUSPENDED,
-            $this->archived => self::STATUS_ARCHIVED,
             $this->pending => self::STATUS_PENDING,
             $this->active => self::STATUS_ACTIVE,
             default => self::STATUS_INACTIVE,
@@ -1404,6 +1420,18 @@ XML;
         }
 
         return false;
+    }
+
+    /**
+     * Returns whether the user is locked out after too many failed logins.
+     *
+     * A user whose cooldown has ended counts as unlocked, even though their `locked` column stays set until
+     * {@see \CraftCms\Cms\User\Users::handleValidLogin()} or {@see \CraftCms\Cms\User\Users::handleInvalidLogin()}
+     * clears it.
+     */
+    public function isLocked(): bool
+    {
+        return $this->locked && (! Cms::config()->cooldownDuration || $this->getRemainingCooldownTime() !== null);
     }
 
     /**
@@ -1574,7 +1602,7 @@ XML;
 
             case self::STATUS_ACTIVE:
                 if (
-                    $this->locked &&
+                    $this->isLocked() &&
                     ! $isCurrentUser &&
                     ($currentUser->isAdmin() || ! $this->admin) &&
                     $currentUser->can('moderateUsers') &&
@@ -1773,7 +1801,7 @@ XML;
                     }
                     break;
                 case self::STATUS_ACTIVE:
-                    if ($this->locked) {
+                    if ($this->isLocked()) {
                         if (
                             ! $isCurrentUser &&
                             ($currentUser->isAdmin() || ! $this->admin) &&
@@ -1850,31 +1878,17 @@ XML;
                         'requireElevatedSession' => true,
                     ];
 
-                    $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
                     $sessionItems[] = [
-                        'id' => $copyImpersonationUrlId,
+                        'id' => sprintf('action-copy-impersonation-url-%s', mt_rand()),
                         'icon' => 'clipboard',
                         'label' => t('Copy impersonation URL…'),
+                        'action' => self::behaviorAction([
+                            'type' => 'copyUrl',
+                            'actionUrl' => Url::actionUrl('users/get-impersonation-url'),
+                            'params' => ['userId' => $this->id],
+                            'prompt' => t('Copy the impersonation URL, and open it in a new private window.'),
+                        ]),
                     ];
-
-                    HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-      Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
-        data: {userId: $userId},
-      }).then((response) => {
-        Craft.ui.createCopyTextPrompt({
-          label: $message,
-          value: response.data.url,
-        })
-      });
-  });
-});
-JS, [
-                        InputNamespace::namespaceId($copyImpersonationUrlId),
-                        $this->id,
-                        t('Copy the impersonation URL, and open it in a new private window.'),
-                    ]);
                 }
             }
         }
@@ -1943,36 +1957,19 @@ JS, [
         ];
     }
 
-    /** @return array<string, string> */
+    /** @return array<string, mixed> */
     private function _copyPasswordResetUrlActionItem(string $label): array
     {
-        $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-    Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
-      data: {userId: $userId}
-    }).then((response) => {
-      Craft.ui.createCopyTextPrompt({
-        label: $message,
-        value: response.data.url,
-      })
-    }).catch(({response}) => {
-      Craft.cp.displayError(response.data.message);
-    });
-  });
-});
-JS, [
-            InputNamespace::namespaceId($id),
-            $this->id,
-            t('Copy the activation URL'),
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-password-reset-url-%s', mt_rand()),
             'icon' => 'clipboard',
             'label' => $label,
+            'action' => self::behaviorAction([
+                'type' => 'copyUrl',
+                'actionUrl' => Url::actionUrl('users/get-password-reset-url'),
+                'params' => ['userId' => $this->id],
+                'prompt' => t('Copy the activation URL'),
+            ]),
         ];
     }
 
@@ -2218,14 +2215,14 @@ JS, [
                 return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             t('Last login fail') => function () use ($formatter) {
-                if (! $this->locked || ! $this->lastInvalidLoginDate) {
+                if (! $this->isLocked() || ! $this->lastInvalidLoginDate) {
                     return false;
                 }
 
                 return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT, true);
             },
             t('Login fail count') => function () use ($formatter) {
-                if (! $this->locked) {
+                if (! $this->isLocked()) {
                     return false;
                 }
 
@@ -2368,12 +2365,18 @@ JS, [
 
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
             $guard = craftAuth();
+            $currentUser = $guard->user();
 
-            if (! method_exists($guard, 'logoutOtherDevices')) {
-                throw new LogicException('Craft auth guard does not support logging out other devices.');
+            if ($currentUser instanceof UserModel && $currentUser->id === $this->id) {
+                if (! method_exists($guard, 'logoutOtherDevices')) {
+                    throw new LogicException('Craft auth guard does not support logging out other devices.');
+                }
+
+                // The guard verifies the password against its own (stale) user model, then rehashes and saves it
+                $currentUser->password = $this->password;
+                $guard->logoutOtherDevices($newPassword);
+                $this->password = $currentUser->password;
             }
-
-            $guard->logoutOtherDevices($newPassword);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {

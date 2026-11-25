@@ -1,5 +1,11 @@
 import {router} from '@inertiajs/vue3';
-import {actionClient, t} from '@craftcms/ui';
+import {
+  actionClient,
+  showCopyTextPrompt,
+  t,
+  type BaseAction,
+} from '@craftcms/ui';
+import {runAction} from '@craftcms/ui/actions.mjs';
 import {computed, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
@@ -12,6 +18,10 @@ import {
   openImageEditorDialog,
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
+import {copyElements} from '@/modules/elements/clipboard';
+import {elevatedSessionManager} from '@/modules/auth/elevated-session/manager';
+import {getCpUrl} from '@/common/craft/url';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 /** Identifies an element for the CP clipboard. */
 interface ElementCopyRef {
@@ -45,6 +55,7 @@ export type ElementActionBehavior =
       elementType: string;
       elementId: number;
       siteId: number | null;
+      ownerId?: number | null;
       confirm: string;
       redirect: string;
     }
@@ -70,6 +81,11 @@ export type ElementActionBehavior =
   | {type: 'download'; actionUrl: string; params?: UiValues}
   | {type: 'replaceFile'; assetId: number}
   | {type: 'editImage'; assetId: number; settings: ImageEditorSettings}
+  /**
+   * Dispatches a window event, as any other `event` action does, for a
+   * plugin's own script to handle.
+   */
+  | Extract<BaseAction, {type: 'event'}>
   /**
    * Fetches a single-use URL and offers it for copying. Always behind an
    * elevated session — these URLs grant access to the account.
@@ -121,11 +137,15 @@ export function createElementActionDispatcher({
   currentEntryTypeId,
   slideout = null,
 }: Options = {}) {
+  /**
+   * Returns a promise for a behavior that opens a dialog, which settles once
+   * the dialog has closed, and rejects if it can't be opened.
+   */
   function dispatch(
     behavior: ElementActionBehavior,
     destructive = false,
     event?: Event
-  ): void {
+  ): void | Promise<void> {
     const trigger =
       event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
 
@@ -158,7 +178,11 @@ export function createElementActionDispatcher({
           : () => router.post(behavior.actionUrl, params);
 
         if (behavior.requireElevatedSession) {
-          void Craft.elevatedSessionManager.requireElevatedSession(post);
+          void elevatedSessionManager.require().then((confirmed) => {
+            if (confirmed) {
+              post();
+            }
+          });
 
           return;
         }
@@ -169,8 +193,7 @@ export function createElementActionDispatcher({
       }
 
       case 'copy':
-        // `Craft.cp` owns the clipboard, including its confirmation toast.
-        Craft.cp?.copyElements?.(behavior.elements);
+        copyElements(behavior.elements);
 
         return;
 
@@ -179,6 +202,7 @@ export function createElementActionDispatcher({
         // references can be reassigned before the element goes.
         new ElementDeletionManager(behavior.elementType, [behavior.elementId], {
           siteId: behavior.siteId,
+          ownerId: behavior.ownerId,
           confirmationMessage: behavior.confirm,
           onSuccess: () => {
             if (slideout) {
@@ -196,7 +220,7 @@ export function createElementActionDispatcher({
         const entryTypeId = currentEntryTypeId?.();
         const url =
           behavior.entryTypeFromField && entryTypeId
-            ? Craft.getCpUrl(`settings/entry-types/${entryTypeId}`)
+            ? getCpUrl(`settings/entry-types/${entryTypeId}`)
             : behavior.url;
         // The store sends focus to the menu's button once the item is hidden.
         void openSlideout(url, trigger ? {opener: trigger} : {});
@@ -215,9 +239,10 @@ export function createElementActionDispatcher({
         return;
 
       case 'previewFile':
-        new Craft.PreviewFileModal(behavior.assetId, behavior.settings ?? {});
-
-        return;
+        return new Craft.PreviewFileModal(
+          behavior.assetId,
+          behavior.settings ?? {}
+        ).closed;
 
       case 'download':
         // A real form post, not an Inertia visit: the response is the file.
@@ -231,19 +256,23 @@ export function createElementActionDispatcher({
         return;
 
       case 'copyUrl':
-        void Craft.elevatedSessionManager.requireElevatedSession(async () => {
+        void elevatedSessionManager.require().then(async (confirmed) => {
+          if (!confirmed) {
+            return;
+          }
+
           try {
             const {data} = await actionClient.post(
               behavior.actionUrl,
               behavior.params ?? {}
             );
 
-            Craft.ui.createCopyTextPrompt({
+            showCopyTextPrompt({
               label: behavior.prompt,
               value: data.url,
             });
           } catch (error: any) {
-            Craft.cp?.displayError?.(
+            showError(
               error?.response?.data?.message ?? t('A server error occurred.')
             );
           }
@@ -252,7 +281,7 @@ export function createElementActionDispatcher({
         return;
 
       case 'editImage':
-        void openImageEditorDialog(behavior.settings, (result) => {
+        return openImageEditorDialog(behavior.settings, (result) => {
           if (!result.newAssetId) {
             reload();
             return;
@@ -269,7 +298,20 @@ export function createElementActionDispatcher({
             });
             slideout.close({force: true});
           }
+        }).then(({closed}) => closed);
+
+      case 'event':
+        void runAction(behavior, {
+          trigger: trigger ?? undefined,
+          sourceEvent: event,
         });
+
+        return;
+
+      default:
+        console.warn(
+          `Unknown element action behavior type: ${(behavior as {type: string}).type}`
+        );
     }
   }
 
@@ -302,7 +344,7 @@ export function createElementActionDispatcher({
       const {data} = await actionClient.post(actionUrl, params);
 
       if (data?.message) {
-        Craft.cp?.displayNotice?.(data.message);
+        showNotice(data.message);
       }
 
       panel.saved(destructive ? {data} : {draft: true, data});
@@ -313,7 +355,7 @@ export function createElementActionDispatcher({
         await panel.reload();
       }
     } catch (error: any) {
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }

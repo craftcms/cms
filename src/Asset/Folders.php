@@ -4,21 +4,30 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderCreated;
+use CraftCms\Cms\Asset\Events\FolderCreating;
+use CraftCms\Cms\Asset\Events\FolderRenamed;
+use CraftCms\Cms\Asset\Events\FolderRenaming;
+use CraftCms\Cms\Asset\Events\FoldersDeleted;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -237,8 +246,44 @@ class Folders
      * @throws FsObjectExistsException if a folder already exists with such a name
      * @throws FilesystemException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
+     * @throws AssetOperationException if a {@see FolderCreating} listener prevents the creation
      */
     public function createFolder(VolumeFolder $folder): void
+    {
+        $parent = $this->newFolderParent($folder);
+
+        event($event = new FolderCreating($folder));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be created.'));
+        }
+
+        $this->makeFolder($folder, $parent);
+    }
+
+    /**
+     * Creates a folder as part of a folder move.
+     *
+     * Unlike {@see createFolder()}, it doesn’t dispatch {@see FolderCreating}, so a listener can’t stop a move after
+     * some of its folders were created.
+     *
+     * @internal
+     *
+     * @throws FsObjectExistsException if a folder already exists with such a name
+     * @throws FilesystemException if unable to create the directory on volume
+     * @throws AssetException if invalid folder provided
+     */
+    public function createFolderForMove(VolumeFolder $folder): void
+    {
+        $this->makeFolder($folder, $this->newFolderParent($folder));
+    }
+
+    /**
+     * Returns the parent of a folder about to be created, after checking that the folder can be created.
+     *
+     * @throws FsObjectExistsException|AssetException
+     */
+    private function newFolderParent(VolumeFolder $folder): VolumeFolder
     {
         $parent = $folder->getParent();
 
@@ -258,6 +303,14 @@ class Folders
             ));
         }
 
+        return $parent;
+    }
+
+    /**
+     * @throws FilesystemException if unable to create the directory on volume
+     */
+    private function makeFolder(VolumeFolder $folder, VolumeFolder $parent): void
+    {
         $path = rtrim((string) $folder->path, '/');
 
         if (! $parent->getVolume()->sourceDisk()->makeDirectory($path)) {
@@ -300,22 +353,85 @@ class Folders
             ]));
         }
 
+        event($event = new FolderRenaming($folder, $newName));
+
+        if (! $event->isValid) {
+            throw new AssetOperationException(t('The folder couldn’t be renamed.'));
+        }
+
         $parentFolderPath = dirname((string) $folder->path);
         $newFolderPath = (($parentFolderPath && $parentFolderPath !== '.') ? $parentFolderPath.'/' : '').$newName.'/';
 
         $volume = $folder->getVolume();
 
-        $this->renameDirectoryOnDisk($volume, rtrim((string) $folder->path, '/'), rtrim($newFolderPath, '/'));
-        $descendantFolders = $this->getAllDescendantFolders($folder);
+        $oldFolderPath = (string) $folder->path;
+        $this->renameDirectoryOnDisk($volume->sourceDisk(), rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
-        foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFolderPath, (string) $descendantFolder->path);
-            $this->storeFolderModel($descendantFolder);
-        }
+        // Transforms are stored by folder path outside the folder, so move them along with it
+        $imageTransformer = app(ImageTransformer::class);
+        $transformDisk = $imageTransformer->getTransformDisk($volume);
+        $moveTransforms = function (string $oldPath, string $newPath) use ($imageTransformer, $transformDisk, $volume): void {
+            $oldTransformPath = rtrim($imageTransformer->getTransformFolderPath($volume, $oldPath), '/');
+
+            if ($transformDisk->directoryExists($oldTransformPath)) {
+                $this->renameDirectoryOnDisk($transformDisk, $oldTransformPath, rtrim($imageTransformer->getTransformFolderPath($volume, $newPath), '/'));
+            }
+        };
+        $moveTransforms($oldFolderPath, $newFolderPath);
 
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderModel($folder);
+
+        // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder’s
+        $disk = $volume->sourceDisk();
+        $folderIds = [];
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            array_push($folderIds, ...$parentIds);
+            $childFolders = $this->findFolders(['parentId' => $parentIds]);
+            $parentIds = $childFolders->map(fn (VolumeFolder $childFolder) => $childFolder->id)->values()->all();
+
+            foreach ($childFolders as $childFolder) {
+                $oldChildPath = (string) $childFolder->path;
+                // Take the prefix by path segment, since case variants can differ in length
+                $oldPrefix = implode('/', array_slice(explode('/', $oldChildPath), 0, substr_count($oldFolderPath, '/'))).'/';
+                if (mb_convert_case($oldPrefix, MB_CASE_FOLD) !== mb_convert_case($oldFolderPath, MB_CASE_FOLD)) {
+                    continue;
+                }
+
+                // Keep the rest of the path as stored, so it still matches the directories below the renamed one
+                $newChildPath = $newFolderPath.substr($oldChildPath, strlen($oldPrefix));
+
+                // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
+                if (
+                    $oldPrefix !== $oldFolderPath &&
+                    (! $disk->directoryExists(rtrim($newChildPath, '/')) || $disk->directoryExists(rtrim($oldChildPath, '/')))
+                ) {
+                    continue;
+                }
+
+                // Transforms stored under a path that differs in case only moved along with the renamed folder’s
+                // where the transform disk ignores case
+                if ($oldPrefix !== $oldFolderPath) {
+                    $moveTransforms($oldChildPath, $newChildPath);
+                }
+
+                $childFolder->path = $newChildPath;
+                $this->storeFolderModel($childFolder);
+            }
+        }
+
+        // Clear caches holding the assets’ old URLs only now, so ones rebuilt during the rename are cleared too
+        Asset::find()
+            ->folderId($folderIds)
+            ->site('*')
+            ->unique()
+            ->status(null)
+            ->cursor()
+            ->each(fn (Asset $asset) => app(ElementCaches::class)->invalidateForElement($asset));
+
+        event(new FolderRenamed($folder));
 
         return $newName;
     }
@@ -327,6 +443,7 @@ class Folders
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
         $allFolderIds = [];
+        $folders = [];
 
         foreach ((array) $folderIds as $folderId) {
             $folder = $this->getFolderById((int) $folderId);
@@ -335,6 +452,7 @@ class Folders
                 continue;
             }
 
+            $folders[] = $folder;
             $allFolderIds[] = $folder->id;
             $descendants = $this->getAllDescendantFolders($folder, withParent: false);
             array_push($allFolderIds, ...array_map(fn (VolumeFolder $folder) => $folder->id, $descendants));
@@ -349,7 +467,7 @@ class Folders
             }
         }
 
-        Asset::find()
+        $deleteAssets = fn () => Asset::find()
             ->folderId($allFolderIds)
             ->site('*')
             ->unique()
@@ -359,8 +477,24 @@ class Folders
                 Elements::deleteElement($asset, true);
             });
 
+        // The control panel deletes folders from one volume at a time. Temporary upload folders have no volume.
+        $volumeId = $folders[0]->volumeId ?? null;
+
+        if ($volumeId === null) {
+            $deleteAssets();
+        } else {
+            VolumeOperation::for(
+                $volumeId,
+                implode(', ', array_map(fn (VolumeFolder $folder): string => (string) $folder->name, $folders)),
+            )->scope($deleteAssets);
+        }
+
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
         $this->reset();
+
+        if ($allFolderIds !== []) {
+            event(new FoldersDeleted($allFolderIds));
+        }
     }
 
     /**
@@ -406,9 +540,14 @@ class Folders
         return $folderModel;
     }
 
+    /**
+     * Saves a folder record. Dispatches {@see FolderCreated} when it creates a new one.
+     */
     public function storeFolderModel(VolumeFolder $folder): void
     {
-        if (! $folder->id) {
+        $isNew = ! $folder->id;
+
+        if ($isNew) {
             $model = new VolumeFolderModel;
         } else {
             $model = VolumeFolderModel::findOrFail($folder->id);
@@ -424,6 +563,10 @@ class Folders
         $folder->uid = $model->uid;
 
         $this->reset();
+
+        if ($isNew) {
+            event(new FolderCreated(clone $folder));
+        }
     }
 
     public function createFolderQuery(): Builder
@@ -528,12 +671,10 @@ class Folders
      * @throws FilesystemException
      * @throws FsObjectNotFoundException
      */
-    private function renameDirectoryOnDisk(Volume $volume, string $sourcePath, string $targetPath): void
+    private function renameDirectoryOnDisk(FilesystemAdapter $disk, string $sourcePath, string $targetPath): void
     {
         $sourcePath = trim($sourcePath, '/');
         $targetPath = trim($targetPath, '/');
-
-        $disk = $volume->sourceDisk();
 
         if ($sourcePath === '' || ! $disk->directoryExists($sourcePath)) {
             throw new FsObjectNotFoundException("No folder exists at path: $sourcePath");

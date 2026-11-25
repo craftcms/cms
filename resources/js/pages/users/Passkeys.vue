@@ -18,6 +18,7 @@
     verifyCreation,
     deleteMethod as deletePasskeyAction,
   } from '@actions/Users/PasskeysController';
+  import {showError} from '@/modules/messages/messages';
 
   defineOptions({
     inheritAttrs: false,
@@ -110,7 +111,7 @@
           optionsJSON: JSON.parse(optionsResponse.options),
         });
       } catch (e: any) {
-        craft?.cp?.displayError?.(e?.message);
+        showError(e?.message);
         return;
       }
 

@@ -8,10 +8,11 @@ import {
   setNotifications,
 } from '../store';
 
-import '@craftcms/ui/components/badge-indicator/badge-indicator';
+import {badgeIndicatorCutoutStyles} from '@craftcms/ui/components/badge-indicator/badge-indicator';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/popover/popover';
+import '@craftcms/ui/components/tooltip/tooltip';
 import './cp-notification-list';
 
 type NotificationData = CraftCms.Cms.Cp.Data.NotificationData;
@@ -24,20 +25,29 @@ class CpNotificationCenter extends LitElement {
     }
 
     .notification-trigger {
-      --c-icon-size: 1em;
+      --c-icon-size: var(--cp-chrome-icon-size, 1em);
       position: relative;
+      margin-inline: -7.25px;
+    }
+
+    .notification-trigger__icon {
+      translate: 0 1.5px;
+    }
+
+    .notification-trigger__icon--indicated {
+      --c-badge-indicator-cutout-x: calc(100% - 2px);
+      --c-badge-indicator-cutout-y: -2px;
+      ${badgeIndicatorCutoutStyles}
+    }
+
+    .notification-trigger__icon--indicated:dir(rtl) {
+      --c-badge-indicator-cutout-x: 2px;
     }
 
     .notification-trigger__badge {
-      --badge-border-width: 2px;
-      display: inline-flex;
       position: absolute;
       inset-block-start: 0;
-      inset-inline-end: 0;
-    }
-
-    .notification-trigger__badge::part(badge) {
-      background-color: var(--c-color-danger-fill-loud);
+      inset-inline-end: 2px;
     }
 
     craft-popover::part(popup) {
@@ -68,6 +78,12 @@ class CpNotificationCenter extends LitElement {
       border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     }
   `;
+
+  /**
+   * Passed to the trigger button's `flush`, so its icon can line up with an
+   * edge rather than its padding: `inline-end`, for one.
+   */
+  @property({reflect: true}) flush?: string;
 
   /** The page's notifications, which replace the shared ones. */
   @property({type: Array, attribute: false})
@@ -125,16 +141,19 @@ class CpNotificationCenter extends LitElement {
       <craft-popover placement="bottom-end" .distance=${8}>
         <craft-button
           slot="invoker"
+          id="notification-trigger"
           class="notification-trigger"
           type="button"
           size="small"
           variant="plain"
+          flush=${this.flush ?? nothing}
           icon
-          aria-label=${this.#triggerLabel}
         >
           <span slot="prefix">
             <craft-icon
-              class="notification-trigger__icon"
+              class="notification-trigger__icon ${this.#unread.length
+                ? 'notification-trigger__icon--indicated'
+                : ''}"
               name="bell"
             ></craft-icon>
             ${this.#unread.length
@@ -157,7 +176,7 @@ class CpNotificationCenter extends LitElement {
                   <craft-button
                     type="button"
                     size="small"
-                    variant="plain"
+                    variant="link"
                     @click=${() => this.#markAllRead()}
                   >
                     ${t('Mark all as read')}
@@ -170,6 +189,10 @@ class CpNotificationCenter extends LitElement {
           ></cp-notification-list>
         </div>
       </craft-popover>
+      <!-- Labels the icon-only button, as the Search button's tooltip does. -->
+      <craft-tooltip for="notification-trigger" invoker-relation="label">
+        ${this.#triggerLabel}
+      </craft-tooltip>
     `;
   }
 }

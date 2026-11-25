@@ -6,6 +6,8 @@ import {h, nextTick, ref, toValue, type MaybeRefOrGetter, type Ref} from 'vue';
 import {useShortcut} from '@/common/shortcuts';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
+import {findDeltaData} from '@/common/craft/delta';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 export type InlineEditingErrors = Record<
   string | number,
@@ -78,6 +80,12 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
   async function start(): Promise<void> {
     await options.load(true);
+
+    // The index can be replaced while its inputs load, such as by an error message
+    if (!options.container.value) {
+      return;
+    }
+
     editingIds.value = toValue(options.editableRows)
       .filter((entry) => Boolean(entry.inlineInputHtml))
       .map((entry) => entry.id);
@@ -131,7 +139,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
     const submittedInputs = serializeFormInputs(container);
     const body = new URLSearchParams(
-      window.Craft.findDeltaData(
+      findDeltaData(
         initialInputs.replaceAll('+', '%20'),
         submittedInputs.replaceAll('+', '%20'),
         editingIds.value.map((id) => `inline[element-${id}]`)
@@ -139,7 +147,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     );
     if (!body.has('modifiedDeltaNames[]')) {
       clear();
-      window.Craft?.cp?.displayNotice?.(t('No changes to save.'));
+      showNotice(t('No changes to save.'));
 
       return;
     }
@@ -151,7 +159,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
 
     if (result.errors && Object.keys(result.errors).length) {
       errors.value = result.errors;
-      window.Craft?.cp?.displayError?.(t('Couldn’t save.'));
+      showError(t('Couldn’t save.'));
 
       for (const host of uiHosts) {
         host.errors =
@@ -166,7 +174,7 @@ export function useInlineEditing<Row extends InlineEditableRow>(options: {
     }
 
     clear();
-    window.Craft?.cp?.displayNotice?.(result.message ?? t('Changes saved.'));
+    showNotice(result.message ?? t('Changes saved.'));
   }
 
   function onKeydown(event: KeyboardEvent): void {

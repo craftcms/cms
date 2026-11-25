@@ -44,7 +44,6 @@
       <DisclosureButton v-if="hasNotes" class="release-trigger">
         <craft-icon
           :name="open ? 'chevron-down' : 'chevron-right'"
-          style="font-size: 0.8em"
         ></craft-icon>
         <div class="release-info">
           <strong class="release-version">{{ version }}</strong>

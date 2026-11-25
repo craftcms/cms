@@ -14,11 +14,17 @@
   import type {ConditionConfig} from '@/modules/conditions/types';
   import type {IndexSite} from '@/modules/elements/types/sites';
   import {computed, ref, useId} from 'vue';
+  import {useElementSize} from '@vueuse/core';
   import '@craftcms/ui/components/tooltip/tooltip';
 
   const props = withDefaults(
     defineProps<{
-      statusOptions?: Array<{label: string; value: string; icon?: string}>;
+      statusOptions?: Array<{
+        label: string;
+        value: string;
+        icon?: string;
+        color?: string;
+      }>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
       /** The thumbnail sizes the active view mode offers. */
@@ -66,6 +72,8 @@
 
   const filterActive = ref(false);
   const filterAnchor = ref<HTMLElement>();
+  // The filters open from the button at the end of the search field, but span the whole field, as they did before.
+  const {width: filterWidth} = useElementSize(filterAnchor);
 
   // One site is no choice at all, so the menu only earns its place from two.
   const showSiteMenu = computed(() => (props.sites?.length ?? 0) > 1);
@@ -89,6 +97,10 @@
 
   function statusOptionIcon(value: string | number): string | undefined {
     return props.statusOptions?.find((option) => option.value === value)?.icon;
+  }
+
+  function statusOptionColor(value: string | number): string | undefined {
+    return props.statusOptions?.find((option) => option.value === value)?.color;
   }
 
   const siteOptions = computed(() =>
@@ -133,21 +145,18 @@
             :label="t('Site')"
             label-sr-only
             .disabled="processing"
-            @model-value-changed="
-              (event: CustomEvent) => {
-                if (event.detail.isTriggeredByUser) {
-                  emit(
-                    'site-change',
-                    (event.target as unknown as {modelValue: string}).modelValue
-                  );
-                }
-              }
+            @change="
+              (event: Event) =>
+                emit(
+                  'site-change',
+                  (event.currentTarget as unknown as {value: string}).value
+                )
             "
           >
             <template #option="{option}">
-              <!-- The menu button shows a copy of this option in its own shadow
-                root, out of reach of utility classes, so the layout is inline
-                and the icon's name is an attribute the copy keeps. -->
+              <!-- The field shows a copy of this option, out of reach of
+                utility classes, so the layout is inline and the icon's name
+                is an attribute the copy keeps. -->
               <span
                 style="
                   display: inline-flex;
@@ -169,13 +178,7 @@
           :label="t('Status')"
           label-sr-only
           .disabled="processing"
-          @model-value-changed="
-            (event: CustomEvent) => {
-              if (event.detail.isTriggeredByUser) {
-                emit('submit');
-              }
-            }
-          "
+          @change="emit('submit')"
         >
           <template #option="{option}">
             <span
@@ -191,7 +194,12 @@
               ></craft-icon>
               {{ option.label }}
             </span>
-            <ElementStatus v-else :label="option.label" :value="option.value" />
+            <ElementStatus
+              v-else
+              :label="option.label"
+              :value="option.value"
+              :color="statusOptionColor(option.value)"
+            />
           </template>
         </CraftSelectRich>
       </div>
@@ -202,27 +210,38 @@
           v-model="search"
           @keydown.enter="onSearchEnter"
         >
-          <craft-button
+          <craft-popover
             slot="suffix"
-            type="button"
-            icon
-            size="small"
-            variant="plain"
-            .disabled="processing"
-            @click="filterActive = true"
-            :class="{'is-active': !!conditions}"
+            placement="bottom-end"
+            :open="filterActive"
+            @craft-show.self="filterActive = true"
+            @craft-hide.self="filterActive = false"
           >
-            <craft-icon name="filter" :label="t('Filter results')"></craft-icon>
-          </craft-button>
+            <craft-button
+              slot="invoker"
+              type="button"
+              icon
+              size="small"
+              variant="plain"
+              .disabled="processing"
+              :class="{'is-active': !!conditions}"
+            >
+              <craft-icon
+                name="filter"
+                :label="t('Filter results')"
+              ></craft-icon>
+            </craft-button>
+            <div slot="content">
+              <FilterHud
+                v-if="filterActive"
+                :style="{inlineSize: `${filterWidth}px`}"
+                @close="filterActive = false"
+                @apply="emit('submit')"
+                v-model="conditions"
+              />
+            </div>
+          </craft-popover>
         </CraftInputSearch>
-
-        <FilterHud
-          v-if="filterActive"
-          :anchor="filterAnchor"
-          @close="filterActive = false"
-          @apply="emit('submit')"
-          v-model="conditions"
-        />
 
         <slot name="search-options"></slot>
       </div>
@@ -344,5 +363,10 @@
 
   .element-toolbar__filter {
     grid-area: filter;
+  }
+
+  /* The filters take the search field's width, which can be wider than a popover's usual cap. */
+  .element-toolbar__filter craft-popover::part(popup) {
+    max-width: none;
   }
 </style>

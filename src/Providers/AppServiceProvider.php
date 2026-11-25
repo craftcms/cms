@@ -11,8 +11,10 @@ use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
+use CraftCms\Cms\Http\RequestBodyLogProcessor;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -28,15 +30,14 @@ use GuzzleHttp\Utils;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Log\ContextLogProcessor;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Carbon;
@@ -47,6 +48,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Octane\Events\RequestReceived;
+use Laravel\Octane\Events\TaskReceived;
+use Laravel\Octane\Events\TickReceived;
 use Override;
 use ReflectionClass;
 use RuntimeException;
@@ -74,6 +78,9 @@ class AppServiceProvider extends ServiceProvider
         $this->registerSerializableClasses();
         $this->registerThrottleExceptionHandler();
 
+        // Every log channel runs this processor, so decorating it reaches all of them.
+        $this->app->extend(ContextLogProcessor::class, fn (ContextLogProcessor $processor) => new RequestBodyLogProcessor($processor));
+
         // Inertia DevTools records every request in local environments unless told otherwise, which adds hundreds of
         // milliseconds to control panel requests, so it's opt-in. Set before providers boot, when DevTools checks it.
         $this->app->booting(function () {
@@ -85,8 +92,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // The control panel sets this one from JavaScript, so it can't be encrypted.
-        EncryptCookies::except(Theme::COOKIE);
+        // The control panel sets these from JavaScript, so they can't be encrypted.
+        EncryptCookies::except([Theme::COOKIE, Theme::PREFERENCE_COOKIE]);
 
         AuthenticationException::redirectUsing(function () {
             $loginPath = Cms::config()->getLoginPath();
@@ -97,6 +104,12 @@ class AppServiceProvider extends ServiceProvider
 
             return Url::cpUrl(CpAuthPath::Login->value);
         });
+
+        // After every provider has booted, so it runs after Octane's own listeners give services the new sandbox.
+        $this->app->booted(fn () => Event::listen(
+            [RequestReceived::class, TaskReceived::class, TickReceived::class],
+            PrepareCraftForNextOperation::class,
+        ));
 
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(
@@ -149,8 +162,6 @@ class AppServiceProvider extends ServiceProvider
 
     private function registerMacros(): void
     {
-        Application::macro('isEphemeral', fn (): bool => Env::parseBoolean('$CRAFT_EPHEMERAL') === true);
-
         // Register Collection::one() as an alias of first()
         Collection::macro('one', fn () => $this->first(...func_get_args()));
 
@@ -177,14 +188,6 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
-
-        Response::macro('setNoCacheHeaders', function (bool $replace = true) {
-            $this->header('Expires', '0', $replace);
-            $this->header('Pragma', 'no-cache', $replace);
-            $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
-
-            return $this;
-        });
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {

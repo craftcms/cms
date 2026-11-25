@@ -81,7 +81,7 @@ it('can get an entry type by id', function () {
     $this->entryTypes->refreshEntryTypes();
 
     expect($this->entryTypes->getEntryTypeById($entryType->id))->toBeInstanceOf(EntryTypeData::class);
-    expect($this->entryTypes->getEntryTypeById(999))->toBeNull();
+    expect($this->entryTypes->getEntryTypeById($entryType->id + 1))->toBeNull();
 });
 
 it('can get an entry type by uid', function () {

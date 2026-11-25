@@ -1,4 +1,5 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {
   ComponentSelect,
   type ComponentSelectSettings,
@@ -25,26 +26,18 @@ describe('ComponentSelect', () => {
   let container: HTMLElement;
 
   beforeEach(() => {
-    // Just enough jQuery for the chip wiring, which only binds listeners.
-    (window as any).$ = () => {
-      const wrapped = {on: () => wrapped, off: () => wrapped};
-
-      return wrapped;
-    };
     (window as any).Craft = {
       t: (_category: string, message: string) => message,
-      addActionsToChip: vi.fn(),
-      hasMousePointerEvents: () => false,
       appendHeadHtml: vi.fn(),
       appendBodyHtml: vi.fn(),
-      sendActionRequest: vi.fn(async () => ({
-        data: {
-          components: {EntryType: {3: [chip('3', 'Gallery')]}},
-          headHtml: '',
-          bodyHtml: '',
-        },
-      })),
     };
+    vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {
+        components: {EntryType: {3: [chip('3', 'Gallery')]}},
+        headHtml: '',
+        bodyHtml: '',
+      },
+    } as any);
 
     container = document.createElement('div');
     container.innerHTML = `
@@ -62,6 +55,7 @@ describe('ComponentSelect', () => {
 
   afterEach(() => {
     container.remove();
+    vi.restoreAllMocks();
   });
 
   function selectedIds(): string[] {
@@ -96,5 +90,20 @@ describe('ComponentSelect', () => {
       .querySelector('craft-action-item')!
       .dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await vi.waitFor(() => expect(selectedIds()).toEqual(['1', '2', '3']));
+  });
+
+  it('opens a chip’s editor when it’s double-clicked', () => {
+    const edit = vi.fn();
+    const first = container.querySelector<HTMLElement>('craft-chip')!;
+    first.insertAdjacentHTML(
+      'beforeend',
+      '<div slot="suffix"><craft-action-menu><div slot="content"><craft-action-item data-edit-action>Edit</craft-action-item></div></craft-action-menu></div>'
+    );
+    first.querySelector('[data-edit-action]')!.addEventListener('click', edit);
+    new ComponentSelect(container, settings);
+
+    first.dispatchEvent(new MouseEvent('dblclick', {bubbles: true}));
+
+    expect(edit).toHaveBeenCalledOnce();
   });
 });

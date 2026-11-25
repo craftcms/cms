@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Gql;
 
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Directives\Anchors;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\Directives\Markdown;
@@ -38,6 +39,7 @@ class GqlDirectives extends TypeRegistry
     protected const string CONTRACT = Directive::class;
 
     protected const array DEFAULT_TYPES = [
+        Anchors::class,
         FormatDateTime::class,
         Markdown::class,
         Money::class,

@@ -12,7 +12,10 @@ use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Override;
 use Throwable;
+
+use function CraftCms\Cms\t;
 
 /**
  * @extends Ruleset<SectionSiteSettings>
@@ -42,6 +45,15 @@ class SectionSiteSettingsRules extends Ruleset
                     : [],
             ),
             'hasUrls' => ['nullable', 'boolean'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    #[Override]
+    public function attributes(): array
+    {
+        return [
+            'uriFormat' => t('Entry URI Format'),
         ];
     }
 }

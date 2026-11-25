@@ -41,6 +41,8 @@ class Button extends ViewComponent
 
     protected string $type = 'button';
 
+    protected ?string $form = null;
+
     protected ?string $icon = null;
 
     protected bool $loading = false;
@@ -224,6 +226,14 @@ class Button extends ViewComponent
         return $this;
     }
 
+    /** The id of the form a submit or reset button acts on, when it isn't the one it's in. */
+    public function form(?string $form): static
+    {
+        $this->form = $form;
+
+        return $this;
+    }
+
     /** Invoker Commands API command (e.g. `--add-row`). */
     public function command(?string $command): static
     {
@@ -293,6 +303,7 @@ class Button extends ViewComponent
         return [
             'id' => $this->getId(),
             'type' => $this->href === null ? $this->type : null,
+            'form' => $this->form,
             'variant' => $this->getVariant(),
             'inherit' => $this->inherit,
             'size' => $this->getSize(),

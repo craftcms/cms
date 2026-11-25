@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Validation\AddressRules;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -113,6 +114,39 @@ describe('elementSelectFieldHtml', function () {
         expect($input->filter('craft-button')->text())->toBe('Add an entry')
             ->and($input->filter('input[type="hidden"][name="featuredEntryIds"][value=""]'))->toHaveCount(1);
     })->with([false, true]);
+
+    it('boots through a custom element rather than an inline script', function (string $elementType, ?string $jsClass, string $element, ?string $inputClass) {
+        $html = FormFields::elementSelectHtml([
+            'id' => 'related',
+            'name' => 'relatedIds',
+            'elementType' => $elementType,
+            'jsClass' => $jsClass,
+        ]);
+
+        $input = new Crawler($html)->filter($element);
+
+        expect($input)->toHaveCount(1)
+            ->and($input->attr('input-class'))->toBe($inputClass)
+            ->and(json_decode((string) $input->attr('settings'), true)['name'])->toBe('relatedIds')
+            ->and($html)->not->toContain('<script');
+    })->with([
+        'entries' => [Entry::class, null, 'craft-entry-select-input', null],
+        'assets' => [Asset::class, null, 'craft-asset-select-input', null],
+        'other element types' => [Address::class, null, 'craft-element-select-input', null],
+        'core jsClass' => [Entry::class, 'Craft.EntrySelectInput', 'craft-entry-select-input', null],
+        'plugin jsClass' => [Entry::class, 'MyPlugin.SelectInput', 'craft-entry-select-input', 'MyPlugin.SelectInput'],
+    ]);
+
+    it('renders a plain container when disabled', function () {
+        $html = FormFields::elementSelectHtml([
+            'id' => 'related',
+            'elementType' => Entry::class,
+            'disabled' => true,
+        ]);
+
+        expect($html)->not->toContain('craft-element-select-input')
+            ->and($html)->toContainTag('div', ['id' => 'related']);
+    });
 });
 
 describe('customSelectFieldHtml', function () {
@@ -133,8 +167,8 @@ describe('customSelectFieldHtml', function () {
         $select = $crawler->filter('craft-field[data-attribute="typeId"] > craft-select-rich#entryType[slot="input"][name="typeId"]');
 
         expect($select)->toHaveCount(1)
-            ->and($select->filter('craft-option[choice-value="1"] craft-icon[name="newspaper"][data-color="blue"]'))->toHaveCount(1)
-            ->and($select->filter('craft-option[checked][choice-value="2"] em')->text())->toBe('News');
+            ->and($select->filter('craft-option[value="1"] craft-icon[name="newspaper"][data-color="blue"]'))->toHaveCount(1)
+            ->and($select->filter('craft-option[selected][value="2"] em')->text())->toBe('News');
     });
 
     it('checks nothing for an empty value and disables the select', function () {
@@ -146,7 +180,7 @@ describe('customSelectFieldHtml', function () {
         ]);
 
         expect($html)->toContainTag('craft-select-rich', ['disabled' => true])
-            ->and($html)->not->toContain(' checked');
+            ->and($html)->not->toContain(' selected');
     });
 });
 
@@ -185,6 +219,60 @@ describe('dateTimeHtml', function () {
             ->and($html)->toContainTag('input', ['type' => 'time', 'name' => 'startsAt[time]', 'value' => '12:30', 'step' => '900'])
             ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'startsAt[locale]'])
             ->and($html)->toContainTag('input', ['type' => 'hidden', 'name' => 'startsAt[timezone]', 'value' => 'Europe/Brussels']);
+    });
+});
+
+describe('dateHtml and timeHtml', function () {
+    it('keeps the value and name, and adds no second input', function (string $method, string $tag, string $type, string $value) {
+        $html = app(TemplateManager::class)->renderString(
+            "{{ craft.cp.{$method}(_context)|raw }}",
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'value' => new DateTimeImmutable('2026-08-05 12:30:00', new DateTimeZone('Europe/Brussels')),
+                'timeZone' => false,
+            ],
+            TemplateMode::Cp,
+        );
+
+        $crawler = new Crawler($html);
+
+        expect($html)->toContainTag($tag, ['name' => "startsAt[{$type}]"])
+            ->and($html)->toContainTag('input', ['type' => $type, 'name' => "startsAt[{$type}]", 'value' => $value])
+            ->and($crawler->filter('input[type="date"], input[type="time"]'))->toHaveCount(1);
+    })->with([
+        'date' => ['date', 'craft-input-date', 'date', '2026-08-05'],
+        'time' => ['time', 'craft-input-time', 'time', '12:30'],
+    ]);
+
+    it('passes inputAttributes through to the input', function () {
+        $html = app(TemplateManager::class)->renderString(
+            '{{ craft.cp.date(_context)|raw }}',
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'inputAttributes' => ['data' => ['target' => 'picker']],
+            ],
+            TemplateMode::Cp,
+        );
+
+        expect($html)->toContainTag('input', ['type' => 'date', 'data-target' => 'picker']);
+    });
+
+    it('omits the locale and timezone params when asked to', function () {
+        $html = app(TemplateManager::class)->renderString(
+            '{{ craft.cp.date(_context)|raw }}',
+            [
+                'id' => 'starts-at',
+                'name' => 'startsAt',
+                'outputLocaleParam' => false,
+                'outputTzParam' => false,
+            ],
+            TemplateMode::Cp,
+        );
+
+        expect($html)->not->toContain('startsAt[locale]')
+            ->and($html)->not->toContain('startsAt[timezone]');
     });
 });
 
@@ -330,12 +418,12 @@ describe('selectizeHtml', function () {
             'name' => 'enabled',
             'value' => true,
             'options' => [['value' => '1', 'label' => 'Yes'], ['value' => '0', 'label' => 'No']],
-        ]))->toContain('model-value="1"')
+        ]))->toContain(' value="1"')
             ->and(FormFields::selectizeHtml([
                 'name' => 'enabled',
                 'value' => false,
                 'options' => [['value' => '1', 'label' => 'Yes'], ['value' => '0', 'label' => 'No']],
-            ]))->toContain('model-value="0"');
+            ]))->toContain(' value="0"');
     });
 
     it('casts a numeric value to its option value', function () {
@@ -343,7 +431,7 @@ describe('selectizeHtml', function () {
             'name' => 'limit',
             'value' => 25,
             'options' => [['value' => '25', 'label' => '25']],
-        ]))->toContain('model-value="25"');
+        ]))->toContain(' value="25"');
     });
 
     it('keeps the native multiple select, which posts an array', function () {
@@ -436,7 +524,7 @@ describe('colorSelectHtml', function () {
         $html = html_entity_decode(FormFields::colorSelectHtml(['name' => 'color']));
 
         expect($html)
-            ->toContain('model-value="__blank__"')
+            ->toContain(' value="__blank__"')
             ->toContain('"value":"__blank__"')
             ->toContain('"value":"rose"')
             ->not->toContain('"value":"gray"');
@@ -444,7 +532,7 @@ describe('colorSelectHtml', function () {
 
     it('selects the value of a Color enum', function () {
         expect(FormFields::colorSelectHtml(['name' => 'color', 'value' => Color::Teal, 'withBlankOption' => false]))
-            ->toContain('model-value="teal"');
+            ->toContain(' value="teal"');
     });
 });
 
@@ -453,7 +541,7 @@ describe('timeZoneHtml', function () {
         $html = html_entity_decode(FormFields::timeZoneHtml(['name' => 'tz', 'value' => 'Europe/Brussels']));
 
         expect($html)
-            ->toContain('model-value="Europe/Brussels"')
+            ->toContain(' value="Europe/Brussels"')
             ->toContain('"value":"America\\/New_York"');
     });
 });

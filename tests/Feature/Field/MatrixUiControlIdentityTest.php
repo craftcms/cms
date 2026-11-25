@@ -18,9 +18,10 @@ use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
-function matrixIdentityFixture(): array
+function matrixIdentityFixture(bool $innerTextRequired = false): array
 {
     $innerField = Field::factory()->create([
         'name' => 'Inner Text',
@@ -29,7 +30,7 @@ function matrixIdentityFixture(): array
     ]);
 
     $matrixEntryType = EntryType::factory()
-        ->withField($innerField)
+        ->withField($innerField, $innerTextRequired)
         ->create([
             'name' => 'Matrix Block',
             'handle' => 'matrixBlock',
@@ -239,4 +240,55 @@ it('keeps Matrix block identities stable across repeated provisional draft saves
 
         expect(matrixControlSortOrder($draft))->toBe($blockUids);
     }
+});
+
+it('keys a failed save’s Matrix entry errors by the controls of the blocks that show them', function () {
+    actingAs(User::findOne());
+
+    [$entry, $blockUids, $matrixEntryType] = matrixIdentityFixture(innerTextRequired: true);
+
+    /** @var EntryElement $draft */
+    $draft = app(Drafts::class)->createDraft($entry, User::findOne()->id, provisional: true);
+    $newUid = Str::uuid()->toString();
+
+    // The browser speaks the identities it was rendered with: the canonical blocks' UUIDs and a new block's own.
+    post(cp_url('actions/elements/apply-draft'), [
+        'elementId' => $entry->id,
+        'draftId' => $draft->draftId,
+        'siteId' => $entry->siteId,
+        'provisional' => 1,
+        'fields' => [
+            'matrixField' => [
+                'entries' => [
+                    "uid:$blockUids[0]" => [
+                        'type' => $matrixEntryType->handle,
+                        'title' => 'Block 1',
+                        'enabled' => true,
+                        'fields' => ['innerText' => ''],
+                    ],
+                    // The block type's layout has no Title field, so nothing in the block can show this one.
+                    "uid:$blockUids[1]" => [
+                        'type' => $matrixEntryType->handle,
+                        'title' => '',
+                        'enabled' => true,
+                        'fields' => ['innerText' => 'Draft 2'],
+                    ],
+                    "uid:$newUid" => [
+                        'type' => $matrixEntryType->handle,
+                        'title' => 'New block',
+                        'enabled' => true,
+                        'fields' => ['innerText' => ''],
+                    ],
+                ],
+                'sortOrder' => [...$blockUids, $newUid],
+            ],
+        ],
+    ])->assertRedirect();
+
+    // Not `matrixField[<uid>].innerText`, which no control owns, so it only reached the form's error list.
+    expect(array_keys(session('errors')->getMessages()))->toEqualCanonicalizing([
+        "matrixField.entries.$blockUids[0].fields.innerText",
+        "matrixField.entries.$newUid.fields.innerText",
+        'matrixField',
+    ]);
 });

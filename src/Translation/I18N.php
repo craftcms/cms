@@ -71,6 +71,13 @@ class I18N
      */
     private array $translations = [];
 
+    /**
+     * @var array<string, array<string, string>> Laravel's JSON translations, by locale
+     *
+     * @see mayHaveLaravelTranslation()
+     */
+    private array $laravelJsonTranslations = [];
+
     public function __construct(
         private readonly Translator $translator,
     ) {}
@@ -409,7 +416,7 @@ class I18N
          * If we don't have a translation for the message.
          * Translate it using Laravel's translations.
          */
-        if ($translation === (string) $message) {
+        if ($translation === (string) $message && $this->mayHaveLaravelTranslation((string) $message, $parameters, $locale)) {
             $result = __($message, $parameters, $locale);
 
             // We're dealing with a message that's equal to a translation file (for example 'site')
@@ -419,6 +426,27 @@ class I18N
         }
 
         return $translation;
+    }
+
+    /**
+     * Returns whether Laravel's translator can return anything other than the message itself.
+     *
+     * It can when the message is a key in the locale's JSON translations, or when it names an item in a group file,
+     * after a dot. It also fills `:placeholder` parameters in a message it has no translation for. Asking it about
+     * any other message would have it look for a group file named after the whole message, once per message, only
+     * to return the message itself.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    private function mayHaveLaravelTranslation(string $message, array $parameters, string $locale): bool
+    {
+        if (preg_match('/\.(?!$)/', $message) || ($parameters !== [] && str_contains($message, ':'))) {
+            return true;
+        }
+
+        $this->laravelJsonTranslations[$locale] ??= app(\Illuminate\Contracts\Translation\Translator::class)->getLoader()->load($locale, '*', '*');
+
+        return isset($this->laravelJsonTranslations[$locale][$message]);
     }
 
     public function addCategorySources(CategorySource ...$categories): void
@@ -512,6 +540,7 @@ class I18N
             'en-US' => true,
             'ar' => true,
             'cs' => true,
+            'cy' => true,
             'da' => true,
             'de' => true,
             'de-CH' => true,
@@ -523,11 +552,14 @@ class I18N
             'fr' => true,
             'fr-CA' => true,
             'he' => true,
+            'hr' => true,
             'hu' => true,
+            'id' => true,
             'is' => true,
             'it' => true,
             'ja' => true,
             'ko' => true,
+            'ky' => true,
             'nb' => true,
             'nl' => true,
             'nn' => true,

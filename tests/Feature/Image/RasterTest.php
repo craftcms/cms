@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Exceptions\ImageException;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Image\Raster;
@@ -126,7 +128,7 @@ it('preserves animated GIF frames and timing', function () {
 
 it('accounts for rotation in text bounds', function () {
     $image = (new Raster)->loadImage($this->sandboxPath.'/google.png');
-    $image->setFontProperties(dirname(__DIR__, 3).'/packages/craftcms-legacy/cp/src/fonts/Craft.ttf', 20, '#000000');
+    $image->setFontProperties(dirname(__DIR__, 2).'/_data/fonts/Craft.ttf', 20, '#000000');
 
     $unrotated = $image->getTextBox('A');
     $rotated = $image->getTextBox('A', 90);
@@ -161,3 +163,32 @@ it('saves supported transform formats', function (string $format) {
     'jpeg xl' => ['jxl'],
     'tiff' => ['tiff'],
 ]);
+
+it('keeps PNGs compressed when cleaning them with GD', function () {
+    if (! extension_loaded('imagick')) {
+        $this->markTestSkipped('Imagick is needed to create the 16-bit PNG.');
+    }
+
+    // GD saves 16-bit PNGs as 8-bit, so its output is smaller than the original at every compression level.
+    $path = $this->sandboxPath.'/noisy-16-bit.png';
+    $source = new Imagick;
+    $source->newPseudoImage(300, 200, 'gradient:red-blue');
+    $source->setImageDepth(16);
+    $source->addNoiseImage(Imagick::NOISE_UNIFORM);
+    $source->setOption('png:bit-depth', '16');
+    $source->writeImage('png:'.$path);
+
+    $original = Cms::config()->imageDriver;
+    Cms::config()->imageDriver = ImageDriver::Gd->value;
+    app()->forgetInstance(Images::class);
+
+    try {
+        app(Images::class)->cleanImage($path);
+    } finally {
+        Cms::config()->imageDriver = $original;
+        app()->forgetInstance(Images::class);
+    }
+
+    // Uncompressed 8-bit RGBA pixel data alone would be 300 × 200 × 4 bytes.
+    expect(File::size($path))->toBeLessThan(300 * 200 * 4 / 2);
+});

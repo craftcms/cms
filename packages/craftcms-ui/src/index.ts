@@ -21,7 +21,6 @@ export {
 export {default as CraftCallout} from './components/callout/callout.js';
 export {default as CraftCard} from './components/card/card.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';
-export {default as CraftCheckboxIndeterminate} from './components/checkbox-indeterminate/checkbox-indeterminate.js';
 export {
   default as CraftCheckboxSelect,
   type CheckboxSelectAllMode,
@@ -55,7 +54,6 @@ export {default as CraftInputColor} from './components/input-color/input-color.j
 export {default as CraftInputCopy} from './components/input-copy/input-copy.js';
 export {default as CraftInputDate} from './components/input-date/input-date.js';
 export {default as CraftInputDateTime} from './components/input-date-time/input-date-time.js';
-export {default as CraftInputFile} from './components/input-file/input-file.js';
 export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
 export {default as CraftInputMoney} from './components/input-money/input-money.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
@@ -63,6 +61,7 @@ export {default as CraftInputSearch} from './components/input-search/input-searc
 export {default as CraftInputTime} from './components/input-time/input-time.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftLink} from './components/link/link.js';
+export {default as CraftMediaItem} from './components/media-item/media-item.js';
 export {default as CraftMissingComponent} from './components/missing-component/missing-component.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
@@ -98,10 +97,10 @@ export {
 } from './components/resize-grips/resize-grips.js';
 export {default as CraftSelectColor} from './components/select-color/select-color.js';
 export {default as CraftSelectRich} from './components/select-rich/select-rich.js';
-export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
 export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 export {default as CraftSlidePicker} from './components/slide-picker/slide-picker.js';
+export {default as CraftSlidePickerButton} from './components/slide-picker-button/slide-picker-button.js';
 export {default as CraftSlideRule} from './components/slide-rule/slide-rule.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';
@@ -145,6 +144,7 @@ export * from './utilities/dom.js';
 export * from './utilities/attrs.js';
 export * from './utilities/thumbnail-loader.js';
 export * from './utilities/create.js';
+export * from './utilities/copy-text-prompt.js';
 export * from './utilities/converters.js';
 export * from './utilities/focus-trap.js';
 export * from './core/element-selector/index.js';

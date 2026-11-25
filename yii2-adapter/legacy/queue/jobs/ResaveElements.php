@@ -85,7 +85,7 @@ class ResaveElements extends BaseJob
     {
         new \CraftCms\Cms\Element\Jobs\ResaveElements(
             elementType: $this->elementType,
-            criteria: $this->criteria,
+            criteria: $this->criteria ?? [],
             updateSearchIndex: $this->updateSearchIndex,
             withFields: $this->withFields,
             set: $this->set,
@@ -96,7 +96,7 @@ class ResaveElements extends BaseJob
             touch: $this->touch,
             batchSize: $this->batchSize,
             description: $this->description,
-        );
+        )->handle();
     }
 
     /**

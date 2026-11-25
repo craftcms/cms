@@ -33,7 +33,7 @@
 <template>
   <section v-if="pending.length" class="grid gap-md">
     <div class="flex items-center justify-between gap-md">
-      <h2 class="m-0">{{ t('Active Trials') }}</h2>
+      <h2 class="cp-h2">{{ t('Active Trials') }}</h2>
       <craft-button
         v-if="pending.length > 1"
         size="small"

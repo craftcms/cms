@@ -4,6 +4,7 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vite-plus/test';
 import {
   createApp,
   defineComponent,
+  effectScope,
   h,
   nextTick,
   provide,
@@ -21,6 +22,7 @@ import {
   createScreenPanels,
   type ScreenPanels,
 } from '@/common/composables/screenPanels';
+import {useResizable} from '@/common/composables/useResizable';
 import DetailsPanels from './DetailsPanels.vue';
 import ScreenPanel from './ScreenPanel.vue';
 
@@ -45,6 +47,8 @@ const pagePanels = ref(true);
 const chatPanel = ref(false);
 /** Whether a page panel that comes first in the rail is mounted, after the others. */
 const latePanel = ref(false);
+/** Whether a panel with its own SVG icon is mounted. */
+const svgIconPanel = ref(false);
 /** Whether the shell is overlaying the column, which tests can flip. */
 const overlay = ref(false);
 
@@ -77,6 +81,7 @@ async function mount(
   pagePanels.value = true;
   chatPanel.value = chat;
   latePanel.value = false;
+  svgIconPanel.value = false;
   registry = createScreenPanels();
 
   app = createApp(
@@ -95,6 +100,19 @@ async function mount(
                 ScreenPanel,
                 {id: 'late', label: 'Late', icon: 'clock', order: -1},
                 () => h('p', 'Late content')
+              )
+            : null,
+          svgIconPanel.value
+            ? h(
+                ScreenPanel,
+                {
+                  id: 'news',
+                  label: 'News',
+                  icon: 'newspaper',
+                  iconSvg:
+                    '<svg viewBox="0 0 16 16"><path d="M0 0h16v16H0z"/></svg>',
+                },
+                () => h('p', 'News content')
               )
             : null,
           chatPanel.value
@@ -150,7 +168,7 @@ it('puts the triggers in the rail and the panels in place', async () => {
   const rail = document.getElementById('rail')!;
   const group = rail.querySelector('[role="group"]');
 
-  expect(group?.getAttribute('aria-label')).toBe('Details');
+  expect(group?.getAttribute('aria-label')).toBe('Panels');
   expect(
     [...rail.querySelectorAll('craft-disclosure > button')].map((button) =>
       button.getAttribute('aria-controls')
@@ -201,6 +219,109 @@ it('leaves a panel closed that the person closed', async () => {
 
   expect(panel('info').hidden).toBe(true);
   expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
+});
+
+describe('overlaying a page', () => {
+  async function openOverlaid(): Promise<HTMLElement> {
+    const details = await mount('#rail', {overlaid: true});
+    trigger('info').click();
+    await settle();
+    expect(panel('info').hidden).toBe(false);
+
+    return details;
+  }
+
+  function outsideIn(parent: HTMLElement): HTMLButtonElement {
+    const button = document.createElement('button');
+    parent.append(button);
+
+    return button;
+  }
+
+  it('closes on a click elsewhere on the page', async () => {
+    const details = await openOverlaid();
+
+    outsideIn(details).click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+  });
+
+  it('stays open on a click inside the panel or the rail', async () => {
+    await openOverlaid();
+
+    panel('info').click();
+    document.getElementById('rail')!.click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('stays open on a click in something opened over the page', async () => {
+    await openOverlaid();
+
+    outsideIn(document.body).click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('stays open while it’s resized from a handle outside it', async () => {
+    const details = await openOverlaid();
+    const handle = outsideIn(details);
+    const scope = effectScope();
+    scope
+      .run(() => useResizable({target: details, minWidth: 200, maxWidth: 600}))!
+      .setHandle(handle);
+    await settle();
+
+    handle.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    details.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}));
+    details.click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+    scope.stop();
+  });
+
+  it('closes on a click elsewhere after a resize handle was pressed', async () => {
+    const details = await openOverlaid();
+    const handle = outsideIn(details);
+    const scope = effectScope();
+    scope
+      .run(() => useResizable({target: details, minWidth: 200, maxWidth: 600}))!
+      .setHandle(handle);
+    await settle();
+
+    handle.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    details.dispatchEvent(new PointerEvent('pointerup', {bubbles: true}));
+    await new Promise((resolve) => setTimeout(resolve));
+    outsideIn(details).click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+    scope.stop();
+  });
+
+  it('switches panels from the rail', async () => {
+    await openOverlaid();
+
+    trigger('history').click();
+    await settle();
+
+    expect(panel('history').hidden).toBe(false);
+  });
+});
+
+it('stays open on a click elsewhere when there’s room beside the content', async () => {
+  const details = await mount('#rail');
+  const button = document.createElement('button');
+  details.append(button);
+
+  button.click();
+  await settle();
+
+  expect(panel('info').hidden).toBe(false);
 });
 
 it('starts folded to the rail in a slideout', async () => {
@@ -299,6 +420,20 @@ it('labels each trigger with a tooltip', async () => {
     ['details-panel-info', 'Info'],
     ['details-panel-history', 'History'],
   ]);
+});
+
+it('shows a panel’s own SVG in place of its named icon, labeled', async () => {
+  await mount('#rail');
+  svgIconPanel.value = true;
+  await settle();
+
+  const icon = trigger('news').querySelector('craft-icon')!;
+
+  expect(icon.querySelector(':scope > svg')?.getAttribute('viewBox')).toBe(
+    '0 0 16 16'
+  );
+  expect(icon.name).toBeUndefined();
+  expect(icon.label).toBe('News');
 });
 
 it('keeps the triggers beside their panels without a rail', async () => {
@@ -408,6 +543,27 @@ it('moves focus into a panel its screen opens', async () => {
   await settle();
 
   expect(panel('history').hidden).toBe(false);
+  expect(document.activeElement).toBe(heading('history'));
+});
+
+it('moves focus to what its screen asks for in a panel it opens', async () => {
+  await mount('#rail');
+
+  registry.open('history', {
+    focus: () => panel('history').querySelector<HTMLElement>('.inner'),
+  });
+  await settle();
+
+  expect(panel('history').hidden).toBe(false);
+  expect(document.activeElement?.className).toBe('inner');
+});
+
+it('falls back to the panel’s heading when what its screen asks for isn’t there', async () => {
+  await mount('#rail');
+
+  registry.open('history', {focus: () => null});
+  await settle();
+
   expect(document.activeElement).toBe(heading('history'));
 });
 

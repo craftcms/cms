@@ -122,10 +122,6 @@ class CustomNavigations
      */
     public function navigationFor(?CraftUser $user): array
     {
-        if (! Edition::get()->supportsCustomNavigations()) {
-            return [];
-        }
-
         $groupUids = $user === null || ! Edition::isAtLeast(Edition::Pro)
             ? []
             : array_map(fn (UserGroup $group) => $group->uid, $user->asElement()->getGroups());

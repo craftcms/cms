@@ -289,13 +289,14 @@ it('returns different filtered and unfiltered counts when filters are applied', 
         ->assertJsonPath('unfilteredTotal', 2);
 });
 
-it('requires owner scope for embedded index routes', function () {
+it('requires the whole owner scope for embedded index routes that name an owner', function () {
     EntryModel::factory()->create();
 
     ($this->postIndexAction)('get-elements', [
         'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+        'attribute' => 'addresses',
     ])->assertUnprocessable()
-        ->assertJsonValidationErrors(['ownerElementType', 'ownerId', 'ownerSiteId', 'attribute']);
+        ->assertJsonValidationErrors(['ownerElementType', 'ownerId', 'ownerSiteId']);
 });
 
 it('returns filter hud html with asset payloads', function () {
@@ -638,7 +639,8 @@ it('scopes a read-only embedded Matrix index without granting mutation access', 
 
     expect($cardResponse->json('data'))->toHaveCount(1)
         ->and($card['label'])->toBe('Included')
-        ->and($card['actionMenuItems'])->toBe([])
+        ->and(collect($card['actionMenuItems'])->pluck('action.detail.behavior.type')->all())
+        ->toBe($revision ? [] : ['copy'])
         ->and($tableRow)->not->toHaveKey('inlineEditable')
         ->and($tableRow)->not->toHaveKey('inlineInputHtml')
         ->and($card['editUrl'])->toBe($tableRow['editUrl'])

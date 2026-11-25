@@ -6,10 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
@@ -17,7 +15,6 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Gql\Types\Generators\ColorDataType;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -44,7 +41,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Color extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
+class Color extends Field implements DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -186,7 +183,12 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     {
         return ColorControl::make($context->path)
             ->alpha($this->allowCustomAlpha)
+            ->custom($this->allowCustomColors)
             ->presets(array_values(array_filter(array_column($this->palette, 'color'))))
+            ->presetLabels(Collection::make($this->palette)
+                ->filter(fn (array $color) => $color['color'] && isset($color['label']) && $color['label'] !== '')
+                ->mapWithKeys(fn (array $color) => [$color['color'] => t($color['label'], category: 'site')])
+                ->all())
             ->value($context->value instanceof ColorData ? $context->value->getHex() : $context->value);
     }
 
@@ -234,12 +236,20 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'palette.*.color' => t('Color'),
+        ]);
+    }
+
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
             'palette' => ['nullable', 'required_if:allowCustomColors,false'],
-            'palette.*.label' => ['string'],
+            'palette.*.label' => ['nullable', 'string'],
             'palette.*.default' => ['nullable', 'boolean'],
             'palette.*.color' => [new ColorRule(allowAlpha: true)],
         ]);
@@ -309,8 +319,12 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     public function getElementRules(ElementInterface $element): array
     {
         return [
-            new ColorRule(allowAlpha: true),
-            function ($attribute, ColorData $value, $fail) {
+            function ($attribute, ?ColorData $value, $fail) {
+                if ($value === null) {
+                    return;
+                }
+                new ColorRule(allowAlpha: true)->validate($attribute, $value, $fail);
+
                 if (
                     (! $this->allowCustomColors || (! $this->allowCustomAlpha && $value->getAlpha() < 1)) &&
                     Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())
@@ -324,114 +338,6 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
     }
 
     #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        $id = $this->getInputId();
-
-        if (empty($this->palette)) {
-            return FormFields::colorHtml([
-                'id' => $id,
-                'describedBy' => $this->describedBy,
-                'name' => $this->handle,
-                'value' => $value?->getHex(),
-                'alpha' => $this->allowCustomAlpha,
-            ]);
-        }
-
-        /** @var ColorData|null $value */
-        $isInPalette = (
-            $value &&
-            Collection::make($this->palette)->contains('color', $value->getHex())
-        );
-        $isCustom = (
-            $value &&
-            $this->allowCustomColors &&
-            ! $isInPalette
-        );
-        $showBlankOption = (
-            ! $value ||
-            ! $this->layoutElement->required ||
-            (! $this->allowCustomColors && ! $isInPalette)
-        );
-
-        $html =
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-col', 'items-stretch'],
-                'style' => [
-                    'width' => '25em',
-                    'max-width' => '100%',
-                ],
-            ]).
-            FormFields::colorSelectFieldHtml([
-                'id' => $id,
-                'labelledBy' => $this->getLabelId(),
-                'describedBy' => $this->describedBy,
-                'class' => 'fullwidth',
-                'name' => "$this->handle[color]",
-                'options' => array_filter([
-                    ...array_map(
-                        fn (array $color) => [
-                            'label' => isset($color['label']) && $color['label'] !== ''
-                                ? t($color['label'], category: 'site')
-                                : $color['color'],
-                            'value' => $color['color'],
-                        ],
-                        $this->palette,
-                    ),
-                    $this->allowCustomColors ? [
-                        'label' => t('Custom…'),
-                        'value' => '__custom__',
-                    ] : null,
-                ]),
-                'withBlankOption' => $showBlankOption,
-                'value' => match (true) {
-                    $isInPalette => $value->getHex(),
-                    $isCustom => '__custom__',
-                    default => '__blank__',
-                },
-                'toggle' => $this->allowCustomColors,
-                'targetPrefix' => $this->allowCustomColors ? "$id-custom-" : null,
-            ]);
-
-        if ($this->allowCustomColors) {
-            $customLabelId = "$id-custom-label";
-            $html .=
-                Html::beginTag('div', [
-                    'id' => "$id-custom-__custom__",
-                    'class' => array_filter([
-                        'pane',
-                        'hairline',
-                        'py-s',
-                        'mt-0',
-                        'flex',
-                        'flex-inline',
-                        ! $isCustom ? 'hidden' : null,
-                    ]),
-                    'style' => [
-                        'width' => '25em',
-                        'max-width' => '100%',
-                        'padding-inline' => '9px',
-                    ],
-                ]).
-                Html::label(t('Custom color:'), "$id-custom-input")
-                    ->id($customLabelId).
-                FormFields::colorHtml([
-                    'id' => "$id-custom-input",
-                    'labelledBy' => $customLabelId,
-                    'describedBy' => $this->describedBy,
-                    'name' => "$this->handle[custom]",
-                    'value' => $isCustom ? $value->getHex() : null,
-                    'alpha' => $this->allowCustomAlpha,
-                ]).
-                Html::endTag('div');
-        } elseif ($value && ! $isInPalette) {
-            DeltaRegistry::setInitialValue($this->handle, $value->getHex());
-        }
-
-        return $html.Html::endTag('div');
-    }
-
-    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
@@ -439,14 +345,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             return '';
         }
 
-        $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-            Html::tag('div', attributes: [
-                'class' => 'color-preview',
-                'style' => [
-                    'background-color' => $value->getHex(),
-                ],
-            ]).
-            Html::endTag('div');
+        $html = Html::tag('craft-indicator', '', ['fill' => $value->getHex()]);
 
         if (isset($value->label)) {
             $html .= Html::tag('span', Html::encode($value->label), ['class' => 'colorhex']);
@@ -454,7 +353,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             $html .= Html::tag('div', $value->getHex(), ['class' => ['colorhex', 'code']]);
         }
 
-        return $html;
+        return Html::tag('div', $html, ['class' => ['flex', 'flex-inline', 'items-center', 'gap-sm']]);
     }
 
     #[Override]

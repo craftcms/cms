@@ -27,11 +27,15 @@ use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
 use yii\base\Event;
 
 uses(DatabaseTestCase::class);
@@ -230,6 +234,18 @@ it('lets legacy define-arguments listeners change draft and revision arguments',
     } finally {
         Event::off(LegacyElementArguments::class, LegacyElementArguments::EVENT_DEFINE_ARGUMENTS, $handler);
     }
+});
+
+it('offers the @transform directive permission on the schema screen when the legacy setting disables it', function() {
+    Cms::config()->disableGraphqlTransformDirective = true;
+    $this->actingAs(User::factory()->admin()->create());
+    Session::passwordConfirmed();
+
+    $this->get(action([SchemasController::class, 'create']))
+        ->assertInertia(fn(AssertableInertia $page) => $page
+            ->where('permissions', fn($permissions) => collect($permissions)
+                ->pluck('permissions')
+                ->contains(fn(array $groupPermissions) => array_key_exists('directive:transform', $groupPermissions))));
 });
 
 class AdapterGqlDirective extends MockDirective

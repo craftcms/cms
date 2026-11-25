@@ -1,5 +1,6 @@
-import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createApp, effectScope, nextTick} from 'vue';
+import {config, router} from '@inertiajs/vue3';
 
 import ActionList from './ActionList.vue';
 import {navItemActions} from '@/common/composables/navActions';
@@ -323,28 +324,63 @@ it('tells the page you are on apart from the parents on the way to it', async ()
   expect(all?.current).toBe(false);
 });
 
-it('marks a link to another site with a labeled icon, unless it has a subnav to toggle', async () => {
+// craft-nav-item draws its own external-link icon, so another one would double it.
+it('leaves the external-link icon to the nav item', async () => {
   await mount({
     items: [
       node('Craft Console', {
         href: 'https://console.craftcms.com/',
         external: true,
       }),
-      node('Same Site', {href: '/admin/legacy', external: true}),
-      node('Resources', {
-        href: 'https://craftcms.com/',
-        external: true,
-        subnav: [node('Docs', {href: 'https://craftcms.com/docs'})],
-      }),
     ],
   });
 
-  const suffixIcon = (label: string) =>
-    item(label)?.querySelector(':scope > craft-icon[slot="suffix"]');
+  const link = item('Craft Console') as
+    | (Element & {external?: boolean})
+    | undefined;
 
-  expect(suffixIcon('Craft Console')?.getAttribute('label')).toBe(
-    'External site'
-  );
-  expect(suffixIcon('Same Site')).toBeNull();
-  expect(suffixIcon('Resources')).toBeNull();
+  expect(link?.external).toBe(true);
+  expect(link?.querySelector('craft-icon[slot="suffix"]')).toBeNull();
+});
+
+describe('fetching a page before it is visited', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('fetches a page that is pointed at for longer than the hover delay', async () => {
+    const prefetch = vi.spyOn(router, 'prefetch').mockImplementation(() => {});
+    await mount();
+
+    item('Dashboard')!.dispatchEvent(new MouseEvent('mouseenter'));
+    vi.advanceTimersByTime(config.get('prefetch.hoverDelay'));
+
+    expect(prefetch).toHaveBeenCalledTimes(1);
+    expect(prefetch).toHaveBeenCalledWith(
+      '/admin/dashboard',
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it('fetches on press when the click beats the hover delay, and not again', async () => {
+    const prefetch = vi.spyOn(router, 'prefetch').mockImplementation(() => {});
+    await mount();
+    const dashboard = item('Dashboard')!;
+
+    dashboard.dispatchEvent(new MouseEvent('mouseenter'));
+    dashboard.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    dashboard.dispatchEvent(
+      new MouseEvent('mousedown', {bubbles: true, button: 0})
+    );
+    expect(prefetch).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1000);
+    expect(prefetch).toHaveBeenCalledTimes(1);
+  });
 });

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -38,7 +36,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -147,20 +145,6 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getInputId(): string
     {
         return sprintf('%s-time', parent::getInputId());
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return FormFields::timeHtml([
-            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value,
-            'minTime' => DateTimeHelper::timeToSeconds($this->min),
-            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
-            'minuteIncrement' => $this->minuteIncrement,
-        ]);
     }
 
     /** @return list<TimeRule> */

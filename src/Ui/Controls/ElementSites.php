@@ -19,7 +19,7 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
  */
 class ElementSites extends Control
 {
-    /** @var list<array{id: int, name: string, url: string|null, current: bool, removable: bool}> */
+    /** @var list<array{id: int, name: string, url: string|null, current: bool, removable: bool, compareUrl?: string|null}> */
     private array $sites = [];
 
     /** @var list<array{id: int, name: string, enabledByDefault: bool}> */
@@ -56,7 +56,7 @@ class ElementSites extends Control
      *
      * `removable` sites were added to a draft, and can be deleted from it again.
      *
-     * @param  list<array{id: int, name: string, url: string|null, current: bool, removable: bool}>  $sites
+     * @param  list<array{id: int, name: string, url: string|null, current: bool, removable: bool, compareUrl?: string|null}>  $sites
      */
     public function sites(array $sites): static
     {

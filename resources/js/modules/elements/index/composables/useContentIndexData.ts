@@ -110,6 +110,10 @@ export function useContentIndexData<
     elementType: computed(() => props().elementType),
     elementDisplayName: computed(() => props().elementDisplayName),
     elementPluralDisplayName: computed(() => props().elementPluralDisplayName),
+    elementLowerDisplayName: computed(() => props().elementLowerDisplayName),
+    elementPluralLowerDisplayName: computed(
+      () => props().elementPluralLowerDisplayName
+    ),
     canHaveDrafts: computed(() => props().canHaveDrafts),
 
     // Page chrome

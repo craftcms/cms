@@ -1,0 +1,218 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/UI Controls & Modals" />
+
+# UI Controls and modals
+
+Screens, settings and modals that the server describes with
+`CraftCms\Cms\Ui\Ui` render in the control panel without any Vue of your own.
+Use a core Node or Control whenever one fits. This page covers the two cases
+that need JavaScript: a Control or Node of your own, and a UI opened in a modal.
+
+**docs/ui.md** has the full contract: modes, errors, refreshes, copying values,
+and the server side.
+
+## Your own Control
+
+A Control is a PHP class and a Vue component that agree on a value. The PHP
+class names the component and renders the same Control as HTML, for screens
+that aren't drawn with Vue.
+
+```php
+use CraftCms\Cms\Cp\Components\Input;
+use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Controls\Control;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+
+class Slug extends Control
+{
+    public function component(): string
+    {
+        return 'my-plugin:slug';
+    }
+
+    public function props(mixed $value = null): array
+    {
+        return ['placeholder' => 'my-slug'];
+    }
+
+    public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
+    {
+        return Input::make()
+            ->id($attributes['id'])
+            ->name($attributes['name'])
+            ->value($value === null ? null : (string) $value)
+            ->placeholder((string) $control->props['placeholder'])
+            ->disabled($attributes['disabled'])
+            ->readOnly($attributes['readonly'])
+            ->toHtml();
+    }
+}
+```
+
+Register it when your plugin boots:
+
+```php
+public function boot(UiControlTypes $controlTypes): void
+{
+    $controlTypes->register(Slug::class);
+}
+```
+
+The Vue component gets the Control's payload and value, and emits the new
+value:
+
+```vue
+<!-- SlugControl.vue -->
+<script setup lang="ts">
+  import {
+    inputName,
+    type UiChangeKind,
+    type UiControlPayload,
+  } from '@craftcms/cp';
+
+  defineProps<{
+    control: UiControlPayload<{placeholder: string}>;
+    value: unknown;
+    editable: boolean;
+    label?: string;
+    invalid: boolean;
+    required: boolean;
+  }>();
+
+  const emit = defineEmits<{
+    (event: 'update:value', value: string, kind?: UiChangeKind): void;
+  }>();
+</script>
+
+<template>
+  <input
+    :name="editable ? inputName(control.path) : undefined"
+    :value="String(value ?? '')"
+    :placeholder="control.props.placeholder"
+    :aria-label="label"
+    :aria-invalid="invalid ? 'true' : undefined"
+    :required="editable && required"
+    :readonly="control.mode === 'readOnly'"
+    :disabled="control.mode === 'disabled'"
+    @input="
+      emit('update:value', ($event.target as HTMLInputElement).value, 'typing')
+    "
+  />
+</template>
+```
+
+Register the component under the name the PHP class returns, from your
+plugin's control panel script:
+
+```ts
+import {registerComponent} from '@craftcms/cp';
+
+registerComponent('my-plugin:slug', () => import('./SlugControl.vue'));
+```
+
+### What a Control gets
+
+| Prop       | What it is                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| `control`  | The `UiControlPayload`: its `path`, `mode` (`editable`, `readOnly` or `disabled`) and `props`. |
+| `value`    | Its current value.                                                                             |
+| `editable` | Whether it can change its value. Only editable Controls submit a `name`.                       |
+| `label`    | The field's label, for an accessible name when the Control has no visible one.                 |
+| `invalid`  | Whether the field has errors.                                                                  |
+| `required` | Whether a value is required. Apply it only while `editable`.                                   |
+| `values`   | Every value in the UI, as `UiPayload['values']`.                                               |
+| `errors`   | Every error in the UI.                                                                         |
+
+Emit `update:value` with the new value. Pass `'typing'` as the kind for
+keystrokes. Changes made in one go, such as picking an option, are
+`'discrete'`, which is the default.
+
+### Input names
+
+`inputName(path)` gives the input name for a Control's path:
+`['settings', 'slug']` becomes `settings[slug]`, the name the server's HTML
+renderer gives the same Control, so the submitted values line up whichever
+renderer drew it.
+
+### Copying and pasting values
+
+`UiValues.registerValueAcceptor()` and `UiValues.registerValuePreview()` let
+your Control decide which copied values it takes, and how they're previewed.
+See **Plugins/Pages & Components**.
+
+## Your own Node
+
+A Node draws something that isn't a value, such as a notice. Its component
+gets the `UiNodePayload` as `node`:
+
+```vue
+<!-- NoticeNode.vue -->
+<script setup lang="ts">
+  import type {UiNodePayload} from '@craftcms/cp';
+
+  defineProps<{node: UiNodePayload<{message: string}>}>();
+</script>
+
+<template>
+  <craft-callout>{{ node.props.message }}</craft-callout>
+</template>
+```
+
+```ts
+registerComponent('my-plugin:notice', NoticeNode);
+```
+
+## A UI in a modal
+
+`openUiModal()` fetches a UI from one action, shows it in a modal with Cancel
+and a submit button, and posts its values to another. Validation errors land
+on the Controls that caused them, and the modal stays open until the action
+succeeds.
+
+```php
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiResolver;
+
+public function renameModal(Exhibition $exhibition, UiResolver $uiResolver): JsonResponse
+{
+    return new JsonResponse([
+        'ui' => $uiResolver->resolve(
+            Ui::make([Field::make(t('Name'), Text::make('name'))->required()]),
+            new UiContext(values: ['name' => $exhibition->name]),
+        ),
+        'title' => t('Rename exhibition'),
+        'submitLabel' => t('Rename'),
+    ]);
+}
+
+public function rename(Exhibition $exhibition, Request $request): Response
+{
+    $exhibition->rename($request->validate(['name' => 'required|string'])['name']);
+
+    return $this->asSuccess(t('Exhibition renamed.'));
+}
+```
+
+```ts
+import {router} from '@inertiajs/vue3';
+import {getCpUrl, openUiModal} from '@craftcms/cp';
+
+void openUiModal({
+  modalUrl: getCpUrl(`exhibitions/${id}/rename-modal`),
+  actionUrl: getCpUrl(`exhibitions/${id}/rename`),
+  onSubmitted: () => router.reload(),
+});
+```
+
+| Option                 | What it does                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `modalUrl`             | Returns the form as `UiFormResponse`: `ui`, and optionally `title`, `submitLabel`, `submitDisabled` and `submitDisabledReason`. |
+| `actionUrl`            | Gets the form's values, posted.                                                                                                 |
+| `params`               | Sent with both requests.                                                                                                        |
+| `title`, `submitLabel` | Used when the response doesn't set them.                                                                                        |
+| `width`                | A `ModalWidth`.                                                                                                                 |
+| `onSubmitted`          | Called with the action's response data once it succeeds.                                                                        |

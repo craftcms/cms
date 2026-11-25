@@ -2,7 +2,12 @@ import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {effectScope} from 'vue';
 import {useAssetFileActions} from './useAssetFileActions';
 
+vi.mock('@/modules/queue/queue', () => ({
+  QueueService: {getInstance: () => ({runQueue: vi.fn(async () => {})})},
+}));
+
 const post = vi.hoisted(() => vi.fn());
+const showCopyTextPrompt = vi.hoisted(() => vi.fn());
 const VolumeFolderSelectorModal = vi.hoisted(() => vi.fn());
 const performMove = vi.fn(async () => {});
 const refresh = vi.fn(async () => {});
@@ -11,6 +16,7 @@ vi.mock('@craftcms/ui', async () => ({
   actionClient: {post},
   isHttpError: (await import('@craftcms/ui/utilities/api/http')).isHttpError,
   getActionUrl: (action: string) => `/actions/${action}`,
+  showCopyTextPrompt,
   t: (message: string) => message,
 }));
 
@@ -21,7 +27,6 @@ vi.mock(
 
 let scope: ReturnType<typeof effectScope>;
 let actions: ReturnType<typeof useAssetFileActions>;
-let createCopyTextPrompt: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   post.mockReset();
@@ -31,11 +36,8 @@ beforeEach(() => {
   VolumeFolderSelectorModal.mockImplementation(function (this: any) {
     this.hide = vi.fn();
   });
-  createCopyTextPrompt = vi.fn();
-  vi.stubGlobal('Craft', {
-    cp: {displayError: vi.fn(), runQueue: vi.fn()},
-    ui: {createCopyTextPrompt},
-  });
+  showCopyTextPrompt.mockReset();
+  vi.stubGlobal('Craft', {});
   scope = effectScope();
   scope.run(() => {
     actions = useAssetFileActions(
@@ -115,11 +117,11 @@ it('offers the file’s URL and reference tag for copying', () => {
   dispatch('assets:copy-url', {elementIds: [5]});
   dispatch('assets:copy-reference-tag', {elementIds: [5]});
 
-  expect(createCopyTextPrompt).toHaveBeenNthCalledWith(1, {
+  expect(showCopyTextPrompt).toHaveBeenNthCalledWith(1, {
     label: 'Copy the URL',
     value: 'https://example.test/photo.jpg',
   });
-  expect(createCopyTextPrompt).toHaveBeenNthCalledWith(2, {
+  expect(showCopyTextPrompt).toHaveBeenNthCalledWith(2, {
     label: 'Copy the reference tag',
     value: '{asset:5}',
   });

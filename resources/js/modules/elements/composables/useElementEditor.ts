@@ -3,6 +3,7 @@ import {
   nestedOwnerContext,
   type NestedOwnerEditor,
   type NestedOwnerEditorRequest,
+  type NestedOwnerRefreshOptions,
   NESTED_OWNER_EDITOR_REQUEST,
 } from '@/modules/elements/nested-owner';
 import {toReactive, useEventListener} from '@vueuse/core';
@@ -14,12 +15,24 @@ import {
   t,
   type ButtonVariant,
 } from '@craftcms/ui';
-import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onScopeDispose,
+  readonly,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
+import {onBroadcast} from '@/common/craft/broadcast';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import {
   useScreenPageProps,
   type ScreenPageProps,
 } from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
+import type {FormSaveOptions} from '@/common/types';
 import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 import type {
   ElementActionBehavior,
@@ -34,6 +47,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
+import {showError, showNotice, showSuccess} from '@/modules/messages/messages';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -109,6 +123,8 @@ export interface ElementContextMenuItem {
   description?: string;
   href?: string;
   selected?: boolean;
+  /** The Compare screen comparing this draft or revision with what it was based on. */
+  compareHref?: string | null;
 }
 
 /**
@@ -194,6 +210,8 @@ export interface ElementEditPayload {
   notice: string | null;
   mergeNotice: string | null;
   canDiscardDraft: boolean;
+  /** The Compare screen comparing this version with what it was based on, when there's anything to compare. */
+  compareChangesUrl?: string | null;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
   /** What Live Preview needs; `null` when the element has no preview targets. */
@@ -263,6 +281,19 @@ interface Options {
    * nested elements from here, so the nested element fields inside hear it.
    */
   root?: () => HTMLElement | null | undefined;
+  /**
+   * Another editor on the page that should take Cmd/Ctrl+S instead, such as
+   * the other side of the Compare screen's while it's the one being edited:
+   * its `saveForShortcut()`. Every editor's shortcut hears the press, and
+   * the first to get it handles it.
+   */
+  saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
+  /**
+   * Runs before each submission, which goes ahead when it resolves true: so
+   * another editor on the page, which the submission reloads, can save its
+   * own changes first.
+   */
+  beforeSave?: () => Promise<boolean>;
 }
 
 /**
@@ -273,7 +304,13 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditor({saveData, root, transform}: Options = {}) {
+export function useElementEditor({
+  saveData,
+  root,
+  transform,
+  saveShortcutTarget,
+  beforeSave,
+}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -397,6 +434,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // mutation — so neither can claim the other's keys.
   const {
     advanceBaseline,
+    errorPath,
     errors,
     onMutation: onLayoutMutation,
     rebase,
@@ -407,12 +445,21 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   const {
     advanceBaseline: advanceSidebarBaseline,
+    errorPath: sidebarErrorPath,
     errors: sidebarErrors,
     onMutation: onSidebarFormMutation,
     rebase: rebaseSidebar,
     renderer: sidebarRenderer,
     resetValues: resetSidebarValues,
   } = useInertiaUiRenderer(form, sidebarPayload);
+
+  /**
+   * The control paths a server error key could belong to: the layout's, then
+   * the sidebar's, as the error summary links whichever is on the page.
+   */
+  function errorPaths(key: string): (string[] | null)[] {
+    return [errorPath(key), sidebarErrorPath(key)];
+  }
 
   useSiteStatuses(form);
 
@@ -519,11 +566,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     updatedTimestamps: props.updatedTimestamps,
   });
 
-  useEventListener(
-    () => window.Craft?.broadcaster,
-    'message',
-    (event: MessageEvent) => {
-      const data = event.data;
+  // Other tabs that reorder these nested elements
+  onScopeDispose(
+    onBroadcast('reorderNestedElements', (data: any) => {
       const draftId = autosave.draftId.value ?? props.draftId;
       if (
         data.event === 'reorderNestedElements' &&
@@ -545,7 +590,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           router.reload();
         }
       }
-    }
+    })
   );
 
   // Applying a draft consumes it, and Inertia preserves this component across
@@ -795,8 +840,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }
 
     // A nested scope's payload is only that form; the renderer that asked for
-    // it reconciles it into the layout.
-    if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
+    // it reconciles it into the layout. So does one that lands during a
+    // submission: it was rendered from unsaved values, and the renderers take
+    // a payload arriving then as what the submission saved.
+    if (
+      JSON.stringify(scope) === JSON.stringify(rootScope) &&
+      !form.processing
+    ) {
       applyingSavedPayload = true;
       savedUi.value = response.ui;
       await nextTick();
@@ -865,15 +915,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       return true;
     } catch (error) {
-      window.Craft?.cp?.displayError(
-        error instanceof Error ? error.message : t('Couldn’t save.')
-      );
+      showError(error instanceof Error ? error.message : t('Couldn’t save.'));
 
       return false;
     }
   }
 
-  const {save} = useSettingsSave(
+  const {save: submit} = useSettingsSave(
     form,
     () => ({
       url:
@@ -885,23 +933,18 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }),
     {
       keyboardShortcutEnabled: () =>
-        !props.readOnly && !releaseDraftLocked.value,
-      // Cmd/Ctrl + Shift + S submits the Save menu's shortcut action that
-      // takes Shift, such as “Save and add another”, as clicking it would.
+        Boolean(saveShortcutTarget?.()) || canSaveForShortcut(),
       onSaveShortcut: (event) => {
-        const action = event.shiftKey
-          ? props.editorActions.menu.find(
-              (item) => item.shortcut && item.shift && !item.disabled
-            )
-          : undefined;
+        const target = saveShortcutTarget?.();
 
-        if (action) {
-          submitAction(action);
-        } else if (!event.shiftKey) {
-          save({redirect: false});
+        if (target) {
+          target(event);
+        } else {
+          saveForShortcut(event);
         }
       },
       hasShiftSaveShortcut: () =>
+        Boolean(saveShortcutTarget?.()) ||
         props.editorActions.menu.some(
           (item) => item.shortcut && item.shift && !item.disabled
         ),
@@ -948,11 +991,23 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       // Saved into the owner's draft, the nested draft this panel was editing
       // is gone, so there's nothing left to keep editing.
       forceClose: () => nestedOwnerId.value !== null,
+      // Applying a provisional draft deletes it, and replaces the nested
+      // elements created in it with new ones, so the panel is still showing
+      // the draft, with blocks that no longer exist.
+      reloadKeptOpen: (data) => {
+        if (!draftIsProvisional.value) {
+          return false;
+        }
+
+        showSavedElement(data);
+
+        return true;
+      },
       onError: (data) => {
         pendingRelease.value = null;
 
         if (data?.message) {
-          window.Craft?.cp?.displayError(data.message);
+          showError(data.message);
         }
 
         if (Array.isArray(data?.invalidNestedElementIds)) {
@@ -1018,6 +1073,152 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }
   );
 
+  let unmounted = false;
+  onBeforeUnmount(() => (unmounted = true));
+
+  /** Whether a save is waiting on an autosave or `beforeSave`, before it submits. */
+  const savePending = ref(false);
+
+  function save(options?: FormSaveOptions): void {
+    // One save at a time: another Save while this one waits would submit too.
+    if (savePending.value) {
+      return;
+    }
+
+    // A draft write already sent finishes on the server whether or not it's
+    // aborted, so the submission waits for it: then it applies the draft that
+    // write created, instead of leaving it behind with older values.
+    const autosaving = autosave.settle();
+
+    if (!autosaving && !beforeSave) {
+      submit(options);
+
+      return;
+    }
+
+    // The action owns only the submission it was chosen for, which its caller
+    // stops waiting for on the next tick, well before the wait is over.
+    const action = pendingAction.value;
+    savePending.value = true;
+
+    const ready = autosaving
+      ? autosaving.then(() => beforeSave?.() ?? true)
+      : beforeSave!();
+
+    void ready
+      .then((proceed) => {
+        // Nor once the editor is gone, as another submission can take the page
+        // away while this one waits.
+        if (!proceed || unmounted) {
+          return;
+        }
+
+        pendingAction.value = action;
+        submit(options);
+        void nextTick(() => (pendingAction.value = null));
+      })
+      .finally(() => (savePending.value = false));
+  }
+
+  /**
+   * Autosaves the edits still waiting to be, and reports whether every edit is
+   * saved, so another editor on the page can submit, and reload this one,
+   * without losing them.
+   */
+  async function settleChanges(): Promise<boolean> {
+    if (autosave.hasPendingChanges.value) {
+      await autosave.save();
+    }
+
+    // An edit made while that save was in flight is still waiting for its own,
+    // and a submission still in flight would be cancelled by another one.
+    return (
+      !form.processing &&
+      !autosave.hasPendingChanges.value &&
+      !hasUnsavedChanges()
+    );
+  }
+
+  function canSaveForShortcut(): boolean {
+    return (
+      !props.readOnly &&
+      !releaseDraftLocked.value &&
+      !workflowReviewLocked.value
+    );
+  }
+
+  /**
+   * Saves as Cmd/Ctrl+S does, when the element can be saved. Cmd/Ctrl +
+   * Shift + S submits the Save menu's shortcut action that takes Shift, such
+   * as “Save and add another”, as clicking it would.
+   */
+  function saveForShortcut(event: KeyboardEvent): void {
+    if (!canSaveForShortcut()) {
+      return;
+    }
+
+    const action = event.shiftKey
+      ? props.editorActions.menu.find(
+          (item) => item.shortcut && item.shift && !item.disabled
+        )
+      : undefined;
+
+    if (action) {
+      submitAction(action);
+    } else if (!event.shiftKey) {
+      save({redirect: false});
+    }
+  }
+
+  /**
+   * Points the panel at what a save of its provisional draft wrote: the
+   * element the draft was applied to, or the draft it was saved as. The
+   * provisional draft it was opened for, if it named one, is gone, and a
+   * panel opened for just that draft has nothing else to go on.
+   */
+  function showSavedElement(result: unknown): void {
+    const element = (
+      result as
+        | {
+            element?: {
+              id?: unknown;
+              canonicalId?: unknown;
+              draftId?: unknown;
+              isProvisionalDraft?: unknown;
+            };
+          }
+        | undefined
+    )?.element;
+    const positive = (value: unknown) => {
+      const number = Number(value);
+
+      return Number.isInteger(number) && number > 0 ? number : null;
+    };
+    const id = positive(element?.canonicalId) ?? positive(element?.id);
+    const draftId = positive(element?.draftId);
+
+    if (!slideout?.instance.href || id === null) {
+      return;
+    }
+
+    const url = new URL(slideout.instance.href, window.location.href);
+    url.searchParams.delete('draftId');
+    url.searchParams.delete('provisional');
+    url.searchParams.set('elementId', String(id));
+
+    // A panel opened at the element's own edit URL takes the element from
+    // the URL's path, and only a draft from its query.
+    if (draftId !== null) {
+      url.searchParams.set('draftId', String(draftId));
+
+      if (element?.isProvisionalDraft) {
+        url.searchParams.set('provisional', '1');
+      }
+    }
+
+    slideout.instance.href = url.href;
+  }
+
   function savedDraftId(result: unknown): number | null {
     const response = result as
       | {
@@ -1063,7 +1264,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       }>(target.url, data);
 
       if (response.message) {
-        window.Craft?.cp?.displayNotice(response.message);
+        showNotice(response.message);
       }
 
       if (response.redirect) {
@@ -1072,7 +1273,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       await slideout.reload();
     } catch (error: any) {
-      window.Craft?.cp?.displayError(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }
@@ -1168,18 +1369,24 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   /**
-   * Catches the screen up with a change it made to one of its nested elements
-   * — one created, saved, moved or deleted from inside it.
+   * Catches the screen up with a change to one of its nested elements — one
+   * created, saved, moved or deleted from inside it, or saved elsewhere.
    *
    * Saving a nested element into this one bumps this one's `dateUpdated`.
-   * That's this screen's own doing, not someone else's edit, so the activity
-   * poll is re-baselined on what the server now reports rather than left to
-   * flag it.
+   * When that's this screen's own doing, not someone else's edit, the
+   * activity poll is re-baselined on what the server now reports rather than
+   * left to flag it. A save from elsewhere is left for the poll to report.
    */
-  async function refreshAfterNestedChange(): Promise<void> {
+  async function refreshAfterNestedChange({
+    changedElsewhere = false,
+  }: NestedOwnerRefreshOptions = {}): Promise<void> {
+    if (changedElsewhere) {
+      return refreshForChangesElsewhere();
+    }
+
     const response = await refreshUi();
 
-    if (response && 'updatedTimestamp' in response) {
+    if (!changedElsewhere && response && 'updatedTimestamp' in response) {
       activity.rebase({
         element: (response.updatedTimestamp as number | null) ?? null,
         canonical:
@@ -1189,26 +1396,35 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   /**
+   * The refresh that nested fields asking about the same saves elsewhere
+   * share, until it's sent. Each field hears of a save on its own, a turn
+   * apart, so one turn is waited for.
+   */
+  let refreshForElsewhere: Promise<void> | null = null;
+
+  function refreshForChangesElsewhere(): Promise<void> {
+    refreshForElsewhere ??= new Promise((resolve) => setTimeout(resolve))
+      .then(() => {
+        refreshForElsewhere = null;
+        return refreshUi();
+      })
+      .then(() => undefined);
+
+    return refreshForElsewhere;
+  }
+
+  /**
    * What a save from inside a panel tells the rest of the CP, since the page
-   * behind it isn't reloaded: the confirmation, other tabs and element indexes
-   * (via the broadcaster), and Live Preview.
+   * behind it isn't reloaded: the confirmation, and Live Preview. Other tabs
+   * hear about the save from the server.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function announceSaved(data: any): void {
-    const craft = window.Craft;
-
     if (data?.message) {
-      craft?.cp?.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
 
-    if (data?.element?.id) {
-      craft?.broadcaster?.postMessage({
-        event: 'saveElement',
-        id: data.element.id,
-      });
-    }
-
-    craft?.Preview?.refresh?.();
+    refreshPreviews();
   }
 
   /** Throws away the provisional draft, reverting to the canonical element. */
@@ -1225,7 +1441,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     autosave.cancel();
 
     try {
-      await actionClient.post(props.discardDraftUrl, {
+      const {data} = await actionClient.post(props.discardDraftUrl, {
         ...contextParams(),
         elementType: props.elementType,
         elementId: draftableElementId(),
@@ -1233,6 +1449,11 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         draftId: autosave.draftId.value,
         provisional: 1,
       });
+
+      // The opener heard about each autosave, so it shows the draft's changes,
+      // such as an index row's “Edited” badge. It refreshes the same way to
+      // show the canonical element again.
+      slideout?.saved({draft: true, data: data as ScreenPageProps});
 
       // The draft is gone, so anything autosave stashed about it now describes
       // something that no longer exists — drop it before the reload rather than
@@ -1256,6 +1477,10 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         element: null,
         canonical: props.updatedTimestamps.canonical,
       });
+      // A provisional draft's preview token names the canonical element, so
+      // the token survives the discard and Live Preview has no other reason to
+      // reload the discarded changes away.
+      refreshPreviews();
 
       // Revert against the payload the page already holds, so the fields go
       // back the moment the draft is deleted rather than a round trip later —
@@ -1359,6 +1584,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     addToRelease,
     discardDraft,
     submitAction,
+    errorPaths,
     errors,
     form,
     uiPayload,
@@ -1368,6 +1594,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     renderer,
     nestedOwnerEditor,
     refreshUi,
+    saveForShortcut,
+    settleChanges,
+    savePending: readonly(savePending),
     refreshLayout,
     formValues,
     save,

@@ -28,7 +28,7 @@
     :is="isCollapsible ? 'craft-disclosure' : 'section'"
     class="workflow-review-stage"
     :appearance="isCollapsible ? 'plain' : undefined"
-    :opened.prop="isCollapsible ? stage.current : undefined"
+    :open.prop="isCollapsible ? stage.current : undefined"
   >
     <craft-button
       v-if="isCollapsible"
@@ -183,7 +183,7 @@
     }
   }
 
-  .workflow-review-stage[opened] .workflow-review-stage__chevron {
+  .workflow-review-stage[open] .workflow-review-stage__chevron {
     transform: none;
   }
 

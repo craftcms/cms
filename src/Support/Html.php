@@ -6,13 +6,11 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\PreventRequestForgery;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
-use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
@@ -95,6 +93,36 @@ class Html
      */
     private static array $_sortedDataAttributes;
 
+    /**
+     * Reduces HTML to its text: block ends become line breaks, and list items get bullets. Entities are decoded, so
+     * the text can still contain tags; check it with {@see isPlainText()} before showing it as text.
+     *
+     * @since 6.0.0
+     */
+    public static function toText(string $html): string
+    {
+        if (strip_tags($html) === $html) {
+            return html_entity_decode($html, ENT_QUOTES | ENT_HTML5);
+        }
+
+        $text = preg_replace('/<li\\b[^>]*>/i', '• ', $html) ?? $html;
+        $text = preg_replace('/<br\\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*>|<\\/(p|div|li|h[1-6]|blockquote|pre|tr|figure)>/i', "\n", $text) ?? $text;
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5);
+        $text = preg_replace("/[ \t]+\n/", "\n", $text) ?? $text;
+
+        return trim(preg_replace("/\n{3,}/", "\n\n", $text) ?? $text);
+    }
+
+    /**
+     * Returns whether a string is valid UTF-8 without HTML tags, so it’s safe to show as text, such as in a diff.
+     *
+     * @since 6.0.0
+     */
+    public static function isPlainText(string $value): bool
+    {
+        return mb_check_encoding($value, 'UTF-8') && strip_tags($value) === $value;
+    }
+
     public static function decode(string $content): string
     {
         return htmlspecialchars_decode($content, ENT_QUOTES | ENT_HTML5);
@@ -134,7 +162,7 @@ class Html
      */
     public static function disableInputs(callable|string|null $html): ?string
     {
-        if (is_callable($html)) {
+        if (! is_string($html) && is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
             HtmlStack::startJsBuffer();
             try {
@@ -177,28 +205,17 @@ class Html
     /**
      * Generates a hidden CSRF input tag.
      *
-     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                                         If a value is null, the corresponding attribute will not be rendered.
-     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
-     * @return string The generated hidden input tag
+     * Printing the token saves the visitor’s session and marks the response `no-cache`. Forms posted from
+     * the same origin don’t need one, as `PreventRequestForgery` accepts them by their `Sec-Fetch-Site` or `Origin` header.
+     * Nothing is printed when `PreventRequestForgery::useOriginOnly()` is enabled, as tokens are never checked then.
      */
-    public static function csrfInput(array $options = []): string
+    public static function csrfInput(): string
     {
-        $async = Arr::pull($options, 'async')
-            ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
-
-        if (! $async) {
-            ResponseHeaders::noCache();
-
-            return (string) csrf_field();
+        if (PreventRequestForgery::checksOriginOnly()) {
+            return '';
         }
 
-        HtmlStack::html(template('_special/async-csrf-input', [
-            'url' => Url::actionUrl('users/session-info'),
-        ], templateMode: TemplateMode::Cp));
-
-        return self::tag('craft-csrf-input');
+        return (string) csrf_field();
     }
 
     /**
@@ -843,7 +860,7 @@ class Html
         // convert any remaining consecutive non-alphanumeric characters to hyphens
         $id = trim((string) preg_replace('/[^A-Za-z0-9_.-]+/', '-', (string) $id), '-');
 
-        return $id ?: Str::random(10);
+        return $id ?: Str::random(10, extendedChars: false);
     }
 
     /**
@@ -1079,25 +1096,29 @@ class Html
             }, $html) ?? '';
         }
 
-        // CSS selectors
+        // CSS selectors. Only the text before each `{` is a selector (or an at-rule prelude), so declaration values,
+        // such as `light-dark(#000,#fff)` or a URL's host name, are left alone. `url(#id)` references were handled above.
         $html = preg_replace_callback(
             '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
-            function (array $match) use ($namespace, $withClasses, $ids) {
-                $html = preg_replace_callback(
-                    "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
-                    function (array $match) use ($namespace, $ids): string {
-                        if (isset($ids[$match[1]])) {
-                            return '#'.$namespace.'-'.$match[1];
-                        }
+            fn (array $match) => $match[1].preg_replace_callback(
+                '/[^{};]+(?:\{|$)/',
+                function (array $selector) use ($namespace, $withClasses, $ids): string {
+                    $selector = preg_replace_callback(
+                        "/(?<![\w'\"])#([^\s'\",{}.:\[\]>+~#();]+)(?=[\s,{.:\[>+~)])/",
+                        fn (array $match): string => isset($ids[$match[1]]) ? '#'.$namespace.'-'.$match[1] : $match[0],
+                        $selector[0],
+                    ) ?? $selector[0];
 
-                        return $match[0];
-                    }, $match[2]);
-                if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
-                }
+                    if ($withClasses) {
+                        $selector = preg_replace("/(?<!['\"])\\.((?:--|-?[a-zA-Z_])[\\w\\-]*)(?=[\\s,{.:\\[>+~)])/", ".$namespace-$1", $selector) ?? $selector;
+                    }
 
-                return $match[1].$html.$match[3];
-            }, $html) ?? '';
+                    return $selector;
+                },
+                $match[2],
+            ).$match[3],
+            $html,
+        ) ?? '';
     }
 
     /**
@@ -1352,7 +1373,8 @@ class Html
 
                 return '';
             }
-            if (! is_file($svg) || ! File::isSvg($svg)) {
+            // Only local file paths are allowed, not stream wrapper URLs (`ftp://`, `phar://`, etc.)
+            if (str_contains($svg, '://') || ! is_file($svg) || ! File::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }
@@ -1381,7 +1403,7 @@ class Html
 
         // Namespace class names and IDs
         if ($namespace) {
-            $ns = Str::random(10);
+            $ns = Str::random(10, extendedChars: false);
             $svg = self::namespaceAttributes($svg, $ns, true);
         }
 

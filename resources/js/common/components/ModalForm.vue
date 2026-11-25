@@ -1,10 +1,13 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import Modal, {type ModalProps} from '@/common/components/Modal.vue';
+  import Modal from '@/common/components/Modal.vue';
+  import type {ModalProps} from '@/common/components/modal';
 
   const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'submit'): void;
+    (e: 'opened', el: Element): void;
+    (e: 'closed'): void;
   }>();
   withDefaults(
     defineProps<
@@ -24,7 +27,10 @@
     {
       title: undefined,
       overlay: true,
+      holdHeight: true,
       dismissible: true,
+      restoreFocus: true,
+      instant: false,
       loading: false,
       resetLabel: t('Cancel'),
       submitLabel: t('Save'),
@@ -46,7 +52,13 @@
     :height="height"
     :max-height="maxHeight"
     :resizable="resizable"
+    :storage-key="storageKey"
+    :hold-height="holdHeight"
     :dismissible="dismissible"
+    :restore-focus="restoreFocus"
+    :instant="instant"
+    @opened="(el) => emit('opened', el)"
+    @closed="emit('closed')"
   >
     <form @submit.prevent="submitHandler">
       <!--

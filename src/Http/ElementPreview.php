@@ -130,9 +130,6 @@ class ElementPreview
             'paramValue' => Crypt::encrypt(Str::random(10)),
             'siteTokenParam' => $config->siteToken,
             'siteToken' => $this->siteToken(),
-            'iframeResizerOptions' => $config->useIframeResizer
-                ? (object) $config->previewIframeResizerOptions
-                : false,
         ];
     }
 
@@ -156,7 +153,7 @@ class ElementPreview
 
     private function token(): string
     {
-        return $this->token ??= Str::random(32, extendedChars: true);
+        return $this->token ??= Str::random(32);
     }
 
     /** @return array<string, mixed> */

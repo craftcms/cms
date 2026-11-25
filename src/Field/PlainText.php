@@ -8,7 +8,6 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -29,14 +28,13 @@ use Illuminate\Support\Facades\DB;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * PlainText represents a Plain Text field.
  *
  * @since 6.0.0
  */
-class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -140,7 +138,7 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         return Ui::make([
             UiField::make(t('UI Mode'))
                 ->instructions(t('How the field should be presented in the control panel.'))
-                ->control(Choice::make('uiMode')->value($this->uiMode)->options([
+                ->control(Choice::make('uiMode')->value($this->uiMode)->withoutPlaceholder()->options([
                     ['label' => t('Normal'), 'value' => 'normal'],
                     ['label' => t('Enlarged'), 'value' => 'enlarged'],
                 ])),
@@ -195,7 +193,8 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
             ->value($context->value)
             ->maxLength($this->charLimit)
             ->placeholder($this->placeholder === null ? null : t($this->placeholder, category: 'site'))
-            ->monospace($this->code);
+            ->monospace($this->code)
+            ->enlarged($this->uiMode === 'enlarged');
     }
 
     #[Override]
@@ -221,25 +220,6 @@ class PlainText extends Field implements CrossSiteCopyableFieldInterface, Inline
         }
 
         return $value !== '' ? $value : null;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->_inputHtml($value, $element, false);
-    }
-
-    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        return template('_components/fieldtypes/PlainText/input', [
-            'name' => $this->handle,
-            'value' => $value,
-            'field' => $this,
-            'placeholder' => $this->placeholder !== null ? t(Str::unescapeShortcodes($this->placeholder),
-                category: 'site') : null,
-            'orientation' => $this->getOrientation($element),
-            'disabled' => $static,
-        ]);
     }
 
     /** @return list<Closure|string> */

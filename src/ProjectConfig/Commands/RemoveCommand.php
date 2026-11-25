@@ -13,7 +13,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
  *
  * Example:
  * ```
- * php craft project-config:remove some.nested.key
+ * php artisan craft:project-config:remove some.nested.key
  * ```
  *
  * ::: danger

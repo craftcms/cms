@@ -52,7 +52,7 @@ readonly class Update implements Arrayable
     /** @param array<string, bool|float|string|array<array-key, array<string, bool|string|null>>|null> $data */
     public static function fromArray(array $data): self
     {
-        $data['status'] = UpdateStatus::tryFrom($data['status'] ?? '');
+        $data['status'] = UpdateStatus::tryFrom($data['status'] ?? '') ?? UpdateStatus::ELIGIBLE;
         $data['releases'] = array_map(
             UpdateRelease::fromArray(...),
             $data['releases'] ?? [],

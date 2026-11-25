@@ -1,3 +1,4 @@
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftField from './field.js';
 import './field.js';
@@ -158,6 +159,20 @@ describe('craft-field required indicator', () => {
     expect(
       labelNode(element)!.querySelector('craft-visually-hidden')
     ).toBeNull();
+  });
+
+  it('says required once, through the label, and leaves the control unmarked', async () => {
+    const element = await createField(
+      {label: 'My field', required: ''},
+      '<craft-input slot="input"></craft-input>'
+    );
+    const control = element.querySelector('craft-input')!;
+    await control.updateComplete;
+    const native = control.querySelector('input')!;
+
+    expect(computeAccessibleName(native)).toMatch(/^My field\s*Required$/);
+    expect(native.hasAttribute('aria-required')).toBe(false);
+    expect(native.hasAttribute('required')).toBe(false);
   });
 
   it('does not render an indicator without a label', async () => {
@@ -391,19 +406,34 @@ describe('craft-field label extras', () => {
 });
 
 describe('craft-field actions', () => {
-  it('renders a flex-grow spacer before slotted actions', async () => {
+  it('renders slotted actions right after a visible label, with no spacer', async () => {
     const element = await createField(
       {label: 'My field'},
       '<input slot="input" type="text"><button slot="actions">Hide</button>'
     );
 
     const heading = element.shadowRoot!.querySelector('.form-field__label')!;
-    const spacer = heading.querySelector('.flex-grow');
-    const slot = heading.querySelector('slot[name="actions"]');
-    expect(spacer).not.toBeNull();
-    expect(slot).not.toBeNull();
+    const label = heading.querySelector('slot[name="label"]')!;
+    const actions = heading.querySelector('slot[name="actions"]')!;
     expect(
-      spacer!.compareDocumentPosition(slot!) & Node.DOCUMENT_POSITION_FOLLOWING
+      label.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(heading.querySelector('.flex-grow')).toBeNull();
+  });
+
+  it('renders slotted actions at the end, after a spacer, when the label is visually hidden', async () => {
+    const element = await createField(
+      {label: 'My field', 'label-sr-only': ''},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    const spacer = heading.querySelector('.flex-grow');
+    const actions = heading.querySelector('slot[name="actions"]')!;
+    expect(spacer).not.toBeNull();
+    expect(
+      spacer!.compareDocumentPosition(actions) &
+        Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
   });
 
@@ -419,7 +449,7 @@ describe('craft-field actions', () => {
     expect(group.querySelector('slot[name="actions"]')).not.toBeNull();
   });
 
-  it('renders actions after label extras', async () => {
+  it('renders actions before label extras beside a visible label', async () => {
     const element = await createField(
       {label: 'My field'},
       '<input slot="input" type="text"><code slot="label-extra">handle</code><button slot="actions">Hide</button>'
@@ -430,7 +460,7 @@ describe('craft-field actions', () => {
     const actions = heading.querySelector('slot[name="actions"]')!;
     expect(
       labelExtra.compareDocumentPosition(actions) &
-        Node.DOCUMENT_POSITION_FOLLOWING
+        Node.DOCUMENT_POSITION_PRECEDING
     ).toBeTruthy();
   });
 
@@ -621,6 +651,18 @@ describe('craft-field label-sr-only', () => {
     ).not.toBeNull();
   });
 
+  it('hides the read-only badge along with the label', async () => {
+    const element = await createField({
+      label: 'My field',
+      'label-sr-only': '',
+      readonly: '',
+    });
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    expect(heading.classList.contains('cp-visually-hidden')).toBe(true);
+    expect(heading.querySelector('.read-only-badge')).not.toBeNull();
+  });
+
   it('shows the label again when label-sr-only is unset', async () => {
     const element = await createField({
       label: 'My field',
@@ -673,6 +715,20 @@ describe('craft-field control width mirroring', () => {
     );
 
     expect(element.getAttribute('width')).toBe('full');
+  });
+
+  it('mirrors a control width property set after the control is slotted', async () => {
+    const element = await createField(
+      {},
+      '<craft-input slot="input"><input slot="input"></craft-input>'
+    );
+    const control = element.querySelector('craft-input')!;
+
+    control.width = 'auto';
+    await control.updateComplete;
+    await element.updateComplete;
+
+    expect(element.getAttribute('width')).toBe('auto');
   });
 
   it('keeps an explicit host width over the control width', async () => {

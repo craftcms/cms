@@ -8,6 +8,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Elements as ElementService;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Structure\Enums\Mode;
@@ -131,7 +133,18 @@ class ApplyNewPropagationMethod extends BatchedJob
             /** @var ElementInterface $otherSiteElement */
             $otherSiteElement = array_pop($otherSiteElements);
 
-            $newElement = Elements::duplicateElement($otherSiteElement, [], false);
+            try {
+                $newElement = app(ElementService::class)->duplicateElement($otherSiteElement, [], false);
+            } catch (UnsupportedSiteException $e) {
+                // Rethrow failures from anything else, such as nested elements, so the original
+                // site's content isn't deleted below without a duplicate to replace it
+                if ($e->element !== $otherSiteElement || $e->siteId !== $otherSiteElement->siteId) {
+                    throw $e;
+                }
+
+                // The site was removed from the element's owner, so there's nothing to keep
+                continue;
+            }
 
             // Should we add the clone to the source element's structure?
             if (
@@ -153,8 +166,9 @@ class ApplyNewPropagationMethod extends BatchedJob
                         ->status(null)
                         ->drafts(null)
                         ->provisionalDrafts(null)
-                        ->select(['elements.id'])
-                        ->value('id');
+                        ->limit(1)
+                        ->pluck('elements.id')
+                        ->first();
 
                     if ($parentId !== null) {
                         // If we've cloned the parent, use the clone's ID instead

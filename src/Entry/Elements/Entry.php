@@ -37,7 +37,6 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
@@ -98,6 +97,7 @@ use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use DateTimeInterface;
+use Deprecated;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Date;
@@ -164,7 +164,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * @var DateTimeInterface|null Post date
      *                             ---
      *                             ```php
-     *                             echo Craft::$app->formatter->asDate($entry->postDate, 'short');
+     *                             echo \CraftCms\Cms\Support\Facades\I18N::getFormatter()->asDate($entry->postDate, 'short');
      *                             ```
      *                             ```twig
      *                             {{ entry.postDate|date('short') }}
@@ -179,7 +179,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      *                             ---
      *                             ```php
      *                             if ($entry->expiryDate) {
-     *                             echo Craft::$app->formatter->asDate($entry->expiryDate, 'short');
+     *                             echo \CraftCms\Cms\Support\Facades\I18N::getFormatter()->asDate($entry->expiryDate, 'short');
      *                             }
      *                             ```
      *                             ```twig
@@ -408,15 +408,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /** @return array<int, array<array-key, scalar|array<array-key, scalar|array<array-key, scalar|null>|null>|null>> */
     /**
      * `content/{page}/{handle}`, the shape {@see Section::getCpIndexUri()}
-     * produces and the rest of the CP links sections by. Singles share one
-     * source, and so one `singles` URL.
+     * produces and the rest of the CP links sections by.
      */
     #[Override]
     public static function sourceCpUri(array $source, ?string $page = null): ?string
     {
-        $handle = ($source['key'] ?? null) === 'singles'
-            ? 'singles'
-            : ($source['data']['handle'] ?? null);
+        $key = (string) ($source['key'] ?? '');
+
+        // A custom source limited to one section carries its handle too (see
+        // modifyCustomSource()), but the handle URL would select the section's
+        // own source, not the custom one.
+        $handle = str_starts_with($key, 'section:') ? ($source['data']['handle'] ?? null) : null;
 
         if (! is_string($handle) || $handle === '') {
             return null;
@@ -447,17 +449,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         $sectionIds = [];
-        $singleSectionIds = [];
         $sectionsByType = [];
 
         foreach ($sections as $section) {
             $sectionIds[] = $section->id;
-
-            if ($section->type === SectionType::Single) {
-                $singleSectionIds[] = $section->id;
-            } else {
-                $sectionsByType[$section->type->value][] = $section;
-            }
+            $sectionsByType[$section->type->value][] = $section;
         }
 
         $sources = [
@@ -472,19 +468,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
         ];
 
-        if (! empty($singleSectionIds)) {
-            $sources[] = [
-                'key' => 'singles',
-                'label' => t('Singles'),
-                'criteria' => [
-                    'sectionId' => $singleSectionIds,
-                    'editable' => $editable,
-                ],
-                'defaultSort' => ['title', 'asc'],
-            ];
-        }
-
         $sectionTypes = [
+            SectionType::Single->value => t('Singles'),
             SectionType::Channel->value => t('Channels'),
             SectionType::Structure->value => t('Structures'),
         ];
@@ -525,6 +510,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                         $source['structureId'] = $section->structureId;
                         // What StructurePolicy::edit() checks, without looking the structure and its section up again
                         $source['structureEditable'] = $user && $section->structureId && $user->can("saveEntries:$section->uid");
+                    } elseif ($type === SectionType::Single->value) {
+                        $source['defaultSort'] = ['title', 'asc'];
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -614,8 +601,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         if ($source === '*') {
             $sections = Sections::getAllSections()->all();
-        } elseif ($source === 'singles') {
-            $sections = Sections::getSectionsByType(SectionType::Single)->all();
         } elseif ($source !== null && preg_match('/^section:(.+)$/', $source, $matches)) {
             $sections = array_filter([
                 Sections::getSectionByUid($matches[1]),
@@ -642,8 +627,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $elementQuery = app(CurrentElementIndex::class)->isActive()
             ? app(CurrentElementIndex::class)->query()
             : null;
-        $site = $elementQuery && $elementQuery->siteId
-            ? Sites::getSiteById($elementQuery->siteId)
+        $site = $elementQuery && is_numeric($elementQuery->siteId)
+            ? Sites::getSiteById((int) $elementQuery->siteId)
             : Sites::getCurrentSite();
 
         // Get the section we need to check permissions on
@@ -895,7 +880,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $attributes[] = 'section';
         }
 
-        if ($source !== 'singles') {
+        // Singles have no meaningful post or expiry dates, or authors.
+        if (! self::isSingleSource($source)) {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
             $attributes[] = 'authors';
@@ -904,6 +890,15 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $attributes[] = 'link';
 
         return $attributes;
+    }
+
+    /**
+     * Whether a source is a single section's own.
+     */
+    private static function isSingleSource(string $source): bool
+    {
+        return preg_match('/^section:(.+)$/', $source, $matches) === 1
+            && Sections::getSectionByUid($matches[1])?->type === SectionType::Single;
     }
 
     /** @return array<string, array<string, string|callable>> */
@@ -1339,9 +1334,24 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ->href(Url::cpUrl(sprintf('content/%s', $page ? ElementSourcesService::pageSlug($page) : 'entries'))),
         ];
 
-        // Is the section’s source enabled?
-        $sourceKey = $section->type === SectionType::Single ? 'singles' : "section:$section->uid";
-        if (ElementSources::sourceExists(Entry::class, $sourceKey)) {
+        $sourceKey = "section:$section->uid";
+        $sourceExists = ElementSources::sourceExists(Entry::class, $sourceKey);
+        // A page with one source has nothing to choose between, and the page
+        // and the source are the same place, so a crumb for each would repeat.
+        $onlySource = $sourceExists && ElementSources::getSources(Entry::class, page: $page, siteId: $this->siteId)
+            ->reject(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_HEADING)
+            ->count() === 1;
+
+        // A single with a source of its own is named by the entry chip that
+        // follows, so it only needs its page, and not even that when it's the
+        // page's only source: the page and the single are the same place.
+        if ($section->type === SectionType::Single && $sourceExists) {
+            return $onlySource ? [] : $crumbs;
+        }
+
+        // Is the section’s source enabled? If it's the page's only source, the
+        // page crumb already names it.
+        if ($sourceExists && ! $onlySource) {
             $sections = Sections::getEditableSections();
 
             // Filter out any sections that aren’t enabled for this site
@@ -1353,14 +1363,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             // Filter out any sections that don’t have an enabled source / don’t belong in this page
             $sources = ElementSources::getSources(Entry::class, page: $page)->all();
             $sourceKeys = array_flip(array_filter(array_map(fn (array $source) => $source['key'] ?? null, $sources)));
-            $sections = $sections->filter(function (Section $s) use ($sourceKeys) {
-                $key = $s->type === SectionType::Single ? 'singles' : "section:$s->uid";
-
-                return isset($sourceKeys[$key]);
-            });
-
             $sectionOptions = $sections
-                ->filter(fn (Section $s) => $s->type !== SectionType::Single)
+                ->filter(fn (Section $s) => isset($sourceKeys["section:$s->uid"]))
                 ->map(fn (Section $s) => [
                     'type' => 'link',
                     'label' => $s->getUiLabel(),
@@ -1368,19 +1372,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     'selected' => $s->id === $section->id,
                 ]);
 
-            /** @var Section|null $firstSingle */
-            $firstSingle = $sections->first(fn (Section $s) => $s->type === SectionType::Single);
-            if ($firstSingle) {
-                $sectionOptions->prepend([
-                    'type' => 'link',
-                    'label' => t('Singles'),
-                    'href' => Url::cpUrl($firstSingle->getCpIndexUri()),
-                    'selected' => $section->type === SectionType::Single,
-                ]);
-            }
-
-            // The crumb names whichever option is current — for a Single that's
-            // the “Singles” pseudo-option, not the single's own name.
             $current = $sectionOptions->first(fn (array $o) => $o['selected'])
                 ?? $sectionOptions->first();
 
@@ -1391,7 +1382,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ->label($current['label'])
                 ->href($current['href'])
                 ->items($sectionOptions->count() > 1 ? $sectionOptions->all() : []);
-        } elseif ($section->type !== SectionType::Single) {
+        } elseif (! $sourceExists && $section->type !== SectionType::Single) {
             // Just show its name w/o a link
             $crumbs[] = new ActionItem()->label($section->getUiLabel());
         }
@@ -1439,7 +1430,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $entryType = $this->getType();
 
         if ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}') {
-            $uiLabel = renderObjectTemplate($entryType->uiLabelFormat, $this);
+            $uiLabel = renderObjectTemplate(
+                $entryType->uiLabelFormat,
+                $this,
+                ElementHelper::objectTemplateDateVariables($this, $entryType->uiLabelFormat),
+            );
 
             if ($uiLabel !== '') {
                 return $uiLabel;
@@ -1855,7 +1850,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             // eager-load authors for all queried entries
             Elements::eagerLoadElements(self::class, $this->elementQueryResult, ['authors']);
 
-            return $this->_authors ?? [];
+            // a clone isn't among the queried entries, so the eager-load won't have set its authors
+            if (isset($this->_authors)) {
+                return $this->_authors;
+            }
         }
 
         $this->setAuthors(User::find()
@@ -1960,6 +1958,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    protected function initialRevisionCreatorId(): ?int
+    {
+        return $this->getAuthorId();
+    }
+
+    #[Override]
     public function hasRevisions(): bool
     {
         if ($section = $this->getSection()) {
@@ -2036,6 +2040,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'behavior' => [
                     'type' => 'slideout',
                     'url' => Url::cpUrl("settings/sections/$this->sectionId"),
+                ],
+            ];
+        }
+
+        if (! empty($this->fieldId)) {
+            $items[] = [
+                'label' => t('Field settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/fields/edit/$this->fieldId"),
                 ],
             ];
         }
@@ -2138,6 +2153,14 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 } catch (RuntimeException) {
                     return t('Unknown');
                 }
+            case 'link':
+                // Only live entries get routed
+                $entry = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($entry->getStatus() !== self::STATUS_LIVE) {
+                    return '';
+                }
+
+                return parent::attributeHtml($attribute);
             default:
                 return parent::attributeHtml($attribute);
         }
@@ -2207,16 +2230,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * The Ui-system counterpart to {@see metaFieldsHtml()}. Mirrors the same
-     * visibility rules so the Inertia editor shows exactly the fields the
-     * legacy editor does.
+     * The entry's editor sidebar fields, for both the Inertia editor and the
+     * HTML editor. Dispatches {@see EntryMetaFieldsResolving} so listeners can
+     * change them.
      *
      * @return list<Node>
      */
     #[Override]
     protected function metaFieldsNodes(bool $static): array
     {
-        $nodes = [];
+        $fields = [];
         $section = $this->getSection();
         $user = currentUserElement();
 
@@ -2226,7 +2249,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
 
         if (count($entryTypes) > 1 || ! $this->isEntryTypeAllowed($entryTypes)) {
-            $nodes[] = Field::make(t('Entry Type'))
+            $fields['type'] = Field::make(t('Entry Type'))
                 ->control(
                     Choice::make('typeId')
                         ->options(array_map(fn (EntryType $entryType) => [
@@ -2253,13 +2276,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     );
             }
 
-            $nodes[] = Field::make(t('Slug'))
+            $fields['slug'] = Field::make(t('Slug'))
                 ->icon('link')
                 ->control($slug);
         }
 
         if ($section?->type === SectionType::Structure && $section->maxLevels !== 1) {
-            $nodes[] = Field::make(t('Parent'))
+            $fields['parent'] = Field::make(t('Parent'))
                 ->icon('sitemap')
                 ->control(
                     ElementSelect::make('parentId')
@@ -2276,7 +2299,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if ($section && $section->type !== SectionType::Single) {
             if ($section->maxAuthors !== 0 && Edition::get() !== Edition::Solo) {
-                $nodes[] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
+                $fields['authors'] = Field::make(t('{max, plural, =1{Author} other {Authors}}', [
                     'max' => $section->maxAuthors ?? PHP_INT_MAX,
                 ]))
                     ->icon('user')
@@ -2292,43 +2315,49 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                                 : ControlMode::Editable),
                     );
             }
-
-            if ($this->getType()->showPostDateField) {
-                $nodes[] = Field::make(t('Post Date'))
-                    ->icon('calendar')
-                    ->control(
-                        DateTime::make('postDate')
-                            ->showTime()
-                            ->fullWidth()
-                            // Stored times aren't constrained to a picker step, and
-                            // the screen submits natively — a coarser increment
-                            // would make any off-step value fail validation and
-                            // silently block saving.
-                            ->minuteIncrement(1)
-                            ->value(self::dateTimeControlValue($this->postDate))
-                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                    );
-            }
-
-            if ($this->getType()->showExpiryDateField) {
-                $nodes[] = Field::make(t('Expiry Date'))
-                    ->icon('calendar-xmark')
-                    ->control(
-                        DateTime::make('expiryDate')
-                            ->showTime()
-                            ->fullWidth()
-                            // Stored times aren't constrained to a picker step, and
-                            // the screen submits natively — a coarser increment
-                            // would make any off-step value fail validation and
-                            // silently block saving.
-                            ->minuteIncrement(1)
-                            ->value(self::dateTimeControlValue($this->expiryDate))
-                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                    );
-            }
         }
 
-        return $nodes;
+        // Only registered while delta tracking is active, which getSidebarHtml() turns on for the HTML editor.
+        DeltaRegistry::registerName('postDate');
+        DeltaRegistry::registerName('expiryDate');
+
+        if ($this->getType()->showPostDateField) {
+            $fields['postDate'] = Field::make(t('Post Date'))
+                ->icon('calendar')
+                ->control(
+                    DateTime::make('postDate')
+                        ->showTime()
+                        ->fullWidth()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->postDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        if ($this->getType()->showExpiryDateField) {
+            $fields['expiryDate'] = Field::make(t('Expiry Date'))
+                ->icon('calendar-xmark')
+                ->control(
+                    DateTime::make('expiryDate')
+                        ->showTime()
+                        ->fullWidth()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->expiryDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
+
+        event($event = new EntryMetaFieldsResolving($this, $static, $fields));
+
+        return array_values(array_filter($event->fields, fn (mixed $field) => $field instanceof Node));
     }
 
     /**
@@ -2371,7 +2400,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $parent?->id;
     }
 
+    /**
+     * @deprecated in 6.0.0. The editor sidebar is built from {@see metaFieldsNodes()}, including the HTML editor's.
+     */
     #[Override]
+    #[Deprecated(message: 'in 6.0.0. [[metaFieldsNodes()]] should be used instead.')]
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
@@ -2484,39 +2517,39 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     ]);
                 })();
             }
+        }
 
-            DeltaRegistry::withActive(true, function () {
-                DeltaRegistry::registerName('postDate');
-                DeltaRegistry::registerName('expiryDate');
-            });
+        DeltaRegistry::withActive(true, function () {
+            DeltaRegistry::registerName('postDate');
+            DeltaRegistry::registerName('expiryDate');
+        });
 
-            // Post Date
-            if ($this->getType()->showPostDateField) {
-                $fields['postDate'] = FormFields::dateTimeFieldHtml([
-                    'status' => $this->getAttributeStatus('postDate'),
-                    'label' => t('Post Date'),
-                    'id' => 'postDate',
-                    'name' => 'postDate',
-                    'value' => $this->postDate,
-                    'width' => 'full',
-                    'errors' => $this->errors()->get('postDate'),
-                    'disabled' => $static,
-                ]);
-            }
+        // Post Date
+        if ($this->getType()->showPostDateField) {
+            $fields['postDate'] = FormFields::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('postDate'),
+                'label' => t('Post Date'),
+                'id' => 'postDate',
+                'name' => 'postDate',
+                'value' => $this->postDate,
+                'width' => 'full',
+                'errors' => $this->errors()->get('postDate'),
+                'disabled' => $static,
+            ]);
+        }
 
-            // Expiry Date
-            if ($this->getType()->showExpiryDateField) {
-                $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
-                    'status' => $this->getAttributeStatus('expiryDate'),
-                    'label' => t('Expiry Date'),
-                    'id' => 'expiryDate',
-                    'name' => 'expiryDate',
-                    'value' => $this->expiryDate,
-                    'width' => 'full',
-                    'errors' => $this->errors()->get('expiryDate'),
-                    'disabled' => $static,
-                ]);
-            }
+        // Expiry Date
+        if ($this->getType()->showExpiryDateField) {
+            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('expiryDate'),
+                'label' => t('Expiry Date'),
+                'id' => 'expiryDate',
+                'name' => 'expiryDate',
+                'value' => $this->expiryDate,
+                'width' => 'full',
+                'errors' => $this->errors()->get('expiryDate'),
+                'disabled' => $static,
+            ]);
         }
 
         $fields[] = parent::metaFieldsHtml($static);
@@ -2537,23 +2570,23 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (! $this->isEntryTypeCompatible()) {
             $js = <<<JS
-let applyDraftBtn = $('#action-buttons .tooltip-draft-btn')
-if (applyDraftBtn.length > 0) {
-  applyDraftBtn.addClass('disabled');
-  let tooltipBtn = `<craft-tooltip aria-label="$draftMessage">` +
-    applyDraftBtn.get(0).outerHTML +
-    `</craft-tooltip>`;
-  applyDraftBtn.replaceWith(tooltipBtn);
-}
+(() => {
+  const applyDraftBtn = document.querySelector('#action-buttons .tooltip-draft-btn');
+  if (applyDraftBtn) {
+    applyDraftBtn.classList.add('disabled');
+    applyDraftBtn.outerHTML = `<craft-tooltip aria-label="$draftMessage">` +
+      applyDraftBtn.outerHTML +
+      `</craft-tooltip>`;
+  }
 
-let revertRevisionBtn = $('#action-buttons .revision-draft-btn');
-if (revertRevisionBtn.length > 0) {
-  revertRevisionBtn.addClass('disabled');
-  let tooltipBtn = `<craft-tooltip aria-label="$revisionMessage">` +
-    revertRevisionBtn.get(0).outerHTML +
-    `</craft-tooltip>`;
-  revertRevisionBtn.replaceWith(tooltipBtn);
-}
+  const revertRevisionBtn = document.querySelector('#action-buttons .revision-draft-btn');
+  if (revertRevisionBtn) {
+    revertRevisionBtn.classList.add('disabled');
+    revertRevisionBtn.outerHTML = `<craft-tooltip aria-label="$revisionMessage">` +
+      revertRevisionBtn.outerHTML +
+      `</craft-tooltip>`;
+  }
+})();
 JS;
             HtmlStack::js($js);
         }
@@ -2609,11 +2642,12 @@ JS;
             if ($this->id) {
                 // Figure out how deep the ancestors go
                 $maxDepth = self::find()
-                    ->select('level')
                     ->descendantOf($this)
                     ->status(null)
                     ->leaves()
-                    ->value('level');
+                    ->limit(1)
+                    ->pluck('level')
+                    ->first();
                 $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
             } else {
                 $depth = 1;
@@ -2651,7 +2685,11 @@ JS;
         $title = I18N::withLocale(
             $site->getLanguage(),
             $site->getLanguage(),
-            fn () => renderObjectTemplate($entryType->titleFormat, $this),
+            fn () => renderObjectTemplate(
+                $entryType->titleFormat,
+                $this,
+                ElementHelper::objectTemplateDateVariables($this, $entryType->titleFormat),
+            ),
         );
         if ($title !== '') {
             $this->title = $title;
@@ -2664,33 +2702,6 @@ JS;
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
-        if ($this->_shouldSaveRevision()) {
-            // Make sure the entry has at least one revision
-            $hasRevisions = self::find()
-                ->revisionOf($this)
-                ->site('*')
-                ->status(null)
-                ->exists();
-
-            if (! $hasRevisions) {
-                /** @var self|null $current */
-                $current = self::find()
-                    ->id($this->id)
-                    ->site('*')
-                    ->status(null)
-                    ->one();
-
-                // May be null if the entry is currently stored as an unpublished draft
-                if ($current) {
-                    app(Revisions::class)->createRevision(
-                        $current,
-                        $current->getAuthorId(),
-                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
-                    );
-                }
-            }
-        }
-
         if ($section = $this->getSection()) {
             // Set the structure ID for Element::attributes() and afterSave()
             if ($section->type === SectionType::Structure) {
@@ -2719,7 +2730,6 @@ JS;
             // Section type-specific stuff
             if ($section->type === SectionType::Single) {
                 $this->setAuthorId(null);
-                $this->expiryDate = null;
             }
         }
 
@@ -2882,13 +2892,14 @@ JS;
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
             $canonicalParentId = self::find()
-                ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
                 ->site('*')
                 ->unique()
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
 
             if ($parentId === $canonicalParentId) {
                 Structures::remove($this->structureId, $this);
@@ -2911,17 +2922,6 @@ JS;
     }
 
     #[Override]
-    public function afterPropagate(bool $isNew): void
-    {
-        parent::afterPropagate($isNew);
-
-        // Save a new revision?
-        if ($this->_shouldSaveRevision()) {
-            app(Revisions::class)->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
-        }
-    }
-
-    #[Override]
     public function beforeDelete(): bool
     {
         if (! parent::beforeDelete()) {
@@ -2939,8 +2939,9 @@ JS;
             $parentId = $this->ancestors()
                 ->ancestorDist(1)
                 ->status(null)
-                ->select(['elements.id'])
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
             if ($parentId) {
                 $data['parentId'] = $parentId;
             }
@@ -3019,22 +3020,6 @@ JS;
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    /**
-     * Returns whether the entry should be saving revisions on save.
-     */
-    private function _shouldSaveRevision(): bool
-    {
-        return
-            $this->id &&
-            ! $this->propagating &&
-            ! $this->resaving &&
-            $this->getIsCanonical() &&
-            $this->hasRevisions() &&
-            // Nested entries owned by a draft or revision shouldn't get their own revisions
-            // (see https://github.com/craftcms/cms/issues/20151)
-            ! ElementHelper::isDraftOrRevision($this);
     }
 
     /**

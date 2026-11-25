@@ -8,6 +8,7 @@ import {LightDomController} from '@src/controllers/LightDomController';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {linkTarget, newTabCue} from '@src/utilities/external-links';
+import {cancelIdle, whenIdle} from '@src/utilities/idle';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
@@ -37,6 +38,46 @@ const INTERACTIVE = [
   'craft-checkbox',
   'craft-switch',
 ].join(', ');
+
+/** Items in closed menus waiting to render, in the order they arrived. */
+const waitingItems = new Set<CraftActionItem>();
+
+/** The idle callback that renders {@link waitingItems}. */
+let renderWaitingHandle: number | undefined;
+
+function queueFirstRender(item: CraftActionItem): void {
+  waitingItems.add(item);
+  renderWaitingHandle ??= whenIdle(renderWaitingItems);
+}
+
+/** Leaves an item out of idle rendering, as when it's rendered or removed. */
+function unqueueFirstRender(item: CraftActionItem): void {
+  waitingItems.delete(item);
+  if (!waitingItems.size && renderWaitingHandle !== undefined) {
+    cancelIdle(renderWaitingHandle);
+    renderWaitingHandle = undefined;
+  }
+}
+
+/**
+ * Renders waiting items until the idle period runs out, then waits for the
+ * next one. Rendering them together, rather than one per idle callback, lets
+ * other idle work that reads styles find them settled.
+ */
+function renderWaitingItems(deadline?: IdleDeadline): void {
+  renderWaitingHandle = undefined;
+
+  for (const item of waitingItems) {
+    item.renderNow();
+    if (deadline && deadline.timeRemaining() <= 0) {
+      break;
+    }
+  }
+
+  if (waitingItems.size) {
+    renderWaitingHandle = whenIdle(renderWaitingItems);
+  }
+}
 
 /**
  * @summary A single entry in a menu, rendered as a button or — when `href` is
@@ -89,7 +130,8 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   /**
    * Optional Craft color name used to tint the item's icon, in the color's
    * loud tone. Black and white icons take the default text color, so they
-   * stay visible in both themes.
+   * stay visible in both themes. A custom property name (`--…`) uses the
+   * color it holds instead, such as one that means something on its own.
    */
   @property({attribute: 'icon-color'}) iconColor: string | null = null;
 
@@ -99,6 +141,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
    * vanish against the surface; they take the default text color instead.
    */
   #iconColorValue(color: string): string {
+    if (color.startsWith('--')) {
+      return `var(${color}, currentColor)`;
+    }
+
     return color === 'black' || color === 'white'
       ? 'var(--c-text-default)'
       : `var(--c-color-${color}-fill-loud, currentColor)`;
@@ -116,7 +162,10 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   /** Anchor `rel`. Defaults to `noopener` when targeting a new context. */
   @property() rel: string | null = null;
 
-  /** Prevents the item from being activated, and dims it. */
+  /**
+   * Prevents the item from being activated, and dims it. A disabled item stays
+   * focusable, and is announced as unavailable.
+   */
   @property({type: Boolean}) disabled: boolean = false;
 
   /**
@@ -169,14 +218,110 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
 
   override connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('click', this._blockDisabledClick, {capture: true});
     this.addEventListener('click', this);
+    // Picks up the first render it was waiting for when it was removed: at
+    // idle if it's back in a closed menu, or now if it shows.
+    if (this.#releaseFirstRender) {
+      if (this.#inClosedMenu()) {
+        queueFirstRender(this);
+      } else {
+        this.renderNow();
+      }
+    }
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener('click', this._blockDisabledClick, {
+      capture: true,
+    });
     this.removeEventListener('click', this);
     this._clearResetStateTimeout();
+    // Its first render still waits, but not on idle time while it's out of the page.
+    unqueueFirstRender(this);
   }
+
+  /**
+   * Focuses the item's own button or link. `delegatesFocus` alone does this in
+   * Chromium, but Firefox won't focus a host that has no box, and this one is
+   * `display: contents`.
+   */
+  override focus(options?: FocusOptions) {
+    const control =
+      this.shadowRoot?.querySelector<HTMLElement>('[part="control"]');
+
+    if (control) {
+      control.focus(options);
+    } else {
+      super.focus(options);
+    }
+  }
+
+  /** Whether it's in a closed menu's pane, rather than showing. */
+  #inClosedMenu(): boolean {
+    const menu = this.closest<HTMLElement & {open?: boolean}>(
+      'craft-action-menu'
+    );
+    if (!menu || menu.open) {
+      return false;
+    }
+
+    // The invoker shows while the menu is closed.
+    let menuChild: Element = this;
+    while (menuChild.parentElement !== menu) {
+      menuChild = menuChild.parentElement!;
+    }
+
+    return menuChild.slot !== 'invoker';
+  }
+
+  /** Lets a first render that's waiting for its closed menu go ahead. */
+  #releaseFirstRender: (() => void) | null = null;
+
+  /**
+   * Holds the first render of an item in a closed menu until the browser is
+   * idle. A page can carry hundreds of these, and none of them shows until
+   * its menu opens, which renders them at once with {@link renderNow}.
+   */
+  protected override scheduleUpdate(): void | Promise<unknown> {
+    if (this.hasUpdated || !this.#inClosedMenu()) {
+      return super.scheduleUpdate();
+    }
+
+    return new Promise<void>((resolve) => {
+      this.#releaseFirstRender = () => {
+        this.#releaseFirstRender = null;
+        unqueueFirstRender(this);
+        resolve();
+      };
+      queueFirstRender(this);
+    }).then(() => super.scheduleUpdate());
+  }
+
+  /**
+   * Renders an item whose first render is waiting for its closed menu, so it
+   * has its size and button by the time the menu shows.
+   *
+   * @internal
+   */
+  renderNow(): void {
+    if (this.#releaseFirstRender) {
+      this.#releaseFirstRender();
+      this.performUpdate();
+    }
+  }
+
+  /**
+   * Stops a disabled item's clicks before anything listening to it hears them.
+   * Its button or link is only `aria-disabled`, which doesn't stop them.
+   */
+  private _blockDisabledClick = (event: Event) => {
+    if (this.disabled) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
 
   private _clearResetStateTimeout() {
     if (this._resetStateTimeout !== null) {
@@ -366,6 +511,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             href="${this.href}"
             aria-current="${this.current ? 'true' : nothing}"
+            aria-disabled="${this.disabled ? 'true' : nothing}"
             aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
             target="${ifDefined(target ?? undefined)}"
             rel="${ifDefined(
@@ -387,7 +533,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
             })}"
             aria-current="${this.current ? 'true' : nothing}"
             aria-keyshortcuts="${this.shortcutAriaKeys ?? nothing}"
-            ?disabled="${this.disabled}"
+            aria-disabled="${this.disabled ? 'true' : nothing}"
           >
             ${this.renderBody()}
           </button>

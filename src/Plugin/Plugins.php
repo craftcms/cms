@@ -28,6 +28,7 @@ use CraftCms\Cms\Plugin\Events\PluginUninstalling;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\ProjectConfig\ConfigStorage;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -185,23 +186,7 @@ class Plugins
             ->orderBy('handle')
             ->get()
             ->keyBy('handle')
-            ->map(function (object $row) {
-                try {
-                    $configData = $this->getPluginConfigData($row->handle);
-                } catch (InvalidPluginException) {
-                    return false;
-                }
-
-                // Clean up the row data
-                $row = (array) $row;
-                $row['edition'] = $configData['edition'] ?? null;
-                $row['settings'] = $configData['settings'] ?? [];
-                $row['licenseKey'] = $configData['licenseKey'] ?? null;
-                $row['enabled'] = ! empty($configData['enabled']);
-                $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
-
-                return $row;
-            })
+            ->map(fn (object $row) => $this->storedInfoFromRow($row))
             ->filter()
             ->all();
 
@@ -374,13 +359,52 @@ class Plugins
 
     /**
      * Republishes all enabled plugins' public assets.
+     *
+     * Without an installed Craft database, such as while a Docker image is built, the enabled plugins come from the
+     * project config YAML files instead.
      */
     public function publishPluginAssets(): void
     {
-        foreach ($this->getAllPlugins() as $plugin) {
+        $plugins = Cms::isInstalled() ? $this->getAllPlugins() : $this->pluginsEnabledInProjectConfigFiles();
+
+        foreach ($plugins as $plugin) {
             $plugin->removeAssets();
             $plugin->publishAssets();
         }
+    }
+
+    /**
+     * Registers the publishable files of the plugins that the project config YAML files enable, so `vendor:publish`
+     * can publish them without a database.
+     */
+    public function registerPublishablesFromProjectConfigFiles(): void
+    {
+        foreach ($this->pluginsEnabledInProjectConfigFiles() as $plugin) {
+            $plugin->registerPublishables();
+        }
+    }
+
+    /**
+     * Creates the Composer-installed plugins that the project config YAML files enable, without reading the database.
+     *
+     * @return PluginInterface[]
+     */
+    private function pluginsEnabledInProjectConfigFiles(): array
+    {
+        $yaml = new ConfigStorage()->readYaml(app(ProjectConfig::class)->folderName);
+        $configs = $yaml[ProjectConfig::PATH_PLUGINS] ?? null;
+
+        if (! is_array($configs)) {
+            return [];
+        }
+
+        return Collection::make($configs)
+            ->filter(fn (mixed $config, string $handle) => ! empty($config['enabled'])
+                && is_subclass_of($this->composerPluginInfo[$handle]['class'] ?? '', Plugin::class)
+                && ! $this->isPluginForceDisabled($handle))
+            ->map(fn (mixed $config, string $handle) => $this->createPlugin($handle))
+            ->filter()
+            ->all();
     }
 
     /**
@@ -440,7 +464,7 @@ class Plugins
             return true;
         }
 
-        if (($plugin = $this->getPlugin($handle)) === null) {
+        if (($plugin = $this->enabledPlugin($handle)) === null) {
             throw new InvalidPluginException($handle);
         }
 
@@ -516,7 +540,7 @@ class Plugins
                     ->where('track', "plugin:$handle")
                     ->delete();
 
-                $info['id'] = DB::table(Table::PLUGINS)->insertGetId([
+                $pluginId = DB::table(Table::PLUGINS)->insertGetId([
                     'handle' => $handle,
                     'version' => $plugin->version,
                     'schemaVersion' => $plugin->schemaVersion,
@@ -526,18 +550,9 @@ class Plugins
                     'uid' => Str::uuid(),
                 ]);
 
-                $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
-
                 $plugin->install();
 
-                try {
-                    DB::commit();
-                } catch (PDOException $e) {
-                    // The transaction could be implicitly committed by Mysql
-                    if ($e->getMessage() !== 'There is no active transaction') {
-                        throw $e;
-                    }
-                }
+                DB::commitSchemaChanges();
             } catch (Throwable $e) {
                 try {
                     DB::rollBack();
@@ -564,7 +579,9 @@ class Plugins
                 message: "Install plugin “{$handle}”",
             );
 
-            $this->storedPluginInfo[$handle] = $info;
+            $this->storedPluginInfo[$handle] = $this->storedInfoFromRow(
+                DB::table(Table::PLUGINS)->where('id', $pluginId)->first(),
+            );
             $plugin->publishAssets();
 
             event(new PluginInstalled($plugin));
@@ -609,11 +626,13 @@ class Plugins
         $projectConfig->readOnly = false;
 
         try {
-            if (($plugin = $this->getPlugin($handle)) === null && ! $force) {
+            if (($plugin = $enabled ? $this->enabledPlugin($handle) : null) === null && ! $force) {
                 throw new InvalidPluginException($handle);
             }
 
-            event(new PluginUninstalling($plugin));
+            if ($plugin) {
+                event(new PluginUninstalling($plugin));
+            }
 
             DB::beginTransaction();
             try {
@@ -638,14 +657,7 @@ class Plugins
                     ->where('track', "plugin:$handle")
                     ->delete();
 
-                try {
-                    DB::commit();
-                } catch (PDOException $e) {
-                    // The transaction could be implicitly committed by Mysql
-                    if ($e->getMessage() !== 'There is no active transaction') {
-                        throw $e;
-                    }
-                }
+                DB::commitSchemaChanges();
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;
@@ -660,9 +672,8 @@ class Plugins
 
             if ($plugin) {
                 $plugin->removeAssets();
+                event(new PluginUninstalled($plugin));
             }
-
-            event(new PluginUninstalled($plugin));
 
             return true;
         } finally {
@@ -742,11 +753,18 @@ class Plugins
             return false;
         }
 
-        // Update the plugin’s settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData());
-        app(ProjectConfig::class)->set(
-            path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
-            value: $pluginSettings,
+        // Update the plugin’s settings in the project config, keeping the stored values of
+        // settings that are overridden by config/craft/<handle>.php
+        $projectConfig = app(ProjectConfig::class);
+        $path = ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings';
+        $overrides = Config::get("craft.$plugin->handle", []);
+
+        $projectConfig->set(
+            path: $path,
+            value: [
+                ...array_diff_key(ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData()), $overrides),
+                ...array_intersect_key($projectConfig->get($path) ?? [], $overrides),
+            ],
             message: "Change settings for plugin “{$plugin->handle}”",
         );
 
@@ -983,7 +1001,7 @@ class Plugins
         $pluginInfo = $this->getStoredPluginInfo($handle);
 
         // Get the plugin if it's enabled
-        $plugin = $this->getPlugin($handle);
+        $plugin = $this->enabledPlugin($handle);
 
         $info = array_merge([
             'developer' => null,
@@ -1003,7 +1021,7 @@ class Plugins
         }
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
-        $info['isEnabled'] = $plugin !== null;
+        $info['isEnabled'] = $this->isPluginEnabled($handle);
         $info['isForceDisabled'] = $this->isPluginForceDisabled($handle);
         $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;
@@ -1326,10 +1344,8 @@ class Plugins
     {
         $html = '';
 
-        foreach ($this->viteConfigs as $vite) {
-            $html .= Cp::viteTags(array_values($vite['input']), (clone app(Vite::class))
-                ->useHotFile($vite['hotFile'])
-                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/')));
+        foreach ($this->viteConfigs as $config) {
+            $html .= Cp::viteTags(array_values($config['input']), $this->vite($config));
         }
 
         foreach ($this->styles as $styles) {
@@ -1345,6 +1361,28 @@ class Plugins
         }
 
         return $html;
+    }
+
+    /**
+     * Returns a hash of the Vite manifests of the builds {@see getAssetsHtml()} loads, which changes whenever one is
+     * republished.
+     *
+     * Like {@see Vite::manifestHash()}, it leaves out builds served by a running dev server and ones that aren't
+     * published, and returns `null` when that leaves none.
+     */
+    public function getViteManifestHash(): ?string
+    {
+        $hashes = array_filter(array_map(fn (array $config) => $this->vite($config)->manifestHash(), $this->viteConfigs));
+
+        return $hashes === [] ? null : md5(implode(',', $hashes));
+    }
+
+    /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */
+    private function vite(array $config): Vite
+    {
+        return (clone app(Vite::class))
+            ->useHotFile($config['hotFile'])
+            ->useBuildDirectory(Str::chopEnd($config['buildDirectory'], '/'));
     }
 
     /**
@@ -1378,6 +1416,54 @@ class Plugins
                 $handle,
                 "Plugin class [$class] from package [{$plugin['packageName']}] must not be declared as a Laravel service provider.",
             );
+        }
+    }
+
+    /**
+     * Builds a plugin’s stored info from its `plugins` row and project config.
+     *
+     * @return array<string, mixed>|null null if the plugin has no project config
+     */
+    private function storedInfoFromRow(object $row): ?array
+    {
+        try {
+            $configData = $this->getPluginConfigData($row->handle);
+        } catch (InvalidPluginException) {
+            return null;
+        }
+
+        $info = (array) $row;
+        $info['edition'] = $configData['edition'] ?? null;
+        $info['settings'] = $configData['settings'] ?? [];
+        $info['licenseKey'] = $configData['licenseKey'] ?? null;
+        $info['enabled'] = ! empty($configData['enabled']);
+        $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
+
+        return $info;
+    }
+
+    /**
+     * Returns an enabled plugin, including one enabled or installed during this request.
+     *
+     * Plugins load once per request, so {@see getPlugin()} doesn’t return a plugin enabled or installed since then.
+     */
+    private function enabledPlugin(string $handle): ?PluginInterface
+    {
+        if (($plugin = $this->getPlugin($handle)) !== null) {
+            return $plugin;
+        }
+
+        $info = $this->getStoredPluginInfo($handle);
+
+        if ($info === null || ! $info['enabled']) {
+            return null;
+        }
+
+        try {
+            return $this->createPlugin($handle, $info);
+        } catch (InvalidPluginException) {
+            // The plugin’s package is gone, like loadPlugins() skips it
+            return null;
         }
     }
 

@@ -41,11 +41,7 @@ beforeEach(() => {
     this.hide = vi.fn();
   });
   vi.stubGlobal('Craft', {
-    cp: {
-      displayNotice: vi.fn(),
-      displayNotification: vi.fn(),
-      displayError: vi.fn(),
-    },
+    cp: {},
   });
   scope = effectScope();
   scope.run(() => {

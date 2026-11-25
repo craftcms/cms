@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
-  import {useForm} from '@inertiajs/vue3';
-  import {computed, provide, shallowRef, toRaw} from 'vue';
+  import {useForm, usePage} from '@inertiajs/vue3';
+  import {computed, provide, shallowRef, toRaw, watch} from 'vue';
   import type {
     ActionItem,
     ActionItemButton,
@@ -26,6 +26,8 @@
   import {useInertiaUiRenderer} from '@/modules/ui/useInertiaUiRenderer';
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -62,17 +64,24 @@
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
   }>();
+  const page = usePage();
+  const shownUi = shownPayload(() => props.ui);
+  const shownSidebarUi = shownPayload(() => props.sidebarUi);
   const inertiaForm = useForm({});
-  const {advanceBaseline, errors, onMutation, renderer} = useInertiaUiRenderer(
-    inertiaForm,
-    () => props.ui
-  );
+  const {advanceBaseline, errorPath, errors, onMutation, renderer} =
+    useInertiaUiRenderer(inertiaForm, () => shownUi.value);
   const {
     advanceBaseline: advanceSidebarBaseline,
+    errorPath: sidebarErrorPath,
     errors: sidebarErrors,
     onMutation: onSidebarMutation,
     renderer: sidebarRenderer,
-  } = useInertiaUiRenderer(inertiaForm, () => props.sidebarUi ?? null);
+  } = useInertiaUiRenderer(inertiaForm, () => shownSidebarUi.value ?? null);
+
+  /** Where an error's field can be, for the summary to link to it. */
+  function errorPaths(key: string): (string[] | null)[] {
+    return [errorPath(key), sidebarErrorPath(key)];
+  }
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
 
   const save = props.submit
@@ -201,7 +210,7 @@
   }
 
   const isBareTable = computed(() => {
-    const [node, ...rest] = props.ui.nodes;
+    const [node, ...rest] = shownUi.value.nodes;
     return (
       rest.length === 0 &&
       node?.component === 'craft:admin-table' &&
@@ -260,11 +269,29 @@
 
   function currentValues(): UiPayload['values'] {
     return {
-      ...toRaw(renderer.value?.currentValues() ?? props.ui.values),
+      ...toRaw(renderer.value?.currentValues() ?? shownUi.value.values),
       ...toRaw(
-        sidebarRenderer.value?.currentValues() ?? props.sidebarUi?.values
+        sidebarRenderer.value?.currentValues() ?? shownSidebarUi.value?.values
       ),
     };
+  }
+
+  /**
+   * The payload to render, which passes over the one a failed save sends
+   * back. That page is built from the stored values, while the form keeps the
+   * submitted ones, which the nodes on screen were refreshed for as they
+   * changed.
+   */
+  function shownPayload<T extends UiPayload | undefined>(source: () => T) {
+    const shown = shallowRef(source());
+
+    watch(source, (payload) => {
+      if (Object.keys(page.props.errors ?? {}).length === 0) {
+        shown.value = payload;
+      }
+    });
+
+    return shown;
   }
 
   function normalize(value: UiValue): string {
@@ -276,15 +303,19 @@
 
 <template>
   <component :is="submit ? 'form' : 'div'" @submit.prevent="save?.()">
+    <!-- The shell's own summary can't tell where a key's field is rendered. -->
+    <LayoutSlot v-if="submit && inertiaForm.hasErrors" name="error-summary">
+      <ErrorSummary :errors="inertiaForm.errors" :error-paths="errorPaths" />
+    </LayoutSlot>
     <CpContainer>
       <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          :class="isBareTable ? undefined : 'py-lg'"
+          :class="isBareTable ? undefined : 'ui-page__fields py-lg'"
         >
           <UiRenderer
             ref="renderer"
-            :payload="ui"
+            :payload="shownUi"
             :refresh="refreshUrl ? refresh : undefined"
             :errors="errors"
             @update:mutation="onMutation"
@@ -302,11 +333,11 @@
       </template>
     </CpContainer>
     <MetadataDetails :html="metadataHtml">
-      <template v-if="sidebarUi" #default>
+      <template v-if="shownSidebarUi" #default>
         <craft-field-group>
           <UiRenderer
             ref="sidebarRenderer"
-            :payload="sidebarUi"
+            :payload="shownSidebarUi"
             :errors="sidebarErrors"
             @update:mutation="onSidebarMutation"
           />
@@ -328,3 +359,12 @@
     </MetadataDetails>
   </component>
 </template>
+
+<style scoped>
+  /* The tab strip spaces itself from the panels, so the group's gap would double it. */
+  .ui-page__fields > :deep(.ui-node-list__tabs) {
+    margin-block-end: calc(
+      -1 * var(--gap, var(--c-field-group-gap, var(--c-spacing-lg)))
+    );
+  }
+</style>

@@ -2,7 +2,8 @@ import {actionClient} from '@craftcms/ui';
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
-import {useOutlet} from './outlets';
+import GroupNode from './GroupNode.vue';
+import {createOutletRegistry, UiOutletsKey} from './outlets';
 import type {UiPayload} from './types';
 
 const html = `
@@ -102,7 +103,8 @@ it('provides the Appearance tab’s outlet while mounted', async () => {
   vi.spyOn(actionClient, 'post').mockResolvedValue({data: {html}} as never);
   const container = document.createElement('div');
   document.body.append(container);
-  const outlet = useOutlet(() => 'field-layout-designer.appearance');
+  const outlets = createOutletRegistry();
+  const outlet = outlets.outlet(() => 'field-layout-designer.appearance');
 
   app = createApp({
     render: () =>
@@ -120,6 +122,7 @@ it('provides the Appearance tab’s outlet while mounted', async () => {
         editable: true,
       }),
   });
+  app.provide(UiOutletsKey, outlets);
   app.mount(container);
   await flush();
 
@@ -133,4 +136,84 @@ it('provides the Appearance tab’s outlet while mounted', async () => {
   app = undefined;
 
   expect(outlet.value).toBeNull();
+});
+
+function mountGroupBeforeDesigner(withCardViewDesigner: boolean): HTMLElement {
+  const container = document.createElement('div');
+  document.body.append(container);
+
+  app = createApp({
+    render: () => [
+      h('div', {class: 'in-place'}, [
+        h(GroupNode, {
+          node: {
+            uid: 'display-settings',
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Group',
+            component: 'craft:group',
+            props: {outlet: 'field-layout-designer.appearance'},
+            children: [],
+          } as never,
+          values: {},
+          errors: [],
+          touchedPaths: new Set<string>(),
+          scope: [],
+          refreshable: false,
+        }),
+      ]),
+      h(FieldLayoutDesignerControl, {
+        control: {
+          path: ['fieldLayout'],
+          props: {
+            elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+            customizableTabs: true,
+            withGeneratedFields: true,
+            withCardViewDesigner,
+          },
+        } as never,
+        value: {},
+        editable: true,
+      }),
+    ],
+  });
+  app.mount(container);
+
+  return container;
+}
+
+it('holds groups bound for the Appearance tab until it renders', async () => {
+  let resolve!: (value: unknown) => void;
+  vi.spyOn(actionClient, 'post').mockReturnValue(
+    new Promise((r) => (resolve = r)) as never
+  );
+  const container = mountGroupBeforeDesigner(true);
+  await flush();
+
+  expect(
+    container.querySelector('[data-ui-node="display-settings"]')
+  ).toBeNull();
+
+  resolve({
+    data: {
+      html: '<div data-ui-outlet="field-layout-designer.appearance"></div>',
+    },
+  });
+  await flush();
+
+  expect(
+    container.querySelector(
+      '[data-ui-outlet="field-layout-designer.appearance"] [data-ui-node="display-settings"]'
+    )
+  ).not.toBeNull();
+});
+
+it('renders groups in place without a card view designer', async () => {
+  vi.spyOn(actionClient, 'post').mockReturnValue(
+    new Promise(() => {}) as never
+  );
+  const container = mountGroupBeforeDesigner(false);
+  await flush();
+
+  expect(
+    container.querySelector('.in-place [data-ui-node="display-settings"]')
+  ).not.toBeNull();
 });

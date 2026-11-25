@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Search;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Claim;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -23,7 +24,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Search as SearchHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
@@ -82,6 +82,18 @@ class Search
             return true;
         }
 
+        try {
+            $this->writeKeywords($element, $fieldHandles);
+        } finally {
+            $mutex->release();
+        }
+
+        return true;
+    }
+
+    /** @param list<string>|null $fieldHandles */
+    private function writeKeywords(ElementInterface $element, ?array $fieldHandles): void
+    {
         $customFields = array_values(array_filter(
             $element->getFieldLayout()?->getCustomFields() ?? [],
             fn (FieldInterface $field) => $field->searchable && $field->layoutElement !== null,
@@ -152,14 +164,6 @@ class Search
                 DB::table(Table::SEARCHINDEX)->insert($chunk);
             }, 1_000, fn (Throwable $e) => $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
         }
-
-        $mutex->release();
-
-        TagDependency::invalidate([
-            sprintf('element-search-query::%s', $element::class),
-        ]);
-
-        return true;
     }
 
     /** @return string[] */
@@ -259,7 +263,7 @@ class Search
         }
 
         try {
-            if (! DB::table(Table::SEARCHINDEXQUEUE)->where('id', $jobId)->update(['reserved' => true])) {
+            if (! $this->indexJobClaim()->claim(DB::table(Table::SEARCHINDEXQUEUE)->where('id', $jobId))) {
                 return;
             }
         } finally {
@@ -302,23 +306,27 @@ class Search
 
     private function pendingIndexJobId(int $elementId, int $siteId): ?int
     {
-        return DB::table(Table::SEARCHINDEXQUEUE)
+        return $this->indexJobClaim()->whereClaimable(DB::table(Table::SEARCHINDEXQUEUE))
             ->where([
                 'elementId' => $elementId,
                 'siteId' => $siteId,
-                'reserved' => false,
             ])
             ->value('id');
     }
 
     private function isIndexJobPending(int $jobId): bool
     {
-        /** @var ?object{reserved: bool} $job */
-        $job = DB::table(Table::SEARCHINDEXQUEUE)
-            ->select('reserved')
-            ->find($jobId);
+        return $this->indexJobClaim()->whereClaimable(DB::table(Table::SEARCHINDEXQUEUE))
+            ->where('id', $jobId)
+            ->exists();
+    }
 
-        return $job !== null && ! $job->reserved;
+    /**
+     * Index jobs reserved for more than 5 minutes count as abandoned, so another job can index the element.
+     */
+    private function indexJobClaim(): Claim
+    {
+        return new Claim('reserved', true, false, ttl: 300, timestampColumn: 'dateReserved');
     }
 
     public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool

@@ -51,5 +51,5 @@ it('mounts widget settings into the light DOM for native submission', async () =
   await combobox?.updateComplete;
 
   expect(combobox?.getAttribute('name')).toBe('settings[placeholder]');
-  expect(combobox?.modelValue).toBe('Submitted placeholder');
+  expect(combobox?.value).toBe('Submitted placeholder');
 });

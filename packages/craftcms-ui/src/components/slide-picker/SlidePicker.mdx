@@ -11,13 +11,15 @@ import * as SlidePickerStories from './slide-picker.stories';
 
 Use it where the range is short and every step is meaningful — a column count, a level, a size. For a continuous range use [Slide Rule](?path=/docs/form-controls-slide-rule--docs); for an exact number a person already knows, a number input is faster than dragging.
 
+Prefer [Slide Picker Button](?path=/docs/form-controls-slide-picker-button--docs). At their default size, a slide picker's segments are 0.5rem wide and touch each other, so they're smaller than the 24×24 CSS px minimum target size that WCAG 2.2 AA requires (2.5.8 Target Size (Minimum)). The slide picker button is a target of that size itself, and the segments in its popover are large enough. Use `craft-slide-picker` directly only where there's room to make every segment at least `1.5rem` wide and tall.
+
 <Canvas of={SlidePickerStories.FiveSteps} sourceState="shown" />
 
 <Canvas of={SlidePickerStories.ReadOnly} sourceState="shown" />
 
 ## Posting a Value
 
-Give it a `name` and it posts with the form the way a native input does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. Set the starting value with `model-value`, or `.modelValue` from script.
+Give it a `name` and it posts with the form the way a native input does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. Set the starting value with `value`.
 
 `readonly` and `disabled` differ in what they post: a read-only control still submits its value, a disabled one is left out of submission entirely.
 
@@ -25,7 +27,7 @@ It emits the same events a radio group does. Every step is a commit, so `change`
 
 ```js
 picker.addEventListener('change', () => {
-  console.log(picker.modelValue);
+  console.log(picker.value);
 });
 ```
 
@@ -45,7 +47,7 @@ When a unit is not enough, `valueLabel` formats the announced value however you 
 
 ## Accessibility
 
-The control is a slider and a Lion field, like [Input](?path=/docs/form-controls-text-controls-input--docs). The slider takes its name and description from one of these:
+The control is a slider with a field's label, help text and feedback, like [Input](?path=/docs/form-controls-text-controls-input--docs). The slider takes its name and description from one of these:
 
 - **Its own label.** Set `label`, and add help text to describe the slider. Keep the label visible, so people know what the slider sets and can name it by voice. When something next to the picker already says what it sets, add `label-sr-only` to hide the label visually.
 - **A surrounding [Field](?path=/docs/form-controls-field--docs).** Leave `label` off. The field's label names the slider, and its instructions and errors describe it.
@@ -54,6 +56,8 @@ The control is a slider and a Lion field, like [Input](?path=/docs/form-controls
 Without one of these, the slider has no name.
 
 Set `value-unit` or `valueLabel` whenever the number alone doesn't say what it counts.
+
+To meet WCAG 2.2 AA's minimum target size, every segment must be at least 24×24 CSS px. Set `--c-slide-picker-segment-width` and `--c-slide-picker-segment-height` to at least `1.5rem`, or use a [Slide Picker Button](?path=/docs/form-controls-slide-picker-button--docs) instead.
 
 Sliders are hard to operate precisely with a pointer and easy with a keyboard, so the arrow-key behavior is not a fallback — it is how many people will use it. Keep the step count low enough that arrowing to a value is quick. There's no Page Up or Page Down.
 

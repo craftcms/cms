@@ -11,7 +11,7 @@ import styles from './tab.styles.js';
  *
  *     <craft-tab slot="tab">Content</craft-tab>
  *
- * Deliberately thin: `<craft-tabs>` (via Lion) owns the accessibility
+ * Deliberately thin: `<craft-tabs>` owns the accessibility
  * contract, assigning this element its `id`, `role="tab"`, `aria-controls`,
  * `aria-selected`, and `tabindex`, and toggling the `selected` attribute. The
  * only state this component owns is `disabled`.
@@ -22,16 +22,23 @@ import styles from './tab.styles.js';
  * @slot suffix - Content after the label, such as an icon flagging errors in
  *   the tab's panel. Give an icon a `label` so its meaning is announced.
  *
- * @cssproperty --c-tab-spacing-inline - Inline padding. Defaults to `0`, so
- *   the labels line up with the content around the strip; the strip's gap
- *   spaces them apart.
- * @cssproperty --c-tab-spacing-block - Block padding. Defaults to `0.5em`, so
+ * @cssproperty --c-tab-padding-inline - Inline padding. Defaults to `0`;
+ *   `<craft-tabs>` sets it to `--c-spacing-md`, to leave room beside each
+ *   label for its hover fill.
+ * @cssproperty --c-tab-padding-block - Block padding. Defaults to `0.5em`, so
  *   the tab scales with whatever font size it inherits — which is how
  *   `<craft-tabs size>` resizes its tabs without touching them.
- * @cssproperty --c-tab-border-active - Color of the selected indicator.
+ * @cssproperty --c-tab-indicator-fill-active - Color of the selected indicator.
  *   Defaults to `--c-color-accent-fill-loud`.
  * @cssproperty --c-tab-font-weight-active - Label weight while selected.
  *   Defaults to `--font-weight-semibold`.
+ * @cssproperty --c-tab-fill-hover - Fill behind the label of a hovered
+ *   tab that isn't selected. Defaults to `--c-color-mix-hover` over
+ *   transparent, the same tint as a plain button's hover.
+ * @cssproperty --c-tab-fill-block-size - Height of the hover fill behind a
+ *   one-line label, centered in the tab; it grows a line at a time as the
+ *   label wraps. Defaults to `30em / 14`: a main nav item's 30px at the base
+ *   text size, scaling with the tab's font size.
  * @cssproperty --c-tab-text-disabled - Label color while disabled. Defaults to
  *   `--c-status-disabled-text`.
  * @cssproperty --c-tab-indicator-inset-block-start - Indicator geometry. Set

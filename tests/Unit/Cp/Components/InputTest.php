@@ -125,10 +125,10 @@ describe('input', function () {
 });
 
 describe('host attributes', function () {
-    it('mirrors Lion-synced control attributes onto the host', function () {
-        // Lion pushes type/placeholder/name/disabled/readonly from the host
-        // onto the slotted input on upgrade, so non-default values must be
-        // reflected there or the server-rendered attributes get clobbered.
+    it('mirrors control attributes onto the host', function () {
+        // The component pushes type/placeholder/name/disabled/readonly from
+        // the host onto the slotted input, so the host carries the same
+        // non-default values as the server-rendered input.
         $html = Input::make()
             ->id('i')
             ->type('password')
@@ -145,7 +145,7 @@ describe('host attributes', function () {
             ->and($html)->toMatch('/<craft-input[^>]* readonly/');
     });
 
-    it('omits Lion-default control attributes from the host', function () {
+    it('omits default control attributes from the host', function () {
         expect(Input::make()->id('i')->toHtml())
             ->toContain('<craft-input>');
     });
@@ -182,6 +182,22 @@ describe('suffix', function () {
         $html = Input::make()->id('i')->suffix('MB')->describedBy('help')->toHtml();
 
         expect($html)->toContain('aria-describedby="help i-desc"');
+    });
+
+    it('renders the prefix slot, described together with the suffix', function () {
+        $html = Input::make()->id('i')->prefix('€')->suffix('kg')->toHtml();
+
+        expect($html)->toContainTag('div', ['slot' => 'prefix', 'class' => 'label light', 'aria-hidden' => 'true'])
+            ->and($html)->toContain('>€</div>')
+            ->and($html)->toContain('>Value prefixed by “€”. Value suffixed by “kg”.</span>')
+            ->and($html)->toContain('aria-describedby="i-desc"');
+    });
+
+    it('describes the input with its prefix without an id', function () {
+        $html = Input::make()->prefix('€')->toHtml();
+
+        expect(preg_match('/<span id="([^"]+)" hidden>Value prefixed by “€”\.<\/span>/u', $html, $matches))->toBe(1)
+            ->and($html)->toContain(sprintf('aria-describedby="%s"', $matches[1]));
     });
 
     it('encodes the suffix text', function () {

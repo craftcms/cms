@@ -11,9 +11,9 @@ import type CraftSelect from './select.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `select.ts` surfaces it here without touching this file.
  *
- * The template is written out rather than generated: Lion expects the real
- * `<select>` in its `input` slot, and a generated slot wraps its content in a
- * `<span>`, which Lion then adopts as the control.
+ * The template is written out rather than generated: the real `<select>`
+ * goes in the `input` slot, and a generated slot wraps its content in a
+ * `<span>`, which would then be taken for the control.
  */
 const {args, argTypes} = getStorybookHelpers<CraftSelect>('craft-select');
 

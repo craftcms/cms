@@ -99,30 +99,15 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   #resizeObserver: ResizeObserver | null = null;
 
-  #sizeLockFrame?: number;
-
-  #windowResizeTimer?: ReturnType<typeof setTimeout>;
-
-  /**
-   * The surface keeps the height it opened at, so switching sources or pages
-   * doesn't shrink and grow it while the index reloads. A window resize lets it
-   * settle to a new size, then holds that one.
-   */
-  #onWindowResize = () => {
-    this.#unlockSize();
-    clearTimeout(this.#windowResizeTimer);
-    this.#windowResizeTimer = setTimeout(() => this.#queueSizeLock(), 200);
-  };
-
   constructor() {
     super();
     // An index needs room, and how much depends on its columns and the screen.
     this.resizable = true;
+    this.storageKey = 'ElementSelectorModal.size';
   }
 
   override connectedCallback(): void {
     super.connectedCallback();
-    window.addEventListener('resize', this.#onWindowResize);
 
     if (typeof ResizeObserver !== 'undefined') {
       this.#resizeObserver = new ResizeObserver(([entry]) => {
@@ -141,60 +126,6 @@ export default class CraftElementSelectorModal extends CraftDialog {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.#resizeObserver?.disconnect();
-    window.removeEventListener('resize', this.#onWindowResize);
-    clearTimeout(this.#windowResizeTimer);
-    this.#unlockSize();
-  }
-
-  protected override updated(changed: PropertyValues): void {
-    super.updated(changed);
-
-    if (!this.opened || !this.hasIndex) {
-      this.#unlockSize();
-    } else if (
-      (changed.has('hasIndex') || changed.has('opened')) &&
-      !this.hasAttribute('size-locked')
-    ) {
-      this.#queueSizeLock();
-    }
-  }
-
-  /**
-   * Waits for the slotted index to lay out (it renders a frame after it
-   * arrives), then holds the surface at the height it settled at.
-   */
-  #queueSizeLock(): void {
-    if (this.#sizeLockFrame !== undefined) {
-      cancelAnimationFrame(this.#sizeLockFrame);
-    }
-
-    this.#sizeLockFrame = requestAnimationFrame(() => {
-      this.#sizeLockFrame = requestAnimationFrame(() => {
-        this.#sizeLockFrame = undefined;
-        const surface = this.shadowRoot?.querySelector<HTMLElement>('.surface');
-
-        if (!this.opened || !this.hasIndex || !surface) {
-          return;
-        }
-
-        const height = surface.getBoundingClientRect().height;
-
-        if (height > 0) {
-          this.style.setProperty('--_locked-block-size', `${height}px`);
-          this.setAttribute('size-locked', '');
-        }
-      });
-    });
-  }
-
-  #unlockSize(): void {
-    if (this.#sizeLockFrame !== undefined) {
-      cancelAnimationFrame(this.#sizeLockFrame);
-      this.#sizeLockFrame = undefined;
-    }
-
-    this.removeAttribute('size-locked');
-    this.style.removeProperty('--_locked-block-size');
   }
 
   protected override willUpdate(changed: PropertyValues): void {
@@ -208,7 +139,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
     const state = this.#binding.state;
 
     if (state) {
-      this.opened = state.open;
+      this.open = state.open;
       this.busy = state.busy;
       this.loading = state.loading;
       this.canSubmit = state.canSubmit;

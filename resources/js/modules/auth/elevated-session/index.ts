@@ -1,3 +1,4 @@
+import './globals';
 import {createApp} from 'vue';
 import ElevatedSessionHost from './ElevatedSessionHost.vue';
 import {ElevatedSessionForm} from './elevated-session-form';
@@ -8,45 +9,6 @@ import {
   ElevatedSessionManager,
   type ElevatedSessionOptions,
 } from './manager';
-import {registerCraftGlobals} from '@/common/craft-global';
-
-class LegacyElevatedSessionManager {
-  static minSafeElevatedSessionTimeout = 5;
-
-  get fetchingTimeout(): boolean {
-    return elevatedSessionManager.state.checking;
-  }
-
-  async requireElevatedSession(
-    onSuccess: () => void,
-    onCancel?: () => void,
-    minimumRemainingSeconds = LegacyElevatedSessionManager.minSafeElevatedSessionTimeout
-  ): Promise<void> {
-    const confirmed = await elevatedSessionManager.require({
-      minimumRemainingSeconds,
-    });
-
-    if (confirmed) {
-      onSuccess();
-    } else {
-      onCancel?.();
-    }
-  }
-
-  showLoginModal(): void {
-    void elevatedSessionManager.require({force: true});
-  }
-}
-
-// Assign onto the legacy `Craft` global so the Twig/PHP-emitted
-// `new Craft.ElevatedSessionForm(...)` (EmailField, _password/_team/_permissions
-// screens) and `Craft.elevatedSessionManager` keep working. The manager global is
-// a thin `LegacyElevatedSessionManager` shim over the modern reactive manager.
-registerCraftGlobals({
-  ElevatedSessionManager: LegacyElevatedSessionManager,
-  elevatedSessionManager: new LegacyElevatedSessionManager(),
-  ElevatedSessionForm,
-});
 
 // Register the declarative custom element, so Twig can emit
 // `<craft-elevated-session-form>` instead of the manual global constructor.
@@ -61,6 +23,14 @@ export function mountElevatedSessionHost(): void {
   host.dataset.elevatedSessionHost = '';
   document.body.append(host);
   createApp(ElevatedSessionHost).mount(host);
+}
+
+/** Answers `@craftcms/ui` actions that ask for an elevated session. */
+export function answerElevatedSessionRequests(): void {
+  window.addEventListener('craft:require-elevated-session', (event) => {
+    const {detail} = event as CustomEvent<{confirmed?: Promise<boolean>}>;
+    detail.confirmed = elevatedSessionManager.require();
+  });
 }
 
 export function usePasswordConfirmation() {

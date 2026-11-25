@@ -42,6 +42,8 @@ describe('useNestedElementsQuery', () => {
       elementType: 'Entry',
       elementDisplayName: 'Entry',
       elementPluralDisplayName: 'Entries',
+      elementLowerDisplayName: 'entry',
+      elementPluralLowerDisplayName: 'entries',
       canHaveDrafts: true,
       title: 'Entries',
       page: null,
@@ -110,7 +112,7 @@ describe('useNestedElementsQuery', () => {
       initial?: NestedContentIndexData;
     } = {}
   ) {
-    vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+    vi.stubGlobal('Craft', {systemUid: 'test'});
     const initial = options.initial ?? payload();
     const props = reactive({
       viewMode: 'index',

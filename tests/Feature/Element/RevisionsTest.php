@@ -6,11 +6,17 @@ use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Events\RevisionCreating;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Tests\TestClasses\Element\TestRevisionableElement;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -47,6 +53,19 @@ it('can create a revision', function () {
     Event::assertDispatchedOnce(RevisionCreated::class);
 });
 
+it('creates a revision of content that doesn’t pass its field rules', function () {
+    $result = Entry::factory()
+        ->withField('amount', Number::class, ['min' => 0])
+        ->createElementWithFields(save: false);
+    $result->element->setFieldValue('amount', -1);
+    Elements::saveElement($result->element, runValidation: false);
+    $element = EntryElement::find()->id($result->element->id)->one();
+
+    $revision = Elements::getElementById($this->revisions->createRevision($element, force: true));
+
+    expect($revision->getFieldValue('amount'))->toEqual(-1);
+});
+
 it('reuses the last revision when the element hasn’t changed since', function () {
     Entry::factory()->create();
     $element = EntryElement::findOne();
@@ -81,4 +100,41 @@ it('can revert an element to a revision', function () {
 
     Event::assertDispatchedOnce(ElementRevertingToRevision::class);
     Event::assertDispatchedOnce(RevertedToRevision::class);
+});
+
+it('saves revisions for any element type that has revisions', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+    $model = ElementModel::factory()->title('Original title')->create(['type' => TestRevisionableElement::class]);
+    $element = TestRevisionableElement::find()->id($model->id)->one();
+
+    Date::setTestNow('2026-10-01 13:00:00');
+    $element->title = 'Updated title';
+    expect(Elements::saveElement($element))->toBeTrue();
+
+    $revisions = TestRevisionableElement::find()
+        ->revisionOf($element)
+        ->status(null)
+        ->orderBy('num')
+        ->all();
+
+    expect($revisions)->toHaveCount(2)
+        ->and($revisions[0]->title)->toBe('Original title')
+        ->and($revisions[0]->revisionNotes)->toStartWith('Revision from ')
+        ->and($revisions[1]->title)->toBe('Updated title');
+});
+
+it('doesn’t delete a revision another request created with the same number', function () {
+    Entry::factory()->create();
+    $element = EntryElement::findOne();
+    $competitorId = null;
+
+    // Another request takes the same number after this one's lock expired
+    Event::listen(RevisionCreating::class, function () use ($element, &$competitorId) {
+        Event::forget(RevisionCreating::class);
+        Cache::lock('revision:'.$element->id)->forceRelease();
+        $competitorId = $this->revisions->createRevision($element, force: true);
+    });
+
+    expect(fn () => $this->revisions->createRevision($element, force: true))->toThrow(QueryException::class)
+        ->and(Elements::getElementById($competitorId))->not->toBeNull();
 });

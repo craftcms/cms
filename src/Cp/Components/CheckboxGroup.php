@@ -96,40 +96,53 @@ class CheckboxGroup extends ChoiceGroup
 
         HtmlStack::jsWithVars(fn ($container, $button, $optionHtml) => <<<JS
             (() => {
-              const \$container = $($container);
-              const \$button = $($button);
+              const container = document.querySelector($container);
+              const button = document.querySelector($button);
+              if (!container || !button) {
+                return;
+              }
               const customOptionHtml = $optionHtml;
 
-              const initCustomOption = (\$option) => {
-                const \$checkbox = \$option.find('input[type=checkbox]');
-                const \$text = \$option.find('.text');
-                \$checkbox.on('change', () => {
-                  if (\$checkbox.prop('checked')) {
-                    \$text.prop('disabled', false).removeClass('disabled noteditable').focus();
+              const initCustomOption = (option) => {
+                const checkbox = option.querySelector('input[type=checkbox]');
+                const text = option.querySelector('.text');
+                if (!checkbox || !text) {
+                  return;
+                }
+                checkbox.addEventListener('change', () => {
+                  if (checkbox.checked) {
+                    text.disabled = false;
+                    text.classList.remove('disabled', 'noteditable');
+                    text.focus();
+                  } else if (text.value !== '') {
+                    text.disabled = true;
+                    text.classList.add('disabled', 'noteditable');
                   } else {
-                    if (\$text.val() !== '') {
-                      \$text.prop('disabled', true).addClass('disabled noteditable');
-                    } else {
-                      \$option.remove();
-                      \$button.focus();
-                    }
+                    option.remove();
+                    button.focus();
                   }
                 });
-                \$text.on('input', () => {
-                  \$checkbox.val(\$text.val());
+                text.addEventListener('input', () => {
+                  checkbox.value = text.value;
                 });
               };
 
-              const \$customOptions = \$container.children('[data-custom]');
-              for (let i = 0; i < \$customOptions.length; i++) {
-                initCustomOption(\$customOptions.eq(i));
+              for (const option of container.querySelectorAll(':scope > [data-custom]')) {
+                initCustomOption(option);
               }
 
-              \$button.on('activate', () => {
+              // craft-button fires click for Enter and Space too
+              button.addEventListener('click', () => {
                 const id = 'option' + Math.floor(Math.random() * 1000000000);
-                const \$newOption = $(customOptionHtml.replace(/__ID__/g, id)).insertBefore(\$button);
-                initCustomOption(\$newOption);
-                \$newOption.find('.text').focus();
+                const template = document.createElement('template');
+                template.innerHTML = customOptionHtml.replace(/__ID__/g, id).trim();
+                const nodes = [...template.content.childNodes];
+                button.before(...nodes);
+                const newOption = nodes.find((node) => node instanceof HTMLElement);
+                if (newOption) {
+                  initCustomOption(newOption);
+                  newOption.querySelector('.text')?.focus();
+                }
               });
             })();
             JS, [

@@ -22,6 +22,7 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\PreventRequestForgery as CraftPreventRequestForgery;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
@@ -30,22 +31,29 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
+use CraftCms\Cms\Http\Middleware\StartLazySession;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use CraftCms\Cms\Http\Middleware\StripSiteBasePath;
 use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
+use CraftCms\Cms\Http\Routing\UrlGenerator;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -66,6 +74,26 @@ class RouteServiceProvider extends ServiceProvider
     public function register(): void
     {
         CraftMaintenanceMiddleware::registerRouteMacro();
+        StartLazySession::registerRouteMacro();
+        UrlGenerator::registerRouteMacro();
+
+        // Laravel's own `url` extenders, such as the signed URL key resolver, still apply to it
+        $this->app->singleton('url', function (Application $app): UrlGenerator {
+            $routes = $app->make(Router::class)->getRoutes();
+
+            // Rebinding `routes` resolves `url` again, so only bind it the first time
+            if (! $app->bound('routes') || $app->make('routes') !== $routes) {
+                $app->instance('routes', $routes);
+            }
+
+            return new UrlGenerator(
+                $routes,
+                $app->rebinding('request', fn (Application $app, Request $request) => $app->make(\Illuminate\Contracts\Routing\UrlGenerator::class)->setRequest($request)),
+                $app->make(Repository::class)->get('app.asset_url'),
+            );
+        });
+
+        $this->app->bind(PreventRequestForgery::class, CraftPreventRequestForgery::class);
 
         /**
          * These middleware must run before all others
@@ -73,21 +101,28 @@ class RouteServiceProvider extends ServiceProvider
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
-        $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
+        // Before `auth`, so guests are sent to the requested site's login URL.
+        $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
-        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class], PreventStaleDatabaseReads::class);
+        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class, StartLazySession::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
                 : $middleware,
             $kernel->getGlobalMiddleware(),
         );
-        $kernel->setGlobalMiddleware(array_merge([
+        $trustsProxies = fn (string $middleware): bool => is_a($middleware, TrustProxies::class, true);
+        $kernel->setGlobalMiddleware([
+            // First, so StripSiteBasePath finds the requested site from the forwarded host
+            ...array_filter($globalMiddleware, $trustsProxies),
             ExtractNamespace::class,
             HandleTokenRequest::class,
+            StripSiteBasePath::class,
             HandleActionRequest::class,
-        ], $globalMiddleware));
+            ...array_filter($globalMiddleware, fn (string $middleware): bool => ! $trustsProxies($middleware)),
+        ]);
 
         LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
             $templates = require $this->app->getCachedRoutesPath();
@@ -101,6 +136,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Event::listen(RouteMatched::class, function (RouteMatched $event): void {
             MatchedElement::set(null);
+            StartLazySession::applyTo($event->route);
 
             if (Cms::isInstalled() && $event->request->isSiteRequest() && ! $event->request->isActionRequest() && ! Cms::config()->headlessMode) {
                 $event->route->middleware([ResolveSite::class, ResolveElementRoute::class]);
@@ -122,25 +158,21 @@ class RouteServiceProvider extends ServiceProvider
             $this->bootRequestForgeryExceptions();
         }
 
-        $this->app->booted(function () use ($routes, $router): void {
+        $this->app->booted(function (): void {
             // Project routes are registered at runtime so cached routes cannot retain stale project config.
             if (! Cms::isInstalled() || $this->app->runningConsoleCommand('route:cache')) {
                 return;
             }
 
-            $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router
-                    ->view($route->getUri(), $route->template)
-                    ->middleware(['craft', 'craft.web']),
-            );
+            $this->app->make(ProjectConfigRoutes::class)->register();
         });
 
-        Event::listen(SiteDeleted::class, function (SiteDeleted $event) use ($routes): void {
+        Event::listen(SiteDeleted::class, function (SiteDeleted $event): void {
             if (ProjectConfig::isApplyingExternalChanges()) {
                 return;
             }
 
-            $routes->handleDeletedSite($event);
+            $this->app->make(Routes::class)->handleDeletedSite($event);
         });
 
         RateLimiter::for('password-reset', function ($request) {
@@ -213,6 +245,8 @@ class RouteServiceProvider extends ServiceProvider
             RequireCpRequest::class,
             AuthenticateCraftSession::class,
             CheckRequirements::class,
+            // Outside `HandleInertiaRequests`, so it sees what the page delivered.
+            SendBroadcasts::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
             HandleTemplateRequest::class,

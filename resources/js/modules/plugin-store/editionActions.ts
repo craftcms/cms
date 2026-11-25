@@ -125,8 +125,8 @@ export function resolveEditionActions({
 
   if (!free) {
     if (inCart) {
-      purchase = context.allowUpdates ? {kind: 'in-cart'} : null;
-    } else if (context.allowUpdates && upgrade) {
+      purchase = context.allowPurchases ? {kind: 'in-cart'} : null;
+    } else if (context.allowPurchases && upgrade) {
       purchase = {
         kind: 'add-to-cart',
         disabled:

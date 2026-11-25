@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -12,12 +13,13 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
@@ -381,7 +383,7 @@ describe('store', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -420,7 +422,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -459,7 +461,7 @@ describe('store', function () {
             ]);
         actingAs(UserModel::findOrFail(auth()->id()));
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public ?bool $capturedCrossSiteValidate = null;
 
@@ -577,7 +579,7 @@ describe('store', function () {
             'root' => storage_path('framework/testing/save-element-controller-test'),
         ]);
 
-        $volume = Volume::factory()->create(['fs' => 'save-element-controller-test']);
+        $volume = Volume::factory()->create(['disk' => 'save-element-controller-test']);
         $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
         $assetModel = AssetModel::factory()->create([
             'volumeId' => $volume->id,
@@ -717,7 +719,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
@@ -769,7 +771,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
@@ -905,5 +907,66 @@ describe('storeForDerivative', function () {
             ->and($initialCard['cardAttributes']['data']['owner-id'])->toBe($fixture['ownerDraft']->id)
             ->and($initialCard['cardAttributes']['data']['field-id'])->toBe($fixture['field']->id);
 
+    });
+
+    // https://github.com/craftcms/cms/issues/20413
+    it('saves nested addresses for derivative owners that aren’t saved in the primary site', function () {
+        $secondarySite = Site::factory()->create();
+        Sites::refreshSites();
+
+        $addressesField = Field::factory()->create([
+            'name' => 'Addresses',
+            'handle' => 'addresses',
+            'type' => Addresses::class,
+        ]);
+        $ownerType = EntryType::factory()->withField($addressesField)->create();
+        $section = Section::factory()
+            ->withSites($secondarySite)
+            ->withEntryTypes($ownerType)
+            ->create(['propagationMethod' => PropagationMethod::Custom]);
+        EntryTypesFacade::refreshEntryTypes();
+        FieldsFacade::invalidateCaches();
+
+        $entry = new Entry([
+            'sectionId' => $section->id,
+            'typeId' => $ownerType->id,
+            'siteId' => $secondarySite->id,
+            'title' => 'Secondary Site Entry',
+        ]);
+        expect(Elements::saveElement($entry))->toBeTrue()
+            ->and(Entry::find()->id($entry->id)->siteId(Sites::getPrimarySite()->id)->status(null)->exists())->toBeFalse();
+
+        $address = new Address([
+            'fieldId' => $addressesField->id,
+            'ownerId' => $entry->id,
+            'title' => 'Test Address',
+            'countryCode' => 'NL',
+            'locality' => 'Amsterdam',
+            'postalCode' => '1011 AB',
+            'addressLine1' => 'Original',
+        ]);
+        expect(Elements::saveElement($address))->toBeTrue();
+
+        $entryDraft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+        $addressDraft = app(Drafts::class)->createDraft($address, auth()->id(), provisional: true);
+
+        postJson(action([SaveElementController::class, 'storeForDerivative']), [
+            'elementType' => Address::class,
+            'elementId' => $address->id,
+            'draftId' => $addressDraft->draftId,
+            'provisional' => true,
+            'siteId' => $secondarySite->id,
+            'ownerId' => $entry->id,
+            'fieldId' => $addressesField->id,
+            'newOwnerId' => $entryDraft->id,
+            'addressLine1' => 'Changed',
+        ])->assertOk();
+
+        $draftAddress = Address::find()->ownerId($entryDraft->id)->status(null)->one();
+
+        expect($draftAddress?->addressLine1)->toBe('Changed')
+            ->and($draftAddress->getPrimaryOwnerId())->toBe($entryDraft->id)
+            ->and($draftAddress->getCanonicalId())->toBe($address->id)
+            ->and(Address::find()->id($address->id)->status(null)->one()->addressLine1)->toBe('Original');
     });
 });

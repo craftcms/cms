@@ -14,12 +14,19 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Cache\Events\RetrievingKey;
+use Illuminate\Cache\Events\RetrievingManyKeys;
+use Illuminate\Cache\Events\WritingKey;
+use Illuminate\Cache\Events\WritingManyKeys;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
@@ -173,6 +180,133 @@ it('loads descendant values over stale scalar ancestor rows', function (string $
     expect($projectConfig->get('legacyOverlap'))->toBe(['deep' => ['value' => 1]]);
 })->with(['string' => '"obsolete"', 'integer' => '1', 'boolean' => 'false']);
 
+/**
+ * Counts the cache reads or writes of the stored project config.
+ */
+function countStoredConfigCacheCalls(string ...$events): Closure
+{
+    $count = 0;
+    Event::listen($events, function (RetrievingKey|RetrievingManyKeys|WritingKey|WritingManyKeys $event) use (&$count) {
+        $keys = $event instanceof RetrievingKey || $event instanceof WritingKey ? [$event->key] : $event->keys;
+
+        if (array_filter($keys, fn (string $key) => str_starts_with($key, ProjectConfig::STORED_CACHE_KEY)) !== []) {
+            $count++;
+        }
+    });
+
+    return function () use (&$count): int {
+        return $count;
+    };
+}
+
+it('reads the keys nearly every request uses with one cache read', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->reset();
+    $projectConfig->get('system.name');
+    $projectConfig->reset();
+    $reads = countStoredConfigCacheCalls(RetrievingKey::class, RetrievingManyKeys::class);
+
+    expect($projectConfig->get('system.name'))->not->toBeNull()
+        ->and($projectConfig->get(ProjectConfig::PATH_USERS))->not->toBeNull()
+        ->and($reads())->toBe(1)
+        ->and($projectConfig->get(ProjectConfig::PATH_SITES))->toBe($projectConfig->get()[ProjectConfig::PATH_SITES])
+        ->and($reads())->toBe(3);
+});
+
+it('reloads a cached key after another process changes the config or the key is evicted', function (bool $evicted) {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"Before"']);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $projectConfig->reset();
+    expect($projectConfig->get('laterRoot.value'))->toBe('Before');
+
+    DB::table(Table::PROJECTCONFIG)->where('path', 'laterRoot.value')->update(['value' => '"After"']);
+
+    if ($evicted) {
+        Cache::forget(ProjectConfig::STORED_CACHE_KEY.':laterRoot');
+    } else {
+        Info::fetch()->update(['configVersion' => Str::random(12)]);
+    }
+
+    $projectConfig->reset();
+
+    expect($projectConfig->get('laterRoot.value'))->toBe('After')
+        ->and($projectConfig->get()['laterRoot']['value'])->toBe('After');
+})->with(['config changed' => false, 'key evicted' => true]);
+
+it('reads the database once per request when the cache keeps nothing', function () {
+    config(['cache.stores.none' => ['driver' => 'null']]);
+    Cache::setDefaultDriver('none');
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->reset();
+    expect($projectConfig->get('system.name'))->not->toBeNull();
+
+    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"Later"']);
+
+    expect($projectConfig->get('laterRoot.value'))->toBeNull()
+        ->and($projectConfig->get())->not->toHaveKey('laterRoot');
+});
+
+it('leaves writing the cache to the request that holds the rebuild lock', function () {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"Rebuilt"']);
+    Info::fetch()->update(['configVersion' => Str::random(12)]);
+    $projectConfig->reset();
+    $lock = Cache::lock(ProjectConfig::STORED_CACHE_KEY.':rebuild', 10);
+    $lock->get();
+
+    try {
+        expect($projectConfig->get('laterRoot.value'))->toBe('Rebuilt')
+            ->and(Cache::get(ProjectConfig::STORED_CACHE_KEY)['version'] ?? null)->not->toBe(Info::fetch()->configVersion);
+    } finally {
+        $lock->release();
+    }
+});
+
+it('reads the rebuilt config after another key is evicted', function () {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->insert([
+        ['path' => 'firstRoot.value', 'value' => '"Before"'],
+        ['path' => 'secondRoot.value', 'value' => '"Second"'],
+    ]);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $projectConfig->reset();
+    $projectConfig->get('firstRoot.value');
+    $projectConfig->reset();
+    expect($projectConfig->get('firstRoot.value'))->toBe('Before');
+
+    DB::table(Table::PROJECTCONFIG)->where('path', 'firstRoot.value')->update(['value' => '"After"']);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY.':secondRoot');
+
+    expect($projectConfig->get('secondRoot.value'))->toBe('Second')
+        ->and($projectConfig->get('firstRoot.value'))->toBe('After')
+        ->and($projectConfig->get()['firstRoot']['value'])->toBe('After');
+});
+
+it('skips writing the cache when another request restored the evicted key', function () {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"Later"']);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $projectConfig->reset();
+    $projectConfig->get('laterRoot.value');
+    $projectConfig->reset();
+    $key = ProjectConfig::STORED_CACHE_KEY.':laterRoot';
+    $entry = Cache::get($key);
+    Cache::forget($key);
+
+    // Another request writes the entry back while this one reads the database
+    DB::listen(function (QueryExecuted $query) use ($key, $entry) {
+        if (str_contains($query->sql, Table::PROJECTCONFIG) && ! Cache::has($key)) {
+            // Written to the store directly, so it isn't counted as this request's write
+            Cache::getStore()->forever($key, $entry);
+        }
+    });
+    $writes = countStoredConfigCacheCalls(WritingKey::class, WritingManyKeys::class);
+
+    expect($projectConfig->get('laterRoot.value'))->toBe('Later')
+        ->and($writes())->toBe(0);
+});
+
 it('replays forced external changes against the original config', function (bool $changed) {
     $original = ['value' => 'old'];
     $incoming = ['value' => $changed ? 'new' : 'old'];
@@ -287,6 +421,19 @@ it('applies parent changes after processing descendants', function (array $incom
     'updates' => [['test' => ['nested' => ['value' => 2, 'keep' => true], 'direct' => 2]]],
     'removals' => [['test' => ['nested' => ['keep' => true]]]],
 ]);
+
+it('fires parent handlers when a nested value creates the parent', function () {
+    $projectConfig = getFakeProjectConfig();
+    $handled = [];
+    $projectConfig->onAdd('demo', function (ConfigEvent $event) use (&$handled) {
+        $handled[] = [$event->oldValue, $event->newValue];
+    });
+
+    $projectConfig->set('demo.child.key', 1);
+
+    expect($handled)->toBe([[null, ['child' => ['key' => 1]]]])
+        ->and($projectConfig->get('demo'))->toBe(['child' => ['key' => 1]]);
+});
 
 it('ignores parent handlers for unrelated event types when applying sibling changes', function () {
     $incoming = ['test' => ['one' => ['value' => 2], 'two' => ['value' => 2]]];
@@ -412,3 +559,21 @@ it('starts each config application with fresh path claims', function (bool $fail
     expect($projectConfig->claimPath(ProjectConfig::PATH_FIELDS, true))->toBeTrue();
     expect(new ProjectConfig(Cms::config())->claimPath(ProjectConfig::PATH_FIELDS, true))->toBeTrue();
 })->with([false, true]);
+
+it('keeps a saved change when the YAML files can’t be written', function () {
+    $blocker = config_path('craft/flush-write-blocker');
+    File::ensureDirectoryExists(dirname($blocker));
+    File::put($blocker, '');
+    $projectConfig = app(ProjectConfig::class)->writeYamlAutomatically();
+    $projectConfig->folderName = 'flush-write-blocker/project';
+
+    try {
+        $projectConfig->set('flushTest.value', 'Saved');
+        $projectConfig->flush();
+    } finally {
+        File::delete($blocker);
+    }
+
+    expect(DB::table(Table::PROJECTCONFIG)->where('path', 'flushTest.value')->value('value'))->toBe('"Saved"')
+        ->and(Cache::get(ProjectConfig::FILE_ISSUES_CACHE_KEY))->toBeTrue();
+});

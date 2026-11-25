@@ -156,6 +156,7 @@ readonly class AssetUploadHandler
 
         $filename = AssetsHelper::prepareAssetName($ingest->filename);
         $moveAfterSelection = false;
+        $fieldValues = [];
 
         if ($validTarget && $ingest->selectionCondition && $ingest->temporaryFolder) {
             $tempFolder = $ingest->temporaryFolder;
@@ -163,7 +164,9 @@ readonly class AssetUploadHandler
             if ($folder->id !== $tempFolder->id) {
                 // upload to the user's temp folder initially, with a temp name
                 $destinationFolder = $folder;
-                $destinationFilename = $filename;
+                $destinationFilename = $this->assets->getNameReplacementInFolder($filename, $folder->id);
+                // The staged asset is saved with the temporary volume’s field layout, so save field values after moving it
+                $fieldValues = ($dirtyFields = $asset->getDirtyFields()) ? $asset->getFieldValues($dirtyFields) : [];
                 $folder = $tempFolder;
                 $filename = uniqid('asset', true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
                 $moveAfterSelection = true;
@@ -197,7 +200,17 @@ readonly class AssetUploadHandler
         }
 
         if ($ingest->selectionCondition) {
-            if (! $ingest->selectionCondition->matchElement($asset)) {
+            // Match the asset as it will be once it’s moved to its upload location
+            $candidate = $asset;
+
+            if ($moveAfterSelection) {
+                $candidate = clone $asset;
+                $candidate->setFilename($destinationFilename);
+                $candidate->folderId = $destinationFolder->id;
+                $candidate->setVolumeId($destinationFolder->volumeId);
+            }
+
+            if (! $ingest->selectionCondition->matchElement($candidate)) {
                 $this->elements->deleteElement($asset, true);
 
                 return new AssetIngestResult(
@@ -212,10 +225,26 @@ readonly class AssetUploadHandler
             if ($moveAfterSelection) {
                 $asset->newFilename = $destinationFilename;
                 $asset->newFolderId = $destinationFolder->id;
+                // Fail rather than rename if the checked filename was taken since, so the condition still holds
+                $asset->avoidFilenameConflicts = false;
                 $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
 
                 if (! $this->elements->saveElement($asset)) {
+                    $this->elements->deleteElement($asset, true);
+
                     return new AssetIngestResult(AssetIngestStatus::Invalid, $asset);
+                }
+
+                if ($fieldValues !== []) {
+                    $asset->setVolumeId($destinationFolder->volumeId);
+                    $asset->setFieldValues($fieldValues);
+                    $asset->ruleset->useScenario(AssetRules::SCENARIO_DEFAULT);
+
+                    if (! $this->elements->saveElement($asset)) {
+                        $this->elements->deleteElement($asset, true);
+
+                        return new AssetIngestResult(AssetIngestStatus::Invalid, $asset);
+                    }
                 }
             }
         }

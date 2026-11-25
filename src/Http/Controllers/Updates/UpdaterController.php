@@ -15,11 +15,11 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Override;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -56,25 +56,21 @@ class UpdaterController extends BaseUpdaterController
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
 
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
-            abort_unless($request->craftUser()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+            $this->requirePerformUpdates();
         }
-    }
 
-    /**
-     * Renders the Updater page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+        $action = $request->route()->getActionMethod();
 
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
-        ])->toResponse($this->request);
+        if (
+            in_array($action, ['composerInstall', 'composerRemove', 'revert'], true) &&
+            (! $generalConfig->allowUpdates || ! $generalConfig->allowAdminChanges)
+        ) {
+            abort(403, 'Updates are disabled.');
+        }
+
+        if ($action === 'revert' && $this->legacyData) {
+            $this->requirePerformUpdates();
+        }
     }
 
     public function forceUpdate(): Response
@@ -97,8 +93,8 @@ class UpdaterController extends BaseUpdaterController
             if (! empty($this->data['install'])) {
                 $firstAction = $this->actionOption(t('Revert the update'), self::ACTION_REVERT);
             } else {
-                $firstAction = $this->finishedState([
-                    'label' => t('Abort the update'),
+                // Go through the finish action so maintenance mode is turned off
+                $firstAction = $this->actionOption(t('Abort the update'), self::ACTION_FINISH, [
                     'status' => t('Update aborted.'),
                 ]);
             }
@@ -118,6 +114,10 @@ class UpdaterController extends BaseUpdaterController
 
     public function revert(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_REVERT));
+        }
+
         $output = '';
 
         try {
@@ -192,7 +192,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function pageTitle(): string
     {
-        return t('updater/Index');
+        return t('Updater');
     }
 
     #[Override]
@@ -270,13 +270,16 @@ class UpdaterController extends BaseUpdaterController
             ];
         }
 
+        if (! empty($this->data['install']) && ! $this->composer->getIsAvailable()) {
+            return $this->noComposerState();
+        }
+
         // If there's anything to install, make sure we can find composer.json
         if (! empty($this->data['install']) && ! $this->ensureComposerJson()) {
             return $this->noComposerJsonState();
         }
 
-        // Enable maintenance mode
-        app()->maintenanceMode()->activate([]);
+        app(Maintenance::class)->startUpdate();
 
         if (! empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
@@ -326,8 +329,16 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function sendFinished(array $state = []): Response
     {
-        // Disable maintenance mode
-        app()->maintenanceMode()->deactivate();
+        app(Maintenance::class)->finishUpdate();
+
+        // Composer installs files with their commit's mtime, so compiled views can be newer than their updated sources
+        try {
+            CompiledViews::clear();
+        } catch (Throwable $e) {
+            Log::error('Could not delete compiled views: '.$e->getMessage(), [__METHOD__]);
+
+            report($e);
+        }
 
         return parent::sendFinished($state);
     }

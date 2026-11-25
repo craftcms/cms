@@ -1,6 +1,10 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {ConfigService} from '@craftcms/ui/services/Config';
+import '@craftcms/ui/components/checkbox/checkbox';
 import type {UiControlPayload} from './types';
+import {broadcast} from '@/common/craft/broadcast';
+import {provideUiPreview} from './uiPreview';
 
 const stub = vi.hoisted(() => {
   const show = vi.fn(async () => {});
@@ -31,9 +35,21 @@ const stub = vi.hoisted(() => {
     openSlideout,
     post,
     copy: null as ((elementInfo: unknown[]) => void) | null,
+    copyElements: vi.fn(),
     clearCopiedElements: vi.fn(),
   };
 });
+
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements: stub.copyElements,
+  clearCopiedElements: stub.clearCopiedElements,
+  getCopiedElements: () => [],
+  onCopiedElementsChange: (callback: (elementInfo: unknown[]) => void) => {
+    stub.copy = callback;
+    return () => {};
+  },
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -54,6 +70,13 @@ vi.mock(
     createElementSelectorModal: stub.createElementSelectorModal,
   })
 );
+
+/** Sets a `craft-checkbox` the way a user would, ending with its `change`. */
+function toggleCheckbox(box: Element, checked: boolean): void {
+  const input = box.querySelector('input')!;
+  input.checked = checked;
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}
 
 // `<craft-element-select-input>` is now an inert wrapper — the control renders
 // its own chips and drives its own modal — so an empty custom element is a
@@ -128,8 +151,7 @@ describe('ElementSelectControl', () => {
       'fetch',
       vi.fn(async () => new Response('<svg></svg>'))
     );
-    vi.stubGlobal('Craft', {
-      siteId: 1,
+    ConfigService.getInstance().initialize({
       elementTypeNames: {
         'CraftCms\\Cms\\Elements\\Entry': [
           'Entry',
@@ -138,14 +160,8 @@ describe('ElementSelectControl', () => {
           'entries',
         ],
       },
-      cp: {
-        getCopiedElements: () => [],
-        onCopyElements: (callback: (elementInfo: unknown[]) => void) => {
-          stub.copy = callback;
-        },
-        clearCopiedElements: stub.clearCopiedElements,
-      },
     });
+    vi.stubGlobal('Craft', {siteId: 1});
   });
 
   afterEach(() => {
@@ -158,6 +174,8 @@ describe('ElementSelectControl', () => {
     stub.openSlideout.mockClear();
     stub.copy?.([]);
     stub.clearCopiedElements.mockClear();
+    stub.copyElements.mockClear();
+    ConfigService.resetInstance();
     stub.post.mockReset();
     stub.post.mockResolvedValue({data: {elements: []}});
   });
@@ -169,12 +187,18 @@ describe('ElementSelectControl', () => {
       props?: Record<string, unknown>;
       editable?: boolean;
       value?: number[] | number | null;
+      preview?: boolean;
     } = {}
   ): Promise<HTMLElement> {
     updates = [];
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
+      setup: () => {
+        if (options.preview) {
+          provideUiPreview();
+        }
+      },
       render: () =>
         h(ElementSelectControl, {
           control: control(options.props),
@@ -185,6 +209,8 @@ describe('ElementSelectControl', () => {
         }),
     });
     app.mount(container);
+    // The upload button loads on demand.
+    await vi.dynamicImportSettled();
     await nextTick();
 
     return container;
@@ -398,6 +424,29 @@ describe('ElementSelectControl', () => {
     expect(updates).toEqual([9]);
   });
 
+  it('evaluates the selection condition against the reference element', async () => {
+    const root = await mount({
+      props: {
+        selectionCondition: {class: 'EntryCondition'},
+        referenceElement: {
+          referenceElementId: 12,
+          referenceElementOwnerId: 3,
+          referenceElementSiteId: 2,
+        },
+      },
+    });
+    addButton(root)!.click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    expect(settings).toMatchObject({
+      condition: {class: 'EntryCondition'},
+      referenceElementId: 12,
+      referenceElementOwnerId: 3,
+      referenceElementSiteId: 2,
+    });
+  });
+
   it('clears a scalar selection to null', async () => {
     const root = await mount({props: {single: true, limit: 1}, value: 5});
     menuItem(menus(root)[0], 'Remove').click();
@@ -433,6 +482,18 @@ describe('ElementSelectControl', () => {
     expect(settings.multiSelect).toBe(false);
   });
 
+  it('gives a full field’s Replace a chip to return focus to', async () => {
+    const root = await mount({props: {limit: 2}, value: [5, 6]});
+    menuItem(menus(root)[0], 'Replace').click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    // The drop zone can't take focus, so a slideout opened from the modal
+    // would have nothing to return focus to once it closed.
+    const target: HTMLElement = settings.triggerElement();
+    expect(target.closest('[data-id]')?.getAttribute('data-id')).toBe('5');
+  });
+
   it('appends what the selector returns', async () => {
     await mount({value: [5]});
     const button = container!.querySelector('[data-element-select-add]')!;
@@ -444,6 +505,517 @@ describe('ElementSelectControl', () => {
     settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
 
     expect(updates).toEqual([[5, 9]]);
+  });
+
+  describe('search', () => {
+    const search = {criteria: {sectionId: 3}, siteId: 2};
+    const selectionCondition = {class: 'EntryCondition'};
+
+    async function type(root: HTMLElement, query: string) {
+      const input = root.querySelector<HTMLInputElement>('[role="combobox"]')!;
+
+      input.focus();
+      vi.useFakeTimers();
+      input.value = query;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      vi.advanceTimersByTime(300);
+      vi.useRealTimers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+
+      return input;
+    }
+
+    function press(input: HTMLInputElement, key: string): void {
+      input.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true}));
+    }
+
+    it('lists already related elements as unavailable, skipping them to relate another', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 5, title: 'Some entry', html: 'Some entry', exclude: true},
+            {
+              id: 9,
+              title: 'Another entry',
+              html: 'Another entry',
+              exclude: false,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search, selectionCondition}});
+
+      const input = await type(root, 'entry');
+
+      expect(stub.post.mock.calls[0]![0]).toContain('element-search/search');
+      expect(stub.post.mock.calls[0]![1]).toMatchObject({
+        search: 'entry',
+        siteId: 2,
+        criteria: {sectionId: 3},
+        condition: selectionCondition,
+        excludeIds: [5],
+      });
+      const options = [
+        ...root.querySelectorAll('[role="listbox"] craft-option'),
+      ];
+      expect(
+        options.map((option) => [
+          option.textContent?.trim(),
+          option.getAttribute('aria-disabled'),
+        ])
+      ).toEqual([
+        ['Some entry', 'true'],
+        ['Another entry', 'false'],
+      ]);
+      expect(input.getAttribute('aria-activedescendant')).toBe(options[1]!.id);
+
+      press(input, 'ArrowDown');
+      await nextTick();
+      expect(input.getAttribute('aria-activedescendant')).toBe(options[1]!.id);
+
+      (options[0] as HTMLElement).click();
+      expect(updates).toEqual([]);
+
+      press(input, 'Enter');
+
+      expect(updates).toEqual([[5, 9]]);
+    });
+
+    it('offers no entry to create when an already related one matches exactly', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 5, title: 'Some entry', html: 'Some entry', exclude: true},
+          ],
+          exactMatch: true,
+        },
+      } as never);
+      const root = await mount({props: {search, createSection: 'posts'}});
+
+      const input = await type(root, 'Some entry');
+
+      expect(
+        [...root.querySelectorAll('[role="listbox"] craft-option')].map(
+          (option) => option.textContent?.trim()
+        )
+      ).toEqual(['Some entry']);
+      expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+
+      press(input, 'Enter');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(updates).toEqual([]);
+      expect(stub.post).toHaveBeenCalledOnce();
+    });
+
+    it('creates an entry from the query, and relates it once it’s saved', async () => {
+      stub.post.mockImplementation(async (action: string) =>
+        action.includes('entries/create')
+          ? ({data: {entry: {id: 31, draftId: 7, title: 'Fresh'}}} as never)
+          : ({data: {elements: [], exactMatch: false}} as never)
+      );
+      const root = await mount({props: {search, createSection: 'posts'}});
+
+      const input = await type(root, 'Fresh');
+      expect(
+        root.querySelector('[role="listbox"] craft-option')?.textContent
+      ).toMatch(/^\s*Create .+: Fresh$/);
+
+      press(input, 'Enter');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(stub.post.mock.calls[1]![1]).toEqual({
+        siteId: 2,
+        section: 'posts',
+        title: 'Fresh',
+      });
+      const [href, options] = stub.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: object) => void},
+      ];
+      expect(href).toContain('draftId=7');
+
+      options.onSaved({draft: true});
+      // Deleting it from the slideout, through the deletion manager or its action.
+      options.onSaved({});
+      options.onSaved({
+        data: {element: {title: 'Fresh', dateDeleted: '2026-11-13'}},
+      });
+      expect(updates).toEqual([]);
+
+      options.onSaved({draft: false, data: {element: {title: 'Fresh'}}});
+      expect(updates).toEqual([[5, 31]]);
+    });
+
+    it('offers no entry to create without a section to create it in', async () => {
+      const root = await mount({props: {search}});
+
+      await type(root, 'Fresh');
+
+      expect(root.querySelector('[role="listbox"] craft-option')).toBeNull();
+    });
+
+    it('excludes the element being edited from the search and the selector', async () => {
+      const root = await mount({props: {search, disabledElementIds: [77]}});
+
+      await type(root, 'entry');
+      root.querySelector<HTMLElement>('[data-element-select-add]')!.click();
+      await flushSelector();
+
+      expect(stub.post.mock.calls[0]![1]).toMatchObject({excludeIds: [5, 77]});
+      expect(
+        stub.createElementSelectorModal.mock.calls[0]![1].disabledElementIds
+      ).toEqual([5, 77]);
+    });
+
+    it('doesn’t choose an earlier query’s result while the next search is pending', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 9, title: 'Another', html: 'Another', exclude: false},
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search}});
+      const input = await type(root, 'Another');
+
+      input.value = 'Something else';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      press(input, 'Enter');
+      (
+        root.querySelector('[role="listbox"] craft-option') as HTMLElement
+      ).click();
+
+      expect(updates).toEqual([]);
+    });
+
+    it('keeps Return from submitting the form when nothing can be chosen', async () => {
+      const root = await mount({props: {search}});
+      const input = await type(root, 'Nothing');
+      const enter = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+
+      input.dispatchEvent(enter);
+
+      expect(enter.defaultPrevented).toBe(true);
+    });
+
+    it('leaves the arrow keys to an IME while it’s composing', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 8, title: 'One', label: 'One', html: 'One', exclude: false},
+            {id: 9, title: 'Two', label: 'Two', html: 'Two', exclude: false},
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search}});
+      const input = await type(root, 'o');
+      const active = input.getAttribute('aria-activedescendant');
+      const arrow = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        isComposing: true,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      input.dispatchEvent(arrow);
+      await nextTick();
+
+      expect(arrow.defaultPrevented).toBe(false);
+      expect(input.getAttribute('aria-activedescendant')).toBe(active);
+    });
+
+    it('relates an untitled result, such as a user, by its label', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 9,
+              title: null,
+              label: 'Jane Doe',
+              html: 'Jane Doe',
+              exclude: false,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({search}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await vi.dynamicImportSettled();
+      await nextTick();
+      const input = await type(container, 'Jane');
+
+      press(input, 'Enter');
+      await nextTick();
+
+      expect(value.value).toEqual([5, 9]);
+      expect(container.textContent).toContain('Jane Doe');
+    });
+
+    it('makes a result available once its relation is removed, without searching again', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 5,
+              title: 'Some entry',
+              label: 'Some entry',
+              html: 'Some entry',
+              exclude: true,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({search}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await vi.dynamicImportSettled();
+      await nextTick();
+      const input = await type(container, 'Some');
+      const option = () =>
+        container!.querySelector('[role="listbox"] craft-option')!;
+      expect(option().getAttribute('aria-disabled')).toBe('true');
+
+      value.value = [];
+      await nextTick();
+      expect(option().getAttribute('aria-disabled')).toBe('false');
+
+      press(input, 'ArrowDown');
+      await nextTick();
+      press(input, 'Enter');
+
+      expect(value.value).toEqual([5]);
+      expect(stub.post).toHaveBeenCalledOnce();
+    });
+
+    it('replaces the related branch when the field allows only one', async () => {
+      stub.post.mockImplementation(async (action: string, body) =>
+        action.includes('structured-elements')
+          ? ({
+              data: {
+                elements: (body.elementIds as number[]).map((id) => ({
+                  id,
+                  label: String(id),
+                })),
+              },
+            } as never)
+          : ({
+              data: {
+                elements: [
+                  {id: 9, title: 'Another', html: 'Another', exclude: false},
+                ],
+                exactMatch: false,
+              },
+            } as never)
+      );
+      const root = await mount({
+        props: {search, maintainHierarchy: true, branchLimit: 1},
+      });
+      const input = await type(root, 'Another');
+
+      press(input, 'Enter');
+
+      expect(updates[0]).toEqual([9]);
+    });
+  });
+
+  it.each([
+    {limit: null, focused: 'the add button'},
+    {limit: 2, focused: 'the chosen element'},
+  ])(
+    'returns focus to $focused after choosing with a limit of $limit',
+    async ({limit}) => {
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({limit}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await nextTick();
+
+      addButton(container)!.click();
+      await flushSelector();
+      const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+      settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
+      await nextTick();
+
+      const target: HTMLElement = settings.triggerElement();
+      if (limit === null) {
+        expect(target).toBe(addButton(container));
+      } else {
+        expect(addButton(container)).toBeNull();
+        expect(target.closest('[data-id]')?.getAttribute('data-id')).toBe('9');
+      }
+    }
+  );
+
+  it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {
+    const answers: Array<(label: string) => void> = [];
+    const root = await mount();
+    stub.post.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answers.push((label) =>
+            resolve({data: {elements: [{id: 5, label}]}})
+          );
+        })
+    );
+
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(answers).toHaveLength(1));
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(answers).toHaveLength(2));
+    answers[1]!('Newer title');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    answers[0]!('Older title');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(root.textContent).toContain('Newer title');
+    expect(root.textContent).not.toContain('Older title');
+  });
+
+  it('forgets a refetched element once it leaves the selection', async () => {
+    const value = ref<number[] | number | null>([5]);
+    // Picked client-side, so the server's render doesn't name it.
+    const payload = control({elements: []});
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: payload,
+          value: value.value,
+          editable: true,
+          'onUpdate:value': (next: number[] | number | null) => {
+            value.value = next;
+          },
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+    stub.post.mockResolvedValue({data: {elements: [{id: 5, label: 'Saved'}]}});
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(container!.textContent).toContain('Saved'));
+
+    value.value = [];
+    await nextTick();
+    (
+      container.querySelector('[data-element-select-add]') as HTMLElement
+    ).click();
+    await flushSelector();
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    settings.onSelect([{id: 5, label: 'Renamed', siteId: 1}]);
+    await nextTick();
+
+    expect(container.textContent).toContain('Renamed');
+    expect(container.textContent).not.toContain('Saved');
+  });
+
+  it('fetches elements it’s given without their presentations, such as pasted ones', async () => {
+    const value = ref<number[] | number | null>([5]);
+    // One render from the server throughout, as a paste brings none
+    const rendered = control();
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: rendered,
+          value: value.value,
+          editable: true,
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+    expect(stub.post).not.toHaveBeenCalled();
+
+    stub.post.mockResolvedValue({
+      data: {elements: [{id: 8, label: 'Pasted entry'}]},
+    });
+    value.value = [5, 8];
+    await vi.waitFor(() =>
+      expect(container!.textContent).toContain('Pasted entry')
+    );
+
+    expect(stub.post).toHaveBeenCalledOnce();
+    expect(stub.post.mock.calls[0]![1]).toMatchObject({elementIds: [8]});
+    expect(container.textContent).toContain('Some entry');
+
+    // Removed and pasted back, it's fetched again.
+    value.value = [5];
+    await nextTick();
+    value.value = [5, 8];
+    await vi.waitFor(() => expect(stub.post).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(container!.textContent).toContain('Pasted entry')
+    );
+  });
+
+  it('keeps focus on a card’s link when its refetched card remounts', async () => {
+    const card = (label: string) => ({
+      id: 5,
+      label,
+      cardHeaderHtml: `<a href="/entries/5" class="card-link">${label}</a>`,
+    });
+    const root = await mount({
+      props: {viewMode: 'cards', elements: [card('Old')]},
+      value: [5],
+    });
+    root.querySelector<HTMLElement>('a.card-link')!.focus();
+    stub.post.mockResolvedValue({data: {elements: [card('New')]}});
+
+    broadcast({event: 'saveElement', id: 5});
+
+    await vi.waitFor(() =>
+      expect(document.activeElement?.textContent).toBe('New')
+    );
   });
 
   describe('maintaining hierarchy', () => {
@@ -610,6 +1182,25 @@ describe('ElementSelectControl', () => {
     expect(actionLabels(menus(root)[0])).toEqual(['Edit entry']);
   });
 
+  it('offers no editor in a preview, which slideouts can’t open over', async () => {
+    const root = await mount({
+      editable: false,
+      preview: true,
+      props: {
+        elementDisplayName: 'entry',
+        elements: [{id: 5, label: 'Some entry', canEdit: true}],
+      },
+    });
+    const event = new MouseEvent('dblclick', {bubbles: false});
+    Object.defineProperty(event, 'composedPath', {
+      value: () => [root.querySelector('craft-chip')],
+    });
+    root.querySelector('craft-chip')!.dispatchEvent(event);
+
+    expect(menus(root)).toHaveLength(0);
+    expect(stub.openSlideout).not.toHaveBeenCalled();
+  });
+
   it('keeps server card actions alongside the field actions', async () => {
     const root = await mount({
       props: {
@@ -767,10 +1358,10 @@ describe('ElementSelectControl', () => {
     expect(chips(root).every(isSelectable)).toBe(true);
   });
 
-  it('leaves the chips unselectable on a read-only field', async () => {
+  it('lets the chips of a read-only field be selected, to copy them', async () => {
     const root = await mount({props: {limit: 3}, value: [5], editable: false});
 
-    expect(chips(root).some(isSelectable)).toBe(false);
+    expect(chips(root).every(isSelectable)).toBe(true);
   });
 
   it('ignores a body click on a single-relation field', async () => {
@@ -803,6 +1394,25 @@ describe('ElementSelectControl', () => {
     selectChip(chips(root)[0]!, false);
     await nextTick();
     expect(selectedChips(root)).toEqual([]);
+  });
+
+  it('names the selected elements by their type', async () => {
+    const root = await mount({
+      props: {
+        limit: 3,
+        elementDisplayName: 'entry',
+        elementPluralDisplayName: 'entries',
+      },
+      value: [5, 6],
+    });
+
+    selectChip(chips(root)[0]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('1 entry selected');
+
+    selectChip(chips(root)[1]!, true);
+    await nextTick();
+    expect(root.textContent).toContain('2 entries selected');
   });
 
   it('selects a range when the chip reports a shift-click', async () => {
@@ -958,10 +1568,7 @@ describe('ElementSelectControl', () => {
       });
       const box = root.querySelector<HTMLElement>('.card-grid craft-checkbox')!;
 
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleCheckbox(box, true);
       await nextTick();
 
       expect(
@@ -1196,15 +1803,8 @@ describe('ElementSelectControl', () => {
       return toolbarMenu(root);
     }
 
-    /** Reports a new checked state the way `craft-checkbox` does. */
     function check(box: HTMLElement, checked: boolean): void {
-      Object.defineProperty(box, 'checked', {
-        value: checked,
-        configurable: true,
-      });
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleCheckbox(box, checked);
     }
 
     function selectFirstChip(root: HTMLElement): void {
@@ -1248,14 +1848,14 @@ describe('ElementSelectControl', () => {
       ).toBeNull();
     });
 
-    it('has no toolbar on a read-only field', async () => {
+    it('has a toolbar on a read-only field too', async () => {
       const root = await mount({
         props: {limit: 3},
         value: [5, 6],
         editable: false,
       });
 
-      expect(root.querySelector('.element-selections-header')).toBeNull();
+      expect(root.querySelector('.element-selections-header')).not.toBeNull();
     });
 
     it('shows no count, clear button or actions until something is selected', async () => {
@@ -1375,17 +1975,18 @@ describe('ElementSelectControl', () => {
       return actionLabels(bulkMenu(root));
     }
 
-    async function mountSelected(props: Record<string, unknown> = {}) {
+    async function mountSelected(
+      props: Record<string, unknown> = {},
+      editable = true
+    ) {
       const root = await mount({
         props: {limit: 5, elements: copyable, ...props},
         value: [5, 6, 7],
+        editable,
       });
 
       const box = selectAllBox(root)!;
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleCheckbox(box, true);
       await nextTick();
 
       return root;
@@ -1426,8 +2027,7 @@ describe('ElementSelectControl', () => {
     });
 
     it('copies the selected elements through the clipboard', async () => {
-      const copyElements = vi.fn();
-      vi.stubGlobal('Craft', {cp: {copyElements}});
+      const copyElements = stub.copyElements;
 
       const root = await mountSelected();
       menuItem(bulkMenu(root)!, 'Copy selected').click();
@@ -1451,20 +2051,11 @@ describe('ElementSelectControl', () => {
       expect(labels(root)).toEqual(['Remove selected']);
     });
 
-    /**
-     * Selection needs an editable field, so a read-only one has no toolbar and
-     * therefore no bulk menu — the per-chip actions are still how you copy from
-     * one. `bulkActions` guards Remove on `editable` regardless, so the list
-     * stays correct if the toolbar's own gate ever changes.
-     */
-    it('offers no bulk menu on a read-only field', async () => {
-      const root = await mount({
-        props: {limit: 5, elements: copyable},
-        value: [5, 6, 7],
-        editable: false,
-      });
+    /** What's related can be copied from a read-only field, but not removed from it. */
+    it('offers only Copy for a selection on a read-only field', async () => {
+      const root = await mountSelected({}, false);
 
-      expect(bulkMenu(root)).toBeNull();
+      expect(labels(root)).toEqual(['Copy selected']);
     });
   });
   describe('element actions', () => {
@@ -1903,8 +2494,10 @@ describe('ElementSelectControl', () => {
     });
   });
   describe('destructive actions', () => {
+    // The property, which an item in a closed menu only reflects once it renders.
     function variantOf(menu: Element, label: string): string | undefined {
-      return menuItem(menu, label).getAttribute('variant') ?? undefined;
+      return (menuItem(menu, label) as HTMLElement & {variant?: string})
+        .variant;
     }
 
     it('marks the chip’s Remove as danger', async () => {

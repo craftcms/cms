@@ -33,8 +33,8 @@ use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Schema;
 use Override;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
@@ -123,6 +123,25 @@ abstract class EloquentElement extends Element
     public static function refHandle(): ?string
     {
         return Str::kebab(class_basename(static::modelClass()));
+    }
+
+    /**
+     * The name of the element type's GraphQL type.
+     *
+     * Defaults to the {@see refHandle()}, studly-cased (`Customer`, `OrderLine`). Override it if
+     * that clashes with another GraphQL type's name, such as `Site` or `Section`.
+     */
+    public static function gqlTypeName(): string
+    {
+        return Str::studly((string) static::refHandle());
+    }
+
+    /**
+     * The GraphQL schema component that lets a schema query the element type (`eloquent.customer`).
+     */
+    public static function gqlScope(): string
+    {
+        return 'eloquent.'.static::refHandle();
     }
 
     /**
@@ -282,7 +301,7 @@ abstract class EloquentElement extends Element
      */
     public static function modelColumns(): array
     {
-        return self::$modelColumns[static::class] ??= Schema::getColumnListing(static::newModel()->getTable());
+        return self::$modelColumns[static::class] ??= DB::getReadSchemaBuilder()->getColumnListing(static::newModel()->getTable());
     }
 
     /** @return TModel */
@@ -357,6 +376,12 @@ abstract class EloquentElement extends Element
     public static function editViewModelClass(): string
     {
         return EloquentElementEditViewModel::class;
+    }
+
+    #[Override]
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeName();
     }
 
     /** @return TModel */
@@ -820,7 +845,7 @@ abstract class EloquentElement extends Element
      */
     public static function canViewIndex(CraftUser $user): bool
     {
-        $gate = Gate::forUser($user);
+        $gate = Gate::forUser($user instanceof User ? self::policyUser($user) : $user);
 
         return Gate::getPolicyFor(static::modelClass()) === null
             ? $gate->check(static::permission('view'))

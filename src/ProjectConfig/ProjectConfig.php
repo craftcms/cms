@@ -18,6 +18,7 @@ use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\ProjectConfigRebuilt;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Models\Info;
@@ -43,9 +44,11 @@ class ProjectConfig
     public const string CACHE_KEY = 'projectConfig:files';
 
     /**
-     * The cache key that is used to store the loaded project config data.
+     * The cache key that is used to store the index of the loaded project config data.
+     *
+     * Top-level keys that aren’t in the index itself are stored under this key, followed by `:` and the top-level key.
      */
-    public const string STORED_CACHE_KEY = 'projectConfig:internal';
+    public const string STORED_CACHE_KEY = 'projectConfig:index';
 
     /**
      * The cache key that is used to store whether there were any issues writing the project config files out.
@@ -93,8 +96,6 @@ class ProjectConfig
     public const string PATH_ADDRESS_FIELD_LAYOUTS = self::PATH_ADDRESSES.'.'.'fieldLayouts';
 
     public const string PATH_AI = 'ai';
-
-    public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
 
     public const string PATH_CP_NAV = 'cpNav';
 
@@ -245,7 +246,6 @@ class ProjectConfig
     public function __construct(GeneralConfig $generalConfig)
     {
         $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
-        $this->writeYamlAutomatically = ! app()->isEphemeral();
         $this->handlers = new ChangeHandlers;
         $this->storage = new ConfigStorage;
 
@@ -283,6 +283,7 @@ class ProjectConfig
         $this->current = null;
         $this->external = null;
         $this->original = null;
+        $this->storage->reset();
         $this->changes = [];
         $this->persistedChanges = 0;
         $this->loggedChanges = 0;
@@ -338,6 +339,23 @@ class ProjectConfig
      */
     public function get(?string $path = null, bool $getFromExternalConfig = false): mixed
     {
+        if ($path !== null && ! $getFromExternalConfig && $this->current === null) {
+            // Nothing has changed yet, so read the stored config, which only loads the top-level keys it’s asked for
+            $segments = ProjectConfigHelper::pathSegments($path);
+            $value = $this->storage->readRoot((string) array_shift($segments), $this->cacheDuration);
+
+            // Traversed by value, as traverseDataArray() would copy the shared arrays it descends by reference
+            foreach ($segments as $segment) {
+                if (! is_array($value)) {
+                    return null;
+                }
+
+                $value = $value[$segment] ?? null;
+            }
+
+            return $value;
+        }
+
         $this->current ??= $this->storage->readDatabase($this->cacheDuration);
         $this->original ??= $this->current;
         $data = $this->current;
@@ -493,6 +511,10 @@ class ProjectConfig
 
             $newValue = $this->get($path, $this->isApplyingExternalChanges);
 
+            if ($newValue === null && $child->newValue !== null) {
+                $newValue = [];
+            }
+
             if (is_array($newValue)) {
                 // The containing value may be stale; merge the child's new value before processing it.
                 $relative = array_slice(ProjectConfigHelper::pathSegments($child->path), count(ProjectConfigHelper::pathSegments($path)));
@@ -596,6 +618,8 @@ class ProjectConfig
     /** @param array<string|int, mixed>|null $previousConfig */
     private function commit(string $path, mixed $value, ?string $message = null, bool $force = false, bool $triggerUpdate = false, ?array $previousConfig = null): void
     {
+        // Changes are made to the whole working config, so load it before anything changes
+        $this->get();
         $oldValue = $previousConfig === null ? $this->get($path) : ProjectConfigHelper::traverseDataArray($previousConfig, $path);
         $changed = $triggerUpdate || ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($value)
             || ($this->forceUpdate && ($oldValue !== null || $value !== null));
@@ -763,11 +787,26 @@ class ProjectConfig
         $this->saveModifiedConfigData();
 
         if ($this->writeYamlAutomatically) {
-            $this->writeYamlFiles();
+            try {
+                $this->writeYamlFiles();
+            } catch (ProjectConfigWriteException $exception) {
+                // The change is already saved. The failure is cached, so admins get the “folder isn’t writable” alert.
+                report($exception);
+            }
         }
     }
 
-    private function acquireLock(): void
+    /**
+     * Acquires the lock that project config changes take, and holds it until modified config data is saved.
+     *
+     * Call it before reading values that a change depends on, so no other process can change them in between.
+     *
+     * @throws BusyResourceException if a lock could not be acquired
+     * @throws StaleResourceException if the loaded project config is out-of-date
+     *
+     * @since 6.0.0
+     */
+    public function acquireLock(): void
     {
         if ($this->lock !== null) {
             return;
@@ -829,7 +868,7 @@ class ProjectConfig
      *
      * @param  bool  $force  Whether to write out the YAML even if there aren’t any new changes
      *
-     * @throws \Exception if something goes wrong
+     * @throws ProjectConfigWriteException if the YAML files can't be written
      */
     public function writeYamlFiles(bool $force = false): void
     {
@@ -843,6 +882,8 @@ class ProjectConfig
 
     /**
      * Regenerates the external config based on the loaded project config.
+     *
+     * @throws ProjectConfigWriteException if the YAML files can't be written
      */
     public function regenerateExternalConfig(): void
     {
@@ -883,7 +924,12 @@ class ProjectConfig
         }
 
         if (! $this->getDoesExternalConfigExist() || $this->getHadFileWriteIssues()) {
-            $this->writeYamlAutomatically ? $this->regenerateExternalConfig() : $this->saveModifiedConfigData();
+            try {
+                $this->writeYamlAutomatically ? $this->regenerateExternalConfig() : $this->saveModifiedConfigData();
+            } catch (ProjectConfigWriteException $exception) {
+                // The failure is cached, so admins get the “folder isn’t writable” alert instead of an error
+                report($exception);
+            }
 
             return false;
         }
@@ -900,8 +946,6 @@ class ProjectConfig
         }
 
         if (array_filter($this->getPendingChanges())) {
-            Cache::forget(self::STORED_CACHE_KEY);
-
             return true;
         }
 

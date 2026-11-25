@@ -8,10 +8,12 @@ use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Component\TypeRegistry;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
+use CraftCms\Cms\Field\TableCells\Assets;
 use CraftCms\Cms\Field\TableCells\Checkbox;
 use CraftCms\Cms\Field\TableCells\Color;
 use CraftCms\Cms\Field\TableCells\Date;
 use CraftCms\Cms\Field\TableCells\Email;
+use CraftCms\Cms\Field\TableCells\Entries;
 use CraftCms\Cms\Field\TableCells\Heading;
 use CraftCms\Cms\Field\TableCells\Lightswitch;
 use CraftCms\Cms\Field\TableCells\Link;
@@ -23,6 +25,7 @@ use CraftCms\Cms\Field\TableCells\Select;
 use CraftCms\Cms\Field\TableCells\Singleline;
 use CraftCms\Cms\Field\TableCells\Time;
 use CraftCms\Cms\Field\TableCells\Url;
+use CraftCms\Cms\Field\TableCells\Users;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
@@ -36,11 +39,13 @@ class TableCellTypes extends TypeRegistry
     protected const string CONTRACT = TableCellInterface::class;
 
     private const array BUILTIN_TYPES = [
+        'assets' => Assets::class,
         'checkbox' => Checkbox::class,
         'color' => Color::class,
         'date' => Date::class,
         'select' => Select::class,
         'email' => Email::class,
+        'entries' => Entries::class,
         'heading' => Heading::class,
         'lightswitch' => Lightswitch::class,
         'link' => Link::class,
@@ -50,6 +55,7 @@ class TableCellTypes extends TypeRegistry
         'singleline' => Singleline::class,
         'time' => Time::class,
         'url' => Url::class,
+        'users' => Users::class,
     ];
 
     public function __construct()

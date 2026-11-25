@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\Feature\Support;
 
 use CraftCms\Cms\Support\Security;
+use Illuminate\Support\Facades\Request;
 
 test('isSensitive', function (string $key, bool $expected) {
     expect(new Security()->isSensitive($key))->toBe($expected);
@@ -52,9 +53,21 @@ test('isSystemDir', function () {
     $security = new Security;
 
     expect($security->isSystemDir($configPath))->toBeTrue();
+    expect($security->isSystemDir($configPath.DIRECTORY_SEPARATOR.'nested'))->toBeTrue();
     expect($security->isSystemDir($vendorPath))->toBeTrue();
+    expect($security->isSystemDir(base_path()))->toBeTrue();
+    expect($security->isSystemDir($vendorPath.'-other'))->toBeFalse();
     expect($security->isSystemDir('/tmp/random-path'))->toBeFalse();
 });
+
+test('isRestrictedDir on Windows', function () {
+    $security = new Security;
+    $windowsPath = Request::server('SystemRoot') ?? 'C:\\Windows';
+
+    expect($security->isRestrictedDir($windowsPath))->toBeTrue()
+        ->and($security->isRestrictedDir($windowsPath.DIRECTORY_SEPARATOR.'System32'))->toBeTrue()
+        ->and($security->isRestrictedDir($windowsPath.'-other'.DIRECTORY_SEPARATOR.'uploads'))->toBeFalse();
+})->skipOnLinux()->skipOnMac();
 
 test('custom sensitive keywords', function () {
     $security = new Security(['banana', 'apple']);

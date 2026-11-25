@@ -30,7 +30,7 @@ readonly class ContentModel
      * @return array{checks: list<string>, summary: array<string, int>, findings: array<string, list<mixed>>, notes?: array<string, string>}
      */
     #[McpTool(
-        name: 'content-model.audit',
+        name: 'content_model_audit',
         description: 'Audits the Craft CMS content model for unused fields, unused entry types, empty sections, duplicate field candidates, and image assets missing alt text.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -113,10 +113,10 @@ readonly class ContentModel
             new PromptMessage(Role::User, new TextContent(<<<MARKDOWN
                 {$focusInstruction}
 
-                1. Run `content-model.audit` with {$arguments}.
-                2. Cross-check each finding with `configuration.get`, selecting `fields`, `entry-types`, or `sections` as the type.
+                1. Run `content_model_audit` with {$arguments}.
+                2. Cross-check each finding with `configuration_get`, selecting `fields`, `entry-types`, or `sections` as the type.
                 3. Treat unused and duplicate items as review candidates. Check templates, modules, plugins, and external integrations before recommending removal or merging.
-                4. For images without alt text, follow the check’s note: queue them with `assets.analyze` when Craft’s “Generate alt text” AI task is set up, and otherwise inspect their context before recommending an update with `elements.update`.
+                4. For images without alt text, follow the check’s note: queue them with `assets_analyze` when Craft’s “Generate alt text” AI task is set up, and otherwise inspect their context before recommending an update with `elements_update`.
                 5. Summarize what needs attention, why it was flagged, and the next non-destructive action.
                 6. Do not call a destructive capability unless the user explicitly confirms each action.
                 MARKDOWN)),

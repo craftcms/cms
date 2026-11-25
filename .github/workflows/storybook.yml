@@ -39,6 +39,9 @@ jobs:
   # and its deploy jobs restored nothing and failed to find Storybook.
   build-assets:
     name: 'Build assets'
+    # Installing frontend dependencies needs the Font Awesome token, and
+    # deploying needs the Cloudflare one; GitHub passes neither to fork PRs.
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
@@ -90,6 +93,15 @@ jobs:
           key: ${{ steps.cache-key.outputs.value }}
           restore-keys: ${{ steps.cache-key.outputs.prefix }}
 
+      # pnpm won't expand env vars in credentials coming from the project
+      # .npmrc, so the Font Awesome token goes in the user-level one. It's
+      # written whether or not the install cache hit: later `vp` commands
+      # re-check the lockfile against the registry, and that needs auth too.
+      - name: Authenticate with the Font Awesome registry
+        run: echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
       - parallel:
           - name: Install Composer dependencies
             if: steps.cache.outputs.cache-matched-key == ''
@@ -97,13 +109,7 @@ jobs:
 
           - name: Install frontend dependencies
             if: steps.cache.outputs.cache-matched-key == ''
-            # pnpm won't expand env vars in credentials coming from the project
-            # .npmrc, so the Font Awesome token goes in the user-level one.
-            run: |
-              echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
-              vp install --frozen-lockfile
-            env:
-              CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+            run: vp install --frozen-lockfile
 
       - name: Copy icons
         if: steps.cache.outputs.cache-matched-key == ''
@@ -191,6 +197,13 @@ jobs:
           restore-keys: ${{ needs.build-assets.outputs.cache-prefix }}
           fail-on-cache-miss: true
 
+      # `vp run` re-checks the lockfile against the registry, which needs the
+      # Font Awesome token even though nothing is installed here.
+      - name: Authenticate with the Font Awesome registry
+        run: echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
+
       - name: Build Storybook
         run: vp run @craftcms/ui#build:storybook
 
@@ -241,6 +254,13 @@ jobs:
           key: ${{ needs.build-assets.outputs.cache-key }}
           restore-keys: ${{ needs.build-assets.outputs.cache-prefix }}
           fail-on-cache-miss: true
+
+      # `vp run` re-checks the lockfile against the registry, which needs the
+      # Font Awesome token even though nothing is installed here.
+      - name: Authenticate with the Font Awesome registry
+        run: echo "//npm.fontawesome.com/:_authToken=${CRAFT_FONTAWESOME_TOKEN}" >> ~/.npmrc
+        env:
+          CRAFT_FONTAWESOME_TOKEN: ${{ secrets.CRAFT_FONTAWESOME_TOKEN }}
 
       - name: Build Storybook
         # build-assets already ran the transformer and Wayfinder, and their

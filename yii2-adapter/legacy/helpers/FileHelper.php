@@ -109,7 +109,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
-            $options['fileMode'] = Cms::config()->defaultFileMode;
+            $options['fileMode'] = \craft\config\GeneralConfig::current()->defaultFileMode;
         }
 
         if (!isset($options['dirMode'])) {
@@ -658,23 +658,21 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Deletes a file after the request ends.
+     * Deletes a file after the request, command, or queued job ends.
      *
      * @param string $filename
      * @since 4.0.0
      */
     public static function deleteFileAfterRequest(string $filename): void
     {
-        app()->terminating(function() use ($filename) {
-            File::delete($filename);
-        });
+        defer(fn() => File::delete($filename), always: true);
     }
 
     /**
      * Delete all files queued up for deletion.
      *
      * @since 4.0.0
-     * @deprecated No longer queues files for batch deletion. Files are now deleted individually via terminating callbacks.
+     * @deprecated No longer queues files for batch deletion. Files are now deleted individually via deferred callbacks.
      */
     public static function deleteQueuedFiles(): void
     {

@@ -8,12 +8,10 @@
    * applied, and then collapsed, after reloads too.
    */
   import {t} from '@craftcms/ui';
-  import '@craftcms/ui/components/text-diff/text-diff';
   import {computed, nextTick, shallowReactive, useId} from 'vue';
   import CpLink from '@/common/components/CpLink.vue';
   import AssistantCard from './AssistantCard.vue';
-  import UiRenderer from '@/modules/ui/UiRenderer.vue';
-  import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
+  import ChangeComparison from '@/modules/ui/ChangeComparison.vue';
   import {
     applyAssistantProposal,
     assistantEditorFor,
@@ -33,9 +31,6 @@
     /** Says how many changes were applied, or why some couldn’t be. */
     status: [message: string];
   }>();
-
-  // The previews’ values are their own, not the page’s.
-  provideUiValueGroup();
 
   const idPrefix = useId();
   const {applied, add} = useAppliedProposals(props.threadId);
@@ -149,29 +144,16 @@
         </craft-button>
       </template>
 
-      <craft-text-diff
-        v-if="proposal.diff"
-        :current="proposal.diff.current"
-        :proposed="proposal.diff.proposed"
+      <ChangeComparison
+        v-if="proposal.diff || proposal.preview"
+        :diff="proposal.diff"
+        :from="proposal.preview && {payload: proposal.preview.current}"
+        :to="proposal.preview && {payload: proposal.preview.proposed}"
+        :from-label="t('Current')"
+        :to-label="t('Proposed')"
         :label="proposal.label"
-        :collapse="true"
-      ></craft-text-diff>
-      <div v-else-if="proposal.preview" class="assistant-proposals__preview">
-        <div class="min-w-0">
-          <h4 class="assistant-proposals__preview-heading">
-            {{ t('Current') }}
-            <span class="sr-only">{{ proposal.label }}</span>
-          </h4>
-          <UiRenderer :payload="proposal.preview.current" />
-        </div>
-        <div class="min-w-0">
-          <h4 class="assistant-proposals__preview-heading">
-            {{ t('Proposed') }}
-            <span class="sr-only">{{ proposal.label }}</span>
-          </h4>
-          <UiRenderer :payload="proposal.preview.proposed" />
-        </div>
-      </div>
+        collapse
+      />
       <p
         v-if="!isApplied(proposal) && !assistantEditorFor(proposal)"
         class="assistant-proposals__note"
@@ -200,27 +182,9 @@
 
 <style scoped>
   .assistant-proposals {
-    container: assistant-proposals / inline-size;
     display: flex;
     flex-direction: column;
     gap: var(--c-spacing-sm);
-  }
-
-  .assistant-proposals__preview {
-    display: grid;
-    gap: var(--c-spacing-md);
-  }
-
-  @container assistant-proposals (min-width: 500px) {
-    .assistant-proposals__preview {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  .assistant-proposals__preview-heading {
-    margin-block-end: var(--c-spacing-xs);
-    font-size: var(--c-text-sm);
-    font-weight: 500;
   }
 
   .assistant-proposals__note {

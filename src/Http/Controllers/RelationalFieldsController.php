@@ -59,7 +59,7 @@ readonly class RelationalFieldsController
     /**
      * The selection of a relation field that maintains hierarchy, in structure
      * order with any missing ancestors filled in and the branch limit applied,
-     * in the shape the {@see ElementSelect} control draws from.
+     * in the shape the {@see ElementSelect} control draws from, for its view mode.
      */
     public function structuredElements(Request $request, Structures $structures): JsonResponse
     {
@@ -70,12 +70,14 @@ readonly class RelationalFieldsController
             'siteId' => ['nullable', 'integer'],
             'branchLimit' => ['nullable', 'integer'],
             'thumbSize' => ['nullable', Rule::enum(ChipThumbSize::class)],
+            'viewMode' => ['nullable', Rule::in(ElementSelect::viewModes())],
         ]);
         $thumbSize = $request->enum('thumbSize', ChipThumbSize::class);
+        $viewMode = $request->input('viewMode') ?? ElementSelect::VIEW_MODE_LIST;
 
         return new JsonResponse([
             'elements' => array_map(
-                fn (ElementInterface $element): array => ElementSelect::presentation($element, thumbSize: $thumbSize),
+                fn (ElementInterface $element): array => ElementSelect::presentation($element, $viewMode, $thumbSize),
                 $this->normalizedElements($request, $structures),
             ),
         ]);

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
+use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementActionMenuItemsResolving;
 use CraftCms\Cms\Element\Events\ElementAltActionsResolving;
 use CraftCms\Cms\Element\Events\ElementAttributeHtmlResolving;
@@ -12,12 +14,23 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Events\EntryMetaFieldsResolving;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Text;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -155,6 +168,41 @@ describe('getActionMenuItems', function () {
 
         expect($items)->toHaveCount(1);
         expect($items[0]['label'])->toBe('Only Item');
+    });
+
+    test('only offers deleting a provisional draft for a site when the canonical entry exists in another site', function () {
+        $primarySiteId = Sites::getPrimarySite()->id;
+        $secondarySite = Site::factory()->create();
+        $section = Section::factory()
+            ->withSites($secondarySite)
+            ->withEntryTypes($entryType = EntryType::factory()->create())
+            ->create(['propagationMethod' => PropagationMethod::Custom]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+        $draft->setEnabledForSite([$primarySiteId => true, $secondarySite->id => true]);
+        expect(ElementsFacade::saveElement($draft))->toBeTrue();
+
+        $offersDeleteForSite = function (int $siteId) use ($draft): array {
+            $siteDraft = Entry::find()->id($draft->id)->drafts()->provisionalDrafts()->siteId($siteId)->status(null)->one();
+            $label = 'Delete entry for this site';
+
+            return [
+                collect($siteDraft->getActionMenuItems())->pluck('label')->contains($label),
+                collect($siteDraft->actionMenuDescriptors())->pluck('label')->contains($label),
+            ];
+        };
+
+        // Deleting the draft for the original site would delete the canonical entry for its only site
+        expect($offersDeleteForSite($primarySiteId))->toBe([false, false])
+            ->and($offersDeleteForSite($secondarySite->id))->toBe([true, true]);
+
+        // Once the canonical entry exists in both sites, it can be deleted for the original site too
+        $entry->setEnabledForSite([$primarySiteId => true, $secondarySite->id => true]);
+        expect(ElementsFacade::saveElement($entry))->toBeTrue()
+            ->and($offersDeleteForSite($primarySiteId))->toBe([true, true]);
     });
 });
 
@@ -349,6 +397,60 @@ describe('getSidebarHtml', function () {
 
         expect((string) $html)->toContain('Appended');
     });
+
+    test('renders the meta fields that EntryMetaFieldsResolving listeners leave', function () {
+        Event::listen(function (EntryMetaFieldsResolving $event) {
+            unset($event->fields['postDate']);
+            $event->fields['subtitle'] = UiField::make('Subtitle')->control(Text::make('subtitle'));
+        });
+
+        $html = (string) $this->entry->getSidebarHtml(false);
+
+        expect($html)->toContain('name="slug"')
+            ->toContain('name="subtitle"')
+            ->not->toContain('name="postDate[date]"');
+    });
+
+    test('shows Post Date and Expiry Date per the entry type', function (string $context, bool $showPostDate, bool $showExpiryDate) {
+        $entryType = EntryType::factory()->create([
+            'handle' => 'block',
+            'showPostDateField' => $showPostDate,
+            'showExpiryDateField' => $showExpiryDate,
+        ]);
+
+        if ($context === 'single') {
+            $section = Section::factory()->withEntryTypes($entryType)->create(['type' => SectionType::Single]);
+            $entry = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement();
+        } else {
+            $blocksField = Field::factory()->create([
+                'handle' => 'blocks',
+                'type' => Matrix::class,
+                'settings' => ['entryTypes' => [$entryType->id]],
+            ]);
+            Fields::refreshFields();
+            $pageType = EntryType::factory()->withField($blocksField)->create();
+            EntryTypes::refreshEntryTypes();
+            $section = Section::factory()->withEntryTypes($pageType)->create();
+
+            $page = new Entry(['sectionId' => $section->id, 'typeId' => $pageType->id, 'title' => 'Page']);
+            $page->setFieldValue('blocks', ['new1' => ['type' => 'block', 'title' => 'Block']]);
+            expect(ElementsFacade::saveElement($page))->toBeTrue();
+            $entry = Entry::find()->ownerId($page->id)->one();
+        }
+
+        $html = (string) $entry->getSidebarHtml(false);
+        $paths = collect($entry->sidebarUi()->nodes())
+            ->map(fn ($node) => $node instanceof UiField ? $node->getControl()?->path() : null)
+            ->all();
+
+        expect(str_contains($html, 'name="postDate[date]"'))->toBe($showPostDate)
+            ->and(str_contains($html, 'name="expiryDate[date]"'))->toBe($showExpiryDate)
+            ->and(in_array('postDate', $paths, true))->toBe($showPostDate)
+            ->and(in_array('expiryDate', $paths, true))->toBe($showExpiryDate);
+    })->with(['nested', 'single'])->with([
+        'post date only' => [true, false],
+        'expiry date only' => [false, true],
+    ]);
 });
 
 describe('getMetadata', function () {

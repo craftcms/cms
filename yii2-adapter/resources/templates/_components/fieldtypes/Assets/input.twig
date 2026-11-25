@@ -1,7 +1,5 @@
 {% extends '_includes/forms/elementSelect.twig' %}
 
-{% set registerJs = false %}
-
 {% set jsSettings = {
     id: id|namespaceInputId,
     name: name|namespaceInputName,
@@ -40,7 +38,3 @@
     describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
     allowSelfRelations: allowSelfRelations ?? false,
 } %}
-
-{% js %}
-    new {{ jsClass }}({{ jsSettings|json_encode|raw }});
-{% endjs %}

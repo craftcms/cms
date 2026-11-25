@@ -88,6 +88,22 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/runtime/htmlpurifier/` directory, where HTML Purifier caches its definitions.
+     *
+     * @since 5.13.0
+     */
+    public function getHtmlPurifierCachePath(bool $create = true): string
+    {
+        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'htmlpurifier';
+
+        if ($create) {
+            File::ensureDirectoryExists($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * @deprecated 6.0.0
      */
     public function getRebrandPath(bool $create = true): string

@@ -46,14 +46,4 @@ describe('craft-empty', () => {
 
     expect(element.shadowRoot!.querySelector('craft-icon')).toBeNull();
   });
-
-  /** Each slot is a fallback point, so slotting replaces what it defaults to. */
-  it('offers graphic, content, and default slots', async () => {
-    const element = await createEmpty({label: 'None'});
-    const names = [...element.shadowRoot!.querySelectorAll('slot')].map(
-      (slot) => slot.getAttribute('name')
-    );
-
-    expect(names).toEqual(expect.arrayContaining(['graphic', 'content', null]));
-  });
 });

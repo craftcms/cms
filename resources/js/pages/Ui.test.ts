@@ -10,6 +10,9 @@ import {
 } from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UiChange, UiPayload, UiValue} from '@/modules/ui/types';
+import {provideLayoutSlotRegistry} from '@/common/composables/layoutSlots';
+import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
+import ErrorSummary from '@/common/form/ErrorSummary.vue';
 import UiPage from './Ui.vue';
 
 const state = vi.hoisted<{
@@ -25,6 +28,8 @@ const state = vi.hoisted<{
     >
   >;
   setValue: ReturnType<typeof vi.fn>;
+  page: {props: {errors?: Record<string, string>}};
+  formErrors: Record<string, string>;
   change?: (change: UiChange, values: UiPayload['values']) => void;
   currentValues: UiPayload['values'];
   confirmElevation: ReturnType<typeof vi.fn>;
@@ -34,6 +39,8 @@ const state = vi.hoisted<{
   refresh: undefined,
   submit: vi.fn(),
   setValue: vi.fn(),
+  page: {props: {}},
+  formErrors: {},
   change: undefined,
   currentValues: {siteId: 42, name: 'Changed', live: '1'},
   confirmElevation: vi.fn(),
@@ -54,12 +61,13 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
 }));
 
 vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({props: {}}),
+  usePage: () => state.page,
   setLayoutProps: state.layout,
   useForm: () => {
     let transform = (data: UiPayload['values']) => data;
     const ui = {
-      errors: {},
+      errors: state.formErrors,
+      hasErrors: Object.keys(state.formErrors).length > 0,
       isDirty: false,
       name: undefined,
       data: () => (ui.name === undefined ? {} : {name: ui.name}),
@@ -88,7 +96,7 @@ vi.mock('@/modules/auth/elevated-session', () => ({
 
 vi.mock('@/modules/ui/UiRenderer.vue', () => ({
   default: defineComponent({
-    props: ['refresh'],
+    props: ['payload', 'refresh'],
     emits: ['change', 'update:mutation'],
     setup: (props, {emit, expose, slots}) => {
       state.refresh = props.refresh;
@@ -100,7 +108,12 @@ vi.mock('@/modules/ui/UiRenderer.vue', () => ({
       });
       onMounted(() => emit('update:mutation', {name: 'Changed'}));
 
-      return () => h('div', slots.name?.({value: 'Original'}));
+      return () =>
+        h(
+          'div',
+          {'data-values': JSON.stringify(props.payload.values)},
+          slots.name?.({value: 'Original'})
+        );
     },
   }),
 }));
@@ -123,6 +136,8 @@ beforeEach(() => {
   state.refresh = undefined;
   state.change = undefined;
   state.setValue.mockReset();
+  state.page = {props: {}};
+  state.formErrors = {};
   state.submit.mockClear();
   state.confirmElevation.mockReset();
   state.currentValues = {siteId: 42, name: 'Changed', live: '1'};
@@ -258,6 +273,43 @@ it('refreshes the ui through the configured endpoint', async () => {
   expect(result).toBe(refreshed);
 });
 
+it('keeps the payloads it shows when a page comes back with validation errors', async () => {
+  const pageProps = reactive({
+    ui: {...payload, values: {name: 'Original', hasUrls: false}},
+    sidebarUi: {...payload, values: {enabled: true}},
+    submit: {method: 'post' as const, url: '/settings/sites'},
+    refreshUrl: '/settings/sites/ui',
+  });
+  app = createApp({render: () => h(UiPage, pageProps)});
+  app.mount(container);
+  await nextTick();
+
+  const shownValues = () =>
+    [...container.querySelectorAll('[data-values]')].map((element) =>
+      JSON.parse(element.getAttribute('data-values')!)
+    );
+
+  state.page.props.errors = {name: 'Name cannot be blank.'};
+  pageProps.ui = {...payload, values: {name: 'Stored', hasUrls: false}};
+  pageProps.sidebarUi = {...payload, values: {enabled: false}};
+  await nextTick();
+
+  expect(shownValues()).toEqual([
+    {name: 'Original', hasUrls: false},
+    {enabled: true},
+  ]);
+
+  state.page.props.errors = {};
+  pageProps.ui = {...payload, values: {name: 'Saved', hasUrls: true}};
+  pageProps.sidebarUi = {...payload, values: {enabled: false}};
+  await nextTick();
+
+  expect(shownValues()).toEqual([
+    {name: 'Saved', hasUrls: true},
+    {enabled: false},
+  ]);
+});
+
 it('forwards control changes and external value updates', async () => {
   const onChange = vi.fn();
   const page = shallowRef<UiPageExposed | null>(null);
@@ -309,4 +361,50 @@ it('forwards path-keyed control slots to the UI renderer', async () => {
   expect(container.querySelector('[data-name-override]')?.textContent).toBe(
     'Original'
   );
+});
+
+it('links an error to its field where the payload scopes it', async () => {
+  const field = document.createElement('craft-field');
+  field.id = 'ui-settings-name';
+  document.body.append(field);
+  state.formErrors = {name: '*Name* cannot be blank.'};
+  app = createApp(
+    defineComponent({
+      setup: () => {
+        provideLayoutSlotRegistry();
+
+        return () =>
+          h('div', [
+            // Falls back to the shell's own summary, as PageScreen does.
+            h(LayoutSlotOutlet, {name: 'error-summary'}, () =>
+              h(ErrorSummary, {errors: state.formErrors})
+            ),
+            h(UiPage, {
+              ui: {
+                ...payload,
+                scope: ['settings'],
+                nodes: [
+                  {type: 'field', control: {path: ['settings', 'name']}},
+                ] as unknown as UiPayload['nodes'],
+              },
+              submit: {method: 'post', url: '/settings/general'},
+            }),
+          ]);
+      },
+    })
+  );
+  app.mount(container);
+  await nextTick();
+  await nextTick();
+
+  const link = container.querySelector<HTMLAnchorElement>(
+    'craft-callout[variant="danger"] a'
+  );
+  const items = container.querySelectorAll(
+    'craft-callout[variant="danger"] li'
+  );
+  expect(items).toHaveLength(1);
+  expect(link?.getAttribute('href')).toBe('#ui-settings-name');
+  expect(link?.textContent?.trim()).toBe('Name cannot be blank.');
+  field.remove();
 });

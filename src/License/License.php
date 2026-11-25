@@ -13,6 +13,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -22,6 +23,7 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -49,9 +51,9 @@ readonly class License
 
     public function key(): ?string
     {
-        if (defined('CRAFT_LICENSE_KEY')) {
-            $licenseKey = CRAFT_LICENSE_KEY;
-        } else {
+        $licenseKey = $this->environmentKey();
+
+        if ($licenseKey === null) {
             $path = $this->keyPath();
 
             // Check to see if the key exists
@@ -72,15 +74,21 @@ readonly class License
     }
 
     /**
+     * Returns the license key set by the `CRAFT_LICENSE_KEY` environment variable or PHP constant, if any.
+     */
+    public function environmentKey(): ?string
+    {
+        $licenseKey = defined('CRAFT_LICENSE_KEY') ? CRAFT_LICENSE_KEY : Env::get('CRAFT_LICENSE_KEY');
+
+        return is_string($licenseKey) && $licenseKey !== '' ? $licenseKey : null;
+    }
+
+    /**
      * Returns the path to the license key file.
      */
     public function keyPath(): string
     {
-        if (defined('CRAFT_LICENSE_KEY_PATH')) {
-            return CRAFT_LICENSE_KEY_PATH;
-        }
-
-        return config_path('craft/license.key');
+        return Env::get('CRAFT_LICENSE_KEY_PATH') ?: config_path('craft/license.key');
     }
 
     /**
@@ -103,6 +111,68 @@ readonly class License
         sort($resolveItems);
 
         return md5(implode('', $resolveItems));
+    }
+
+    /**
+     * Returns info about the active trials of Craft and plugins, from their licensing issues: a message naming them,
+     * and the URL of a Craft Console cart to buy them with. Returns null if there are none.
+     *
+     * Issues are only known once license info has been fetched, so this returns null until then.
+     *
+     * @return array{message: string, cartUrl: string}|null
+     */
+    public function trialInfo(): ?array
+    {
+        $issues = collect($this->issues([
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ]));
+
+        if ($issues->isEmpty()) {
+            return null;
+        }
+
+        $cmsIssues = $issues->filter(fn ($issue) => in_array($issue[2]['type'], ['cms-edition', 'cms-renewal']));
+        $pluginEditionIssues = $issues->filter(fn ($issue) => $issue[2]['type'] === 'plugin-edition');
+        $pluginRenewalIssues = $issues->filter(fn ($issue) => $issue[2]['type'] === 'plugin-renewal');
+
+        $names = $cmsIssues->map(fn ($issue) => $issue[0])->all();
+        foreach ([$pluginEditionIssues, $pluginRenewalIssues] as $group) {
+            $count = $group->count();
+            if ($count === 1) {
+                $names[] = $group->first()[0];
+            } elseif ($count !== 0) {
+                if ($group->first()[2]['type'] === 'plugin-edition') {
+                    $name = t('{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
+                        'count' => $count,
+                    ]);
+                } else {
+                    $name = t('{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
+                        'count' => $count,
+                    ]);
+                }
+                if (empty($names)) {
+                    $name = ucfirst($name);
+                }
+                $names[] = $name;
+            }
+        }
+
+        $message = t('{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
+            'names' => collect($names)->sentence(),
+            'total' => $issues->count(),
+        ]);
+
+        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => $issues->map(fn ($issue) => $issue[2])->all()])
+            ->value();
+
+        return [
+            'message' => $message,
+            'cartUrl' => $cartUrl,
+        ];
     }
 
     /**
@@ -317,7 +387,7 @@ readonly class License
             'target' => '_blank',
         ]);
 
-        if (defined('CRAFT_LICENSE_KEY')) {
+        if ($this->environmentKey() !== null) {
             $message = t('The Craft CMS license key in use belongs to {domain}', [
                 'domain' => $domainLink,
             ]);

@@ -28,8 +28,6 @@ export interface ElementInfo {
 
 /** The `element-selector-modals/body` response. */
 export interface ElementIndexBody {
-  /** Legacy `ElementIndexHtml` markup. Only the volume-folder path reads it. */
-  html: string;
   /** `ModalIndexViewModel::toArray()`. The Vue index reads it. */
   props: Record<string, unknown>;
 }
@@ -51,6 +49,8 @@ export type LoadIndexBody = (
 export interface ElementIndexAdapter {
   clearSelection(): void;
   destroy?(): void;
+  refresh?(): Promise<void>;
+  selectElements?(ids: number[]): void;
 }
 
 /** Extra information about a selection, beyond the elements themselves. */

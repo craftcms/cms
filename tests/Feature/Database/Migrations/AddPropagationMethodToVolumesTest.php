@@ -25,7 +25,7 @@ function removeVolumePropagationMethods(VolumeModel $volume): void
     $projectConfig->set(ProjectConfig::PATH_VOLUMES.".$volume->uid", [
         'name' => $volume->name,
         'handle' => $volume->handle,
-        'fs' => $volume->fs,
+        'disk' => $volume->disk,
     ]);
     $projectConfig->muteEvents = false;
 }

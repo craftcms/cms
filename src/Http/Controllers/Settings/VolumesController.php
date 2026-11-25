@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
@@ -42,7 +41,6 @@ class VolumesController extends BaseAssetSettingsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private readonly AssetTransformers $assetTransformers,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -65,7 +63,7 @@ class VolumesController extends BaseAssetSettingsController
                 ],
                 ...($this->readOnly ? [] : [
                     '_deleteUrl' => route('craft.cp.settings.assets.volumes.destroy', ['volumeId' => $volume->id]),
-                    '_deleteConfirmMessage' => t('Are you sure you want to delete "{name}"?', ['name' => $volume->name]),
+                    '_deleteConfirmMessage' => t('Are you sure you want to delete “{name}”?', ['name' => $volume->name]),
                 ]),
             ]))
             ->emptyMessage(t('No volumes exist yet.'))
@@ -109,10 +107,9 @@ class VolumesController extends BaseAssetSettingsController
             'values.volumeId' => ['nullable', 'integer'],
             'values.name' => ['nullable', 'string'],
             'values.handle' => ['nullable', 'string'],
-            'values.fsHandle' => ['nullable', 'string'],
+            'values.disk' => ['nullable', 'string'],
             'values.hasUrls' => ['required', 'boolean'],
             'values.subpath' => ['nullable', 'string'],
-            'values.assetTransformer' => ['nullable', 'string'],
             'values.titleTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
             'values.titleTranslationKeyFormat' => ['nullable', 'string'],
             'values.altTranslationMethod' => ['required', Rule::enum(TranslationMethod::class)],
@@ -131,7 +128,6 @@ class VolumesController extends BaseAssetSettingsController
                 $volume,
                 $volumes,
                 $uiResolver,
-                $this->assetTransformers,
                 values: $data['values'],
             )->ui(),
         ]);
@@ -139,9 +135,6 @@ class VolumesController extends BaseAssetSettingsController
 
     public function store(Request $request, Volumes $volumes, Fields $fields): Response
     {
-        $data = $request->validate([
-            'assetTransformer' => ['nullable', 'string'],
-        ]);
         $volumeId = $request->integer('volumeId') ?: null;
         $volume = $volumeId ? $volumes->getVolumeById($volumeId) : new Volume;
 
@@ -155,10 +148,9 @@ class VolumesController extends BaseAssetSettingsController
 
         $volume->name = $request->input('name');
         $volume->handle = $request->input('handle');
-        $volume->fsHandle = $request->input('fsHandle');
+        $volume->disk = $request->input('disk');
         $volume->hasUrls = $request->boolean('hasUrls');
         $volume->subpath = $subpath;
-        $volume->assetTransformer = ($data['assetTransformer'] ?? null) ?: null;
         $volume->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, TranslationMethod::Site);
         $volume->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat');
         $volume->altTranslationMethod = $request->enum('altTranslationMethod', TranslationMethod::class, TranslationMethod::None);
@@ -212,7 +204,6 @@ class VolumesController extends BaseAssetSettingsController
                 $volume,
                 $volumes,
                 $uiResolver,
-                $this->assetTransformers,
                 readOnly: $this->readOnly,
             ))
             ->unless(

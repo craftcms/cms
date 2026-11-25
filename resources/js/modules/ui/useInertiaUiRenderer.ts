@@ -1,14 +1,9 @@
 import type {InertiaForm} from '@inertiajs/vue3';
-import {
-  computed,
-  shallowRef,
-  toRaw,
-  toValue,
-  watch,
-  type MaybeRefOrGetter,
-} from 'vue';
+import {computed, shallowRef, toValue, watch, type MaybeRefOrGetter} from 'vue';
 import type {UiChangeKind, UiPayload, UiValue} from './types';
+import type {UiValueSnapshot} from './valueAccess';
 import {pathsMatch, visitControls} from './runtime';
+import {cloneRaw} from './renderer/uiTree';
 
 export interface UiRendererInstance {
   advanceBaseline(): void;
@@ -21,6 +16,10 @@ export interface UiRendererInstance {
   setValues(
     changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
   ): void;
+  /** The value of the control at a path, when it says it can be read. */
+  readValue(path: string[]): UiValueSnapshot | null;
+  /** Gives the control at a path a value read from elsewhere, when it says it can take one. */
+  writeValue(path: string[], snapshot: UiValueSnapshot): boolean;
 }
 
 interface Options<T extends object, Key extends Extract<keyof T, string>> {
@@ -61,11 +60,16 @@ export function useInertiaUiRenderer<
     {flush: 'sync', immediate: true}
   );
 
+  /** The path of the control a server error key belongs to. */
+  function errorPath(key: string): string[] | null {
+    return mapErrorPath
+      ? mapErrorPath(key)
+      : defaultErrorPath(key, toValue(payload));
+  }
+
   const errors = computed(() =>
     Object.entries(form.errors).flatMap(([path, message]) => {
-      const mappedPath = mapErrorPath
-        ? mapErrorPath(path)
-        : defaultErrorPath(path, toValue(payload));
+      const mappedPath = errorPath(path);
 
       return mappedPath
         ? [{path: mappedPath, messages: [String(message)]}]
@@ -73,21 +77,29 @@ export function useInertiaUiRenderer<
     })
   );
 
+  /** The mutation last applied to the form, serialized. */
+  let appliedMutation = '{}';
+
   /**
    * Applies the renderer's mutation to the Inertia form, and reports whether it
-   * carried anything.
+   * carried a change.
    *
    * The mutation *is* the difference against the values the server sent, so an
    * empty one means the screen matches the server — a control announcing itself
-   * as it's populated, say, rather than an edit. Callers that act on changes
-   * (autosave) read that from here rather than deciding for themselves, and
-   * `form.isDirty` says the same thing a tick later for callers that can wait.
+   * as it's populated, say, rather than an edit. One identical to the last is
+   * no edit either: a layout refresh re-emits the unsaved values it was asked
+   * to render. Callers that act on changes (autosave) read that from here
+   * rather than deciding for themselves, and `form.isDirty` says the same thing
+   * a tick later for callers that can wait.
    */
   function onMutation(mutation: UiPayload['values']): boolean {
+    const serialized = JSON.stringify(mutation);
+    const repeated = serialized === appliedMutation;
+    appliedMutation = serialized;
     replaceMutation(mutation);
     values.value = renderer.value?.currentValues() ?? values.value;
 
-    return Object.keys(mutation).length > 0;
+    return !repeated && Object.keys(mutation).length > 0;
   }
 
   function replaceMutation(mutation: UiPayload['values']): void {
@@ -154,12 +166,14 @@ export function useInertiaUiRenderer<
     // The renderer's reset emits an empty mutation of its own, but the bridge
     // has to hold up on its own when nothing is mounted to emit one.
     replaceMutation({});
+    appliedMutation = '{}';
     values.value = clone(toValue(payload)?.values ?? {});
     form.defaults();
   }
 
   return {
     advanceBaseline,
+    errorPath,
     errors,
     onMutation,
     rebase,
@@ -222,6 +236,11 @@ function defaultErrorPath(
   return withinScope ? segments : null;
 }
 
-function clone<T>(value: T): T {
-  return structuredClone(toRaw(value));
+/**
+ * A copy with no Vue proxies anywhere in it, not just at the top: a payload
+ * merged from Inertia's props, as the editor's deferred tabs are, holds
+ * reactive objects further down, which `structuredClone()` can't copy.
+ */
+function clone<T extends UiValue>(value: T): T {
+  return cloneRaw(value);
 }

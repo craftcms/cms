@@ -27,10 +27,13 @@ class ExpiresNode extends Node
                 ->write('$expiration = ')
                 ->subcompile($expiration)
                 ->raw(";\n")
+                /** @see DateTimeHelper::toDateTime() */
                 ->write(sprintf(
                     '$duration = %s::toDateTime($expiration)->getTimestamp() - now()->getTimestamp();',
                     DateTimeHelper::class,
                 ));
+        } elseif (! $this->hasAttribute('durationNum')) {
+            $compiler->write("\$duration = 0;\n");
         } else {
             $now = now();
             $duration = (int) $now->diffInSeconds((clone $now)->add(
@@ -40,6 +43,7 @@ class ExpiresNode extends Node
             $compiler->write("\$duration = $duration;\n");
         }
 
+        /** @see \CraftCms\Cms\Http\ResponseHeaders::setCache() */
         $compiler->write(ResponseHeaders::class."::setCache(\$duration);\n");
     }
 }

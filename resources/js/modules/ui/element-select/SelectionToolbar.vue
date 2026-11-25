@@ -14,6 +14,10 @@
     actions: ActionItem[];
     /** How many elements the field relates. */
     total: number;
+    /** What one element is called, such as “entry”. */
+    elementDisplayName: string;
+    /** What several elements are called, such as “entries”. */
+    elementPluralDisplayName: string;
     limit: number | null;
   }>();
 
@@ -25,18 +29,12 @@
    * nested interpolation to the template compiler.
    */
   const selectionCountLabel = computed(() =>
-    t('{num, number} {num, plural, =1{item} other{items}} selected', {
+    t('{num, number} {num, plural, =1{{item}} other{{items}}} selected', {
       num: selectedIds.value.length,
+      item: props.elementDisplayName,
+      items: props.elementPluralDisplayName,
     })
   );
-
-  /**
-   * `craft-checkbox` dispatches from the host rather than an inner `<input>`, so
-   * the checked state has to be read off the target as a plain property.
-   */
-  function checkboxValue(event: Event): boolean {
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
 </script>
 
 <template>
@@ -46,7 +44,9 @@
         label-sr-only
         .checked="allSelected"
         .indeterminate="someSelected"
-        @model-value-changed="selection.toggleAll(checkboxValue($event))"
+        @change="
+          selection.toggleAll(($event.target as HTMLInputElement).checked)
+        "
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>

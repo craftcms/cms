@@ -13,7 +13,7 @@ function fakeController(): ElementSelectorController {
     busy: false,
     selection: [],
     disabledElementIds: [],
-    indexBody: {html: '', props: {}},
+    indexBody: {props: {}},
     error: null,
     title: 'Choose an entry',
     showTitle: false,
@@ -43,34 +43,58 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-it('holds the height it opened at while the index reloads, until the window resizes', async () => {
+async function openModal(indexHeight: string) {
   const modal = document.createElement(
     'craft-element-selector-modal'
   ) as CraftElementSelectorModal;
   const index = document.createElement('div');
-  index.style.blockSize = '600px';
+  index.style.blockSize = indexHeight;
   modal.append(index);
   modal.controller = fakeController();
   document.body.append(modal);
   await modal.updateComplete;
-  await frames(3);
-
+  await frames(2);
   const surface = modal.shadowRoot!.querySelector<HTMLElement>('.surface')!;
-  const height = () => surface.getBoundingClientRect().height;
-  const opened = height();
 
-  expect(modal.hasAttribute('size-locked')).toBe(true);
+  return {modal, index, surface};
+}
 
-  // A reload swaps in a much shorter listing.
-  index.style.blockSize = '50px';
+it('opens at golden-ratio proportions, within 90% of the viewport, whatever the index holds', async () => {
+  const {index, surface} = await openModal('50px');
+  const {width, height} = surface.getBoundingClientRect();
+
+  expect(width).toBeCloseTo(Math.min(window.innerWidth * 0.96, 1280), 0);
+  expect(height).toBeCloseTo(
+    Math.min(Math.max(width / 1.618, 400), window.innerHeight * 0.9),
+    0
+  );
+
+  index.style.blockSize = '3000px';
   await frames(1);
-  expect(height()).toBe(opened);
+  expect(surface.getBoundingClientRect().height).toBe(height);
+});
 
-  window.dispatchEvent(new Event('resize'));
-  expect(modal.hasAttribute('size-locked')).toBe(false);
-  expect(height()).toBeLessThan(opened);
+it('opens at the size the last element selector modal was resized to', async () => {
+  localStorage.clear();
+  const first = await openModal('50px');
+  const grips = first.modal.shadowRoot!.querySelector('craft-resize-grips')!;
+  const corner = grips.shadowRoot!.querySelector<HTMLElement>('.grip--corner')!;
+  const {width, height} = first.surface.getBoundingClientRect();
+  corner.focus();
+  corner.dispatchEvent(
+    new KeyboardEvent('keydown', {key: 'ArrowLeft', bubbles: true})
+  );
+  corner.dispatchEvent(
+    new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
+  );
+  first.modal.remove();
 
-  await vi.waitFor(() => expect(modal.hasAttribute('size-locked')).toBe(true));
+  const second = await openModal('50px');
+  const reopened = second.surface.getBoundingClientRect();
+
+  expect(reopened.width).toBe(Math.round(width) - 16);
+  expect(reopened.height).toBe(Math.round(height) + 16);
+  localStorage.clear();
 });
 
 it('follows its width after it is moved in the document', async () => {

@@ -26,12 +26,15 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
+use CraftCms\Cms\Element\FieldChangeComparisons;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -50,6 +53,8 @@ use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -210,47 +215,6 @@ trait HasControlPanelUI
     {
         $items = [];
 
-        // Validate
-        if (
-            ! $this->getIsRevision() &&
-            ! request()->headers->has('X-Craft-Container-Id') &&
-            app()->resolved(ElementRequest::class) &&
-            app(ElementRequest::class)->element === $this
-        ) {
-            $validateId = sprintf('action-validate-%s', mt_rand());
-            $items[] = [
-                'id' => $validateId,
-                'icon' => 'circle-check',
-                'label' => t('Validate {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-
-            HtmlStack::jsWithVars(fn ($id) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  btn.on('activate', () => {
-    const elementId = btn.closest('.menu').data('disclosureMenu').\$trigger
-      .closest('form').data('elementEditor').settings.elementId;
-    const form = Craft.createForm()
-      .addClass('hidden')
-      .append(Craft.getCsrfInput())
-      .appendTo(Garnish.\$bod);
-
-    Craft.submitForm(form, {
-      action: 'elements/validate',
-      retainScroll: true,
-      params: {
-        elementId,
-      },
-    });
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($validateId),
-            ]);
-        }
-
         // View
         if ($url = $this->getUrl()) {
             $viewId = sprintf('action-view-%s', mt_rand());
@@ -295,35 +259,68 @@ JS, [
 
             // Copy
             if (! $this->getIsRevision() && Gate::check('copy', $this)) {
-                $copyId = sprintf('action-copy-%s', mt_rand());
                 $items[] = [
-                    'id' => $copyId,
+                    'id' => sprintf('action-copy-%s', mt_rand()),
                     'color' => Color::Fuchsia,
                     'icon' => self::actionMenuIcon('clone-dashed'),
                     'label' => mb_ucfirst(t('Copy {type}', [
                         'type' => static::lowerDisplayName(),
                     ])),
+                    'action' => self::behaviorAction([
+                        'type' => 'copy',
+                        'elements' => [[
+                            'type' => static::class,
+                            'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                            'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                            'revisionId' => $this->revisionId,
+                            'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
+                            'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                            'siteId' => $this->siteId,
+                        ]],
+                    ]),
                 ];
+            }
+        }
 
-                HtmlStack::jsWithVars(fn ($id, $elementInfo) => <<<JS
+        // Validate
+        if (
+            ! $this->getIsRevision() &&
+            ! request()->headers->has('X-Craft-Container-Id') &&
+            app()->resolved(ElementRequest::class) &&
+            app(ElementRequest::class)->element === $this
+        ) {
+            $validateId = sprintf('action-validate-%s', mt_rand());
+            $items[] = [
+                'id' => $validateId,
+                'icon' => 'circle-check',
+                'label' => t('Validate {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ];
+
+            HtmlStack::jsWithVars(fn ($id, $elementId) => <<<JS
 (() => {
-  $('#' + $id).on('activate', () => {
-    Craft.cp.copyElements([$elementInfo])
+  const btn = $('#' + $id);
+  btn.on('activate', () => {
+    const elementId = $elementId;
+    const form = Craft.createForm()
+      .addClass('hidden')
+      .append(Craft.getCsrfInput())
+      .appendTo(Garnish.\$bod);
+
+    Craft.submitForm(form, {
+      action: 'elements/validate',
+      retainScroll: true,
+      params: {
+        elementId,
+      },
+    });
   });
 })();
 JS, [
-                    InputNamespace::namespaceId($copyId),
-                    [
-                        'type' => static::class,
-                        'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
-                        'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
-                        'revisionId' => $this->revisionId,
-                        'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
-                        'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
-                        'siteId' => $this->siteId,
-                    ],
-                ]);
-            }
+                InputNamespace::namespaceId($validateId),
+                $this->id,
+            ]);
         }
 
         return $items;
@@ -354,18 +351,6 @@ JS, [
         $redirectUrl = ElementHelper::postEditRedirectUrl($this);
         $sourceId = $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id;
 
-        if (! $this->getIsRevision()) {
-            $items[] = [
-                'label' => t('Validate {type}', ['type' => static::lowerDisplayName()]),
-                'icon' => 'circle-check',
-                'behavior' => [
-                    'type' => 'submit',
-                    'actionUrl' => Url::actionUrl('elements/validate'),
-                    'params' => ['elementId' => $this->id],
-                ],
-            ];
-        }
-
         if ($url = $this->getUrl()) {
             $items[] = [
                 'label' => t('View in a new tab'),
@@ -392,6 +377,18 @@ JS, [
             ];
         }
 
+        if (! $this->getIsRevision()) {
+            $items[] = [
+                'label' => t('Validate {type}', ['type' => static::lowerDisplayName()]),
+                'icon' => 'circle-check',
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('elements/validate'),
+                    'params' => ['elementId' => $this->id],
+                ],
+            ];
+        }
+
         $items = [...$items, ...$this->extraActionMenuDescriptors($context)];
 
         // Destructive items sort last and are flagged so the menu can style them.
@@ -408,7 +405,11 @@ JS, [
         $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && Gate::check('deleteForSite', $canonical)) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && Gate::check('deleteForSite', $canonical) && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             Gate::check('deleteForSite', $this)
         );
 
@@ -505,6 +506,22 @@ JS, [
     }
 
     /**
+     * A menu item action that runs one of {@see actionMenuDescriptors()}'s
+     * behaviors, so server-rendered menus need no inline JavaScript.
+     *
+     * @param  array<string, mixed>  $behavior
+     * @return array<string, mixed>
+     */
+    protected static function behaviorAction(array $behavior): array
+    {
+        return [
+            'type' => 'event',
+            'name' => 'craft:element-action',
+            'detail' => ['behavior' => $behavior],
+        ];
+    }
+
+    /**
      * Qualifies an icon with its family when it isn't in the default set.
      *
      * The action menu's icon renderer resolves a bare name against the default
@@ -592,7 +609,11 @@ JS, [
         $canDeleteCanonicalForSite = Gate::check('deleteForSite', $canonical);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && $canDeleteCanonicalForSite && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             Gate::check('deleteForSite', $this)
         );
 
@@ -617,47 +638,24 @@ JS, [
             }
 
             if ($canDeleteCanonical) {
-                $deleteId = sprintf('action-delete-%s', mt_rand());
-
                 $items[] = [
-                    'id' => $deleteId,
+                    'id' => sprintf('action-delete-%s', mt_rand()),
                     'icon' => 'trash',
                     'label' => mb_ucfirst(t('Delete {type}', [
                         'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ])),
-                ];
-
-                HtmlStack::jsWithVars(fn (
-                    $id,
-                    $elementType,
-                    $elementId,
-                    $siteId,
-                    $ownerId,
-                    $confirmationMessage,
-                    $redirect,
-                ) => <<<JS
-$('#' + $id).on('activate', async () => {
-  new Craft.ElementDeletionManager($elementType, [$elementId], {
-    siteId: $siteId,
-    ownerId: $ownerId,
-    confirmationMessage: $confirmationMessage,
-    onSuccess: () => {
-      document.location.href = $redirect;
-    },
-  })
-});
-JS,
-                    [
-                        InputNamespace::namespaceId($deleteId),
-                        static::class,
-                        $this->id,
-                        $this->siteId,
-                        $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
-                        t('Are you sure you want to delete this {type}?', [
+                    'action' => self::behaviorAction([
+                        'type' => 'delete',
+                        'elementType' => static::class,
+                        'elementId' => $this->id,
+                        'siteId' => $this->siteId,
+                        'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        'confirm' => t('Are you sure you want to delete this {type}?', [
                             'type' => $isDraft ? t('draft') : static::lowerDisplayName(),
                         ]),
-                        "$redirectUrl#",
-                    ]);
+                        'redirect' => Url::cpUrl($redirectUrl),
+                    ]),
+                ];
             }
         } elseif ($isDraft && $canDeleteDraft) {
             if ($canDeleteForSite) {
@@ -809,7 +807,9 @@ JS,
     {
         $components = [];
 
-        $metaFieldsHtml = trim($this->metaFieldsHtml($static));
+        $metaFieldsHtml = trim((string) ($this->hasMetaFieldsNodes()
+            ? $this->metaFieldsNodesHtml($static)
+            : $this->metaFieldsHtml($static)));
         if ($metaFieldsHtml !== '') {
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta'])
                 .Html::tag('h2', t('Metadata'), ['class' => 'visually-hidden']);
@@ -1007,19 +1007,60 @@ JS,
     }
 
     /**
+     * Returns whether the element's meta fields come from
+     * {@see metaFieldsNodes()}. An element type that overrides
+     * {@see metaFieldsHtml()} without overriding `metaFieldsNodes()` alongside it
+     * keeps its HTML, so its fields aren't lost.
+     */
+    private function hasMetaFieldsNodes(): bool
+    {
+        return new ReflectionMethod($this, 'metaFieldsHtml')->getDeclaringClass()->getName()
+            === new ReflectionMethod($this, 'metaFieldsNodes')->getDeclaringClass()->getName();
+    }
+
+    /**
+     * Renders {@see metaFieldsNodes()} as HTML for the HTML editor, followed by
+     * the HTML that {@see ElementMetaFieldsHtmlResolving} listeners add.
+     */
+    private function metaFieldsNodesHtml(bool $static): string
+    {
+        // Delta tracking is on so attributes such as an entry's dates register
+        // their names, which the HTML editor uses to submit only changed values.
+        $nodes = DeltaRegistry::withActive(true, fn () => $this->metaFieldsNodes($static));
+        $html = $nodes === [] ? '' : app(UiHtmlRenderer::class)->render(
+            app(UiResolver::class)->resolve(Ui::make($nodes), new UiContext(errors: $this->uiErrors())),
+        );
+
+        event($event = new ElementMetaFieldsHtmlResolving($this, $static));
+
+        return $html."\n".$event->html;
+    }
+
+    /**
      * Returns the element's validation errors keyed the way the editor's UIs
      * address them.
      *
      * A Ui matches errors to Controls by path, so an attribute validated
      * under one name but posted under another — an asset's `newLocation` versus
      * its `newFilename` field — needs remapping here, or its messages never
-     * reach the field that produced them.
+     * reach the field that produced them. Custom fields rekey the errors they
+     * added themselves; see {@see FieldInterface::uiErrors()}.
      *
      * @return array<string, list<string>>
      */
     public function uiErrors(): array
     {
-        return $this->errors()->getMessages();
+        $errors = $this->errors()->getMessages();
+
+        if ($errors === []) {
+            return $errors;
+        }
+
+        foreach ($this->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            $errors = $field->uiErrors($this, $errors);
+        }
+
+        return $errors;
     }
 
     /**
@@ -1266,21 +1307,23 @@ JS,
         $isDraft = $this->getIsDraft();
         $canonicalId = $this->getCanonicalId();
 
-        // Sites that were added to a draft can be deleted from it again
-        if ($isDraft && Gate::check('deleteForSite', $this)) {
+        // Sites that were added to a draft, which the current entry doesn't have, and can be deleted from it again
+        if ($isDraft) {
             $canonicalSiteIds = $this->getIsUnpublishedDraft()
                 ? []
                 : DB::table(Table::ELEMENTS_SITES)
                     ->where('elementId', $canonicalId)
                     ->pluck('siteId')
                     ->all();
-            $newSiteIds = $sites
+            $draftOnlySiteIds = $sites
                 ->map(fn (Site $site) => $site->id)
                 ->reject(fn (int $siteId) => $siteId === $this->siteId || in_array($siteId, $canonicalSiteIds))
                 ->all();
         } else {
-            $newSiteIds = [];
+            $draftOnlySiteIds = [];
         }
+
+        $newSiteIds = $draftOnlySiteIds && Gate::check('deleteForSite', $this) ? $draftOnlySiteIds : [];
 
         $sites = $sites->sortBy(fn (Site $site) => $site->id === $this->siteId ? 0 : 1)->values();
 
@@ -1308,6 +1351,10 @@ JS,
                                 : null,
                             'current' => $site->id === $this->siteId,
                             'removable' => in_array($site->id, $newSiteIds, true),
+                            // Sites only this draft has aren't in the current entry to compare with.
+                            'compareUrl' => $site->id !== $this->siteId && ! in_array($site->id, $draftOnlySiteIds, true)
+                                ? app(FieldChangeComparisons::class)->siteCompareUrl($this, $site->id)
+                                : null,
                         ])->all())
                         ->additionalSites(array_map(fn (array $site) => [
                             'id' => $site['siteId'],
@@ -1368,7 +1415,7 @@ JS,
         return FormFields::textareaFieldHtml([
             'label' => t('Notes About Your Changes'),
             'labelClass' => 'h6',
-            'class' => ['nicetext', 'notes'],
+            'class' => ['notes'],
             'name' => 'notes',
             'value' => $this->getIsDraft() ? $this->draftNotes : $this->revisionNotes,
             'rows' => 1,
@@ -1421,7 +1468,7 @@ JS,
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
-                if (! isset($revision)) {
+                if (! isset($revision) || ($revision->revisionNotes ?? '') === '') {
                     return false;
                 }
 

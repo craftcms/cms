@@ -28,6 +28,8 @@ import {
   useElementIndexStructure,
 } from '@/modules/elements/index/composables/useElementIndexStructure';
 import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {onElementChanged} from '@/modules/elements/element-instances';
+import {tryOnScopeDispose} from '@vueuse/core';
 import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
 import type {
   IndexQueryParams,
@@ -82,8 +84,14 @@ interface UseElementIndexOptions {
     context: {elementIndex: ReturnType<typeof useContentIndexData>}
   ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
   structure?: boolean;
+  /**
+   * Whether selecting a structure row also selects its descendants. Defaults
+   * to `structure`.
+   */
+  selectDescendants?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
-  refresh: () => Promise<boolean>;
+  /** `silent` reloads without the loading state, keeping the rows on screen. */
+  refresh: (options?: {silent?: boolean}) => Promise<boolean>;
 }
 
 /** Shared state and table setup for page and detached element indexes. */
@@ -107,28 +115,6 @@ export function useElementIndex(options: UseElementIndexOptions) {
     () => visibleViewModes.value.map(({mode}) => mode),
     (mode) => thumbSizeModeParams(mode)
   );
-  const filters = useElementIndexFilters(visitor, {
-    search: elementIndex.search,
-    status: elementIndex.statusMenuValue,
-    conditions: elementIndex.currentCondition,
-    busy: options.busy,
-    preferredSort: () => {
-      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
-        ({field}) => field !== 'score'
-      );
-
-      if (saved?.length) {
-        return saved;
-      }
-
-      return sourceKey() === initialSourceKey ? preferredSort : [];
-    },
-    params: () => ({
-      source: elementIndex.source?.key,
-      viewMode: persistedMode(),
-      ...options.filterParams?.(),
-    }),
-  });
   const pinnedColumn =
     options.pinnedColumn === undefined
       ? {key: 'title', label: elementIndex.elementDisplayName}
@@ -153,10 +139,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
     isDefault: sortIsDefault,
     resetToDefault: resetSort,
   } = useElementIndexSort(elementIndex, viewState, visitor);
-  const {paginationState, paginationConfig} = useElementIndexPagination(
-    elementIndex,
-    visitor
-  );
+  const {
+    paginationState,
+    paginationConfig,
+    restore: restorePageSize,
+  } = useElementIndexPagination(elementIndex, viewState, visitor, sourceKey);
   // The selection watcher below is sync, so it reruns this when a visit swaps
   // in the next page's props, before the index unmounts. Throwing there would
   // reject Inertia's swap, which then skips loading the next page's deferred
@@ -182,6 +169,28 @@ export function useElementIndex(options: UseElementIndexOptions) {
     set: (value) => {
       savedMode.value = value;
     },
+  });
+  const filters = useElementIndexFilters(visitor, {
+    search: elementIndex.search,
+    status: elementIndex.statusMenuValue,
+    conditions: elementIndex.currentCondition,
+    busy: options.busy,
+    preferredSort: () => {
+      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
+        ({field}) => field !== 'score'
+      );
+
+      if (saved?.length) {
+        return saved;
+      }
+
+      return sourceKey() === initialSourceKey ? preferredSort : [];
+    },
+    params: () => ({
+      source: elementIndex.source?.key,
+      viewMode: mode.value,
+      ...options.filterParams?.(),
+    }),
   });
   const {
     thumbSize,
@@ -228,6 +237,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor,
     () => mode.value
   );
+  const selectDescendants =
+    options.selectDescendants ?? options.structure ?? false;
   const data = computed(() =>
     options.data
       ? options.data(elementIndex.data ?? [], mode.value, elementIndex)
@@ -264,7 +275,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
       rowSelection.value = selectRows(rows);
     }
 
-    if (options.structure && structureView.isStructure.value) {
+    if (selectDescendants && structureView.isStructure.value) {
       rowSelection.value = selectDescendantsOfSelected(
         rowSelection.value,
         rows
@@ -314,7 +325,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
       const next =
         typeof updater === 'function' ? updater(rowSelection.value) : updater;
       rowSelection.value =
-        options.structure && structureView.isStructure.value
+        selectDescendants && structureView.isStructure.value
           ? cascadeStructureSelection(rowSelection.value, next, data.value)
           : next;
 
@@ -365,6 +376,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     const restores = [
       restoreColumns(),
       restoreSort(),
+      restorePageSize(),
       restoreViewMode(),
       restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),
@@ -545,14 +557,48 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor.merge({site: handle}, {resetPage: true});
   }
 
-  async function refresh(refreshOptions?: {selectId?: number}): Promise<void> {
-    const applied = await options.refresh();
-    if (!applied || refreshOptions?.selectId === undefined) return;
-    const row = table
-      .getRowModel()
-      .rows.find(({original}) => original.id === refreshOptions.selectId);
-    if (row) selection.selectRow(row, {checked: true});
+  async function refresh(refreshOptions?: {silent?: boolean}): Promise<void> {
+    await options.refresh({silent: refreshOptions?.silent});
   }
+
+  function selectElements(ids: number[]): void {
+    for (const row of table.getRowModel().rows) {
+      if (ids.includes(Number(row.original.id))) {
+        selection.selectRow(row, {checked: true});
+      }
+    }
+  }
+
+  // Rows saved in another tab are reloaded, once for all the rows saved
+  // together. Saves in this one refresh the index where they happen, such as
+  // after a quick edit. The reload is silent, so the rows stay on screen, and
+  // focus within them, instead of making way for placeholders. While rows are
+  // edited inline, it waits until editing ends, so it doesn't redraw the
+  // inputs over unsaved changes.
+  let reloadQueued = false;
+  let reloadAfterEditing = false;
+  tryOnScopeDispose(
+    onElementChanged((id) => {
+      const shown =
+        id === null ||
+        elementIndex.data?.some((row) => Number(row.id) === id) === true;
+      if (!shown || reloadQueued) return;
+      if (inlineEditingActive.value) {
+        reloadAfterEditing = true;
+        return;
+      }
+      reloadQueued = true;
+      queueMicrotask(() => {
+        reloadQueued = false;
+        void refresh({silent: true});
+      });
+    })
+  );
+  watch(inlineEditingActive, (active) => {
+    if (active || !reloadAfterEditing) return;
+    reloadAfterEditing = false;
+    void refresh({silent: true});
+  });
 
   const processing = computed(
     () => loading.value || pending.value || Boolean(toValue(options.busy))
@@ -621,6 +667,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     changeSource,
     changeSite,
     refresh,
+    selectElements,
     clearSelection: selection.clearSelection,
     findRow: (id) => data.value.find((row) => String(row.id) === String(id)),
     captureSelection: () => {

@@ -2,12 +2,16 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Config\McpConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\SnapshotPluginSettings;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateManager;
@@ -22,7 +26,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -156,6 +160,30 @@ it('materializes array configuration through fluent setters', function () {
         ->and(app(ConfigRepository::class)->get('craft.general'))->toBe($config);
 });
 
+it('applies configured aliases and removes aliases with null paths', function (bool $fluent) {
+    Aliases::set('@configExisting', '/previous');
+    Aliases::set('@configReplaced', '/previous');
+
+    $aliases = [
+        '@configMissing' => null,
+        '@configExisting' => null,
+        '@configReplaced' => '/replacement',
+        '@configEmpty' => '',
+    ];
+    app(ConfigRepository::class)->set('craft.general', $fluent
+        ? GeneralConfig::create()->aliases($aliases)
+        : ['aliases' => $aliases]);
+    app()->forgetInstance(GeneralConfig::class);
+
+    new ConfigServiceProvider(app())->register();
+    app(GeneralConfig::class);
+
+    expect(Aliases::get('@configMissing', false))->toBeFalse()
+        ->and(Aliases::get('@configExisting', false))->toBeFalse()
+        ->and(Aliases::get('@configReplaced'))->toBe('/replacement')
+        ->and(Aliases::get('@configEmpty'))->toBe('');
+})->with(['array' => false, 'fluent' => true]);
+
 it('applies environment overrides when resolved', function () {
     app(ConfigRepository::class)->set('craft.general', [
         'cpTrigger' => 'control',
@@ -166,6 +194,31 @@ it('applies environment overrides when resolved', function () {
     new ConfigServiceProvider(app())->register();
 
     expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
+});
+
+it('logs a deprecation warning for each environment override', function () {
+    app(ConfigRepository::class)->set('craft.general', []);
+    app()->forgetInstance(GeneralConfig::class);
+    putenv('CRAFT_CP_TRIGGER=adminus');
+    putenv('CRAFT_DISABLE_2FA=true');
+    putenv('CRAFT_HTTP_PROXY=http://user:hunter2@proxy.test');
+    $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
+
+    try {
+        new ConfigServiceProvider(app())->register();
+        app(GeneralConfig::class);
+    } finally {
+        putenv('CRAFT_DISABLE_2FA');
+        putenv('CRAFT_HTTP_PROXY');
+    }
+
+    $logs = collect(Deprecator::getRequestLogs());
+    $messages = $logs->mapWithKeys(fn ($log) => [$log->key => $log->message]);
+
+    expect($messages->keys()->sort()->values()->all())->toBe(['env:CRAFT_CP_TRIGGER', 'env:CRAFT_DISABLE_2FA', 'env:CRAFT_HTTP_PROXY', 'env:CRAFT_MCP_INSTRUCTIONS'])
+        ->and(Json::encode($logs->pluck('traces')))->not->toContain('hunter2')
+        ->and($messages['env:CRAFT_MCP_INSTRUCTIONS'])->toStartWith('Setting `mcp.instructions` with the `CRAFT_MCP_INSTRUCTIONS` environment variable is deprecated.')
+        ->and($messages['env:CRAFT_DISABLE_2FA'])->toStartWith('Setting `disable2fa` with the `CRAFT_DISABLE_2FA` environment variable is deprecated.');
 });
 
 it('materializes typed MCP configuration from JSON environment overrides', function () {
@@ -180,6 +233,50 @@ it('materializes typed MCP configuration from JSON environment overrides', funct
     expect($config->mcp)->toBeInstanceOf(McpConfig::class)
         ->and($config->mcp->instructions)->toBe('Be brief.')
         ->and($config->mcp->middleware)->toBe(['throttle:mcp']);
+});
+
+it('materializes anchors configuration from general.php and JSON environment overrides', function () {
+    app(ConfigRepository::class)->set('craft.general', ['anchors' => ['anchorLinkText' => '¶']]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_ANCHORS'] = '{"anchorLinkPosition":"before","useAdditionalTagToAnchorTo":"false"}';
+
+    new ConfigServiceProvider(app())->register();
+
+    $anchors = app(GeneralConfig::class)->anchors;
+
+    expect($anchors)->toBeInstanceOf(AnchorsConfig::class)
+        ->and($anchors->anchorLinkText)->toBe('#')
+        ->and($anchors->anchorLinkPosition)->toBe(AnchorsConfig::POS_BEFORE)
+        ->and($anchors->useAdditionalTagToAnchorTo)->toBeFalse();
+});
+
+it('merges per-setting environment overrides into nested config objects', function () {
+    app(ConfigRepository::class)->set('craft.general', ['mcp' => ['instructions' => 'From general.php.']]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MCP'] = '{"instructions":"From JSON.","middleware":["throttle:mcp"]}';
+    $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'From a single variable.';
+    $_SERVER['CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO'] = 'false';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class);
+
+    expect($config->mcp)->toBeInstanceOf(McpConfig::class)
+        ->and($config->mcp->instructions)->toBe('From a single variable.')
+        ->and($config->mcp->middleware)->toBe(['throttle:mcp'])
+        ->and($config->anchors->useAdditionalTagToAnchorTo)->toBeFalse();
+});
+
+it('does not change a cached config’s nested objects when applying environment overrides', function () {
+    $cached = GeneralConfig::create();
+    app(ConfigRepository::class)->set('craft.general', $cached);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
+
+    new ConfigServiceProvider(app())->register();
+
+    expect(app(GeneralConfig::class)->mcp->instructions)->toBe('Be brief.')
+        ->and($cached->mcp->instructions)->toBe('');
 });
 
 it('extends the default Twig sandbox allowlist with project entries', function () {

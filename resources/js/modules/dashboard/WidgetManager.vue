@@ -1,6 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
+  import type CraftSlidePickerButton from '@craftcms/ui/components/slide-picker-button/slide-picker-button';
+  import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
+  import type {Edge} from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
+  import {computed} from 'vue';
+  import DropIndicator from '@/common/components/DropIndicator.vue';
+  import type CraftSelectColor from '@craftcms/ui/components/select-color/select-color';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
   import {widgetName} from './widgetName';
@@ -9,29 +14,78 @@
     widgets: DashboardWidget[];
     columns: number;
     busy: boolean;
+    /** The colors a widget can have. */
+    colors: CraftCms.Cms.Shared.Enums.Color[];
   }>();
+
+  /** The color select's value for "No color". */
+  const NO_COLOR = '__blank__';
 
   const opened = defineModel<boolean>('opened', {default: false});
 
   const emit = defineEmits<{
     remove: [widget: DashboardWidget];
     resize: [widget: DashboardWidget, colspan: number];
+    recolor: [
+      widget: DashboardWidget,
+      color: CraftCms.Cms.Shared.Enums.Color | null,
+    ];
     reorder: [from: number, to: number];
   }>();
 
-  const {setItemRef, setHandleRef, getDropState, getRowPosition} =
+  function recolor(widget: DashboardWidget, event: Event) {
+    const value = String((event.target as CraftSelectColor).value ?? '');
+    emit(
+      'recolor',
+      widget,
+      value === NO_COLOR || value === ''
+        ? null
+        : (value as CraftCms.Cms.Shared.Enums.Color)
+    );
+  }
+
+  const {setItemRef, setHandleRef, getDragState, getDropIndex, getRowPosition} =
     useReorderableItems({
       getItemIds: () => props.widgets.map((widget) => widget.id),
       enabled: () => !props.busy,
       onReorder: (from, to) => emit('reorder', from, to),
     });
+
+  function isDragging(widget: DashboardWidget): boolean {
+    return getDragState(widget.id).type !== 'idle';
+  }
+
+  const draggingIndex = computed(() => props.widgets.findIndex(isDragging));
+
+  /**
+   * Which edge of this row carries the drop line, if any. Every gap is drawn
+   * by the row below it, and the gap after the last row by that row's bottom,
+   * so the line between two rows has one owner.
+   */
+  function dropEdge(index: number): Edge | null {
+    const gap = getDropIndex();
+    const from = draggingIndex.value;
+
+    // Nowhere new: the widget would land back where it is.
+    if (gap === null || (from !== -1 && (gap === from || gap === from + 1))) {
+      return null;
+    }
+
+    if (gap === index) return 'top';
+    if (gap === index + 1 && index === props.widgets.length - 1) {
+      return 'bottom';
+    }
+
+    return null;
+  }
 </script>
 
 <template>
   <craft-popover
     placement="bottom-end"
-    .opened="opened"
-    @opened-changed="opened = $event.detail.opened"
+    .open="opened"
+    @craft-show.self="opened = true"
+    @craft-hide.self="opened = false"
   >
     <craft-button
       slot="invoker"
@@ -45,7 +99,7 @@
       role="region"
       aria-labelledby="widget-settings-heading"
     >
-      <h2 id="widget-settings-heading" class="text-sm mb-md">
+      <h2 id="widget-settings-heading" class="cp-h4 mb-md">
         {{ t('Widget Settings') }}
       </h2>
       <craft-empty
@@ -57,8 +111,8 @@
           v-for="(widget, index) in widgets"
           :key="widget.id"
           :ref="(el) => setItemRef(el, widget.id)"
-          class="flex flex-wrap items-center gap-sm p-sm rounded bg-(--c-color-fill-quiet)"
-          :class="{'bg-gray-100': getDropState(widget.id).type === 'is-over'}"
+          class="widget-manager__item relative flex flex-wrap items-center gap-sm px-sm py-md rounded bg-(--c-color-fill-quiet)"
+          :class="{'widget-manager__item--dragging': isDragging(widget)}"
         >
           <craft-reorder-button
             :ref="
@@ -78,39 +132,85 @@
           <span :id="`widget-label-${widget.id}`" class="flex-1">{{
             widgetName(widget)
           }}</span>
-          <craft-slide-picker
-            :min="1"
-            :max="Math.min(columns, widget.maxColspan)"
-            :step="1"
-            .modelValue="Math.min(widget.colspan, columns)"
-            .disabled="busy"
-            :label="`${t('Number of columns')} ${widgetName(widget)}`"
-            label-sr-only
-            @change="
-              emit(
-                'resize',
-                widget,
-                ($event.target as CraftSlidePicker).modelValue
-              )
-            "
-          ></craft-slide-picker>
-          <craft-button
-            :id="`widget-delete-${widget.id}`"
-            type="button"
-            size="small"
-            variant="danger-plain"
-            icon
-            :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
-            .disabled="busy"
-            @click="emit('remove', widget)"
-          >
-            <craft-icon name="trash" :label="t('Delete')"></craft-icon>
-          </craft-button>
+          <div class="flex items-center gap-3">
+            <craft-select-color
+              class="me-[calc((1rem-var(--c-size-control-sm))/2)]"
+              .colors="colors"
+              swatch-only
+              small
+              allow-transparent
+              :blank-label="t('No color')"
+              .value="widget.color ?? NO_COLOR"
+              .disabled="busy"
+              :label="`${t('Color')} ${widgetName(widget)}`"
+              label-sr-only
+              @change="recolor(widget, $event)"
+            ></craft-select-color>
+            <craft-slide-picker-button
+              flush="inline"
+              :min="1"
+              :max="Math.min(columns, widget.maxColspan)"
+              :step="1"
+              .value="Math.min(widget.colspan, columns)"
+              .disabled="busy"
+              :slider-label="t('Columns')"
+              :item-label="widgetName(widget)"
+              .valueLabel="
+                (num: number) =>
+                  t('{num, number} {num, plural, =1{column} other{columns}}', {
+                    num,
+                  })
+              "
+              @change="
+                emit(
+                  'resize',
+                  widget,
+                  ($event.target as CraftSlidePickerButton).value
+                )
+              "
+            ></craft-slide-picker-button>
+            <craft-button
+              :id="`widget-delete-${widget.id}`"
+              type="button"
+              size="small"
+              variant="danger-plain"
+              flush="inline-start"
+              icon
+              :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
+              .disabled="busy"
+              @click="emit('remove', widget)"
+            >
+              <craft-icon name="trash" :label="t('Delete')"></craft-icon>
+            </craft-button>
+          </div>
+          <DropIndicator
+            contained
+            class="widget-manager__drop-indicator"
+            :edge="dropEdge(index)"
+          />
         </li>
       </ul>
     </div>
   </craft-popover>
 </template>
+
+<style scoped>
+  /* The widget being dragged stays where it was, faded, so you can see where
+     it came from while the line shows where it's going. */
+  .widget-manager__item--dragging {
+    opacity: 0.4;
+  }
+
+  /* Centered in the gap between rows rather than on a row's own edge. Scoped
+     under the item to outrank DropIndicator's contained offsets. */
+  .widget-manager__item .widget-manager__drop-indicator.drop-indicator--top {
+    inset-block-start: calc(var(--c-spacing-sm) / -2 - 1px);
+  }
+
+  .widget-manager__item .widget-manager__drop-indicator.drop-indicator--bottom {
+    inset-block-end: calc(var(--c-spacing-sm) / -2 - 1px);
+  }
+</style>
 
 <style scoped>
   craft-popover::part(popup) {

@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\Contracts\EmbeddedIndexScope;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ use Illuminate\Support\Facades\Gate;
 /**
  * @since 6.0.0
  */
-class EmbeddedNestedElementScope
+class EmbeddedNestedElementScope implements EmbeddedIndexScope
 {
     private const array ELEMENT_INDEX_SCOPE_CRITERIA = [
         'fieldId',
@@ -184,6 +185,21 @@ class EmbeddedNestedElementScope
     public function canReorder(): bool
     {
         return $this->isAuthorized('reorderNestedElements', $this->resolveOwner());
+    }
+
+    public function restrictQuery(ElementQueryInterface $query): void {}
+
+    /**
+     * Nested elements are listed in their owner's site.
+     */
+    public function siteIds(): array
+    {
+        return [$this->resolveOwner()->siteId];
+    }
+
+    public function showsStatusMenu(): bool
+    {
+        return true;
     }
 
     /**

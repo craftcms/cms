@@ -484,6 +484,28 @@ it('passes Matrix content to the native control in HTML forms', function (string
     'index' => Matrix::VIEW_MODE_INDEX,
 ])->with([ControlMode::Editable, ControlMode::ReadOnly]);
 
+it('sends the same card menu each time the card is rendered', function () {
+    $user = UserModel::factory()->createElement();
+    $address = AddressModel::factory()->createElement([
+        'primaryOwnerId' => $user->id,
+    ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)->insert([
+        'elementId' => $address->id,
+        'ownerId' => $user->id,
+        'sortOrder' => 1,
+    ]);
+
+    $menu = fn (): array => $user->getAddressManager()->getCardsData($user, [
+        'sortable' => true,
+        'canPaste' => true,
+        'nestedActionEvents' => true,
+    ])['elements'][0]->actionMenuItems;
+
+    expect($first = $menu())->not->toBeEmpty()
+        ->and($menu())->toBe($first);
+});
+
 it('provides permitted card menu events for the hosting field', function (bool $showInGrid, bool $static, bool $authorized) {
     $user = UserModel::factory()->createElement();
     $address = AddressModel::factory()->createElement([
@@ -1166,6 +1188,67 @@ it('duplicates nested entries into a new site without losing existing site conte
         ->and($newSiteNested)->toHaveCount(1)
         ->and($newSiteNested[0]->title)->toBe('Default site content')
         ->and($newSiteNested[0]->id)->not->toBe($defaultSiteNested[0]->id);
+});
+
+it('keeps other sites’ nested entries in required fields when merging canonical changes and applying a draft', function () {
+    ['owner' => $owner, 'field' => $field, 'section' => $section] = createMatrixOwnerFixture(['propagationMethod' => 'none']);
+    $owner->getFieldLayout()->getFieldByHandle($field->handle)->layoutElement->required = true;
+
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $section->id,
+        'siteId' => $secondSite->id,
+        'hasUrls' => true,
+        'dateCreated' => $section->dateCreated,
+        'dateUpdated' => $section->dateUpdated,
+    ]);
+    Sections::refreshSections();
+    app(Elements::class)->propagateElement($owner, $secondSite->id);
+
+    $elements = app(Elements::class);
+    $drafts = app(Drafts::class);
+    $ownerInSite = fn (int $siteId, ?int $id = null): EntryElement => EntryElement::find()
+        ->id($id ?? $owner->id)
+        ->siteId($siteId)
+        ->drafts($id !== null)
+        ->provisionalDrafts($id !== null ? true : null)
+        ->status(null)
+        ->one();
+    $nestedEntries = fn (EntryElement $element): array => EntryElement::find()
+        ->fieldId($field->id)
+        ->ownerId($element->id)
+        ->siteId($element->siteId)
+        ->status(null)
+        ->drafts(null)
+        ->all();
+    $saveBlock = function (int $siteId, string $title) use ($ownerInSite, $elements, $field): void {
+        $element = $ownerInSite($siteId);
+        $element->setFieldValue($field->handle, ['new1' => ['type' => 'block', 'title' => $title]]);
+        expect($elements->saveElement($element))->toBeTrue();
+    };
+
+    $saveBlock($owner->siteId, 'Site 1 block');
+    $saveBlock($secondSite->id, 'Site 2 block');
+    $draft = $drafts->createDraft($ownerInSite($owner->siteId), User::findOne()->id, provisional: true);
+
+    // Replace the other site’s block on the canonical entry after the draft was created
+    $this->travel(2)->seconds();
+    $saveBlock($secondSite->id, 'New site 2 block');
+    [$site2Block] = $nestedEntries($ownerInSite($secondSite->id));
+
+    $elements->mergeCanonicalChanges($ownerInSite($owner->siteId, $draft->id));
+    $draftSite2Blocks = $nestedEntries($ownerInSite($secondSite->id, $draft->id));
+
+    expect($draftSite2Blocks)->toHaveCount(1)
+        ->and($draftSite2Blocks[0]->id)->toBe($site2Block->id);
+
+    $drafts->applyDraft($ownerInSite($owner->siteId, $draft->id));
+    $site2Blocks = $nestedEntries($ownerInSite($secondSite->id));
+
+    expect($site2Blocks)->toHaveCount(1)
+        ->and($site2Blocks[0]->id)->toBe($site2Block->id)
+        ->and($site2Blocks[0]->title)->toBe('New site 2 block');
 });
 
 it('restores a nested entry when reverting to an old revision without an integrity error', function () {

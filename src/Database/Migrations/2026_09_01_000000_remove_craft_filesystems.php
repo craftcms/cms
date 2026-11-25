@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -21,11 +22,11 @@ return new class extends Migration
         $filesystems = is_array($filesystems) ? $filesystems : [];
         $volumes = $projectConfig->get(ProjectConfig::PATH_VOLUMES);
         $volumes = is_array($volumes) ? $volumes : [];
-        $transformers = $projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS);
-        $transformers = is_array($transformers) ? $transformers : [];
         $configuredDisks = config('filesystems.disks', []);
         $configuredDisks = is_array($configuredDisks) ? $configuredDisks : [];
         $missingDisks = [];
+        // The column is `disk` when a later migration that renames it has already run, such as when every migration is rerun
+        $column = Schema::hasColumn(Table::VOLUMES, 'fs') ? 'fs' : 'disk';
 
         foreach ($volumes as $volume) {
             if (! is_array($volume)) {
@@ -35,16 +36,7 @@ return new class extends Migration
             $this->requireConfiguredDisk($volume['fs'] ?? null, $filesystems, $configuredDisks, $missingDisks);
         }
 
-        foreach ($transformers as $transformer) {
-            if (! is_array($transformer) || ($transformer['driver'] ?? null) !== 'craft') {
-                continue;
-            }
-
-            $settings = is_array($transformer['settings'] ?? null) ? $transformer['settings'] : [];
-            $this->requireConfiguredDisk($settings['filesystem'] ?? null, $filesystems, $configuredDisks, $missingDisks);
-        }
-
-        foreach (DB::table(Table::VOLUMES)->pluck('fs') as $reference) {
+        foreach (DB::table(Table::VOLUMES)->pluck($column) as $reference) {
             $this->requireConfiguredDisk($reference, $filesystems, $configuredDisks, $missingDisks);
         }
 
@@ -56,6 +48,7 @@ return new class extends Migration
                 $missingDisks,
             ));
             $suggestions = Str::indent($suggestions, '        ');
+            $publishCommand = app(TerminalCommands::class)->artisan('config:publish filesystems --no-interaction');
 
             throw new RuntimeException(<<<MESSAGE
                 The Craft Filesystem concept has been removed.
@@ -64,7 +57,7 @@ return new class extends Migration
 
                 If config/filesystems.php does not exist, publish it first:
 
-                    php artisan config:publish filesystems --no-interaction
+                    $publishCommand
 
                 Add these entries to its `disks` array:
 
@@ -75,7 +68,7 @@ return new class extends Migration
         }
 
         if (! Schema::hasColumn(Table::VOLUMES, 'hasUrls')) {
-            Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->boolean('hasUrls')->default(false)->after('fs'));
+            Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->boolean('hasUrls')->default(false)->after($column));
         }
 
         foreach ($volumes as $uid => $volume) {
@@ -94,23 +87,9 @@ return new class extends Migration
             $volumes[$uid] = $volume;
         }
 
-        foreach ($transformers as $uid => $transformer) {
-            if (! is_array($transformer) || ($transformer['driver'] ?? null) !== 'craft') {
-                continue;
-            }
-
-            $settings = is_array($transformer['settings'] ?? null) ? $transformer['settings'] : [];
-            $reference = $settings['filesystem'] ?? null;
+        foreach (DB::table(Table::VOLUMES)->select(['id', $column])->get() as $volume) {
+            $reference = $volume->$column;
             $diskName = $this->diskName($reference);
-            unset($settings['filesystem']);
-            $settings['disk'] = $diskName === null ? null : $this->diskReference($reference, $diskName);
-            $settings['hasUrls'] = $this->referenceHasUrls($reference, $filesystems, $configuredDisks);
-            $transformer['settings'] = $settings;
-            $transformers[$uid] = $transformer;
-        }
-
-        foreach (DB::table(Table::VOLUMES)->select(['id', 'fs'])->get() as $volume) {
-            $diskName = $this->diskName($volume->fs);
             if ($diskName === null) {
                 continue;
             }
@@ -118,8 +97,8 @@ return new class extends Migration
             DB::table(Table::VOLUMES)
                 ->where('id', $volume->id)
                 ->update([
-                    'fs' => $this->diskReference($volume->fs, $diskName),
-                    'hasUrls' => $this->referenceHasUrls($volume->fs, $filesystems, $configuredDisks),
+                    $column => $this->diskReference($reference, $diskName),
+                    'hasUrls' => $this->referenceHasUrls($reference, $filesystems, $configuredDisks),
                 ]);
         }
 
@@ -128,7 +107,6 @@ return new class extends Migration
 
         try {
             $projectConfig->set(ProjectConfig::PATH_VOLUMES, $volumes, 'Convert volumes to Laravel filesystem disks');
-            $projectConfig->set(ProjectConfig::PATH_ASSET_TRANSFORMERS, $transformers, 'Convert asset transformers to Laravel filesystem disks');
             $projectConfig->remove('fs', 'Remove Craft filesystem definitions');
             $projectConfig->saveModifiedConfigData();
         } finally {
@@ -167,6 +145,79 @@ return new class extends Migration
 
         if ($type === 'craft\fs\Local' || $type === 'craft\fs\Temp' || $type === 'CraftCms\Cms\Filesystem\Filesystems\Local') {
             return $this->localDiskConfig($handle, $filesystem, $settings);
+        }
+
+        $credentials = [];
+        $config = match ($type) {
+            'craft\awss3\Fs' => [
+                'driver' => "'s3'",
+                'key' => $this->credentialExpression($handle, 'KEY_ID', $settings['keyId'] ?? null, $credentials),
+                'secret' => $this->credentialExpression($handle, 'SECRET', $settings['secret'] ?? null, $credentials),
+                'region' => $this->configExpression($settings['region'] ?? null),
+                'bucket' => $this->configExpression($settings['bucket'] ?? null),
+                'root' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+                'visibility' => ($settings['makeUploadsPublic'] ?? true) ? "'public'" : "'private'",
+            ],
+            'vaersaagod\dospaces\Fs', 'mwikala\linodes3\Fs' => [
+                'driver' => "'s3'",
+                'key' => $this->credentialExpression($handle, 'KEY_ID', $settings['keyId'] ?? null, $credentials),
+                'secret' => $this->credentialExpression($handle, 'SECRET', $settings['secret'] ?? null, $credentials),
+                'region' => $this->configExpression($settings['region'] ?? null),
+                'bucket' => $this->configExpression($settings['bucket'] ?? null),
+                'endpoint' => $this->configExpression($settings['endpoint'] ?? null),
+                'root' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+            ],
+            'jrrdnx\cloudflarer2\Fs' => [
+                'driver' => "'s3'",
+                'key' => $this->credentialExpression($handle, 'KEY_ID', $settings['keyId'] ?? null, $credentials),
+                'secret' => $this->credentialExpression($handle, 'SECRET', $settings['secret'] ?? null, $credentials),
+                'region' => $this->configExpression($settings['region'] ?? 'auto'),
+                'bucket' => $this->configExpression(($settings['bucketSelectionMode'] ?? null) === 'manual' ? ($settings['manualBucket'] ?? null) : ($settings['bucket'] ?? null)),
+                'endpoint' => ($accountId = $this->configExpression($settings['accountId'] ?? null)) !== null
+                    ? "sprintf('https://%s.r2.cloudflarestorage.com', $accountId)"
+                    : null,
+                'root' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+            ],
+            'craft\googlecloud\Fs' => [
+                '// Install with: composer require spatie/laravel-google-cloud-storage:^2.4.2',
+                'driver' => "'gcs'",
+                'project_id' => $this->configExpression($settings['projectId'] ?? null),
+                'key_file' => ($keyFile = $this->credentialExpression($handle, 'KEY_FILE', $settings['keyFileContents'] ?? null, $credentials)) !== null
+                    ? "json_decode((string) $keyFile, true)"
+                    : null,
+                'bucket' => $this->configExpression($settings['bucket'] ?? null),
+                'path_prefix' => $this->configExpression($settings['subfolder'] ?? null),
+                'storage_api_uri' => $this->urlExpression($filesystem, $settings),
+                'visibility' => $this->configExpression($settings['visibility'] ?? null) ?? ($this->hasUrls($filesystem) ? "'public'" : "'private'"),
+            ],
+            'craft\azureblob\Fs' => [
+                '// Install with: composer require azure-oss/storage-blob-laravel',
+                'driver' => "'azure-storage-blob'",
+                'connection_string' => $this->credentialExpression($handle, 'CONNECTION_STRING', $settings['connectionString'] ?? null, $credentials),
+                'container' => $this->configExpression($settings['container'] ?? null),
+                'prefix' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+            ],
+            default => null,
+        };
+
+        if ($config !== null) {
+            $lines = ["'$handle' => ["];
+
+            foreach ($credentials as $name) {
+                $lines[] = "    // Set $name in .env to the previous filesystem's value.";
+            }
+
+            foreach (array_filter($config, fn (?string $expression) => $expression !== null) as $key => $expression) {
+                $lines[] = is_int($key) ? "    $expression" : "    '$key' => $expression,";
+            }
+
+            $lines[] = '],';
+
+            return implode("\n", $lines);
         }
 
         $typeLabel = is_string($type) && $type !== '' ? $type : 'unknown';
@@ -213,6 +264,60 @@ return new class extends Migration
         $escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
 
         return "'$key' => '$escaped',";
+    }
+
+    /**
+     * Renders a setting as a PHP expression: `env()` for a `$ENV_VAR` reference, otherwise the parsed literal.
+     */
+    private function configExpression(mixed $value): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $value, $match)) {
+            return "env('$match[1]')";
+        }
+
+        $parsed = (string) Env::parse($value);
+
+        return "'".str_replace(['\\', "'"], ['\\\\', "\\'"], $parsed)."'";
+    }
+
+    /**
+     * Renders a credential as an `env()` call, so the error message never contains its value.
+     *
+     * @param  string[]  $credentials  Environment variable names the user must set
+     */
+    private function credentialExpression(string $handle, string $suffix, mixed $value, array &$credentials): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $value, $match)) {
+            return "env('$match[1]')";
+        }
+
+        $name = Str::of($handle)->snake()->upper()->append("_$suffix")->toString();
+        $credentials[] = $name;
+
+        return "env('$name')";
+    }
+
+    /**
+     * @param  array<string, mixed>  $filesystem
+     * @param  array<string, mixed>  $settings
+     */
+    private function urlExpression(array $filesystem, array $settings): ?string
+    {
+        if (! $this->hasUrls($filesystem)) {
+            return null;
+        }
+
+        $url = $settings['url'] ?? $filesystem['url'] ?? null;
+
+        return $this->configExpression(is_string($url) ? rtrim($url, '/') : null);
     }
 
     private function diskName(mixed $reference): ?string

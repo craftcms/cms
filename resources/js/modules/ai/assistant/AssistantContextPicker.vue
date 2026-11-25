@@ -39,14 +39,8 @@
   }
 
   function onChange(event: Event): void {
-    // Its checkboxes fire their own `model-value-changed`, which bubbles up
-    // to this listener too.
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
     // SAFETY: The listener is bound to the `craft-checkbox-select`.
-    const value = (event.currentTarget as CraftCheckboxSelect).modelValue;
+    const value = (event.currentTarget as CraftCheckboxSelect).value;
 
     setElementContext(
       props.editor,
@@ -60,17 +54,13 @@
 </script>
 
 <template>
-  <craft-popover
-    :label="t('Fields of “{name}”', {name: editor.label()})"
-    placement="top-start"
-    @craft-show="load"
-  >
+  <craft-popover placement="top-start" @craft-show="load">
     <craft-button
       slot="invoker"
       class="assistant-context-picker__invoker"
       type="button"
       variant="plain"
-      size="small"
+      size="xsmall"
       flush
       icon="chevron-down"
       icon-position="suffix"
@@ -90,17 +80,23 @@
         :all-label="t('All fields')"
         :all-value="ALL_FIELDS"
         .options="options"
-        .modelValue="selected"
-        @model-value-changed="onChange"
+        .value="selected"
+        @change="onChange"
       ></craft-checkbox-select>
     </div>
   </craft-popover>
 </template>
 
 <style scoped>
+  /* Shrinks to truncate its label when the chip's short of room. Not capped
+     at 100%: it's flush, so its box is wider than the room it takes up. */
   .assistant-context-picker__invoker {
     min-inline-size: 0;
-    max-inline-size: 100%;
+    /* The chip's own text size, which an xsmall button would otherwise scale
+       down, and no taller than a line of it: its border is taken back, so the
+       chip is as tall as one with a plain label. */
+    font-size: inherit;
+    margin-block: -1px;
 
     &::part(content) {
       min-inline-size: 0;

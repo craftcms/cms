@@ -1,14 +1,14 @@
 import {describe, expect, it} from 'vite-plus/test';
-import {wireOverlayLifecycleEvents} from './overlay-events.js';
+import {announceOverlayState} from './overlay-events.js';
 
 type FakeHost = HTMLElement & {
-  opened: boolean;
+  open: boolean;
   updateComplete: Promise<boolean>;
 };
 
 function createHost(): FakeHost {
   const host = document.createElement('div') as unknown as FakeHost;
-  host.opened = false;
+  host.open = false;
   host.updateComplete = Promise.resolve(true);
   document.body.append(host as unknown as HTMLElement);
   return host;
@@ -18,10 +18,9 @@ function flush(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve));
 }
 
-describe('wireOverlayLifecycleEvents', () => {
+describe('announceOverlayState', () => {
   it('dispatches craft-show then craft-after-show when opened', async () => {
     const host = createHost();
-    wireOverlayLifecycleEvents(host);
     const events: string[] = [];
     for (const type of [
       'craft-show',
@@ -32,8 +31,8 @@ describe('wireOverlayLifecycleEvents', () => {
       host.addEventListener(type, () => events.push(type));
     }
 
-    host.opened = true;
-    host.dispatchEvent(new CustomEvent('opened-changed'));
+    host.open = true;
+    announceOverlayState(host);
     await flush();
 
     expect(events).toEqual(['craft-show', 'craft-after-show']);
@@ -41,7 +40,6 @@ describe('wireOverlayLifecycleEvents', () => {
 
   it('dispatches craft-hide then craft-after-hide when closed', async () => {
     const host = createHost();
-    wireOverlayLifecycleEvents(host);
     const events: string[] = [];
     for (const type of [
       'craft-show',
@@ -52,11 +50,11 @@ describe('wireOverlayLifecycleEvents', () => {
       host.addEventListener(type, () => events.push(type));
     }
 
-    host.opened = true;
-    host.dispatchEvent(new CustomEvent('opened-changed'));
+    host.open = true;
+    announceOverlayState(host);
     await flush();
-    host.opened = false;
-    host.dispatchEvent(new CustomEvent('opened-changed'));
+    host.open = false;
+    announceOverlayState(host);
     await flush();
 
     expect(events).toEqual([
@@ -67,14 +65,13 @@ describe('wireOverlayLifecycleEvents', () => {
     ]);
   });
 
-  it('ignores opened-changed events that do not change state', async () => {
+  it('does nothing when the state has not changed', async () => {
     const host = createHost();
-    wireOverlayLifecycleEvents(host);
     const events: string[] = [];
     host.addEventListener('craft-show', () => events.push('craft-show'));
     host.addEventListener('craft-hide', () => events.push('craft-hide'));
 
-    host.dispatchEvent(new CustomEvent('opened-changed'));
+    announceOverlayState(host);
     await flush();
 
     expect(events).toEqual([]);
@@ -82,14 +79,13 @@ describe('wireOverlayLifecycleEvents', () => {
 
   it('dispatches events that bubble and cross shadow boundaries', async () => {
     const host = createHost();
-    wireOverlayLifecycleEvents(host);
     let event: Event | null = null;
     document.body.addEventListener('craft-show', (e) => {
       event = e;
     });
 
-    host.opened = true;
-    host.dispatchEvent(new CustomEvent('opened-changed'));
+    host.open = true;
+    announceOverlayState(host);
     await flush();
 
     expect(event).not.toBeNull();

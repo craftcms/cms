@@ -7,13 +7,9 @@
 
 namespace craft\web;
 
-use Craft;
 use craft\errors\ExitException;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyScreenFragments;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
@@ -47,15 +43,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             throw new InvalidConfigException('TemplateResponseFormatter can only be used on responses with a TemplateResponseBehavior.');
         }
 
-        $generalConfig = Cms::config();
-
-        // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
-        if (
-            Craft::$app->getRequest()->getQueryParam('x-craft-live-preview') !== null &&
-            $generalConfig->useIframeResizer
-        ) {
-            app(InternalAssetRegistry::class)->register(ContentWindowAsset::class);
-        }
+        $generalConfig = \craft\config\GeneralConfig::current();
 
         $templateMode = $behavior->templateMode ? TemplateMode::from($behavior->templateMode) : null;
 

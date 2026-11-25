@@ -169,7 +169,9 @@ readonly class ElementCanonicalChanges
 
         $updatedCanonical = $this->elementDuplicates->duplicateElement($element, $newAttributes);
 
-        app()->terminating(function () use (
+        // Written after the transaction commits, so the upserts don't hold locks during the save, and are skipped if it
+        // rolls back.
+        DB::afterCommit(function () use (
             $canonical,
             $updatedCanonical,
             $changedAttributes,

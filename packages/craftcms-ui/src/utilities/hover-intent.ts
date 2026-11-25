@@ -172,11 +172,14 @@ export class HoverIntentGroup {
 
     this.#closeSiblingsOf(member);
 
-    if (state.open || state.openTimer !== undefined) {
+    if (state.open || (!immediate && state.openTimer !== undefined)) {
       return;
     }
 
     if (immediate || this.#warm) {
+      // A hover still warming up would only open it again, later.
+      clearTimeout(state.openTimer);
+      state.openTimer = undefined;
       this.#open(member, state);
 
       return;

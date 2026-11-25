@@ -11,7 +11,7 @@ import {CraftAuthChallengeForm} from '../auth-challenge-form';
  * @fires login-failed   - Verification failed; bubbles to `craft-login-challenge`.   Detail: `{ message: string }`
  */
 export default class CraftRecoveryCodeForm extends CraftAuthChallengeForm {
-  static override METHOD = 'recovery-codes';
+  static override METHOD = 'CraftCms\\Cms\\Auth\\Methods\\RecoveryCodes';
 
   @query('craft-input.recovery-code')
   protected override _input?: HTMLElement & {value: string};

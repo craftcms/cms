@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -15,10 +13,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -43,6 +38,16 @@ abstract class BaseElementLinkType extends BaseLinkType
      * @see element()
      */
     private static array $fetchedElements = [];
+
+    /**
+     * Forgets the linked elements fetched so far, so a long-lived worker doesn't keep them between requests.
+     *
+     * @internal
+     */
+    public static function forgetFetchedElements(): void
+    {
+        self::$fetchedElements = [];
+    }
 
     /**
      * Returns the element type this link type is for.
@@ -104,26 +109,26 @@ abstract class BaseElementLinkType extends BaseLinkType
     #[Override]
     public function settingsNodes(string $prefix): array
     {
-        $sources = Collection::make($this->availableSources())
+        // Some element types expose an “All …” source of their own (entries);
+        // it becomes the group's All checkbox rather than rendering beside it.
+        [$allSources, $sources] = Collection::make($this->availableSources())
             ->map(fn (array $source): array => [
                 'label' => (string) $source['label'],
                 'value' => $source['key'],
             ])
-            ->values()
-            ->all();
+            ->partition(fn (array $source): bool => $source['value'] === Choice::ALL_VALUE);
 
-        if ($sources === []) {
+        if ($sources->isEmpty() && $allSources->isEmpty()) {
             return [];
         }
-
-        array_unshift($sources, ['label' => t('All'), 'value' => '*']);
 
         return [
             UiField::make(t('{type} Sources', ['type' => static::elementType()::displayName()]))
                 ->control(Choice::make($this->settingPath($prefix, 'sources'))
                     ->multiple()
                     ->presentation(ChoicePresentation::Checkboxes)
-                    ->options($sources)
+                    ->options($sources->values()->all())
+                    ->allOption($allSources->pluck('label')->first())
                     ->value($this->sources ?? ['*'])),
             $this->selectionConditionField($prefix),
         ];
@@ -159,47 +164,6 @@ abstract class BaseElementLinkType extends BaseLinkType
         $element = $this->element($value);
 
         return $element ? (string) $element : '';
-    }
-
-    public function inputHtml(Link $field, ?string $value, string $containerId): string
-    {
-        $id = sprintf('elementselect%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $refHandle) => <<<JS
-(() => {
-  const container = $('#' + $id);
-  const field = container.closest('[data-link-field]').parent().data('linkField');
-  const input = container.next('input');
-  const refHandle = $refHandle;
-  container[0].addEventListener('selectElements', (ev) => {
-    const element = ev.detail.elements[0];
-    input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
-    field.updateLabel(element.label);
-    field.updateFilename(element.\$element.data('filename'));
-  });
-  container[0].addEventListener('removeElements', () => {
-    input.val('');
-    field.updateLabel('');
-    field.updateFilename('');
-  });
-})();
-JS, [
-            'id' => InputNamespace::namespaceId($id),
-            'refHandle' => static::elementType()::refHandle(),
-        ]);
-
-        return
-            FormFields::elementSelectHtml(array_merge($this->elementSelectConfig(), [
-                'id' => $id,
-                'elements' => array_filter([$this->element($value)]),
-                'showSiteMenu' => true,
-                'condition' => $this->getSelectionCondition(),
-                'modalSettings' => [
-                    'matchSiteBeforeDisablingElement' => true,
-                    'siteId' => app(RequestedSite::class)->get()?->id,
-                ],
-            ])).
-            Html::hiddenInput('value', $value);
     }
 
     /**

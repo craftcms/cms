@@ -102,21 +102,17 @@ class Template extends BaseUiElement
             return $this->error(t('No template path has been chosen yet.'), 'warning');
         }
 
-        $templateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Site);
-        $twig = Twig::get();
-        Twig::set(self::twig());
-
         try {
-            $content = trim(template($this->template, [
-                'element' => $element,
-                'static' => $static,
-            ], templateMode: TemplateMode::from($this->templateMode)));
+            $content = TemplateMode::with(TemplateMode::Site, fn() => Twig::with(
+                self::twig(),
+                TemplateMode::Site,
+                fn() => trim(template($this->template, [
+                    'element' => $element,
+                    'static' => $static,
+                ], templateMode: TemplateMode::from($this->templateMode))),
+            ));
         } catch (Throwable $exception) {
             return $this->error($exception->getMessage(), 'error');
-        } finally {
-            Twig::set($twig);
-            TemplateMode::set($templateMode);
         }
 
         return $content === ''

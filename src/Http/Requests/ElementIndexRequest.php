@@ -9,8 +9,12 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Element\Validation\Rules\ElementTypeRule;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\Contracts\EmbeddedIndexScope;
+use CraftCms\Cms\Http\EmbeddedElementIndexScope;
+use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Url;
@@ -47,18 +51,59 @@ class ElementIndexRequest extends FormRequest
         return $this->input('context', ElementSources::CONTEXT_INDEX);
     }
 
+    /**
+     * Returns whether the request is for an embedded index that lists elements by fixed criteria rather than by owner.
+     */
+    public function hasEmbeddedIndexToken(): bool
+    {
+        return $this->filled('embeddedIndexToken');
+    }
+
+    /**
+     * Returns the scope of an embedded index: the one in its token, its owner, or the `embeddedCriteria` the request posts.
+     *
+     * Posted criteria come from the browser, so their scope only shapes the list; only a token's criteria and
+     * read-only state are enforced.
+     */
+    public function embeddedIndexScope(): EmbeddedIndexScope
+    {
+        if ($this->hasEmbeddedIndexToken()) {
+            return EmbeddedElementIndexScope::fromToken((string) $this->input('embeddedIndexToken'));
+        }
+
+        if ($this->hasAny(['ownerElementType', 'ownerId', 'ownerSiteId', 'attribute'])) {
+            return new EmbeddedNestedElementScope($this);
+        }
+
+        return new EmbeddedElementIndexScope(EmbeddedElementIndex::make($this->elementType())->criteria($this->array('embeddedCriteria')));
+    }
+
     public function isAdministrative(?string $context = null): bool
     {
         return in_array($context ?? $this->context(), [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_EMBEDDED_INDEX, 'embedded-index']);
     }
 
     /**
-     * Returns the condition that should be applied to the element query.
+     * Returns the condition that should be applied to the element query, such as the filters the user chose.
      */
     public function condition(): ?ElementConditionInterface
     {
+        return $this->conditionFromInput('condition');
+    }
+
+    /**
+     * Returns the condition elements must match to be selected, such as a relation field's selection condition. It
+     * applies along with {@see condition()}, which the user can change through the index's filters.
+     */
+    public function selectionCondition(): ?ElementConditionInterface
+    {
+        return $this->conditionFromInput('selectionCondition');
+    }
+
+    private function conditionFromInput(string $param): ?ElementConditionInterface
+    {
         $this->validate([
-            'condition' => ['nullable', function (string $attribute, mixed $value, Closure $fail): void {
+            $param => ['nullable', function (string $attribute, mixed $value, Closure $fail): void {
                 if (! is_array($value) && ! is_string($value)) {
                     $fail(t('The {attribute} field must be a string or array.', ['attribute' => $attribute]));
 
@@ -79,7 +124,7 @@ class ElementIndexRequest extends FormRequest
         ]);
 
         /** @var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = $this->input('condition');
+        $conditionConfig = $this->input($param);
 
         if (! $conditionConfig) {
             return null;

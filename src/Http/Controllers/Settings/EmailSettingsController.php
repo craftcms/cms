@@ -95,6 +95,17 @@ readonly class EmailSettingsController
             $emailSettings['siteOverrides'] = $siteOverrides;
         }
 
+        /**
+         * Keep the Craft 5 transport adapter settings, which the Yii adapter
+         * still sends email with until a Laravel mailer is configured.
+         */
+        $currentSettings = $this->projectConfig->get('email') ?? [];
+        foreach (['transportType', 'transportSettings'] as $key) {
+            if (isset($currentSettings[$key])) {
+                $emailSettings[$key] = $currentSettings[$key];
+            }
+        }
+
         $this->projectConfig->set('email', $emailSettings, 'Update email settings.');
 
         return $this->asSuccess(t('Email settings saved.'));

@@ -1,10 +1,15 @@
-import {createApp, h, nextTick, ref} from 'vue';
+import {createApp, h, nextTick, ref, watch, type Ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import NestedElementsCreateButton from './NestedElementsCreateButton.vue';
 
 vi.mock('@vueuse/core', async (original) => ({
   ...(await original<Record<string, unknown>>()),
   useElementSize: () => ({width: ref(10), height: ref(10)}),
+  // The DOM here has no layout, so report a resize whenever the target mounts.
+  useResizeObserver: (
+    target: Ref<HTMLElement | undefined>,
+    callback: () => void
+  ) => watch(target, (element) => element && callback(), {flush: 'post'}),
 }));
 
 let teardown: (() => void) | undefined;

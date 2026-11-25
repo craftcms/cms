@@ -269,7 +269,7 @@ final readonly class Backups
         }
 
         throw new CommandFailedException(
-            command: preg_replace('/PGPASSWORD=(\S+)/i', 'PGPASSWORD=••••••', $command) ?? $command,
+            command: preg_replace('/(PGPASSWORD=)(?:"[^"]*"|\'(?:[^\']|\'"\'"\')*\'|\S*)/i', '$1••••••••', $command) ?? $command,
             exitCode: $process->getExitCode() ?? 1,
             error: trim($process->getErrorOutput()) ?: null,
         );

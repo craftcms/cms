@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Inertia\Inertia;
 use Override;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,23 +51,6 @@ class ConfigSyncController extends BaseUpdaterController
     }
 
     /**
-     * Renders the Config Sync page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => $this->returnUrl(),
-        ])->toResponse($this->request);
-    }
-
-    /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
      */
     public function retry(): Response
@@ -81,6 +63,8 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function applyYamlChanges(): Response
     {
+        $forceUpdate = $this->projectConfig->forceUpdate;
+
         if (! empty($this->data['force'])) {
             $this->projectConfig->forceUpdate = true;
         }
@@ -95,6 +79,8 @@ class ConfigSyncController extends BaseUpdaterController
                     $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),
                 ],
             ]);
+        } finally {
+            $this->projectConfig->forceUpdate = $forceUpdate;
         }
 
         return $this->sendFinished();
@@ -105,7 +91,18 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function regenerateYaml(): Response
     {
-        $this->projectConfig->regenerateExternalConfig();
+        try {
+            $this->projectConfig->regenerateExternalConfig();
+        } catch (ProjectConfigWriteException $exception) {
+            report($exception);
+
+            return $this->send([
+                'error' => t('Project config YAML files can’t be written in this environment.'),
+                'options' => [
+                    $this->finishedState(['label' => t('Cancel')]),
+                ],
+            ]);
+        }
 
         return $this->sendFinished();
     }
@@ -215,7 +212,9 @@ class ConfigSyncController extends BaseUpdaterController
 
         if ($error) {
             return [
-                'error' => $error."\n\n".t('Try running `composer install` from your terminal to resolve.'),
+                'error' => $error."\n\n".t('Try running `{command}` from your terminal to resolve.', [
+                    'command' => app(TerminalCommands::class)->composer('install'),
+                ]),
                 'options' => [
                     $this->finishedState(['label' => t('Cancel')]),
                     $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),

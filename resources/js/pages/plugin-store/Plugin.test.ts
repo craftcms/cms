@@ -138,10 +138,8 @@ it('shows the plugin a new handle loads, even after the previous request is canc
   const props = reactive<Props>({handle: 'first', tab: 'overview'});
   const root = mount(props);
   props.handle = 'second';
-  await new Promise((resolve) => setTimeout(resolve, 5));
-  await settle();
 
-  expect(root.textContent).toContain('overview panel');
+  await vi.waitFor(() => expect(root.textContent).toContain('overview panel'));
   expect(root.textContent).not.toContain('Couldn’t find that plugin.');
 });
 
