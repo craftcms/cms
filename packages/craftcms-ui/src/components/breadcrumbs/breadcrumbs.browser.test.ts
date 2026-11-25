@@ -495,6 +495,107 @@ describe('craft-breadcrumbs', () => {
     expect(backward).toEqual([...expected].reverse());
   });
 
+  describe('when the trail collapses or expands around focus', () => {
+    /** The element with focus, followed down through shadow roots. */
+    const deepActive = () => {
+      let active = document.activeElement;
+      while (active?.shadowRoot?.activeElement) {
+        active = active.shadowRoot.activeElement;
+      }
+      return active as HTMLElement;
+    };
+
+    /** Resizes the trail's container and waits for it to measure again. */
+    const resize = async (container: HTMLElement, width: string) => {
+      container.style.inlineSize = width;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await frame();
+      await frame();
+    };
+
+    const linkOf = (item: Element) =>
+      item.shadowRoot!.querySelector<HTMLAnchorElement>('a[href]')!;
+
+    it('moves focus to More items when the focused crumb collapses', async () => {
+      const {container, items, overflow} = await trail('2000px');
+      expect(overflow.hidden).toBe(true);
+      linkOf(items[2]!).focus();
+
+      await resize(container, '200px');
+
+      expect(items[2]!.hidden).toBe(true);
+      expect(deepActive()).not.toBe(document.body);
+      await expect.element(deepActive()).toHaveAccessibleName('More items');
+    });
+
+    it('moves focus to the first crumb back from the menu when the trail expands', async () => {
+      const {container, element, items, overflow} = await trail('200px');
+      const firstCollapsed = items.find((item) => item.hidden)!;
+      const name = firstCollapsed.firstChild!.textContent!.trim();
+      overflow.querySelector<HTMLElement>('craft-button')!.focus();
+      expect(element.shadowRoot!.activeElement).not.toBeNull();
+
+      await resize(container, '2000px');
+
+      expect(overflow.hidden).toBe(true);
+      expect(deepActive()).not.toBe(document.body);
+      await expect.element(deepActive()).toHaveAccessibleName(name);
+    });
+
+    it('closes the menu and moves focus to the first crumb back when the trail expands with focus in the menu', async () => {
+      const {container, items, menu, overflow} = await trail('200px');
+      const firstCollapsed = items.find((item) => item.hidden)!;
+      const name = firstCollapsed.firstChild!.textContent!.trim();
+      overflow.querySelector<HTMLElement>('craft-button')!.focus();
+      await userEvent.keyboard('{Enter}');
+      await frame();
+      await frame();
+      expect(menu.open).toBe(true);
+      // Focus is on an item in the open menu, not on its trigger.
+      expect((deepActive().getRootNode() as ShadowRoot).host?.localName).toBe(
+        'craft-action-item'
+      );
+
+      await resize(container, '2000px');
+
+      expect(overflow.hidden).toBe(true);
+      expect(menu.open).toBe(false);
+      expect(deepActive()).not.toBe(document.body);
+      await expect.element(deepActive()).toHaveAccessibleName(name);
+    });
+
+    it('skips crumbs with no link when it chooses where focus goes', async () => {
+      const {container, items, overflow} = await trail('200px');
+      const collapsed = items.filter((item) => item.hidden);
+      expect(collapsed.length).toBeGreaterThan(1);
+      // The first crumb in the menu is plain text, so it can't take focus.
+      collapsed[0]!.removeAttribute('href');
+      await frame();
+      await frame();
+      expect(collapsed[0]!.hidden).toBe(true);
+      overflow.querySelector<HTMLElement>('craft-button')!.focus();
+
+      await resize(container, '2000px');
+
+      expect(deepActive()).not.toBe(document.body);
+      await expect
+        .element(deepActive())
+        .toHaveAccessibleName(collapsed[1]!.firstChild!.textContent!.trim());
+    });
+
+    it('leaves focus on a crumb that stays in the trail', async () => {
+      const {container, items, overflow} = await trail('2000px');
+      linkOf(items[0]!).focus();
+
+      await resize(container, '520px');
+
+      // Partly collapsed, with the root kept.
+      expect(overflow.hidden).toBe(false);
+      expect(items[0]!.hidden).toBe(false);
+      await expect.element(deepActive()).toHaveAccessibleName('Site Name');
+    });
+  });
+
   it('keeps the menu and truncation in place around a custom separator', async () => {
     const separator = '<span slot="separator">/</span>';
     const {element, items, overflow} = await trail(

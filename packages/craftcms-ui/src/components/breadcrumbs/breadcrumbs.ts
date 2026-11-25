@@ -10,6 +10,8 @@ import type {
 import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
 import styles from './breadcrumbs.styles.js';
 import {t} from '../../utilities/translate';
+import {focusableWithin} from '../../utilities/focus-trap';
+import {isFocusable} from '../../utilities/focus-return';
 
 import '../action-menu/action-menu.js';
 import '../breadcrumb-item/breadcrumb-item.js';
@@ -249,9 +251,21 @@ export default class CraftBreadcrumbs extends LitElement {
       return;
     }
 
+    // Where focus is, before anything is hidden: hiding what has focus drops
+    // it to the page (see #keepFocus). Read through containment rather than
+    // `:focus-within`, which doesn't match the menu while focus is on one of
+    // its items.
+    const ownActive = this.shadowRoot?.activeElement ?? null;
+    const focused =
+      ownActive && overflow.contains(ownActive)
+        ? 'menu'
+        : (items.find((item) => item.contains(document.activeElement)) ?? null);
+    const wasCollapsed = [...this.#collapsed];
+
     if (items.length < 2) {
       this.style.removeProperty('--_natural-inline-size');
       this.#apply([]);
+      void this.#keepFocus(focused, wasCollapsed);
       return;
     }
 
@@ -279,6 +293,7 @@ export default class CraftBreadcrumbs extends LitElement {
 
     if (natural <= available + FIT_TOLERANCE) {
       this.#apply([]);
+      void this.#keepFocus(focused, wasCollapsed);
       return;
     }
 
@@ -306,6 +321,54 @@ export default class CraftBreadcrumbs extends LitElement {
     }
 
     this.#apply(items.map((_, index) => index).filter((i) => !kept.has(i)));
+    void this.#keepFocus(focused, wasCollapsed);
+  }
+
+  /**
+   * Puts focus back in the trail when measuring hid what had it, rather than
+   * leaving it on the page: a crumb that collapsed hands it to the menu's
+   * trigger, and a menu that went away hands it to the first crumb that came
+   * back out of it. Focus on anything still shown stays where it is.
+   */
+  async #keepFocus(
+    focused: CraftBreadcrumbItem | 'menu' | null,
+    wasCollapsed: CraftBreadcrumbItem[]
+  ) {
+    const overflow = this.#overflowItem;
+
+    if (!focused || !overflow) {
+      return;
+    }
+
+    if (focused !== 'menu') {
+      // Only a crumb collapsed here. One its author hid is theirs to handle.
+      if (focused.hidden && focused.hasAttribute('data-collapsed')) {
+        overflow.querySelector<HTMLElement>('craft-button')?.focus();
+      }
+      return;
+    }
+
+    if (!overflow.hidden) {
+      return;
+    }
+
+    // Closed first, or the popover hands focus back to its trigger as it
+    // closes, which is hidden now.
+    const menu = overflow.querySelector<CraftActionMenu>('craft-action-menu');
+    if (menu?.open) {
+      await menu.hide();
+    }
+
+    // The first crumb out of the menu that can take focus: its link, or a
+    // switcher beside a crumb with no link. Failing those, the first such
+    // crumb after them, then the first in the trail.
+    const items = this.#items;
+    const after = items.slice(items.indexOf(wasCollapsed.at(-1)!) + 1);
+    const target = [...wasCollapsed, ...after, ...items]
+      .filter((item) => items.includes(item) && !item.hidden)
+      .flatMap((item) => focusableWithin(item).filter(isFocusable))[0];
+
+    target?.focus();
   }
 
   #apply(collapsed: number[]) {
