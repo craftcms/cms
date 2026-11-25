@@ -232,7 +232,7 @@
         "Path": "CraftCms\\Cms\\Support\\Facades\\Path",
         "Plugins": "CraftCms\\Cms\\Support\\Facades\\Plugins",
         "ProjectConfig": "CraftCms\\Cms\\Support\\Facades\\ProjectConfig",
-        "ResponseCacheInfo": "CraftCms\\Cms\\Support\\Facades\\ResponseCacheInfo",
+        "CacheInfo": "CraftCms\\Cms\\Support\\Facades\\CacheInfo",
         "ResponseHeaders": "CraftCms\\Cms\\Support\\Facades\\ResponseHeaders",
         "Revisions": "CraftCms\\Cms\\Support\\Facades\\Revisions",
         "Search": "CraftCms\\Cms\\Support\\Facades\\Search",

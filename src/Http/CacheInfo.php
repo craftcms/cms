@@ -16,10 +16,10 @@ use Illuminate\Container\Attributes\Scoped;
  *
  * For GET and HEAD site requests outside the control panel and actions, {@see CollectCacheInfo} collects the tags and
  * expiry dates of the elements the request queries for the whole request. Templates, controllers and plugins add their
- * own through the `ResponseCacheInfo` facade, which is also a Twig global:
+ * own through the `CacheInfo` facade, which is also a Twig global:
  *
  * ```twig
- * {% do ResponseCacheInfo.addTags(['nav']) %}
+ * {% do CacheInfo.addTags(['nav']) %}
  * ```
  *
  * They're collected like the cache info Craft collects for elements. Added inside a `{% cache %}` block, they're
@@ -33,7 +33,7 @@ use Illuminate\Container\Attributes\Scoped;
  * @since 6.0.0
  */
 #[Scoped]
-class ResponseCacheInfo
+class CacheInfo
 {
     private bool $collecting = false;
 

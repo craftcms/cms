@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Cms\Http\ResponseCacheInfo;
+use CraftCms\Cms\Http\CacheInfo;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -13,19 +13,17 @@ use Symfony\Component\HttpFoundation\Response;
  * Collects the cache info of eligible responses, and caps their lifetimes at the response's earliest expiry.
  *
  * Global middleware, so it sees the final response. For a GET or HEAD request outside the control panel and actions,
- * it collects element tags and the earliest element expiry into {@see ResponseCacheInfo} until the request
+ * it collects element tags and the earliest element expiry into {@see CacheInfo} until the request
  * terminates, so cache integrations can read them from any middleware. If the response succeeds or is a
  * `304 Not Modified`, it caps the response's `max-age`, `s-maxage` and `Expires` at
- * {@see ResponseCacheInfo::getExpiryDate()}. Whether the response is stored is still up to the cache, from its headers.
- *
- * @internal
+ * {@see CacheInfo::getExpiryDate()}. Whether the response is stored is still up to the cache, from its headers.
  *
  * @since 6.0.0
  */
 readonly class CollectCacheInfo
 {
     public function __construct(
-        private ResponseCacheInfo $cacheInfo,
+        private CacheInfo $cacheInfo,
     ) {}
 
     public function handle(Request $request, Closure $next): Response

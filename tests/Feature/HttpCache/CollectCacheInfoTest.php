@@ -7,7 +7,7 @@ use CraftCms\Cms\Database\Factories\EntryFactory;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Support\Facades\ResponseCacheInfo;
+use CraftCms\Cms\Support\Facades\CacheInfo;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -30,8 +30,8 @@ readonly class RecordCacheInfo
     {
         $response = $next($request);
 
-        $this->seen['tags'] = ResponseCacheInfo::getTags();
-        $this->seen['expiry'] = ResponseCacheInfo::getExpiryDate()?->getTimestamp();
+        $this->seen['tags'] = CacheInfo::getTags();
+        $this->seen['expiry'] = CacheInfo::getExpiryDate()?->getTimestamp();
 
         return $response;
     }
@@ -51,7 +51,7 @@ it('tags a page with the elements it queried until it terminates, and caps its l
 
     expect($this->cacheInfo['tags'])->toContain('element', 'element::'.Entry::class)
         ->and($this->cacheInfo['expiry'])->toBe(now()->addMinutes(10)->getTimestamp())
-        ->and(ResponseCacheInfo::getTags())->toBe([])
+        ->and(CacheInfo::getTags())->toBe([])
         ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600')
         ->and($response->headers->getCacheControlDirective('s-maxage'))->toBe('600')
         ->and($response->getExpires()->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
@@ -82,7 +82,7 @@ it('caps lifetimes at expiry dates added through the facade', function () {
     $this->freezeSecond();
 
     Route::get('/page', function () {
-        ResponseCacheInfo::addExpiryDate(now()->addMinutes(5));
+        CacheInfo::addExpiryDate(now()->addMinutes(5));
 
         return response('ok')->setPublic()->setMaxAge(3600);
     });
@@ -135,9 +135,9 @@ it('leaves lifetimes shorter than the earliest expiry alone', function () {
 
 it('collects tags added through the facade and the Twig global', function () {
     Route::get('/page', function () {
-        ResponseCacheInfo::addTags(['from-php']);
+        CacheInfo::addTags(['from-php']);
 
-        return response(renderString("{% do ResponseCacheInfo.addTags(['from-twig']) %}ok"));
+        return response(renderString("{% do CacheInfo.addTags(['from-twig']) %}ok"));
     });
 
     $this->get('/page');
@@ -150,7 +150,7 @@ it('keeps tags and element expiry dates from inside a cached block on a cache hi
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
     Route::get('/page', fn () => response(renderString(
-        "{% cache globally using key 'nav' %}{% do ResponseCacheInfo.addTags(['nav']) %}"
+        "{% cache globally using key 'nav' %}{% do CacheInfo.addTags(['nav']) %}"
         ."{{ craft.entries.id({$entry->id}).one().id }}-{{ random() }}{% endcache %}",
     ))->setPublic()->setMaxAge(3600));
 
@@ -169,7 +169,7 @@ it('keeps tags and element expiry dates from inside a cached block on a cache hi
 it('clears cached blocks that added a tag when the tag is invalidated', function () {
     Event::fake([ElementCachesInvalidated::class]);
     Route::get('/page', fn () => response(renderString(
-        "{% cache globally using key 'nav' %}{% do ResponseCacheInfo.addTags(['nav']) %}{{ random() }}{% endcache %}",
+        "{% cache globally using key 'nav' %}{% do CacheInfo.addTags(['nav']) %}{{ random() }}{% endcache %}",
     )));
 
     $first = $this->get('/page')->getContent();

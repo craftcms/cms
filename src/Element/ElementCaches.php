@@ -20,7 +20,7 @@ use Throwable;
  * Collects the cache tags and expiry dates that caches depend on, and invalidates the caches tagged with them.
  *
  * Element tags, such as `element::5`, come from the elements a cache's content queries. Tags can also be custom,
- * such as `nav` added with `ResponseCacheInfo::addTags()`. Both kinds are invalidated the same way, firing
+ * such as `nav` added with `CacheInfo::addTags()`. Both kinds are invalidated the same way, firing
  * {@see ElementCachesInvalidated}.
  *
  * @since 6.0.0
@@ -199,7 +199,7 @@ class ElementCaches
     }
 
     /**
-     * Invalidates the caches tagged with any of the given tags, such as tags added with `ResponseCacheInfo::addTags()`.
+     * Invalidates the caches tagged with any of the given tags, such as tags added with `CacheInfo::addTags()`.
      *
      * This clears `{% cache %}` blocks and data caches that depend on them, and fires {@see ElementCachesInvalidated}
      * so cache integrations can purge the HTTP caches of the responses tagged with them.

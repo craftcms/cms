@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \CraftCms\Cms\Http\ResponseCacheInfo addTags(string|list<string> $tags)
+ * @method static \CraftCms\Cms\Http\CacheInfo addTags(string|list<string> $tags)
  * @method static list<string> getTags()
- * @method static \CraftCms\Cms\Http\ResponseCacheInfo addExpiryDate(\DateTimeInterface $date)
+ * @method static \CraftCms\Cms\Http\CacheInfo addExpiryDate(\DateTimeInterface $date)
  * @method static \DateTimeImmutable|null getExpiryDate()
  *
- * @see \CraftCms\Cms\Http\ResponseCacheInfo
+ * @see \CraftCms\Cms\Http\CacheInfo
  * @since 6.0.0
  */
-class ResponseCacheInfo extends Facade
+class CacheInfo extends Facade
 {
     /**
      * The instance is scoped to the request, so the facade mustn't keep the first one it resolves.
@@ -27,6 +27,6 @@ class ResponseCacheInfo extends Facade
     #[Override]
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\Http\ResponseCacheInfo::class;
+        return \CraftCms\Cms\Http\CacheInfo::class;
     }
 }

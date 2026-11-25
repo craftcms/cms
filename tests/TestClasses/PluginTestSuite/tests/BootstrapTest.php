@@ -46,5 +46,5 @@ it('saves and queries elements', function () {
 });
 
 it('exposes Craft facades as Twig globals', function () {
-    expect(renderString('{{ ResponseCacheInfo.getTags()|json_encode }}'))->toBe('[]');
+    expect(renderString('{{ CacheInfo.getTags()|json_encode }}'))->toBe('[]');
 });

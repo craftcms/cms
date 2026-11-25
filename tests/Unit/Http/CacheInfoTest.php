@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Element\ElementCaches;
-use CraftCms\Cms\Http\ResponseCacheInfo;
+use CraftCms\Cms\Http\CacheInfo;
 
 it('collects nothing outside a collection', function () {
-    $cacheInfo = app(ResponseCacheInfo::class)->addTags(['a'])->addExpiryDate(now()->addHour());
+    $cacheInfo = app(CacheInfo::class)->addTags(['a'])->addExpiryDate(now()->addHour());
 
     expect($cacheInfo->getTags())->toBe([])
         ->and($cacheInfo->getExpiryDate())->toBeNull();
@@ -14,7 +14,7 @@ it('collects nothing outside a collection', function () {
 
 it('ignores empty and duplicate tags and keeps the earliest future expiry date until it stops', function () {
     $this->freezeSecond();
-    $cacheInfo = app(ResponseCacheInfo::class);
+    $cacheInfo = app(CacheInfo::class);
     $cacheInfo->start();
 
     $cacheInfo
@@ -34,7 +34,7 @@ it('ignores empty and duplicate tags and keeps the earliest future expiry date u
 });
 
 it('includes tags from collections still open inside the response', function () {
-    $cacheInfo = app(ResponseCacheInfo::class);
+    $cacheInfo = app(CacheInfo::class);
     $cacheInfo->start();
     $cacheInfo->addTags('page');
 
