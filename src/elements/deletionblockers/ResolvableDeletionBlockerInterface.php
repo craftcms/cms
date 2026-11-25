@@ -19,7 +19,7 @@ namespace craft\elements\deletionblockers;
 interface ResolvableDeletionBlockerInterface extends DeletionBlockerInterface
 {
     /**
-     * Returns a key that identifies the blocker, such as `usages` or `entries`.
+     * Returns a key that identifies the blocker, such as `usages` or `elements`.
      */
     public function getKey(): string;
 
@@ -29,7 +29,7 @@ interface ResolvableDeletionBlockerInterface extends DeletionBlockerInterface
      * Each item has the following keys:
      *
      * - `label` – The item’s name, such as an entry type’s name
-     * - `count` – The number of elements the deletion affects there, or `null` if it couldn’t be counted
+     * - `count` – The number of elements the deletion affects there, or `null` if it couldn’t be counted or doesn’t apply
      * - `description` – A sentence that describes the count, such as “42 entries have a value.”
      *
      * @return array{label: string, count: int|null, description: string}[]

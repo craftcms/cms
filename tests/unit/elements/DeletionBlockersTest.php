@@ -13,27 +13,36 @@ use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\deletionblockers\EntryAuthorsBlocker;
 use craft\elements\deletionblockers\EntryTypeUsageBlocker;
 use craft\elements\deletionblockers\FieldUsageBlocker;
+use craft\elements\deletionblockers\FilesystemUsageBlocker;
 use craft\elements\deletionblockers\ResolvableDeletionBlockerInterface;
-use craft\elements\deletionblockers\SectionUsageBlocker;
-use craft\elements\deletionblockers\TrashedEntriesBlocker;
+use craft\elements\deletionblockers\SourceUsageBlocker;
+use craft\elements\deletionblockers\TrashedElementsBlocker;
+use craft\elements\deletionblockers\UserGroupUsageBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
+use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\DefineDeletionBlockersEvent;
 use craft\events\RegisterDeletionSubjectTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\Assets as AssetsField;
 use craft\fields\Entries as EntriesField;
 use craft\fields\PlainText;
+use craft\fields\Tags as TagsField;
+use craft\fs\Local;
 use craft\models\EntryType;
+use craft\models\ImageTransform;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\models\TagGroup;
+use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\DeletionBlockers;
 use craft\test\TestCase;
 use yii\base\InvalidArgumentException;
 
 /**
- * Tests the deletion blockers for fields, entry types, and sections.
+ * Tests the core deletion blockers and the service that collects them.
  */
 class DeletionBlockersTest extends TestCase
 {
@@ -136,7 +145,7 @@ class DeletionBlockersTest extends TestCase
         $usage = $this->activeBlocker($blockers, EntryTypeUsageBlocker::class);
         self::assertSame(['blockerBlog' => 1, 'blockerPages' => 2], array_column($usage->getItems(), 'count', 'label'));
         self::assertSame('The entry type is used by 2 sections.', $usage->getSummary());
-        self::assertSame('3 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedEntriesBlocker::class)->getSummary());
+        self::assertSame('3 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
     }
 
     public function testSectionBlockersListSourceFieldsAndEntriesToTrash(): void
@@ -176,15 +185,98 @@ class DeletionBlockersTest extends TestCase
 
         try {
             $blockers = $this->blockers('section', $this->blog);
-            $usage = $this->activeBlocker($blockers, SectionUsageBlocker::class);
+            $usage = $this->activeBlocker($blockers, SourceUsageBlocker::class);
             $counts = array_column($usage->getItems(), 'count', 'label');
             ksort($counts);
             self::assertSame(['Blocker Anything' => 0, 'Blocker Related' => 2], $counts);
-            self::assertSame('2 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedEntriesBlocker::class)->getSummary());
+            self::assertSame('2 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
         } finally {
             Craft::$app->getFields()->deleteField($anything);
         }
         self::assertSame([], $this->activeBlockers($this->blockers('section', $this->createSection('blockerEmpty', [$this->page]))));
+    }
+
+    public function testTagGroupBlockersListSingleSourceFieldsAndTagsToTrash(): void
+    {
+        $group = new TagGroup(['name' => 'Blocker Tags', 'handle' => 'blockerTags']);
+        self::assertTrue(Craft::$app->getTags()->saveTagGroup($group), json_encode($group->getErrors()));
+        // Tags fields select one source, rather than a list of them
+        $field = new TagsField(['name' => 'Blocker Tag Field', 'handle' => 'blockerTagField', 'source' => "taggroup:$group->uid"]);
+        Craft::$app->getFields()->saveField($field);
+
+        try {
+            $tag = new Tag(['groupId' => $group->id, 'title' => 'Blocker tag']);
+            self::assertTrue(Craft::$app->getElements()->saveElement($tag));
+
+            $layout = $this->page->getFieldLayout();
+            $layout->setTabs([['name' => 'Content', 'elements' => [['type' => CustomField::class, 'fieldUid' => $field->uid]]]]);
+            self::assertTrue(Craft::$app->getEntries()->saveEntryType($this->page), json_encode($this->page->getErrors()));
+            $entry = new Entry(['sectionId' => $this->pages->id, 'typeId' => $this->page->id, 'title' => 'Tagged']);
+            $entry->setFieldValue('blockerTagField', [$tag->id]);
+            $this->saveEntry($entry);
+
+            $blockers = $this->blockers('tag-group', $group);
+            $usage = $this->activeBlocker($blockers, SourceUsageBlocker::class);
+            self::assertSame(['Blocker Tag Field' => 1], array_column($usage->getItems(), 'count', 'label'));
+            self::assertSame('The tag group is a source for 1 field.', $usage->getSummary());
+            self::assertSame('1 tag will be moved to the trash.', $this->activeBlocker($blockers, TrashedElementsBlocker::class)->getSummary());
+        } finally {
+            Craft::$app->getFields()->deleteField($field);
+            Craft::$app->getTags()->deleteTagGroup($group);
+        }
+    }
+
+    public function testFilesystemBlockerListsVolumesThatUseIt(): void
+    {
+        $fsService = Craft::$app->getFs();
+        $fs = $fsService->createFilesystem(['type' => Local::class, 'name' => 'Blocker Fs', 'handle' => 'blockerFs', 'path' => sys_get_temp_dir() . '/blocker-fs']);
+        self::assertTrue($fsService->saveFilesystem($fs), json_encode($fs->getErrors()));
+        $volume = new Volume(['name' => 'Blocker Volume', 'handle' => 'blockerVolume', 'fsHandle' => 'blockerFs', 'transformFsHandle' => 'blockerFs']);
+        self::assertTrue(Craft::$app->getVolumes()->saveVolume($volume), json_encode($volume->getErrors()));
+        $field = new AssetsField(['name' => 'Blocker Images', 'handle' => 'blockerImages', 'sources' => ["volume:$volume->uid"]]);
+        Craft::$app->getFields()->saveField($field);
+
+        try {
+            $blocker = $this->activeBlockers($this->blockers('filesystem', $fs));
+            self::assertCount(1, $blocker);
+            self::assertInstanceOf(FilesystemUsageBlocker::class, $blocker[0]);
+            self::assertSame('The filesystem is used by 1 volume. Choose another filesystem for it first.', $blocker[0]->getSummary());
+            // There’s nothing to resolve from the modal
+            self::assertSame([], $blocker[0]->getActions());
+            self::assertSame([], $this->activeBlockers($this->blockers('filesystem', $fsService->createFilesystem(['type' => Local::class, 'handle' => 'blockerUnused']))));
+
+            $usage = $this->activeBlocker($this->blockers('volume', $volume), SourceUsageBlocker::class);
+            self::assertSame(0, array_column($usage->getItems(), 'count', 'label')['Blocker Images'] ?? null);
+        } finally {
+            Craft::$app->getFields()->deleteField($field);
+            Craft::$app->getVolumes()->deleteVolume($volume);
+            $fsService->removeFilesystem($fs);
+        }
+    }
+
+    public function testUserGroupBlockerListsUsersAndDefaultGroup(): void
+    {
+        $group = new UserGroup(['name' => 'Blocker Group', 'handle' => 'blockerGroup']);
+        self::assertTrue(Craft::$app->getUserGroups()->saveGroup($group), json_encode($group->getErrors()));
+        $projectConfig = Craft::$app->getProjectConfig();
+        $defaultGroup = $projectConfig->get('users.defaultGroup');
+
+        try {
+            self::assertSame([], $this->activeBlockers($this->blockers('user-group', $group)));
+
+            $user = User::find()->admin()->one();
+            Craft::$app->getUsers()->assignUserToGroups($user->id, [$group->id]);
+            $blocker = $this->activeBlocker($this->blockers('user-group', $group), UserGroupUsageBlocker::class);
+            self::assertSame('1 user is in the group.', $blocker->getSummary());
+
+            Craft::$app->getUsers()->assignUserToGroups($user->id, []);
+            $projectConfig->set('users.defaultGroup', $group->uid);
+            $blocker = $this->activeBlocker($this->blockers('user-group', $group), UserGroupUsageBlocker::class);
+            self::assertSame('New users are assigned to the group.', $blocker->getSummary());
+        } finally {
+            $projectConfig->set('users.defaultGroup', $defaultGroup);
+            Craft::$app->getUserGroups()->deleteGroup($group);
+        }
     }
 
     public function testEventHandlersCanAddBlockersToAnyRegisteredType(): void
@@ -192,14 +284,14 @@ class DeletionBlockersTest extends TestCase
         $custom = $this->createMock(DeletionBlockerInterface::class);
         $custom->method('isActive')->willReturn(true);
         $service = Craft::$app->getDeletionBlockers();
-        $volume = new Volume(['id' => 99, 'name' => 'Uploads']);
+        $transform = new ImageTransform(['id' => 99, 'name' => 'Thumb']);
         $thing = (object)['name' => 'Plugin thing'];
 
         $registerHandler = function(RegisterDeletionSubjectTypesEvent $event) use ($thing) {
             $event->types['plugin-thing'] = ['find' => fn($id) => $id === 'abc' ? $thing : null];
         };
         $defineHandler = function(DefineDeletionBlockersEvent $event) use ($custom) {
-            if ($event->type === 'volume' && $event->subject->id === 99) {
+            if ($event->type === 'image-transform' && $event->subject->id === 99) {
                 $event->blockers[] = $custom;
             }
         };
@@ -208,8 +300,8 @@ class DeletionBlockersTest extends TestCase
 
         try {
             // Core types without core blockers have none until a handler adds one
-            self::assertSame([$custom], $this->activeBlockers($service->getBlockers('volume', $volume)));
-            self::assertSame([], $this->activeBlockers($service->getBlockers('volume', new Volume(['id' => 100]))));
+            self::assertSame([$custom], $this->activeBlockers($service->getBlockers('image-transform', $transform)));
+            self::assertSame([], $this->activeBlockers($service->getBlockers('image-transform', new ImageTransform(['id' => 100]))));
 
             // Plugins can register their own subject types
             $service = new DeletionBlockers();

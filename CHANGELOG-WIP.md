@@ -22,7 +22,8 @@
 
 ### Control Panel
 
-- Deleting a field, entry type, or section in the control panel now lists where it’s used, how many elements have values there, and which entries will be moved to the trash. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Deleting configuration in the control panel now lists where it’s used and what the deletion affects. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Filesystems can no longer be deleted from the control panel while a volume uses them. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Plugins can now show deletion blockers for any configuration deleted in the control panel. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Soft-deleting elements no longer asks for a second confirmation after the deletion blockers modal. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - The control panel is now available in Croatian, and its Indonesian, Kyrgyz, and Welsh translations are now complete. Previously, most of their strings were shown in English.
@@ -47,9 +48,12 @@
 - Added `craft\elements\deletionblockers\BaseResolvableDeletionBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\elements\deletionblockers\EntryTypeUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\elements\deletionblockers\FieldUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\FilesystemUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\elements\deletionblockers\ResolvableDeletionBlockerInterface`. ([#21104](https://github.com/craftcms/cms/pull/21104))
-- Added `craft\elements\deletionblockers\SectionUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
-- Added `craft\elements\deletionblockers\TrashedEntriesBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\SiteSectionsBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\SourceUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\TrashedElementsBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\UserGroupUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\base\ApplicationTrait::getDeletionBlockers()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\controllers\DeletionBlockersController`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\events\DefineDeletionBlockersEvent`. ([#21104](https://github.com/craftcms/cms/pull/21104))

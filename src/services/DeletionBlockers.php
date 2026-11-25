@@ -10,15 +10,27 @@ namespace craft\services;
 use Craft;
 use craft\base\Chippable;
 use craft\base\ElementInterface;
-use craft\elements\deletionblockers\BaseResolvableDeletionBlocker;
+use craft\db\Table;
+use craft\elements\Asset;
+use craft\elements\Category;
 use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\deletionblockers\EntryTypeUsageBlocker;
 use craft\elements\deletionblockers\FieldUsageBlocker;
-use craft\elements\deletionblockers\SectionUsageBlocker;
-use craft\elements\deletionblockers\TrashedEntriesBlocker;
+use craft\elements\deletionblockers\FilesystemUsageBlocker;
+use craft\elements\deletionblockers\SiteSectionsBlocker;
+use craft\elements\deletionblockers\SourceUsageBlocker;
+use craft\elements\deletionblockers\TrashedElementsBlocker;
+use craft\elements\deletionblockers\UserGroupUsageBlocker;
 use craft\elements\ElementCollection;
+use craft\elements\Entry;
+use craft\elements\Tag;
 use craft\events\DefineDeletionBlockersEvent;
 use craft\events\RegisterDeletionSubjectTypesEvent;
+use craft\fields\Assets as AssetsField;
+use craft\fields\Categories as CategoriesField;
+use craft\fields\Entries as EntriesField;
+use craft\fields\Tags as TagsField;
+use craft\models\Section;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -151,16 +163,61 @@ class DeletionBlockers extends Component
     public function getBlockers(string $type, mixed $subject): array
     {
         $blockers = match ($type) {
-            'field' => [
-                new FieldUsageBlocker($subject),
+            'category-group' => [
+                new SourceUsageBlocker(
+                    CategoriesField::class,
+                    ["group:$subject->uid"],
+                    Table::CATEGORIES,
+                    ['groupId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The category group is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                ),
+                new TrashedElementsBlocker(Category::class, ['groupId' => $subject->id]),
             ],
             'entry-type' => [
                 new EntryTypeUsageBlocker($subject),
-                new TrashedEntriesBlocker(['typeId' => $subject->id]),
+                new TrashedElementsBlocker(Entry::class, ['typeId' => $subject->id]),
+            ],
+            'field' => [
+                new FieldUsageBlocker($subject),
+            ],
+            'filesystem' => [
+                new FilesystemUsageBlocker($subject),
             ],
             'section' => [
-                new SectionUsageBlocker($subject),
-                new TrashedEntriesBlocker(['sectionId' => $subject->id]),
+                new SourceUsageBlocker(
+                    EntriesField::class,
+                    $subject->type === Section::TYPE_SINGLE ? ["section:$subject->uid", 'singles'] : ["section:$subject->uid"],
+                    Table::ENTRIES,
+                    ['sectionId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The section is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                ),
+                new TrashedElementsBlocker(Entry::class, ['sectionId' => $subject->id]),
+            ],
+            'site' => [
+                new SiteSectionsBlocker($subject),
+            ],
+            'tag-group' => [
+                new SourceUsageBlocker(
+                    TagsField::class,
+                    ["taggroup:$subject->uid"],
+                    Table::TAGS,
+                    ['groupId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The tag group is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                ),
+                new TrashedElementsBlocker(Tag::class, ['groupId' => $subject->id]),
+            ],
+            'user-group' => [
+                new UserGroupUsageBlocker($subject),
+            ],
+            'volume' => [
+                new SourceUsageBlocker(
+                    AssetsField::class,
+                    ["volume:$subject->uid"],
+                    Table::ASSETS,
+                    ['volumeId' => $subject->id],
+                    fn(int $num) => Craft::t('app', 'The volume is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
+                ),
+                new TrashedElementsBlocker(Asset::class, ['volumeId' => $subject->id]),
             ],
             default => [],
         };
@@ -187,6 +244,8 @@ class DeletionBlockers extends Component
     /**
      * Prepares the active blockers for `Craft.ElementDeletionManager` and `Craft.DeletionBlockersModal`.
      *
+     * A blocker’s details start out expanded when it has an `$expandDetails` property set to `true`.
+     *
      * @param DeletionBlockerInterface[] $blockers
      * @return array{summary: string, details: string|null, actions: array, expanded: bool}[]
      */
@@ -197,7 +256,7 @@ class DeletionBlockers extends Component
                 'summary' => $blocker->getSummary(),
                 'details' => $blocker->getDetails(),
                 'actions' => $blocker->getActions(),
-                'expanded' => $blocker instanceof BaseResolvableDeletionBlocker && $blocker->expandDetails,
+                'expanded' => property_exists($blocker, 'expandDetails') && $blocker->expandDetails,
             ],
             array_filter($blockers, fn(DeletionBlockerInterface $blocker) => $blocker->isActive()),
         ));
