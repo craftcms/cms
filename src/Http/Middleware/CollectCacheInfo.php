@@ -34,14 +34,14 @@ readonly class CollectCacheInfo
             return $next($request);
         }
 
-        $this->cacheInfo->collectElements();
+        $this->cacheInfo->collectDependencies();
         $this->elementCaches->startCollectingCacheInfo();
 
         try {
             $response = $next($request);
         } finally {
             $this->elementCaches->stopCollectingCacheInfo();
-            $this->cacheInfo->collectElements(false);
+            $this->cacheInfo->collectDependencies(false);
         }
 
         $expiryDate = $this->cacheInfo->getExpiryDate();

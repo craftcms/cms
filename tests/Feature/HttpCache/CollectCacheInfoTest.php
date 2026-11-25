@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Factories\EntryFactory;
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\ResponseCacheInfo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 
 use function CraftCms\Cms\renderString;
@@ -168,6 +171,23 @@ it('keeps tags and element expiry dates from inside a cached block on a cache hi
         ->and(ResponseCacheInfo::getTags())->toContain('nav', 'element::'.Entry::class)
         ->and(ResponseCacheInfo::getExpiryDate()?->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp())
         ->and($second->headers->getCacheControlDirective('max-age'))->toBe('600');
+});
+
+it('clears cached blocks that added a tag when the tag is invalidated', function () {
+    Event::fake([ElementCachesInvalidated::class]);
+    Route::get('/page', fn () => response(renderString(
+        "{% cache globally using key 'nav' %}{% do ResponseCacheInfo.addTags(['nav']) %}{{ random() }}{% endcache %}",
+    )));
+
+    $first = $this->get('/page')->getContent();
+    app()->forgetScopedInstances();
+    expect($this->get('/page')->getContent())->toBe($first);
+
+    expect(app(ElementCaches::class)->invalidateTags(['nav', '']))->toBe(['nav']);
+    Event::assertDispatched(ElementCachesInvalidated::class, fn (ElementCachesInvalidated $event) => $event->tags === ['nav']);
+
+    app()->forgetScopedInstances();
+    expect($this->get('/page')->getContent())->not->toBe($first);
 });
 
 it('only collects element tags for eligible requests', function (string $method, string $uri) {

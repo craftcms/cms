@@ -192,10 +192,28 @@ class ElementCaches
         return $this->dependencyCollector()->stop();
     }
 
+    /**
+     * Invalidates the caches tagged with any of the given tags, such as tags added with `ResponseCacheInfo::addTags()`.
+     *
+     * This clears `{% cache %}` blocks and data caches that depend on them, and fires {@see ElementCachesInvalidated}
+     * so cache integrations can purge the HTTP caches of the responses tagged with them.
+     *
+     * @param  list<string>  $tags
+     * @return list<string>
+     */
+    public function invalidateTags(array $tags): array
+    {
+        $tags = $this->queueInvalidations(array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== ''))));
+
+        event(new ElementCachesInvalidated($tags));
+
+        return $tags;
+    }
+
     /** @return list<string> */
     public function invalidateAll(): array
     {
-        $tags = $this->invalidateTags(['element']);
+        $tags = $this->queueInvalidations(['element']);
 
         event(new ElementCachesInvalidated($tags));
 
@@ -208,7 +226,7 @@ class ElementCaches
      */
     public function invalidateForElementType(string $elementType): array
     {
-        $tags = $this->invalidateTags(["element::$elementType"]);
+        $tags = $this->queueInvalidations(["element::$elementType"]);
 
         event(new ElementCachesInvalidated($tags));
 
@@ -223,7 +241,7 @@ class ElementCaches
      */
     public function invalidateForElementAfterCommit(ElementInterface $element): void
     {
-        $tags = $this->invalidateTags($this->tagsForElement($element));
+        $tags = $this->queueInvalidations($this->tagsForElement($element));
 
         DB::afterCommit(function () use ($tags, $element): void {
             // Flush before the event, because a listener that throws makes Laravel skip the flush queued after this
@@ -241,7 +259,7 @@ class ElementCaches
      */
     public function invalidateForElement(ElementInterface $element): array
     {
-        $tags = $this->invalidateTags($this->tagsForElement($element));
+        $tags = $this->queueInvalidations($this->tagsForElement($element));
 
         event(new ElementCachesInvalidated($tags, $element));
 
@@ -253,7 +271,7 @@ class ElementCaches
      * @param  string[]  $tags
      * @return string[]
      */
-    private function invalidateTags(array $tags): array
+    private function queueInvalidations(array $tags): array
     {
         foreach ($tags as $tag) {
             $this->pendingTags[$tag] = true;
