@@ -405,7 +405,7 @@ return [
     'Context' => 'Környezet',
     'Continue anyway' => 'Mindenképpen tovább',
     'Continue shopping' => 'Vásárlás folytatása',
-    'Continue to the control panel in {num, number} {num, plural, =1{second} other{seconds}}' => 'Tovább a vezérlőpultra {num, number} {num, plural, =1{másodperc} other{másodperc}}}',
+    'Continue to the control panel in {num, number} {num, plural, =1{second} other{seconds}}' => 'Tovább a vezérlőpultra {num, number} {num, plural, =1{másodperc} other{másodperc}} múlva',
     'Continue to the control panel' => 'Tovább a vezérlőpultra',
     'Continue' => 'Tovább',
     'Control panel resources' => 'Vezérlőpult erőforrások',
