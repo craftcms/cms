@@ -83,7 +83,7 @@ readonly class MoveEntryToSectionController
             'sectionId' => ['required', 'integer', Rule::exists(Table::SECTIONS, 'id')],
         ]);
 
-        $section = $this->sections->getSectionById($sectionId);
+        $section = $this->sections->getSectionById((int) $sectionId);
 
         abort_if(is_null($section), 400, 'Cannot find the section to move the entries to.');
 
