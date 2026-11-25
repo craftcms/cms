@@ -155,6 +155,8 @@ craft-markdown-field:defined .overtype-wrapper {
  * preview that renders each line as a line of its own, so the two are stacked
  * in one grid cell and the taller sets the height: the preview's text, or the
  * textarea's `rows`, which sets the minimum in place of OverType's 60px floor.
+ * The footer controls get a row of their own below the text, and the cap
+ * covers both rows, so the text row shrinks to make room for the footer.
  */
 craft-markdown-field:defined .overtype-container {
   height: auto !important;
@@ -163,8 +165,10 @@ craft-markdown-field:defined .overtype-container {
 craft-markdown-field:defined .overtype-wrapper {
   display: grid !important;
   flex: 0 0 auto !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
   height: auto !important;
   min-height: 0 !important;
+  max-height: var(--markdown-field-max-height, none) !important;
 }
 
 craft-markdown-field:defined
@@ -173,7 +177,6 @@ craft-markdown-field:defined
   grid-area: 1 / 1 !important;
   position: relative !important;
   height: auto !important;
-  max-height: var(--markdown-field-max-height, none) !important;
   /* Their text is the same height; only a cap leaves either any to scroll. */
   overflow-y: hidden !important;
 }
@@ -184,26 +187,40 @@ craft-markdown-field[capped]:defined
   overflow-y: auto !important;
 }
 
+/*
+ * A row of its own below the text, so the text never runs underneath it. The
+ * count's digits sit as far from the field's bottom edge, at their baseline,
+ * as from its end edge, so the row's block-end padding matches its inline-end
+ * padding, and the count's box is trimmed to its digits.
+ */
 craft-markdown-field:defined .markdown-field-footer-controls {
-  position: absolute !important;
-  inset-block-end: var(--c-spacing-md) !important;
-  inset-inline-end: var(--c-input-spacing-inline) !important;
-  z-index: 2 !important;
+  grid-area: 2 / 1 !important;
+  justify-self: end !important;
+  padding-block-end: var(--c-input-spacing-inline) !important;
+  padding-inline-end: var(--c-input-spacing-inline) !important;
   display: flex !important;
   gap: var(--c-spacing-sm) !important;
-  align-items: center !important;
+  align-items: last baseline !important;
   pointer-events: none !important;
 }
 
 craft-markdown-field:defined .markdown-field-char-counter {
-  color: var(--c-text-quiet) !important;
+  color: var(--c-form-control-placeholder) !important;
+  font-variant-numeric: tabular-nums !important;
   font-family: var(--c-font-body) !important;
   font-size: var(--c-text-base) !important;
   line-height: 1 !important;
 }
 
+@supports (text-box: trim-both cap alphabetic) {
+  craft-markdown-field:defined .markdown-field-char-counter [aria-hidden] {
+    display: block !important;
+    text-box: trim-both cap alphabetic !important;
+  }
+}
+
 craft-markdown-field:defined .markdown-field-char-counter.negative-chars-left {
-  color: var(--c-color-danger-on-quiet) !important;
+  color: var(--c-color-danger-on-normal) !important;
 }
 
 craft-markdown-field:defined .markdown-field-type-indicator {

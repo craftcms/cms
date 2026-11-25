@@ -28,6 +28,7 @@
 - Image transform URLs that Craft serves itself no longer have a `v` query param. ([#20957](https://github.com/craftcms/cms/pull/20957))
 - Improved the performance of field layout designers. ([#21062](https://github.com/craftcms/cms/pull/21062))
 - Added the `storage-key` attribute to `craft-dialog` and `craft-resize-grips`, and the `storageKey` prop to `ModalForm`. ([#21067](https://github.com/craftcms/cms/pull/21067))
+- Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
 - Fixed a bug where shared caches could store responses to token and site token requests. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses that saved or refreshed a lazy session. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses containing the session’s CSRF token, unless `csrfInput()` output it. ([#20953](https://github.com/craftcms/cms/pull/20953))
