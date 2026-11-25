@@ -21,6 +21,7 @@ use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\currentUser;
@@ -42,6 +43,15 @@ readonly class Alerts
         private Updates $updates,
         private Ai $ai,
     ) {}
+
+    /**
+     * Returns whether the license and update info that alerts come from are cached, so {@see get()} can return them
+     * without fetching from Craft Console. Licensing issues need both.
+     */
+    public function areCached(): bool
+    {
+        return Cache::has(License::CACHE_KEY_LICENSE_INFO) && $this->updates->isUpdateInfoCached();
+    }
 
     /** @return array<int, string|array{content: string, showIcon: bool}> */
     public function get(?string $path = null, bool $fetch = false): array

@@ -19,7 +19,6 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
@@ -39,7 +38,6 @@ use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use Inertia\DeferProp;
@@ -298,15 +296,14 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * The control panel alerts: resolved with the page once the license and update info are cached, and otherwise
-     * deferred, so fetching them from Craft Console doesn't hold up the page. Licensing issues need both, so the
-     * alerts are deferred when either one has expired.
+     * The control panel alerts: resolved with the page once what they come from is cached, and otherwise deferred,
+     * so fetching it from Craft Console doesn't hold up the page.
      */
     private function alertsProp(Request $request): Closure|DeferProp
     {
         $path = $request->craftPath();
 
-        if (Cache::has(License::CACHE_KEY_LICENSE_INFO) && app(Updates::class)->isUpdateInfoCached()) {
+        if (app(Alerts::class)->areCached()) {
             return fn (): array => app(Alerts::class)->get($path);
         }
 

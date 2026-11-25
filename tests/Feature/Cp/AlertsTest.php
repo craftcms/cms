@@ -16,6 +16,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
+use CraftCms\Cms\Twig\Variables\Cp as CpVariable;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
@@ -79,7 +80,7 @@ it('offers a Resolve now button for licensing issues a purchase resolves', funct
     expect($content)->toMatch('#<p class="[^"]*resolvable-alert-buttons[^"]*"[^>]*><craft-button href="[^"]+/cart/new\?[^"]+" variant="outline" inherit style="[^"]*display: inline-flex !important;[^"]*">Resolve now</craft-button></p>#');
 });
 
-it('shares alerts with Inertia pages, deferring them until the license and update info are cached', function (bool $licenseInfoCached, bool $updateInfoCached, bool $deferred) {
+it('shares alerts with the page only once the license and update info are cached', function (bool $licenseInfoCached, bool $updateInfoCached, bool $deferred) {
     actingAs(User::findOne());
 
     Event::listen(function (CpAlertsResolving $event) {
@@ -96,6 +97,8 @@ it('shares alerts with Inertia pages, deferring them until the license and updat
     if ($updateInfoCached) {
         Cache::put(Updates::class, new UpdatesData);
     }
+
+    expect((new CpVariable)->areAlertsCached())->toBe(! $deferred);
 
     $assertAlerts = fn (AssertableInertia $page) => $page
         ->where('alerts.0.content', 'custom alert from event')
