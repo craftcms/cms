@@ -298,14 +298,15 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * The control panel alerts, as the Twig layout shows them: resolved with the page once the license info is
-     * cached, and otherwise deferred, so fetching the license info from Craft Console doesn't hold up the page.
+     * The control panel alerts: resolved with the page once the license and update info are cached, and otherwise
+     * deferred, so fetching them from Craft Console doesn't hold up the page. Licensing issues need both, so the
+     * alerts are deferred when either one has expired.
      */
     private function alertsProp(Request $request): Closure|DeferProp
     {
         $path = $request->craftPath();
 
-        if (Cache::has(License::CACHE_KEY_LICENSE_INFO)) {
+        if (Cache::has(License::CACHE_KEY_LICENSE_INFO) && app(Updates::class)->isUpdateInfoCached()) {
             return fn (): array => app(Alerts::class)->get($path);
         }
 

@@ -14,6 +14,8 @@ use CraftCms\Cms\Cp\Events\CpAlertsResolving;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -61,7 +63,7 @@ it('merges alerts from CpAlertsResolving listeners', function () {
     expect(implode(' ', $contents))->toContain('custom alert from event');
 });
 
-it('shares alerts with Inertia pages, deferring them until the license info is cached', function () {
+it('shares alerts with Inertia pages, deferring them until the license and update info are cached', function (bool $licenseInfoCached, bool $updateInfoCached, bool $deferred) {
     actingAs(User::findOne());
 
     Event::listen(function (CpAlertsResolving $event) {
@@ -69,20 +71,29 @@ it('shares alerts with Inertia pages, deferring them until the license info is c
     });
 
     Cache::forget(License::CACHE_KEY_LICENSE_INFO);
+    Cache::forget(Updates::class);
 
-    get(cp_url('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
-        ->component('Dashboard')
-        ->missing('alerts')
-        ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
-            ->where('alerts.0.content', 'custom alert from event')
-            ->where('alerts.0.showIcon', true)));
+    if ($licenseInfoCached) {
+        Cache::put(License::CACHE_KEY_LICENSE_INFO, []);
+    }
 
-    Cache::put(License::CACHE_KEY_LICENSE_INFO, []);
+    if ($updateInfoCached) {
+        Cache::put(Updates::class, new UpdatesData);
+    }
 
-    get(cp_url('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
+    $assertAlerts = fn (AssertableInertia $page) => $page
         ->where('alerts.0.content', 'custom alert from event')
-        ->where('alerts.0.showIcon', true));
-});
+        ->where('alerts.0.showIcon', true);
+
+    get(cp_url('dashboard'))->assertInertia(fn (AssertableInertia $page) => $deferred
+        ? $page->component('Dashboard')->missing('alerts')->loadDeferredProps($assertAlerts)
+        : $assertAlerts($page->component('Dashboard')));
+})->with([
+    'nothing cached' => [false, false, true],
+    'only the license info cached' => [true, false, true],
+    'only the update info cached' => [false, true, true],
+    'both cached' => [true, true, false],
+]);
 
 it('alerts admins when the project config folder can’t be written, instead of failing', function () {
     $blocker = config_path('craft/alerts-write-blocker');
