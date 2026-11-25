@@ -1,12 +1,14 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.4 - 2026-11-25
 
+- Improved the Dutch control panel translations. ([#21099](https://github.com/craftcms/cms/discussions/21099))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
-- Fixed a JavaScript error that could occur when formatting translated messages with commas inside plural or select options, which kept elements from being deleted in some languages. ([#21100](https://github.com/craftcms/cms/issues/21100))
+- Fixed a JavaScript error that could occur when formatting translated messages with commas inside plural or select options, which kept elements from being deleted in some languages. ([#21100](https://github.com/craftcms/cms/issues/21100), [#21126](https://github.com/craftcms/cms/pull/21126))
 - Fixed an error that occurred when `{% namespace %}` tags were nested. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - Fixed a bug where Number fields and Table fields’ Number columns could save `0`, or drop the minus sign, for numbers written with the formatting locale’s own digits or minus sign, such as Arabic digits or Swedish negative numbers. ([#21110](https://github.com/craftcms/cms/pull/21110))
 - Fixed a bug where typing a character that a number input doesn’t allow could move the cursor to the wrong place. ([#21110](https://github.com/craftcms/cms/pull/21110))
+- Fixed a bug where the “Replace” action on component select chips could add the new component instead of replacing the old one. ([#21116](https://github.com/craftcms/cms/issues/21116), [#21124](https://github.com/craftcms/cms/pull/21124))
 
 ## 5.12.3 - 2026-11-24
 
