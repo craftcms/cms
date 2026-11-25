@@ -61,6 +61,7 @@
 
     {% if not readOnly %}
         config['deleteAction'] = 'entry-types/delete';
+        config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('entry-type', id);
         config['deleteConfirmationMessage'] = Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?');
     {% endif %}
 

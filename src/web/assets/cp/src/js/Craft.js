@@ -2750,17 +2750,30 @@ $.extend(Craft, {
    * @param {string} [options.action] The `action` param value override
    * @param {string} [options.redirect] The `redirect` param value override
    * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+   * @param {Object} [options.deletionBlockers] The subject `type` and `id` that `Craft.DeletionBlockersModal` should check before submit. If it shows any blockers, `confirm` isn’t shown.
    * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
    * @param {Object} [options.data] Additional data to be passed to the submit event
    * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
    * @param {boolean} [options.requireElevatedSession] Whether an elevated session is required
    */
-  submitForm: function ($form, options) {
+  submitForm: async function ($form, options) {
     if (typeof options === 'undefined') {
       options = {};
     }
 
-    if (options.confirm && !confirm(options.confirm)) {
+    let confirmed = false;
+    if (options.deletionBlockers) {
+      const modal = new Craft.DeletionBlockersModal(
+        options.deletionBlockers.type,
+        options.deletionBlockers.id
+      );
+      if (!(await modal.run())) {
+        return;
+      }
+      confirmed = modal.confirmed;
+    }
+
+    if (!confirmed && options.confirm && !confirm(options.confirm)) {
       return;
     }
 
@@ -3255,6 +3268,7 @@ $.extend($.fn, {
 
       Craft.submitForm($form, {
         confirm: $btn.data('confirm'),
+        deletionBlockers: $btn.data('deletion-blockers'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
         retainScroll: Garnish.hasAttr($btn, 'data-retain-scroll'),

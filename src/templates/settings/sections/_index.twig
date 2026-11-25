@@ -52,6 +52,7 @@
 
         {% if not readOnly %}
             config['deleteAction'] = 'sections/delete-section';
+            config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('section', id);
             config['deleteConfirmationMessage'] = Craft.t('app', "Are you sure you want to delete “{name}” and all its entries?");
         {% endif %}
 

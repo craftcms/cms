@@ -694,8 +694,17 @@ import './routes.scss';
       }
     },
 
-    deleteRoute: function () {
+    deleteRoute: async function () {
+      const result = await Craft.DeletionBlockersModal.confirm(
+        'route',
+        this.route.uid
+      );
+      if (!result) {
+        return;
+      }
+
       if (
+        result.confirmed ||
         confirm(Craft.t('app', 'Are you sure you want to delete this route?'))
       ) {
         Craft.sendActionRequest('POST', 'routes/delete-route', {

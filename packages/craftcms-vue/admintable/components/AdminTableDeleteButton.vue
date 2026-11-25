@@ -70,7 +70,11 @@
         _this.$emit('loading');
 
         _this.before(_this.id).then((continueDelete) => {
-          if (continueDelete && _this.confirmDelete()) {
+          // `before` can resolve `{confirmed: true}` if it already asked the user
+          if (
+            continueDelete &&
+            (continueDelete.confirmed || _this.confirmDelete())
+          ) {
             Craft.sendActionRequest('POST', _this.actionUrl, {
               data: {id: _this.id},
             })

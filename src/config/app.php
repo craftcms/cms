@@ -47,6 +47,9 @@ return [
         'dashboard' => [
             'class' => craft\services\Dashboard::class,
         ],
+        'deletionBlockers' => [
+            'class' => craft\services\DeletionBlockers::class,
+        ],
         'deprecator' => [
             'class' => craft\services\Deprecator::class,
         ],

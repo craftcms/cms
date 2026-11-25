@@ -153,13 +153,21 @@
       });
     },
 
-    deleteSelectedGroup: function () {
+    deleteSelectedGroup: async function () {
+      const id = this.$selectedGroup.data('id');
+      const result = await Craft.DeletionBlockersModal.confirm(
+        'site-group',
+        id
+      );
+      if (!result) {
+        return;
+      }
+
       if (
+        result.confirmed ||
         confirm(Craft.t('app', 'Are you sure you want to delete this group?'))
       ) {
-        var data = {
-          id: this.$selectedGroup.data('id'),
-        };
+        var data = {id};
 
         Craft.sendActionRequest('POST', 'sites/delete-group', {data})
           .then(() => {

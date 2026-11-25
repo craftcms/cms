@@ -114,21 +114,37 @@ Craft.AdminTable = Garnish.Base.extend(
       return ids;
     },
 
-    handleDeleteBtnClick: function (event) {
+    handleDeleteBtnClick: async function (event) {
       if (this.settings.minItems && this.totalItems <= this.settings.minItems) {
         // Sorry pal.
         return;
       }
 
       var $row = $(event.target).closest('tr');
+      let blockersConfirmed = false;
 
-      if (this.confirmDeleteItem($row)) {
+      if (this.settings.deletionBlockerType) {
+        const result = await Craft.DeletionBlockersModal.confirm(
+          this.settings.deletionBlockerType,
+          this.getItemId($row)
+        );
+        if (!result) {
+          return;
+        }
+        blockersConfirmed = !!result.confirmed;
+      }
+
+      if (this.confirmDeleteItem($row, blockersConfirmed)) {
         this.deleteItem($row);
       }
     },
 
-    confirmDeleteItem: function ($row) {
-      if (!this.settings.confirmDeleteMessage) {
+    /**
+     * @param {jQuery} $row
+     * @param {boolean} [blockersConfirmed] Whether the user already confirmed the deletion in `Craft.DeletionBlockersModal`
+     */
+    confirmDeleteItem: function ($row, blockersConfirmed = false) {
+      if (blockersConfirmed || !this.settings.confirmDeleteMessage) {
         return true;
       }
 
@@ -253,6 +269,7 @@ Craft.AdminTable = Garnish.Base.extend(
       maxItems: null,
       reorderAction: null,
       deleteAction: null,
+      deletionBlockerType: null,
       reorderSuccessMessage: Craft.t('app', 'New order saved.'),
       reorderFailMessage: Craft.t('app', 'Couldn’t save new order.'),
       confirmDeleteMessage: Craft.t(

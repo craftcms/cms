@@ -6,17 +6,15 @@
 /**
  * Element Deletion Manager
  *
+ * Shows the deletion blockers for elements, then deletes them.
+ *
  * @since 5.10.0
  */
-Craft.ElementDeletionManager = Garnish.Base.extend(
+Craft.ElementDeletionManager = Craft.DeletionBlockersModal.extend(
   {
     elementType: null,
     elementIds: null,
     hardDelete: false,
-    modal: null,
-    $blockersContainer: null,
-    $submitBtn: null,
-    blockers: null,
     succeeded: false,
 
     init: function (elementType, elementIds, settings) {
@@ -28,13 +26,7 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
     },
 
     run: async function () {
-      const {data} = await Craft.sendActionRequest(
-        'POST',
-        'delete-elements/deletion-blockers',
-        {
-          data: this.getParams(),
-        }
-      );
+      const data = await this.loadBlockers();
 
       this.settings.onLoadBlockers();
 
@@ -43,16 +35,11 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
         return;
       }
 
-      this.createModal(data);
+      await this.showModal(data);
+    },
 
-      for (const blocker of data.blockers) {
-        this.blockers.push(
-          new Craft.ElementDeletionManager.Blocker(this, blocker)
-        );
-      }
-
-      await Craft.appendHeadHtml(data.headHtml);
-      await Craft.appendBodyHtml(data.bodyHtml);
+    getBlockersAction: function () {
+      return 'delete-elements/deletion-blockers';
     },
 
     getParams: function () {
@@ -66,14 +53,33 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
       };
     },
 
-    resolveBlocker: function (blocker) {
-      const i = this.blockers.indexOf(blocker);
-      if (i !== -1) {
-        this.blockers.splice(i, 1);
-      }
+    getHeadingHtml: function (data) {
+      return Craft.t(
+        'app',
+        'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
+        {
+          numBlockers: data.blockers.length,
+          label: data.elementPreview,
+        }
+      );
+    },
 
-      if (!this.blockers.length) {
-        this.$submitBtn.removeClass('disabled');
+    getSubmitLabel: function (data) {
+      return Craft.t('app', 'Delete {type}', {
+        type:
+          this.elementIds.length === 1
+            ? Craft.elementTypeNames[this.elementType][2]
+            : Craft.elementTypeNames[this.elementType][3],
+      });
+    },
+
+    onSubmit: async function (data) {
+      await this.confirmAndDelete(data.totalElements);
+    },
+
+    onHide: function () {
+      if (!this.succeeded) {
+        this.settings.onCancel();
       }
     },
 
@@ -144,90 +150,6 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
         }
       );
     },
-
-    createModal: function (data) {
-      const $container = $('<div/>', {
-        class: 'modal element-deletion-modal',
-      });
-
-      const $body = $('<div/>', {
-        class: 'body',
-      }).appendTo($container);
-
-      $('<h1/>', {
-        class: 'flex flex-inline items-center gap-xs',
-        html: Craft.t(
-          'app',
-          'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
-          {
-            numBlockers: data.blockers.length,
-            label: data.elementPreview,
-          }
-        ),
-      }).appendTo($body);
-
-      this.$blockersContainer = $('<div/>', {
-        class: 'edm-blockers',
-      }).appendTo($body);
-
-      const $footer = $('<div/>', {
-        class: 'footer flex flex-justify',
-      }).appendTo($container);
-      $('<div/>', {
-        class: 'flex-grow',
-      }).appendTo($footer);
-      const $closeBtn = $('<button/>', {
-        type: 'button',
-        class: 'btn',
-        text: Craft.t('app', 'Close'),
-      }).appendTo($footer);
-      this.$submitBtn = Craft.ui
-        .createSubmitButton({
-          class: 'disabled',
-          label: Craft.t('app', 'Delete {type}', {
-            type:
-              this.elementIds.length === 1
-                ? Craft.elementTypeNames[this.elementType][2]
-                : Craft.elementTypeNames[this.elementType][3],
-          }),
-          spinner: true,
-        })
-        .appendTo($footer);
-
-      this.modal = new Garnish.Modal($container, {
-        resizable: true,
-        onFadeIn: () => {
-          Craft.cp.elementThumbLoader.load($container);
-        },
-        onHide: () => {
-          if (!this.succeeded) {
-            this.settings.onCancel();
-          }
-        },
-        onFadeOut: () => {
-          this.destroy();
-        },
-      });
-
-      $closeBtn.on('activate', () => {
-        this.modal.hide();
-      });
-
-      this.$submitBtn.on('activate', async () => {
-        await this.confirmAndDelete(data.totalElements);
-      });
-    },
-
-    destroy: function () {
-      this.modal?.destroy();
-      delete this.modal;
-
-      for (const blocker of this.blockers) {
-        blocker.destroy();
-      }
-
-      delete this.blockers;
-    },
   },
   {
     defaults: {
@@ -243,157 +165,5 @@ Craft.ElementDeletionManager = Garnish.Base.extend(
   }
 );
 
-Craft.ElementDeletionManager.Blocker = Garnish.Base.extend({
-  manager: null,
-  data: null,
-  id: null,
-  $container: null,
-  buttons: null,
-
-  init: function (manager, data) {
-    this.manager = manager;
-    this.data = data;
-    this.buttons = [];
-
-    this.id = `blocker-${Math.floor(Math.random() * 1000000)}`;
-    this.$container = $('<div/>', {
-      id: this.id,
-      class: 'edm-blocker',
-    }).appendTo(this.manager.$blockersContainer);
-
-    const $headingContainer = $('<div/>', {
-      class: 'flex flex-nowrap gap-0 mb-s',
-    }).appendTo(this.$container);
-
-    if (this.data.details) {
-      $('<button/>', {
-        type: 'button',
-        class: 'fieldtoggle my-0',
-        'data-target': `${this.id}-details`,
-        title: `${Craft.t('app', 'Expand')} “${this.data.summary}”`,
-        'aria-label': `${Craft.t('app', 'Expand')} “${this.data.summary}”`,
-        html: '&nbsp;',
-      }).appendTo($headingContainer);
-    }
-
-    $('<h2/>', {
-      class: 'h3 mt-0',
-      text: this.data.summary,
-    }).appendTo($headingContainer);
-
-    if (this.data.details) {
-      $('<div/>', {
-        id: `${this.id}-details`,
-        class: 'edm-details hidden mb-m',
-        html: this.data.details,
-      }).appendTo(this.$container);
-    }
-
-    if (this.data.actions) {
-      const $actions = $('<div/>', {
-        class: 'flex flex-nowrap',
-      }).appendTo(this.$container);
-
-      for (const action of this.data.actions) {
-        const $button = Craft.ui.createButton({
-          id: action.id,
-          class: action.class,
-          label: action.label,
-          icon: action.icon,
-          spinner: true,
-        });
-        this.buttons.push($button);
-
-        $button.addClass('hairline-dark');
-        if (action.destructive) {
-          $button.addClass('error');
-        }
-
-        if (action.attributes) {
-          $button.attr(action.attributes);
-        }
-
-        $button.appendTo($actions);
-
-        $button.on('activate', async () => {
-          if (action.callback) {
-            let message;
-            try {
-              message = await new Promise((resolve, reject) => {
-                const blocker = this;
-                const {
-                  elementType,
-                  elementIds,
-                  siteId,
-                  ownerId,
-                  withDescendants,
-                  hardDelete,
-                } = this.manager.getParams();
-                eval(action.callback);
-              });
-            } catch (e) {
-              return;
-            }
-            await this.resolve(message);
-            return;
-          }
-
-          if (action.confirm && !confirm(action.confirm)) {
-            return;
-          }
-
-          if (!action.action) {
-            return;
-          }
-
-          const submit = async () => {
-            $button.addClass('loading');
-            let response;
-            try {
-              response = await Craft.sendActionRequest('POST', action.action, {
-                data: {
-                  elementIds: this.elementIds,
-                  ...(action.params || {}),
-                },
-              });
-            } finally {
-              $button.removeClass('loading');
-            }
-
-            this.resolve(response.data.message);
-          };
-
-          if (action.requireElevatedSession) {
-            Craft.elevatedSessionManager.requireElevatedSession(async () => {
-              await submit();
-            });
-          } else {
-            await submit();
-          }
-        });
-      }
-    }
-
-    Craft.initUiElements(this.$container);
-  },
-
-  resolve: async function (message = null) {
-    this.$container.addClass('edm-blocker--resolved');
-    for (const $button of this.buttons) {
-      $button.addClass('disabled');
-    }
-    const $messageContainer = $('<div/>', {
-      class: 'edm-blocker-resolved-message flex flex-nowrap items-center',
-    }).appendTo(this.$container);
-    $('<div/>', {
-      class: 'cp-icon teal',
-    })
-      .append(await Craft.ui.icon('check'))
-      .appendTo($messageContainer);
-    $('<p/>', {
-      class: 'mt-0',
-      text: message ?? Craft.t('app', 'Resolved'),
-    }).appendTo($messageContainer);
-    this.manager.resolveBlocker(this);
-  },
-});
+// Kept for backwards compatibility
+Craft.ElementDeletionManager.Blocker = Craft.DeletionBlockersModal.Blocker;

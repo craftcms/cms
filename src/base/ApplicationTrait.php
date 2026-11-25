@@ -73,6 +73,7 @@ use craft\services\Composer;
 use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Dashboard;
+use craft\services\DeletionBlockers;
 use craft\services\Deprecator;
 use craft\services\Drafts;
 use craft\services\Elements;
@@ -154,6 +155,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Connection $db The database connection component
  * @property-read Connection $db2 The database connection component used for mutex locks and element bulk op records
  * @property-read Dashboard $dashboard The dashboard service
+ * @property-read DeletionBlockers $deletionBlockers The deletion blockers service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
  * @property-read ElementSources $elementSources The element sources service
@@ -1168,6 +1170,17 @@ trait ApplicationTrait
     public function getDb2(): Connection
     {
         return $this->get('db2');
+    }
+
+    /**
+     * Returns the deletion blockers service.
+     *
+     * @return DeletionBlockers The deletion blockers service
+     * @since 5.13.0
+     */
+    public function getDeletionBlockers(): DeletionBlockers
+    {
+        return $this->get('deletionBlockers');
     }
 
     /**

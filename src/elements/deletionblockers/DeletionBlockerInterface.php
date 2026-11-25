@@ -61,7 +61,7 @@ interface DeletionBlockerInterface
      * - `hardDelete` – Whether the elements are being hard-deleted
      * - `resolve` – A function that should be called once the action is resolved
      * - `reject` – A function that should be called if the action is aborted
-     * - `blocker` – The `Craft.ElementDeletionManager.Blocker` instance
+     * - `blocker` – The `Craft.DeletionBlockersModal.Blocker` instance (also available as `Craft.ElementDeletionManager.Blocker`)
      * - `action` – The current action config
      *
      * A custom success message can be passed to `resolve()` like so:

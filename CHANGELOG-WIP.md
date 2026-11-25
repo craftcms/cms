@@ -22,6 +22,8 @@
 
 ### Control Panel
 
+- Deleting a field, entry type, or section in the control panel now lists where it’s used, how many entries have values there, and the entries it would move to the trash. Each has to be addressed before the deletion goes ahead.
+- Plugins can now show deletion blockers when category groups, filesystems, global sets, GraphQL schemas and tokens, image transforms, routes, sites, site groups, tag groups, user groups, or volumes are deleted in the control panel.
 - The control panel is now available in Croatian, and its Indonesian, Kyrgyz, and Welsh translations are now complete. Previously, most of their strings were shown in English.
 
 ### Development
@@ -41,6 +43,25 @@
 - Added `craft\helpers\ElementHelper::getProvisionalDraftUser()`. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - Added `craft\helpers\HtmlPurifier::enableDefinitionCache()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
 - Added `craft\services\Path::getHtmlPurifierCachePath()`. ([#20861](https://github.com/craftcms/cms/pull/20861))
+- Added `craft\elements\deletionblockers\BaseResolvableDeletionBlocker`.
+- Added `craft\elements\deletionblockers\EntryTypeUsageBlocker`.
+- Added `craft\elements\deletionblockers\FieldUsageBlocker`.
+- Added `craft\elements\deletionblockers\ResolvableDeletionBlockerInterface`.
+- Added `craft\elements\deletionblockers\SectionUsageBlocker`.
+- Added `craft\elements\deletionblockers\TrashedEntriesBlocker`.
+- Added `craft\base\ApplicationTrait::getDeletionBlockers()`.
+- Added `craft\controllers\DeletionBlockersController`.
+- Added `craft\events\DefineDeletionBlockersEvent`.
+- Added `craft\events\RegisterDeletionSubjectTypesEvent`.
+- Added `craft\services\DeletionBlockers`.
+- `craft\controllers\DeleteElementsController::actionDeletionBlockers()` now gets blockers via `craft\services\DeletionBlockers::getElementBlockers()`, so `craft\services\DeletionBlockers::EVENT_DEFINE_BLOCKERS` handlers can add blockers to element deletions too.
+- Added `craft\services\Fields::countElementsWithValues()`.
+- Added `Craft.DeletionBlockersModal`.
+- `Craft.ElementDeletionManager` now extends `Craft.DeletionBlockersModal`. `Craft.ElementDeletionManager.Blocker` is now an alias of `Craft.DeletionBlockersModal.Blocker`.
+- Deletion blocker actions that post to a controller action now send the element IDs and other deletion params, as `craft\elements\deletionblockers\DeletionBlockerInterface::getActions()` describes.
+- Added the `deletionBlockers` option to `Craft.submitForm()`.
+- Added the `deletionBlockerType` setting to `Craft.AdminTable`.
+- `Craft.VueAdminTable`’s `beforeDelete` setting can now resolve to `{confirmed: true}`, to continue without showing the confirmation message.
 - Added `craft\base\ApplicationTrait::getUploads()`.
 - Added `craft\base\TemporaryUploadUrlInterface`.
 - Added `craft\controllers\UploadsController`.

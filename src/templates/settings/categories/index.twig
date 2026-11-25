@@ -70,6 +70,7 @@
 
     {% if not readOnly %}
         config['deleteAction'] = 'categories/delete-category-group';
+        config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('category-group', id);
     {% endif %}
 
     new Craft.VueAdminTable(config);

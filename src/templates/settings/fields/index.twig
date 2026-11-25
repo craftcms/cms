@@ -108,6 +108,7 @@
 
   {% if not readOnly %}
     config['deleteAction'] = 'fields/delete-field';
+    config['beforeDelete'] = (id) => Craft.DeletionBlockersModal.confirm('field', id);
   {% endif %}
 
     new Craft.VueAdminTable(config);
