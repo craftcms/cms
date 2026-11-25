@@ -160,6 +160,9 @@ export default class CraftNavItem extends LitElement {
   @state()
   subnavState: 'open' | 'closed' = 'closed';
 
+  /** Whether the last render showed an expanded, indented subnav. */
+  #inlineSubnavOpen = false;
+
   /**
    * Whether the flyout is showing. Opened by hover or by the item's own
    * disclosure — deliberately not by focus, which would put every child of
@@ -281,6 +284,13 @@ export default class CraftNavItem extends LitElement {
       this.setAttribute('role', 'listitem');
     }
 
+    // Inside another item's subnav or flyout, a heading is set off by less.
+    // An attribute rather than :host-context(), which Firefox lacks.
+    this.toggleAttribute(
+      'nested',
+      !!this.parentElement?.closest('craft-nav-item')
+    );
+
     // Default to open when the item is active, or when explicitly requested.
     this.subnavState =
       this.active || this.initialState === 'open' ? 'open' : 'closed';
@@ -295,6 +305,9 @@ export default class CraftNavItem extends LitElement {
   }
 
   override updated(changed: PropertyValues<this>) {
+    // Reflected so craft-nav-list can set off the row that follows.
+    this.toggleAttribute('subnav-open', this.#inlineSubnavOpen);
+
     if (changed.has('flyoutOpen')) {
       if (this.flyoutOpen) {
         this.#watchFlyoutFit();
@@ -820,6 +833,8 @@ export default class CraftNavItem extends LitElement {
       this.indicator ||
       hasSlotted(this, 'prefix', 'icon');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
+    this.#inlineSubnavOpen =
+      hasSubnav && !useFlyout && subnavOpen && !this.group && !this.iconOnly;
 
     // Collapsed, a heading has no room for its name and nothing to sit above
     // but icons, so it becomes the rule between one run of them and the next.

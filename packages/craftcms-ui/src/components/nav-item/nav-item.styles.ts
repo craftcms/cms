@@ -152,19 +152,41 @@ export default css`
   }
 
   /*
-   * A group heading sits with the rows it heads: the space above separates it
-   * from whatever came before, the space below only sets it off from what it
-   * heads. The flyout's label takes its spacing from the flyout grid.
+   * One rhythm for the whole list, measured on the text rather than the boxes.
+   * A heading row is as tall as an item row, its label centered the same way,
+   * with the list's gap before the rows it heads, so every label, heading or
+   * not, sits on the same pitch. A break adds space above, in whole spacing
+   * steps so it stays on the grid the pitch is built on:
+   *
+   * - a top-level heading: --c-spacing-md. Its label already marks the break.
+   * - a heading inside a subnav or flyout: --c-spacing-sm. Its smaller, bolder
+   *   type marks it too, so it needs the least.
+   * - the row after an open subnav: --c-spacing-md (see craft-nav-list). Only
+   *   the indent marks that break.
+   *
+   * A heading at the top of its list has nothing to be set off from. The
+   * flyout's label takes its spacing from the flyout grid.
    */
   :host([group]) {
     border-radius: 0;
+    margin-block-start: var(--c-spacing-md);
+  }
+
+  :host([group][nested]) {
     margin-block-start: var(--c-spacing-sm);
+  }
+
+  :host([group]:first-child) {
+    margin-block-start: 0;
+  }
+
+  :host([after-open-subnav]:not([group], [icon-only])) {
+    margin-block-start: var(--c-spacing-md);
   }
 
   :host([group]) .nav-item {
     border-radius: 0;
-    padding-block: var(--_padding-block) var(--c-spacing-xs);
-    min-block-size: 0;
+    margin-block-end: var(--c-nav-list-gap, var(--c-spacing-xs));
   }
 
   /* A hovered row, or one with its flyout open, is back to full strength.
@@ -289,7 +311,8 @@ export default css`
         var(--_padding-inline)
     );
     position: relative;
-    margin-block-start: var(--c-spacing-sm);
+    /* One list gap below its parent, as the next row would be. */
+    margin-block-start: var(--c-nav-list-gap, var(--c-spacing-xs));
     margin-inline-start: var(--_subnav-indent);
     padding-inline: var(--c-spacing-sm);
     border-inline-start: var(--_subnav-rule) solid transparent;
@@ -397,11 +420,27 @@ export default css`
     }
   }
 
-  /* Quieter than the label it trails, and sized to the toggle chevron it
-     stands in for. */
+  /*
+   * A row's chevrons are quieter than its label: mixed from the row's own
+   * color, since the nav takes its colors from wherever it's placed and no
+   * fixed token can sit a step below that. They follow the row on hover.
+   * A plain craft-button sets its own text color, which this outranks.
+   *
+   * The mix is on the icon alone, or the flyout's would be mixed twice. The
+   * chevron is the toggle's only visual, so 75% keeps it over 3:1 against
+   * the sidebar for 1.4.11 (70% is barely over it, and 65% falls short).
+   */
+  .nav-item__suffix :is(.subnav-toggle, .flyout-toggle) {
+    color: inherit;
+  }
+
+  .nav-item__suffix :is(.subnav-toggle, .flyout-toggle) craft-icon {
+    color: color-mix(in srgb, currentcolor 75%, transparent);
+  }
+
+  /* Sized to the toggle chevron it stands in for. */
   .flyout-indicator {
     font-size: var(--c-size-icon-sm, calc(12rem / 16));
-    color: var(--c-color-neutral-on-quiet, currentcolor);
   }
 
   .flyout-indicator:dir(rtl) {
