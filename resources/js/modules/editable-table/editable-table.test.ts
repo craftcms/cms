@@ -102,6 +102,42 @@ it('initializes text cells without the legacy NiceText behavior', () => {
 });
 
 it.each([
+  {locale: 'ar-EG', localized: true},
+  {locale: undefined, localized: false},
+])(
+  'filters number cells as localized only when the column has a locale ($locale)',
+  ({locale, localized}) => {
+    const filterNumberInputVal = vi.fn();
+    vi.stubGlobal('$', $);
+    vi.stubGlobal('Garnish', {});
+    vi.stubGlobal('Craft', {
+      inArray: <T>(value: T, values: T[]) => values.includes(value),
+      filterNumberInputVal,
+    });
+
+    const table = Object.assign(Object.create(EditableTable.prototype), {
+      biggestId: -1,
+      columns: {weight: {type: 'number', locale}},
+      radioCheckboxes: {},
+      settings: {rowIdPrefix: ''},
+    });
+    const row = document.createElement('tr');
+    row.dataset.id = '0';
+    row.innerHTML = '<td><textarea name="rows[0][weight]"></textarea></td>';
+    document.body.append(row);
+
+    const instance = new Row(table, row);
+
+    expect(filterNumberInputVal).toHaveBeenCalledWith(
+      row.querySelector('textarea'),
+      localized
+    );
+
+    instance.destroy();
+  }
+);
+
+it.each([
   {
     kind: 'flat',
     options: [{label: 'Environment', value: '$SYSTEM_EMAIL'}],

@@ -1,6 +1,7 @@
 import {actionClient} from '@craftcms/ui';
 import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {openActionMenus} from '@/test/action-menus';
 import {stubUiRenderer} from './renderer/context.test-support';
 import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
@@ -106,6 +107,7 @@ describe('FieldNode generated values', () => {
 
   async function clickGenerate() {
     await vi.waitFor(() => {
+      openActionMenus(container);
       expect(
         [...container.querySelectorAll('craft-action-item')].some(
           (item) => item.textContent?.trim() === 'Generate alt text'

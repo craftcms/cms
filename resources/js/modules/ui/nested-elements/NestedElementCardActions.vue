@@ -121,5 +121,6 @@
     :label="actionLabel()"
     :actions="actions()"
     :flush="false"
+    lazy
   />
 </template>

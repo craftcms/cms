@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {openActionMenus} from '@/test/action-menus';
 import ActionMenuNode from './ActionMenuNode.vue';
 import CopyAttributeNode from './CopyAttributeNode.vue';
 import type {UiNodePayload} from './types';
@@ -86,6 +87,7 @@ describe('ActionMenuNode', () => {
     } as unknown as UiNodePayload;
 
     const el = mount(ActionMenuNode, node).querySelector('craft-action-menu')!;
+    openActionMenus(el.parentElement!);
     await nextTick();
 
     expect(el).not.toBeNull();
@@ -122,6 +124,7 @@ describe('ActionMenuNode', () => {
     } as unknown as UiNodePayload;
 
     const el = mount(ActionMenuNode, node).querySelector('craft-action-menu')!;
+    openActionMenus(el.parentElement!);
     await nextTick();
 
     expect(el.querySelectorAll('craft-action-item')).toHaveLength(0);
