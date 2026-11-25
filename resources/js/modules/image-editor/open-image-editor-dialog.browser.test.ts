@@ -32,11 +32,12 @@ vi.mock('./useImageEditor', () => ({
 }));
 
 const nativeConfirm = vi.fn(() => false);
+let closed: Promise<void>;
 
 beforeEach(async () => {
   vi.stubGlobal('confirm', nativeConfirm);
 
-  await openImageEditorDialog({
+  ({closed} = await openImageEditorDialog({
     assetId: 1,
     filename: 'photo.jpg',
     focalPoint: null,
@@ -45,7 +46,7 @@ beforeEach(async () => {
     imageEditorRatios: {},
     allowDegreeFractions: false,
     orientation: 'ltr',
-  });
+  }));
   await expectOpenDialogs(['Edit Image']);
 });
 
@@ -95,6 +96,18 @@ function requestEditorClose(): void {
     .shadowRoot!.querySelector<HTMLElement>('[part="close"]')!
     .click();
 }
+
+it('settles `closed` once the editor has closed', async () => {
+  const settled = vi.fn();
+  void closed.then(settled);
+  await new Promise((resolve) => setTimeout(resolve));
+  expect(settled).not.toHaveBeenCalled();
+
+  document.querySelector<CraftDialog>('.image-editor-dialog')!.open = false;
+
+  await vi.waitFor(() => expect(settled).toHaveBeenCalled());
+  expect(document.querySelector('.image-editor-dialog')).toBeNull();
+});
 
 it('confirms closing an edited image in a dialog of its own', async () => {
   requestEditorClose();

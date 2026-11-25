@@ -4,6 +4,7 @@ import {LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {NativeField} from '@src/mixins/NativeField';
+import {CharsLeft, charsLeftStyles} from '@src/mixins/CharsLeft';
 
 /**
  * @summary A single-line text input, and the base every other `craft-input-*`
@@ -31,8 +32,13 @@ import {NativeField} from '@src/mixins/NativeField';
  * @slot before - Content outside the control, before it.
  * @slot after - Content outside the control, after it.
  */
-export default class CraftInput extends NativeField(LitElement) {
-  static override styles = [formControlStyles, inputStyles, styles];
+export default class CraftInput extends CharsLeft(NativeField(LitElement)) {
+  static override styles = [
+    formControlStyles,
+    inputStyles,
+    styles,
+    charsLeftStyles,
+  ];
 
   /** The native input's type. Leaves the control's own when unset. */
   @property({reflect: true}) type?: string;
@@ -187,6 +193,14 @@ export default class CraftInput extends NativeField(LitElement) {
       }
 
       input?.setAttribute(attribute, String(value));
+    }
+
+    // Browsers ignore `size` on some input types, such as `number`, so the
+    // stylesheet sizes those from this property instead.
+    if (attributes.size === undefined) {
+      input?.style.removeProperty('--_input-size');
+    } else {
+      input?.style.setProperty('--_input-size', String(attributes.size));
     }
   }
 }

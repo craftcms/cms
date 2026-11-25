@@ -125,6 +125,8 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
             ->max($this->max)
             ->step($this->step)
             ->size($this->size)
+            ->prefix($this->prefix === null ? null : t($this->prefix, category: 'site'))
+            ->suffix($this->suffix === null ? null : t($this->suffix, category: 'site'))
             ->value($context->value);
     }
 

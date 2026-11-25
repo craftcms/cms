@@ -9,6 +9,7 @@
   type TextareaControlProps = {
     rows?: number;
     maxLength?: number;
+    showCharsLeft?: boolean;
     placeholder?: string;
     monospace?: boolean;
     enlarged?: boolean;
@@ -67,6 +68,7 @@
     .value="String(value ?? '')"
     :rows="control.props.rows ?? 2"
     :maxlength="control.props.maxLength"
+    .showCharsLeft="control.props.showCharsLeft === true"
     :placeholder="control.props.placeholder"
     .monospace="control.props.monospace === true"
     :size="control.props.enlarged ? 'large' : 'medium'"

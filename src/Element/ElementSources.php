@@ -920,6 +920,14 @@ class ElementSources
                     }
                 }
             }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '') {
+                    $attributes["generatedField:{$field['uid']}"] = [
+                        'label' => t($field['name'], category: 'site'),
+                    ];
+                }
+            }
         }
 
         foreach ($groupedContentBlocks as $layoutElement) {
