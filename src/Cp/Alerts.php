@@ -82,7 +82,11 @@ readonly class Alerts
                     Html::beginTag('p', [
                         'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
                     ]).
-                    sprintf('<a class="go" href="%s" target="_blank">%s</a>', $cartUrl, t('Resolve now')).
+                    Html::tag('craft-button', t('Resolve now'), [
+                        'href' => $cartUrl,
+                        'variant' => 'outline',
+                        'inherit' => true,
+                    ]).
                     Html::endTag('p'),
                 'showIcon' => false,
             ]);
@@ -186,6 +190,9 @@ readonly class Alerts
                 break;
             case 'li':
                 $style['display'] = 'list-item';
+                break;
+            case 'craft-button':
+                $style['display'] = 'inline-flex';
                 break;
             case 'a':
                 if (isset($tagInfo['attributes']['class']) && array_intersect(['go', 'btn'], $tagInfo['attributes']['class'])) {

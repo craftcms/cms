@@ -166,30 +166,7 @@
     margin-block-start: var(--c-spacing-md);
   }
 
-  .cp-alerts__content :deep(.resolvable-alert-buttons > *) {
-    vertical-align: middle;
-  }
-
   .cp-alerts__content :deep(.resolvable-alert-buttons > * + *) {
     margin-inline-start: var(--c-spacing-sm);
-  }
-
-  .cp-alerts__content :deep(.resolvable-alert-buttons a) {
-    align-items: center;
-    min-height: var(--c-size-control-md);
-    padding-inline: var(--c-spacing-md);
-    border: 1px solid var(--c-color-border-loud);
-    border-radius: var(--c-form-control-radius);
-    color: var(--c-color-on-quiet);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .cp-alerts__content :deep(.resolvable-alert-buttons a:hover) {
-    background-color: color-mix(
-      in oklab,
-      var(--c-color-mix-hover),
-      transparent
-    );
   }
 </style>

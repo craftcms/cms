@@ -11,8 +11,10 @@ use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\CpAlertsResolving;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use CraftCms\Cms\Update\Updates;
@@ -61,6 +63,20 @@ it('merges alerts from CpAlertsResolving listeners', function () {
     $contents = array_map(fn (string|array $alert) => is_array($alert) ? $alert['content'] : $alert, $alerts);
 
     expect(implode(' ', $contents))->toContain('custom alert from event');
+});
+
+it('offers a Resolve now button for licensing issues a purchase resolves', function () {
+    Edition::set(Edition::Solo);
+    actingAs(User::findOne());
+    Cache::put(sprintf('editionTestableDomain@%s', request()->getHost()), false);
+    Cache::put(Updates::class, new UpdatesData);
+    Cache::put(License::CACHE_KEY_LICENSE_INFO, [
+        'craft' => ['id' => 'craft', 'edition' => 'pro', 'status' => LicenseKeyStatus::Trial->value],
+    ]);
+
+    $content = app(Alerts::class)->get('dashboard')[0]['content'];
+
+    expect($content)->toMatch('#<p class="[^"]*resolvable-alert-buttons[^"]*"[^>]*><craft-button href="[^"]+/cart/new\?[^"]+" variant="outline" inherit style="[^"]*display: inline-flex !important;[^"]*">Resolve now</craft-button></p>#');
 });
 
 it('shares alerts with Inertia pages, deferring them until the license and update info are cached', function (bool $licenseInfoCached, bool $updateInfoCached, bool $deferred) {
