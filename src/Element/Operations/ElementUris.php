@@ -68,34 +68,36 @@ readonly class ElementUris
             return;
         }
 
-        if ($element::hasUris()) {
-            $this->setElementUri($element);
-        }
+        $this->elementCaches->deferInvalidations(function () use ($element, $updateOtherSites, $updateDescendants): void {
+            if ($element::hasUris()) {
+                $this->setElementUri($element);
+            }
 
-        event(new ElementSlugAndUriUpdating($element));
+            event(new ElementSlugAndUriUpdating($element));
 
-        $row = DB::table(Table::ELEMENTS_SITES)
-            ->where('elementId', $element->id)
-            ->where('siteId', $element->siteId);
-        $oldUri = (clone $row)->value('uri');
+            $row = DB::table(Table::ELEMENTS_SITES)
+                ->where('elementId', $element->id)
+                ->where('siteId', $element->siteId);
+            $oldUri = (clone $row)->value('uri');
 
-        $row->update([
-            'slug' => $element->slug,
-            'uri' => $element->uri,
-            'dateUpdated' => Query::prepareDateForDb(now()),
-        ]);
+            $row->update([
+                'slug' => $element->slug,
+                'uri' => $element->uri,
+                'dateUpdated' => Query::prepareDateForDb(now()),
+            ]);
 
-        event(new ElementSlugAndUriUpdated($element, $oldUri));
+            event(new ElementSlugAndUriUpdated($element, $oldUri));
 
-        $this->elementCaches->invalidateForElement($element);
+            $this->elementCaches->invalidateForElement($element);
 
-        if ($updateOtherSites) {
-            $this->updateElementSlugAndUriInOtherSites($element);
-        }
+            if ($updateOtherSites) {
+                $this->updateElementSlugAndUriInOtherSites($element);
+            }
 
-        if ($updateDescendants) {
-            $this->updateDescendantSlugsAndUris($element, $updateOtherSites);
-        }
+            if ($updateDescendants) {
+                $this->updateDescendantSlugsAndUris($element, $updateOtherSites);
+            }
+        });
     }
 
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element): void

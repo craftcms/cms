@@ -115,7 +115,7 @@ beforeEach(function () {
     Facade::clearResolvedInstance(SitesService::class);
     Sites::setCurrentSite($primarySite);
 
-    $this->elementCaches = Mockery::mock(ElementCaches::class);
+    $this->elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
     $this->elements = Mockery::mock(Elements::class);
 
     $this->action = app(TestPropagateElementsWrites::class, [
@@ -243,6 +243,27 @@ it('propagates elements to supported target sites and dispatches lifecycle event
         && $event->position === 1
         && $event->exception === null);
     Event::assertDispatched(fn (ElementsPropagated $event): bool => $event->query === $query);
+});
+
+it('reports each element’s position in the propagation events', function () {
+    fakeBulkOps();
+    Event::fake([ElementPropagating::class, ElementPropagated::class]);
+
+    $first = createElement(100);
+    $second = createElement(101);
+
+    $this->elements->shouldReceive('getElementById')->andReturnNull();
+    $this->elementCaches->shouldReceive('invalidateForElement')->twice();
+
+    $this->action->propagateElements(createQueryMock([$first, $second]));
+
+    $positions = fn (string $class): array => Event::dispatched($class)
+        ->map(fn (array $args) => [$args[0]->element->id, $args[0]->position])
+        ->values()
+        ->all();
+
+    expect($positions(ElementPropagating::class))->toBe([[100, 1], [101, 2]])
+        ->and($positions(ElementPropagated::class))->toBe([[100, 1], [101, 2]]);
 });
 
 it('filters requested site ids and skips the source site and newer localized elements', function () {

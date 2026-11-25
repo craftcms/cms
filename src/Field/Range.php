@@ -68,6 +68,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
             ->min($this->min)
             ->max($this->max)
             ->step($this->step)
+            ->suffix($this->suffix)
             ->value($context->value);
     }
 

@@ -19,6 +19,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -323,4 +324,36 @@ it('preserves matrix nested field values through draft apply', function () {
 
     expect($appliedBlock->getFieldValue('innerText'))
         ->toBe('Draft matrix value');
+});
+
+it('invalidates the canonical element’s caches once, after applying a draft commits', function () {
+    actingAs(User::findOne());
+
+    $entry = Entry::factory()->createElement(['title' => 'Old title']);
+    $cachedTitle = fn (): string => EntryElement::find()->id($entry->id)->cache()->one()->title;
+
+    expect($cachedTitle())->toBe('Old title');
+
+    $draft = $this->drafts->createDraft($entry, User::findOne()->id);
+    $draft->title = 'New title';
+    expect(Elements::saveElement($draft))->toBeTrue();
+
+    $outerLevel = DB::transactionLevel();
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = ['level' => DB::transactionLevel(), 'tags' => (array) $event->tags];
+    });
+
+    $titlesInListener = [];
+    Event::listen(DraftApplied::class, function () use ($cachedTitle, &$titlesInListener) {
+        $titlesInListener[] = $cachedTitle();
+    });
+
+    $this->drafts->applyDraft($draft);
+
+    expect($invalidations)->toHaveCount(1)
+        ->and($invalidations[0]['level'])->toBe($outerLevel)
+        ->and($invalidations[0]['tags'])->toContain("element::$entry->id")
+        ->and($titlesInListener)->toBe(['New title'])
+        ->and($cachedTitle())->toBe('New title');
 });

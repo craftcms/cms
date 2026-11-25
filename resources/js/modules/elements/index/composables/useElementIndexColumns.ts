@@ -103,7 +103,10 @@ export function useElementIndexColumns(
   const columns = computed(() => [
     ...(pinned ? [columnHelper.html(pinned.key, {header: pinned.label})] : []),
     ...visibleOrderedColumns.value.map((column) =>
-      columnHelper.html(column.value, {
+      // Read the key as-is: Content Block keys such as `contentBlock:X.field:Y`
+      // contain dots, which TanStack would treat as a nested path.
+      columnHelper.html((row) => row[column.value], {
+        id: column.value,
         header: column.label,
         meta: {align: column.align ?? 'start'},
       })
