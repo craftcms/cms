@@ -31,6 +31,10 @@
 - Added the `craftCommand()` Twig function. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - GraphQL API requests can now pass a GraphQL token via an `X-Craft-Gql-Token` header. When the `Authorization` header also contains a user’s OAuth access token or personal access token, the GraphQL token determines the schema, and the user is logged in for the request, so queries with `withProvisionalDrafts` swap in their provisional drafts. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - The authenticated MCP server now supports HTTP basic auth. When a `craft\filters\BasicHttpAuthLogin` filter applies to it, either site-wide or via `filters` in `config/mcp.php`, clients authenticate with a username and password instead of an access token. ([#20844](https://github.com/craftcms/cms/issues/20844))
+- Added the `element_sources_get` and `element_sources_save` MCP tools, for reading and saving element index sidebars.
+- Added the `condition_schema` MCP tool, which lists the rules a condition accepts for custom sources, field layout visibility, and relation field selection.
+- MCP tools now reject condition rules that Craft would otherwise drop when saving field layouts and relation fields.
+- MCP tools now return field settings as plain objects, and accept field layouts in the shape `configuration_get` returns them.
 
 ### Extensibility
 
