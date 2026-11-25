@@ -118,6 +118,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where element index columns for fields within Content Block fields were empty, and inline edits to them weren’t saved. ([#21090](https://github.com/craftcms/cms/issues/21090), [#21115](https://github.com/craftcms/cms/pull/21115))
 - Fixed a bug where Table fields’ Number columns could save `0`, or drop the minus sign, for numbers written with the formatting locale’s own digits or minus sign, such as Arabic digits or Swedish negative numbers. ([#21110](https://github.com/craftcms/cms/pull/21110))
 - Fixed a bug where typing a character that a number input doesn’t allow could move the cursor to the wrong place. ([#21110](https://github.com/craftcms/cms/pull/21110))
+- Fixed a bug where control panel links with a `#fragment`, such as user review notifications’ links to drafts, lost the fragment when the URL had more than one query parameter. ([#21093](https://github.com/craftcms/cms/issues/21093), [#21140](https://github.com/craftcms/cms/pull/21140))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
