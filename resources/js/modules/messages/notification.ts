@@ -47,6 +47,8 @@ export class Notification {
   message: string;
   settings: NotificationSettings;
   closing = false;
+  /** Shown below the stack, where newer notifications don't cover it. */
+  docked = false;
   element: HTMLElement | null = null;
   closeButton: HTMLElement | null = null;
 
@@ -136,11 +138,12 @@ export class Notification {
     body.append(main);
 
     const closeContainer = document.createElement('div');
+    closeContainer.className = 'notification-buttons';
     this.closeButton = this.createCloseButton();
     this.closeButton.addEventListener('click', () =>
       this.handleCloseButtonClick()
     );
-    closeContainer.append(this.closeButton);
+    closeContainer.append(...this.createButtons(), this.closeButton);
     inner.append(closeContainer);
 
     const details = await this.getDetails();
@@ -217,6 +220,11 @@ export class Notification {
 
   createCloseButton(): HTMLElement {
     return Notification.createIconButton(t('Close'));
+  }
+
+  /** Anything shown before the close button, which is created first. */
+  createButtons(): HTMLElement[] {
+    return [];
   }
 
   updateMessage(message: string): void {

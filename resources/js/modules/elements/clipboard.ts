@@ -26,6 +26,7 @@ import {elementTypeName} from '@/common/craft/element-types';
 import {uppercaseFirst} from '@/common/craft/strings';
 import {prefixedKey} from '@/common/composables/useStorage';
 import {showError, showSuccess} from '@/modules/messages/messages';
+import {forgetCopiedMinimized} from '@/modules/messages/copied-notification';
 import {CopiedElementsNotification} from './copied-elements-notification';
 
 export interface CopiedElementInfo {
@@ -74,6 +75,7 @@ let installed = false;
 export function copyElements(elements: CopiedElementInfo[]): void {
   if (elements.length) {
     claimClipboard('elements');
+    forgetCopiedMinimized();
   }
 
   write(elements);

@@ -35,9 +35,7 @@
     inset-inline: var(--cp-messages-inset);
   }
 
-  &:not(:has(.notification)) {
-    pointer-events: none;
-  }
+  pointer-events: none;
 
   /* top */
   &[position^='start-'] {
@@ -56,6 +54,7 @@
 }
 
 .cp-messages .messages-stack {
+  pointer-events: auto;
   position: relative;
   isolation: isolate;
   block-size: calc(
@@ -261,6 +260,80 @@
     margin-block-start: var(--c-spacing-md);
     margin-block-end: calc(var(--c-spacing) * -2.5);
     margin-inline-end: calc(var(--c-spacing) * -3.5);
+  }
+}
+
+.cp-messages .copied-notification {
+  .notification-buttons {
+    display: flex;
+  }
+
+  .copied-notification-minimize {
+    margin-block-start: calc(var(--c-spacing) * -1);
+    margin-inline-start: calc(var(--c-spacing) * 2);
+  }
+
+  .notification-close-btn {
+    margin-inline-start: 0;
+  }
+
+  &.copied-notification--value .copied-notification-minimize {
+    margin-inline-start: 0;
+  }
+}
+
+.cp-messages .messages-stack .copied-notification-expand {
+  display: none;
+}
+
+.cp-messages .messages-dock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-block-start: calc(
+    min(var(--cp-messages-count, 0), 1) * var(--cp-messages-gap)
+  );
+}
+
+.cp-messages[position$='-end'] .messages-dock {
+  align-items: flex-end;
+}
+
+.cp-messages .messages-dock .notification {
+  pointer-events: auto;
+  position: relative;
+  inset: auto;
+  max-inline-size: 100%;
+  transform: none;
+}
+
+.cp-messages .messages-dock .copied-notification {
+  .notification-inner {
+    display: flex;
+    padding: 0;
+  }
+
+  .notification-inner > :not(.notification-buttons),
+  .notification-buttons > :not(.copied-notification-expand, craft-tooltip) {
+    display: none;
+  }
+
+  .copied-notification-expand craft-icon[slot='prefix'] {
+    color: var(--c-color-fuchsia-fill-loud);
+  }
+}
+
+.cp-messages .copied-notification-count {
+  padding-inline: calc(var(--c-spacing) * 1.5);
+  border-radius: var(--c-radius-full);
+  background-color: var(--c-color-fuchsia-fill-loud);
+  color: var(--c-color-fuchsia-on-loud);
+  font-size: var(--c-text-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: calc(18rem / 16);
+
+  &[hidden] {
+    display: none;
   }
 }
 
