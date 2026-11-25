@@ -65,6 +65,17 @@ export default css`
     }
   }
 
+  /* No status color can contrast with both the page and a selected header's
+     fill, so status dots there take a ring in the header's text color. White
+     and black headers keep their surface colors, which the dots already
+     contrast with. */
+  :host([active]:not([data-color='white'], [data-color='black'])) .card {
+    .card__header,
+    .card__footer {
+      --c-status-ring: var(--c-color-on-loud);
+    }
+  }
+
   /* A checked header checkbox is filled with the header's text color, with
      the mark cut out in its fill, rather than the accent color, which can
      clash with the card's color or blend into it. */

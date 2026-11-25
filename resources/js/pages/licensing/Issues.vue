@@ -79,7 +79,7 @@
 <template>
   <AuthBase :title="t('License purchase required.')" wide>
     <craft-pane :label="t('License purchase required.')" :heading-level="2">
-      <div class="prose grid gap-md">
+      <div class="prose">
         <p>{{ intro }}</p>
 
         <ul>

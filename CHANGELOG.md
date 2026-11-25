@@ -5,16 +5,22 @@
 > [!WARNING]
 > Sites that set `CRAFT_EPHEMERAL` on a read-only filesystem should now turn off automatic project config YAML writes by calling `writeYamlAutomatically(false)` on `CraftCms\Cms\ProjectConfig\ProjectConfig` from a service provider, and make sure Laravel’s storage path is writable. With the Yii adapter installed, `resourceBasePath` should also point to a writable directory, or the `assetManager` component should serve resources published at build time.
 
+- Brightened the live, pending, and expired status colors. ([#20964](https://github.com/craftcms/cms/pull/20964))
 - Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
 - GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
+- Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
 - `{% expires %}` and Craft’s no-cache headers no longer send the legacy `Expires` and `Pragma` headers. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - `csrfInput()` no longer sets no-cache headers itself. Responses containing the CSRF token get them instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
+- Added the `element_sources_get` and `element_sources_save` MCP tools, for reading and saving element index sidebars. ([#21112](https://github.com/craftcms/cms/pull/21112))
+- Added the `condition_schema` MCP tool, which lists the rules a condition accepts for custom sources, field layout visibility, and relation field selection. ([#21112](https://github.com/craftcms/cms/pull/21112))
+- The `configuration_*` MCP tools now reject condition rules that Craft would drop, and accept field layouts in the shape `configuration_get` returns them. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `Craft.Grid::queueRefreshCols()`. ([#21062](https://github.com/craftcms/cms/pull/21062))
+- Added `CraftCms\Cms\Ui\Controls\Number::locale()`. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))
 - Removed the `Response::setNoCacheHeaders()` macro. `CraftCms\Cms\Http\ResponseHeaders::setNoCacheHeaders()` should be used instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Removed `CraftCms\Cms\Http\ResponseHeaders::$noCache`, `$duration`, `$replace`, and `$headers`, and the `$replace` argument of `ResponseHeaders::setCache()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Volumes’ `fs` setting has been renamed to `disk`, in project config, the `volumes` table, and the volume MCP tools. Existing project config is updated automatically, and project config that still uses `fs` can still be applied. ([#20959](https://github.com/craftcms/cms/pull/20959))
@@ -33,6 +39,7 @@
 - Added `CraftCms\Cms\Cp\Alerts::areCached()`. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where control panel alerts weren’t shown on Inertia pages. ([#21083](https://github.com/craftcms/cms/issues/21083), [#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Fixed a bug where Number fields’ inputs didn’t format their values for the user’s formatting locale. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))
 - Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
 - Fixed a bug where shared caches could store responses to token and site token requests. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses that saved or refreshed a lazy session. ([#20953](https://github.com/craftcms/cms/pull/20953))
@@ -108,6 +115,11 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where generated fields couldn’t be shown as element index columns. ([#21079](https://github.com/craftcms/cms/issues/21079), [#21087](https://github.com/craftcms/cms/pull/21087))
 - Fixed a bug where eager-loading maps that covered more than one element type, or were returned as a list of maps, only loaded the elements from one of them.
 - Fixed a bug where Range fields were drawn as a text input with no slider track, and didn’t show their number input or suffix. ([#21056](https://github.com/craftcms/cms/issues/21056), [#21072](https://github.com/craftcms/cms/pull/21072))
+- Fixed a bug where Markdown field layout UI elements weren’t displayed in a pane when “Display content in a pane” was enabled, and their lists had no bullets or numbers. ([#21061](https://github.com/craftcms/cms/issues/21061), [#21074](https://github.com/craftcms/cms/pull/21074))
+- Fixed a bug where paragraphs and lists in callouts and Markdown UI elements had no space between them. ([#21074](https://github.com/craftcms/cms/pull/21074))
+- Fixed a bug where element index columns for fields within Content Block fields were empty, and inline edits to them weren’t saved. ([#21090](https://github.com/craftcms/cms/issues/21090), [#21115](https://github.com/craftcms/cms/pull/21115))
+- Fixed a bug where Table fields’ Number columns could save `0`, or drop the minus sign, for numbers written with the formatting locale’s own digits or minus sign, such as Arabic digits or Swedish negative numbers. ([#21110](https://github.com/craftcms/cms/pull/21110))
+- Fixed a bug where typing a character that a number input doesn’t allow could move the cursor to the wrong place. ([#21110](https://github.com/craftcms/cms/pull/21110))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 

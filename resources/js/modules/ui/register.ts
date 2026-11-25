@@ -13,6 +13,7 @@ import GroupNode from './GroupNode.vue';
 import ScopeNode from './ScopeNode.vue';
 import LightswitchControl from './LightswitchControl.vue';
 import MoneyControl from './MoneyControl.vue';
+import NumberControl from './NumberControl.vue';
 import LinkControl from './LinkControl.vue';
 import RangeControl from './RangeControl.vue';
 import TextControl from './TextControl.vue';
@@ -98,7 +99,7 @@ export function registerUiComponents(
     'craft:condition-builder',
     lazyControls.ConditionBuilderControl
   );
-  components.register('craft:number', TextControl);
+  components.register('craft:number', NumberControl);
   components.register('craft:range', RangeControl);
   components.register('craft:date', TextControl);
   components.register('craft:date-time', DateTimeControl);

@@ -11,12 +11,18 @@
 </script>
 
 <template>
+  <craft-pane
+    v-if="node.props.displayInPane"
+    appearance="outline-fill"
+    class="markdown prose"
+    :class="`width-${node.props.width}`"
+    :data-ui-node="node.uid"
+    v-html="node.props.html"
+  ></craft-pane>
   <div
-    class="markdown"
-    :class="[
-      node.props.displayInPane ? 'pane' : undefined,
-      `width-${node.props.width}`,
-    ]"
+    v-else
+    class="markdown prose"
+    :class="`width-${node.props.width}`"
     :data-ui-node="node.uid"
     v-html="node.props.html"
   ></div>

@@ -132,8 +132,8 @@ enum ConfigurationType: string
     public function notes(): array
     {
         return match ($this) {
-            self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.'],
-            self::Fields => ['Creating a field requires a valid, selectable field class from component_types_list with kind: field; component_types_get describes its settings. Updates cannot change the field class. Supplied settings merge with existing settings.'],
+            self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.', 'Field layout tabs and elements take userCondition and elementCondition visibility conditions. Call condition_schema with context field-layout for their rules.'],
+            self::Fields => ['Creating a field requires a valid, selectable field class from component_types_list with kind: field; component_types_get describes its settings. Updates cannot change the field class. Supplied settings merge with existing settings.', 'Relation fields such as Entries, Assets, and Users take settings.selectionCondition, which replaces the saved condition as a whole rather than merging its rules. Call condition_schema with context relation-selection for its rules.'],
             self::UserGroups => ['Assign permissions separately with user_permissions_group_set, which replaces the complete permission list.'],
             self::Routes => ['Lookup accepts UID or computed URI. uriParts contains literal strings or [name, regex] tuples. Lists routes available to the current site.'],
             self::Workflows => ['Lookup accepts ID or UID. Workflows require Craft Pro. Assign a workflow to a section with the sections type’s `workflow` attribute, which takes the workflow’s ID or UID. component_types_list and component_types_get with kind: workflow-stage describe stage types and their settings. On update, supplied stages replace the current stages.'],
