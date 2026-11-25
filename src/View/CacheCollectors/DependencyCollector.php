@@ -215,6 +215,8 @@ class DependencyCollector implements CacheCollectorInterface
      * Returns the tags collected so far by the current collection and the collections it's nested in.
      *
      * @return list<string>
+     *
+     * @internal
      */
     public function collectedTags(): array
     {
@@ -229,6 +231,8 @@ class DependencyCollector implements CacheCollectorInterface
 
     /**
      * Returns the earliest expiry date collected so far by the current collection and the collections it's nested in.
+     *
+     * @internal
      */
     public function collectedExpiryDate(): ?DateTimeImmutable
     {

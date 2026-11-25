@@ -22,9 +22,9 @@ use Illuminate\Container\Attributes\Scoped;
  * {% do ResponseCacheInfo.addTags(['nav']) %}
  * ```
  *
- * Tags and expiry dates are cache dependencies, like the ones Craft collects for elements. Added inside a
- * `{% cache %}` block, they're stored with it and added again on a cache hit, and `ElementCaches::invalidateTags()`
- * clears the blocks that depend on a tag. Other responses have no cache info.
+ * They're collected like the cache info Craft collects for elements. Added inside a `{% cache %}` block, they're
+ * stored with it and added again on a cache hit, and `ElementCaches::invalidateTags()` clears the blocks tagged with
+ * them. Other responses have no cache info.
  *
  * Craft doesn't send the tags anywhere itself. Cache integrations, such as `craftcms/http-cache` or a plugin, read
  * them with {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`,
