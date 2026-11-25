@@ -65,14 +65,16 @@ export class FileUploadNotificationElement extends LitElement {
           ${t('{loaded} of {total}', {
             loaded: formatBytes(this.loaded),
             total: formatBytes(this.total),
-          })}${showEstimate
-            ? html` · ${t('{speed}/s', {speed: formatBytes(this.speed)})} ·
-              ${t('{time} left', {
-                time: prettyETA(
-                  Math.ceil((this.total - this.loaded) / this.speed)
-                ),
-              })}`
-            : nothing}
+          })}${
+            showEstimate
+              ? html` · ${t('{speed}/s', {speed: formatBytes(this.speed)})} ·
+                ${t('{time} left', {
+                  time: prettyETA(
+                    Math.ceil((this.total - this.loaded) / this.speed)
+                  ),
+                })}`
+              : nothing
+          }
         </span>
         <span class="wrap-anywhere" ?hidden=${!message}>${message}</span>
         <div class="flex flex-wrap gap-2">

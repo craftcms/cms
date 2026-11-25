@@ -176,18 +176,9 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin sans-serif-font {
   font-family:
-    system-ui,
-    BlinkMacSystemFont,
-    -apple-system,
-    'Segoe UI',
-    'Roboto',
-    'Oxygen',
-    'Ubuntu',
-    'Cantarell',
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
+    system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
 }
 
 @mixin fixed-width-font($size: 0.9em) {
@@ -239,9 +230,9 @@ $menuBorderRadius: $mediumBorderRadius;
   // Recolor strokes on groups and shapes that declare one, and on shapes that
   // inherit the <svg>’s, so `stroke="none"` on a group still applies within it.
   :is(g, #{$shapes}):where(#{$stroked-svg} *):where(
-    [stroke]:not([stroke='none']),
-    :not([stroke], [stroke='none'] *)
-  ) {
+      [stroke]:not([stroke='none']),
+      :not([stroke], [stroke='none'] *)
+    ) {
     stroke: $color;
   }
 }

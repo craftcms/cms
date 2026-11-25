@@ -141,25 +141,29 @@ export default class CraftPermissionTree extends LitElement {
 
     return html`
       <section class="group">
-        ${group.heading
-          ? html`
-              <div class="heading">
-                <h3 id=${headingId}>${group.heading}</h3>
-                <craft-button
-                  type="button"
-                  size="small"
-                  variant="plain"
-                  aria-describedby=${headingId}
-                  ?disabled=${this.disabled}
-                  @click=${() => this.#toggleAll(group.keys, locked)}
-                >
-                  ${this.#allSelected(group.keys, locked)
-                    ? t('Deselect all')
-                    : t('Select all')}
-                </craft-button>
-              </div>
-            `
-          : nothing}
+        ${
+          group.heading
+            ? html`
+                <div class="heading">
+                  <h3 id=${headingId}>${group.heading}</h3>
+                  <craft-button
+                    type="button"
+                    size="small"
+                    variant="plain"
+                    aria-describedby=${headingId}
+                    ?disabled=${this.disabled}
+                    @click=${() => this.#toggleAll(group.keys, locked)}
+                  >
+                    ${
+                      this.#allSelected(group.keys, locked)
+                        ? t('Deselect all')
+                        : t('Select all')
+                    }
+                  </craft-button>
+                </div>
+              `
+            : nothing
+        }
         ${this.#renderPermissions(group.permissions, 0, this.disabled, locked)}
       </section>
     `;
@@ -198,34 +202,40 @@ export default class CraftPermissionTree extends LitElement {
                     locked
                   )}
               >
-                ${permission.info || permission.warning
-                  ? html`
-                      <div slot="help-text">
-                        ${permission.info ?? nothing}
-                        ${permission.warning
-                          ? html`
-                              <craft-callout
-                                variant="warning"
-                                appearance="plain"
-                                inline
-                              >
-                                ${permission.warning}
-                              </craft-callout>
-                            `
-                          : nothing}
-                      </div>
-                    `
-                  : nothing}
+                ${
+                  permission.info || permission.warning
+                    ? html`
+                        <div slot="help-text">
+                          ${permission.info ?? nothing}
+                          ${
+                            permission.warning
+                              ? html`
+                                  <craft-callout
+                                    variant="warning"
+                                    appearance="plain"
+                                    inline
+                                  >
+                                    ${permission.warning}
+                                  </craft-callout>
+                                `
+                              : nothing
+                          }
+                        </div>
+                      `
+                    : nothing
+                }
               </craft-checkbox>
 
-              ${Object.keys(nested).length
-                ? this.#renderPermissions(
-                    nested,
-                    level + 1,
-                    disabled || !selected,
-                    locked
-                  )
-                : nothing}
+              ${
+                Object.keys(nested).length
+                  ? this.#renderPermissions(
+                      nested,
+                      level + 1,
+                      disabled || !selected,
+                      locked
+                    )
+                  : nothing
+              }
             </li>
           </ul>
         `;

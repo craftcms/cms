@@ -152,10 +152,8 @@
   .cp-sidebar[data-mode='docked'] {
     --badge-border-color: var(--c-surface-page);
     height: calc(
-      100dvh - var(--cp-top-bar-visible-height, 0px) - var(
-          --cp-debug-bar-height,
-          0px
-        )
+      100dvh - var(--cp-top-bar-visible-height, 0px) -
+        var(--cp-debug-bar-height, 0px)
     );
     max-height: 100%;
     transform: none;

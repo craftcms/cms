@@ -117,11 +117,13 @@ export default class CraftLoginResetPassword extends LitElement {
             </craft-button>
           </div>
 
-          ${this._error
-            ? html`<craft-callout variant="danger" class="auth-form__error"
-                >${this._error}</craft-callout
-              >`
-            : nothing}
+          ${
+            this._error
+              ? html`<craft-callout variant="danger" class="auth-form__error"
+                  >${this._error}</craft-callout
+                >`
+              : nothing
+          }
         </form>
 
         <hr />

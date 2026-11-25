@@ -276,16 +276,23 @@ export default class CraftSelectColor extends CraftSelectRich {
   #renderOptions() {
     const container = document.createElement('div');
     render(
-      html`${this.allowTransparent
-        ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
-        : nothing}${this.colors.map((color) =>
+      html`${
+        this.allowTransparent
+          ? this._optionTemplate(
+              '__blank__',
+              this.blankLabel ?? t('Transparent')
+            )
+          : nothing
+      }${this.colors.map((color) =>
         this._optionTemplate(
           color,
           this.labels[color] ?? (isHex(color) ? color : t(titleCase(color)))
         )
-      )}${this.allowCustom
-        ? this._optionTemplate('__custom__', t('Custom…'))
-        : nothing}`,
+      )}${
+        this.allowCustom
+          ? this._optionTemplate('__custom__', t('Custom…'))
+          : nothing
+      }`,
       container
     );
 

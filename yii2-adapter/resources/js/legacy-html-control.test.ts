@@ -24,15 +24,16 @@ describe('Legacy HTML UI Control', () => {
   it('mounts assets in order and expands flat values before mutation', async () => {
     const appendChild = Node.prototype.appendChild;
 
-    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(
-      function (this: Node, node) {
-        if (node instanceof HTMLElement && node.dataset.legacyOrder) {
-          ((window as any).legacyOrder ??= []).push(node.dataset.legacyOrder);
-        }
-
-        return appendChild.call(this, node) as Node;
+    vi.spyOn(Node.prototype, 'appendChild').mockImplementation(function (
+      this: Node,
+      node
+    ) {
+      if (node instanceof HTMLElement && node.dataset.legacyOrder) {
+        ((window as any).legacyOrder ??= []).push(node.dataset.legacyOrder);
       }
-    );
+
+      return appendChild.call(this, node) as Node;
+    });
 
     const {container, mutation} = await mount(
       {
@@ -147,20 +148,21 @@ describe('Legacy HTML UI Control', () => {
     const appendChild = document.body.appendChild;
     let failedScript: HTMLScriptElement | undefined;
 
-    vi.spyOn(document.body, 'appendChild').mockImplementation(
-      function (this: Node, node) {
-        if (
-          node instanceof HTMLScriptElement &&
-          node.src.endsWith('/missing-legacy.js')
-        ) {
-          failedScript = node;
+    vi.spyOn(document.body, 'appendChild').mockImplementation(function (
+      this: Node,
+      node
+    ) {
+      if (
+        node instanceof HTMLScriptElement &&
+        node.src.endsWith('/missing-legacy.js')
+      ) {
+        failedScript = node;
 
-          return node;
-        }
-
-        return appendChild.call(this, node) as Node;
+        return node;
       }
-    );
+
+      return appendChild.call(this, node) as Node;
+    });
 
     const {form, container} = await mount({
       html: '<input name="settings[title]" value="Original">',

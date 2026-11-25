@@ -444,9 +444,7 @@
       }"
     >
       <caption class="sr-only">
-        {{
-          titleString
-        }}
+        {{ titleString }}
         <span :id="columnSortInstructionId">{{
           t('Column headers with buttons are sortable')
         }}</span>

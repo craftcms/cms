@@ -346,11 +346,13 @@ export default class CraftProgress extends LitElement {
         aria-label=${this.label}
       ></canvas>
       <span class="visually-hidden">
-        ${this.failed
-          ? 'Failed'
-          : this.progress < 0
-            ? 'Loading'
-            : `${this.progress}%`}
+        ${
+          this.failed
+            ? 'Failed'
+            : this.progress < 0
+              ? 'Loading'
+              : `${this.progress}%`
+        }
       </span>
     `;
   }

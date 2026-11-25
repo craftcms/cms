@@ -251,23 +251,25 @@ export default class CraftLoginForm extends LitElement {
           aria-atomic="true"
         ></span>
 
-        ${this._view === 'login'
-          ? this.#renderLoginView()
-          : this._view === 'reset-password'
-            ? html`
-                <craft-login-reset-password
-                  ?use-email-as-username="${this.useEmailAsUsername}"
-                  username="${this._resetUsername}"
-                  @craft:login:reset-back="${this.#onResetBack}"
-                ></craft-login-reset-password>
-              `
-            : html`
-                <craft-login-challenge
-                  .data="${this._twoFactorData!}"
-                  @login-verified="${this.#onLoginSuccess}"
-                  @login-failed="${this.#onLoginError}"
-                ></craft-login-challenge>
-              `}
+        ${
+          this._view === 'login'
+            ? this.#renderLoginView()
+            : this._view === 'reset-password'
+              ? html`
+                  <craft-login-reset-password
+                    ?use-email-as-username="${this.useEmailAsUsername}"
+                    username="${this._resetUsername}"
+                    @craft:login:reset-back="${this.#onResetBack}"
+                  ></craft-login-reset-password>
+                `
+              : html`
+                  <craft-login-challenge
+                    .data="${this._twoFactorData!}"
+                    @login-verified="${this.#onLoginSuccess}"
+                    @login-failed="${this.#onLoginError}"
+                  ></craft-login-challenge>
+                `
+        }
       </div>
     `;
   }
@@ -285,28 +287,30 @@ export default class CraftLoginForm extends LitElement {
           @submit="${this.#onSubmit}"
         >
           <craft-field-group>
-            ${this.staticEmail
-              ? html`<input
-                  type="hidden"
-                  class="login-username"
-                  name="username"
-                  .value="${this.staticEmail}"
-                />`
-              : html`
-                  <div class="field">
-                    <craft-input
-                      label="${this.#usernameLabel()}"
-                      id="login-username"
-                      type="${this.useEmailAsUsername ? 'email' : 'text'}"
-                      class="login-username"
-                      name="username"
-                      .value="${this.username}"
-                      autocomplete="username"
-                      autocapitalize="off"
-                      required
-                    />
-                  </div>
-                `}
+            ${
+              this.staticEmail
+                ? html`<input
+                    type="hidden"
+                    class="login-username"
+                    name="username"
+                    .value="${this.staticEmail}"
+                  />`
+                : html`
+                    <div class="field">
+                      <craft-input
+                        label="${this.#usernameLabel()}"
+                        id="login-username"
+                        type="${this.useEmailAsUsername ? 'email' : 'text'}"
+                        class="login-username"
+                        name="username"
+                        .value="${this.username}"
+                        autocomplete="username"
+                        autocapitalize="off"
+                        required
+                      />
+                    </div>
+                  `
+            }
 
             <div>
               <craft-input-password
@@ -318,33 +322,37 @@ export default class CraftLoginForm extends LitElement {
                 required
               ></craft-input-password>
 
-              ${this.showResetPassword
-                ? html`
-                    <craft-button
-                      type="button"
-                      size="small"
-                      variant="link"
-                      @click="${this.#showResetPasswordForm}"
-                      style="margin-block-start: var(--c-spacing-sm)"
-                    >
-                      ${t('Forgot password?')}
-                    </craft-button>
-                  `
-                : nothing}
+              ${
+                this.showResetPassword
+                  ? html`
+                      <craft-button
+                        type="button"
+                        size="small"
+                        variant="link"
+                        @click="${this.#showResetPasswordForm}"
+                        style="margin-block-start: var(--c-spacing-sm)"
+                      >
+                        ${t('Forgot password?')}
+                      </craft-button>
+                    `
+                  : nothing
+              }
             </div>
 
-            ${this.showRememberMe
-              ? html`
-                  <div class="remember-me-row">
-                    <craft-checkbox
-                      label="${this.rememberMeLabel || t('Stay signed in')}"
-                      type="checkbox"
-                      id="login-remember-me"
-                      class="login-remember-me"
-                    ></craft-checkbox>
-                  </div>
-                `
-              : nothing}
+            ${
+              this.showRememberMe
+                ? html`
+                    <div class="remember-me-row">
+                      <craft-checkbox
+                        label="${this.rememberMeLabel || t('Stay signed in')}"
+                        type="checkbox"
+                        id="login-remember-me"
+                        class="login-remember-me"
+                      ></craft-checkbox>
+                    </div>
+                  `
+                : nothing
+            }
           </craft-field-group>
 
           <div class="auth-form__actions">
@@ -359,33 +367,39 @@ export default class CraftLoginForm extends LitElement {
           </div>
         </form>
 
-        ${this._error
-          ? html`<craft-callout class="auth-form__error" variant="danger"
-              >${this._error}</craft-callout
-            >`
-          : nothing}
+        ${
+          this._error
+            ? html`<craft-callout class="auth-form__error" variant="danger"
+                >${this._error}</craft-callout
+              >`
+            : nothing
+        }
       </craft-pane>
 
-      ${hasAltMethods
-        ? html`
-            <div class="alternative-login-methods">
-              ${this._canUsePasskey
-                ? html`
-                    <craft-button
-                      type="button"
-                      variant="outline"
-                      ?loading="${this._passkeyBusy}"
-                      @click="${this.#loginWithPasskey}"
-                      style="width: 100%"
-                    >
-                      ${t('Sign in with a passkey')}
-                    </craft-button>
-                  `
-                : nothing}
-              <slot name="alternative-methods"></slot>
-            </div>
-          `
-        : nothing}
+      ${
+        hasAltMethods
+          ? html`
+              <div class="alternative-login-methods">
+                ${
+                  this._canUsePasskey
+                    ? html`
+                        <craft-button
+                          type="button"
+                          variant="outline"
+                          ?loading="${this._passkeyBusy}"
+                          @click="${this.#loginWithPasskey}"
+                          style="width: 100%"
+                        >
+                          ${t('Sign in with a passkey')}
+                        </craft-button>
+                      `
+                    : nothing
+                }
+                <slot name="alternative-methods"></slot>
+              </div>
+            `
+          : nothing
+      }
     `;
   }
 }

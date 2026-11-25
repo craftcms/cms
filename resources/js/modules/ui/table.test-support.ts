@@ -12,22 +12,20 @@ export function columnMetadata(
     ['type', 'Choice', 'craft:choice'],
   ] as const;
 
-  return fields.map(
-    ([property, type, component]): UiNodePayload => ({
-      type: 'Field',
-      component: 'craft:field',
-      props: {label: property},
-      control: {
-        type: type,
-        component: component,
-        mode: 'editable',
-        path: [...scope, property],
-        deltaGroup,
-        props:
-          property === 'type'
-            ? {options: cellTypes, presentation: 'select', placeholder: false}
-            : {},
-      },
-    })
-  );
+  return fields.map(([property, type, component]): UiNodePayload => ({
+    type: 'Field',
+    component: 'craft:field',
+    props: {label: property},
+    control: {
+      type: type,
+      component: component,
+      mode: 'editable',
+      path: [...scope, property],
+      deltaGroup,
+      props:
+        property === 'type'
+          ? {options: cellTypes, presentation: 'select', placeholder: false}
+          : {},
+    },
+  }));
 }

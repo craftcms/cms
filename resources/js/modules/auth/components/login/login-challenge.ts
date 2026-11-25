@@ -215,29 +215,31 @@ export default class CraftLoginChallenge extends LitElement {
         <div class="auth-form-container">
           ${isNativeMethod ? unsafeHTML(this.data.authForm) : nothing}
         </div>
-        ${this.data.otherMethods.length
-          ? html`
-              <hr />
-              <craft-action-menu>
-                <craft-button slot="invoker" variant="plain" size="zero">
-                  <craft-icon slot="prefix" name="chevron-down"></craft-icon>
-                  ${t('Try another way')}
-                </craft-button>
+        ${
+          this.data.otherMethods.length
+            ? html`
+                <hr />
+                <craft-action-menu>
+                  <craft-button slot="invoker" variant="plain" size="zero">
+                    <craft-icon slot="prefix" name="chevron-down"></craft-icon>
+                    ${t('Try another way')}
+                  </craft-button>
 
-                <div slot="content">
-                  ${this.data.otherMethods.map(
-                    (method) => html`
-                      <craft-action-item
-                        @click="${() => this.#switchMethod(method)}"
-                      >
-                        ${method.name}
-                      </craft-action-item>
-                    `
-                  )}
-                </div>
-              </craft-action-menu>
-            `
-          : nothing}
+                  <div slot="content">
+                    ${this.data.otherMethods.map(
+                      (method) => html`
+                        <craft-action-item
+                          @click="${() => this.#switchMethod(method)}"
+                        >
+                          ${method.name}
+                        </craft-action-item>
+                      `
+                    )}
+                  </div>
+                </craft-action-menu>
+              `
+            : nothing
+        }
       </craft-pane>
     `;
   }

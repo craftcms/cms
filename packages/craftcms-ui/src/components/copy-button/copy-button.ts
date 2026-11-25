@@ -209,21 +209,27 @@ export default class CraftCopyButton extends LitElement {
         size="${this.size}"
         variant="${this.variant}"
         flush=${ifDefined(this.flush)}
-        icon="${this.status === 'success' || this.status === 'error'
-          ? STATUS_ICONS[this.status]
-          : (this.icon ?? STATUS_ICONS[this.status])}"
-        aria-label="${this.hasLabel
-          ? nothing
-          : this.label || t('Copy to clipboard')}"
+        icon="${
+          this.status === 'success' || this.status === 'error'
+            ? STATUS_ICONS[this.status]
+            : (this.icon ?? STATUS_ICONS[this.status])
+        }"
+        aria-label="${
+          this.hasLabel ? nothing : this.label || t('Copy to clipboard')
+        }"
         ?disabled=${this.disabled}
         @click="${this.copyValue}"
-        >${this.hasLabel
-          ? html`<slot @slotchange=${this.#onSlotChange}></slot>`
-          : nothing}</craft-button
+        >${
+          this.hasLabel
+            ? html`<slot @slotchange=${this.#onSlotChange}></slot>`
+            : nothing
+        }</craft-button
       >
-      ${this.hasLabel
-        ? nothing
-        : html`<slot hidden @slotchange=${this.#onSlotChange}></slot>`}
+      ${
+        this.hasLabel
+          ? nothing
+          : html`<slot hidden @slotchange=${this.#onSlotChange}></slot>`
+      }
     `;
   }
 }

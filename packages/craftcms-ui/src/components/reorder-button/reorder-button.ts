@@ -306,38 +306,42 @@ export default class CraftReorderButton extends LitElement {
             command="--move-down"
             >${downLabel}</craft-action-item
           >
-          ${this.nested
-            ? html`
-                <craft-action-item
-                  icon="${this._isRtl() ? 'arrow-left' : 'arrow-right'}"
-                  ?disabled="${!this._canMove('indent')}"
-                  @click="${() => this._reorder('indent')}"
-                  data-action="indent"
-                  >${t('Indent')}</craft-action-item
-                >
-                <craft-action-item
-                  icon="${this._isRtl() ? 'arrow-right' : 'arrow-left'}"
-                  ?disabled="${!this._canMove('outdent')}"
-                  @click="${() => this._reorder('outdent')}"
-                  data-action="outdent"
-                  >${t('Outdent')}</craft-action-item
-                >
-              `
-            : nothing}
-          ${this.moves.length > 0
-            ? html`
-                <hr class="separator" />
-                ${this.moves.map(
-                  (move) => html`
-                    <craft-action-item
-                      icon="${ifDefined(move.icon ?? undefined)}"
-                      @click="${() => this._move(move.value)}"
-                      >${move.label}</craft-action-item
-                    >
-                  `
-                )}
-              `
-            : nothing}
+          ${
+            this.nested
+              ? html`
+                  <craft-action-item
+                    icon="${this._isRtl() ? 'arrow-left' : 'arrow-right'}"
+                    ?disabled="${!this._canMove('indent')}"
+                    @click="${() => this._reorder('indent')}"
+                    data-action="indent"
+                    >${t('Indent')}</craft-action-item
+                  >
+                  <craft-action-item
+                    icon="${this._isRtl() ? 'arrow-right' : 'arrow-left'}"
+                    ?disabled="${!this._canMove('outdent')}"
+                    @click="${() => this._reorder('outdent')}"
+                    data-action="outdent"
+                    >${t('Outdent')}</craft-action-item
+                  >
+                `
+              : nothing
+          }
+          ${
+            this.moves.length > 0
+              ? html`
+                  <hr class="separator" />
+                  ${this.moves.map(
+                    (move) => html`
+                      <craft-action-item
+                        icon="${ifDefined(move.icon ?? undefined)}"
+                        @click="${() => this._move(move.value)}"
+                        >${move.label}</craft-action-item
+                      >
+                    `
+                  )}
+                `
+              : nothing
+          }
         </div>
       </craft-action-menu>
     `;

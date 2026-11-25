@@ -115,12 +115,14 @@ export default class CraftInputPassword extends CraftInput {
       @click="${this.reveal}"
     >
       <span class="icon"
-        >${this._visible
-          ? html`<craft-icon
-              name="eye-slash"
-              label="${t('Hide')}"
-            ></craft-icon>`
-          : html`<craft-icon name="eye" label="${t('Show')}"></craft-icon>`}
+        >${
+          this._visible
+            ? html`<craft-icon
+                name="eye-slash"
+                label="${t('Hide')}"
+              ></craft-icon>`
+            : html`<craft-icon name="eye" label="${t('Show')}"></craft-icon>`
+        }
       </span>
     </craft-button>`;
   };

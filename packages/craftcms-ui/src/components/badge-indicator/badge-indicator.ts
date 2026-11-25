@@ -69,19 +69,23 @@ export default class CraftBadgeIndicator extends LitElement {
 
   private renderBadgeContents() {
     return html`
-      ${this.showCount()
-        ? html`
-            <span class="number">${this.truncatedNumber()}</span>
-            <sl-visually-hidden>${this.badgeCountSuffix}</sl-visually-hidden>
-          `
-        : nothing}
-      ${this.altText
-        ? html`
-            <sl-visually-hidden id=${this.#labelId}
-              >${this.altText}</sl-visually-hidden
-            >
-          `
-        : nothing}
+      ${
+        this.showCount()
+          ? html`
+              <span class="number">${this.truncatedNumber()}</span>
+              <sl-visually-hidden>${this.badgeCountSuffix}</sl-visually-hidden>
+            `
+          : nothing
+      }
+      ${
+        this.altText
+          ? html`
+              <sl-visually-hidden id=${this.#labelId}
+                >${this.altText}</sl-visually-hidden
+              >
+            `
+          : nothing
+      }
     `;
   }
 

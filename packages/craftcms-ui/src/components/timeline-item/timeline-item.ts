@@ -80,30 +80,40 @@ export default class CraftTimelineItem extends LitElement {
           <slot name="marker"></slot>
         </span>
         <div class="timeline-item__content" part="content">
-          ${this._hasHeading || this._hasMeta
-            ? html`<div class="timeline-item__header" part="header">
-                ${this._hasHeading
-                  ? html`<div class="timeline-item__heading" part="heading">
-                      <slot name="heading"></slot>
-                    </div>`
-                  : nothing}
-                ${this._hasMeta
-                  ? html`<div class="timeline-item__meta" part="meta">
-                      <slot name="meta"></slot>
-                    </div>`
-                  : nothing}
-              </div>`
-            : nothing}
-          ${this._hasBody
-            ? html`<div class="timeline-item__body" part="body">
-                <slot></slot>
-              </div>`
-            : nothing}
-          ${this._hasFooter
-            ? html`<div class="timeline-item__footer" part="footer">
-                <slot name="footer"></slot>
-              </div>`
-            : nothing}
+          ${
+            this._hasHeading || this._hasMeta
+              ? html`<div class="timeline-item__header" part="header">
+                  ${
+                    this._hasHeading
+                      ? html`<div class="timeline-item__heading" part="heading">
+                          <slot name="heading"></slot>
+                        </div>`
+                      : nothing
+                  }
+                  ${
+                    this._hasMeta
+                      ? html`<div class="timeline-item__meta" part="meta">
+                          <slot name="meta"></slot>
+                        </div>`
+                      : nothing
+                  }
+                </div>`
+              : nothing
+          }
+          ${
+            this._hasBody
+              ? html`<div class="timeline-item__body" part="body">
+                  <slot></slot>
+                </div>`
+              : nothing
+          }
+          ${
+            this._hasFooter
+              ? html`<div class="timeline-item__footer" part="footer">
+                  <slot name="footer"></slot>
+                </div>`
+              : nothing
+          }
         </div>
       </div>
     `;

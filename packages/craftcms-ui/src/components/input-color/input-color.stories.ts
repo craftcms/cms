@@ -27,9 +27,11 @@ const field = (args: Record<string, unknown>, extra: unknown = '') => html`
     .presets="${(args.presets as string[]) ?? []}"
   >
     <label slot="label">${args['label-slot']}</label>
-    ${args['help-text-slot']
-      ? html`<span slot="help-text">${args['help-text-slot']}</span>`
-      : ''}
+    ${
+      args['help-text-slot']
+        ? html`<span slot="help-text">${args['help-text-slot']}</span>`
+        : ''
+    }
     ${extra}
   </craft-input-color>
 `;

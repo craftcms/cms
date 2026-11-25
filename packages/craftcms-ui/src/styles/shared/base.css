@@ -643,8 +643,8 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
 
     &:has(
       .cp-table-input:not([type='checkbox']):not([type='radio']):not(
-        craft-switch
-      )
+          craft-switch
+        )
     ) {
       padding: 0;
     }

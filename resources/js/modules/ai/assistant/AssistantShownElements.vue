@@ -79,14 +79,12 @@
    * structure level, which would nest chips under the ones shown before them.
    */
   const shown = computed(() =>
-    props.elements.map(
-      (element): ShownElement => ({
-        ...((element.elementType &&
-          caches.get(element.elementType)?.get(element.id, element.siteId)) ||
-          element),
-        level: undefined,
-      })
-    )
+    props.elements.map((element): ShownElement => ({
+      ...((element.elementType &&
+        caches.get(element.elementType)?.get(element.id, element.siteId)) ||
+        element),
+      level: undefined,
+    }))
   );
 
   useFocusThroughRedraw(cardList, shown, () =>

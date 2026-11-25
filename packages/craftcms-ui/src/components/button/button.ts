@@ -1007,9 +1007,11 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
         part="content"
       >
         <slot name="prefix" class="prefix" part="prefix">
-          ${this.icon && this.iconPosition === 'prefix'
-            ? html`<craft-icon name="${this.icon}"></craft-icon>`
-            : nothing}
+          ${
+            this.icon && this.iconPosition === 'prefix'
+              ? html`<craft-icon name="${this.icon}"></craft-icon>`
+              : nothing
+          }
         </slot>
         <slot
           class="${classMap({
@@ -1019,23 +1021,29 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
           part="label"
         ></slot>
         <slot name="suffix" class="suffix" part="suffix">
-          ${this.icon && this.iconPosition === 'suffix'
-            ? html`<craft-icon name="${this.icon}"></craft-icon>`
-            : nothing}
+          ${
+            this.icon && this.iconPosition === 'suffix'
+              ? html`<craft-icon name="${this.icon}"></craft-icon>`
+              : nothing
+          }
         </slot>
-        ${this.shortcutKeys
-          ? html`<craft-shortcut
-              class="shortcut"
-              aria-hidden="true"
-              ?alt="${this.shortcutKeys.alt}"
-              ?shift="${this.shortcutKeys.shift}"
-              >${this.shortcutKeys.key}</craft-shortcut
-            >`
-          : nothing}
+        ${
+          this.shortcutKeys
+            ? html`<craft-shortcut
+                class="shortcut"
+                aria-hidden="true"
+                ?alt="${this.shortcutKeys.alt}"
+                ?shift="${this.shortcutKeys.shift}"
+                >${this.shortcutKeys.key}</craft-shortcut
+              >`
+            : nothing
+        }
       </div>
-      ${this.loading
-        ? html`<craft-spinner part="spinner"></craft-spinner>`
-        : nothing}
+      ${
+        this.loading
+          ? html`<craft-spinner part="spinner"></craft-spinner>`
+          : nothing
+      }
       <span class="cp-visually-hidden" role="status" data-live-region></span>
     `;
 
@@ -1056,11 +1064,13 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
           download="${this.download ?? nothing}"
           aria-label="${label ?? nothing}"
           aria-describedby="${label && cue ? 'new-tab-cue' : nothing}"
-          >${content}${cue
-            ? html`<span id="new-tab-cue" class="cp-visually-hidden"
-                >${newTabCue()}</span
-              >`
-            : nothing}</a
+          >${content}${
+            cue
+              ? html`<span id="new-tab-cue" class="cp-visually-hidden"
+                  >${newTabCue()}</span
+                >`
+              : nothing
+          }</a
         >
       `;
     }

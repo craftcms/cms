@@ -134,27 +134,33 @@ export default class CraftBadge extends LitElement {
           'badge--labeled': this.hasLabel,
         })}"
       >
-        ${this.noPrefix
-          ? nothing
-          : html`<span class="badge__prefix">
-              <slot name="prefix" part="prefix">
-                <craft-indicator
-                  part="indicator"
-                  fill="${this.getFill()}"
-                  shape="${this.shape}"
-                ></craft-indicator>
-              </slot>
-            </span>`}
-        ${this.hasLabel
-          ? html`<slot
-              class="${classMap({'badge__label--text': this.hasTextLabel})}"
-            ></slot>`
-          : nothing}
-        ${this.hasSuffix
-          ? html`<span class="badge__suffix">
-              <slot name="suffix" part="suffix"></slot>
-            </span>`
-          : nothing}
+        ${
+          this.noPrefix
+            ? nothing
+            : html`<span class="badge__prefix">
+                <slot name="prefix" part="prefix">
+                  <craft-indicator
+                    part="indicator"
+                    fill="${this.getFill()}"
+                    shape="${this.shape}"
+                  ></craft-indicator>
+                </slot>
+              </span>`
+        }
+        ${
+          this.hasLabel
+            ? html`<slot
+                class="${classMap({'badge__label--text': this.hasTextLabel})}"
+              ></slot>`
+            : nothing
+        }
+        ${
+          this.hasSuffix
+            ? html`<span class="badge__suffix">
+                <slot name="suffix" part="suffix"></slot>
+              </span>`
+            : nothing
+        }
       </span>
     `;
   }

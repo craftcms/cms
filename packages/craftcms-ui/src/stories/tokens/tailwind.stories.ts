@@ -222,13 +222,25 @@ export const Spacing: Story = {
                     )}
                   </td>
                   <td>
-                    ${has('margin', entry.name)
-                      ? classList(
-                          ['m', 'mx', 'my', 'mt', 'mr', 'mb', 'ml', 'ms', 'me']
-                            .map((prefix) => `${prefix}-${entry.name}`)
-                            .concat(`-mt-${entry.name}`)
-                        )
-                      : '—'}
+                    ${
+                      has('margin', entry.name)
+                        ? classList(
+                            [
+                              'm',
+                              'mx',
+                              'my',
+                              'mt',
+                              'mr',
+                              'mb',
+                              'ml',
+                              'ms',
+                              'me',
+                            ]
+                              .map((prefix) => `${prefix}-${entry.name}`)
+                              .concat(`-mt-${entry.name}`)
+                          )
+                        : '—'
+                    }
                   </td>
                   <td>
                     ${classList([

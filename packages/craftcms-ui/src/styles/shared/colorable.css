@@ -795,11 +795,11 @@
   text can match the page; those buttons take the neutral colors instead.
 */
 craft-button:is([data-color='white'], [data-color='black']):is(
-  [variant~='outline'],
-  [variant~='dashed'],
-  [variant~='plain'],
-  [variant~='link']
-) {
+    [variant~='outline'],
+    [variant~='dashed'],
+    [variant~='plain'],
+    [variant~='link']
+  ) {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
   --c-color-border-quiet: var(--c-color-neutral-border-quiet);
   --c-color-on-quiet: var(--c-color-neutral-on-quiet);

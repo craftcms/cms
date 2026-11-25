@@ -600,9 +600,11 @@ export default class CraftNavItem extends LitElement {
         @craft-after-hide=${this.#stopOverlayEvent}
       >
         <div class="flyout" id="${this.subnavId}">
-          ${withLabel
-            ? html`<div class="flyout__label"><slot></slot></div>`
-            : nothing}
+          ${
+            withLabel
+              ? html`<div class="flyout__label"><slot></slot></div>`
+              : nothing
+          }
           <slot name="subnav"></slot>
         </div>
       </craft-popover>
@@ -623,16 +625,18 @@ export default class CraftNavItem extends LitElement {
         aria-controls="${this.subnavId}"
         aria-expanded="${this.subnavState === 'open' ? 'true' : 'false'}"
         class="subnav-toggle"
-        aria-labelledby="${this.iconOnly
-          ? `${this.id}-toggle-icon`
-          : `${this.id}-toggle-icon ${this.id}-label`}"
+        aria-labelledby="${
+          this.iconOnly
+            ? `${this.id}-toggle-icon`
+            : `${this.id}-toggle-icon ${this.id}-label`
+        }"
       >
         <craft-icon
           id="${this.id}-toggle-icon"
           part="${ifDefined(part)}"
-          name="${this.subnavState === 'closed'
-            ? 'chevron-down'
-            : 'chevron-up'}"
+          name="${
+            this.subnavState === 'closed' ? 'chevron-down' : 'chevron-up'
+          }"
           label="${t('Toggle subnavigation')}"
         ></craft-icon>
       </craft-button>
@@ -655,18 +659,22 @@ export default class CraftNavItem extends LitElement {
       >
         <slot name="prefix">
           <slot name="icon">
-            ${this.icon
-              ? html` <craft-icon
-                  name="${this.icon}"
-                  class="nav-icon"
-                ></craft-icon>`
-              : this.renderInitial()}
+            ${
+              this.icon
+                ? html` <craft-icon
+                    name="${this.icon}"
+                    class="nav-icon"
+                  ></craft-icon>`
+                : this.renderInitial()
+            }
           </slot>
-          ${this.indicator
-            ? html`<craft-badge-indicator
-                altText="${t('Has Notifications')}"
-              />`
-            : nothing}
+          ${
+            this.indicator
+              ? html`<craft-badge-indicator
+                  altText="${t('Has Notifications')}"
+                />`
+              : nothing
+          }
         </slot>
       </span>
     `;
@@ -741,26 +749,32 @@ export default class CraftNavItem extends LitElement {
   ) {
     return html`
       <div class="nav-item__suffix">
-        ${this.opensInNewTab && !this.iconOnly
-          ? html`<craft-icon
-              class="external-icon"
-              name="arrow-up-right-from-square"
-            ></craft-icon>`
-          : nothing}
-        ${this.iconOnly
-          ? nothing
-          : html`<slot
-              name="actions"
-              @mousedown="${this.#stopActionPressAtRow}"
-              @mouseup="${this.#stopActionPressAtRow}"
-              @click="${this.#stopActionPressAtRow}"
-              @keydown="${this.#stopActionPressAtRow}"
-              @keyup="${this.#stopActionPressAtRow}"
-            ></slot>`}
+        ${
+          this.opensInNewTab && !this.iconOnly
+            ? html`<craft-icon
+                class="external-icon"
+                name="arrow-up-right-from-square"
+              ></craft-icon>`
+            : nothing
+        }
+        ${
+          this.iconOnly
+            ? nothing
+            : html`<slot
+                name="actions"
+                @mousedown="${this.#stopActionPressAtRow}"
+                @mouseup="${this.#stopActionPressAtRow}"
+                @click="${this.#stopActionPressAtRow}"
+                @keydown="${this.#stopActionPressAtRow}"
+                @keyup="${this.#stopActionPressAtRow}"
+              ></slot>`
+        }
         <slot name="suffix">
-          ${showToggle && this.togglePosition === 'suffix'
-            ? this.renderSubnavToggle('toggle-icon')
-            : nothing}
+          ${
+            showToggle && this.togglePosition === 'suffix'
+              ? this.renderSubnavToggle('toggle-icon')
+              : nothing
+          }
           ${showFlyoutToggle ? this.renderFlyoutToggle('toggle-icon') : nothing}
         </slot>
       </div>
@@ -851,37 +865,45 @@ export default class CraftNavItem extends LitElement {
             class="rail-separator"
             aria-label="${this.labelText || nothing}"
           />
-          ${hasSubnav
-            ? html`<div class="subnav" id="${this.subnavId}">
-                <slot name="subnav"></slot>
-              </div>`
-            : nothing}
+          ${
+            hasSubnav
+              ? html`<div class="subnav" id="${this.subnavId}">
+                  <slot name="subnav"></slot>
+                </div>`
+              : nothing
+          }
         </li>
       `;
     }
 
     return html`
       <li role="presentation">
-        ${this.iconOnly
-          ? this.renderIconItem(hasSubnav, useFlyout)
-          : this.renderItem(showToggle, hasPrefix, useFlyout)}
-        ${this.iconOnly && showToggle
-          ? html`<div class="rail-toggle">${this.renderSubnavToggle()}</div>`
-          : nothing}
+        ${
+          this.iconOnly
+            ? this.renderIconItem(hasSubnav, useFlyout)
+            : this.renderItem(showToggle, hasPrefix, useFlyout)
+        }
+        ${
+          this.iconOnly && showToggle
+            ? html`<div class="rail-toggle">${this.renderSubnavToggle()}</div>`
+            : nothing
+        }
         ${!this.iconOnly && useFlyout ? this.renderFlyout(false) : nothing}
-        ${hasSubnav && !useFlyout
-          ? html`
-              <div
-                class="subnav"
-                id="${this.subnavId}"
-                style="${styleMap({
-                  display: subnavOpen ? 'block' : 'none',
-                })}"
-              >
-                <slot name="subnav"></slot>
-              </div>
-            `
-          : nothing}
+        ${
+          hasSubnav && !useFlyout
+            ? html`
+                <div
+                  class="subnav"
+                  id="${this.subnavId}"
+                  style="${styleMap({
+                    display: subnavOpen ? 'block' : 'none',
+                  })}"
+                >
+                  <slot name="subnav"></slot>
+                </div>
+              `
+            : nothing
+        }
       </li>
     `;
   }

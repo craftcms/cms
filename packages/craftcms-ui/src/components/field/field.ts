@@ -366,18 +366,22 @@ export default class CraftField extends FormControl(LitElement) {
   protected override _groupOneTemplate() {
     return html`
       ${this._labelTemplate()}
-      ${this.instructionsPosition === 'before'
-        ? this._helpTextTemplate()
-        : nothing}
+      ${
+        this.instructionsPosition === 'before'
+          ? this._helpTextTemplate()
+          : nothing
+      }
     `;
   }
 
   protected override _groupTwoTemplate() {
     return html`
       ${this._inputGroupTemplate()}
-      ${this.instructionsPosition === 'after'
-        ? this._helpTextTemplate()
-        : nothing}
+      ${
+        this.instructionsPosition === 'after'
+          ? this._helpTextTemplate()
+          : nothing
+      }
       ${this._feedbackTemplate()}
     `;
   }
@@ -450,20 +454,24 @@ export default class CraftField extends FormControl(LitElement) {
       >
         <slot name="heading-prefix"></slot>
         ${label}
-        ${this.readOnly
-          ? html`<span
-              class=${classMap({
-                'read-only-badge': true,
-                'cp-visually-hidden': this.labelSrOnly && hasOtherContent,
-              })}
-              >${t('Read Only')}</span
-            >`
-          : nothing}
+        ${
+          this.readOnly
+            ? html`<span
+                class=${classMap({
+                  'read-only-badge': true,
+                  'cp-visually-hidden': this.labelSrOnly && hasOtherContent,
+                })}
+                >${t('Read Only')}</span
+              >`
+            : nothing
+        }
         <slot name="label-badge"></slot>
         ${actionsBesideLabel ? actions : nothing}
-        ${hasLabelExtra || (hasActions && !actionsBesideLabel)
-          ? html`<div class="flex-grow"></div>`
-          : nothing}
+        ${
+          hasLabelExtra || (hasActions && !actionsBesideLabel)
+            ? html`<div class="flex-grow"></div>`
+            : nothing
+        }
         <slot name="label-extra"></slot>
         ${actionsBesideLabel ? nothing : actions}
         <slot name="heading-suffix"></slot>

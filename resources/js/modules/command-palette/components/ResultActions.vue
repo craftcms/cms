@@ -86,23 +86,22 @@
    * a slideout or modal it opens isn't left behind the palette.
    */
   function menuActions(item: CommandPaletteItem): ActionItem[] {
-    const own = (item.actions ?? []).map(
-      (action): ActionItem =>
-        action.href
-          ? {
-              type: 'link',
-              href: action.href,
-              label: action.label ?? '',
-              icon: action.icon ?? undefined,
-              external: action.external,
-              attrs: action.linkAttributes as Record<string, string>,
-            }
-          : {
-              label: action.label ?? '',
-              icon: action.icon ?? undefined,
-              action: (action.action as BaseAction | null) ?? undefined,
-              variant: action.variant ?? undefined,
-            }
+    const own = (item.actions ?? []).map((action): ActionItem =>
+      action.href
+        ? {
+            type: 'link',
+            href: action.href,
+            label: action.label ?? '',
+            icon: action.icon ?? undefined,
+            external: action.external,
+            attrs: action.linkAttributes as Record<string, string>,
+          }
+        : {
+            label: action.label ?? '',
+            icon: action.icon ?? undefined,
+            action: (action.action as BaseAction | null) ?? undefined,
+            variant: action.variant ?? undefined,
+          }
     );
 
     return [...own, ...elementActionItems(item.elementActions ?? [])].map(

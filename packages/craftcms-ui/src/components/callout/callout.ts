@@ -239,24 +239,30 @@ export default class CraftCallout extends Paddable(LitElement, {
         })}"
       >
         <div class="callout__body">
-          ${hasIcon
-            ? html`<span class="callout__icon">
-                <span class="callout__strut" aria-hidden="true">&#8203;</span>
-                <slot name="icon">
-                  ${this.resolvedIcon
-                    ? html`<craft-icon
-                        name="${this.resolvedIcon}"
-                      ></craft-icon>`
-                    : nothing}
-                </slot>
-              </span>`
-            : nothing}
+          ${
+            hasIcon
+              ? html`<span class="callout__icon">
+                  <span class="callout__strut" aria-hidden="true">&#8203;</span>
+                  <slot name="icon">
+                    ${
+                      this.resolvedIcon
+                        ? html`<craft-icon
+                            name="${this.resolvedIcon}"
+                          ></craft-icon>`
+                        : nothing
+                    }
+                  </slot>
+                </span>`
+              : nothing
+          }
           <div class="callout__text">
-            ${hasTitle
-              ? html`<div class="callout__title">
-                  <slot name="title">${this.label}</slot>
-                </div>`
-              : nothing}
+            ${
+              hasTitle
+                ? html`<div class="callout__title">
+                    <slot name="title">${this.label}</slot>
+                  </div>`
+                : nothing
+            }
 
             <div class="callout__description">
               <slot></slot>
@@ -264,9 +270,13 @@ export default class CraftCallout extends Paddable(LitElement, {
           </div>
         </div>
 
-        ${hasSlotted(this, 'action')
-          ? html`<div class="callout__action"><slot name="action"></slot></div>`
-          : nothing}
+        ${
+          hasSlotted(this, 'action')
+            ? html`<div class="callout__action">
+                <slot name="action"></slot>
+              </div>`
+            : nothing
+        }
       </div>
     `;
   }

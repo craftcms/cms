@@ -32,12 +32,14 @@ export default class CraftSelectInvoker extends LitElement {
 
   override render() {
     return html`<div id="content-wrapper"><slot></slot></div>
-      ${this.singleOption || this.plain
-        ? ''
-        : html`<craft-icon
-            class="indicator"
-            name="chevron-down"
-          ></craft-icon>`}`;
+      ${
+        this.singleOption || this.plain
+          ? ''
+          : html`<craft-icon
+              class="indicator"
+              name="chevron-down"
+            ></craft-icon>`
+      }`;
   }
 }
 

@@ -225,49 +225,53 @@ export default class CraftThumbnail extends LitElement {
         style="${styleMap(sized ? {} : placeholderStyles)}"
         part="thumbnail"
       >
-        ${this.src
-          ? html`<img
-              class="${classMap({
-                thumbnail__image: true,
-                'thumbnail__image--landscape': sized === 'landscape',
-                'thumbnail__image--portrait': sized === 'portrait',
-                'thumbnail__image--placeholder':
-                  Boolean(sized) && this.showsPlaceholder,
-                'cp-visually-hidden': this.frozen,
-              })}"
-              style="${styleMap(
-                sized
-                  ? {
-                      ...placeholderStyles,
-                      '--_width': `${this.width}px`,
-                      '--_height': `${this.height}px`,
-                      'aspect-ratio': `${this.width} / ${this.height}`,
-                    }
-                  : {}
-              )}"
-              part="image"
-              src="${this.src}"
-              srcset="${ifDefined(this.srcset ?? undefined)}"
-              sizes="${ifDefined(this.sizes ?? undefined)}"
-              width="${ifDefined(this.width ?? undefined)}"
-              height="${ifDefined(this.height ?? undefined)}"
-              alt="${this.alt}"
-              loading="${this.loading}"
-              decoding="async"
-              @load=${this.onImageLoad}
-            />`
-          : nothing}
-        ${this.src && this.isAnimated
-          ? html`<canvas
-              class="${classMap({
-                thumbnail__cover: true,
-                'thumbnail__cover--pending': !this.frozen,
-              })}"
-              part="cover"
-              aria-hidden="true"
-              role="presentation"
-            ></canvas>`
-          : nothing}
+        ${
+          this.src
+            ? html`<img
+                class="${classMap({
+                  thumbnail__image: true,
+                  'thumbnail__image--landscape': sized === 'landscape',
+                  'thumbnail__image--portrait': sized === 'portrait',
+                  'thumbnail__image--placeholder':
+                    Boolean(sized) && this.showsPlaceholder,
+                  'cp-visually-hidden': this.frozen,
+                })}"
+                style="${styleMap(
+                  sized
+                    ? {
+                        ...placeholderStyles,
+                        '--_width': `${this.width}px`,
+                        '--_height': `${this.height}px`,
+                        'aspect-ratio': `${this.width} / ${this.height}`,
+                      }
+                    : {}
+                )}"
+                part="image"
+                src="${this.src}"
+                srcset="${ifDefined(this.srcset ?? undefined)}"
+                sizes="${ifDefined(this.sizes ?? undefined)}"
+                width="${ifDefined(this.width ?? undefined)}"
+                height="${ifDefined(this.height ?? undefined)}"
+                alt="${this.alt}"
+                loading="${this.loading}"
+                decoding="async"
+                @load=${this.onImageLoad}
+              />`
+            : nothing
+        }
+        ${
+          this.src && this.isAnimated
+            ? html`<canvas
+                class="${classMap({
+                  thumbnail__cover: true,
+                  'thumbnail__cover--pending': !this.frozen,
+                })}"
+                part="cover"
+                aria-hidden="true"
+                role="presentation"
+              ></canvas>`
+            : nothing
+        }
         <slot @slotchange=${this.updateSlottedSvgs}></slot>
       </div>
     `;

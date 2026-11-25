@@ -301,15 +301,17 @@ export default class CraftInputColor extends CraftInput {
         @input="${this._handlePickerInput}"
         @change="${this._handlePickerChange}"
       />
-      ${presets.length
-        ? html`
-            <datalist id="${this._pickerListId}">
-              ${presets.map(
-                (preset) => html`<option value="${preset}"></option>`
-              )}
-            </datalist>
-          `
-        : nothing}
+      ${
+        presets.length
+          ? html`
+              <datalist id="${this._pickerListId}">
+                ${presets.map(
+                  (preset) => html`<option value="${preset}"></option>`
+                )}
+              </datalist>
+            `
+          : nothing
+      }
     `;
   }
 

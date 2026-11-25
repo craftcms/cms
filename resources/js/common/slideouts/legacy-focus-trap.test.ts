@@ -74,13 +74,13 @@ let container: HTMLElement;
 beforeEach(() => {
   rejectJquerySelectors();
   // happy-dom has no layout, so every element reports a box unless it's `hidden`.
-  vi.spyOn(Element.prototype, 'getClientRects').mockImplementation(
-    function (this: Element) {
-      return (this.hasAttribute('hidden')
-        ? []
-        : [{width: 10, height: 10}]) as unknown as DOMRectList;
-    }
-  );
+  vi.spyOn(Element.prototype, 'getClientRects').mockImplementation(function (
+    this: Element
+  ) {
+    return (this.hasAttribute('hidden')
+      ? []
+      : [{width: 10, height: 10}]) as unknown as DOMRectList;
+  });
   // jQuery UI also wants `visibility` to compute, which needs a rule here.
   document.head.innerHTML = '<style>* { visibility: visible; }</style>';
 });

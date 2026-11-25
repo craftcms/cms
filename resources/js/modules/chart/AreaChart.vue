@@ -151,9 +151,7 @@
     <div ref="container" class="area-chart-plot" aria-hidden="true"></div>
     <table class="sr-only">
       <caption>
-        {{
-          label
-        }}
+        {{ label }}
       </caption>
       <thead>
         <tr>

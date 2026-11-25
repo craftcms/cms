@@ -274,84 +274,88 @@ export default class CraftLink extends LitElement {
     const openLabel = t('Open in a new tab');
 
     return html`
-      ${this.anchor
-        ? html`<craft-popover
-            placement="bottom-start"
-            @craft-show=${this.#onDetailsToggle}
-            @craft-hide=${this.#onDetailsToggle}
-            @click=${{handleEvent: this.#pin, capture: true}}
-            @focusin=${this.#pin}
-          >
-            <craft-button
-              slot="invoker"
-              type="button"
-              variant="plain"
-              size="xsmall"
-              icon
-              part="details-button"
+      ${
+        this.anchor
+          ? html`<craft-popover
+              placement="bottom-start"
+              @craft-show=${this.#onDetailsToggle}
+              @craft-hide=${this.#onDetailsToggle}
+              @click=${{handleEvent: this.#pin, capture: true}}
+              @focusin=${this.#pin}
             >
-              <craft-icon
-                name=${kind.icon}
-                label=${[this.label, this.#text].filter(Boolean).join(' ')}
-              ></craft-icon>
-            </craft-button>
-            <div slot="content" class="details">
-              <div class="details__header">
-                <span class="details__heading">${kind.heading}</span>
-                <span class="details__actions">
-                  <craft-button
-                    id="open-button"
-                    class="details__open"
-                    href=${this.anchor.href}
-                    target="_blank"
-                    rel=${this.anchor.rel || nothing}
-                    variant="plain"
-                    size="small"
-                    icon
-                  >
-                    <craft-icon
-                      name="arrow-up-right-from-square"
-                      label=${openLabel}
-                    ></craft-icon>
-                  </craft-button>
-                  <craft-button
-                    id="copy-button"
-                    class="details__copy"
-                    type="button"
-                    variant="plain"
-                    size="small"
-                    icon
-                    .action=${{type: 'clipboard', value: this.#address}}
-                    @craft-state-change=${this.#onCopyStateChange}
-                  >
-                    <craft-icon
-                      name=${copyFeedback.icon}
-                      label=${copyFeedback.label}
-                    ></craft-icon>
-                  </craft-button>
-                  <craft-tooltip for="open-button" invoker-relation="label"
-                    >${openLabel}</craft-tooltip
-                  >
-                  <craft-tooltip for="copy-button" invoker-relation="label"
-                    >${copyFeedback.label}</craft-tooltip
-                  >
-                </span>
+              <craft-button
+                slot="invoker"
+                type="button"
+                variant="plain"
+                size="xsmall"
+                icon
+                part="details-button"
+              >
+                <craft-icon
+                  name=${kind.icon}
+                  label=${[this.label, this.#text].filter(Boolean).join(' ')}
+                ></craft-icon>
+              </craft-button>
+              <div slot="content" class="details">
+                <div class="details__header">
+                  <span class="details__heading">${kind.heading}</span>
+                  <span class="details__actions">
+                    <craft-button
+                      id="open-button"
+                      class="details__open"
+                      href=${this.anchor.href}
+                      target="_blank"
+                      rel=${this.anchor.rel || nothing}
+                      variant="plain"
+                      size="small"
+                      icon
+                    >
+                      <craft-icon
+                        name="arrow-up-right-from-square"
+                        label=${openLabel}
+                      ></craft-icon>
+                    </craft-button>
+                    <craft-button
+                      id="copy-button"
+                      class="details__copy"
+                      type="button"
+                      variant="plain"
+                      size="small"
+                      icon
+                      .action=${{type: 'clipboard', value: this.#address}}
+                      @craft-state-change=${this.#onCopyStateChange}
+                    >
+                      <craft-icon
+                        name=${copyFeedback.icon}
+                        label=${copyFeedback.label}
+                      ></craft-icon>
+                    </craft-button>
+                    <craft-tooltip for="open-button" invoker-relation="label"
+                      >${openLabel}</craft-tooltip
+                    >
+                    <craft-tooltip for="copy-button" invoker-relation="label"
+                      >${copyFeedback.label}</craft-tooltip
+                    >
+                  </span>
+                </div>
+                <a
+                  class="details__address"
+                  href=${this.anchor.href}
+                  target=${this.anchor.target || nothing}
+                  rel=${this.anchor.rel || nothing}
+                  >${this.#address}</a
+                >
+                <span class="details__status" role="status"
+                  >${
+                    this.copyState === AsyncStates.Idle
+                      ? ''
+                      : copyFeedback.label
+                  }</span
+                >
               </div>
-              <a
-                class="details__address"
-                href=${this.anchor.href}
-                target=${this.anchor.target || nothing}
-                rel=${this.anchor.rel || nothing}
-                >${this.#address}</a
-              >
-              <span class="details__status" role="status"
-                >${this.copyState === AsyncStates.Idle
-                  ? ''
-                  : copyFeedback.label}</span
-              >
-            </div>
-          </craft-popover>`
-        : nothing}
+            </craft-popover>`
+          : nothing
+      }
       <span class="text" part="text"
         ><slot @slotchange=${() => this.#readAnchor()}></slot
       ></span>

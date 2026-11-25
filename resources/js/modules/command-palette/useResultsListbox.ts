@@ -15,15 +15,13 @@ export function useResultsListbox<Row extends {optionId: string}>(
   const selectedRow = computed(() => rows.value[selectedIndex.value] ?? null);
 
   /** The search input's attributes as the listbox's combobox. */
-  const comboboxAttributes = computed(
-    (): InputHTMLAttributes => ({
-      role: 'combobox',
-      'aria-expanded': rows.value.length ? 'true' : 'false',
-      'aria-autocomplete': 'list',
-      'aria-controls': listboxId,
-      'aria-activedescendant': selectedRow.value?.optionId,
-    })
-  );
+  const comboboxAttributes = computed((): InputHTMLAttributes => ({
+    role: 'combobox',
+    'aria-expanded': rows.value.length ? 'true' : 'false',
+    'aria-autocomplete': 'list',
+    'aria-controls': listboxId,
+    'aria-activedescendant': selectedRow.value?.optionId,
+  }));
 
   /** The option `step` along from the active one, wrapping, if there are any. */
   function indexAfter(step: number): number | null {

@@ -773,9 +773,9 @@ craft-card[data-color='white'] {
    colored block they're in. Black tiles keep their dark backing, which
    their light text needs. */
 craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
-  [selected],
-  [data-color='black']
-)::part(chip) {
+    [selected],
+    [data-color='black']
+  )::part(chip) {
   background-color: color-mix(
     in srgb,
     var(--c-text-default) var(--c-thumbnail-tile-shade),
@@ -793,17 +793,17 @@ craft-card .status-badge {
 }
 
 craft-card:has(
-  > [slot='header'] .status-badge.modified,
-  > .card-titlebar > .status-badge.modified
-)::part(base) {
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base) {
   /* Lets the bar cover the card's border, so it's flush with the outer edge */
   overflow-clip-margin: border-box;
 }
 
 craft-card:has(
-  > [slot='header'] .status-badge.modified,
-  > .card-titlebar > .status-badge.modified
-)::part(base)::after {
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base)::after {
   content: '';
   position: absolute;
   inset: calc(var(--c-card-border-width, 1px) * -1);
@@ -815,9 +815,9 @@ craft-card:has(
 
 /* A cover card's border is drawn inside its edge, so the bar already sits on it */
 craft-card:has(> [data-cover]):has(
-  > [slot='header'] .status-badge.modified,
-  > .card-titlebar > .status-badge.modified
-)::part(base)::after {
+    > [slot='header'] .status-badge.modified,
+    > .card-titlebar > .status-badge.modified
+  )::part(base)::after {
   inset: 0;
 }
 
@@ -838,9 +838,9 @@ craft-card:has(> [data-cover]):has(
 
 @media (forced-colors: active) {
   craft-card:has(
-    > [slot='header'] .status-badge.modified,
-    > .card-titlebar > .status-badge.modified
-  )::part(base)::after {
+      > [slot='header'] .status-badge.modified,
+      > .card-titlebar > .status-badge.modified
+    )::part(base)::after {
     /* The bar is the only visual sign of the status */
     forced-color-adjust: none;
     border-inline-start-color: Highlight;

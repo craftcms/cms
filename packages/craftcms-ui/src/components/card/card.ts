@@ -353,36 +353,44 @@ export default class CraftCard extends Paddable(LitElement, {
           ...this._coverStyles(cover),
         })}"
       >
-        ${cover
-          ? html`<img
-              class="card__cover"
-              part="cover"
-              src="${this.coverSrc}"
-              alt=""
-              loading="lazy"
-              decoding="async"
-              @error="${this._onCoverError}"
-            />`
-          : nothing}
-        ${hasSlottedHeader
-          ? html`<div class="card__header" part="header">
-              <slot name="header">
-                <slot name="label" class="card__label" part="label"
-                  >${this.label
-                    ? html`<span class="card__label-text">${this.label}</span>`
-                    : nothing}</slot
-                >
-                <div class="card__header__suffix">
-                  <slot name="badge" class="card__badge" part="badge"></slot>
-                  <slot
-                    name="actions"
-                    class="card__actions"
-                    part="actions"
-                  ></slot>
-                </div>
-              </slot>
-            </div>`
-          : nothing}
+        ${
+          cover
+            ? html`<img
+                class="card__cover"
+                part="cover"
+                src="${this.coverSrc}"
+                alt=""
+                loading="lazy"
+                decoding="async"
+                @error="${this._onCoverError}"
+              />`
+            : nothing
+        }
+        ${
+          hasSlottedHeader
+            ? html`<div class="card__header" part="header">
+                <slot name="header">
+                  <slot name="label" class="card__label" part="label"
+                    >${
+                      this.label
+                        ? html`<span class="card__label-text"
+                            >${this.label}</span
+                          >`
+                        : nothing
+                    }</slot
+                  >
+                  <div class="card__header__suffix">
+                    <slot name="badge" class="card__badge" part="badge"></slot>
+                    <slot
+                      name="actions"
+                      class="card__actions"
+                      part="actions"
+                    ></slot>
+                  </div>
+                </slot>
+              </div>`
+            : nothing
+        }
 
         <div
           part="body"
@@ -407,11 +415,13 @@ export default class CraftCard extends Paddable(LitElement, {
           </div>
         </div>
 
-        ${hasSlottedFooter
-          ? html`<div class="card__footer" part="footer">
-              <slot name="footer"></slot>
-            </div>`
-          : nothing}
+        ${
+          hasSlottedFooter
+            ? html`<div class="card__footer" part="footer">
+                <slot name="footer"></slot>
+              </div>`
+            : nothing
+        }
       </div>
     `;
   }
