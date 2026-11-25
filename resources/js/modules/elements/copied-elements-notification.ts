@@ -65,6 +65,10 @@ export class CopiedElementsNotification extends CopiedNotification {
     this.on('close', () => this.#resolveFormats(null));
   }
 
+  protected override get copiedCount(): number {
+    return this.elementInfo.length;
+  }
+
   #message(): string {
     const type = this.elementInfo[0]!.type;
 

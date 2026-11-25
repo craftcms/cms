@@ -22,7 +22,10 @@ import {
   type ClipboardFormats,
 } from '@/common/craft/system-clipboard';
 import {prefixedKey} from '@/common/composables/useStorage';
-import {CopiedNotification} from '@/modules/messages/copied-notification';
+import {
+  CopiedNotification,
+  forgetCopiedMinimized,
+} from '@/modules/messages/copied-notification';
 import {formatMoney} from './money';
 import type {UiControlPayload} from './types';
 import type {UiValueSnapshot} from './valueAccess';
@@ -81,6 +84,7 @@ export function useCopiedFieldValue(): Readonly<
  */
 export function copyFieldValue(value: CopiedFieldValue): void {
   claimClipboard('fieldValue');
+  forgetCopiedMinimized();
   writeSystemClipboard({text: value.text, html: value.html ?? null});
   write(value);
   copied.value = value;

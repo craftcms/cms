@@ -1,6 +1,8 @@
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import '@/modules/messages/components/cp-messages';
+import {forgetCopiedMinimized} from '@/modules/messages/copied-notification';
+import {Notification} from '@/modules/messages/notification';
 import {CopiedElementsNotification} from './copied-elements-notification';
 
 vi.mock('@/common/craft/icon-svg', () => ({iconSvg: async () => null}));
@@ -24,6 +26,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  localStorage.clear();
   post.mockReset();
   vi.unstubAllGlobals();
   document.body.innerHTML = '';
@@ -94,4 +97,76 @@ it('keeps the copy, without titles for the system clipboard, when the chips canâ
     /copied\.$/
   );
   await expect(card.loadedFormats).resolves.toBeNull();
+});
+
+it('minimizes below newer notifications, and stays minimized on later pages until something new is copied', async () => {
+  const elements = [7, 8].map((id) => ({type: 'Entry', id, siteId: 1}));
+  const showCard = async () => {
+    const card = new CopiedElementsNotification(elements, () => {}, {
+      animate: false,
+    });
+    await card.show();
+    return card;
+  };
+  const messages = document.querySelector('cp-messages')!;
+  const dock = messages.querySelector('.messages-dock')!;
+
+  const card = await showCard();
+  card
+    .element!.querySelector<HTMLElement>('.copied-notification-minimize')!
+    .click();
+  const saved = new Notification('success', 'Saved.', {animate: false});
+  await saved.show();
+
+  expect(card.element!.parentElement).toBe(dock);
+  expect(
+    messages.querySelector('.messages-stack')!.contains(saved.element)
+  ).toBe(true);
+  expect(messages.style.getPropertyValue('--cp-messages-count')).toBe('1');
+  expect(
+    card.element!.querySelector('.copied-notification-count')!.textContent
+  ).toBe('2');
+
+  card.element!.remove();
+  const nextPage = await showCard();
+  expect(nextPage.element!.parentElement).toBe(dock);
+
+  nextPage
+    .element!.querySelector<HTMLElement>('.copied-notification-expand')!
+    .click();
+  expect(nextPage.element!.closest('[role="status"]')).not.toBeNull();
+  expect(Number(nextPage.element!.dataset.shownAt)).toBeGreaterThanOrEqual(
+    Number(saved.element!.dataset.shownAt)
+  );
+
+  nextPage
+    .element!.querySelector<HTMLElement>('.copied-notification-minimize')!
+    .click();
+  nextPage.element!.remove();
+  forgetCopiedMinimized();
+  const newCopy = await showCard();
+  expect(newCopy.element!.closest('[role="status"]')).not.toBeNull();
+});
+
+it('minimizes and opens along with other tabs', async () => {
+  const card = new CopiedElementsNotification(
+    [7, 8].map((id) => ({type: 'Entry', id, siteId: 1})),
+    () => {},
+    {animate: false}
+  );
+  await card.show();
+  const otherTab = new BroadcastChannel('CraftCMS:');
+  const dock = document.querySelector('cp-messages .messages-dock')!;
+
+  otherTab.postMessage({event: 'copiedNotificationMinimized', minimized: true});
+  await vi.waitFor(() => expect(card.element!.parentElement).toBe(dock));
+
+  otherTab.postMessage({
+    event: 'copiedNotificationMinimized',
+    minimized: false,
+  });
+  await vi.waitFor(() =>
+    expect(card.element!.closest('[role="status"]')).not.toBeNull()
+  );
+  otherTab.close();
 });

@@ -23,6 +23,8 @@ interface Timed {
  * It also manages the stack, as Sonner does: the newest notification in
  * front, the rest tucked behind it until the pointer, a press or keyboard
  * focus expands it. Timers pause while it's expanded or the page is hidden.
+ * Docked notifications, such as a minimized "copied" card, sit below the
+ * stack instead, where newer notifications don't cover them.
  *
  * Light DOM on purpose: notifications are added straight into the regions,
  * and `resources/css/messages.css` styles them.
@@ -63,12 +65,50 @@ export class CpMessages extends HTMLElement {
     this.#connectLegacyNotifier();
   }
 
-  /** Adds a notification to its live region, newest in front. */
+  /**
+   * Adds a notification to its live region, newest in front, or to the dock
+   * when it's docked.
+   */
   addNotification(notification: Notification): void {
     const element = notification.element!;
     this.#instances.set(element, notification);
-    this.#region(notification.type).append(element);
+    this.#place(notification);
     this.updateStack();
+  }
+
+  /**
+   * Moves a notification to the dock below the stack, or back into the stack,
+   * in front.
+   */
+  dockNotification(notification: Notification, docked: boolean): void {
+    notification.docked = docked;
+    const element = notification.element;
+
+    if (!element || !this.#instances.has(element)) {
+      return;
+    }
+
+    if (docked) {
+      element.inert = false;
+      element.removeAttribute('data-stack-behind');
+      element.removeAttribute('data-stack-hidden');
+      element.style.removeProperty('--cp-message-index');
+      element.style.removeProperty('--cp-message-offset');
+      element.style.removeProperty('z-index');
+    } else {
+      element.dataset.shownAt = String(Date.now());
+    }
+
+    this.#place(notification);
+    this.updateStack();
+  }
+
+  #place(notification: Notification): void {
+    const parent = notification.docked
+      ? this.querySelector(':scope > .messages-dock')
+      : this.#region(notification.type);
+
+    (parent ?? this).append(notification.element!);
   }
 
   removeNotification(notification: Notification): void {
@@ -91,11 +131,14 @@ export class CpMessages extends HTMLElement {
     return region ?? this;
   }
 
-  /** The notifications on screen, newest first, not counting any leaving. */
+  /**
+   * The notifications in the stack, newest first, not counting any leaving or
+   * docked.
+   */
   #stacked(): HTMLElement[] {
     return [
       ...this.querySelectorAll<HTMLElement>(
-        '.notification:not(.notification--leaving)'
+        '.messages-stack .notification:not(.notification--leaving)'
       ),
     ].sort(
       (a, b) => Number(b.dataset.shownAt ?? 0) - Number(a.dataset.shownAt ?? 0)
@@ -161,7 +204,7 @@ export class CpMessages extends HTMLElement {
     );
     this.querySelector('#cp-notification-heading')?.classList.toggle(
       'hidden',
-      notifications.length === 0
+      !this.querySelector('.notification:not(.notification--leaving)')
     );
 
     this.#updateExpanded();
@@ -335,7 +378,10 @@ export class CpMessages extends HTMLElement {
     stack.className = 'messages-stack';
     stack.append(alerts, statuses);
 
-    this.append(heading, stack);
+    const dock = document.createElement('div');
+    dock.className = 'messages-dock';
+
+    this.append(heading, stack, dock);
   }
 
   /**

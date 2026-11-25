@@ -429,6 +429,7 @@ return [
     'Message Variables' => 'Message Variables',
     'Meta' => 'Meta',
     'Method' => 'Method',
+    'Minimize' => 'Minimize',
     'Minimum' => 'Minimum',
     'Missing stage type' => 'Missing stage type',
     'Model' => 'Model',
