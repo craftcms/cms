@@ -23,7 +23,8 @@ async function render(markup: string): Promise<CraftButton[]> {
   return buttons;
 }
 
-const settle = () => new Promise((resolve) => setTimeout(resolve));
+const settle = () =>
+  new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
 
 /** Moves the pointer to an empty corner, so nothing it was left over stays hovered. */
 async function parkPointer(): Promise<void> {

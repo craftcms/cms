@@ -73,6 +73,7 @@
       :max="control.props.max"
       :step="control.props.step"
       .inputSize="control.props.size"
+      :width="control.props.size ? 'auto' : undefined"
       :currency="control.props.currency"
       :locale="moneyValue().locale"
       .showCurrency="control.props.showCurrency"

@@ -117,6 +117,8 @@ abstract class Table
     /** @deprecated in 6.0.0 */
     public const TAGS = '{{%tags}}';
     public const TOKENS = '{{%tokens}}';
+    /** @since 5.13.0 */
+    public const UPLOADSESSIONS = '{{%uploadsessions}}';
     public const USERGROUPS = '{{%usergroups}}';
     public const USERGROUPS_USERS = '{{%usergroups_users}}';
     public const USERPERMISSIONS = '{{%userpermissions}}';

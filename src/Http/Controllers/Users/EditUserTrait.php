@@ -9,6 +9,7 @@ use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Enums\Appearance;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\EditUserScreens;
 use CraftCms\Cms\User\Elements\User;
@@ -101,6 +102,12 @@ trait EditUserTrait
             ));
 
             $response->metaSidebarHtml($user->getSidebarHtml(false).app(ContentHtml::class)->metadataHtml($user->getMetadata()));
+
+            // The header the Profile screen's editor shows, for the rest of them.
+            $response->screenData(['userHeader' => [
+                'statusLabelHtml' => app(StatusHtml::class)->componentStatusLabelHtml($user),
+                'actionMenu' => $user->actionMenuDescriptors(),
+            ]]);
         }
 
         return $response;

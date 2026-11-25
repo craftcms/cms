@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '„{handle}“ nie je platný identifikátor.',
     '“{name}” deleted.' => '„{name}“ - zmazané.',
     '“{name}” value copied.' => 'Hodnota „{name}“ skopírovaná.',
+    '“{name}” was saved, but it can’t be selected here.' => '„{name}“ bolo uložené, ale tu ho nie je možné vybrať.',
     'Deprecated' => 'Zastarané',
     '“{{entry}}” is approved' => '„{{entry}}“ je schválené',
     'About Craft CMS' => 'O Craft CMS',

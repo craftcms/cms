@@ -137,11 +137,15 @@ export function createElementActionDispatcher({
   currentEntryTypeId,
   slideout = null,
 }: Options = {}) {
+  /**
+   * Returns a promise for a behavior that opens a dialog, which settles once
+   * the dialog has closed, and rejects if it can't be opened.
+   */
   function dispatch(
     behavior: ElementActionBehavior,
     destructive = false,
     event?: Event
-  ): void {
+  ): void | Promise<void> {
     const trigger =
       event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
 
@@ -235,9 +239,10 @@ export function createElementActionDispatcher({
         return;
 
       case 'previewFile':
-        new Craft.PreviewFileModal(behavior.assetId, behavior.settings ?? {});
-
-        return;
+        return new Craft.PreviewFileModal(
+          behavior.assetId,
+          behavior.settings ?? {}
+        ).closed;
 
       case 'download':
         // A real form post, not an Inertia visit: the response is the file.
@@ -276,7 +281,7 @@ export function createElementActionDispatcher({
         return;
 
       case 'editImage':
-        void openImageEditorDialog(behavior.settings, (result) => {
+        return openImageEditorDialog(behavior.settings, (result) => {
           if (!result.newAssetId) {
             reload();
             return;
@@ -293,9 +298,7 @@ export function createElementActionDispatcher({
             });
             slideout.close({force: true});
           }
-        });
-
-        return;
+        }).then(({closed}) => closed);
 
       case 'event':
         void runAction(behavior, {

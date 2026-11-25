@@ -93,6 +93,39 @@ describe('craft-input maxlength sizing', () => {
   });
 });
 
+describe('craft-input number character width', () => {
+  async function numberInput(
+    inputSize: number,
+    value: string
+  ): Promise<HTMLInputElement> {
+    document.body.innerHTML = `
+      <style>* { box-sizing: border-box; }</style>
+      <div style="width: 300px">
+        <craft-input label="Amount" type="number" width="auto" value="${value}"></craft-input>
+      </div>`;
+    const element = document.querySelector('craft-input') as CraftInput;
+    element.inputSize = inputSize;
+    await element.updateComplete;
+
+    return element.querySelector('input')!;
+  }
+
+  it('shrinks to fit its input size, which the browser ignores', async () => {
+    const input = await numberInput(4, '9999');
+
+    expect(input.getBoundingClientRect().width).toBeLessThan(100);
+    expect(input.scrollWidth).toBeLessThanOrEqual(input.clientWidth);
+  });
+
+  it('grows with its input size', async () => {
+    const narrow = (await numberInput(4, '')).getBoundingClientRect().width;
+    const wide = (await numberInput(12, '')).getBoundingClientRect().width;
+
+    expect(wide).toBeGreaterThan(narrow * 1.5);
+    expect(wide).toBeLessThan(300);
+  });
+});
+
 describe('craft-input value', () => {
   it('keeps a value set before insertion within the bounds also set then', async () => {
     const element = document.createElement('craft-input') as CraftInput;

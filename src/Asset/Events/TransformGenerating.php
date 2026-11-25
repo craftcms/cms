@@ -6,9 +6,26 @@ namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageHelper;
 
 /**
- * @event TransformGenerating The event that is triggered before a transform is generated for an asset.
+ * @event TransformGenerating The event that is triggered before an asset’s transform URL is determined.
+ *
+ * It fires for every transform driver, including drivers that only build a URL and never generate a file.
+ * Set {@see $url} to use that URL instead of calling the driver.
+ *
+ * It fires before the driver checks whether it can transform the file, so it fires for every file, including files
+ * that aren’t images and GIFs or SVGs when the `transformGifs` or `transformSvgs` config setting is off. A listener
+ * that sets {@see $url} should check the file first, such as with
+ * {@see ImageHelper::canManipulateAsImage()}.
+ *
+ * Changes to {@see $transform} have no effect.
+ *
+ * When a listener sets {@see $url}, the result’s MIME type is the transform’s format’s, or the source file’s if the
+ * transform has no format. A listener whose URL returns another type should use a transform driver instead.
+ *
+ * {@see $transform} holds the transform’s parameters as an array when the driver gives a core parameter a type that
+ * {@see ImageTransform} doesn’t support.
  *
  * @since 6.0.0
  */
