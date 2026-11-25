@@ -5,6 +5,7 @@ import {property} from 'lit/decorators.js';
 import autosize from 'autosize';
 import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {NativeField} from '@src/mixins/NativeField';
+import {CharsLeft, charsLeftStyles} from '@src/mixins/CharsLeft';
 
 /**
  * Whether the browser sizes a textarea to its content in CSS. Where it does,
@@ -31,7 +32,7 @@ const sizesToContent =
  * padding. Change the padding with this rather than on the textarea itself,
  * so `rows` and `max-rows` still fit whole lines.
  */
-export default class CraftTextarea extends NativeField(LitElement) {
+export default class CraftTextarea extends CharsLeft(NativeField(LitElement)) {
   static override styles = [
     formControlStyles,
     css`
@@ -46,8 +47,12 @@ export default class CraftTextarea extends NativeField(LitElement) {
       }
     `,
     inputStyles,
+    charsLeftStyles,
     styles,
   ];
+
+  /** Maximum number of characters, applied to the native textarea's `maxLength`. */
+  @property({type: Number, reflect: true}) maxlength?: number;
 
   /** Rows shown before it grows. */
   @property({type: Number, reflect: true}) rows = 2;
@@ -110,6 +115,14 @@ export default class CraftTextarea extends NativeField(LitElement) {
 
     if (changed.has('rows') && this._control) {
       this._control.rows = this.rows;
+    }
+
+    if (changed.has('maxlength') && this._control) {
+      if (this.maxlength && this.maxlength > 0) {
+        this._control.maxLength = this.maxlength;
+      } else if (changed.get('maxlength') !== undefined) {
+        this._control.removeAttribute('maxlength');
+      }
     }
   }
 
