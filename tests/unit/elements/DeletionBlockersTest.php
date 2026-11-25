@@ -18,6 +18,7 @@ use craft\elements\deletionblockers\ResolvableDeletionBlockerInterface;
 use craft\elements\deletionblockers\SourceUsageBlocker;
 use craft\elements\deletionblockers\TrashedElementsBlocker;
 use craft\elements\deletionblockers\UserGroupUsageBlocker;
+use craft\elements\deletionblockers\UserPhotoVolumeBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\Tag;
@@ -226,7 +227,7 @@ class DeletionBlockersTest extends TestCase
         }
     }
 
-    public function testFilesystemBlockerListsVolumesThatUseIt(): void
+    public function testFilesystemAndVolumeBlockersListWhatUsesThem(): void
     {
         $fsService = Craft::$app->getFs();
         $fs = $fsService->createFilesystem(['type' => Local::class, 'name' => 'Blocker Fs', 'handle' => 'blockerFs', 'path' => sys_get_temp_dir() . '/blocker-fs']);
@@ -235,6 +236,8 @@ class DeletionBlockersTest extends TestCase
         self::assertTrue(Craft::$app->getVolumes()->saveVolume($volume), json_encode($volume->getErrors()));
         $field = new AssetsField(['name' => 'Blocker Images', 'handle' => 'blockerImages', 'sources' => ["volume:$volume->uid"]]);
         Craft::$app->getFields()->saveField($field);
+        $projectConfig = Craft::$app->getProjectConfig();
+        $photoVolumeUid = $projectConfig->get('users.photoVolumeUid');
 
         try {
             $blocker = $this->activeBlockers($this->blockers('filesystem', $fs));
@@ -247,7 +250,14 @@ class DeletionBlockersTest extends TestCase
 
             $usage = $this->activeBlocker($this->blockers('volume', $volume), SourceUsageBlocker::class);
             self::assertSame(0, array_column($usage->getItems(), 'count', 'label')['Blocker Images'] ?? null);
+
+            // Only the user photo volume gets the user photo blocker
+            self::assertSame([], array_filter($this->activeBlockers($this->blockers('volume', $volume)), fn($blocker) => $blocker instanceof UserPhotoVolumeBlocker));
+            $projectConfig->set('users.photoVolumeUid', $volume->uid);
+            $photos = $this->activeBlocker($this->blockers('volume', $volume), UserPhotoVolumeBlocker::class);
+            self::assertSame(['User Photos' => 0], array_column($photos->getItems(), 'count', 'label'));
         } finally {
+            $projectConfig->set('users.photoVolumeUid', $photoVolumeUid);
             Craft::$app->getFields()->deleteField($field);
             Craft::$app->getVolumes()->deleteVolume($volume);
             $fsService->removeFilesystem($fs);

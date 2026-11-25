@@ -54,6 +54,7 @@
 - Added `craft\elements\deletionblockers\SourceUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\elements\deletionblockers\TrashedElementsBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\elements\deletionblockers\UserGroupUsageBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
+- Added `craft\elements\deletionblockers\UserPhotoVolumeBlocker`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\base\ApplicationTrait::getDeletionBlockers()`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\controllers\DeletionBlockersController`. ([#21104](https://github.com/craftcms/cms/pull/21104))
 - Added `craft\events\DefineDeletionBlockersEvent`. ([#21104](https://github.com/craftcms/cms/pull/21104))

@@ -21,6 +21,7 @@ use craft\elements\deletionblockers\SiteSectionsBlocker;
 use craft\elements\deletionblockers\SourceUsageBlocker;
 use craft\elements\deletionblockers\TrashedElementsBlocker;
 use craft\elements\deletionblockers\UserGroupUsageBlocker;
+use craft\elements\deletionblockers\UserPhotoVolumeBlocker;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\Tag;
@@ -218,6 +219,7 @@ class DeletionBlockers extends Component
                     fn(int $num) => Craft::t('app', 'The volume is a source for {num, number} {num, plural, =1{field} other{fields}}.', ['num' => $num]),
                 ),
                 new TrashedElementsBlocker(Asset::class, ['volumeId' => $subject->id]),
+                new UserPhotoVolumeBlocker($subject),
             ],
             default => [],
         };
