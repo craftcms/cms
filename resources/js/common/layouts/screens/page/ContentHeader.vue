@@ -43,9 +43,7 @@
 
 <style scoped>
   /* Gone while there's nothing in it, so the row doesn't leave a gap for it. */
-  .content-header__actions:not(
-    :has(> :not([data-layout-slot]), > [data-layout-slot][style*='contents'])
-  ) {
+  .content-header__actions:has(> [data-layout-slot][style*='none']:only-child) {
     display: none;
   }
 </style>

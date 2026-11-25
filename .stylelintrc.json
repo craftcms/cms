@@ -27,6 +27,14 @@
           "max-width"
         ]
       }
+    ],
+    "selector-disallowed-list": [
+      [
+        "/:has\\((?:[^()]|\\((?:[^()]|\\([^()]*\\))*\\)|\\()*?(?::not\\(|\\*(?!=))/"
+      ],
+      {
+        "message": "Avoid :not() and * inside :has(): Chromium then restyles the whole document whenever any element is added or removed. Match positively inside :has() and negate outside it, as in :has(a):not(:has(a.b))."
+      }
     ]
   }
 }
