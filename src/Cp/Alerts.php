@@ -53,7 +53,12 @@ readonly class Alerts
         return Cache::has(License::CACHE_KEY_LICENSE_INFO) && $this->updates->isUpdateInfoCached();
     }
 
-    /** @return array<int, string|array{content: string, showIcon: bool}> */
+    /**
+     * Alerts are HTML strings, or arrays that can also give a title, link buttons, and whether a refresh of the
+     * license info could resolve them.
+     *
+     * @return array<int, string|array{content: string, showIcon: bool, title?: string, actions?: list<array{label: string, url: string}>, refreshable?: bool}>
+     */
     public function get(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
@@ -67,9 +72,13 @@ readonly class Alerts
         $resolvableLicenseAlerts = [];
         $resolvableLicenseItems = [];
 
-        foreach ($this->license->issues(fetch: $fetch) as [$name, $message, $resolveItem]) {
+        foreach ($this->license->issues(fetch: $fetch) as $issue) {
+            [, $message, $resolveItem] = $issue;
+
             if (! $resolveItem) {
-                $alerts[] = $message;
+                $alerts[] = isset($issue[3])
+                    ? ['content' => $message, 'actions' => $issue[3], 'showIcon' => true]
+                    : $message;
             } elseif (! Edition::canTest()) {
                 $resolvableLicenseAlerts[] = $message;
                 $resolvableLicenseItems[] = $resolveItem;
@@ -82,22 +91,17 @@ readonly class Alerts
                 ->value();
 
             array_unshift($alerts, [
-                'content' => Html::tag('h2', t('License purchase required.')).
-                    Html::tag('p', t('The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:', [
-                        'total' => count($resolvableLicenseAlerts),
-                    ])).
+                'title' => t('License purchase required.'),
+                'content' => Html::tag('p', t('The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:', [
+                    'total' => count($resolvableLicenseAlerts),
+                ])).
                     Html::ul()
                         ->items(...array_map(Html::li(...), $resolvableLicenseAlerts))
-                        ->class('errors').
-                    Html::beginTag('p', [
-                        'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
-                    ]).
-                    Html::tag('craft-button', t('Resolve now'), [
-                        'href' => $cartUrl,
-                        'variant' => 'outline',
-                        'inherit' => true,
-                    ]).
-                    Html::endTag('p'),
+                        ->class('errors'),
+                'actions' => [
+                    ['label' => t('Resolve now'), 'url' => $cartUrl],
+                ],
+                'refreshable' => true,
                 'showIcon' => false,
             ]);
         }
@@ -107,8 +111,11 @@ readonly class Alerts
             $this->utilities->checkAuthorization(UpdatesUtility::class) &&
             $this->updates->isCriticalUpdateAvailable()
         ) {
-            $alerts[] = t('A critical update is available.').
-                ' <a class="go nowrap" href="'.Url::url('utilities/updates').'">'.t('Go to Updates').'</a>';
+            $alerts[] = [
+                'content' => t('A critical update is available.'),
+                'actions' => [['label' => t('Go to Updates'), 'url' => Url::url('utilities/updates')]],
+                'showIcon' => true,
+            ];
         }
 
         if (Edition::get() < Edition::Pro) {
@@ -128,8 +135,11 @@ readonly class Alerts
             $this->projectConfig->areChangesPending() &&
             ($this->projectConfig->writeYamlAutomatically || $this->projectConfig->get('dateModified') <= $this->projectConfig->get('dateModified', true))
         ) {
-            $alerts[] = t('Your project config YAML files contain pending changes.').
-                ' '.'<a class="go" href="'.Url::url('utilities/project-config').'">'.t('Review').'</a>';
+            $alerts[] = [
+                'content' => t('Your project config YAML files contain pending changes.'),
+                'actions' => [['label' => t('Review'), 'url' => Url::url('utilities/project-config')]],
+                'showIcon' => true,
+            ];
         }
 
         if (
@@ -147,8 +157,11 @@ readonly class Alerts
             $user->isAdmin() &&
             ($aiProblems = count($this->ai->problems())) > 0
         ) {
-            $alerts[] = t('{count, plural, =1{An AI task can’t run} other{# AI tasks can’t run}} yet.', ['count' => $aiProblems]).
-                ' <a class="go" href="'.route('craft.cp.settings.ai.index').'">'.t('Review').'</a>';
+            $alerts[] = [
+                'content' => t('{count, plural, =1{An AI task can’t run} other{# AI tasks can’t run}} yet.', ['count' => $aiProblems]),
+                'actions' => [['label' => t('Review'), 'url' => route('craft.cp.settings.ai.index')]],
+                'showIcon' => true,
+            ];
         }
 
         event($event = new CpAlertsResolving);
@@ -200,9 +213,6 @@ readonly class Alerts
                 break;
             case 'li':
                 $style['display'] = 'list-item';
-                break;
-            case 'craft-button':
-                $style['display'] = 'inline-flex';
                 break;
             case 'a':
                 if (isset($tagInfo['attributes']['class']) && array_intersect(['go', 'btn'], $tagInfo['attributes']['class'])) {

@@ -37,6 +37,8 @@
 - Element saves, deletions, restorations, nested element reordering, and URI updates now invalidate each cache tag once per operation, and propagations once per element. Element cache tags invalidated inside a database transaction are now invalidated when it commits. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Added `CraftCms\Cms\Element\ElementCaches::deferInvalidations()` and `hasPendingInvalidations()`. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Added `CraftCms\Cms\Cp\Alerts::areCached()`. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Control panel alerts can now have `title`, `actions`, and `refreshable` keys, which are shown in the alert’s heading and buttons. Plugins can pass them from `CpAlertsResolving` to show their links as buttons. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- `CraftCms\Cms\License\License::issues()` can now return a fourth item per issue, with link buttons for its alert. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where control panel alerts weren’t shown on Inertia pages. ([#21083](https://github.com/craftcms/cms/issues/21083), [#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where Number fields’ inputs didn’t format their values for the user’s formatting locale. ([#21080](https://github.com/craftcms/cms/issues/21080), [#21107](https://github.com/craftcms/cms/pull/21107))

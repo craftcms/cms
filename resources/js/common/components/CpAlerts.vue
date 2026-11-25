@@ -14,7 +14,13 @@
   import {showError} from '@/modules/messages/messages';
 
   /** An alert from `CraftCms\Cms\Cp\Alerts::get()`. Its content is HTML. */
-  type Alert = {content: string; showIcon: boolean};
+  type Alert = {
+    content: string;
+    showIcon: boolean;
+    title?: string;
+    actions?: Array<{label: string; url: string}>;
+    refreshable?: boolean;
+  };
 
   const page = usePage<{alerts?: Alert[]}>();
   const shunned = ref(new Set<string>());
@@ -28,11 +34,18 @@
   // announced. The ones already showing aren't repeated.
   const {announce} = useAnnouncer();
   watch(
-    () => alerts.value.map((alert) => alert.content),
-    (contents, previous) => {
-      const added = contents.filter((content) => !previous.includes(content));
+    () => alerts.value,
+    (current, previous) => {
+      const shown = new Set(previous.map((alert) => alert.content));
+      const added = current.filter((alert) => !shown.has(alert.content));
       if (added.length) {
-        announce(added.map(plainText).join(' '));
+        announce(
+          added
+            .map((alert) =>
+              [alert.title, plainText(alert.content)].filter(Boolean).join(' ')
+            )
+            .join(' ')
+        );
       }
     }
   );
@@ -41,11 +54,6 @@
     return (
       new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
     ).trim();
-  }
-
-  /** Licensing alerts that a Craft Console purchase resolves can be refreshed once it's made. */
-  function isResolvable(alert: Alert): boolean {
-    return alert.content.includes('resolvable-alert-buttons');
   }
 
   const refreshing = ref(false);
@@ -112,23 +120,37 @@
             name="triangle-exclamation"
             :label="t('Error')"
           ></craft-icon>
+          <h2 v-if="alert.title" slot="title" class="cp-alerts__title">
+            {{ alert.title }}
+          </h2>
           <div class="cp-alerts__content" v-html="alert.content"></div>
-        </craft-callout>
-        <!-- Beside “Resolve now”, as `Craft.cp.initAlerts()` puts it. -->
-        <Teleport
-          v-if="isResolvable(alert)"
-          defer
-          :to="`.cp-alerts [data-alert-index='${index}'] .resolvable-alert-buttons`"
-        >
-          <craft-button
-            type="button"
-            variant="outline"
-            inherit
-            .loading="refreshing"
-            @click="refresh"
-            >{{ t('Refresh') }}</craft-button
+          <div
+            v-if="alert.actions?.length || alert.refreshable"
+            slot="action"
+            class="cp-alerts__actions"
           >
-        </Teleport>
+            <craft-button
+              v-for="action in alert.actions"
+              :key="action.url"
+              :href="action.url"
+              variant="outline"
+              size="small"
+              inherit
+              >{{ action.label }}</craft-button
+            >
+            <!-- Once a purchase is made, a refresh of the license info clears the alert. -->
+            <craft-button
+              v-if="alert.refreshable"
+              type="button"
+              variant="outline"
+              size="small"
+              inherit
+              .loading="refreshing"
+              @click="refresh"
+              >{{ t('Refresh') }}</craft-button
+            >
+          </div>
+        </craft-callout>
       </li>
     </ul>
   </section>
@@ -141,6 +163,10 @@
     list-style: none;
   }
 
+  .cp-alerts > li + li {
+    border-block-start: 1px solid var(--c-color-danger-border-quiet);
+  }
+
   craft-callout {
     --c-callout-padding-inline: calc(var(--c-spacing-md) - 1px);
     --c-callout-icon-padding-inline: 0 var(--c-spacing-sm);
@@ -151,7 +177,17 @@
     margin-block-start: var(--c-spacing-sm);
   }
 
-  .cp-alerts__content :deep(h2) {
+  /* Alert links are inline-flex, so their external-link icon is centered on the line by hand. */
+  .cp-alerts__content :deep(a) {
+    align-items: start;
+  }
+
+  /* Centered on the line, then nudged down a touch to sit with lowercase link text. */
+  .cp-alerts__content :deep(a[data-external-link]::after) {
+    translate: 0 calc((1lh - 0.75em) / 2 + 0.075em);
+  }
+
+  .cp-alerts__title {
     margin: 0;
     font-size: var(--c-text-md);
     font-weight: bold;
@@ -162,11 +198,9 @@
     list-style-type: square;
   }
 
-  .cp-alerts__content :deep(.resolvable-alert-buttons) {
-    margin-block-start: var(--c-spacing-md);
-  }
-
-  .cp-alerts__content :deep(.resolvable-alert-buttons > * + *) {
-    margin-inline-start: var(--c-spacing-sm);
+  .cp-alerts__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--c-spacing-sm);
   }
 </style>

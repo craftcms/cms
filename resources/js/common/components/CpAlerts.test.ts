@@ -5,9 +5,15 @@ const {pageProps, post, ping, reload} = await vi.hoisted(async () => {
   const {reactive} = await import('vue');
 
   return {
-    pageProps: reactive<{alerts?: Array<{content: string; showIcon: boolean}>}>(
-      {}
-    ),
+    pageProps: reactive<{
+      alerts?: Array<{
+        content: string;
+        showIcon: boolean;
+        title?: string;
+        actions?: Array<{label: string; url: string}>;
+        refreshable?: boolean;
+      }>;
+    }>({}),
     post: vi.fn(),
     ping: vi.fn(),
     reload: vi.fn(),
@@ -44,7 +50,7 @@ function mount(): void {
 }
 
 function alertTexts(): string[] {
-  return [...root.querySelectorAll('craft-callout > div')].map(
+  return [...root.querySelectorAll('.cp-alerts__content')].map(
     (alert) => alert.textContent ?? ''
   );
 }
@@ -103,15 +109,32 @@ it('dismisses an alert from its shun link', async () => {
   });
 });
 
-it('refreshes the license info before reloading resolvable licensing alerts', async () => {
+it('puts an alert’s title and buttons in the callout’s slots', async () => {
+  pageProps.alerts = [
+    {
+      title: 'License purchase required.',
+      content: '<p>Resolvable.</p>',
+      actions: [{label: 'Resolve now', url: 'https://console.example/cart'}],
+      showIcon: false,
+    },
+  ];
+  mount();
+  await nextTick();
+
+  expect(root.querySelector('[slot="title"]')?.textContent?.trim()).toBe(
+    'License purchase required.'
+  );
+  const button = root.querySelector('[slot="action"] craft-button');
+  expect(button?.textContent).toBe('Resolve now');
+  expect(button?.getAttribute('href')).toBe('https://console.example/cart');
+  expect(button?.getAttribute('size')).toBe('small');
+});
+
+it('refreshes the license info before reloading refreshable alerts', async () => {
   ping.mockResolvedValue({});
   reload.mockImplementation(({onFinish}) => onFinish());
   pageProps.alerts = [
-    {
-      content:
-        '<p class="resolvable-alert-buttons"><a href="#">Resolve now</a></p>',
-      showIcon: false,
-    },
+    {content: 'Resolvable.', refreshable: true, showIcon: false},
     {content: 'Not resolvable.', showIcon: true},
   ];
   mount();

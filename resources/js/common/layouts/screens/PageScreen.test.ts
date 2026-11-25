@@ -249,7 +249,11 @@ describe('PageScreen', () => {
         content: 'A critical update is available. <a href="/updates">Go</a>',
         showIcon: true,
       },
-      {content: '<h2>License purchase required.</h2>', showIcon: false},
+      {
+        title: 'License purchase required.',
+        content: '<p>Buy it.</p>',
+        showIcon: false,
+      },
     ];
 
     const container = document.createElement('div');
@@ -264,13 +268,16 @@ describe('PageScreen', () => {
 
     const alerts = [...container.querySelectorAll('craft-callout')];
     const [first, second] = alerts;
-    expect(alerts.map((alert) => alert.textContent?.trim())).toEqual([
-      'A critical update is available. Go',
-      'License purchase required.',
-    ]);
+    expect(
+      alerts.map((alert) =>
+        alert.querySelector('.cp-alerts__content')?.textContent?.trim()
+      )
+    ).toEqual(['A critical update is available. Go', 'Buy it.']);
     expect(first?.querySelector('a')?.getAttribute('href')).toBe('/updates');
     expect(first?.querySelector('craft-icon')).toHaveProperty('label', 'Error');
-    expect(second?.querySelector('h2')).not.toBeNull();
+    expect(second?.querySelector('[slot="title"]')?.textContent?.trim()).toBe(
+      'License purchase required.'
+    );
     expect(second?.querySelector('craft-icon')).toBeNull();
   });
 
