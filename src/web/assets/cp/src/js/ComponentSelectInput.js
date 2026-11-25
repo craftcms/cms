@@ -17,6 +17,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     $components: null,
     $addBtn: null,
     $createBtn: null,
+    $replacedComponent: null,
 
     _initialized: false,
 
@@ -47,6 +48,15 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           const $button = $(ev.currentTarget);
           this.addComponent($button.data('type'), $button.data('id'));
         });
+
+        // Options hide the menu after they're activated, so the replaced chip
+        // has already been captured by then
+        this.$addBtn
+          .disclosureMenu()
+          .data('disclosureMenu')
+          .on('hide', () => {
+            this.$replacedComponent = null;
+          });
       }
 
       if (this.$createBtn.length && this.settings.createAction) {
@@ -390,6 +400,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           callback: () => {
             const menu = this.$addBtn.disclosureMenu().data('disclosureMenu');
             menu.$alignmentElement = $component;
+            this.$replacedComponent = $component;
             menu.show();
           },
         });
@@ -521,6 +532,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     },
 
     async addComponent(type, id, addToMenu = false) {
+      const $replacedComponent = this.$replacedComponent;
       const disclosureMenu = this.$addBtn.length
         ? this.$addBtn.disclosureMenu().data('disclosureMenu')
         : null;
@@ -543,12 +555,19 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      if (!this.canAddMoreComponents()) {
-        this.removeComponent(this.getComponents().last(), false);
+      const $component = $(data.components[type][id][0]);
+
+      if ($replacedComponent && this.$components.is($replacedComponent)) {
+        this.insertComponent($component);
+        $component.parent('li').insertAfter($replacedComponent.parent('li'));
+        this.removeComponent($replacedComponent, false);
+      } else {
+        if (!this.canAddMoreComponents()) {
+          this.removeComponent(this.getComponents().last(), false);
+        }
+        this.insertComponent($component);
       }
 
-      const $component = $(data.components[type][id][0]);
-      this.insertComponent($component);
       this.addComponents($component);
       let $item = $component;
 
