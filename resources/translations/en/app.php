@@ -67,6 +67,7 @@ return [
     'AI assistant:' => 'AI assistant:',
     'After' => 'After',
     'After the input' => 'After the input',
+    'Alerts' => 'Alerts',
     'All sites' => 'All sites',
     'All {total, number} results are selected.' => 'All {total, number} results are selected.',
     'All {type}' => 'All {type}',

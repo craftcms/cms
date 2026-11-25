@@ -93,36 +93,38 @@
 </script>
 
 <template>
-  <ul v-if="alerts.length" class="cp-alerts" @click="onClick">
-    <li
-      v-for="(alert, index) in alerts"
-      :key="alert.content"
-      :data-alert-index="index"
-    >
-      <craft-callout
-        variant="danger"
-        appearance="fill"
-        rounded="none"
-        .hideIcon="!alert.showIcon"
+  <section v-if="alerts.length" :aria-label="t('Alerts')">
+    <ul class="cp-alerts" @click="onClick">
+      <li
+        v-for="(alert, index) in alerts"
+        :key="alert.content"
+        :data-alert-index="index"
       >
-        <craft-icon
-          v-if="alert.showIcon"
-          slot="icon"
-          name="triangle-exclamation"
-          :label="t('Error')"
-        ></craft-icon>
-        <div v-html="alert.content"></div>
-        <craft-button
-          v-if="isResolvable(alert)"
-          slot="action"
-          type="button"
-          .loading="refreshing"
-          @click="refresh"
-          >{{ t('Refresh') }}</craft-button
+        <craft-callout
+          variant="danger"
+          appearance="fill"
+          rounded="none"
+          .hideIcon="!alert.showIcon"
         >
-      </craft-callout>
-    </li>
-  </ul>
+          <craft-icon
+            v-if="alert.showIcon"
+            slot="icon"
+            name="triangle-exclamation"
+            :label="t('Error')"
+          ></craft-icon>
+          <div v-html="alert.content"></div>
+          <craft-button
+            v-if="isResolvable(alert)"
+            slot="action"
+            type="button"
+            .loading="refreshing"
+            @click="refresh"
+            >{{ t('Refresh') }}</craft-button
+          >
+        </craft-callout>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped>
