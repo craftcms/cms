@@ -31,7 +31,7 @@ class SystemMessageCatalog
     public function __construct(
         private readonly Container $container,
     ) {
-        foreach (['account_activation', 'comment_mention', 'verify_new_email', 'forgot_password', 'test_email'] as $key) {
+        foreach (['account_activation', 'comment_mention', 'cp_notification', 'verify_new_email', 'forgot_password', 'test_email'] as $key) {
             $this->register($key, fn () => new SystemMessage([
                 'key' => $key,
                 'heading' => t("{$key}_heading"),
@@ -52,6 +52,11 @@ class SystemMessageCatalog
                 'subject' => t('Commented item'),
                 'comment' => t('Comment'),
                 'link' => t('Comment link'),
+            ],
+            'cp_notification' => [
+                'title' => t('Notification title'),
+                'message' => t('Notification message'),
+                'link' => t('Notification link'),
             ],
             'verify_new_email' => ['link' => t('Verification link')],
             'forgot_password' => ['link' => t('Password reset link')],

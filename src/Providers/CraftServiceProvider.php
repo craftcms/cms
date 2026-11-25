@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\AssetServiceProvider;
 use CraftCms\Cms\Auth\AuthServiceProvider;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
+use CraftCms\Cms\CriticalNotification\CriticalNotificationServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\Debug\DebugServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
@@ -62,6 +63,7 @@ class CraftServiceProvider extends AggregateServiceProvider
         ConsoleServiceProvider::class,
         ElementServiceProvider::class,
         ReleaseServiceProvider::class,
+        CriticalNotificationServiceProvider::class,
         EmailServiceProvider::class,
         GqlServiceProvider::class,
         PluginServiceProvider::class,

@@ -6,21 +6,48 @@ namespace CraftCms\Cms\Cp\Notifications;
 
 use Closure;
 use CraftCms\Cms\Cp\Data\NotificationButtonData;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
+use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Illuminate\Notifications\Channels\DatabaseChannel;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Traits\Macroable;
 use Laravel\SerializableClosure\SerializableClosure;
 use UnexpectedValueException;
 
+use function CraftCms\Cms\t;
+
 /**
+ * A notification shown in the control panel’s notification center, and optionally sent through other channels.
+ *
+ * Projects choose the channels for each kind of notification with {@see viaUsing()}, and add the
+ * `toX()` methods other channels need as macros:
+ *
+ * ```php
+ * CpNotification::viaUsing(fn (CpNotification $notification, CraftUser $notifiable) => match ($notification->kind) {
+ *     'critical' => [...$notification->defaultChannels($notifiable), 'slack'],
+ *     default => $notification->defaultChannels($notifiable),
+ * });
+ *
+ * CpNotification::macro('toSlack', fn (CraftUser $notifiable) => (new SlackMessage)
+ *     ->text($this->toDatabase($notifiable)['message']));
+ * ```
+ *
  * @since 6.0.0
  */
 class CpNotification extends Notification
 {
+    use Macroable;
+
     public const string TYPE = 'craft-cp';
 
-    protected string $kind;
+    /** @var (Closure(CpNotification, CraftUser): list<string>)|null */
+    private static ?Closure $viaUsing = null;
+
+    public protected(set) string $kind;
 
     protected string|SerializableClosure|null $title = null;
 
@@ -46,10 +73,43 @@ class CpNotification extends Notification
         $this->message = $this->serializable($message);
     }
 
-    /** @return class-string[] */
+    /**
+     * Sets a callback that returns the channels a notification is sent through, in place of its {@see defaultChannels()}.
+     *
+     * @param  (Closure(CpNotification, CraftUser): list<string>)|null  $callback
+     */
+    public static function viaUsing(?Closure $callback): void
+    {
+        self::$viaUsing = $callback;
+    }
+
+    /** @return list<string> */
     public function via(CraftUser $notifiable): array
     {
+        return self::$viaUsing !== null
+            ? (self::$viaUsing)($this, $notifiable)
+            : $this->defaultChannels($notifiable);
+    }
+
+    /** @return list<string> The channels used when the project hasn’t set {@see viaUsing()} */
+    public function defaultChannels(CraftUser $notifiable): array
+    {
         return [DatabaseChannel::class];
+    }
+
+    public function toMail(CraftUser $notifiable): SystemMessageMailable
+    {
+        $url = $this->resolve($this->url, $notifiable);
+
+        return app(SystemMessages::class)->mailable(
+            key: 'cp_notification',
+            user: $notifiable->asElement(),
+            variables: [
+                'title' => t($this->resolve($this->title, $notifiable) ?? 'Notification'),
+                'message' => t($this->resolve($this->message, $notifiable)),
+                'link' => $url !== null ? Template::raw(Url::url($url)) : null,
+            ],
+        );
     }
 
     /** @return array<string, mixed> */

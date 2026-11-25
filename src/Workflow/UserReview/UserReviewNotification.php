@@ -43,11 +43,11 @@ class UserReviewNotification extends CpNotification implements ShouldQueueAfterC
             ->url($entryUrl);
     }
 
-    /** @return class-string[] */
+    /** @return list<string> */
     #[\Override]
-    public function via(CraftUser $notifiable): array
+    public function defaultChannels(CraftUser $notifiable): array
     {
-        return [...parent::via($notifiable), MailChannel::class];
+        return [...parent::defaultChannels($notifiable), MailChannel::class];
     }
 
     public function toMail(CraftUser $notifiable): SystemMessageMailable

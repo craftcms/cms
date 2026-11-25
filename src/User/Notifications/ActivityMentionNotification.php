@@ -45,11 +45,11 @@ class ActivityMentionNotification extends CpNotification implements ShouldQueueA
             ->url($this->subject()?->getCpEditUrl());
     }
 
-    /** @return class-string[] */
+    /** @return list<string> */
     #[\Override]
-    public function via(CraftUser $notifiable): array
+    public function defaultChannels(CraftUser $notifiable): array
     {
-        return [...parent::via($notifiable), MailChannel::class];
+        return [...parent::defaultChannels($notifiable), MailChannel::class];
     }
 
     public function shouldSend(CraftUser $notifiable, string $channel): bool
