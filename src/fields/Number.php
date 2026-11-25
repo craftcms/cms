@@ -324,11 +324,12 @@ class Number extends Field implements
         $id = $this->getInputId();
         $namespacedId = $view->namespaceInputId($id);
 
+        $localized = $formatNumber ? 'true' : 'false';
         $js = <<<JS
 (function() {
     const input = \$('#$namespacedId');
     input.on('input', () => {
-        Craft.filterNumberInputVal(input);
+        Craft.filterNumberInputVal(input, $localized);
     });
 })();
 JS;
