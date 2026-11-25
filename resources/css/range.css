@@ -5,6 +5,10 @@
   gap: var(--c-spacing-sm) var(--c-spacing-md);
 }
 
+.range-suffix {
+  color: var(--c-text-quiet);
+}
+
 .range-wrapper {
   flex: 0 1 200px;
   min-width: 0;

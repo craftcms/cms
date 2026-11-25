@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import CraftInput from '@craftcms/ui/components/input/input';
-  import {ref, useTemplateRef} from 'vue';
+  import {t} from '@craftcms/ui/utilities/translate';
+  import {ref, useId, useTemplateRef} from 'vue';
   import type {UiChangeKind, UiControlPayload, TextControlProps} from './types';
   import {inputName} from './runtime';
 
@@ -17,6 +18,7 @@
   }>();
 
   const range = useTemplateRef<HTMLInputElement>('range');
+  const descriptionId = useId();
 
   /**
    * What's typed in the number input while it has focus. The value it sets
@@ -69,6 +71,7 @@
       :min="control.props.min"
       :max="control.props.max"
       :step="control.props.step"
+      .inputSize="control.props.size"
       .inputMode="'decimal'"
       :readonly="control.mode === 'readOnly'"
       .disabled="control.mode === 'disabled'"
@@ -76,9 +79,18 @@
       @input="onNumberInput"
       @focusout="typed = null"
     >
-      <span v-if="control.props.suffix" slot="suffix">{{
+      <input
+        slot="input"
+        :aria-describedby="control.props.suffix ? descriptionId : undefined"
+      />
+    </craft-input>
+    <template v-if="control.props.suffix">
+      <span :id="descriptionId" hidden>{{
+        t('Value suffixed by “{suffix}”.', {suffix: control.props.suffix})
+      }}</span>
+      <span class="range-suffix" aria-hidden="true">{{
         control.props.suffix
       }}</span>
-    </craft-input>
+    </template>
   </div>
 </template>

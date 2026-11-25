@@ -50,6 +50,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\Range as RangeControl;
 use CraftCms\Cms\Ui\Controls\Table as TableControl;
 use CraftCms\Cms\Ui\Controls\TableColumn;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -1057,14 +1058,14 @@ readonly class FormFields
         $numberInput = self::textHtml([
             'type' => 'number',
             'id' => $numberInputId,
-            'descriptionId' => $descriptionId,
             'value' => $value,
             'inputmode' => 'numeric',
             'min' => $config['min'] ?? null,
             'max' => $config['max'] ?? null,
             'step' => $step,
-            'suffix' => $suffix,
+            'size' => $config['size'] ?? RangeControl::inputSize($config['min'] ?? null, $config['max'] ?? null, $step),
             'labelledBy' => $labelledBy,
+            'describedBy' => $hasSuffix ? $descriptionId : null,
             'disabled' => (bool) ($config['disabled'] ?? false),
         ]);
 
@@ -1090,7 +1091,11 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
 
         return Html::tag('div',
             Html::tag('div', $rangeInput, ['class' => 'range-wrapper']).
-            Html::tag('div', $numberInput),
+            Html::tag('div', $numberInput).
+            ($hasSuffix
+                ? Html::tag('span', Html::encode(t('Value suffixed by “{suffix}”.', ['suffix' => $suffix])), ['id' => $descriptionId, 'hidden' => true]).
+                    Html::tag('span', Html::encode($suffix), ['class' => 'range-suffix', 'aria' => ['hidden' => 'true']])
+                : ''),
             ['class' => 'range-group'],
         );
     }

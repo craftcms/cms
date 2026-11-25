@@ -125,6 +125,15 @@ it('uses the current formatting locale when money does not declare one', functio
     expect(Money::make('price')->props()['locale'])->toBe(I18N::getFormattingLocale()->id);
 });
 
+it('sizes the range number input to fit its longest value', function (int|float $min, int|float $max, int|float $step, int $size) {
+    expect(Range::make('range')->min($min)->max($max)->step($step)->props()['size'])->toBe($size);
+})->with([
+    'whole numbers' => [0, 10, 1, 2],
+    'decimal step' => [0, 100, 0.5, 5],
+    'negative minimum' => [-1000, 10, 1, 5],
+    'negative decimal minimum' => [-50, 10, 0.25, 6],
+]);
+
 it('serializes choice presentations', function () {
     expect(Choice::make('choice')->presentation(ChoicePresentation::Buttons)->props()['presentation'])->toBe('buttons')
         ->and(Choice::make('choice')->multiple()->props()['presentation'])->toBe('checkboxes');
