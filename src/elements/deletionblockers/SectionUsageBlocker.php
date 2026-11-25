@@ -55,12 +55,18 @@ class SectionUsageBlocker extends BaseResolvableDeletionBlocker
 
     protected function defineItems(): array
     {
-        $source = "section:{$this->section->uid}";
+        $sources = ["section:{$this->section->uid}"];
+        if ($this->section->type === Section::TYPE_SINGLE) {
+            $sources[] = 'singles';
+        }
         $items = [];
 
         foreach (Craft::$app->getFields()->getFieldsByType(EntriesField::class) as $field) {
             /** @var EntriesField $field */
-            if (!is_array($field->sources) || !in_array($source, $field->sources, true)) {
+            $offersSection = $field->sources === '*' || (
+                is_array($field->sources) && array_intersect($sources, $field->sources)
+            );
+            if (!$offersSection) {
                 continue;
             }
 

@@ -41,7 +41,13 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
      * @returns {Promise<boolean>}
      */
     run: async function () {
-      const data = await this.loadBlockers();
+      let data;
+      try {
+        data = await this.loadBlockers();
+      } catch (e) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        return false;
+      }
 
       if (!data.blockers.length) {
         return true;

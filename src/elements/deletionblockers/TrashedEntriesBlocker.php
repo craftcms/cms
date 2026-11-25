@@ -40,7 +40,10 @@ class TrashedEntriesBlocker extends BaseResolvableDeletionBlocker
 
     public function init(): void
     {
+        // Match what the deletion trashes: canonical entries and unpublished drafts
         $this->count = Craft::configure(Entry::find(), $this->criteria)
+            ->drafts(null)
+            ->draftOf(false)
             ->site('*')
             ->unique()
             ->status(null)
@@ -74,6 +77,8 @@ class TrashedEntriesBlocker extends BaseResolvableDeletionBlocker
             'jsSettings' => [
                 'criteria' => [
                     ...$this->criteria,
+                    'drafts' => null,
+                    'draftOf' => false,
                     'status' => null,
                 ],
             ],

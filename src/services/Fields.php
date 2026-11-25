@@ -915,8 +915,9 @@ class Fields extends Component
 
         foreach ($fields as $field) {
             if ($field::dbType() !== null && isset($field->layoutElement)) {
-                // Empty values aren’t stored, so a value is there if its key is
-                $conditions[] = sprintf('%s IS NOT NULL', $qb->jsonExtract('elements_sites.content', [$field->layoutElement->uid]));
+                // Empty values can be stored as empty strings, arrays, objects, or JSON null
+                $valueSql = $qb->jsonExtract('elements_sites.content', [$field->layoutElement->uid]);
+                $conditions[] = sprintf("%s IS NOT NULL AND %s NOT IN ('', '[]', '{}', 'null')", $valueSql, $valueSql);
             } elseif ($field instanceof MatrixField) {
                 $nestedFieldIds[] = $field->id;
             } else {

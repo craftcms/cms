@@ -59,6 +59,8 @@ class EntryTypeUsageBlocker extends BaseResolvableDeletionBlocker
         foreach ($this->entryType->findUsages() as $usage) {
             $query = Entry::find()
                 ->typeId($this->entryType->id)
+                ->drafts(null)
+                ->draftOf(false)
                 ->site('*')
                 ->unique()
                 ->status(null);

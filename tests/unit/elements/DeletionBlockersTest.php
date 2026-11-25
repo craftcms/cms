@@ -159,11 +159,32 @@ class DeletionBlockersTest extends TestCase
             $this->saveEntry($source);
         }
 
-        $blockers = $this->blockers('section', $this->blog);
+        // An existing entry saved with an empty relation stores `[]`, which isn't a value
+        $other->setFieldValue('blockerRelated', []);
+        $this->saveEntry($other);
+        self::assertSame(
+            ['Blocker Page' => 3],
+            array_column($this->activeBlocker($this->blockers('field', $this->related), FieldUsageBlocker::class)->getItems(), 'count', 'label'),
+        );
 
-        $usage = $this->activeBlocker($blockers, SectionUsageBlocker::class);
-        self::assertSame(['Blocker Related' => 2], array_column($usage->getItems(), 'count', 'label'));
-        self::assertSame('1 entry will be moved to the trash.', $this->activeBlocker($blockers, TrashedEntriesBlocker::class)->getSummary());
+        // A field offering all sources offers this one too
+        $anything = new EntriesField(['name' => 'Blocker Anything', 'handle' => 'blockerAnything', 'sources' => '*']);
+        Craft::$app->getFields()->saveField($anything);
+
+        // The section delete trashes unpublished drafts too
+        $unpublished = new Entry(['sectionId' => $this->blog->id, 'typeId' => $this->article->id, 'title' => 'Unpublished']);
+        self::assertTrue(Craft::$app->getDrafts()->saveElementAsDraft($unpublished, markAsSaved: false));
+
+        try {
+            $blockers = $this->blockers('section', $this->blog);
+            $usage = $this->activeBlocker($blockers, SectionUsageBlocker::class);
+            $counts = array_column($usage->getItems(), 'count', 'label');
+            ksort($counts);
+            self::assertSame(['Blocker Anything' => 0, 'Blocker Related' => 2], $counts);
+            self::assertSame('2 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedEntriesBlocker::class)->getSummary());
+        } finally {
+            Craft::$app->getFields()->deleteField($anything);
+        }
         self::assertSame([], $this->activeBlockers($this->blockers('section', $this->createSection('blockerEmpty', [$this->page]))));
     }
 
