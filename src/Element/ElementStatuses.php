@@ -66,19 +66,26 @@ readonly class ElementStatuses
             foreach ($elementType::findIdsWithOutdatedStatus() as $elementId) {
                 // One element failing, or a listener throwing, mustn't hold up the rest
                 try {
-                    $before = $elementType::storedStatuses([$elementId])[$elementId] ?? [];
+                    $update = $elementType::updateStoredStatus($elementId);
 
-                    if (! $elementType::updateStoredStatus($elementId)) {
-                        // The element type may have saved the element instead, and the save dispatched the changes
-                        if (($elementType::storedStatuses([$elementId])[$elementId] ?? []) !== $before) {
-                            $count++;
-                        }
-
+                    if ($update === null) {
                         continue;
                     }
 
                     $count++;
-                    $this->dispatchChanges($elementType, $elementId, $before, invalidateCaches: true);
+
+                    // The element type saved the element instead, and the save dispatched the changes
+                    if ($update['before'] === null) {
+                        continue;
+                    }
+
+                    $this->dispatchChanges(
+                        $elementType,
+                        $elementId,
+                        $update['before'],
+                        self::withDateStatus($update['before'], $update['status']),
+                        invalidateCaches: true,
+                    );
                 } catch (Throwable $exception) {
                     report($exception);
                 }
@@ -129,32 +136,39 @@ readonly class ElementStatuses
         ['statuses' => $before, 'siteId' => $siteId] = $this->statusesBeforeSave[$element];
         unset($this->statusesBeforeSave[$element]);
 
-        // The stored status may have been updated by a scheduled run after it was read above. The one the save
-        // replaced was read under a lock, so it’s the one to compare.
-        $replacedStatus = $element->getReplacedStoredStatus();
+        // Compare the stored status the save replaced, read under a lock, with the one it wrote. A scheduled run may
+        // have updated it after it was read above, or may update it before the comparison below, and dispatches
+        // that change itself.
+        $write = $element->getStoredStatusWrite();
 
-        if ($replacedStatus !== null) {
-            foreach ($before as $beforeSiteId => $status) {
-                if (! in_array($status, [Element::STATUS_DISABLED, Element::STATUS_ARCHIVED], true)) {
-                    $before[$beforeSiteId] = $replacedStatus;
-                }
-            }
+        if ($write !== null && $write['replaced'] !== null) {
+            $before = self::withDateStatus($before, $write['replaced']);
         }
 
         // Once every site is written, such as when a draft is applied, which saves its other sites after this one.
         // The save already invalidated the element’s caches.
         $this->comparingAfterCommit[$element] = true;
 
-        DB::afterCommit(function () use ($element, $before, $siteId): void {
+        DB::afterCommit(function () use ($element, $before, $siteId, $write): void {
             unset($this->comparingAfterCommit[$element]);
+
+            $after = $element::storedStatuses([$element->id])[$element->id] ?? [];
+
+            if ($siteId !== null) {
+                $after = array_intersect_key($after, [$siteId => true]);
+            }
+
+            if ($write !== null) {
+                $after = self::withDateStatus($after, $write['written']);
+            }
 
             $this->dispatchChanges(
                 $element::class,
                 $element->id,
                 $before,
+                $after,
                 invalidateCaches: false,
                 element: $element,
-                siteId: $siteId,
             );
         });
     }
@@ -173,22 +187,16 @@ readonly class ElementStatuses
     /**
      * @param  class-string<SchedulableElementInterface>  $elementType
      * @param  array<int, string>  $before  The element’s statuses by site ID, before the change
-     * @param  int|null  $siteId  The only site to compare, if not all of them
+     * @param  array<int, string>  $after  The element’s statuses by site ID, after the change
      */
     private function dispatchChanges(
         string $elementType,
         int $elementId,
         array $before,
+        array $after,
         bool $invalidateCaches,
         ?ElementInterface $element = null,
-        ?int $siteId = null,
     ): void {
-        $after = $elementType::storedStatuses([$elementId])[$elementId] ?? [];
-
-        if ($siteId !== null) {
-            $after = array_intersect_key($after, [$siteId => true]);
-        }
-
         if ($after === []) {
             return;
         }
@@ -215,5 +223,20 @@ readonly class ElementStatuses
                 event(new ElementStatusChanged($siteElement, $oldStatus, $status));
             }
         }
+    }
+
+    /**
+     * Replaces the date-based part of an element’s statuses by site ID, leaving disabled and archived sites as they
+     * are.
+     *
+     * @param  array<int, string>  $statuses
+     * @return array<int, string>
+     */
+    private static function withDateStatus(array $statuses, string $dateStatus): array
+    {
+        return array_map(
+            fn (string $status): string => in_array($status, [Element::STATUS_DISABLED, Element::STATUS_ARCHIVED], true) ? $status : $dateStatus,
+            $statuses,
+        );
     }
 }

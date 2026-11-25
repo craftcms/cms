@@ -6,10 +6,12 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Brings entries’ stored statuses up to date, so the `craft:update-element-statuses` command’s first run doesn’t
- * dispatch `ElementStatusChanged` for entries that went live or expired before the upgrade.
+ * dispatch `ElementStatusChanged` for entries that went live or expired before the upgrade, and adds the indexes the
+ * command uses to find entries whose dates passed.
  */
 return new class extends Migration
 {
@@ -23,6 +25,12 @@ return new class extends Migration
         DB::table(Table::ENTRIES)
             ->where('status', '!=', $status)
             ->update(['status' => $status]);
+
+        foreach ([['status', 'postDate'], ['status', 'expiryDate']] as $columns) {
+            if (! Schema::hasIndex(Table::ENTRIES, $columns)) {
+                Schema::createIndex(Table::ENTRIES, $columns);
+            }
+        }
     }
 
     public function down(): void {}

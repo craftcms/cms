@@ -209,8 +209,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     private string $status;
 
-    /** @see getReplacedStoredStatus() */
-    private ?string $replacedStoredStatus = null;
+    /**
+     * @var array{replaced: string|null, written: string}|null
+     *
+     * @see getStoredStatusWrite()
+     */
+    private ?array $storedStatusWrite = null;
 
     /**
      * @var bool Whether the entry was deleted along with its entry type
@@ -1639,8 +1643,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             Deprecator::log('staticStatuses', 'The `staticStatuses` config setting is deprecated. Turn it off and run Laravel’s scheduler. Entry queries get statuses from post and expiry dates, and Craft dispatches `'.ElementStatusChanged::class.'` and clears caches when those dates pass.');
         }
 
+        $now = Query::prepareDateForDb(now()->endOfMinute());
+
+        // Only dates passing change a stored status without a save, so this can use the (status, postDate) and
+        // (status, expiryDate) indexes rather than comparing every entry’s status with its dates
         return self::canonicalEntryRows()
-            ->where('entries.status', '!=', self::statusForDatesSql('entries'))
+            ->where(fn (Builder $query) => $query
+                ->where(fn (Builder $query) => $query
+                    ->where('entries.status', self::STATUS_PENDING)
+                    ->where('entries.postDate', '<=', $now))
+                ->orWhere(fn (Builder $query) => $query
+                    ->where('entries.status', self::STATUS_LIVE)
+                    ->where('entries.expiryDate', '<=', $now)))
             ->orderBy('entries.id')
             ->pluck('entries.id')
             ->map(fn (mixed $id): int => (int) $id)
@@ -1652,7 +1666,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      * did, so `ElementSaved` listeners that compare {@see $oldStatus} keep working. Entries nested in drafts and
      * revisions are updated without re-saving them. A re-save that fails throws, so the failure is reported.
      */
-    public static function updateStoredStatus(int $elementId): bool
+    public static function updateStoredStatus(int $elementId): ?array
     {
         if (Cms::config()->staticStatuses) {
             $entry = self::find()->id($elementId)->status(null)->one();
@@ -1666,22 +1680,42 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     throw new InvalidElementException($entry, "Couldn’t re-save entry $elementId to update its status: ".implode(', ', $entry->errors()->all()));
                 }
 
-                return false;
+                $write = $entry->getStoredStatusWrite();
+
+                return $write !== null && $write['replaced'] !== $write['written']
+                    ? ['before' => null, 'status' => $write['written']]
+                    : null;
             }
         }
 
-        // Only if it’s still outdated, so a save or another run that updated it first dispatches the change once
-        $status = self::statusForDatesSql(Table::ENTRIES);
+        return DB::transaction(function () use ($elementId): ?array {
+            // Under the same lock a save takes, so a save or another run that updated it first dispatches the change
+            // once, and the statuses read below are the ones this replaces
+            $row = DB::table(Table::ENTRIES)
+                ->where('id', $elementId)
+                ->lockForUpdate()
+                ->first([
+                    'status',
+                    DB::raw(sprintf('%s as %s', self::statusForDatesSql(Table::ENTRIES)->getValue(DB::getQueryGrammar()), DB::getQueryGrammar()->wrap('dateStatus'))),
+                ]);
 
-        return DB::table(Table::ENTRIES)
-            ->where('id', $elementId)
-            ->where('status', '!=', $status)
-            ->update(['status' => $status]) > 0;
+            if ($row === null || $row->status === $row->dateStatus) {
+                return null;
+            }
+
+            $before = self::storedStatuses([$elementId])[$elementId] ?? [];
+
+            DB::table(Table::ENTRIES)
+                ->where('id', $elementId)
+                ->update(['status' => $row->dateStatus]);
+
+            return ['before' => $before, 'status' => $row->dateStatus];
+        });
     }
 
-    public function getReplacedStoredStatus(): ?string
+    public function getStoredStatusWrite(): ?array
     {
-        return $this->replacedStoredStatus;
+        return $this->storedStatusWrite;
     }
 
     public static function storedStatuses(array $elementIds): array
@@ -2923,7 +2957,7 @@ JS;
     #[Override]
     public function afterSave(bool $isNew): void
     {
-        $this->replacedStoredStatus = null;
+        $this->storedStatusWrite = null;
 
         if (! $this->propagating) {
             $section = $this->getSection();
@@ -2931,7 +2965,7 @@ JS;
             // Get the entry record, locked so the scheduled status update can’t change it until this save commits
             if (! $isNew) {
                 $model = EntryModel::query()->lockForUpdate()->findOrFail($this->id);
-                $this->replacedStoredStatus = $model->status;
+                $replacedStatus = $model->status;
             } else {
                 $model = new EntryModel;
                 $model->id = (int) $this->id;
@@ -2946,6 +2980,7 @@ JS;
 
             $status = $this->_status();
             $model->status = $status;
+            $this->storedStatusWrite = ['replaced' => $replacedStatus ?? null, 'written' => $status];
             // only update $this->status if it's already set, indicating that staticStatuses is enabled
             if (isset($this->status)) {
                 $this->status = $status;

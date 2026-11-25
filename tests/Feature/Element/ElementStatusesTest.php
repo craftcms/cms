@@ -249,6 +249,19 @@ it('announces a status change once when the scheduled task updates it during a s
         ->and($this->changes)->toBe([[$entry->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]]);
 });
 
+it('announces a status change once when the scheduled task updates it after a save, before the save commits', function () {
+    $entry = ($this->scheduledEntry)('2026-10-01 12:05:00');
+
+    DB::transaction(function () use ($entry) {
+        expect(Elements::saveElement($entry))->toBeTrue();
+
+        Date::setTestNow('2026-10-01 12:05:20');
+        expect(app(ElementStatuses::class)->updateScheduled())->toBe(1);
+    });
+
+    expect($this->changes)->toBe([[$entry->id, Entry::STATUS_PENDING, Entry::STATUS_LIVE]]);
+});
+
 it('keeps updating other entries when one entry’s re-save fails', function () {
     app(GeneralConfig::class)->staticStatuses = true;
 
