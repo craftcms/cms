@@ -53,6 +53,17 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Use the `pr` skill to write the pull request body.
 - Use the `requesting-accessibility-reviews` skill to request an accessibility review.
 
+## Screenshots in pull requests
+
+- Take and add every screenshot in a pull request's description or comments by following the `feature-screenshots` skill.
+- Host every image on GitHub, as a `https://github.com/user-attachments/assets/…` URL. Never use images hosted on ampcode.com, such as Amp attachment, artifact, or file URLs, or anywhere else.
+- When the Claude in Chrome tools aren't available to upload the screenshots yourself, ask the user to:
+  1. Download the screenshots.
+  2. Drop them into any comment box on GitHub, such as the pull request's, without saving the comment.
+  3. Paste the Markdown or HTML that GitHub inserts for each image back into the thread.
+
+  Then add those images to the pull request description, as the `feature-screenshots` skill describes.
+
 ## Workspace skills
 
 The Craft workspace skills cover processes shared with Craft 5 and the plugin repos: `releasing`, `changelog-entries`, `merging-pull-requests`, `watching-copilot-reviews`, `requesting-accessibility-reviews`, `feature-screenshots`, and `pr`. Follow them, along with the details for this repo below.

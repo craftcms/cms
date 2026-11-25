@@ -252,6 +252,21 @@ readonly class ElementDeletions
         bool $hardDelete = false,
         bool $recordActivity = true,
     ): bool {
+        return $this->elementCaches->deferInvalidations(
+            fn () => $this->deleteElementInScope($element, $hardDelete, $recordActivity),
+        );
+    }
+
+    /**
+     * Deletes an element while cache invalidations are deferred.
+     *
+     * @see deleteElement()
+     */
+    private function deleteElementInScope(
+        ElementInterface $element,
+        bool $hardDelete,
+        bool $recordActivity,
+    ): bool {
         event($event = new ElementDeleting($element, $hardDelete));
 
         $element->hardDelete = $hardDelete || $event->hardDelete;
@@ -314,7 +329,7 @@ readonly class ElementDeletions
                 }
 
                 // After commit, so another process can't cache the element as it was before the delete
-                DB::afterCommit(fn () => $this->elementCaches->invalidateForElement($element));
+                $this->elementCaches->invalidateForElementAfterCommit($element);
 
                 if ($element->hardDelete) {
                     // Remove drafts and revisions first. Otherwise PostgreSQL can null their elements' canonicalId after
@@ -509,6 +524,18 @@ readonly class ElementDeletions
      */
     public function restoreElements(array $elements): bool
     {
+        return $this->elementCaches->deferInvalidations(fn () => $this->restoreElementsInScope($elements));
+    }
+
+    /**
+     * Restores elements while cache invalidations are deferred.
+     *
+     * @param  ElementInterface[]  $elements
+     *
+     * @see restoreElements()
+     */
+    private function restoreElementsInScope(array $elements): bool
+    {
         foreach ($elements as $element) {
             event(new ElementRestoring($element));
 
@@ -599,7 +626,7 @@ readonly class ElementDeletions
                 }
 
                 // After commit, so another process can't cache the element as it was before the restore
-                DB::afterCommit(fn () => $this->elementCaches->invalidateForElement($element));
+                $this->elementCaches->invalidateForElementAfterCommit($element);
             }
 
             foreach ($elements as $element) {
