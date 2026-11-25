@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\StringHelper;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Node;
@@ -19,6 +20,7 @@ use Twig\Node\Node;
  * @author Yonel Ceruto <yonelceruto@gmail.com>
  * @since 3.7.24
  */
+#[YieldReady]
 class DeprecatedNode extends Node
 {
     /**
@@ -37,7 +39,7 @@ class DeprecatedNode extends Node
      *
      * @param Compiler $compiler
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler->addDebugInfo($this);
 
