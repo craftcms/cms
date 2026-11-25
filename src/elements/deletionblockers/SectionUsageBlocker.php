@@ -79,6 +79,7 @@ class SectionUsageBlocker extends BaseResolvableDeletionBlocker
                 ->where([
                     'relations.fieldId' => $field->id,
                     'targets.sectionId' => $this->section->id,
+                    'sources.canonicalId' => null,
                     'sources.draftId' => null,
                     'sources.revisionId' => null,
                     'sources.dateDeleted' => null,
