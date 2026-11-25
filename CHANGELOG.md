@@ -28,6 +28,8 @@
 - Image transform URLs that Craft serves itself no longer have a `v` query param. ([#20957](https://github.com/craftcms/cms/pull/20957))
 - Improved the performance of field layout designers. ([#21062](https://github.com/craftcms/cms/pull/21062))
 - Added the `storage-key` attribute to `craft-dialog` and `craft-resize-grips`, and the `storageKey` prop to `ModalForm`. ([#21067](https://github.com/craftcms/cms/pull/21067))
+- Element saves, deletions, restorations, nested element reordering, and URI updates now invalidate each cache tag once per operation, and propagations once per element. Element cache tags invalidated inside a database transaction are now invalidated when it commits. ([#21058](https://github.com/craftcms/cms/pull/21058))
+- Added `CraftCms\Cms\Element\ElementCaches::deferInvalidations()` and `hasPendingInvalidations()`. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
 - Fixed a bug where shared caches could store responses to token and site token requests. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses that saved or refreshed a lazy session. ([#20953](https://github.com/craftcms/cms/pull/20953))

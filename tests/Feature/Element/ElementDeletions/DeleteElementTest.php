@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\BulkOp\BulkOps;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Element\Events\ElementDeleted;
 use CraftCms\Cms\Element\Events\ElementDeleting;
@@ -14,9 +15,14 @@ use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -252,6 +258,89 @@ it('invalidates element caches only after the delete is committed', function () 
 
     expect($this->deletions->deleteElement($entry))->toBeTrue()
         ->and($invalidationLevels)->toBe([$outerLevel]);
+});
+
+it('invalidates the caches of an element and its nested elements once', function () {
+    $blockType = EntryType::factory()->create(['hasTitleField' => true]);
+    $matrixField = Field::factory()->create([
+        'handle' => 'blocks',
+        'type' => Matrix::class,
+        'settings' => ['entryTypes' => [$blockType->id]],
+    ]);
+    $owner = EntryModel::factory()->withFieldLayout(FieldLayout::factory()->forField($matrixField))->createElement();
+    $owner->setFieldValueFromRequest('blocks', [
+        'entries' => [
+            'new1' => ['type' => $blockType->handle, 'title' => 'A'],
+            'new2' => ['type' => $blockType->handle, 'title' => 'B'],
+        ],
+        'sortOrder' => ['new1', 'new2'],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    $blockIds = $owner->getFieldValue('blocks')->status(null)->ids();
+
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = (array) $event->tags;
+    });
+
+    expect($blockIds)->toHaveCount(2)
+        ->and($this->deletions->deleteElement($owner))->toBeTrue()
+        ->and($invalidations)->toHaveCount(1)
+        ->and($invalidations[0])->toContain("element::$owner->id", "element::$blockIds[0]", "element::$blockIds[1]")
+        ->and($invalidations[0])->toBe(array_values(array_unique($invalidations[0])));
+});
+
+it('bypasses a deleted element’s caches until an enclosing transaction rolls back', function () {
+    $entry = EntryModel::factory()->createElement();
+    $cachedExists = fn (): bool => Entry::find()->id($entry->id)->cache()->exists();
+
+    expect($cachedExists())->toBeTrue();
+
+    $existsInListener = [];
+    Event::listen(function (ElementDeleted $event) use ($entry, $cachedExists, &$existsInListener) {
+        if ($event->element->id === $entry->id) {
+            $existsInListener[] = $cachedExists();
+        }
+    });
+
+    $invalidatedEvents = 0;
+    Event::listen(ElementCachesInvalidated::class, function () use (&$invalidatedEvents) {
+        $invalidatedEvents++;
+    });
+
+    DB::beginTransaction();
+
+    expect($this->deletions->deleteElement($entry))->toBeTrue()
+        ->and($existsInListener)->toBe([false])
+        ->and($cachedExists())->toBeFalse();
+
+    DB::rollBack();
+
+    expect($cachedExists())->toBeTrue()
+        ->and($invalidatedEvents)->toBe(0);
+});
+
+it('invalidates the caches of every deleted element after the commit when an ElementCachesInvalidated listener throws', function () {
+    $first = EntryModel::factory()->createElement();
+    $second = EntryModel::factory()->createElement();
+    Event::listen(function (ElementCachesInvalidated $event) use ($first) {
+        if ($event->element?->id === $first->id) {
+            throw new RuntimeException('Listener failed');
+        }
+    });
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    DB::beginTransaction();
+
+    expect($this->deletions->deleteElement($first))->toBeTrue()
+        ->and($this->deletions->deleteElement($second))->toBeTrue()
+        ->and(fn () => DB::commit())->toThrow(RuntimeException::class, 'Listener failed')
+        ->and($invalidated)->toContain("element::$first->id", "element::$second->id")
+        ->and(app(ElementCaches::class)->hasPendingInvalidations(["element::$first->id", "element::$second->id"]))->toBeFalse();
 });
 
 it('rolls back the delete when afterDelete throws', function () {
