@@ -10,6 +10,8 @@ use CraftCms\Cms\Field\Commands\FieldsMergeCommand;
 use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
 use CraftCms\Cms\Field\Listeners\FieldReferenceEventSubscriber;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -31,9 +33,26 @@ class FieldsServiceProvider extends ServiceProvider
         $this->registerIdeHelperListeners($projectConfig);
     }
 
+    /**
+     * Regenerates the IDE helper once the request or command that changed the content model has finished, as
+     * project config flushes its own changes then. Regenerating on the first change would miss the rest, such
+     * as the other entry types and fields a project config apply adds after it.
+     */
     private function registerIdeHelperListeners(ProjectConfig $projectConfig): void
     {
-        $regenerate = fn () => once(fn () => $this->app->make(CustomFieldIdeHelperGenerator::class)->generate());
+        $stale = false;
+        $markStale = function () use (&$stale): void {
+            $stale = true;
+        };
+
+        Event::listen([RequestHandled::class, CommandFinished::class], function () use (&$stale): void {
+            if (! $stale) {
+                return;
+            }
+
+            $stale = false;
+            $this->app->make(CustomFieldIdeHelperGenerator::class)->generate();
+        });
 
         $paths = [
             ProjectConfig::PATH_ENTRY_TYPES.'.{uid}',
@@ -44,9 +63,9 @@ class FieldsServiceProvider extends ServiceProvider
 
         foreach ($paths as $path) {
             $projectConfig
-                ->onAdd($path, $regenerate)
-                ->onUpdate($path, $regenerate)
-                ->onRemove($path, $regenerate);
+                ->onAdd($path, $markStale)
+                ->onUpdate($path, $markStale)
+                ->onRemove($path, $markStale);
         }
     }
 }
