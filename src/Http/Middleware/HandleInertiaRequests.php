@@ -9,6 +9,7 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\AboutCraft;
+use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Enums\Theme;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
@@ -37,8 +39,10 @@ use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
+use Inertia\DeferProp;
 use Inertia\Inertia;
 use Inertia\Middleware;
 use Inertia\OnceProp;
@@ -218,6 +222,9 @@ class HandleInertiaRequests extends Middleware
                 return ! $generalConfig->allowAdminChanges && $request->is($settingsPath, "$settingsPath/*");
             },
             'locale' => fn () => app()->getLocale(),
+            ...($currentUser !== null ? [
+                'alerts' => $this->alertsProp($request),
+            ] : []),
             ...($currentUser !== null && $nav->hasSourceBadges() ? [
                 'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
             ] : []),
@@ -288,6 +295,21 @@ class HandleInertiaRequests extends Middleware
                     : (object) $nav->getBadgeCounts(),
             ],
         ];
+    }
+
+    /**
+     * The control panel alerts, as the Twig layout shows them: resolved with the page once the license info is
+     * cached, and otherwise deferred, so fetching the license info from Craft Console doesn't hold up the page.
+     */
+    private function alertsProp(Request $request): Closure|DeferProp
+    {
+        $path = $request->craftPath();
+
+        if (Cache::has(License::CACHE_KEY_LICENSE_INFO)) {
+            return fn (): array => app(Alerts::class)->get($path);
+        }
+
+        return Inertia::defer(fn (): array => app(Alerts::class)->get($path, fetch: true));
     }
 
     /**

@@ -11,14 +11,19 @@ use CraftCms\Cms\Asset\Analysis\Tasks\GenerateTitles;
 use CraftCms\Cms\Asset\Analysis\Tasks\TagImage;
 use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\CpAlertsResolving;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Inertia\Testing\AssertableInertia;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\get;
 
 it('returns no alerts for guests', function () {
     auth()->logout();
@@ -54,6 +59,29 @@ it('merges alerts from CpAlertsResolving listeners', function () {
     $contents = array_map(fn (string|array $alert) => is_array($alert) ? $alert['content'] : $alert, $alerts);
 
     expect(implode(' ', $contents))->toContain('custom alert from event');
+});
+
+it('shares alerts with Inertia pages, deferring them until the license info is cached', function () {
+    actingAs(User::findOne());
+
+    Event::listen(function (CpAlertsResolving $event) {
+        $event->alerts[] = 'custom alert from event';
+    });
+
+    Cache::forget(License::CACHE_KEY_LICENSE_INFO);
+
+    get(cp_url('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
+        ->component('Dashboard')
+        ->missing('alerts')
+        ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+            ->where('alerts.0.content', 'custom alert from event')
+            ->where('alerts.0.showIcon', true)));
+
+    Cache::put(License::CACHE_KEY_LICENSE_INFO, []);
+
+    get(cp_url('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('alerts.0.content', 'custom alert from event')
+        ->where('alerts.0.showIcon', true));
 });
 
 it('alerts admins when the project config folder can’t be written, instead of failing', function () {
