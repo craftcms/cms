@@ -17,6 +17,12 @@ use RuntimeException;
 use Throwable;
 
 /**
+ * Collects the cache tags and expiry dates that caches depend on, and invalidates the caches tagged with them.
+ *
+ * Element tags, such as `element::5`, come from the elements a cache's content queries. Tags can also be custom,
+ * such as `nav` added with `ResponseCacheInfo::addTags()`. Both kinds are invalidated the same way, firing
+ * {@see ElementCachesInvalidated}.
+ *
  * @since 6.0.0
  */
 #[Singleton]
