@@ -126,3 +126,39 @@ it('clamps a resized box again when a window resize lowers its cap', async () =>
 
   expect(last()).toEqual({width: 500, height: 500});
 });
+
+it('remembers a size picked by a person under its storage key, until it is reset', async () => {
+  localStorage.clear();
+  const {box, grips, grip, last} = await render();
+  grips.storageKey = 'Test.size';
+  await grips.updateComplete;
+
+  drag(grip('corner'), 100, 100);
+  expect(last()).toEqual({width: 600, height: 500});
+
+  box.style.maxWidth = '500px';
+  window.dispatchEvent(new Event('resize'));
+  expect(last()).toEqual({width: 500, height: 500});
+
+  const restored: ResizeGripsSize[] = [];
+  const next = document.createElement('craft-resize-grips');
+  next.storageKey = 'Test.size';
+  next.addEventListener('craft-resize', (event) =>
+    restored.push((event as CustomEvent<ResizeGripsSize>).detail)
+  );
+  box.append(next);
+  await next.updateComplete;
+  expect(restored).toEqual([{width: 600, height: 500}]);
+
+  grips.reset();
+  const afterReset: ResizeGripsSize[] = [];
+  const another = document.createElement('craft-resize-grips');
+  another.storageKey = 'Test.size';
+  another.addEventListener('craft-resize', (event) =>
+    afterReset.push((event as CustomEvent<ResizeGripsSize>).detail)
+  );
+  box.append(another);
+  await another.updateComplete;
+  expect(afterReset).toEqual([]);
+  localStorage.clear();
+});

@@ -30,7 +30,9 @@ beforeEach(() => {
 
 vi.mock('@/common/slideouts', () => ({openSlideout: vi.fn()}));
 vi.mock('@/modules/image-editor/open-image-editor-dialog', () => ({
-  openImageEditorDialog: vi.fn(),
+  openImageEditorDialog: vi.fn(async () => ({
+    closed: new Promise<void>(() => {}),
+  })),
 }));
 vi.mock('@/modules/ui/open-ui-modal', () => ({openUiModal: vi.fn()}));
 

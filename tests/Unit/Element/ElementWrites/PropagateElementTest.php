@@ -40,7 +40,7 @@ beforeEach(function () {
         'elements' => $this->elements,
         'drafts' => Mockery::mock(Drafts::class),
         'elementUris' => $this->uris,
-        'elementCaches' => Mockery::mock(ElementCaches::class),
+        'elementCaches' => Mockery::mock(ElementCaches::class)->makePartial(),
         'search' => Mockery::mock(Search::class),
         'sites' => $this->sites,
         'workflows' => Mockery::mock(Workflows::class),

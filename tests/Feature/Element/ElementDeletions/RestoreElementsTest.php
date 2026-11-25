@@ -52,6 +52,44 @@ it('restores a trashed entry and updates restore side effects', function () {
     Event::assertDispatched(fn (ElementRestored $event) => $event->element->id === $entry->id);
 });
 
+it('reads fresh cached queries from ElementRestored listeners', function () {
+    $entry = Entry::factory()->createElement();
+    app(Elements::class)->deleteElement($entry);
+
+    expect(EntryElement::find()->id($entry->id)->cache()->exists())->toBeFalse();
+
+    $existsInListener = [];
+    Event::listen(function (ElementRestored $event) use ($entry, &$existsInListener) {
+        if ($event->element->id === $entry->id) {
+            $existsInListener[] = EntryElement::find()->id($entry->id)->cache()->exists();
+        }
+    });
+
+    $trashedEntry = EntryElement::find()->id($entry->id)->trashed()->one();
+
+    expect(app(ElementDeletions::class)->restoreElements([$trashedEntry]))->toBeTrue()
+        ->and($existsInListener)->toBe([true])
+        ->and(EntryElement::find()->id($entry->id)->cache()->exists())->toBeTrue();
+});
+
+it('bypasses a restored element’s caches until an enclosing transaction rolls back, without caching the restore', function () {
+    $entry = Entry::factory()->createElement();
+    app(Elements::class)->deleteElement($entry);
+    $cachedExists = fn (): bool => EntryElement::find()->id($entry->id)->cache()->exists();
+
+    expect($cachedExists())->toBeFalse();
+
+    DB::beginTransaction();
+    $trashedEntry = EntryElement::find()->id($entry->id)->trashed()->one();
+
+    expect(app(ElementDeletions::class)->restoreElements([$trashedEntry]))->toBeTrue()
+        ->and($cachedExists())->toBeTrue();
+
+    DB::rollBack();
+
+    expect($cachedExists())->toBeFalse();
+});
+
 it('returns false when an element vetoes restore in beforeRestore', function () {
     $action = restoreElementsService();
     $element = new TestRestoreElement(beforeRestoreResult: false);
@@ -180,13 +218,11 @@ it('restores drafts and revisions, reindexes supported sites, and invalidates ca
             return true;
         });
 
-    $elementCaches = Mockery::mock(ElementCaches::class);
-    $elementCaches->shouldReceive('invalidateForElement')
+    $elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
+    $elementCaches->shouldReceive('invalidateForElementAfterCommit')
         ->once()
-        ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): array {
+        ->andReturnUsing(function (ElementInterface $element) use (&$invalidated): void {
             $invalidated[] = [$element->id, $element->siteId];
-
-            return [];
         });
 
     $deletions = app(ElementDeletions::class, [
@@ -223,7 +259,7 @@ function restoreElementsService(): ElementDeletions
     $search = Mockery::mock(Search::class);
     $search->shouldReceive('indexElementAttributes')->andReturn(true);
 
-    $elementCaches = Mockery::mock(ElementCaches::class);
+    $elementCaches = Mockery::mock(ElementCaches::class)->makePartial();
     $elementCaches->shouldReceive('invalidateForElement')->andReturn([]);
 
     return app(ElementDeletions::class, [

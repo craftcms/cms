@@ -245,6 +245,25 @@ it('rejects invalid custom source conditions before writing project config', fun
     expect(app(ProjectConfig::class)->get($path))->toBe($original);
 });
 
+it('offers named generated fields as table columns', function () {
+    $layout = FieldLayout::createFromConfig(['type' => Entry::class])->generatedFields([
+        ['uid' => 'generated-named', 'name' => 'Status label', 'handle' => 'statusLabel', 'template' => '{title|upper}'],
+        ['uid' => 'generated-unnamed', 'name' => '', 'handle' => 'unnamed', 'template' => '{title}'],
+    ]);
+
+    $attributes = $this->elementSources->getTableAttributes(
+        Entry::class,
+        'section:any',
+        ['generatedField:generated-named', 'generatedField:generated-unnamed'],
+        [$layout],
+    );
+
+    expect($attributes->all())->toBe([
+        ['title', ['label' => 'Entry']],
+        ['generatedField:generated-named', ['label' => 'Status label']],
+    ]);
+});
+
 it('aligns field columns to the end for quantities', function () {
     $fields = collect([
         'plainText' => [PlainText::class, []],

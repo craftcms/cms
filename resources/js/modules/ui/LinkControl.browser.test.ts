@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, type App} from 'vue';
 import {afterEach, expect, it} from 'vite-plus/test';
+import {page} from 'vite-plus/test/browser/context';
 import type {
   LinkAdvancedField,
   LinkTypeConfig,
@@ -15,18 +16,19 @@ afterEach(() => {
   container?.remove();
 });
 
-it('lets table columns keep their widths when a compact link has a long URL', async () => {
-  const control: UiControlPayload<{
-    types: LinkTypeConfig[];
-    showLabelField: boolean;
-    advancedFields: LinkAdvancedField[];
-    compact: boolean;
-    registeredTypes: string[] | null;
-  }> = {
+/** A compact Link control, as a Table field's cell renders one. */
+function compactControl(types: LinkTypeConfig[]): UiControlPayload<{
+  types: LinkTypeConfig[];
+  showLabelField: boolean;
+  advancedFields: LinkAdvancedField[];
+  compact: boolean;
+  registeredTypes: string[] | null;
+}> {
+  return {
     type: 'CraftCms\\Cms\\Ui\\Controls\\Link',
     component: 'craft:link',
     props: {
-      types: [{id: 'url', label: 'URL', kind: 'text'}],
+      types,
       showLabelField: true,
       advancedFields: [],
       compact: true,
@@ -36,6 +38,10 @@ it('lets table columns keep their widths when a compact link has a long URL', as
     mode: 'editable',
     deltaGroup: ['fields', 'link'],
   };
+}
+
+it('lets table columns keep their widths when a compact link has a long URL', async () => {
+  const control = compactControl([{id: 'url', label: 'URL', kind: 'text'}]);
   container = document.createElement('div');
   container.style.width = '400px';
   document.body.append(container);
@@ -76,4 +82,51 @@ it('lets table columns keep their widths when a compact link has a long URL', as
     container.querySelector('.link-control__detail')!.textContent
   ).toContain('long-path/long-path/');
   expect(link!.offsetWidth).toBe(event!.offsetWidth);
+});
+
+it('keeps unapplied edits and focus when a chip’s actions open in a compact link', async () => {
+  const control = compactControl([
+    {
+      id: 'entry',
+      label: 'Entry',
+      kind: 'element',
+      elementType: 'Entry',
+      refHandle: 'entry',
+    },
+  ]);
+  container = document.createElement('div');
+  document.body.append(container);
+  app = createApp({
+    render: () =>
+      h(LinkControl, {
+        control,
+        value: {
+          type: 'entry',
+          value: '{entry:12@1:url}',
+          defaultLabel: 'pending',
+          element: {
+            id: 12,
+            label: 'pending',
+            siteId: 1,
+            url: 'https://example.com/pending',
+          },
+        },
+        editable: true,
+        label: 'Link, row 1',
+      }),
+  });
+  app.mount(container);
+  await nextTick();
+
+  await page.getByRole('button', {name: 'Edit link'}).click();
+  await page.getByRole('button', {name: 'Advanced'}).click();
+  await page.getByRole('textbox', {name: 'Label'}).fill('Read more');
+  await page.getByRole('button', {name: 'Actions'}).click();
+
+  const view = page.getByRole('button', {name: 'View in a new tab'});
+  await expect.element(view).toBeVisible();
+  await expect
+    .element(page.getByRole('textbox', {name: 'Label'}))
+    .toHaveValue('Read more');
+  expect(document.activeElement?.tagName).toBe('CRAFT-ACTION-ITEM');
 });

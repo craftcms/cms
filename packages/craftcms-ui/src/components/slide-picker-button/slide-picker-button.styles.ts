@@ -1,8 +1,8 @@
-import {css} from 'lit';
+import {css, unsafeCSS} from 'lit';
 import {
-  activeSegmentDividerForcedColorsStyles,
   segmentDividerStyles,
-} from '../slide-picker/segment-divider.styles.js';
+  segmentTrackStyles,
+} from '../slide-picker/segment-track.styles.js';
 
 export default css`
   :host {
@@ -13,38 +13,19 @@ export default css`
     display: none;
   }
 
+  ${segmentTrackStyles(unsafeCSS('.segments'))}
+
   .segments {
+    --_pitch: calc(9rem / 16);
+    --_split: calc(
+      min(var(--_filled), 1) * 1px + var(--_filled) * var(--_pitch)
+    );
     display: inline-flex;
     pointer-events: none;
   }
 
-  .segment {
-    --_edge: var(--c-color-neutral-border-normal);
-    position: relative;
-    box-sizing: border-box;
-    inline-size: calc(9rem / 16);
-    block-size: 1rem;
-    border: 1px solid var(--_edge);
-    border-inline-start-width: 0;
-    background-color: var(
-      --c-slide-picker-segment-fill,
-      var(--c-color-neutral-fill-quiet)
-    );
-  }
-
-  .segment:first-child {
-    border-inline-start-width: 1px;
-    border-start-start-radius: var(--c-radius-sm);
-    border-end-start-radius: var(--c-radius-sm);
-  }
-
-  .segment:last-child {
-    border-start-end-radius: var(--c-radius-sm);
-    border-end-end-radius: var(--c-radius-sm);
-  }
-
-  .segment.is-active {
-    --_edge: var(--c-color-neutral-border-loud);
+  .segments::before {
+    border-color: var(--c-color-neutral-border-loud);
     background-color: var(
       --c-slide-picker-segment-active-fill,
       color-mix(
@@ -55,14 +36,31 @@ export default css`
     );
   }
 
-  .segment:not(:last-child, .is-last-active) {
-    border-inline-end-color: transparent;
+  .segments::after {
+    border-color: var(--c-color-neutral-border-normal);
+    background-color: var(
+      --c-slide-picker-segment-fill,
+      var(--c-color-neutral-fill-quiet)
+    );
   }
 
-  .segment:not(:last-child, .is-last-active)::after {
-    --_divider-edge: var(--_edge);
+  .segment {
+    position: relative;
+    inline-size: var(--_pitch);
+    block-size: 1rem;
+  }
+
+  .segment:first-child {
+    inline-size: calc(var(--_pitch) + 1px);
+  }
+
+  .segment:not(:last-child)::after {
     --_divider: var(--c-color-neutral-border-quiet);
     ${segmentDividerStyles}
+  }
+
+  .segment.is-last-active:not(:last-child)::after {
+    --_divider: var(--c-color-neutral-border-loud);
   }
 
   craft-popover::part(popup) {
@@ -95,25 +93,28 @@ export default css`
   }
 
   @media (forced-colors: active) {
-    .segment {
-      background: Canvas;
-      border-color: ButtonBorder;
+    .segments::before {
+      border-color: Highlight;
+      background-color: Highlight;
     }
 
-    .segment.is-active {
-      background: Highlight;
-      border-color: Highlight;
+    .segments::after {
+      border-color: ButtonBorder;
+      background-color: Canvas;
     }
 
     /* Forced colors would recolor the dividers to vanish on Highlight. */
-    .segment:not(:last-child, .is-last-active)::after {
+    .segment:not(:last-child)::after {
       forced-color-adjust: none;
-      --_divider-edge: ButtonBorder;
       --_divider: ButtonBorder;
     }
 
-    .segment.is-active:not(:last-child, .is-last-active)::after {
-      ${activeSegmentDividerForcedColorsStyles}
+    .segment.is-active:not(:last-child)::after {
+      --_divider: Canvas;
+    }
+
+    .segment.is-last-active:not(:last-child)::after {
+      --_divider: Highlight;
     }
   }
 `;

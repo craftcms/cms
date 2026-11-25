@@ -28,6 +28,7 @@
 - Double-clicking an admin table row now opens its link's slideout, if it has one.
 - Sortable checkbox selects, such as “Card Attributes”, “Table Columns”, and “Default Table Columns”, now list only the selected options, with an “Add item” menu for the rest. ([#20001](https://github.com/craftcms/cms/pull/20001), [#20036](https://github.com/craftcms/cms/pull/20036))
 - Slideouts can now be resized horizontally, and remember their width. ([#19978](https://github.com/craftcms/cms/pull/19978))
+- Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
 - Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
 - Card view designers now preview users with a sample user’s name, default avatar, and active status.
 - Control panel error pages are now standalone pages with their own styles, so they still draw when the control panel’s assets can’t load. Front-end errors use them too when the site has no error template of its own, without the link to the control panel’s Dashboard. ([#19931](https://github.com/craftcms/cms/pull/19931))
@@ -216,6 +217,7 @@
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
 - Removed the `allowedGraphqlOrigins`, `disableGraphqlTransformDirective`, `enableBasicHttpAuth`, `enableTwigSandbox`, `maxCachedCloudImageSize`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `previewIframeResizerOptions`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, `useIframeResizer`, and `usePathInfo` config settings, which no longer have any effect.
 - Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and are listed in the Yii2 Loose Ends utility when they’re set.
+- Removed the `@web` alias. It’s still defined when the Yii adapter is installed, and the Yii2 Loose Ends utility lists sites whose base URL uses it. ([#20989](https://github.com/craftcms/cms/issues/20989))
 
 ### Development
 

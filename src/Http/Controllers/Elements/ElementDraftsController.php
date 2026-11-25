@@ -454,18 +454,6 @@ class ElementDraftsController
             $elementToSave->setDirtyFields($element->getDirtyFields(), false);
         }
 
-        // Validate and save the draft
-        if ($elementToSave->enabled && $elementToSave->getEnabledForSite()) {
-            $elementToSave->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
-        }
-
-        // if we're about to apply an unpublished draft, set propagateRequired to true
-        if ($isUnpublishedDraft) {
-            $elementToSave->propagateRequired = true;
-        }
-
-        $elementToSave->applyingDraft = true;
-
         // If the field layout ID changed, save all content
         $saveContent = $elementToSave->getFieldLayout()?->id !== $oldFieldLayoutId;
 
@@ -478,11 +466,7 @@ class ElementDraftsController
 
         $saved = false;
         try {
-            $saved = $this->elements->saveElement(
-                element: $elementToSave,
-                crossSiteValidate: $crossSiteValidate,
-                saveContent: $saveContent,
-            );
+            $saved = $this->drafts->saveDraftForApplying($elementToSave, $crossSiteValidate, $saveContent);
         } finally {
             if ($validateOnly) {
                 $saved ? DB::commit() : DB::rollBack();
@@ -512,7 +496,6 @@ class ElementDraftsController
             return new ElementResponse()->applyDraftFailure($element);
         }
 
-        $elementToSave->applyingDraft = false;
         $elementToApply = $validateOnly ? $elementToSave : $element;
 
         if (! $isUnpublishedDraft) {
@@ -534,7 +517,6 @@ class ElementDraftsController
         }
 
         try {
-            $elementToApply->propagateRequired = false;
             $canonical = $this->drafts->applyDraft($elementToApply, $attributes);
         } catch (InvalidElementException $exception) {
             return new ElementResponse()->applyDraftFailure($exception->element);

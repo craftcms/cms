@@ -805,6 +805,19 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public string $csrfTokenName = '_token';
 
     /**
+     * @var bool Whether requests should be protected against CSRF by their `Sec-Fetch-Site` and `Origin` headers alone, without CSRF tokens.
+     *
+     * ```php
+     * ->csrfOriginOnly(true)
+     * ```
+     *
+     * @group Security
+     * @since 5.13.0
+     * @deprecated in 6.0.0. Call `$middleware->preventRequestForgery(originOnly: true)` in `bootstrap/app.php` instead.
+     */
+    public bool $csrfOriginOnly = false;
+
+    /**
      * @var bool Whether user-defined Twig templates should be sandboxed.
      *
      * ```php
@@ -986,6 +999,29 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->deprecate('csrfTokenName', 'It no longer has any effect.');
 
         $this->csrfTokenName = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether requests should be protected against CSRF by their `Sec-Fetch-Site` and `Origin` headers alone, without CSRF tokens.
+     *
+     * ```php
+     * ->csrfOriginOnly(true)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $csrfOriginOnly
+     * @since 5.13.0
+     * @deprecated in 6.0.0. Call `$middleware->preventRequestForgery(originOnly: true)` in `bootstrap/app.php` instead.
+     */
+    #[Deprecated(message: 'in 6.0.0. Call `$middleware->preventRequestForgery(originOnly: true)` in `bootstrap/app.php` instead.')]
+    public function csrfOriginOnly(bool $value = true): self
+    {
+        $this->deprecate('csrfOriginOnly', 'Call `$middleware->preventRequestForgery(originOnly: true)` in `bootstrap/app.php` instead.');
+
+        $this->csrfOriginOnly = $value;
 
         return $this;
     }

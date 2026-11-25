@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Activity\OperationTypes\ElementActionOperation;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Actions\Duplicate;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Http\Resources\ElementIndexResource;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\I18N as TranslationI18N;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -49,6 +51,7 @@ class PerformElementActionController
     public function __invoke(
         ElementIndexRequest $request,
         CurrentElementIndex $currentElementIndex,
+        RequestedSite $requestedSite,
     ): SymfonyResponse {
         $validated = $request->validate([
             'elementAction' => ['required', 'string'],
@@ -111,7 +114,13 @@ class PerformElementActionController
         $actions = null;
 
         if ($request->isAdministrative($context) && isset($sourceKey)) {
-            $actions = $this->elementActions->availableActions($elementType, $sourceKey, $elementQuery);
+            $resolveActions = fn (): array => $this->elementActions->availableActions($elementType, $sourceKey, $elementQuery);
+            $listedSite = $embedded && is_numeric($elementQuery->siteId)
+                ? Sites::getSiteById((int) $elementQuery->siteId, true)
+                : null;
+            $actions = $listedSite !== null
+                ? $requestedSite->using($listedSite, $resolveActions)
+                : $resolveActions();
         }
 
         $action = $this->elementActions->resolveAction($actions ?? [], $actionClass);

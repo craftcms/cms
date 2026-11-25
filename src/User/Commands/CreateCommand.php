@@ -117,6 +117,13 @@ class CreateCommand extends Command
                 : $defaultActivate;
         }
 
+        if (! $user->validate(['email', 'username'])) {
+            $this->components->error('Failed to save the user.');
+            $this->components->error(implode(PHP_EOL, $user->errors()->all()));
+
+            return self::FAILURE;
+        }
+
         $failed = false;
         $this->components->task(
             description: 'Saving the user',

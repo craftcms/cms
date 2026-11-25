@@ -7,6 +7,7 @@ import type {
 import type {Source, SourceItem} from '@/modules/elements/types/sources';
 
 export type EntryType = {
+  uid: string;
   handle: string;
   id: number;
   name: string;
@@ -39,6 +40,8 @@ interface Options {
   creatableSections: () => Array<CreatableSection>;
   /** The site the index is showing. */
   siteId: () => number | null | undefined;
+  /** Narrows what can be created further, such as to what a selection condition allows. */
+  allows?: () => ((creatable: CreatableType) => boolean) | null;
 }
 
 /**
@@ -101,8 +104,9 @@ export function useCreatableEntryTypes(options: Options): {
       (section) => section.handle === sectionHandle
     );
     const sections = ownSection ? [ownSection] : creatableSections.value;
+    const allows = options.allows?.() ?? (() => true);
 
-    return sections.flatMap((section) =>
+    const types = sections.flatMap((section) =>
       (section.entryTypeIdsBySite[options.siteId()!] ?? [])
         .map((id) =>
           section.entryTypes.find((entryType) => entryType.id === id)!
@@ -116,6 +120,8 @@ export function useCreatableEntryTypes(options: Options): {
         )
         .map((entryType) => ({section, entryType}))
     );
+
+    return types.filter(allows);
   });
 
   /** One item per type, grouped under its section when more than one contributes. */

@@ -137,8 +137,8 @@
     selectedElements,
     hasSelection,
     clearSelection,
-    /** Re-requests the current query and selects an uploaded element. */
-    refresh: (selectId?: number) => index.refresh({selectId}),
+    refresh: () => index.refresh(),
+    selectElements: (ids: number[]) => index.selectElements(ids),
   });
 
   const showSidebar = computed(

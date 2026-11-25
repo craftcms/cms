@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\ElementCaches;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\DateTimeHelper;
@@ -169,3 +171,26 @@ function setTemplateCacheConsoleState(bool $runningInConsole): void
 {
     new ReflectionProperty(app(), 'isRunningInConsole')->setValue(app(), $runningInConsole);
 }
+
+it('does not read or write template caches with pending invalidations', function () {
+    $service = app(TemplateCaches::class);
+    $elementCaches = app(ElementCaches::class);
+    $cacheWithElementTag = function (string $key, string $body) use ($service, $elementCaches): void {
+        $service->startTemplateCache(global: true);
+        $elementCaches->collectCacheTags(['element::'.Entry::class]);
+        $service->endTemplateCache($key, true, null, null, $body);
+    };
+
+    $cacheWithElementTag('element-cache', 'cached body');
+    expect($service->getTemplateCache('element-cache', true))->toBe('cached body');
+
+    $elementCaches->deferInvalidations(function () use ($service, $elementCaches, $cacheWithElementTag) {
+        $elementCaches->invalidateForElementType(Entry::class);
+
+        expect($service->getTemplateCache('element-cache', true))->toBeNull();
+
+        $cacheWithElementTag('new-element-cache', 'new body');
+
+        expect(Cache::get('template::new-element-cache::1'))->toBeNull();
+    });
+});

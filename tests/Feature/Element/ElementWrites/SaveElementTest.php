@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Events\ElementLifecyclePropagated;
 use CraftCms\Cms\Element\Events\ElementSaved;
@@ -35,6 +36,9 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\DependencyAwareCache\Dependency\AnyDependency;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -638,3 +642,152 @@ it('keeps missing field values on every site when the element is saved', functio
         $secondSite->id => '<p>Corps français</p>',
     ]);
 })->with(['changed content only' => false, 'all content' => true]);
+
+it('invalidates each cache tag once per save, including the revisions it creates', function () {
+    actingAs(User::findOne());
+
+    $section = Section::factory()->create(['enableVersioning' => true]);
+    $entry = Entry::find()->id(EntryModel::factory()->forSection($section)->create()->id)->status(null)->one();
+
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = (array) $event->tags;
+    });
+
+    $this->travel(1)->minutes();
+    $entry->title = 'Changed';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue();
+
+    $revisionIds = Entry::find()->revisionOf($entry)->status(null)->ids();
+
+    expect($revisionIds)->toHaveCount(2)
+        ->and($invalidations)->toHaveCount(1)
+        ->and($invalidations[0])->toEqualCanonicalizing([
+            'element::'.Entry::class.'::*',
+            "element::$entry->id",
+            "element::$revisionIds[0]",
+            "element::$revisionIds[1]",
+            'element::'.Entry::class.'::revisions',
+            'element::'.Entry::class."::entryType:$entry->typeId",
+            'element::'.Entry::class."::section:$section->id",
+        ]);
+});
+
+it('invalidates a save’s caches before ElementSaved fires, so its listeners read fresh cached queries', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+
+    expect(Entry::find()->id($entry->id)->cache()->one()->title)->toBe('Old title');
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    $titlesInListener = [];
+    $invalidatedInListener = [];
+    Event::listen(function (ElementSaved $event) use ($entry, &$titlesInListener, &$invalidated, &$invalidatedInListener) {
+        if ($event->element->id === $entry->id) {
+            $titlesInListener[] = Entry::find()->id($entry->id)->cache()->one()->title;
+            $invalidatedInListener[] = in_array("element::$entry->id", $invalidated, true);
+        }
+    });
+
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($titlesInListener)->toBe(['New title'])
+        ->and($invalidatedInListener)->toBe([true])
+        ->and(Entry::find()->id($entry->id)->cache()->one()->title)->toBe('New title');
+});
+
+it('invalidates a save’s caches once an enclosing transaction commits', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+    $outerLevel = DB::transactionLevel();
+
+    $invalidations = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidations) {
+        $invalidations[] = ['level' => DB::transactionLevel(), 'tags' => (array) $event->tags];
+    });
+
+    DB::beginTransaction();
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($invalidations)->toBe([]);
+
+    DB::commit();
+
+    expect($invalidations)->toHaveCount(1)
+        ->and($invalidations[0]['level'])->toBe($outerLevel)
+        ->and($invalidations[0]['tags'])->toContain("element::$entry->id");
+});
+
+it('bypasses queries cached with a composite dependency while any tags are pending', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+    $cachedTitle = fn (): string => Entry::find()->id($entry->id)
+        ->cache(3600, new AnyDependency([new TagDependency(['element::'.User::class])]))
+        ->one()->title;
+
+    expect($cachedTitle())->toBe('Old title');
+
+    DB::beginTransaction();
+    DB::table(Table::ELEMENTS_SITES)->where('elementId', $entry->id)->update(['title' => 'New title']);
+    app(ElementCaches::class)->invalidateForElementType(User::class);
+
+    expect($cachedTitle())->toBe('New title');
+
+    DB::rollBack();
+});
+
+it('keeps a save’s caches pending when an enclosing transaction rolls back', function () {
+    $entry = EntryModel::factory()->createElement(['title' => 'Old title']);
+    $cachedTitle = fn (): string => Entry::find()->id($entry->id)->cache()->one()->title;
+
+    expect($cachedTitle())->toBe('Old title');
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    DB::beginTransaction();
+    $entry->title = 'New title';
+
+    expect(app(ElementWrites::class)->saveElement($entry))->toBeTrue()
+        ->and($cachedTitle())->toBe('New title')
+        ->and($invalidated)->toBe([]);
+
+    DB::rollBack();
+
+    expect($cachedTitle())->toBe('Old title')
+        ->and($invalidated)->toBe([]);
+
+    app()->terminate();
+
+    expect($invalidated)->toContain("element::$entry->id");
+});
+
+it('invalidates each element’s caches before its ElementSaved fires during bulk resaves', function () {
+    $entries = [
+        EntryModel::factory()->createElement(),
+        EntryModel::factory()->createElement(),
+    ];
+    $ids = array_map(fn (Entry $entry) => $entry->id, $entries);
+
+    $invalidated = [];
+    Event::listen(TagsInvalidated::class, function (TagsInvalidated $event) use (&$invalidated) {
+        array_push($invalidated, ...(array) $event->tags);
+    });
+
+    $invalidatedInListeners = [];
+    Event::listen(function (ElementSaved $event) use ($ids, &$invalidated, &$invalidatedInListeners) {
+        if (in_array($event->element->id, $ids, true)) {
+            $invalidatedInListeners[$event->element->id] = in_array("element::{$event->element->id}", $invalidated, true);
+        }
+    });
+
+    app(ElementWrites::class)->resaveElements(Entry::find()->id($ids));
+
+    expect($invalidatedInListeners)->toEqual(array_fill_keys($ids, true));
+});
