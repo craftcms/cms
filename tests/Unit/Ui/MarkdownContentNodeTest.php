@@ -22,8 +22,9 @@ it('renders Markdown content in a pane only when displayInPane is enabled', func
 
     expect($inPane->nodeName())->toBe('craft-pane')
         ->and($inPane->attr('appearance'))->toBe('outline-fill')
-        ->and($inPane->attr('class'))->toContain('width-50')
+        ->and(explode(' ', $inPane->attr('class')))->toContain('prose', 'width-50')
         ->and($inPane->filter('strong')->text())->toBe('Boxed')
         ->and($noPane->nodeName())->toBe('div')
+        ->and(explode(' ', $noPane->attr('class')))->toContain('prose')
         ->and($noPane->filter('strong')->text())->toBe('Plain');
 });

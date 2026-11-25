@@ -14,14 +14,14 @@
   <craft-pane
     v-if="node.props.displayInPane"
     appearance="outline-fill"
-    class="markdown"
+    class="markdown prose"
     :class="`width-${node.props.width}`"
     :data-ui-node="node.uid"
     v-html="node.props.html"
   ></craft-pane>
   <div
     v-else
-    class="markdown"
+    class="markdown prose"
     :class="`width-${node.props.width}`"
     :data-ui-node="node.uid"
     v-html="node.props.html"

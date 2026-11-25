@@ -36,7 +36,7 @@ class MarkdownContent implements Node
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         $attributes = [
-            'class' => ['markdown', "width-{$node->props['width']}"],
+            'class' => ['markdown', 'prose', "width-{$node->props['width']}"],
             'data-ui-node' => $node->uid,
         ];
 
