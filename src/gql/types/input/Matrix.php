@@ -13,6 +13,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -71,7 +72,7 @@ class Matrix extends InputObjectType
                                         }
 
                                         // Get the field input types
-                                        foreach ($entryType->getCustomFields() as $field) {
+                                        foreach (GqlHelper::filterMutableFields($entryType->getCustomFields()) as $field) {
                                             /** @var Field $field */
                                             $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
                                         }

@@ -10,6 +10,7 @@ namespace crafttests\unit\services\images;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
+use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use craft\image\Svg;
 use craft\services\Images;
@@ -129,6 +130,70 @@ class ImagesTest extends TestCase
         $this->images->cleanImage($this->sandboxPath . 'image-rotated-180.jpg');
         $currentExif = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
         self::assertArrayNotHasKey('ifd0.Orientation', $currentExif);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCleanImageKeepsIndexedPngPixels(): void
+    {
+        $this->_skipIfNoImagick();
+
+        if (!extension_loaded('gd')) {
+            $this->markTestSkipped('Need GD to create the indexed PNG.');
+        }
+
+        $path = $this->sandboxPath . 'indexed.png';
+        $image = imagecreate(200, 50);
+        for ($x = 0; $x < 200; $x++) {
+            imageline($image, $x, 0, $x, 49, imagecolorallocate($image, $x, 255 - $x, intdiv($x, 2)));
+        }
+        imagepng($image, $path);
+        $source = new Imagick($path);
+
+        $this->images->cleanImage($path);
+        $this->images->cleanImage($path);
+
+        $cleaned = new Imagick($path);
+
+        self::assertSame(3, ord(file_get_contents($path, false, null, 25, 1)));
+        self::assertSame(200, $source->getImageColors());
+        self::assertSame(200, $cleaned->getImageColors());
+        self::assertSame($source->getImageSignature(), $cleaned->getImageSignature());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCleanImageKeepsGreyscalePngPixels(): void
+    {
+        $this->_skipIfNoImagick();
+
+        $path = $this->sandboxPath . 'greyscale.png';
+        $height = 1000;
+        $pixels = '';
+        for ($y = 0; $y < $height; $y++) {
+            $pixels .= "\0" . pack('n', $y * 65);
+        }
+        $chunk = fn(string $type, string $data) => pack('N', strlen($data)) . $type . $data . pack('N', crc32($type . $data));
+        file_put_contents($path, "\x89PNG\r\n\x1a\n" .
+            $chunk('IHDR', pack('NNCCCCC', 1, $height, 16, 0, 0, 0, 0)) .
+            $chunk('IDAT', gzcompress($pixels)) .
+            $chunk('IEND', ''));
+        $source = new Imagick($path);
+
+        $this->images->cleanImage($path);
+        $this->images->cleanImage($path);
+
+        $cleaned = new Imagick($path);
+
+        $pngInfo = ImageHelper::pngImageInfo($path);
+        $levels = fn(Imagick $image) => $image->exportImagePixels(0, 0, 1, $height, 'I', Imagick::PIXEL_SHORT);
+
+        self::assertSame(16, $pngInfo['bit-depth']);
+        self::assertContains($pngInfo['color'], [0, 4]);
+        self::assertSame($height, $source->getImageColors());
+        self::assertSame($levels($source), $levels($cleaned));
     }
 
     /**

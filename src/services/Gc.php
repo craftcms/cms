@@ -37,6 +37,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
+use yii\db\Expression;
 use yii\di\Instance;
 
 /**
@@ -120,6 +121,7 @@ class Gc extends Component
         $this->_deleteStaleElementActivity();
         $this->_deleteStaleBulkOpData();
         $this->_deleteStaleOAuthData();
+        $this->_deleteExpiredUploads();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -460,6 +462,16 @@ class Gc extends Component
     }
 
     /**
+     * Deletes expired uploads and their staged files.
+     */
+    private function _deleteExpiredUploads(): void
+    {
+        $this->_stdout('    > deleting expired uploads ... ');
+        Craft::$app->getUploads()->deleteExpiredUploads();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
      * Deletes expired and revoked OAuth credentials, and registered clients that can no longer be used.
      */
     private function _deleteStaleOAuthData(): void
@@ -678,19 +690,13 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned foreign key rows ... ');
 
-        // Disable FK checks
-        try {
-            $this->db->transaction(function() {
-                $this->db->createCommand()->checkIntegrity(false)->execute();
-            });
-            $disabledFkChecks = true;
-        } catch (DbException) {
-            // the DB user probably didn't have permission
-            // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
-            $disabledFkChecks = false;
-        }
+        // Find the orphaned rows a page at a time with plain SELECTs, which don't lock any rows,
+        // and delete each page in its own transaction.
+        // FK checks stay enabled, so the deletions cascade and set columns to NULL as the schema says,
+        // and other connections' writes only wait on the rows being deleted.
+        // (https://github.com/craftcms/cms/issues/20885)
+        $batchSize = 1000;
 
-        $isMysql = $this->db->getIsMysql();
         foreach ($this->db->getSchema()->getTableSchemas() as $table) {
             /** @var TableSchema $table */
             $extendedFkInfo = $table->getExtendedForeignKeys();
@@ -701,35 +707,57 @@ class Gc extends Component
                     $refTable = array_shift($fk);
 
                     foreach ($fk as $fkColumn => $pkColumn) {
-                        if ($isMysql) {
-                            $sql = <<<SQL
-DELETE t.* FROM $table->name t
-LEFT JOIN $refTable t2 ON t2.$pkColumn = t.$fkColumn
-WHERE t.$fkColumn IS NOT NULL
-AND t2.$pkColumn IS NULL
-SQL;
-                        } else {
-                            $sql = <<<SQL
-DELETE FROM $table->name t
-WHERE t."$fkColumn" IS NOT NULL
-AND NOT EXISTS (
-    SELECT * FROM $refTable
-    WHERE "$pkColumn" = t."$fkColumn"
-)
-SQL;
-                        }
+                        // Identify the rows by their primary key, so each batch deletes at most $batchSize rows
+                        // (tables without one fall back to the FK value, which may match more rows).
+                        // Including the FK value means a row whose FK changed since the SELECT won't be deleted.
+                        $keyColumns = array_values(array_unique([...$table->primaryKey, $fkColumn]));
+                        $qualifiedKeyColumns = array_map(fn(string $column) => "t.$column", $keyColumns);
+                        $quotedKeyColumns = implode(', ', array_map(fn(string $column) => $this->db->quoteColumnName($column), $qualifiedKeyColumns));
 
-                        $this->db->createCommand($sql)->execute();
+                        $query = (new Query())
+                            ->select($qualifiedKeyColumns)
+                            ->distinct()
+                            ->from(['t' => $table->name])
+                            ->leftJoin(['t2' => $refTable], "[[t2.$pkColumn]] = [[t.$fkColumn]]")
+                            ->where(['not', ["t.$fkColumn" => null]])
+                            ->andWhere(["t2.$pkColumn" => null])
+                            ->orderBy(array_fill_keys($qualifiedKeyColumns, SORT_ASC))
+                            ->limit($batchSize);
+                        $lastKey = null;
+
+                        do {
+                            $pageQuery = clone $query;
+                            if ($lastKey !== null) {
+                                // Continue after the last page, skipping any rows that couldn't be deleted
+                                $params = [];
+                                foreach (array_values($lastKey) as $i => $value) {
+                                    $params[":lastKey$i"] = $value;
+                                }
+                                $pageQuery->andWhere(new Expression(
+                                    sprintf('(%s) > (%s)', $quotedKeyColumns, implode(', ', array_keys($params))),
+                                    $params,
+                                ));
+                            }
+
+                            $keys = $pageQuery->all($this->db);
+                            if (empty($keys)) {
+                                break;
+                            }
+
+                            try {
+                                Db::delete($table->name, ['in', $keyColumns, $keys], db: $this->db);
+                            } catch (DbException $e) {
+                                // Most likely another foreign key restricts the deletion
+                                Craft::warning("Couldn't delete orphaned rows from $table->name: {$e->getMessage()}", __METHOD__);
+                            }
+
+                            $lastKey = end($keys);
+                        } while (count($keys) === $batchSize);
                     }
                 }
 
                 $counter++;
             }
-        }
-
-        // Re-enable FK checks
-        if ($disabledFkChecks) {
-            $this->db->createCommand()->checkIntegrity(true)->execute();
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);

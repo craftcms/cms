@@ -231,16 +231,26 @@ class UserPermissions extends Component
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
 
-        // Filter out any orphaned permissions
-        $permissions = $this->_filterOrphanedPermissions($permissions);
+        // Filter out any orphaned permissions, keeping stored ones that aren't registered right now
+        $permissions = array_merge(
+            $this->_filterOrphanedPermissions($permissions),
+            $this->_storedUnregisteredPermissions($permissions, $this->getPermissionsByGroupId($groupId)),
+        );
 
         // Sort ascending
         sort($permissions);
 
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-        $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
-        Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
+        $groupPath = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid;
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        // The Team group can exist in the database before it's in the project config
+        if ($projectConfig->get("$groupPath.name") === null) {
+            Craft::$app->getUserGroups()->saveGroup($group, false);
+        }
+
+        $projectConfig->set("$groupPath.permissions", $permissions, "Update permissions for user group “{$group->handle}”");
 
         // Fire an 'afterSaveGroupPermissions' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
@@ -340,6 +350,11 @@ class UserPermissions extends Component
     {
         Craft::$app->requireEdition(CmsEdition::Pro);
 
+        $storedPermissions = $this->_createUserPermissionsQuery()
+            ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
+            ->where(['p_u.userId' => $userId])
+            ->column();
+
         // Delete any existing user permissions
         Db::delete(Table::USERPERMISSIONS_USERS, [
             'userId' => $userId,
@@ -350,7 +365,10 @@ class UserPermissions extends Component
 
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
-        $permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
+        $permissions = array_merge(
+            $this->_filterOrphanedPermissions($permissions, $groupPermissions),
+            $this->_storedUnregisteredPermissions($permissions, $storedPermissions),
+        );
 
         if (!empty($permissions)) {
             $userPermissionVals = [];
@@ -880,6 +898,24 @@ class UserPermissions extends Component
         }
 
         return $filteredPermissions;
+    }
+
+    /**
+     * Returns the posted permissions that aren’t registered right now but are already stored, such as those of a
+     * plugin that only registers its permissions for control panel requests, so saving doesn’t drop them.
+     *
+     * @param string[] $postedPermissions Lowercase posted permissions
+     * @param string[] $storedPermissions
+     * @return string[]
+     */
+    private function _storedUnregisteredPermissions(array $postedPermissions, array $storedPermissions): array
+    {
+        $storedPermissions = array_map('strtolower', $storedPermissions);
+
+        return array_values(array_unique(array_filter(
+            $postedPermissions,
+            fn(string $permission) => !$this->validatePermission($permission) && in_array($permission, $storedPermissions, true),
+        )));
     }
 
     /**

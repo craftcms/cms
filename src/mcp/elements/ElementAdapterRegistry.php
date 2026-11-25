@@ -68,6 +68,24 @@ class ElementAdapterRegistry extends Component
         return $type === null ? null : Craft::$app->get('mcp')->getCapabilityContainer()->get($type);
     }
 
+    /**
+     * Returns whether an adapter is registered for an element type.
+     *
+     * @param string $elementType
+     * @return bool
+     * @since 5.12.1
+     */
+    public function supports(string $elementType): bool
+    {
+        foreach ($this->types() as $type) {
+            if ($type::elementType() === $elementType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /** @return class-string<ElementAdapter>|null */
     private function typeByHandle(string $handle): ?string
     {

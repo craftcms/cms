@@ -208,10 +208,10 @@ class Security extends \yii\base\Security
      */
     public function isSystemDir(string $path): bool
     {
-        $path = FileHelper::absolutePath($path, '/');
+        $path = FileHelper::absolutePath($path, ds: '/');
 
         foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
-            $dir = FileHelper::absolutePath($dir, '/');
+            $dir = FileHelper::absolutePath($dir, ds: '/');
             if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
                 return true;
             }
@@ -229,7 +229,7 @@ class Security extends \yii\base\Security
      */
     public function isRestrictedDir(string $path): bool
     {
-        $path = FileHelper::absolutePath($path, '/');
+        $path = FileHelper::absolutePath($path, ds: '/');
 
         // is it located within a Craft-specific system directory
         if ($this->isSystemDir($path)) {
@@ -245,7 +245,7 @@ class Security extends \yii\base\Security
                 return true;
             }
 
-            $winRoot = FileHelper::normalizePath($_SERVER['SystemRoot'] ?? 'C:\\Windows');
+            $winRoot = FileHelper::normalizePath($_SERVER['SystemRoot'] ?? 'C:\\Windows', '/');
             $drive = substr($winRoot, 0, 3); // e.g. "C:/" because we've normalized it
             $sensitiveDirs = [
                 $winRoot, // C:/Windows

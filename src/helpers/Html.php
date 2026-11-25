@@ -143,9 +143,15 @@ class Html extends \yii\helpers\Html
      */
     public static function csrfInput(array $options = []): string
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->enableCsrfProtection && $generalConfig->csrfOriginOnly) {
+            // Tokens are never checked
+            return '';
+        }
+
         $request = Craft::$app->getRequest();
         $async = ArrayHelper::remove($options, 'async')
-            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+            ?? ($request->getIsSiteRequest() && $generalConfig->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
@@ -1239,7 +1245,8 @@ class Html extends \yii\helpers\Html
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
-            if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+            // Only local file paths are allowed, not stream wrapper URLs (`ftp://`, `phar://`, etc.)
+            if (str_contains($svg, '://') || !is_file($svg) || !FileHelper::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }

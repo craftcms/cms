@@ -8,14 +8,11 @@ use Closure;
 use Craft;
 use craft\elements\User;
 use craft\helpers\ConfigHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
-use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
+use craft\uploads\StagedUpload;
+use craft\uploads\TemporaryUploadHandler;
 use CraftCms\UrlValidator\UrlValidationException;
 use CraftCms\UrlValidator\UrlValidator;
-use DateInterval;
 use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Uri;
@@ -23,6 +20,8 @@ use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\TransferStats;
 use Mcp\Exception\ToolCallException;
 use Throwable;
+use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Turns client file references into bounded, temporary files for asset persistence.
@@ -34,8 +33,6 @@ use Throwable;
 class AssetUploads
 {
     private const MaxRedirects = 3;
-    private const UploadTtl = 'PT15M';
-    private const UploadIdPattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
 
     private UrlValidator $urlValidator;
 
@@ -98,80 +95,33 @@ class AssetUploads
     /**
      * Reserves an upload for the user, returning a single-use URL that accepts the file as a raw PUT request body.
      *
-     * @return array{upload_id: string, upload_url: string, method: string, expires_at: string, max_size: int}
+     * Uploads go through the uploads service, staged in the temporary asset upload filesystem. If that filesystem
+     * accepts direct uploads, the URL sends the file straight to it; otherwise it goes to Craft’s `uploads/transfer`
+     * action. Either way, the request reserving the upload, the PUT request, and the request claiming the upload can
+     * each be handled by a different server.
+     *
+     * @param string $transferUrl Where Craft receives files the filesystem can’t accept directly. A token routes the
+     * request, so any URL that reaches Craft works.
+     * @param int|null $size The file’s size in bytes, if known, so the URL only accepts a file of that size
+     * @return array{upload_id: string, upload_url: string, method: string, headers: object, expires_at: string, max_size: int}
      */
-    public function createUpload(User $user, string $baseUrl): array
+    public function createUpload(User $user, string $transferUrl, ?int $size = null): array
     {
-        // Only users who can upload to some volume may store files, so registered front-end users can't fill
-        // temporary storage
-        $canUpload = false;
-
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
-            if ($user->can("saveAssets:$volume->uid")) {
-                $canUpload = true;
-                break;
-            }
+        try {
+            $upload = Craft::$app->getUploads()->start(TemporaryUploadHandler::class, null, $size, user: $user, transferUrl: $transferUrl);
+        } catch (HttpException $exception) {
+            throw new ToolCallException($exception->getMessage(), previous: $exception);
         }
-
-        if (!$canUpload) {
-            throw new ToolCallException('You are not authorized to upload assets.');
-        }
-
-        $this->deleteStaleUploads();
-
-        $id = StringHelper::UUID();
-        $expiresAt = DateTimeHelper::currentUTCDateTime()->add(new DateInterval(self::UploadTtl));
-        $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => $id]], 1, $expiresAt);
-
-        if ($token === false) {
-            throw new ToolCallException('Could not create an upload URL.');
-        }
-
-        FileHelper::writeToFile($this->uploadPath($id) . '.json', Json::encode(['userId' => $user->id]));
 
         return [
-            'upload_id' => $id,
-            'upload_url' => UrlHelper::urlWithToken($baseUrl, $token),
-            'method' => 'PUT',
-            'expires_at' => DateTimeHelper::toIso8601($expiresAt),
+            'upload_id' => $upload['id'],
+            'upload_url' => $upload['url'],
+            'method' => $upload['method'],
+            // An object, so it's `{}` in JSON when empty
+            'headers' => (object)$upload['headers'],
+            'expires_at' => $upload['expiresAt'],
             'max_size' => ConfigHelper::sizeInBytes(Craft::$app->getConfig()->getGeneral()->maxUploadFileSize),
         ];
-    }
-
-    /**
-     * Stores a request body for a reserved upload.
-     *
-     * @param  resource  $stream
-     * @return int The number of bytes stored.
-     */
-    public function receiveUpload(string $id, $stream): int
-    {
-        $path = $this->uploadPath($id);
-
-        if (!preg_match(self::UploadIdPattern, $id) || !is_file("$path.json") || file_exists($path)) {
-            throw new ToolCallException('This upload URL is not valid.');
-        }
-
-        // Stream to a staging file, so the upload can't be claimed until it's complete
-        $maxSize = ConfigHelper::sizeInBytes(Craft::$app->getConfig()->getGeneral()->maxUploadFileSize);
-        $target = @fopen("$path.part", 'xb');
-
-        if ($target === false) {
-            throw new ToolCallException('This upload URL is not valid.');
-        }
-
-        try {
-            $size = stream_copy_to_stream($stream, $target, $maxSize + 1);
-        } finally {
-            fclose($target);
-        }
-
-        if ($size === false || $size > $maxSize || $size === 0 || !rename("$path.part", $path)) {
-            @unlink("$path.part");
-            throw new ToolCallException($size ? 'The file exceeds the maximum upload size.' : 'The request body was empty.');
-        }
-
-        return $size;
     }
 
     private function assertFilename(mixed $filename): string
@@ -342,22 +292,12 @@ class AssetUploads
 
     private function claimUpload(string $id, string $path, int $maxSize): void
     {
-        $upload = $this->uploadPath($id);
-        $meta = preg_match(self::UploadIdPattern, $id) && is_file("$upload.json") ? Json::decode((string)file_get_contents("$upload.json")) : null;
-
-        if (!$meta || ($meta['userId'] ?? null) !== Craft::$app->getUser()->getId()) {
-            throw new ToolCallException('Upload not found. Request a new upload URL with assets_upload_url.');
-        }
-
-        if (!is_file($upload)) {
-            throw new ToolCallException('Nothing has been uploaded yet. Send the file to upload_url with a PUT request first.');
-        }
-
-        // Each upload can only be used once
-        unlink("$upload.json");
-
-        if (!rename($upload, $path)) {
-            throw new ToolCallException('The uploaded file could not be read.');
+        try {
+            Craft::$app->getUploads()->claim($id, static fn(StagedUpload $upload) => $upload->copyTo($path));
+        } catch (NotFoundHttpException $exception) {
+            throw new ToolCallException('Upload not found. Request a new upload URL with assets_upload_url.', previous: $exception);
+        } catch (HttpException $exception) {
+            throw new ToolCallException($exception->getMessage(), previous: $exception);
         }
 
         $this->assertSize($path, $maxSize);
@@ -369,24 +309,6 @@ class AssetUploads
 
         if (filesize($path) > $maxSize) {
             throw new ToolCallException('The file exceeds the maximum upload size.');
-        }
-    }
-
-    private function uploadPath(string $id): string
-    {
-        return Craft::$app->getPath()->getTempPath() . "/mcp-uploads/$id";
-    }
-
-    /** Deletes uploads that were never claimed. */
-    private function deleteStaleUploads(): void
-    {
-        $dir = dirname($this->uploadPath('x'));
-        $cutoff = time() - 86400;
-
-        foreach (glob("$dir/*") ?: [] as $file) {
-            if (filemtime($file) < $cutoff) {
-                @unlink($file);
-            }
         }
     }
 }

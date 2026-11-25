@@ -6,6 +6,7 @@ use Craft;
 use craft\config\GeneralConfig;
 use craft\mcp\contentmodel\CheckRegistry;
 use craft\mcp\elements\ElementAdapterRegistry;
+use craft\services\Security;
 use Psr\Container\ContainerInterface;
 use ReflectionNamedType;
 use ReflectionObject;
@@ -33,6 +34,8 @@ class CapabilityContainer implements ContainerInterface
             }
         }
 
+        // Yii's getSecurity() has no return type, so the reflection loop above can't discover it
+        $this->container->set(Security::class, static fn() => Craft::$app->getSecurity());
         $this->container->set(\Psr\Log\LoggerInterface::class, Logger::class);
         $this->container->set(GeneralConfig::class, static fn() => Craft::$app->getConfig()->getGeneral());
         $this->container->set(Settings::class, static fn() => Craft::$app->get('mcp')->getSettings());

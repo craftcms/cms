@@ -11,10 +11,12 @@ use Craft;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\ProjectConfig;
 use Throwable;
 use yii\base\NotSupportedException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -36,6 +38,11 @@ class ConfigSyncController extends BaseUpdaterController
 
     public function beforeAction($action): bool
     {
+        // Project config syncs never run Composer
+        if (in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true)) {
+            throw new NotFoundHttpException();
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
@@ -222,7 +229,9 @@ class ConfigSyncController extends BaseUpdaterController
 
         if ($error) {
             return [
-                'error' => $error . "\n\n" . Craft::t('app', 'Try running `composer install` from your terminal to resolve.'),
+                'error' => $error . "\n\n" . Craft::t('app', 'Try running `{command}` from your terminal to resolve.', [
+                    'command' => App::composerCommand('install'),
+                ]),
                 'options' => [
                     $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),

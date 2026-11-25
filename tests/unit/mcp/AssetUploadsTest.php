@@ -8,6 +8,7 @@ use CraftCms\UrlValidator\UrlValidator;
 use Mcp\Exception\ToolCallException;
 use PHPUnit\Framework\TestCase;
 use yii\console\Application;
+use yii\web\NotFoundHttpException;
 
 /** Exercises file-reference admission before any file is handed to asset persistence. */
 class AssetUploadsTest extends TestCase
@@ -79,6 +80,16 @@ class AssetUploadsTestApplication extends Application
             public function getGeneral(): object
             {
                 return (object)['allowedFileExtensions' => ['jpg'], 'maxUploadFileSize' => 1024];
+            }
+        };
+    }
+
+    public function getUploads(): object
+    {
+        return new class() {
+            public function claim(): never
+            {
+                throw new NotFoundHttpException('Upload not found.');
             }
         };
     }

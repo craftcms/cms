@@ -254,6 +254,36 @@ class GcTest extends TestCase
     }
 
     /**
+     * Deleting orphaned FK rows must apply the foreign key actions of the tables that reference them.
+     *
+     * @see https://github.com/craftcms/cms/issues/20885
+     */
+    public function testDeletingOrphanedFkRowsAppliesForeignKeyActions(): void
+    {
+        $db = Craft::$app->getDb();
+        Db::insert(Table::DRAFTS, ['name' => 'Orphaned draft']);
+        $draftId = (int)$db->getLastInsertID(Table::DRAFTS);
+        Db::insert(Table::ELEMENTS, ['type' => self::class, 'draftId' => $draftId]);
+        $draftElementId = (int)$db->getLastInsertID(Table::ELEMENTS);
+        Db::insert(Table::ELEMENTS, ['type' => self::class, 'canonicalId' => $draftElementId]);
+        $derivativeElementId = (int)$db->getLastInsertID(Table::ELEMENTS);
+
+        // orphan the draft element
+        $db->createCommand()->checkIntegrity(false)->execute();
+        Db::delete(Table::DRAFTS, ['id' => $draftId]);
+        $db->createCommand()->checkIntegrity(true)->execute();
+
+        $this->gc->run(true);
+
+        self::assertFalse((new Query())->from(Table::ELEMENTS)->where(['id' => $draftElementId])->exists());
+        self::assertNull((new Query())
+            ->select('canonicalId')
+            ->from(Table::ELEMENTS)
+            ->where(['id' => $derivativeElementId])
+            ->scalar());
+    }
+
+    /**
      * @return array
      * @todo Other GC tables
      */

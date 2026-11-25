@@ -577,7 +577,9 @@ class Raster extends Image
         $quality = null;
 
         try {
-            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
+            // PNG compression is lossless, so PNGs are always saved with the default quality (compression level).
+            // Searching for a level that matches the original file size can settle on level 0 (uncompressed).
+            if ($autoQuality && in_array($extension, ['jpeg', 'jpg'], true)) {
                 clearstatcache();
                 App::maxPowerCaptain();
 
@@ -857,21 +859,28 @@ class Raster extends Image
                     'flatten' => false,
                 ];
 
-                if ($this->_imageSourcePath) {
-                    $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-                    // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
-                    // a valid format: http://www.imagemagick.org/script/formats.php
-                    // So 2 channel PNGs get converted to 4 channel.
-                    if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                        $format = 'png' . (8 * $pngInfo['channels']);
-                    } else {
-                        $format = 'png32';
-                    }
+                $pngInfo = $this->_imageSourcePath ? ImageHelper::pngImageInfo($this->_imageSourcePath) : false;
+                // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+                // a valid format: http://www.imagemagick.org/script/formats.php
+                // So 2 channel PNGs get converted to 4 channel.
+                if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
+                    $format = 'png' . (8 * $pngInfo['channels']);
                 } else {
                     $format = 'png32';
                 }
 
-                $options['png_format'] = $format;
+                // Imagine quantizes PNG8 images, which merges similar colors even when the image already fits in a
+                // palette, and PNG32 has 8 bits per sample, so 16-bit greyscale images would lose levels either way.
+                // Without a format, Imagick saves greyscale images and images that fit in a palette losslessly.
+                $isGreyscale = is_array($pngInfo) && in_array($pngInfo['color'], [0, 4], true);
+                $fitsPalette = (
+                    $format === 'png8' &&
+                    Craft::$app->getImages()->getIsImagick() &&
+                    $this->_image->getImagick()->getImageColors() <= 256
+                );
+                if (!$isGreyscale && !$fitsPalette) {
+                    $options['png_format'] = $format;
+                }
 
                 return $options;
 

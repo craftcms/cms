@@ -13,6 +13,7 @@ use craft\mcp\capabilities\SiteGroups;
 use craft\mcp\capabilities\Sites;
 use craft\mcp\capabilities\UserGroups;
 use craft\mcp\capabilities\Volumes;
+use craft\services\ProjectConfig;
 
 /**
  * @since 5.12.0
@@ -67,6 +68,27 @@ enum ConfigurationType: string
             self::ImageTransforms => 'transforms',
             default => $this->value,
         };
+    }
+
+    /**
+     * The project config path that holds a record’s complete, unredacted configuration.
+     *
+     * @param array<string, mixed> $item The record as the type’s capability returns it
+     */
+    public function configPath(array $item): string
+    {
+        return match ($this) {
+            self::Sections => ProjectConfig::PATH_SECTIONS,
+            self::EntryTypes => ProjectConfig::PATH_ENTRY_TYPES,
+            self::Fields => ProjectConfig::PATH_FIELDS,
+            self::Volumes => ProjectConfig::PATH_VOLUMES,
+            self::Sites => ProjectConfig::PATH_SITES,
+            self::SiteGroups => ProjectConfig::PATH_SITE_GROUPS,
+            self::UserGroups => ProjectConfig::PATH_USER_GROUPS,
+            self::ImageTransforms => ProjectConfig::PATH_IMAGE_TRANSFORMS,
+            self::Routes => ProjectConfig::PATH_ROUTES,
+        }
+        . '.' . $item['uid'];
     }
 
     /** @return list<string> */

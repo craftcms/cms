@@ -10,6 +10,7 @@ use craft\elements\User;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText;
+use craft\fs\Local;
 use craft\helpers\FileHelper;
 use craft\mcp\AssetUploads;
 use craft\mcp\ServerFactory;
@@ -19,6 +20,7 @@ use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use Mcp\Exception\ToolCallException;
 use Mcp\Server\Transport\StdioTransport;
+use yii\web\ConflictHttpException;
 
 /** Exercises MCP asset uploads: local paths, upload URLs, and field uploads through the stdio MCP server. */
 class AssetFieldUploadTest extends TestCase
@@ -26,7 +28,6 @@ class AssetFieldUploadTest extends TestCase
     private string $file;
     private array $fields = [];
     private ?array $originalVolume = null;
-    private mixed $originalMaxUploadFileSize;
 
     public function _fixtures(): array
     {
@@ -36,9 +37,6 @@ class AssetFieldUploadTest extends TestCase
     protected function _before(): void
     {
         Craft::$app->getUser()->setIdentity(User::find()->admin()->one());
-        // Other tests may leave a lower limit behind
-        $this->originalMaxUploadFileSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1024 * 1024;
         // Local paths must be within the project, outside system directories (which include tests/)
         FileHelper::createDirectory(Craft::getAlias('@root/mcp-upload-test'));
         $this->file = Craft::getAlias('@root/mcp-upload-test/photo.png');
@@ -64,7 +62,6 @@ class AssetFieldUploadTest extends TestCase
         }
 
         FileHelper::removeDirectory(Craft::getAlias('@root/mcp-upload-test'));
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = $this->originalMaxUploadFileSize;
         Craft::$app->getUser()->setIdentity(null);
     }
 
@@ -131,6 +128,100 @@ class AssetFieldUploadTest extends TestCase
         }
     }
 
+    public function testUploadUrlsWorkOverStdio(): void
+    {
+        // Agents may not be able to give the stdio server a path it can read, such as when it runs in a container.
+        // Console URLs lack a host and subdirectory, so the URL must come from the site's base URL.
+        $general = Craft::$app->getConfig()->getGeneral();
+        $site = Craft::$app->getSites()->getCurrentSite();
+        $omitScriptName = $general->omitScriptNameInUrls;
+        $baseUrl = $site->getBaseUrl(false);
+        $general->omitScriptNameInUrls = false;
+
+        try {
+            $site->setBaseUrl('/');
+            $result = $this->callTool('assets_upload_url', []);
+            self::assertTrue($result['isError'] ?? false, json_encode($result));
+            self::assertStringContainsString('absolute base URL', $result['content'][0]['text']);
+
+            $site->setBaseUrl('https://example.test/craft/');
+            $upload = $this->callTool('assets_upload_url', []);
+
+            // With rewrites, a language prefix in the base URL can't be mistaken for the front controller's directory
+            $general->omitScriptNameInUrls = true;
+            $site->setBaseUrl('https://example.test/craft/nl/');
+            $rewritten = $this->callTool('assets_upload_url', []);
+        } finally {
+            $general->omitScriptNameInUrls = $omitScriptName;
+            $site->setBaseUrl($baseUrl);
+            // The server saved the fixtures' pending config changes and released their lock within the test
+            // transaction, so take it again, or fixture cleanup will find the config stale once it's rolled back
+            Craft::$app->getProjectConfig()->acquireLock();
+        }
+
+        self::assertFalse($rewritten['isError'] ?? true, json_encode($rewritten));
+        self::assertSame("/craft/nl/$general->actionTrigger/uploads/transfer", parse_url($rewritten['structuredContent']['upload_url'], PHP_URL_PATH));
+        self::assertFalse($upload['isError'] ?? true, json_encode($upload));
+        $upload = $upload['structuredContent'];
+        // The scheme follows useSslOnTokenizedUrls
+        self::assertSame(['example.test', '/craft/index.php'], [parse_url($upload['upload_url'], PHP_URL_HOST), parse_url($upload['upload_url'], PHP_URL_PATH)]);
+        parse_str((string)parse_url($upload['upload_url'], PHP_URL_QUERY), $query);
+        $token = $query[$general->tokenParam];
+        self::assertSame(['uploads/transfer', ['uploadId' => $upload['upload_id']]], Craft::$app->getTokens()->getTokenRoute($token));
+
+        $uploads = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class);
+        $stream = fopen($this->file, 'rb');
+        Craft::$app->getUploads()->transfer($upload['upload_id'], $stream);
+        fclose($stream);
+
+        $contents = $uploads->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
+        self::assertSame(file_get_contents($this->file), $contents);
+    }
+
+    public function testUploadUrlsWorkAcrossServers(): void
+    {
+        // Load-balanced servers share temporary uploads through tempAssetUploadFs, but each has its own runtime
+        // directory, and the requests reserving, sending, and claiming an upload may each reach a different one
+        $general = Craft::$app->getConfig()->getGeneral();
+        $runtimePath = Craft::$app->getRuntimePath();
+        $sharedPath = sys_get_temp_dir() . '/craft-mcp-upload-test-shared';
+        $fs = new Local(['name' => 'MCP Upload Test', 'handle' => 'mcpUploadTest', 'path' => $sharedPath]);
+        self::assertTrue(Craft::$app->getFs()->saveFilesystem($fs));
+        $general->tempAssetUploadFs = 'mcpUploadTest';
+
+        try {
+            Craft::$app->setRuntimePath("$runtimePath/mcp-server-a");
+            $upload = (new AssetUploads())->createUpload(Craft::$app->getUser()->getIdentity(), 'https://example.test/mcp');
+
+            Craft::$app->setRuntimePath("$runtimePath/mcp-server-b");
+            $stream = fopen($this->file, 'rb');
+            self::assertSame(filesize($this->file), Craft::$app->getUploads()->transfer($upload['upload_id'], $stream));
+            fclose($stream);
+
+            Craft::$app->setRuntimePath("$runtimePath/mcp-server-c");
+            $stream = fopen($this->file, 'rb');
+            try {
+                Craft::$app->getUploads()->transfer($upload['upload_id'], $stream);
+                self::fail('Each upload URL must only accept one file.');
+            } catch (ConflictHttpException) {
+            } finally {
+                fclose($stream);
+            }
+
+            $contents = (new AssetUploads())->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
+            self::assertSame(file_get_contents($this->file), $contents);
+            self::assertSame([], FileHelper::findFiles("$sharedPath/_upload-sessions"), 'Claimed uploads must be deleted.');
+        } finally {
+            Craft::$app->setRuntimePath($runtimePath);
+            $general->tempAssetUploadFs = null;
+            Craft::$app->getFs()->removeFilesystem($fs);
+            FileHelper::removeDirectory($sharedPath);
+            foreach (['a', 'b', 'c'] as $server) {
+                FileHelper::removeDirectory("$runtimePath/mcp-server-$server");
+            }
+        }
+    }
+
     /** @dataProvider restrictedPaths */
     public function testRejectsPathsWhereVolumesCannotLive(string $path): void
     {
@@ -160,7 +251,12 @@ class AssetFieldUploadTest extends TestCase
 
     private function createAsset(array $arguments): array
     {
-        $input = fopen('php://memory', 'r+');
+        return $this->callTool('assets_create', $arguments);
+    }
+
+    private function callTool(string $name, array $arguments): array
+    {
+        $input = tmpfile();
         foreach ([
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-06-18',
@@ -168,7 +264,7 @@ class AssetFieldUploadTest extends TestCase
                 'clientInfo' => ['name' => 'asset-field-upload-test', 'version' => '1.0'],
             ]],
             ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
-            ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => ['name' => 'assets_create', 'arguments' => $arguments]],
+            ['jsonrpc' => '2.0', 'id' => 'call', 'method' => 'tools/call', 'params' => ['name' => $name, 'arguments' => $arguments]],
         ] as $message) {
             fwrite($input, json_encode($message) . "\n");
         }
@@ -179,12 +275,12 @@ class AssetFieldUploadTest extends TestCase
 
         foreach (array_filter(explode("\n", (string)file_get_contents($outputPath))) as $line) {
             $response = json_decode($line, true);
-            if (($response['id'] ?? null) === 'create') {
+            if (($response['id'] ?? null) === 'call') {
                 unlink($outputPath);
                 return $response['result'] ?? $response;
             }
         }
 
-        self::fail('assets_create returned no response.');
+        self::fail("$name returned no response.");
     }
 }

@@ -10,6 +10,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\helpers\DateTimeHelper;
 use craft\mcp\Authorization;
 use craft\mcp\ElementLifecycle;
 use craft\mcp\ElementQueryCriteria;
@@ -190,6 +191,13 @@ class EntryAdapter extends BaseElementAdapter
 
         $authorId = Arr::pull($attributes, 'authorId');
         $authorIds = Arr::pull($attributes, 'authorIds');
+
+        foreach (['postDate', 'expiryDate'] as $attribute) {
+            if (isset($attributes[$attribute])) {
+                $attributes[$attribute] = DateTimeHelper::toDateTime($attributes[$attribute])
+                    ?: throw new ToolCallException("Invalid $attribute value.");
+            }
+        }
 
         Craft::configure($element, $attributes);
         $this->defaultEntryType($element);

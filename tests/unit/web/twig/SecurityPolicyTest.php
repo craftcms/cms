@@ -9,11 +9,13 @@ namespace crafttests\unit\web\twig;
 
 use Craft;
 use craft\base\Renderable;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\test\TestCase;
 use craft\web\twig\SecurityPolicy;
 use craft\web\View;
 use Illuminate\Support\Collection;
+use Stringable;
 use Twig\Markup;
 use Twig\Sandbox\SecurityError;
 use Twig\Sandbox\SecurityNotAllowedFunctionError;
@@ -95,6 +97,65 @@ class SecurityPolicyTest extends TestCase
         $this->renderSandboxedString('{{ collection.toJson() }}', [
             'collection' => Collection::make([1, 2, 3]),
         ]);
+    }
+
+    /**
+     * @dataProvider markupContentReplacementDataProvider
+     */
+    public function testMarkupContentCantBeReplacedWithinSandbox(string $template): void
+    {
+        self::expectException(SecurityNotAllowedMethodError::class);
+        $this->renderSandboxedString($template, ['safe' => new Markup('original', 'UTF-8')]);
+    }
+
+    public static function markupContentReplacementDataProvider(): array
+    {
+        return [
+            ['{% set x = safe.__construct("<script>", "UTF-8") %}{{ safe }}'],
+            ['{{ safe.withContent("<script>") }}'],
+        ];
+    }
+
+    /**
+     * @dataProvider nonStringCoercingTestsDataProvider
+     */
+    public function testTestsThatDontConvertValuesToStringsAreAllowedWithinSandbox(string $template, string $expected): void
+    {
+        self::assertSame($expected, $this->renderSandboxedString($template, [
+            'stringable' => $this->stringable('SECRET'),
+            'entry' => new Entry(),
+        ]));
+    }
+
+    public static function nonStringCoercingTestsDataProvider(): array
+    {
+        return [
+            ['{{ stringable is object ? "y" : "n" }}', 'y'],
+            ['{{ stringable is string ? "y" : "n" }}', 'n'],
+            ['{{ stringable is instance of("Stringable") ? "y" : "n" }}', 'y'],
+            ['{{ entry is empty ? "y" : "n" }}', 'n'],
+            ['{{ [entry] is empty ? "y" : "n" }}', 'n'],
+        ];
+    }
+
+    public function testEmptyTestChecksToStringWithinSandbox(): void
+    {
+        self::expectException(SecurityNotAllowedMethodError::class);
+        $this->renderSandboxedString('{{ stringable is empty ? "y" : "n" }}', ['stringable' => $this->stringable('')]);
+    }
+
+    private function stringable(string $value): Stringable
+    {
+        return new class($value) implements Stringable {
+            public function __construct(private string $value)
+            {
+            }
+
+            public function __toString(): string
+            {
+                return $this->value;
+            }
+        };
     }
 
     private function renderSandboxedString(string $template, array $variables = []): string

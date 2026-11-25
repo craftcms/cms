@@ -8,6 +8,7 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use craft\controllers\ElementsController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteForSite;
@@ -27,6 +28,7 @@ use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\SitesFixture;
 use ReflectionMethod;
 use UnitTester;
+use yii\web\BadRequestHttpException;
 
 /**
  * Unit tests for volume propagation methods
@@ -348,6 +350,54 @@ class AssetPropagationTest extends TestCase
             self::assertStringContainsString("site-$siteId-field hidden", $html);
         }
         self::assertLessThan(strpos($html, 'element-sites-toggle'), strpos($html, 'site-1000-field sel'));
+    }
+
+    public function testDeleteForSiteRequiresAnotherSite(): void
+    {
+        $this->volume->propagationMethod = PropagationMethod::Custom;
+        Craft::$app->getUser()->setIdentity(User::findOne(1));
+        $originalRequestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = Craft::$app->getRequest();
+        $request->getHeaders()->set('Accept', 'application/json');
+        $deleteForSite = function(Asset $asset, int $siteId) use ($request) {
+            $request->setBodyParams(['elementId' => $asset->id, 'siteId' => $siteId]);
+            $controller = new ElementsController('elements', Craft::$app);
+            $controller->enableCsrfValidation = false;
+            return $controller->runAction('delete-for-site');
+        };
+
+        try {
+            $asset = $this->createAsset(1000);
+
+            // The element action should skip it
+            (new DeleteForSite(['elementType' => Asset::class]))->performAction(Asset::find()->id($asset->id)->siteId(1000));
+            self::assertSame([1000], $this->siteIdsForAsset($asset));
+
+            // ...and the controller should reject it
+            try {
+                $deleteForSite($asset, 1000);
+                self::fail('Deleting an asset for the only site it exists in should be rejected.');
+            } catch (BadRequestHttpException $e) {
+                self::assertStringContainsString('only site', $e->getMessage());
+            }
+            self::assertSame([1000], $this->siteIdsForAsset($asset));
+
+            // Once it exists in another site, it can be deleted for either one
+            $asset = Craft::$app->getAssets()->getAssetById($asset->id, 1000);
+            $asset->setEnabledForSite([1000 => true, 1001 => true]);
+            self::assertFalse(ElementHelper::isMultiSite($asset), 'Unsaved site statuses shouldn’t count.');
+            self::assertTrue(Craft::$app->getElements()->saveElement($asset), json_encode($asset->getErrors()));
+            self::assertTrue(ElementHelper::isMultiSite($asset));
+            $deleteForSite($asset, 1001);
+            self::assertSame([1000], $this->siteIdsForAsset($asset));
+        } finally {
+            if ($originalRequestMethod === null) {
+                unset($_SERVER['REQUEST_METHOD']);
+            } else {
+                $_SERVER['REQUEST_METHOD'] = $originalRequestMethod;
+            }
+        }
     }
 
     public function testDeleteForSiteAction(): void

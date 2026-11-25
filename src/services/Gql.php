@@ -72,6 +72,7 @@ use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -80,6 +81,7 @@ use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
+use craft\models\UserGroup;
 use craft\oauth\Resource as OAuthResource;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
@@ -584,6 +586,12 @@ class Gql extends Component
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
+
+                // Field layout user conditions may be based on the user’s own content, so invalidate cached results
+                // when the user is saved
+                if ($schema->user) {
+                    $elementsService->collectCacheTags(["element::{$schema->user->id}"]);
+                }
 
                 $result = GraphQL::executeQuery(
                     $schemaDef,
@@ -1628,10 +1636,22 @@ class Gql extends Component
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
 
-            // Results for authenticated requests are limited to what the user can access, so vary them by the
-            // user’s current permissions as well
-            if ($schema->user) {
-                $cacheKey .= '::' . $this->_userPermissionsHash($schema->user);
+            // Results for logged-in users can include their provisional drafts and depend on their permissions (such as
+            // with `editable: true`, or authenticated schemas), so vary them by the user and their current permissions
+            $user = $schema->user ?? Craft::$app->getUser()->getIdentity();
+            if ($user) {
+                $cacheKey .= "::$user->id::" . $this->_userPermissionsHash($user);
+
+                // Field layout user conditions are commonly based on the user’s groups as well
+                $groupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());
+                sort($groupIds);
+                $cacheKey .= '::' . implode(',', $groupIds);
+            }
+
+            // Preview tokens can swap in another user’s provisional drafts
+            $provisionalDraftUser = ElementHelper::getProvisionalDraftUser();
+            if ($provisionalDraftUser && $provisionalDraftUser->id !== $user?->id) {
+                $cacheKey .= "::provisional:$provisionalDraftUser->id";
             }
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);

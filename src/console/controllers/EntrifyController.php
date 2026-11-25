@@ -22,12 +22,14 @@ use craft\fields\BaseRelationField;
 use craft\fields\Categories;
 use craft\fields\Entries;
 use craft\fields\Tags;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\TagGroup;
+use craft\services\ElementSources;
 use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
@@ -802,7 +804,7 @@ class EntrifyController extends Controller
 
     private function _deployTip(string $action, string $handle): void
     {
-        $command = "php craft entrify/$action $handle --section={$this->_section->handle}";
+        $command = App::craftCommand("entrify/$action $handle --section={$this->_section->handle}");
 
         if (!$this->_forSingle) {
             $command .= " --entry-type={$this->_entryType->handle} --author={$this->_author->username}";
@@ -822,7 +824,7 @@ MD);
         $sourcesService = Craft::$app->getElementSources();
 
         $sourceKey = sprintf('section:%s', $this->_section()->uid);
-        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, withDisabled: true))
+        $sourceConfigs = Collection::make($sourcesService->getSources(Entry::class, ElementSources::CONTEXT_SETTINGS, true))
             ->map(function(array $config) use ($sourceKey, $name) {
                 if (($config['key'] ?? null) === $sourceKey) {
                     $config['page'] = $name;

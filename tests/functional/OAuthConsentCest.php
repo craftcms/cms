@@ -54,11 +54,12 @@ class OAuthConsentCest
     public function testFrontEndConsentPagePostsToFrontEnd(FunctionalTester $I): void
     {
         $actionTrigger = Craft::$app->getConfig()->getGeneral()->actionTrigger;
-        $I->amOnPage("/$actionTrigger/oauth/authorize?" . http_build_query(['resource' => 'mcp'] + $this->authorizeParams()));
+        // Clients send their RFC 8707 resource indicator as `resource`, alongside the endpoint's own params
+        $I->amOnPage("/$actionTrigger/oauth/authorize?" . http_build_query(['oauthResource' => 'mcp', 'resource' => 'https://example.com/mcp/auth'] + $this->authorizeParams()));
 
         $I->seeResponseCodeIs(200);
-        $I->seeElement("form[action*=\"$actionTrigger/oauth/approve\"][action*=\"resource=mcp\"]");
-        $I->seeElement("button[formaction*=\"$actionTrigger/oauth/deny\"][formaction*=\"resource=mcp\"]");
+        $I->seeElement("form[action*=\"$actionTrigger/oauth/approve\"][action*=\"oauthResource=mcp\"]");
+        $I->seeElement("button[formaction*=\"$actionTrigger/oauth/deny\"][formaction*=\"oauthResource=mcp\"]");
     }
 
     public function testControlPanelDomainLoginContinuesOnFrontEnd(FunctionalTester $I): void
@@ -87,7 +88,7 @@ class OAuthConsentCest
             $location = Craft::$app->getResponse()->getHeaders()->get('Location');
             $I->assertStringStartsWith(UrlHelper::siteUrl("$general->actionTrigger/oauth/authorize"), $location);
             parse_str(parse_url($location, PHP_URL_QUERY), $query);
-            $I->assertSame(['resource' => 'mcp'] + $params, $query);
+            $I->assertSame(['oauthResource' => 'mcp'] + $params, $query);
 
             // URLs with the script name are built on the request's host, but the login and continuation stay on the
             // site's, whether the login path is relative or absolute

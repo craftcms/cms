@@ -1340,7 +1340,7 @@ class UsersController extends Controller
 
         if (
             !$user->getIsCredentialed() &&
-            $currentUser->can('administrateUsers') &&
+            $currentUser->can('moderateUsers') &&
             $this->request->getBodyParam('sendActivationEmail')
         ) {
             try {
@@ -1569,6 +1569,9 @@ JS);
         $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
 
         if (!Craft::$app->getOAuth()->hasKeys()) {
+            $response->errorSummaryTemplate('_includes/oauth-keys-missing', [
+                'heading' => Craft::t('app', 'Tokens can’t be created until Craft has OAuth signing keys.'),
+            ]);
             $response->contentTemplate('users/_tokens-setup');
             return $response;
         }
@@ -1631,6 +1634,7 @@ JS, ['users/token-modal']);
             }
         } else {
             $this->requireElevatedSession();
+            $this->requireOAuthKeys();
         }
 
         $response = $this->asCpModal()->contentTemplate('users/_token', [
@@ -1656,6 +1660,7 @@ JS, ['users/token-modal']);
         $this->requirePostRequest();
         $this->requireCpRequest();
         $this->requireElevatedSession();
+        $this->requireOAuthKeys();
         $user = static::currentUser();
 
         $name = trim($this->request->getBodyParam('name', ''));
@@ -1713,6 +1718,13 @@ JS, ['users/token-modal']);
         return $this->asSuccess(Craft::t('app', 'Token saved.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
     }
 
+    private function requireOAuthKeys(): void
+    {
+        if (!Craft::$app->getOAuth()->hasKeys()) {
+            throw new BadRequestHttpException(Craft::t('app', 'Tokens can’t be created until Craft has OAuth signing keys.'));
+        }
+    }
+
     private function tokenNameError(string $name): ?string
     {
         if ($name === '') {
@@ -1738,13 +1750,16 @@ JS, ['users/token-modal']);
         $this->requirePostRequest();
         $this->requireCpRequest();
 
+        $user = static::currentUser();
         Craft::$app->getPersonalAccessTokens()->revoke(
-            static::currentUser(),
+            $user,
             $this->request->getRequiredBodyParam('clientId'),
             $this->request->getBodyParam('tokenId') ?: null,
         );
 
-        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+        // The Tokens screen goes away once there's nothing left to list or create
+        $path = $this->showTokensScreen($user) ? 'myaccount/tokens' : 'myaccount';
+        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl($path));
     }
 
     /**

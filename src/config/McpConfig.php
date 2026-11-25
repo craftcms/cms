@@ -14,4 +14,10 @@ class McpConfig extends BaseConfig
         $this->instructions = $value;
         return $this;
     }
+
+    public function filters(array $value): self
+    {
+        $this->filters = $value;
+        return $this;
+    }
 }

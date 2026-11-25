@@ -2296,8 +2296,11 @@ $.extend(Craft, {
    * @returns {Uploader}
    */
   createUploader: function (fsType, $container, settings) {
-    const func =
-      typeof this._uploaderClasses[fsType] !== 'undefined'
+    // Filesystems that implement TemporaryUploadUrlInterface always use upload
+    // sessions, so their uploads skip Craft's request size limits
+    const func = Craft.uploadSessionFsTypes.includes(fsType)
+      ? Craft.UploadSessionUploader
+      : typeof this._uploaderClasses[fsType] !== 'undefined'
         ? this._uploaderClasses[fsType]
         : Craft.Uploader;
 

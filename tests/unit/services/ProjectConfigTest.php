@@ -9,7 +9,12 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
+use craft\db\Table;
 use craft\elements\Category;
+use craft\events\ConfigEvent;
+use craft\helpers\Db;
+use craft\helpers\FileHelper;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
@@ -19,7 +24,12 @@ use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use Exception;
 use UnitTester;
+use yii\base\Exception as YiiException;
 use yii\base\NotSupportedException;
+use yii\caching\ArrayCache;
+use yii\caching\CacheInterface;
+use yii\caching\DummyCache;
+use yii\mutex\FileMutex;
 use yii\mutex\Mutex as YiiMutex;
 
 /**
@@ -57,6 +67,8 @@ class ProjectConfigTest extends TestCase
 
     private YiiMutex $_originalMutex;
 
+    private ?CacheInterface $_originalCache = null;
+
     protected function _before(): void
     {
         parent::_before();
@@ -70,6 +82,13 @@ class ProjectConfigTest extends TestCase
     {
         parent::_after();
         Craft::$app->set('mutex', $this->_originalMutex);
+
+        if ($this->_originalCache !== null) {
+            Craft::$app->set('cache', $this->_originalCache);
+            $this->_originalCache = null;
+        }
+
+        Craft::$app->getProjectConfig()->reset();
     }
 
     /**
@@ -238,6 +257,88 @@ class ProjectConfigTest extends TestCase
         self::assertSame(['some.path', 'other.path'], $paths);
     }
 
+    public function testSavingModifiedConfigDataReleasesLockWithoutChanges(): void
+    {
+        $mutexPath = Craft::$app->getPath()->getTempPath() . '/mutex-' . StringHelper::randomString(8);
+        Craft::$app->set('mutex', new FileMutex(['mutexPath' => $mutexPath]));
+        $otherProcess = new FileMutex(['mutexPath' => $mutexPath, 'autoRelease' => false]);
+        $pc = $this->getProjectConfig();
+
+        $pc->acquireLock();
+        self::assertFalse($otherProcess->acquire(ProjectConfig::MUTEX_NAME));
+
+        $pc->saveModifiedConfigData();
+        self::assertTrue($otherProcess->acquire(ProjectConfig::MUTEX_NAME));
+        $otherProcess->release(ProjectConfig::MUTEX_NAME);
+    }
+
+    public function testWritingYamlFilesReplacesFilesWithoutClearingFolderFirst(): void
+    {
+        $globalProjectConfig = Craft::$app->getProjectConfig();
+        $originalFolderName = $globalProjectConfig->folderName;
+        $globalProjectConfig->folderName = 'project-' . StringHelper::randomString(8);
+        $basePath = Craft::$app->getPath()->getProjectConfigPath();
+
+        $entryTypeUid = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+        $fieldUid = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+        $config = [
+            'dateModified' => 1,
+            'entryTypes' => [$entryTypeUid => ['handle' => 'foo']],
+            'fields' => [$fieldUid => ['handle' => 'body']],
+        ];
+        $pc = $this->make(ProjectConfig::class, [
+            'getCurrentWorkingConfig' => function() use (&$config) {
+                return new ProjectConfigData($config);
+            },
+        ]);
+        $listFiles = fn() => array_map(
+            fn($file) => substr($file, strlen($basePath) + 1),
+            FileHelper::findFiles($basePath, ['except' => ['.gitignore']]),
+        );
+
+        try {
+            file_put_contents("$basePath/.gitignore", '');
+            FileHelper::writeToFile("$basePath/entryTypes/Foo--$entryTypeUid.yaml", "handle: Foo\n");
+            FileHelper::writeToFile("$basePath/sections/old--cccccccc-cccc-4ccc-8ccc-cccccccccccc.yaml", "handle: old\n");
+            FileHelper::writeToFile("$basePath/project.yaml", "dateModified: 0\n");
+            FileHelper::writeToFile("$basePath/globalSets/old--eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.yaml", "handle: old\n");
+            FileHelper::createDirectory("$basePath/globalSets/.hidden");
+
+            $pc->writeYamlFiles(true);
+
+            $files = $listFiles();
+            sort($files);
+            self::assertSame([
+                "entryTypes/foo--$entryTypeUid.yaml",
+                "fields/body--$fieldUid.yaml",
+                'project.yaml',
+            ], $files);
+            self::assertFileExists("$basePath/.gitignore");
+            self::assertDirectoryDoesNotExist("$basePath/sections");
+            self::assertDirectoryExists("$basePath/globalSets/.hidden");
+
+            // A failed write leaves the existing files in place
+            $config['fields']['dddddddd-dddd-4ddd-8ddd-dddddddddddd'] = ['handle' => 'summary'];
+            chmod("$basePath/fields", 0555);
+            try {
+                $pc->writeYamlFiles(true);
+                self::fail('writeYamlFiles() should have failed');
+            } catch (YiiException $e) {
+                self::assertStringContainsString('is not writable', $e->getMessage());
+            }
+            self::assertFileExists("$basePath/entryTypes/foo--$entryTypeUid.yaml");
+            self::assertFileExists("$basePath/project.yaml");
+            self::assertTrue($pc->getHadFileWriteIssues());
+        } finally {
+            if (is_dir("$basePath/fields")) {
+                chmod("$basePath/fields", 0775);
+            }
+            FileHelper::removeDirectory($basePath);
+            Craft::$app->getCache()->delete(ProjectConfig::FILE_ISSUES_CACHE_KEY);
+            $globalProjectConfig->folderName = $originalFolderName;
+        }
+    }
+
     public function testApplyingConfigChangesDoesNotExposePartialElementSourcesToSectionHandlers(): void
     {
         $projectConfig = new ProjectConfig();
@@ -261,9 +362,9 @@ class ProjectConfigTest extends TestCase
                 ]],
             ],
             'sections' => [
-                'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' => [
                     'siteSettings' => [
-                        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' => [
+                        'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' => [
                             'hasUrls' => true,
                             'uriFormat' => 'test/{slug}',
                             'template' => 'test/_entry',
@@ -299,6 +400,185 @@ class ProjectConfigTest extends TestCase
         }
 
         self::assertTrue($handlerWasCalled);
+    }
+
+    public function testParentHandlersFireWhenNestedValueCreatesParent(): void
+    {
+        $projectConfig = new ProjectConfig();
+        $internalConfigProperty = new \ReflectionProperty(ProjectConfig::class, '_internalConfig');
+        $internalConfigProperty->setValue($projectConfig, new ReadOnlyProjectConfigData($this->internal, $projectConfig));
+
+        $handled = [];
+        $projectConfig->onAdd('demo', function(ConfigEvent $event) use (&$handled) {
+            $handled[] = [$event->oldValue, $event->newValue];
+        });
+
+        $projectConfig->set('demo.child.key', 1);
+
+        self::assertSame([[null, ['child' => ['key' => 1]]]], $handled);
+        self::assertSame(['child' => ['key' => 1]], $projectConfig->get('demo'));
+    }
+
+    public function testReadingBootKeysTakesOneCacheRead(): void
+    {
+        $cache = $this->_useCache(new class() extends ArrayCache {
+            public int $reads = 0;
+
+            public function get($key)
+            {
+                $this->reads++;
+                return parent::get($key);
+            }
+
+            public function multiGet($keys)
+            {
+                $this->reads++;
+                return parent::multiGet($keys);
+            }
+        });
+        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig->get('system.name');
+        $projectConfig->reset();
+        $cache->reads = 0;
+
+        self::assertNotNull($projectConfig->get('system.name'));
+        self::assertNotNull($projectConfig->get(ProjectConfig::PATH_USERS));
+        self::assertSame(1, $cache->reads);
+
+        self::assertSame($projectConfig->get(ProjectConfig::PATH_SITES), $projectConfig->get()[ProjectConfig::PATH_SITES]);
+        self::assertSame(3, $cache->reads);
+    }
+
+    /**
+     * @dataProvider staleCacheProvider
+     */
+    public function testReloadingStaleCachedKeys(bool $configChanged): void
+    {
+        $this->_useCache(new ArrayCache());
+        $projectConfig = Craft::$app->getProjectConfig();
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'laterRoot.value', 'value' => Json::encode('Before')]);
+        self::assertSame('Before', $projectConfig->get('laterRoot.value'));
+
+        Db::update(Table::PROJECTCONFIG, ['value' => Json::encode('After')], ['path' => 'laterRoot.value']);
+
+        if ($configChanged) {
+            $info = Craft::$app->getInfo();
+            $info->configVersion = StringHelper::randomString(12);
+            Craft::$app->saveInfo($info, ['configVersion']);
+        } else {
+            Craft::$app->getCache()->delete(ProjectConfig::STORED_CACHE_KEY . ':laterRoot');
+        }
+
+        $projectConfig->reset();
+        self::assertSame('After', $projectConfig->get('laterRoot.value'));
+        self::assertSame('After', $projectConfig->get()['laterRoot']['value']);
+    }
+
+    public function testReadingTheDatabaseOncePerRequestWhenTheCacheKeepsNothing(): void
+    {
+        $this->_useCache(new DummyCache());
+        $projectConfig = Craft::$app->getProjectConfig();
+        self::assertNotNull($projectConfig->get('system.name'));
+
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'laterRoot.value', 'value' => Json::encode('Later')]);
+
+        self::assertNull($projectConfig->get('laterRoot.value'));
+        self::assertArrayNotHasKey('laterRoot', $projectConfig->get());
+    }
+
+    public function testLeavingTheCacheWriteToTheRequestThatHoldsTheRebuildLock(): void
+    {
+        $this->_useCache(new ArrayCache());
+        Craft::$app->set('mutex', new Mutex([
+            'mutex' => new class() extends NullMutex {
+                protected function acquireLock($name, $timeout = 0): bool
+                {
+                    return false;
+                }
+            },
+        ]));
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'laterRoot.value', 'value' => Json::encode('Rebuilt')]);
+
+        self::assertSame('Rebuilt', Craft::$app->getProjectConfig()->get('laterRoot.value'));
+        self::assertFalse(Craft::$app->getCache()->get(ProjectConfig::STORED_CACHE_KEY));
+    }
+
+    public function testReadingTheRebuiltConfigAfterAnotherKeyIsEvicted(): void
+    {
+        $this->_useCache(new ArrayCache());
+        $projectConfig = Craft::$app->getProjectConfig();
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'firstRoot.value', 'value' => Json::encode('Before')]);
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'secondRoot.value', 'value' => Json::encode('Second')]);
+        $projectConfig->get('firstRoot.value');
+        $projectConfig->reset();
+        self::assertSame('Before', $projectConfig->get('firstRoot.value'));
+
+        Db::update(Table::PROJECTCONFIG, ['value' => Json::encode('After')], ['path' => 'firstRoot.value']);
+        Craft::$app->getCache()->delete(ProjectConfig::STORED_CACHE_KEY . ':secondRoot');
+
+        self::assertSame('Second', $projectConfig->get('secondRoot.value'));
+        self::assertSame('After', $projectConfig->get('firstRoot.value'));
+        self::assertSame('After', $projectConfig->get()['firstRoot']['value']);
+    }
+
+    public function testSkippingTheCacheWriteWhenAnotherRequestRestoredTheEvictedKey(): void
+    {
+        $cache = $this->_useCache(new class() extends ArrayCache {
+            public int $writes = 0;
+
+            public function multiSet($items, $duration = null, $dependency = null)
+            {
+                $this->writes++;
+                return parent::multiSet($items, $duration, $dependency);
+            }
+        });
+        $projectConfig = Craft::$app->getProjectConfig();
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'laterRoot.value', 'value' => Json::encode('Later')]);
+        $projectConfig->get('laterRoot.value');
+        $projectConfig->reset();
+        $key = ProjectConfig::STORED_CACHE_KEY . ':laterRoot';
+        $entry = $cache->get($key);
+        $cache->delete($key);
+        Craft::$app->set('mutex', new Mutex([
+            'mutex' => new class($cache, $key, $entry) extends NullMutex {
+                public function __construct(private ArrayCache $cache, private string $key, private array $entry)
+                {
+                    parent::__construct();
+                }
+
+                protected function acquireLock($name, $timeout = 0): bool
+                {
+                    $this->cache->set($this->key, $this->entry);
+                    return true;
+                }
+            },
+        ]));
+        $cache->writes = 0;
+
+        self::assertSame('Later', $projectConfig->get('laterRoot.value'));
+        self::assertSame(0, $cache->writes);
+    }
+
+    public static function staleCacheProvider(): array
+    {
+        return [
+            'config changed' => [true],
+            'key evicted' => [false],
+        ];
+    }
+
+    /**
+     * @template T of CacheInterface
+     * @param T $cache
+     * @return T
+     */
+    private function _useCache(CacheInterface $cache): CacheInterface
+    {
+        $this->_originalCache ??= Craft::$app->getCache();
+        Craft::$app->set('cache', $cache);
+        Craft::$app->getProjectConfig()->reset();
+
+        return $cache;
     }
 
     public function getConfigProvider(): array

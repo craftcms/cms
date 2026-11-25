@@ -63,7 +63,16 @@ class Settings extends Model
             return ['mcp/server-card', []];
         }
 
-        $authenticated = $this->enabled && in_array($path, [trim($this->route, '/'), trim($this->authorizationRoute, '/')], true);
+        // Routes that begin with the control panel trigger are only served in the control panel. When it has its own
+        // domain, the same path on the site’s domain is a site request, which wouldn’t require control panel access.
+        $authenticatedPaths = [];
+        foreach ([$this->route, $this->authorizationRoute] as $route) {
+            if ($request->getIsCpRequest() || !$this->isCpRoute($route)) {
+                $authenticatedPaths[] = trim($route, '/');
+            }
+        }
+
+        $authenticated = $this->enabled && in_array($path, $authenticatedPaths, true);
         $public = $this->publicEnabled && !$request->getIsCpRequest() && $path === trim($this->publicRoute, '/');
 
         if ($authenticated && (!$public || $request->getIsGet() || $request->getHeaders()->has('Authorization'))) {

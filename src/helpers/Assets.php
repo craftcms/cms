@@ -987,12 +987,14 @@ class Assets
             return true;
         }
 
-        if (!$fs->handle) {
-            return false;
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+
+        if (!$handle) {
+            // The default temp filesystem may have been replaced with another class via the DI container
+            return $fs === Craft::$app->getAssets()->getTempAssetUploadFs();
         }
 
-        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
-        return $fs->handle === $handle;
+        return $fs->handle && $fs->handle === $handle;
     }
 
     /**

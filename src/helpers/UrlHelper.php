@@ -11,6 +11,9 @@ use Craft;
 use craft\console\Request as ConsoleRequest;
 use craft\errors\SiteNotFoundException;
 use craft\web\Request as WebRequest;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
+use InvalidArgumentException;
 use yii\base\Exception;
 
 /**
@@ -75,6 +78,31 @@ class UrlHelper
     public static function isFullUrl(string $url): bool
     {
         return (static::isAbsoluteUrl($url) || static::isRootRelativeUrl($url) || static::isProtocolRelativeUrl($url));
+    }
+
+    /**
+     * Resolves a relative URL, such as `/uploads/a.png` or `//cdn.example.com/a.png`, against a base URL, as a browser
+     * would. The base URL defaults to the current site’s base URL. The URL is returned as it is when it’s already
+     * absolute, when the base URL isn’t absolute, or when either can’t be parsed.
+     *
+     * @param string $url
+     * @param string|null $baseUrl
+     * @return string
+     * @since 5.12.2
+     */
+    public static function absoluteUrl(string $url, ?string $baseUrl = null): string
+    {
+        $baseUrl ??= static::baseSiteUrl();
+
+        if (static::isAbsoluteUrl($url) || !static::isAbsoluteUrl($baseUrl)) {
+            return $url;
+        }
+
+        try {
+            return (string)UriResolver::resolve(new Uri($baseUrl), new Uri($url));
+        } catch (InvalidArgumentException) {
+            return $url;
+        }
     }
 
     /**

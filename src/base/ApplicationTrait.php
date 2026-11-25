@@ -104,6 +104,7 @@ use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
 use craft\services\Updates;
+use craft\services\Uploads;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -193,6 +194,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
+ * @property-read Uploads $uploads The uploads service
  * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
@@ -1542,6 +1544,17 @@ trait ApplicationTrait
     public function getUpdates(): Updates
     {
         return $this->get('updates');
+    }
+
+    /**
+     * Returns the uploads service.
+     *
+     * @return Uploads The uploads service
+     * @since 5.13.0
+     */
+    public function getUploads(): Uploads
+    {
+        return $this->get('uploads');
     }
 
     /**

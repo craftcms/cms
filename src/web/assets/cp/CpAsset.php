@@ -10,11 +10,13 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\TemporaryUploadUrlInterface;
 use craft\config\GeneralConfig;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Assets;
+use craft\helpers\ConfigHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -603,7 +605,11 @@ JS;
 
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
-            'allowUpdates' => $generalConfig->allowUpdates,
+            'allowUpdates' => (
+                $generalConfig->allowUpdates &&
+                $userSession->checkPermission('performUpdates') &&
+                Craft::$app->getComposer()->getIsAvailableForUi()
+            ),
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'appId' => Craft::$app->id,
@@ -628,6 +634,11 @@ JS;
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
+            'maxUploadSessionSize' => ConfigHelper::sizeInBytes($generalConfig->maxUploadFileSize),
+            'uploadSessionFsTypes' => array_values(array_filter(
+                Craft::$app->getFs()->getAllFilesystemTypes(),
+                fn(string $class) => is_subclass_of($class, TemporaryUploadUrlInterface::class),
+            )),
             'notificationDuration' => (int)(
                 $currentUser->getPreference('notificationDuration')
                 ?? $generalConfig->accessibilityDefaults['notificationDuration']

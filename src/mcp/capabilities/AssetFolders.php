@@ -28,7 +28,7 @@ readonly class AssetFolders
             'id' => ['type' => 'integer'],
             'uid' => ['type' => 'string', 'format' => 'uuid'],
             'volumeId' => ['type' => 'integer'],
-            'parentId' => ['type' => 'integer', 'description' => 'Parent folder ID.'],
+            'parentId' => ['type' => ['integer', 'null'], 'description' => 'Parent folder ID, or null for root folders: one per volume, across all volumes unless volumeId is also given. A volume’s top-level folders have its root folder’s ID as their parentId.'],
             'name' => ['type' => 'string', 'description' => 'Folder name.'],
             'path' => ['type' => 'string', 'description' => 'Folder path.'],
             'offset' => ['type' => 'integer', 'minimum' => 0, 'description' => 'Number of folders to skip.'],
@@ -58,6 +58,12 @@ readonly class AssetFolders
     ): array {
         $actor = $this->actor->user();
         $criteria['limit'] = max(1, min(500, (int)($criteria['limit'] ?? 100)));
+
+        // Folder criteria ignore a null parentId, so match root folders explicitly
+        if (array_key_exists('parentId', $criteria) && $criteria['parentId'] === null) {
+            $criteria['parentId'] = ':empty:';
+        }
+
         $folders = array_values(array_filter(
             $this->folders->findFolders($criteria),
             static fn(VolumeFolder $folder): bool => Authorization::allows($actor, 'viewContents', $folder),

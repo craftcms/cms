@@ -18,6 +18,7 @@ module.exports = getConfig({
             require.resolve('jquery-ui/ui/scroll-parent.js'),
             require.resolve('jquery-ui/ui/widgets/datepicker.js'),
             require.resolve('jquery-ui/ui/widgets/mouse.js'),
+            require.resolve('./src/datepicker-fixes.js'),
           ],
         },
       }),

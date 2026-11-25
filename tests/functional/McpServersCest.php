@@ -10,11 +10,14 @@ namespace crafttests\functional;
 use Craft;
 use craft\db\Table;
 use craft\elements\User;
+use craft\filters\BasicHttpAuthLogin;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\mcp\Settings;
 use craft\oauth\User as OAuthUser;
 use craft\services\Mcp;
+use DateTime;
 use FunctionalTester;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -75,6 +78,23 @@ class McpServersCest
         $I->seeInSource('mcp/auth');
     }
 
+    public function testRequestsWithoutTokensAreChallengedWithoutOAuthKeys(FunctionalTester $I): void
+    {
+        $this->settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth']);
+        $config = Craft::$app->getConfig()->getOAuth();
+        $config->privateKey = '@storage/missing-oauth-private.key';
+        $config->publicKey = '@storage/missing-oauth-public.key';
+
+        foreach ([null, 'Basic dXNlcjpwYXNz'] as $authorization) {
+            $authorization === null ? $I->deleteHeader('Authorization') : $I->haveHttpHeader('Authorization', $authorization);
+            $I->sendAjaxPostRequest('/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('/.well-known/oauth-protected-resource/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+        }
+
+        $config->privateKey = $config->publicKey = null;
+    }
+
     public function testDisabledServers(FunctionalTester $I): void
     {
         $this->settings(['enabled' => false, 'publicEnabled' => false]);
@@ -99,6 +119,21 @@ class McpServersCest
         $I->dontSeeResponseCodeIs(403);
     }
 
+    public function testUploadUrlsWorkOnControlPanelEndpoints(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp"]);
+
+        // Upload URLs use the authenticated server's endpoint, and their token routes them to the uploads/transfer
+        // action, which rejects this unreserved upload with a JSON error, even though upload clients like curl don't
+        // ask for JSON, rather than with a control panel page
+        $token = Craft::$app->getTokens()->createToken(['uploads/transfer', ['uploadId' => StringHelper::UUID()]]);
+        $I->haveHttpHeader('Accept', '*/*');
+        $I->sendAjaxPostRequest("/$general->cpTrigger/mcp?$general->tokenParam=$token");
+        $I->seeResponseCodeIs(404);
+        $I->assertStringContainsString('This upload URL is not valid', json_decode($I->grabPageSource(), true)['error']);
+    }
+
     public function testSiteEndpointsDoNotRequireControlPanelAccess(FunctionalTester $I): void
     {
         $this->settings(['enabled' => true, 'route' => '/mcp']);
@@ -106,6 +141,35 @@ class McpServersCest
         $I->sendAjaxPostRequest('/mcp');
         $I->dontSeeResponseCodeIs(401);
         $I->dontSeeResponseCodeIs(403);
+    }
+
+    public function testBasicHttpAuthLogin(FunctionalTester $I): void
+    {
+        $this->settings(['enabled' => true, 'route' => '/mcp']);
+        $config = Craft::$app->getConfig()->getMcp();
+        $config->filters = [BasicHttpAuthLogin::class];
+        $user = $this->user([]);
+        $user->newPassword = 'correct horse';
+        Craft::$app->getElements()->saveElement($user, false);
+
+        try {
+            // Craft only signs in requests with a user agent and IP address
+            $I->haveHttpHeader('User-Agent', 'MCP client');
+            $I->haveServerParameter('REMOTE_ADDR', '127.0.0.1');
+            // Basic auth isn't scoped, so the user gets every MCP scope
+            $I->haveHttpHeader('Authorization', 'Basic ' . base64_encode("$user->username:correct horse"));
+            $I->sendAjaxPostRequest('/mcp');
+            $I->dontSeeResponseCodeIs(401);
+            $I->assertSame($user->id, Craft::$app->getUser()->getId());
+            $I->assertEqualsCanonicalizing([Mcp::SCOPE_READ, Mcp::SCOPE_WRITE, Mcp::SCOPE_ADMIN], Craft::$app->get('mcp')->tokenScopes);
+
+            // Locked accounts are rejected, as with access tokens
+            Craft::$app->getDb()->createCommand()->update(Table::USERS, ['locked' => true, 'lockoutDate' => Db::prepareDateForDb(new DateTime())], ['id' => $user->id])->execute();
+            $I->sendAjaxPostRequest('/mcp');
+            $I->seeResponseCodeIs(401);
+        } finally {
+            $config->filters = [];
+        }
     }
 
     public function testControlPanelDomainWithoutTrigger(FunctionalTester $I): void
@@ -202,6 +266,33 @@ class McpServersCest
             $I->assertSame('https://cp.example.com/index.php/backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
             $general->usePathInfo = false;
             $I->assertSame('https://cp.example.com/index.php?p=backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
+    public function testControlPanelEndpointsAreOnlyInTheControlPanel(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl];
+        $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp/auth"]);
+        $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token($this->user([])));
+
+        // Action URLs are site requests, which don't require control panel access
+        $I->sendAjaxPostRequest('/actions/mcp/authenticated');
+        $I->seeResponseCodeIs(404);
+
+        $general->baseCpUrl = 'https://cp.example.com';
+
+        try {
+            // On the site's domain, paths beginning with the trigger are site requests too
+            $I->sendAjaxPostRequest("/$general->cpTrigger/mcp/auth");
+            $I->seeResponseCodeIs(404);
+
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest("/$general->cpTrigger/mcp/auth");
+            $I->seeResponseCodeIs(403);
         } finally {
             Craft::configure($general, $original);
         }

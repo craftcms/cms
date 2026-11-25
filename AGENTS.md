@@ -12,6 +12,30 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
   translations from Craft CMS, but must not modify those translations or their
   catalog.
 
+## Control panel trigger
+
+Sites can use a custom `cpTrigger` to keep their control panel URL private, so
+treat it as sensitive.
+
+- Never reveal the `cpTrigger`, or control panel URLs that contain it, on the
+  front end: in site responses, discovery metadata (such as `.well-known/*`),
+  response headers, redirects, error messages, or anything else served to
+  visitors who haven't already reached the control panel. Use site or action
+  URLs instead.
+- Never include a real site's `cpTrigger` or control panel URL in pull request
+  descriptions, commit messages, changelog entries, issue comments, or other
+  public text. Use a placeholder such as `{cpTrigger}`.
+- Don't worry about revealing the `cpTrigger` on the front end when
+  `headlessMode` is enabled.
+
+## Permissions
+
+- Every user with the `accessCp` permission has basic read-only access to all
+  elements, as that permission's description notes: through element selector
+  modals, chips, cards, and other means. Don't flag or add `view` permission
+  checks on control panel endpoints that only show element content to them.
+  Saving, deleting, and other changes still need the element's own permissions.
+
 ## Migrations
 
 - Only add new migrations when working on a new major or minor release (such
@@ -36,65 +60,49 @@ eligibility by the actual effect, not filenames alone. Code, dependencies,
 executable configuration, workflows, and behavior-changing generated artifacts
 are not eligible.
 
+Only add it when no other unpushed commits on the branch have significant
+changes. GitHub skips CI for a whole push when its head commit carries the
+marker, so it would also skip the commits beneath it.
+
 Skip markers can leave required checks pending and do not establish green CI.
 Never use them to evade required checks, merged-result verification, or merge
-queues. The merge safeguards below still apply.
+queues. The `merging-pull-requests` skill's safeguards still apply.
 
-## Merging pull requests
+## Workspace skills
 
-When explicitly instructed to merge a PR, resolve conflicts in the final merge
-commit into the PR's actual target branch if every conflict is either:
+The Craft workspace skills below cover processes shared with the plugin repos.
+Follow them, along with the details for this repo.
 
-- Inconsequential and nonfunctional, such as overlapping `CHANGELOG.md` entries.
-- A generated build artifact that can be regenerated from merged sources with
-  the appropriate documented build script. Regenerate outputs; do not hand-merge
-  generated content.
+### Releasing
 
-Do not merge the target branch into the PR or rebase and push the PR merely to
-resolve these conflicts and trigger repeated PR CI. Judge the conflicting
-content, not just the filename. Ask for confirmation before resolving substantive
-source or dependency conflicts, or any other conflicts outside these categories.
-Eligibility for build artifact regeneration does not make behavior-changing
-artifacts eligible for `[ci skip]` or nonfunctional-only CI inheritance.
+Follow the `releasing` skill.
 
-For this path:
+- Release from the branch the changes landed on: `5.x`, or `4.x` for 4.x
+  releases.
+- The version is `version` in `src/config/app.php`. The Finish commit bumps it.
+- New minor versions are developed on a next-minor branch, such as `5.13`, with
+  its own `CHANGELOG-WIP.md`. `6.x` is the next major version.
+- After a release, merge `5.x` into the next-minor branch, then that branch
+  into `6.x`.
+- Unreleased security fixes are on `5.x-internal` in craftcms/cms-internal.
 
-1. Fetch the latest PR head and actual target branch. Confirm that the PR head
-   has passed all required CI, or use earlier successful required CI for agent
-   pre-merge verification only if the tested commit is an ancestor of the current
-   PR head, every subsequent PR commit ends its body with `[ci skip]`, and
-   inspection of every subsequent commit plus the complete cumulative diff from
-   the tested commit to the current head confirms genuinely nonfunctional-only
-   changes under the eligibility rules above. Required approvals must remain
-   satisfied for the current PR state. When using inherited CI, report both the
-   tested SHA and current-head SHA; never claim the current head itself passed.
-   Check the target's branch protections, required merged-result checks, and
-   merge queue requirements before pushing. CI inheritance cannot override
-   GitHub's head-check requirements or any other protection. With explicit
-   authorization to merge the PR and only conflicts eligible under this policy, an
-   ordinary push of the final target-based merge commit may use the credential's
-   existing bypass permission solely for the PR-only rule, after the CI
-   verification and current-state approval checks above. Never bypass failed or
-   pending required checks, fresh merged-result checks, merge queues, or any
-   other protection. Do not use an administrative override. If another
-   protection prevents this path or compliance is unclear, stop and ask how to
-   proceed.
-2. Use a clean worktree based on the fetched target commit, then run
-   `git merge --no-ff --no-commit <verified-pr-head-sha>`. Resolve only the
-   eligible conflicts covered above, preserving both sides' intended content,
-   including changelog entries and release ordering. For generated build artifact
-   conflicts, run the appropriate documented build script on the merged sources.
-3. Inspect the staged merge result and the complete diff against the target.
-   Validate the resolved documentation and inspect regenerated outputs. Check for
-   leftover conflict markers and run `git diff --cached --check`. These lightweight
-   checks do not validate the substantive merged result. Run applicable build
-   verification and tests for regenerated artifacts, plus all required tests and
-   merged-result verification for the PR's substantive changes; passing or
-   inherited PR CI does not replace required merged-result checks.
-4. Before committing and pushing, confirm that the PR head is still the
-   verified commit and that CI verification and current-state approvals remain
-   valid. If the head changed, restart with the latest head and repeat those
-   checks. Commit the merge and use an ordinary push to the actual target branch,
-   never a force-push. If the target advances before the push succeeds, discard the
-   unpublished merge, fetch the latest heads, and repeat from a clean worktree
-   based on the latest target, including inspection and required validation.
+### Changelog entries
+
+Load the `changelog-entries` skill for every bug fix or feature PR, and commit
+the release notes it calls for with the change, linking the GitHub issue it
+fixes. If the skill says the change gets no entry, such as a fix for behavior
+that was never released, say why in the PR body.
+
+### Merging pull requests
+
+When explicitly instructed to merge a PR, follow the `merging-pull-requests`
+skill. Translation files are in `src/translations/`.
+
+Never close or comment on GitHub issues or discussions on your own, including
+after merging the pull request that fixes them. Do either only when asked to
+for that issue or discussion.
+
+### Copilot reviews
+
+When waiting for, watching for, or checking a Copilot review, follow the
+`watching-copilot-reviews` skill.

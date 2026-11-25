@@ -103,6 +103,35 @@ class EditUserCest
         unlink($path);
     }
 
+    public function testTokensCantBeCreatedWithoutOAuthKeys(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $elevatedSessionDuration = $general->elevatedSessionDuration;
+        $general->elevatedSessionDuration = 0;
+        $config = Craft::$app->getConfig()->getOAuth();
+        $config->privateKey = $config->publicKey = '@storage/missing-oauth.key';
+
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
+        $csrfToken = $I->grabValueFrom(sprintf('#main-form input[name="%s"]', $general->csrfTokenName));
+        $I->haveHttpHeader('Accept', 'application/json');
+
+        $I->sendAjaxGetRequest('/' . $this->cpTrigger . '/actions/users/token-modal');
+        $I->seeResponseCodeIs(400);
+        $I->see('Tokens can’t be created until Craft has OAuth signing keys.');
+
+        $I->sendAjaxPostRequest('/' . $this->cpTrigger . '/actions/users/create-token', [
+            $general->csrfTokenName => $csrfToken,
+            'name' => 'Build script',
+            'scopes' => ['graphql:read'],
+            'expiresIn' => '7',
+        ]);
+        $I->seeResponseCodeIs(400);
+        $I->see('Tokens can’t be created until Craft has OAuth signing keys.');
+
+        $config->privateKey = $config->publicKey = null;
+        $general->elevatedSessionDuration = $elevatedSessionDuration;
+    }
+
     public function testTokensPageIsHiddenFromNonAdminsWithoutOAuthKeys(FunctionalTester $I): void
     {
         $config = Craft::$app->getConfig()->getOAuth();

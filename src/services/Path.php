@@ -440,6 +440,24 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/runtime/htmlpurifier/` directory, where HTML Purifier caches its definitions.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @since 5.13.0
+     */
+    public function getHtmlPurifierCachePath(bool $create = true): string
+    {
+        $path = Craft::$app->getRuntimePath() . DIRECTORY_SEPARATOR . 'htmlpurifier';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/runtime/compiled_classes/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist

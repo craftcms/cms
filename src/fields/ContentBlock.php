@@ -31,6 +31,7 @@ use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
 use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
 use craft\gql\types\input\ContentBlock as ContentBlockInputType;
 use craft\helpers\Component;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json as JsonHelper;
@@ -503,8 +504,7 @@ class ContentBlock extends Field implements
             if (count($sameSiteElements) > 1) {
                 $query = ContentBlockElement::find()
                     ->fieldId($this->id)
-                    ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
-                    ->siteId($element->siteId)
+                    ->owner($sameSiteElements)
                     ->indexBy('ownerId');
 
                 // If the owner element is a revision, allow revision content blocks to be returned as
@@ -521,9 +521,6 @@ class ContentBlock extends Field implements
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
-                    if ($contentBlock) {
-                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
-                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
                         'handle' => $handle,
                     ]));
@@ -938,14 +935,15 @@ JS, [
         }
 
         if (isset($value['fields'])) {
-            foreach ($value['fields'] as $fieldHandle => $fieldValue) {
-                try {
-                    if ($fromRequest) {
-                        $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                    } else {
+            if ($fromRequest) {
+                // Respect field layout conditions
+                ElementHelper::setNestedFieldValuesFromRequest($contentBlock, $value['fields']);
+            } else {
+                foreach ($value['fields'] as $fieldHandle => $fieldValue) {
+                    try {
                         $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (InvalidFieldException) {
                     }
-                } catch (InvalidFieldException) {
                 }
             }
         }
