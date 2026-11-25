@@ -2179,7 +2179,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @deprecated in 6.0.0. Listen for {@see ElementStatusChanged} to act on entries going live or expiring.
+     * @deprecated in 6.0.0. Turn it off and run Laravel’s scheduler. Entry queries get statuses from post and
+     *             expiry dates, and Craft dispatches {@see ElementStatusChanged} and clears caches when those dates pass.
      */
     public bool $staticStatuses = false;
 
@@ -5232,7 +5233,8 @@ class GeneralConfig extends BaseConfig
      * @group System
      *
      * @see $staticStatuses
-     * @deprecated in 6.0.0. Listen for {@see ElementStatusChanged} to act on entries going live or expiring.
+     * @deprecated in 6.0.0. Turn it off and run Laravel’s scheduler. Entry queries get statuses from post and
+     *             expiry dates, and Craft dispatches {@see ElementStatusChanged} and clears caches when those dates pass.
      */
     public function staticStatuses(bool $value = true): self
     {

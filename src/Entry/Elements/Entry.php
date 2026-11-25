@@ -1636,7 +1636,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         // Once a day, since this runs every minute
         if (Cms::config()->staticStatuses && Cache::add('craft:staticStatuses-deprecation-logged', true, now()->plus(days: 1))) {
-            Deprecator::log('staticStatuses', 'The `staticStatuses` config setting is deprecated. Listen for `'.ElementStatusChanged::class.'` to act on entries going live or expiring.');
+            Deprecator::log('staticStatuses', 'The `staticStatuses` config setting is deprecated. Turn it off and run Laravel’s scheduler. Entry queries get statuses from post and expiry dates, and Craft dispatches `'.ElementStatusChanged::class.'` and clears caches when those dates pass.');
         }
 
         return self::canonicalEntryRows()
