@@ -170,6 +170,8 @@ trait QueriesUserGroups
      *
      * @param  mixed  $value  The property value
      *
+     * @phpstan-return static
+     *
      * @uses $groupId
      */
     #[ElementQueryParam(ElementQueryParamType::ScalarOrScalars, 'Narrows the query results based on the user group the users belong to.')]
@@ -230,6 +232,8 @@ trait QueriesUserGroups
      *
      * @param  mixed  $value  The property value
      *
+     * @phpstan-return static
+     *
      * @uses $groupId
      */
     #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the user group the users belong to, per the groups’ IDs.')]
@@ -268,6 +272,8 @@ trait QueriesUserGroups
      * ```
      *
      * @uses $withGroups
+     *
+     * @phpstan-return static
      */
     public function withGroups(bool $value = true): self
     {

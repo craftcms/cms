@@ -1,4 +1,7 @@
 // line 1
-ob_start();
-yield "Hello World";
-yield CraftCms\Cms\Support\Html::tag("div", ob_get_clean());
+$_v0 = \Twig\Extension\CoreExtension::captureOutput((function () use (&$context, &$macros, $blocks) {
+    yield "Hello World";
+    return; yield;
+})());
+yield CraftCms\Cms\Support\Html::tag("div", $_v0);
+unset($_v0);

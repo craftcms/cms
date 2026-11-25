@@ -48,6 +48,8 @@ import {
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
  *
+ * @csspart toggle-icon - The subnav or flyout chevron beside the label.
+ *
  * @cssproperty [--c-nav-item-size=--c-size-touch-target] - The row's height,
  *   and its width too when it's `icon-only`.
  * @cssproperty [--c-nav-item-color=inherit] - The label's color while the
@@ -159,6 +161,9 @@ export default class CraftNavItem extends LitElement {
   /** Whether an inline subnav is expanded. */
   @state()
   subnavState: 'open' | 'closed' = 'closed';
+
+  /** Whether the last render showed an expanded, indented subnav. */
+  #inlineSubnavOpen = false;
 
   /**
    * Whether the flyout is showing. Opened by hover or by the item's own
@@ -281,6 +286,13 @@ export default class CraftNavItem extends LitElement {
       this.setAttribute('role', 'listitem');
     }
 
+    // Inside another item's subnav or flyout, a heading is set off by less.
+    // An attribute rather than :host-context(), which Firefox lacks.
+    this.toggleAttribute(
+      'nested',
+      !!this.parentElement?.closest('craft-nav-item')
+    );
+
     // Default to open when the item is active, or when explicitly requested.
     this.subnavState =
       this.active || this.initialState === 'open' ? 'open' : 'closed';
@@ -295,6 +307,9 @@ export default class CraftNavItem extends LitElement {
   }
 
   override updated(changed: PropertyValues<this>) {
+    // Reflected so craft-nav-list can set off the row that follows.
+    this.toggleAttribute('subnav-open', this.#inlineSubnavOpen);
+
     if (changed.has('flyoutOpen')) {
       if (this.flyoutOpen) {
         this.#watchFlyoutFit();
@@ -594,7 +609,7 @@ export default class CraftNavItem extends LitElement {
     `;
   }
 
-  protected renderSubnavToggle() {
+  protected renderSubnavToggle(part?: string) {
     return html`
       <craft-button
         @click="${this.toggleSubnav}"
@@ -614,6 +629,7 @@ export default class CraftNavItem extends LitElement {
       >
         <craft-icon
           id="${this.id}-toggle-icon"
+          part="${ifDefined(part)}"
           name="${this.subnavState === 'closed'
             ? 'chevron-down'
             : 'chevron-up'}"
@@ -667,7 +683,7 @@ export default class CraftNavItem extends LitElement {
    * every branch in the tab order, so tabbing past a branch would mean tabbing
    * through it.
    */
-  protected renderFlyoutToggle() {
+  protected renderFlyoutToggle(part?: string) {
     return html`
       <craft-button
         class="flyout-toggle"
@@ -685,6 +701,7 @@ export default class CraftNavItem extends LitElement {
       >
         <craft-icon
           class="flyout-indicator"
+          part="${ifDefined(part)}"
           name="chevron-right"
           aria-hidden="true"
         ></craft-icon>
@@ -742,9 +759,9 @@ export default class CraftNavItem extends LitElement {
             ></slot>`}
         <slot name="suffix">
           ${showToggle && this.togglePosition === 'suffix'
-            ? this.renderSubnavToggle()
+            ? this.renderSubnavToggle('toggle-icon')
             : nothing}
-          ${showFlyoutToggle ? this.renderFlyoutToggle() : nothing}
+          ${showFlyoutToggle ? this.renderFlyoutToggle('toggle-icon') : nothing}
         </slot>
       </div>
     `;
@@ -820,6 +837,8 @@ export default class CraftNavItem extends LitElement {
       this.indicator ||
       hasSlotted(this, 'prefix', 'icon');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
+    this.#inlineSubnavOpen =
+      hasSubnav && !useFlyout && subnavOpen && !this.group && !this.iconOnly;
 
     // Collapsed, a heading has no room for its name and nothing to sit above
     // but icons, so it becomes the rule between one run of them and the next.

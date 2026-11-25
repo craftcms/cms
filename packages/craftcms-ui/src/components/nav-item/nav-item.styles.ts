@@ -5,22 +5,16 @@ import {badgeIndicatorCutoutStyles} from '../badge-indicator/badge-indicator.sty
 export default css`
   :host {
     --_padding-inline: var(--c-spacing-md);
-    /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
-    /* Enough to center the icon column in a row, border included. */
     --_padding-block: calc(
       (var(--_rail-size) - var(--_prefix-size) - var(--_rail-border) * 2) / 2
     );
-    /* The space between the icon column and the label (tighter than the row's gap). */
     --_prefix-gap: var(--c-spacing-sm);
-    /* The rule down the side of an inline subnav. */
     --_subnav-rule: 2px;
-    /* The square a collapsed row occupies, border included. The row draws a
-       transparent border to keep room for its focus state. */
+    /* Rows keep a transparent border to reserve room for the focus state. */
     --_rail-border: 1px;
     --_rail-size: var(--c-nav-item-size, var(--c-size-touch-target));
-    /* A row with an icon, less its border, so the icon sits where a collapsed
-       row centers it. */
+    /* Keeps the icon where a collapsed row centers it. */
     --_prefixed-padding-inline: calc(
       (var(--_rail-size) - var(--_prefix-size)) / 2 - var(--_rail-border)
     );
@@ -31,7 +25,7 @@ export default css`
   .nav-item {
     display: grid;
     gap: var(--c-spacing-md);
-    /* Two tracks: an item with no icon has no prefix to leave room for. */
+    /* An item with no icon needs no prefix track. */
     grid-template-columns: 1fr auto;
     align-items: center;
     text-decoration: none;
@@ -41,18 +35,12 @@ export default css`
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     position: relative;
-    /* A full row whether or not there's an icon to fill one. */
     box-sizing: border-box;
     min-block-size: var(--_rail-size);
 
-    /*
-     * Expanded, the focusable element is the label inside the row, so the ring
-     * is drawn on the row around it. Collapsed, the row *is* the focusable
-     * element — without this second selector it fell through to the browser's
-     * default outline, which is a different width and offset from the one
-     * craft-button draws, so the ring changed size as you tabbed onto the
-     * chevron.
-     */
+    /* Expanded, the label is focusable, so the ring goes on the row. Collapsed,
+       the row itself is focusable and needs craft-button's ring, not the
+       browser's. */
     &:focus-visible,
     &:has(.nav-item__action-item:focus-visible) {
       outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
@@ -76,10 +64,7 @@ export default css`
     }
   }
 
-  /*
-   * An item that only discloses its flyout is a button, so it can be focused.
-   * Zero specificity, so the rules that shape the row still win.
-   */
+  /* Zero specificity, so the rules that shape the row still win. */
   :where(button.nav-item, button.nav-item__action-item) {
     appearance: none;
     background: none;
@@ -112,9 +97,9 @@ export default css`
     ${badgeIndicatorCutoutStyles}
   }
 
+  /* Above the label's full-row click target, so clicks on a control don't
+     follow the link. */
   .nav-item__prefix craft-button,
-  /* Above the label's full-row click target, or a click meant for a control
-     would follow the link instead. */
   .nav-item__suffix craft-button,
   ::slotted([slot='actions']) {
     position: relative;
@@ -126,7 +111,7 @@ export default css`
     padding-inline: var(--_prefixed-padding-inline);
     grid-template-columns: var(--_prefix-size) 1fr auto;
 
-    /* Pull the label back across the row's gap, to the tighter prefix gap. */
+    /* The icon sits closer to the label than the row's gap allows. */
     > .nav-item__action-item {
       margin-inline-start: calc(var(--_prefix-gap) - var(--c-spacing-md));
     }
@@ -137,13 +122,8 @@ export default css`
   }
 
   /*
-   * A heading names the rows under it rather than being one of them, so it's
-   * smaller and heavier than they are. One rule for both kinds — a group
-   * row in the list, and the label heading a collapsed item's flyout — so the
-   * two can't drift apart again.
-   *
-   * The type goes on the row, not the host, or the subnav nested inside would
-   * inherit it and every child would read as a heading too.
+   * Shared with the flyout label so the two headings stay in sync. Set on the
+   * row, not the host, so the nested subnav doesn't inherit it.
    */
   :host([group]) .nav-item,
   .flyout__label {
@@ -152,13 +132,25 @@ export default css`
   }
 
   /*
-   * A group heading sits with the rows it heads: the space above separates it
-   * from whatever came before, the space below only sets it off from what it
-   * heads. The flyout's label takes its spacing from the flyout grid.
+   * Breaks add whole spacing steps above: md for a top-level heading, sm for
+   * a nested one (its type already sets it off), and md after an open subnav
+   * (see craft-nav-list).
    */
   :host([group]) {
     border-radius: 0;
+    margin-block-start: var(--c-spacing-md);
+  }
+
+  :host([group][nested]) {
     margin-block-start: var(--c-spacing-sm);
+  }
+
+  :host([group]:first-child) {
+    margin-block-start: 0;
+  }
+
+  :host([after-open-subnav]:not([group], [icon-only])) {
+    margin-block-start: var(--c-spacing-md);
   }
 
   :host([group]) .nav-item {
@@ -167,8 +159,7 @@ export default css`
     min-block-size: 0;
   }
 
-  /* A hovered row, or one with its flyout open, is back to full strength.
-     Before the selected states, which keep their own color. */
+  /* Before the selected states, so they keep their own color. */
   .nav-item:not(.nav-item--static):hover,
   .nav-item--flyout-open {
     color: inherit;
@@ -179,15 +170,12 @@ export default css`
     border: 1px solid var(--c-color-accent-border-normal);
   }
 
-  /*
-   * Selected parent: on the trail to the page you're on, but not the page
-   * itself. Stub values — a quieter treatment than the child's.
-   */
+  /* Selected parent: on the trail to the current page. Stub values. */
   :host([active]:not([current])) .nav-item {
     background-color: transparent;
     border-color: transparent;
 
-    /* Starts at the row's outer edge, in line with its hover background. */
+    /* In line with the row's hover background. */
     &:before {
       content: '';
       position: absolute;
@@ -200,23 +188,20 @@ export default css`
     }
   }
 
-  /*
-   * Selected child: the page you're on. Stub values.
-   */
+  /* Selected child: the current page. Stub values. */
   :host([current]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
     color: var(--c-color-accent-on-quiet);
   }
 
-  /* A badge on the current row takes the row's tint. */
   :host([current]) ::slotted(craft-badge-indicator) {
     --c-color-neutral-fill-normal: var(--c-color-accent-fill-normal);
     --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
-  /* Not on the page you're on: its selected fill is the state to show. A row
-     with its flyout open looks hovered while the pointer is in the flyout. */
+  /* The current row shows its selected fill instead. An open flyout keeps its
+     row looking hovered while the pointer is in the flyout. */
   :host(:not([current], [appearance='tabs']))
     .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
   :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
@@ -227,14 +212,13 @@ export default css`
     );
   }
 
-  /* Pressed, more so, as a tinted button is. A press on one of its controls
-     is that control's. */
+  /* Pressed, like a tinted button. A press on a control belongs to it. */
   :host(:not([current], [appearance='tabs']))
     .nav-item:not(.nav-item--static):active:not(:has(craft-button:active)) {
     background-color: color-mix(in srgb, currentColor 12%, transparent);
   }
 
-  /* No href: render as a plain label, not an interactive item. */
+  /* No href: a plain label, not interactive. */
   .nav-item--static {
     cursor: default;
   }
@@ -249,7 +233,6 @@ export default css`
     color: var(--c-nav-item-icon-color, inherit);
   }
 
-  /* A selected or hovered row's icon takes the row's own color. */
   :host([active]) .nav-item__prefix,
   .nav-item:not(.nav-item--static):hover .nav-item__prefix,
   .nav-item--flyout-open .nav-item__prefix {
@@ -275,13 +258,7 @@ export default css`
     }
   }
 
-  /*
-   * A child's label lines up with its parent's. The parent's label sits past
-   * its padding, its icon column and the gap after it; a child's sits past this
-   * margin, the rule, this padding and the child's own padding. The margin is
-   * whatever makes the two add up. Both rows carry the same border, so it
-   * cancels out.
-   */
+  /* Lines a child's label up with its parent's. */
   :host(:not([group])) .subnav {
     --_subnav-indent: calc(
       var(--_prefixed-padding-inline) + var(--_prefix-size) +
@@ -289,18 +266,13 @@ export default css`
         var(--_padding-inline)
     );
     position: relative;
-    margin-block-start: var(--c-spacing-sm);
+    margin-block-start: var(--c-nav-list-gap, var(--c-spacing-xs));
     margin-inline-start: var(--_subnav-indent);
     padding-inline: var(--c-spacing-sm);
     border-inline-start: var(--_subnav-rule) solid transparent;
   }
 
-  /*
-   * A hairline down the subnav, centered on the selected parent's indicator:
-   * back across the indent and rule to the parent row's inner edge (past its
-   * border). The indicator's center is half a pixel past that edge, as is the
-   * hairline's.
-   */
+  /* A hairline centered on the selected parent's indicator. */
   :host(:not([group]):not([icon-only])) .subnav::before {
     content: '';
     position: absolute;
@@ -312,11 +284,8 @@ export default css`
     background-color: var(--c-color-neutral-border-quiet);
   }
 
-  /*
-   * Collapsed to a rail there's nowhere to indent a subnav, so it moves into a
-   * popover. The label leads it as the group's heading, standing in for the
-   * tooltip a childless item would get.
-   */
+  /* A rail has nowhere to indent a subnav, so it moves into a popover, led by
+     the label in place of a tooltip. */
   .flyout {
     display: grid;
     gap: var(--c-spacing-xs);
@@ -324,12 +293,9 @@ export default css`
   }
 
   /*
-   * A flyout too tall for the viewport scrolls like the CP's other inner
-   * scrollers (.cp-inner-scroller): its scrollbar hidden until you hover or
-   * focus it, its content fading at an edge with more beyond. The list
-   * scrolls rather than the popover's pane, so the fade doesn't take the
-   * pane's border and shadow with it; it's capped at the pane's own cap less
-   * the pane's borders. The fade's lengths are registered in variables.css.
+   * Scrolls like .cp-inner-scroller. The list scrolls rather than the pane so
+   * the fade doesn't mask the pane's border and shadow. The fade's lengths are
+   * registered in variables.css.
    */
   @supports (animation-timeline: scroll()) {
     @keyframes nav-item-flyout-fade-start {
@@ -385,7 +351,7 @@ export default css`
           calc(100% - var(--c-spacing-xl)) 100%;
       }
 
-      /* The same revealed thumb as .cp-inner-scroller's. */
+      /* Matches .cp-inner-scroller's thumb. */
       .flyout:is(:hover, :focus-within) {
         scrollbar-color: color-mix(
             in oklab,
@@ -397,11 +363,15 @@ export default css`
     }
   }
 
-  /* Quieter than the label it trails, and sized to the toggle chevron it
-     stands in for. */
+  /* Chevrons follow the row's color, which a plain craft-button would
+     override. */
+  .nav-item__suffix :is(.subnav-toggle, .flyout-toggle) {
+    color: inherit;
+  }
+
+  /* Matches the toggle chevron it stands in for. */
   .flyout-indicator {
     font-size: var(--c-size-icon-sm, calc(12rem / 16));
-    color: var(--c-color-neutral-on-quiet, currentcolor);
   }
 
   .flyout-indicator:dir(rtl) {
@@ -418,11 +388,8 @@ export default css`
   }
 
   /*
-   * Collapsed to a rail
-   *
-   * The row is the icon and nothing else, so everything that would sit beside
-   * a label has to find somewhere else to be: the subnav loses its indent, the
-   * disclosure moves on top of the icon, and a heading gives way to a rule.
+   * Collapsed to a rail: the row is only its icon, so the subnav loses its
+   * indent, the disclosure sits over the icon, and headings become rules.
    */
   .nav-item--icon {
     box-sizing: border-box;
@@ -447,11 +414,7 @@ export default css`
     position: relative;
   }
 
-  /*
-   * A rail shows one row per branch, so no child row is there to carry the
-   * current page's fill. The branch carries it instead, whether the page is the
-   * branch itself or somewhere inside it.
-   */
+  /* A rail shows no child rows, so the branch carries the current page's fill. */
   :host([icon-only][active]) .nav-item {
     background-color: var(--c-color-accent-fill-quiet);
     border-color: var(--c-color-accent-border-normal);
@@ -462,7 +425,6 @@ export default css`
     }
   }
 
-  /* No room to indent, so the stand-ins sit directly under their parent. */
   :host([icon-only]) .subnav {
     margin: 0;
     border-inline-start: none;
@@ -470,13 +432,9 @@ export default css`
   }
 
   /*
-   * Without that indent nothing says the stand-ins belong to the icon above
-   * them, so a rule runs down beside them: the width of the active indicator,
-   * and pulled clear of the column the same way, so the icons stay centered on
-   * the rail and the two line up when a child is the current page.
-   *
-   * Not on a group — its children are already inside the branch's own subnav,
-   * and a second rule would land on top of the first.
+   * With no indent, a rule marks the stand-ins as the icon's children. It
+   * matches the active indicator so the two line up. Not on a group, whose
+   * children already sit inside the branch's rule.
    */
   :host([icon-only]:not([group])) .subnav {
     position: relative;
@@ -494,15 +452,8 @@ export default css`
   }
 
   /*
-   * A row has space for one thing, so the disclosure sits over the icon rather
-   * than beside or below it — invisible and click-through until it's tabbed
-   * to, since a pointer has hover for the flyout and the icon itself to click.
-   *
-   * Opacity rather than visibility or display: those would take it out of the
-   * tab order, and then nothing could ever focus it into view.
-   *
-   * The button stays 24px square for 2.5.8 Target Size even though the chevron
-   * in it is much smaller.
+   * Hidden over the icon until tabbed to; pointers have hover and the icon.
+   * Opacity, since visibility or display would drop it from the tab order.
    */
   .rail-toggle {
     position: absolute;
@@ -511,16 +462,14 @@ export default css`
     z-index: 1;
     display: grid;
     place-items: center;
-    /* The row's whole box, so the chevron lands dead on the icon it replaces
-       — and the button fills it, so the focus ring appears exactly where the
-       row's own would. Well past the 24px 2.5.8 floor either way. */
+    /* The row's whole box, so the chevron and focus ring land where the row's
+       would. */
     width: var(--_rail-size);
     height: var(--_rail-size);
     /* The row's ring offset, which the plain button would otherwise inset. */
     --_row-focus-outline-offset: var(--c-focus-outline-offset);
 
-    /* A plain button is transparent, which would leave only a bare chevron
-       and its ring to show a keyboard user where they are. */
+    /* Filled, so a keyboard user sees more than a bare chevron. */
     craft-button {
       --c-focus-outline-offset: var(--_row-focus-outline-offset);
       width: 100%;
@@ -533,11 +482,7 @@ export default css`
       pointer-events: none;
     }
 
-    /*
-     * The chevron stands in for the icon in the same square, so it matches the
-     * nav item's icon size, rather than the subnav toggle's smaller chevron or
-     * the small button's smaller icons.
-     */
+    /* Matches the nav item's icon, which it replaces. */
     --_rail-icon-size: var(
       --c-icon-size,
       var(--c-size-icon-sm, calc(12rem / 16))
@@ -548,15 +493,11 @@ export default css`
     }
   }
 
-  /* The chevron stands in for the icon while it's up, so there's nothing
-     underneath for it to have to read against. */
   :host([icon-only]) li:has(.rail-toggle:focus-within) .nav-item__prefix {
     opacity: 0;
   }
 
-  /* A heading's stand-in: the rule between one run of icons and the next. The
-     space above belongs to the rule itself, not a margin carried over from the
-     expanded heading. */
+  /* On a rail a heading becomes a rule, which owns the space above it. */
   :host([group][icon-only]) {
     margin-block-start: 0;
     padding-block-start: var(--c-spacing-sm);
@@ -574,13 +515,8 @@ export default css`
   }
 
   /*
-   * A letter standing in for an icon: a filled chip, so it reads as a mark
-   * rather than as a word cut short, and sits quieter than the real icons it
-   * shares a column with.
-   *
-   * The fill is mixed from currentcolor rather than a surface token — the nav
-   * takes its background from whatever it's placed in, so there's nothing
-   * fixed to match.
+   * A filled chip, so a letter reads as a mark rather than a truncated word.
+   * Mixed from currentcolor since the nav's background comes from its container.
    */
   .nav-item__initial {
     display: grid;
@@ -599,8 +535,7 @@ export default css`
     border-radius: 0;
   }
 
-  /* No gap, so the empty suffix column doesn't carry one and leave the bar
-     below wider than the label it marks. */
+  /* No gap, so the empty suffix column doesn't widen the bar past the label. */
   :host([appearance='tabs']) .nav-item {
     gap: 0;
     padding-inline: 0;

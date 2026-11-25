@@ -164,6 +164,8 @@ trait QueriesUserProperties
      *
      * @param  mixed  $value  The property value
      *
+     * @phpstan-return static
+     *
      * @uses $username
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ usernames.')]
@@ -201,6 +203,8 @@ trait QueriesUserProperties
      * ```
      *
      * @param  mixed  $value  The property value
+     *
+     * @phpstan-return static
      *
      * @uses $fullName
      */
@@ -240,6 +244,8 @@ trait QueriesUserProperties
      *
      * @param  mixed  $value  The property value
      *
+     * @phpstan-return static
+     *
      * @uses $firstName
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the users’ first names.')]
@@ -277,6 +283,8 @@ trait QueriesUserProperties
      * ```
      *
      * @param  mixed  $value  The property value
+     *
+     * @phpstan-return static
      *
      * @uses $lastName
      */
@@ -317,6 +325,8 @@ trait QueriesUserProperties
      * ```
      *
      * @param  mixed  $value  The property value
+     *
+     * @phpstan-return static
      *
      * @uses $email
      */
@@ -362,6 +372,8 @@ trait QueriesUserProperties
      *
      * @param  mixed  $value  The property value
      *
+     * @phpstan-return static
+     *
      * @uses $lastLoginDate
      */
     #[ElementQueryParam(ElementQueryParamType::String, 'Narrows the query results based on the users’ last login dates.')]
@@ -393,6 +405,8 @@ trait QueriesUserProperties
      * ```
      *
      * @uses $hasPhoto
+     *
+     * @phpstan-return static
      */
     #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only users that have (or don’t have) a user photo.')]
     public function hasPhoto(bool $value = true): self
