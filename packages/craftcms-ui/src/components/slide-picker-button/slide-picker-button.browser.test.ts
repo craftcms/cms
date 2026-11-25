@@ -1,17 +1,20 @@
 import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
+import {outlineRows, pixels} from '../../../test/pixels';
 import {movePointerAway} from '../../../test/pointer';
 import type CraftSlidePickerButton from './slide-picker-button.js';
 import './slide-picker-button.js';
 import '../../styles/cp.css';
 
-beforeEach(() => {
+beforeEach(async () => {
+  await page.viewport(414, 720);
   document.body.innerHTML = '';
 });
 
 afterEach(async () => {
   await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  await cdp().send('Emulation.clearDeviceMetricsOverride');
   await movePointerAway();
 });
 
@@ -26,6 +29,14 @@ async function render(markup: string): Promise<CraftSlidePickerButton> {
 
 function invoker(button: CraftSlidePickerButton): HTMLElement {
   return button.shadowRoot!.querySelector<HTMLElement>('craft-button')!;
+}
+
+function track(button: CraftSlidePickerButton): HTMLElement {
+  return button.shadowRoot!.querySelector<HTMLElement>('.segments')!;
+}
+
+function divider(segment: Element): string {
+  return getComputedStyle(segment, '::after').backgroundColor;
 }
 
 function slider(button: CraftSlidePickerButton): HTMLElement {
@@ -216,27 +227,15 @@ it.each(['light', 'dark'] as const)(
     const surface = getComputedStyle(
       document.querySelector('.surface')!
     ).backgroundColor;
-    const styles = [...button.shadowRoot!.querySelectorAll('.segment')].map(
-      (segment) => getComputedStyle(segment)
-    );
-    const [first, second, third, last] = styles as [
-      CSSStyleDeclaration,
-      CSSStyleDeclaration,
-      CSSStyleDeclaration,
-      CSSStyleDeclaration,
-    ];
+    const filled = getComputedStyle(track(button), '::before');
+    const empty = getComputedStyle(track(button), '::after');
+    const segments = [...button.shadowRoot!.querySelectorAll('.segment')];
     const edges: Record<string, [string, string]> = {
-      'start edge': [first.borderLeftColor, surface],
-      'end edge': [last.borderRightColor, surface],
-      ...Object.fromEntries(
-        styles.flatMap((style, index) => [
-          [`segment ${index + 1} top`, [style.borderTopColor, surface]],
-          [`segment ${index + 1} bottom`, [style.borderBottomColor, surface]],
-        ])
-      ),
+      'outline vs surface': [empty.borderTopColor, surface],
+      'filled run outline vs surface': [filled.borderTopColor, surface],
       'filled run end vs empty fill': [
-        second.borderRightColor,
-        third.backgroundColor,
+        divider(segments[1]!),
+        empty.backgroundColor,
       ],
     };
 
@@ -282,14 +281,9 @@ it('draws filled segments in Highlight and empty ones in Canvas with a ButtonBor
   const button = await render(
     `<craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
   );
+  const filled = getComputedStyle(track(button), '::before');
+  const empty = getComputedStyle(track(button), '::after');
   const segments = [...button.shadowRoot!.querySelectorAll('.segment')];
-  const [filled, , empty] = segments.map((segment) =>
-    getComputedStyle(segment)
-  );
-  const divider = (segment: Element) =>
-    getComputedStyle(segment, '::after').backgroundImage.match(
-      /(?:rgba?|color)\([^)]*\)/g
-    ) ?? [];
   const probe = document.createElement('span');
   probe.style.forcedColorAdjust = 'none';
   document.body.append(probe);
@@ -298,19 +292,48 @@ it('draws filled segments in Highlight and empty ones in Canvas with a ButtonBor
     return getComputedStyle(probe).color;
   };
 
-  expect(filled!.backgroundColor).toBe(system('Highlight'));
-  expect(empty!.backgroundColor).toBe(system('Canvas'));
-  expect(empty!.borderTopColor).toBe(system('ButtonBorder'));
-  expect(divider(segments[0]!)).toEqual([
-    system('Highlight'),
-    system('Canvas'),
+  expect(filled.backgroundColor).toBe(system('Highlight'));
+  expect(empty.backgroundColor).toBe(system('Canvas'));
+  expect(empty.borderTopColor).toBe(system('ButtonBorder'));
+  expect(segments.slice(0, -1).map(divider)).toEqual([
     system('Canvas'),
     system('Highlight'),
+    system('ButtonBorder'),
   ]);
-  expect(new Set(divider(segments[2]!))).toEqual(
-    new Set([system('ButtonBorder')])
-  );
 });
+
+it.each([1.25, 1.5])(
+  'keeps its outline even, with the lines between segments inside it, at a device pixel ratio of %s',
+  async (ratio) => {
+    await cdp().send('Emulation.setDeviceMetricsOverride', {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      deviceScaleFactor: ratio,
+      mobile: false,
+    });
+    const uneven: number[] = [];
+
+    for (const offset of [0, 0.2, 0.4, 0.6, 0.8]) {
+      const button = await render(
+        `<div class="surface" style="background-color: var(--c-surface-default); padding: 8px; padding-block-start: ${8 + offset}px; display: inline-block"><craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
+      );
+      const surface = document.querySelector('.surface')!;
+      const image = await pixels(surface);
+      const rows = outlineRows(
+        image,
+        surface.getBoundingClientRect(),
+        track(button).getBoundingClientRect(),
+        image.at(1, 1)
+      );
+      if (rows.size !== 1) {
+        uneven.push(offset);
+      }
+    }
+
+    expect(window.devicePixelRatio).toBe(ratio);
+    expect(uneven).toEqual([]);
+  }
+);
 
 it('is at least 24×24 CSS px, and so is each segment in the popover', async () => {
   const button = await render(

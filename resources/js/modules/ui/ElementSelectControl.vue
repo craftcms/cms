@@ -18,8 +18,7 @@
   import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
   import {useUiPreview} from './uiPreview';
-  import {openSlideout} from '@/common/slideouts';
-  import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+  import {openElementEditor} from '@/modules/elements/open-element-editor';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import RelationSearch from './element-select/RelationSearch.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
@@ -639,26 +638,16 @@
       return;
     }
 
-    const element = presentation(value);
-    const href =
-      element.cpEditUrl ??
-      EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
-        undefined,
-        {
-          query: {
-            elementType: props.control.props.elementType,
-            elementId: element.id,
-            siteId: element.siteId ?? null,
-          },
-        }
-      );
-
-    void openSlideout(href, {
-      // Registering a handler keeps a save from reloading the page behind,
-      // which would throw away the owner's unsaved edits.
-      onSaved: ({data}) =>
-        replaceAsset(data?.replacedAssetId, data?.newAssetId),
-    });
+    void openElementEditor(
+      presentation(value),
+      props.control.props.elementType,
+      {
+        // Registering a handler keeps a save from reloading the page behind,
+        // which would throw away the owner's unsaved edits.
+        onSaved: ({data}) =>
+          replaceAsset(data?.replacedAssetId, data?.newAssetId),
+      }
+    );
   }
 
   /** An image saved as a new asset takes the edited asset's place. */

@@ -90,10 +90,10 @@ describe('textarea', function () {
         expect($html)->toContain('aria-describedby="help"');
     });
 
-    it('marks the textarea for the chars-left counter without padding', function () {
+    it('shows the chars-left counter on the host', function () {
         $html = Textarea::make()->id('i')->maxlength(255)->showCharsLeft()->toHtml();
 
-        expect($html)->toContain('data-show-chars-left')
+        expect($html)->toContain('maxlength="255" show-chars-left')
             ->and($html)->not->toContain('padding');
     });
 

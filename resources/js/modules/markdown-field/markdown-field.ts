@@ -2,7 +2,7 @@ import OverType, {
   type Options,
   type OverType as OverTypeInstance,
 } from 'overtype';
-import {t} from '@craftcms/ui';
+import {formatNumber, t} from '@craftcms/ui';
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {
@@ -357,16 +357,20 @@ class MarkdownField extends LitElement {
     const maxLength = this.maxLength;
     const counter = document.createElement('div');
     counter.className = 'markdown-field-char-counter';
-    counter.setAttribute('aria-live', 'polite');
+    counter.setAttribute('role', 'status');
+    const label = document.createElement('span');
+    label.className = 'sr-only';
+    const number = document.createElement('span');
+    number.setAttribute('aria-hidden', 'true');
+    counter.append(label, number);
 
     const updateCounter = () => {
       const charsLeft = maxLength - editor.textarea.value.length;
 
-      counter.textContent = String(charsLeft);
-      counter.setAttribute(
-        'aria-label',
-        t('Characters left: {chars, number}', {chars: charsLeft})
-      );
+      label.textContent = t('Characters left: {chars, number}', {
+        chars: charsLeft,
+      });
+      number.textContent = formatNumber(charsLeft);
       counter.classList.toggle('negative-chars-left', charsLeft < 0);
     };
 

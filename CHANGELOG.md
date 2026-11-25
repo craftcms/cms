@@ -5,6 +5,8 @@
 > [!WARNING]
 > Sites that set `CRAFT_EPHEMERAL` on a read-only filesystem should now turn off automatic project config YAML writes by calling `writeYamlAutomatically(false)` on `CraftCms\Cms\ProjectConfig\ProjectConfig` from a service provider, and make sure Laravel’s storage path is writable. With the Yii adapter installed, `resourceBasePath` should also point to a writable directory, or the `assetManager` component should serve resources published at build time.
 
+- Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
+- GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
@@ -28,6 +30,7 @@
 - Added the `storage-key` attribute to `craft-dialog` and `craft-resize-grips`, and the `storageKey` prop to `ModalForm`. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element saves, deletions, restorations, nested element reordering, and URI updates now invalidate each cache tag once per operation, and propagations once per element. Element cache tags invalidated inside a database transaction are now invalidated when it commits. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Added `CraftCms\Cms\Element\ElementCaches::deferInvalidations()` and `hasPendingInvalidations()`. ([#21058](https://github.com/craftcms/cms/pull/21058))
+- Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
 - Fixed a bug where shared caches could store responses to token and site token requests. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses that saved or refreshed a lazy session. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses containing the session’s CSRF token, unless `csrfInput()` output it. ([#20953](https://github.com/craftcms/cms/pull/20953))
@@ -43,6 +46,8 @@
 - Fixed a bug where PHP could crash when getting the URL or dimensions of a legacy `craft\elements\Asset` after calling `setTransform()`. ([#21089](https://github.com/craftcms/cms/pull/21089))
 - Fixed a bug where Number and Money fields’ Size setting didn’t change their inputs’ width. ([#21054](https://github.com/craftcms/cms/issues/21054), [#21068](https://github.com/craftcms/cms/pull/21068))
 - Fixed a bug where Number fields didn’t show their prefix or suffix text. ([#21060](https://github.com/craftcms/cms/issues/21060), [#21063](https://github.com/craftcms/cms/pull/21063))
+- Fixed a bug where Plain Text fields with a character limit didn’t show how many characters were left. ([#21066](https://github.com/craftcms/cms/issues/21066), [#21076](https://github.com/craftcms/cms/pull/21076))
+- Fixed a bug where field layout elements’ width controls had uneven outlines at 125% and 150% display scaling. ([#21071](https://github.com/craftcms/cms/issues/21071), [#21078](https://github.com/craftcms/cms/pull/21078))
 - Fixed a bug where the `configuration_*` MCP tools couldn’t assign a workflow to a section. ([#21042](https://github.com/craftcms/cms/issues/21042), [#21051](https://github.com/craftcms/cms/pull/21051))
 - Fixed a bug where `craft:users:create` could create users with a username or email that was already taken. ([#21040](https://github.com/craftcms/cms/issues/21040), [#21052](https://github.com/craftcms/cms/pull/21052))
 - Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes and legacy asset publishing no longer depend on it. `app()->isEphemeral()` and `craft\helpers\App::isEphemeral()` are deprecated, and only available with the Yii adapter. ([#20547](https://github.com/craftcms/cms/pull/20547))
@@ -50,6 +55,8 @@
 Error summaries shown when a save fails now show field names in bold, and each error links to its field, including custom fields and fields within settings screens’ scoped or sidebar layouts. Errors within Table fields’ cells, and within Matrix and Addresses fields shown as cards or an index, are no longer listed separately from their field’s own error, and the links are now at least 24px tall. ([#20935](https://github.com/craftcms/cms/pull/20935))
 - The Yii2 Loose Ends utility now lists sites whose base URL uses the `@web` alias, which is only defined when the Yii adapter is installed. ([#20989](https://github.com/craftcms/cms/issues/20989))
 - Eloquent element types and their relation fields are now available in GraphQL. ([#21014](https://github.com/craftcms/cms/pull/21014))
+- Added `CraftCms\Cms\Ui\Controls\Text::showCharsLeft()` and `CraftCms\Cms\Ui\Controls\Textarea::showCharsLeft()`. ([#21066](https://github.com/craftcms/cms/issues/21066), [#21076](https://github.com/craftcms/cms/pull/21076))
+- Added the `show-chars-left` attribute to `craft-input` and `craft-textarea`. ([#21066](https://github.com/craftcms/cms/issues/21066), [#21076](https://github.com/craftcms/cms/pull/21076))
 - Added `CraftCms\Cms\Element\Eloquent\EloquentElement::gqlScope()` and `gqlTypeName()`. ([#21014](https://github.com/craftcms/cms/pull/21014))
 - Added `CraftCms\Cms\ProjectConfig\Exceptions\ProjectConfigWriteException`, which `CraftCms\Cms\ProjectConfig\ConfigStorage::writeYaml()` throws when the YAML files can’t be written. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - Added `CraftCms\Cms\Validation\Concerns\LabelsAttributes`, which gives validation rules the label of the attribute they’re validating, for the `{attribute}` placeholder in their messages, and `CraftCms\Cms\Support\Str::stripEmphasis()`. ([#20935](https://github.com/craftcms/cms/pull/20935))
@@ -57,7 +64,9 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Added the `rootOnly()` route macro, for routes in the `craft` middleware group that should only match at the app’s root URL and keep it in their URLs. ([#20988](https://github.com/craftcms/cms/issues/20988), [#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Route\Routes::getAllProjectConfigRoutes()`. ([#21015](https://github.com/craftcms/cms/pull/21015))
 - Added `CraftCms\Cms\Cp\Components\Input::prefix()` and `CraftCms\Cms\Ui\Controls\Text::prefix()`. ([#21063](https://github.com/craftcms/cms/pull/21063))
+- Asset selector modals’ index adapters now have `refresh()` and `selectElements()` methods. ([#21036](https://github.com/craftcms/cms/issues/21036))
 - Fixed a bug where queue workers kept every remote image they downloaded to generate transforms until the worker stopped, which could fill up local storage. Each one is now deleted when its job finishes. ([#20803](https://github.com/craftcms/cms/issues/20803))
+- Fixed a bug where elements selected in Link fields weren’t shown as chips, and couldn’t be edited, copied, replaced, or removed from an action menu. ([#21025](https://github.com/craftcms/cms/pull/21025))
 - Fixed a bug where files passed to `craft\helpers\FileHelper::deleteFileAfterRequest()` from a queued job weren’t deleted until the queue worker stopped. They’re now deleted when the job finishes.
 - Fixed a bug where the request that generated an image transform gave it a different URL than later requests did. ([#20957](https://github.com/craftcms/cms/pull/20957))
 - Fixed a bug where <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> didn’t save element editor slideouts opened from full-page element editors. ([#21021](https://github.com/craftcms/cms/pull/21021))
@@ -94,6 +103,9 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where checking “All” in Link fields’ element sources and Markdown fields’ “Available Volumes” settings didn’t check the other options. ([#21059](https://github.com/craftcms/cms/pull/21059))
 - Fixed a bug where option and Color field values didn’t show their colors in element indexes and cards. ([#21055](https://github.com/craftcms/cms/issues/21055), [#21070](https://github.com/craftcms/cms/pull/21070))
 - Fixed a bug where generated fields couldn’t be shown as element index columns. ([#21079](https://github.com/craftcms/cms/issues/21079), [#21087](https://github.com/craftcms/cms/pull/21087))
+- Fixed a bug where eager-loading maps that covered more than one element type, or were returned as a list of maps, only loaded the elements from one of them.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
 ## 6.0.0-beta.2 - 2026-11-20
 
