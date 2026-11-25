@@ -514,6 +514,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $countryCode
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ country codes.')]
@@ -554,6 +556,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $administrativeArea
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ administrative areas.')]
@@ -592,6 +596,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ```
      *
      * @param  string[]|string|null  $value
+     *
+     * @phpstan-return static
      *
      * @uses $locality
      */
@@ -632,6 +638,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $dependentLocality
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ dependent localities.')]
@@ -670,6 +678,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ```
      *
      * @param  string[]|string|null  $value
+     *
+     * @phpstan-return static
      *
      * @uses $postalCode
      */
@@ -710,6 +720,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $sortingCode
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ sorting codes.')]
@@ -748,6 +760,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ```
      *
      * @param  string[]|string|null  $value
+     *
+     * @phpstan-return static
      *
      * @uses $organization
      */
@@ -788,6 +802,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $organizationTaxId
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ organization tax IDs.')]
@@ -826,6 +842,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ```
      *
      * @param  string[]|string|null  $value
+     *
+     * @phpstan-return static
      *
      * @uses $addressLine1
      */
@@ -866,6 +884,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $addressLine2
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ second address lines.')]
@@ -904,6 +924,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ```
      *
      * @param  string[]|string|null  $value
+     *
+     * @phpstan-return static
      *
      * @uses $addressLine3
      */
@@ -944,6 +966,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $fullName
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ full names.')]
@@ -983,6 +1007,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @param  string[]|string|null  $value
      *
+     * @phpstan-return static
+     *
      * @uses $firstName
      */
     #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ first names.')]
@@ -1021,6 +1047,8 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ```
      *
      * @param  string[]|string|null  $value
+     *
+     * @phpstan-return static
      *
      * @uses $lastName
      */

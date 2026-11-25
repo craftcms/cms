@@ -79,6 +79,8 @@ trait QueriesAssetUploaders
      * ```
      *
      * @uses $assetUploaders
+     *
+     * @phpstan-return static
      */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results based on whether the users have uploaded any assets.')]
     public function assetUploaders(?bool $value = true): self
