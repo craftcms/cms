@@ -198,6 +198,11 @@ class DeletionBlockersTest extends TestCase
             self::assertNotContains('Move entries', array_column($entries->getActions(), 'label'));
             $pageEntries = $this->activeBlocker($this->blockers('section', $this->pages), TrashedElementsBlocker::class);
             self::assertContains('Move entries', array_column($pageEntries->getActions(), 'label'));
+
+            // Entries can’t be moved out of a Single, even when another section accepts their type
+            $single = $this->createSection('blockerSingle', [$this->page], Section::TYPE_SINGLE);
+            $singleEntries = $this->activeBlocker($this->blockers('section', $single), TrashedElementsBlocker::class);
+            self::assertNotContains('Move entries', array_column($singleEntries->getActions(), 'label'));
         } finally {
             Craft::$app->getFields()->deleteField($anything);
         }
@@ -406,9 +411,9 @@ class DeletionBlockersTest extends TestCase
     /**
      * @param EntryType[] $entryTypes
      */
-    private function createSection(string $handle, array $entryTypes): Section
+    private function createSection(string $handle, array $entryTypes, string $type = Section::TYPE_CHANNEL): Section
     {
-        $section = new Section(['name' => $handle, 'handle' => $handle, 'type' => Section::TYPE_CHANNEL]);
+        $section = new Section(['name' => $handle, 'handle' => $handle, 'type' => $type]);
         $section->setEntryTypes($entryTypes);
         $section->setSiteSettings([
             new Section_SiteSettings(['siteId' => Craft::$app->getSites()->getPrimarySite()->id, 'hasUrls' => false]),

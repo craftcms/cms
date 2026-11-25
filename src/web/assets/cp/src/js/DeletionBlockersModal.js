@@ -106,7 +106,14 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
       try {
         data = await this.loadBlockers();
       } catch (e) {
-        Craft.cp.displayError(e?.response?.data?.message);
+        if (this.modal?.visible) {
+          Craft.cp.displayError(e?.response?.data?.message);
+        }
+        return;
+      }
+
+      // The modal was closed while the blockers were loading
+      if (!this.modal?.visible) {
         return;
       }
 
@@ -121,11 +128,13 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
         this.$heading.text(
           Craft.t('app', 'Nothing is blocking the deletion anymore.')
         );
-        return;
+      } else {
+        this.$heading.html(this.getHeadingHtml(data));
+        await this.showBlockers(data);
       }
 
-      this.$heading.html(this.getHeadingHtml(data));
-      await this.showBlockers(data);
+      // The button that had focus is gone, so move focus to the updated heading, which also labels the modal
+      this.$heading.trigger('focus');
     },
 
     getHeadingHtml: function (data) {
@@ -174,8 +183,12 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
         class: 'body',
       }).appendTo($container);
 
+      const headingId = `deletion-blockers-heading-${Craft.randomString(10)}`;
+      $container.attr('aria-labelledby', headingId);
       this.$heading = $('<h1/>', {
+        id: headingId,
         class: 'flex flex-inline items-center gap-xs',
+        tabindex: '-1',
         html: this.getHeadingHtml(data),
       }).appendTo($body);
 
