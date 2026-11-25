@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -79,7 +80,7 @@ class ImageTransformer
 
         $index = $this->getTransformIndex($asset, $imageTransform);
         $disk = $this->transformDisk($asset, $transformer);
-        $transformHasUrls = $this->transformHasUrls($asset, $transformer);
+        $transformHasUrls = $this->transformHasUrls($asset->getVolume(), $transformer);
         $uri = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
@@ -183,7 +184,7 @@ class ImageTransformer
 
     public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
     {
-        return $this->transformHasUrls($asset, $this->currentTransformer($asset->getVolume()));
+        return $this->transformHasUrls($asset->getVolume(), $this->currentTransformer($asset->getVolume()));
     }
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
@@ -235,13 +236,27 @@ class ImageTransformer
         ?AssetTransformer $transformer = null,
     ): void {
         $transformer ??= $this->currentTransformer($asset->getVolume());
-        $diskPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $transformIndex);
+        $folderPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath);
+        // Disk paths use forward slashes on every OS
+        $diskPath = $folderPath.$this->getTransformUri($asset, $transformIndex);
 
         try {
+            // Only a generated transform was served from its own URL. It’s built as getTransformUrl() served it,
+            // revved with when the transform was generated.
+            $url = $transformIndex->fileExists && $this->transformHasUrls($asset->getVolume(), $transformer)
+                ? Html::encodeSpaces(AssetsHelper::revUrl(
+                    $this->transformDisk($asset, $transformer)->url($diskPath),
+                    $asset,
+                    $transformIndex->dateIndexed,
+                ))
+                : null;
+
             event(new DeletingTransformedImage(
                 asset: $asset,
                 imageTransformIndex: $transformIndex,
                 path: $diskPath,
+                disk: $this->outputDisk($asset->getVolume(), $transformer),
+                url: $url,
             ));
             $this->transformDisk($asset, $transformer)->delete($diskPath);
         } catch (Throwable) {
@@ -753,6 +768,20 @@ class ImageTransformer
     }
 
     /**
+     * Returns the URL of the directory that holds the transforms of a volume folder’s assets, or null if transforms
+     * don’t have public URLs.
+     */
+    public function getTransformFolderUrl(Volume $volume, ?string $folderPath): ?string
+    {
+        if (! $this->transformHasUrls($volume, $this->currentTransformer($volume))) {
+            return null;
+        }
+
+        // Built like getTransformUrl() builds transform URLs, so it’s a prefix of them
+        return Html::encodeSpaces($this->getTransformDisk($volume)->url($this->getTransformFolderPath($volume, $folderPath)));
+    }
+
+    /**
      * Returns the disk that a volume’s transforms are stored on.
      */
     public function getTransformDisk(Volume $volume): FilesystemAdapter
@@ -769,7 +798,7 @@ class ImageTransformer
      * Returns the `craft` driver’s `has_urls`. It defaults to the volume’s setting when transforms are stored on the
      * volume’s own disk, and to `false` on any other disk.
      */
-    private function transformHasUrls(Asset $asset, AssetTransformer $transformer): bool
+    private function transformHasUrls(Volume $volume, AssetTransformer $transformer): bool
     {
         $hasUrls = $transformer->settings['has_urls'] ?? null;
 
@@ -777,9 +806,7 @@ class ImageTransformer
             return $hasUrls;
         }
 
-        $volume = $asset->getVolume();
-
-        return $this->outputDisk($asset->getVolume(), $transformer) === $volume->getResolvedDisk() && $volume->sourceHasUrls();
+        return $this->outputDisk($volume, $transformer) === $volume->getResolvedDisk() && $volume->sourceHasUrls();
     }
 
     /**

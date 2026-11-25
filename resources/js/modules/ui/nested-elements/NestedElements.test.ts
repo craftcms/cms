@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, shallowRef} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {openActionMenus} from '@/test/action-menus';
 import {savedNestedOwner} from '@/modules/elements/nested-owner';
 import type {ActionItemButton} from '@/common/types';
 import type {NestedElement, NestedElementsProps} from './nested-elements';
@@ -132,7 +133,10 @@ describe('NestedElements', () => {
     app.mount(root);
   }
 
-  function action(label: string): HTMLElement | undefined {
+  async function action(label: string): Promise<HTMLElement | undefined> {
+    openActionMenus(root);
+    await nextTick();
+
     return [...root.querySelectorAll<HTMLElement>('craft-action-item')].find(
       (item) => item.textContent?.trim() === label
     );
@@ -144,7 +148,7 @@ describe('NestedElements', () => {
     mount(refresh);
     await nextTick();
 
-    action('Delete address')!.click();
+    (await action('Delete address'))!.click();
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
 
     expect(actions.run).toHaveBeenCalledWith(
@@ -193,7 +197,7 @@ describe('NestedElements', () => {
     mount(refresh);
     await nextTick();
 
-    action('Delete address')!.click();
+    (await action('Delete address'))!.click();
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
     broadcaster.dispatchEvent(
       new MessageEvent('message', {data: {event: 'saveElement', id: 14}})

@@ -115,6 +115,30 @@ Put exactly one supported lookup key in `identifier`. Keep replacement values in
 
 All configuration tools require administrator access. Writes also require `allowAdminChanges`. Read the selected delete schema's effects before deleting: behavior depends on the type and can affect related content. For sites, `options.transferContentTo` selects the destination site ID. Existing `craft://` resources remain available. Permission assignment and project-config operations keep their dedicated tools.
 
+### Element source and condition tools
+
+Three tools manage element index sidebars and the conditions used in sidebars, field layouts, and relation fields:
+
+| Tool | Purpose |
+| --- | --- |
+| `element_sources_get` | Returns an element type's index sidebar as one document, with its `revision` and the columns, sort options, view modes, sites, and user groups that `element_sources_save` accepts |
+| `element_sources_save` | Replaces an element type's whole index sidebar, or restores Craft's default sidebar with `reset: true` |
+| `condition_schema` | Lists the rules a condition accepts in one place, with each rule's operators and options |
+
+The sidebar document matches what Customize Sources shows in the control panel. Entries have pages, each with its own sources, so `element_sources_get` returns `multiPage: true` for them and `element_sources_save` takes `pages`. Other element types take `sources`. Headings and sources are listed in display order, and each source belongs to the heading above it.
+
+To change a sidebar, read it, edit the document, and send it back with its revision as `expectedRevision`. Craft refuses the save if the sidebar has changed since the read. Headings and custom sources without a `key` are created, and ones left out are deleted. An existing source needs only its `type` and `key`. Settings it leaves out keep their saved values, and `null` restores the default. Native sources can't be removed or renamed, so set `enabled: false` to hide one. As in the control panel, native sources left out are added back at the end of the first page, and the result lists them in `addedNativeSources`.
+
+`condition_schema` takes a `context`:
+
+- `element-sources`: custom source conditions in `element_sources_save`. Pass `elementType`.
+- `field-layout`: the `userCondition` and `elementCondition` of field layout tabs and elements, in the `fieldLayout` attribute of the configuration tools. Pass `fieldLayout` with an existing layout's UID, or `elementType` for a new layout, and `condition` set to `element` or `user`. These conditions only hide tabs and fields in the edit form. They don't restrict permissions.
+- `relation-selection`: the `selectionCondition` setting of relation fields, such as Entries, Assets, and Users fields. Pass `field` with an existing field's handle or UID, or `fieldType` for a new field.
+
+Saves in all three places reject rules, operators, and values that the schema doesn't list, rather than letting Craft drop them. A relation field's `selectionCondition` replaces the saved condition as a whole.
+
+All three tools require administrator access. `element_sources_save` also requires `allowAdminChanges`.
+
 ## Authentication
 
 The authenticated server uses OAuth 2.1 through Laravel Passport. Craft publishes the discovery documents that MCP clients expect, so a client only needs the endpoint URL:

@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, provide, reactive, shallowRef} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {openActionMenus} from '@/test/action-menus';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import type {Selectable} from '@/common/composables/useSelectable';
@@ -251,7 +252,10 @@ describe('NestedElementsControl', () => {
     };
   }
 
-  function action(label: string): HTMLElement | undefined {
+  async function action(label: string): Promise<HTMLElement | undefined> {
+    openActionMenus(root);
+    await nextTick();
+
     return [...root.querySelectorAll<HTMLElement>('craft-action-item')].find(
       (item) => item.textContent?.trim() === label
     );
@@ -261,7 +265,7 @@ describe('NestedElementsControl', () => {
     const prepare = vi.fn().mockResolvedValue(null);
     mount({prepare});
 
-    action('Delete entry')!.click();
+    (await action('Delete entry'))!.click();
     await vi.waitFor(() =>
       expect(root.textContent).toContain('No nested elements were changed')
     );
@@ -280,7 +284,7 @@ describe('NestedElementsControl', () => {
     });
     mount({prepare});
 
-    action('Delete entry')!.click();
+    (await action('Delete entry'))!.click();
     await vi.waitFor(() =>
       expect(root.textContent).toContain('Could not prepare the owner draft')
     );
@@ -310,7 +314,7 @@ describe('NestedElementsControl', () => {
 
     expect(prepare).not.toHaveBeenCalled();
 
-    action('Delete entry')!.click();
+    (await action('Delete entry'))!.click();
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
 
     expect(prepare).toHaveBeenCalledOnce();
@@ -394,9 +398,9 @@ describe('NestedElementsControl', () => {
       ],
     });
 
-    expect(action('Delete entry')).toBeUndefined();
-    expect(action('Duplicate')).toBeUndefined();
-    const item = action('Open in plugin')!;
+    expect(await action('Delete entry')).toBeUndefined();
+    expect(await action('Duplicate')).toBeUndefined();
+    const item = (await action('Open in plugin'))!;
     expect(item).toHaveProperty('icon', 'star');
     item.click();
     await vi.waitFor(() => expect(opened).toHaveBeenCalledOnce());
@@ -432,7 +436,7 @@ describe('NestedElementsControl', () => {
 
       const target =
         presentation === 'menu'
-          ? action('Quote')!
+          ? (await action('Quote'))!
           : [
               ...root.querySelectorAll<HTMLElement>('[data-create-element]'),
             ].find((button) => button.textContent?.trim() === 'Add Quote')!;
@@ -634,7 +638,7 @@ describe('NestedElementsControl', () => {
   it('announces deletion and passes the standard confirmation to the action runner', async () => {
     const {refresh} = mount();
 
-    action('Delete entry')!.click();
+    (await action('Delete entry'))!.click();
     expect(useAnnouncer().announcement.value).toBe('Loading');
     await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
 
@@ -703,8 +707,8 @@ describe('NestedElementsControl', () => {
     });
 
     expect(root.querySelector('[aria-label="Select 14"]')).toBeNull();
-    expect(action('Delete entry')).toBeUndefined();
-    expect(action('Duplicate')).toBeUndefined();
+    expect(await action('Delete entry')).toBeUndefined();
+    expect(await action('Duplicate')).toBeUndefined();
 
     await nextTick();
     root.querySelector<HTMLElement>('[data-edit-element]')!.click();

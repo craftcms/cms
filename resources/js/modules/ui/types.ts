@@ -53,6 +53,8 @@ export type TextControlProps = {
   enlarged?: boolean;
   prefix?: string;
   suffix?: string;
+  /** The locale a number control's value is formatted in, posted alongside it. */
+  locale?: string;
   textExpanderTriggers?: TextExpanderTriggers;
 };
 

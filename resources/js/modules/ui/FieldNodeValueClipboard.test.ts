@@ -1,5 +1,6 @@
 import {createApp, defineComponent, h, inject, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {openActionMenus} from '@/test/action-menus';
 import {stubUiRenderer} from './renderer/context.test-support';
 import ActionMenuNode from './ActionMenuNode.vue';
 import {FieldActionItems} from './runtime';
@@ -145,6 +146,8 @@ describe('FieldNode value clipboard', () => {
   }
 
   function actionItem(handle: string, label: string): HTMLElement {
+    openActionMenus(field(handle));
+
     return [
       ...field(handle).querySelectorAll<HTMLElement>('craft-action-item'),
     ].find((item) => item.textContent?.trim() === label)!;

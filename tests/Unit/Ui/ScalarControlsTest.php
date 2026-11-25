@@ -56,7 +56,7 @@ function scalarControlsUi(): Ui
             ]),
         )->required(),
         Field::make('Number', Number::make('number')->min(0)->max(10)->step(0.5)),
-        Field::make('Range', Range::make('range')->min(1)->max(5)->step(1)),
+        Field::make('Range', Range::make('range')->min(1)->max(5)->step(1)->suffix('pts')),
         Field::make('Date', Date::make('date')->min('2026-01-01')->max('2026-12-31')),
         Field::make('Date and time',
             DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15)->fullWidth(),
@@ -106,7 +106,9 @@ it('resolves and renders scalar and choice Controls with canonical values', func
         ->and($crawler->filter('input[type="number"][name="settings[number]"][value=""][min="0"][max="10"][step="0.5"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input[width] input[name="settings[number]"]'))->toHaveCount(0)
         ->and($crawler->filter('input[type="number"][aria-invalid="true"]'))->toHaveCount(1)
-        ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
+        ->and($crawler->filter('.range-group input[type="range"][value="3"]'))->toHaveCount(1)
+        ->and($crawler->filter('.range-group input[type="number"][value="3"][min="1"][max="5"]:not([name])'))->toHaveCount(1)
+        ->and($crawler->filter('.range-group')->text())->toContain('pts')
         ->and($crawler->filter('input[type="date"][value="2026-08-04"][min="2026-01-01"][max="2026-12-31"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-date-time[width="full"] input[type="date"][name="settings[datetime][date]"][value="2026-08-04"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-input-date-time input[type="time"][name="settings[datetime][time]"][value="14:30"][step="900"]'))->toHaveCount(1)
@@ -122,6 +124,15 @@ it('resolves and renders scalar and choice Controls with canonical values', func
 it('uses the current formatting locale when money does not declare one', function () {
     expect(Money::make('price')->props()['locale'])->toBe(I18N::getFormattingLocale()->id);
 });
+
+it('sizes the range number input to fit its longest value', function (int|float $min, int|float $max, int|float $step, int $size) {
+    expect(Range::make('range')->min($min)->max($max)->step($step)->props()['size'])->toBe($size);
+})->with([
+    'whole numbers' => [0, 10, 1, 2],
+    'decimal step' => [0, 100, 0.5, 5],
+    'negative minimum' => [-1000, 10, 1, 5],
+    'negative decimal minimum' => [-50, 10, 0.25, 6],
+]);
 
 it('serializes choice presentations', function () {
     expect(Choice::make('choice')->presentation(ChoicePresentation::Buttons)->props()['presentation'])->toBe('buttons')
@@ -419,7 +430,9 @@ it('displays scalar and choice values without submitting them in non-editable mo
     expect($crawler->filter('[name]'))->toHaveCount(0)
         ->and($crawler->filter('textarea')->text())->toBe('<script>alert(1)</script>')
         ->and($crawler->filter('select option[value="1"][selected]'))->toHaveCount(1)
-        ->and($crawler->filter('input[type="range"][value="3"]'))->toHaveCount(1)
+        ->and($crawler->filter('.range-group input[type="range"][value="3"]'))->toHaveCount(1)
+        ->and($crawler->filter('.range-group input[type="number"][value="3"][min="1"][max="5"]:not([name])'))->toHaveCount(1)
+        ->and($crawler->filter('.range-group')->text())->toContain('pts')
         ->and($crawler->filter('input[type="date"][value="2026-08-04"]'))->toHaveCount(2)
         ->and($crawler->filter('input[value="Europe/Brussels"]'))->toHaveCount(1)
         ->and($crawler->filter('input[type="time"][value="14:30"]'))->toHaveCount(2)

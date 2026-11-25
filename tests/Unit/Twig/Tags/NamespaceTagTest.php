@@ -48,6 +48,14 @@ it('leaves for attributes unchanged when no matching id exists', function () {
     expect($result)->toContain('for="title"');
 });
 
+it('keeps macros imported in the body available after it', function () {
+    $result = $this->manager->renderString(
+        "{% macro hi() %}hi{% endmacro %}{% namespace 'ns' %}{% import _self as m %}{% endnamespace %}{{ m.hi() }}",
+    );
+
+    expect($result)->toBe('hi');
+});
+
 it('renders body directly when namespace is empty', function () {
     $result = $this->manager->renderString(
         '{% namespace "" %}<input name="title">{% endnamespace %}',

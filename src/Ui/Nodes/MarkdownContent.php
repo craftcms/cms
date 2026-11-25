@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Nodes;
 
+use CraftCms\Cms\Cp\Components\Pane;
+use CraftCms\Cms\Cp\Enums\PaneAppearance;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
@@ -12,6 +14,7 @@ use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\NodePayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiPayload;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Conditionable;
 
 /**
@@ -32,14 +35,20 @@ class MarkdownContent implements Node
 
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
-        return Html::tag('div', $node->props['html'], [
-            'class' => array_filter([
-                'markdown',
-                $node->props['displayInPane'] ? 'pane' : null,
-                "width-{$node->props['width']}",
-            ]),
+        $attributes = [
+            'class' => ['markdown', 'prose', "width-{$node->props['width']}"],
             'data-ui-node' => $node->uid,
-        ]);
+        ];
+
+        if ($node->props['displayInPane']) {
+            return Pane::make()
+                ->appearance(PaneAppearance::OutlineFill)
+                ->content(new HtmlString($node->props['html']))
+                ->attributes($attributes)
+                ->toHtml();
+        }
+
+        return Html::tag('div', $node->props['html'], $attributes);
     }
 
     public static function make(string $uid, string $content): self
