@@ -23,6 +23,15 @@ it('outputs only the date or time', function (string $date, array $arguments, st
     'date and time by default' => ['2026-11-24 13:45:10', ['timezone' => 'UTC'], '2026-11-24T13:45:10+00:00'],
 ]);
 
+it('formats PHP formats in the requested time zone', function (string $date, array $arguments, string $expected) {
+    expect(applyFormatDateTime($date, $arguments))->toBe($expected);
+})->with([
+    'date and time by default' => ['2026-11-24 13:45:10', ['timezone' => 'America/New_York'], '2026-11-24T08:45:10-05:00'],
+    'date that falls on the previous day' => ['2026-11-24 03:45:10', ['output' => 'date', 'format' => 'd/m/Y', 'timezone' => 'America/New_York'], '23/11/2026'],
+    'time' => ['2026-11-24 13:45:10', ['output' => 'time', 'format' => 'H:i', 'timezone' => 'Asia/Kolkata'], '19:15'],
+    'time with the time zone appended' => ['2026-11-24 13:45:10', ['output' => 'time', 'format' => 'H:i', 'timezone' => 'America/New_York', 'withTimeZone' => true], '08:45 EST'],
+]);
+
 it('rejects an unknown output', function () {
     applyFormatDateTime('2026-11-24 13:45:10', ['output' => 'week']);
 })->throws(UserError::class, 'Invalid output: week');
