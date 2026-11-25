@@ -105,6 +105,8 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where generated fields couldn’t be shown as element index columns. ([#21079](https://github.com/craftcms/cms/issues/21079), [#21087](https://github.com/craftcms/cms/pull/21087))
 - Fixed a bug where eager-loading maps that covered more than one element type, or were returned as a list of maps, only loaded the elements from one of them.
 - Fixed a bug where Range fields were drawn as a text input with no slider track, and didn’t show their number input or suffix. ([#21056](https://github.com/craftcms/cms/issues/21056), [#21072](https://github.com/craftcms/cms/pull/21072))
+- Fixed a bug where Markdown field layout UI elements weren’t displayed in a pane when “Display content in a pane” was enabled, and their lists had no bullets or numbers. ([#21061](https://github.com/craftcms/cms/issues/21061), [#21074](https://github.com/craftcms/cms/pull/21074))
+- Fixed a bug where paragraphs and lists in callouts and Markdown UI elements had no space between them. ([#21074](https://github.com/craftcms/cms/pull/21074))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 

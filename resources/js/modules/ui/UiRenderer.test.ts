@@ -2263,7 +2263,9 @@ describe('UiRenderer', () => {
     expect(tab?.querySelector('[slot="warning"] strong')?.textContent).toBe(
       'publicly'
     );
-    expect(content?.classList.contains('pane')).toBe(true);
+    expect(content?.localName).toBe('craft-pane');
+    expect(content?.getAttribute('appearance')).toBe('outline-fill');
+    expect(content?.classList.contains('prose')).toBe(true);
     expect(content?.classList.contains('width-50')).toBe(true);
     expect(content?.querySelector('strong')?.textContent).toBe(
       'Editorial note'
