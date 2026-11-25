@@ -15,7 +15,9 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
+use ReflectionClass;
 use Throwable;
+use Twig\Environment as TwigEnvironment;
 use Twig\Extension\CoreExtension;
 use Twig\Template as TwigTemplate;
 
@@ -86,6 +88,34 @@ class Deprecator
             'message' => $message,
             'traces' => $this->processStackTrace($traces),
         ]);
+    }
+
+    /**
+     * Logs a deprecation warning that Twig triggered.
+     *
+     * Twig ends most of its messages with the template and line, as in `in "_layouts/base.twig" at line 3.`.
+     * When it doesn't, the warning is attributed to the first caller outside of Twig and Craft, such as the template
+     * that passed a deprecated value to a Craft filter, or the plugin that called a deprecated Twig function.
+     *
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results whose first frame is the `trigger_deprecation()` call
+     */
+    public function logTwigDeprecation(string $message, array $traces): void
+    {
+        if (preg_match('/\s\(?in (?:"([^"]+)"|(\S+(?: \(string template \w+\))?)) at line (\d+)\)?\.?$/', $message, $match, PREG_OFFSET_CAPTURE)) {
+            $name = preg_replace('/ \(string template \w+\)$/', '', $match[1][0] !== '' ? $match[1][0] : $match[2][0]);
+            $file = is_file($name) ? $name : (app(TemplateResolver::class)->resolve($name) ?: $name);
+            $line = (int) $match[3][0];
+            $message = rtrim(substr($message, 0, $match[0][1]), '.').'.';
+        } else {
+            $coreDirs = [dirname((string) new ReflectionClass(TwigEnvironment::class)->getFileName()), dirname(__DIR__)];
+            $t = 1;
+            while (isset($traces[$t]) && (! isset($traces[$t]['file']) || Str::startsWith($traces[$t]['file'], $coreDirs))) {
+                $t++;
+            }
+            [$file, $line] = $this->findOrigin(isset($traces[$t]) ? array_slice($traces, $t - 1) : $traces);
+        }
+
+        $this->log('twig:'.md5($message), $message, $file, $line);
     }
 
     public function storeLogs(): void
