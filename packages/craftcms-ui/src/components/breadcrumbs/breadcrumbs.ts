@@ -35,6 +35,9 @@ const AFFIXES = '[slot="separator"], [slot="prefix"], [slot="suffix"]';
  * last crumbs are kept for as long as there's room for them. With room for
  * only one, the last crumb stays and truncates its label.
  *
+ * The trail is as wide as its crumbs, up to its container's width, so it can
+ * sit beside other content in a row.
+ *
  * @slot - The `craft-breadcrumb-item`s making up the trail.
  * @slot separator - Drawn between crumbs. Defaults to a chevron.
  *
@@ -247,6 +250,7 @@ export default class CraftBreadcrumbs extends LitElement {
     }
 
     if (items.length < 2) {
+      this.style.removeProperty('--_natural-inline-size');
       this.#apply([]);
       return;
     }
@@ -267,6 +271,11 @@ export default class CraftBreadcrumbs extends LitElement {
     const natural =
       widths.reduce((total, width) => total + width, 0) +
       gap * (items.length - 1);
+
+    // The trail asks for its full width even while collapsed (see the host
+    // styles), so a container sized by its content gives it more room as
+    // room comes back, and the resize brings the crumbs back.
+    this.style.setProperty('--_natural-inline-size', `${Math.ceil(natural)}px`);
 
     if (natural <= available + FIT_TOLERANCE) {
       this.#apply([]);

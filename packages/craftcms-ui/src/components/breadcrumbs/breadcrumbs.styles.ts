@@ -7,6 +7,12 @@ export default css`
     display: block;
     min-width: 0;
     gap: var(--c-spacing-md);
+    /* The width of every crumb, set when the trail is measured, up to the
+       container's. Sized by its content alone, a collapsed trail would keep
+       its collapsed width in a container sized by its content, and never be
+       given the room to bring its crumbs back. */
+    inline-size: var(--_natural-inline-size, auto);
+    max-inline-size: 100%;
   }
 
   /* Crumbs too, collapsed here or hidden by their author: important, so a

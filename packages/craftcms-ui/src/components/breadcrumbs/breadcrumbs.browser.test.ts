@@ -163,6 +163,68 @@ describe('craft-breadcrumbs', () => {
     expect(overflow.hidden).toBe(true);
   });
 
+  it('brings crumbs back when its container is sized by its content', async () => {
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
+
+    // A row like a page header's: the trail sits in a wrapper sized by its
+    // content, followed by another control.
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; gap: 8px; inline-size: 300px';
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'flex: 0 1 auto; min-inline-size: 0';
+    const element = document.createElement(
+      'craft-breadcrumbs'
+    ) as CraftBreadcrumbs;
+    element.innerHTML = `
+      <craft-breadcrumb-item href="#root">Site Name</craft-breadcrumb-item>
+      <craft-breadcrumb-item href="#entries">Entries</craft-breadcrumb-item>
+      <craft-breadcrumb-item href="#type">Entry Type</craft-breadcrumb-item>
+      <craft-breadcrumb-item href="#parent">Parent Entry</craft-breadcrumb-item>
+      <craft-breadcrumb-item>Current</craft-breadcrumb-item>`;
+    const after = document.createElement('button');
+    after.textContent = 'Actions';
+    wrapper.append(element);
+    row.append(wrapper, after);
+    document.body.append(row);
+    await element.updateComplete;
+    await frame();
+    await frame();
+
+    const items = [...element.querySelectorAll('craft-breadcrumb-item')];
+    const overflow = element.shadowRoot!.querySelector<HTMLElement>(
+      '.breadcrumbs__overflow'
+    )!;
+    expect(overflow.hidden).toBe(false);
+    // Nothing truncates, so the collapsed trail is already as wide as its
+    // content wants: widening the row alone doesn't resize it. A truncated
+    // crumb would grow back first, and remeasure the trail by accident.
+    const label = items.at(-1)!.shadowRoot!.querySelector('.label')!;
+    expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
+
+    // Let the collapse settle: the trail shrinking to its collapsed width
+    // queues one more measurement, which would otherwise see the wider row.
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await frame();
+
+    row.style.inlineSize = '2000px';
+    await frame();
+    await frame();
+    await frame();
+
+    // Otherwise the wrapper filled the row, which would bring the crumbs back
+    // without the trail asking for its width.
+    expect(wrapper.getBoundingClientRect().width).toBeLessThan(
+      row.getBoundingClientRect().width - after.getBoundingClientRect().width
+    );
+    expect(items.filter((item) => item.hidden)).toHaveLength(0);
+    expect(overflow.hidden).toBe(true);
+    // The trail takes only its crumbs' width, so what follows stays beside it.
+    expect(
+      after.getBoundingClientRect().left - element.getBoundingClientRect().right
+    ).toBeLessThanOrEqual(8 + 1);
+  });
+
   it('follows the collapsed crumb’s own link from the menu', async () => {
     const {items, actions} = await trail('120px');
     const link = items[1]!.shadowRoot!.querySelector('a')!;
