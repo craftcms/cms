@@ -183,7 +183,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $editable
      */
-    /** @return self<T> */
+    /** @phpstan-return static */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
     public function editable(?bool $value = true): self
     {
@@ -200,7 +200,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $savable
      */
-    /** @return self<T> */
+    /** @phpstan-return static */
     public function savable(?bool $value = true): self
     {
         $this->savable = $value;

@@ -15,6 +15,7 @@ use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Date;
 
 /**
  * @since 6.0.0
@@ -127,6 +128,9 @@ class FormatDateTime extends Directive
         }
 
         $formatter->timeZone = $timezone;
+
+        // PHP formats are shown in the date's own time zone, so convert it first
+        $value = Date::instance($value)->setTimezone($timezone);
 
         $withTimeZone = $arguments['withTimeZone'] ?? false;
 
