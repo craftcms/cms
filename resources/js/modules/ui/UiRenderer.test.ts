@@ -4003,7 +4003,7 @@ describe('UiRenderer', () => {
         'craft:range',
         'Range',
         'range',
-        {inputType: 'range', min: 1, max: 5, step: 1},
+        {inputType: 'range', min: 1, max: 5, step: 1, suffix: 'pts'},
         3,
       ],
       [
@@ -4170,6 +4170,13 @@ describe('UiRenderer', () => {
       input.dispatchEvent(new Event('input', {bubbles: true}));
     }
 
+    await nextTick();
+    const rangeGroup = container.querySelector('.range-group')!;
+    expect(
+      rangeGroup.querySelector<HTMLInputElement>('input[type="number"]')?.value
+    ).toBe('4');
+    expect(rangeGroup.textContent).toContain('pts');
+
     const money = container.querySelector<HTMLInputElement>(
       'input[name="settings[price][value]"]'
     )!;
@@ -4209,8 +4216,9 @@ describe('UiRenderer', () => {
         container.querySelector<HTMLTextAreaElement>('textarea')?.value
       ).toBe('<summary>');
       expect(
-        container.querySelector<HTMLInputElement>('input[inputmode="decimal"]')
-          ?.value
+        container.querySelector<HTMLInputElement>(
+          'craft-input-money input[inputmode="decimal"]'
+        )?.value
       ).toBe('12,50');
       expect(container.querySelector<HTMLSelectElement>('select')?.value).toBe(
         '1'
