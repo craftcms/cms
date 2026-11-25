@@ -6,24 +6,25 @@ namespace CraftCms\Cms\Http;
 
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Http\Middleware\CollectCacheInfo;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
- * Collects the tags the current response depends on and the earliest expiry date among them.
+ * The tags the current response depends on and the earliest expiry date among them.
  *
- * Tags are opaque strings. For GET and HEAD site requests outside the control panel and actions, {@see CollectCacheInfo}
- * adds the tags of the elements the request queries, along with their earliest expiry date ({@see getExpiryDate()}).
- * Templates, controllers and plugins add their own tags and expiry dates through the `ResponseCacheInfo` facade,
- * which is also a Twig global:
+ * For GET and HEAD site requests outside the control panel and actions, {@see CollectCacheInfo} collects the tags and
+ * expiry dates of the elements the request queries for the whole request. Templates, controllers and plugins add their
+ * own through the `ResponseCacheInfo` facade, which is also a Twig global:
  *
  * ```twig
  * {% do ResponseCacheInfo.addTags(['nav']) %}
  * ```
  *
- * Tags and expiry dates added inside a `{% cache %}` block are stored with it, so they're added again on a cache hit,
- * and `ElementCaches::invalidateTags()` clears the blocks that depend on a tag.
+ * Tags and expiry dates are cache dependencies, like the ones Craft collects for elements. Added inside a
+ * `{% cache %}` block, they're stored with it and added again on a cache hit, and `ElementCaches::invalidateTags()`
+ * clears the blocks that depend on a tag. Other responses have no cache info.
  *
  * Craft doesn't send the tags anywhere itself. Cache integrations, such as `craftcms/http-cache` or a plugin, read
  * them with {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`,
@@ -34,17 +35,18 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 class ResponseCacheInfo
 {
+    private bool $collecting = false;
+
     /**
-     * @var array<string, true>
+     * What {@see stop()} collected, for code that runs after it.
+     *
+     * @var array{tags: list<string>, expiryDate: DateTimeImmutable|null}|null
      */
-    private array $tags = [];
-
-    private ?int $expiryTimestamp = null;
-
-    private bool $collectingDependencies = false;
+    private ?array $collected = null;
 
     public function __construct(
         private readonly ElementCaches $elementCaches,
+        private readonly DependencyCollector $dependencies,
     ) {}
 
     /**
@@ -52,12 +54,9 @@ class ResponseCacheInfo
      */
     public function addTags(string|array $tags): static
     {
-        $tags = array_values(array_filter(array_map(strval(...), (array) $tags), fn (string $tag) => $tag !== ''));
-
-        $this->recordTags($tags);
-
-        // So `{% cache %}` blocks and data caches depend on them too.
-        $this->elementCaches->collectCacheTags($tags);
+        $this->elementCaches->collectCacheTags(
+            array_values(array_filter(array_map(strval(...), (array) $tags), fn (string $tag) => $tag !== '')),
+        );
 
         return $this;
     }
@@ -67,17 +66,14 @@ class ResponseCacheInfo
      */
     public function getTags(): array
     {
-        return array_map(strval(...), array_keys($this->tags));
+        return $this->collected['tags'] ?? ($this->collecting ? $this->dependencies->collectedTags() : []);
     }
 
     /**
-     * Records an expiry date the response depends on, keeping the earliest.
+     * Adds an expiry date the response depends on. Past dates are ignored.
      */
     public function addExpiryDate(DateTimeInterface $date): static
     {
-        $this->recordExpiryDate($date);
-
-        // So `{% cache %}` blocks and data caches expire with it too.
         $this->elementCaches->setCacheExpiryDate($date);
 
         return $this;
@@ -88,64 +84,36 @@ class ResponseCacheInfo
      */
     public function getExpiryDate(): ?DateTimeImmutable
     {
-        return $this->expiryTimestamp === null ? null : new DateTimeImmutable("@{$this->expiryTimestamp}");
+        if ($this->collected !== null) {
+            return $this->collected['expiryDate'];
+        }
+
+        return $this->collecting ? $this->dependencies->collectedExpiryDate() : null;
     }
 
     /**
-     * Sets whether the tags and expiry dates Craft collects for caches, such as those of the elements a request
-     * queries, are added to the response. {@see CollectCacheInfo} turns this on for the requests it collects for.
+     * Starts collecting the response's cache info for the whole request.
      *
      * @internal
      */
-    public function collectDependencies(bool $collect = true): void
+    public function start(): void
     {
-        $this->collectingDependencies = $collect;
+        $this->elementCaches->startCollectingCacheInfo();
+        $this->collecting = true;
     }
 
     /**
-     * Adds tags Craft collected for caches, if {@see collectDependencies()} is on.
-     *
-     * @param  list<string>  $tags
-     *
-     * @internal
-     */
-    public function addCollectedTags(array $tags): void
-    {
-        if ($this->collectingDependencies) {
-            $this->recordTags($tags);
-        }
-    }
-
-    /**
-     * Adds an expiry date Craft collected for caches, if {@see collectDependencies()} is on.
+     * Stops collecting, keeping what was collected.
      *
      * @internal
      */
-    public function addCollectedExpiryDate(DateTimeInterface $date): void
+    public function stop(): void
     {
-        if ($this->collectingDependencies) {
-            $this->recordExpiryDate($date);
-        }
-    }
-
-    /**
-     * @param  list<string>  $tags
-     */
-    private function recordTags(array $tags): void
-    {
-        foreach ($tags as $tag) {
-            if ($tag !== '') {
-                $this->tags[$tag] = true;
-            }
-        }
-    }
-
-    private function recordExpiryDate(DateTimeInterface $date): void
-    {
-        $timestamp = $date->getTimestamp();
-
-        if ($this->expiryTimestamp === null || $timestamp < $this->expiryTimestamp) {
-            $this->expiryTimestamp = $timestamp;
-        }
+        $this->collected = [
+            'tags' => $this->dependencies->collectedTags(),
+            'expiryDate' => $this->dependencies->collectedExpiryDate(),
+        ];
+        $this->collecting = false;
+        $this->elementCaches->stopCollectingCacheInfo();
     }
 }

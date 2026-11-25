@@ -2,23 +2,49 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Http\ResponseCacheInfo;
 
-it('ignores empty and duplicate tags', function () {
-    $cacheInfo = app(ResponseCacheInfo::class)->addTags(['a', '', 'b'])->addTags('a');
+it('collects nothing outside a collection', function () {
+    $cacheInfo = app(ResponseCacheInfo::class)->addTags(['a'])->addExpiryDate(now()->addHour());
 
-    expect($cacheInfo->getTags())->toBe(['a', 'b']);
+    expect($cacheInfo->getTags())->toBe([])
+        ->and($cacheInfo->getExpiryDate())->toBeNull();
 });
 
-it('keeps the earliest expiry date', function () {
+it('ignores empty and duplicate tags and keeps the earliest future expiry date', function () {
+    $this->freezeSecond();
     $cacheInfo = app(ResponseCacheInfo::class);
-
-    expect($cacheInfo->getExpiryDate())->toBeNull();
+    $cacheInfo->start();
 
     $cacheInfo
-        ->addExpiryDate(new DateTimeImmutable('@2000'))
-        ->addExpiryDate(new DateTimeImmutable('@1000'))
-        ->addExpiryDate(new DateTimeImmutable('@3000'));
+        ->addTags(['a', '', 'b'])->addTags('a')
+        ->addExpiryDate(now()->addMinutes(20))
+        ->addExpiryDate(now()->addMinutes(10))
+        ->addExpiryDate(now()->subMinute())
+        ->addExpiryDate(now()->addMinutes(30));
 
-    expect($cacheInfo->getExpiryDate()?->getTimestamp())->toBe(1000);
+    expect($cacheInfo->getTags())->toBe(['a', 'b'])
+        ->and($cacheInfo->getExpiryDate()?->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
+
+    $cacheInfo->stop();
+
+    expect($cacheInfo->getTags())->toBe(['a', 'b'])
+        ->and($cacheInfo->getExpiryDate()?->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp());
+});
+
+it('includes tags from collections still open inside the response', function () {
+    $cacheInfo = app(ResponseCacheInfo::class);
+    $cacheInfo->start();
+    $cacheInfo->addTags('page');
+
+    app(ElementCaches::class)->startCollectingCacheInfo();
+    $cacheInfo->addTags('inner');
+
+    expect($cacheInfo->getTags())->toEqualCanonicalizing(['page', 'inner']);
+
+    app(ElementCaches::class)->stopCollectingCacheInfo();
+    $cacheInfo->stop();
+
+    expect($cacheInfo->getTags())->toEqualCanonicalizing(['page', 'inner']);
 });

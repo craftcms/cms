@@ -8,7 +8,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Facades\ResponseCacheInfo;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -47,7 +46,5 @@ it('saves and queries elements', function () {
 });
 
 it('exposes Craft facades as Twig globals', function () {
-    renderString("{% do ResponseCacheInfo.addTags('plugin-tag') %}");
-
-    expect(ResponseCacheInfo::getTags())->toBe(['plugin-tag']);
+    expect(renderString('{{ ResponseCacheInfo.getTags()|json_encode }}'))->toBe('[]');
 });

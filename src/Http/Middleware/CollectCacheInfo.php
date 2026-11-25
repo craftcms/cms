@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Http\ResponseCacheInfo;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +23,6 @@ use Symfony\Component\HttpFoundation\Response;
 readonly class CollectCacheInfo
 {
     public function __construct(
-        private ElementCaches $elementCaches,
         private ResponseCacheInfo $cacheInfo,
     ) {}
 
@@ -34,14 +32,12 @@ readonly class CollectCacheInfo
             return $next($request);
         }
 
-        $this->cacheInfo->collectDependencies();
-        $this->elementCaches->startCollectingCacheInfo();
+        $this->cacheInfo->start();
 
         try {
             $response = $next($request);
         } finally {
-            $this->elementCaches->stopCollectingCacheInfo();
-            $this->cacheInfo->collectDependencies(false);
+            $this->cacheInfo->stop();
         }
 
         $expiryDate = $this->cacheInfo->getExpiryDate();

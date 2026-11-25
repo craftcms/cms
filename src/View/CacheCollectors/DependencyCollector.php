@@ -7,7 +7,6 @@ namespace CraftCms\Cms\View\CacheCollectors;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
-use CraftCms\Cms\Http\ResponseCacheInfo;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
@@ -103,9 +102,6 @@ class DependencyCollector implements CacheCollectorInterface
         foreach ($tags as $tag) {
             $this->tags[$tag] = true;
         }
-
-        // So cache integrations anywhere in the request can read the response's tags as they're collected.
-        $this->responseCacheInfo->addCollectedTags($tags);
     }
 
     public function setExpiryDate(DateTimeInterface $expiryDate): void
@@ -210,11 +206,38 @@ class DependencyCollector implements CacheCollectorInterface
 
     private function mergeExpiryTimestamp(int $expiryTimestamp): void
     {
-        $this->responseCacheInfo->addCollectedExpiryDate(new DateTimeImmutable("@{$expiryTimestamp}"));
-
         if ($this->expiryTimestamp === null || $expiryTimestamp < $this->expiryTimestamp) {
             $this->expiryTimestamp = $expiryTimestamp;
         }
+    }
+
+    /**
+     * Returns the tags collected so far by the current collection and the collections it's nested in.
+     *
+     * @return list<string>
+     */
+    public function collectedTags(): array
+    {
+        $tags = $this->tags ?? [];
+
+        foreach ($this->buffers as $buffer) {
+            $tags += $buffer['tags'];
+        }
+
+        return array_map(strval(...), array_keys($tags));
+    }
+
+    /**
+     * Returns the earliest expiry date collected so far by the current collection and the collections it's nested in.
+     */
+    public function collectedExpiryDate(): ?DateTimeImmutable
+    {
+        $timestamps = array_filter([
+            $this->expiryTimestamp,
+            ...array_column($this->buffers, 'expiryTimestamp'),
+        ], is_int(...));
+
+        return $timestamps === [] ? null : new DateTimeImmutable('@'.min($timestamps));
     }
 
     public function collectElement(ElementInterface $element): void
