@@ -153,6 +153,16 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
+     * The page URL exactly as requested. Inertia only carries a link's `#fragment` over to the page when the URL
+     * matches, and the default resolver re-sorts and re-encodes the query string.
+     */
+    #[Override]
+    public function urlResolver(): Closure
+    {
+        return fn (Request $request): string => $request->getRequestUri();
+    }
+
+    /**
      * Define the props that are shared by default.
      *
      * @see https://inertiajs.com/shared-data
