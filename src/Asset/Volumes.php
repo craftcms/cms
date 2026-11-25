@@ -172,10 +172,6 @@ class Volumes
         try {
             $volumeModel = $this->getVolumeModel($volumeUid, true);
             $isNewVolume = ! $volumeModel->exists;
-            $oldVolume = $isNewVolume ? null : new Volume([
-                'propagationMethod' => PropagationMethod::All->value,
-                ...Arr::except($volumeModel->getAttributes(), ['dateCreated', 'dateUpdated', 'dateDeleted']),
-            ]);
 
             $volumeModel->name = $data['name'];
             $volumeModel->handle = $data['handle'];
@@ -288,7 +284,6 @@ class Volumes
         event(new VolumeSaved(
             volume: $this->getVolumeById($volumeModel->id),
             isNew: $isNewVolume,
-            oldVolume: $oldVolume,
         ));
 
         $this->elementCaches->invalidateForElementType(Asset::class);
