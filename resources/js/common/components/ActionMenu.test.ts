@@ -1,17 +1,22 @@
 import {createApp, defineComponent, h, nextTick, ref} from 'vue';
-import {afterEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import '@craftcms/ui/components/action-menu/action-menu';
 import type {ActionItems} from '@/common/types';
+import {PAGE_ACTIONS_ATTRIBUTE} from '@/modules/command-palette';
 import ActionMenu from './ActionMenu.vue';
 
 let teardown: (() => void) | undefined;
 
-function mount(actions: ActionItems | ReturnType<typeof ref<ActionItems>>) {
+function mount(
+  actions: ActionItems | ReturnType<typeof ref<ActionItems>>,
+  {lazy = false, parent = document.body} = {}
+) {
   const current = ref(actions) as ReturnType<typeof ref<ActionItems>>;
   const container = document.createElement('div');
-  document.body.append(container);
+  parent.append(container);
 
   const app = createApp({
-    render: () => h(ActionMenu, {actions: current.value as ActionItems}),
+    render: () => h(ActionMenu, {actions: current.value as ActionItems, lazy}),
   });
   app.mount(container);
 
@@ -58,6 +63,51 @@ describe('ActionMenu', () => {
 
     expect(wrappers).toHaveLength(1);
     expect(labels(wrappers[0]!)).toEqual(['Edit', 'Duplicate']);
+  });
+
+  it('renders a lazy menu’s items when it first opens, and focuses the first', async () => {
+    const {menu} = mount([{label: 'Edit'}, {label: 'Duplicate'}], {
+      lazy: true,
+    });
+    await nextTick();
+
+    expect(labels(menu)).toEqual([]);
+
+    menu.querySelector<HTMLElement>('[slot="invoker"]')!.click();
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(
+        menu.querySelector('craft-action-item')
+      )
+    );
+
+    expect(labels(menu)).toEqual(['Edit', 'Duplicate']);
+  });
+
+  it.each(['pointerover', 'focusin'])(
+    'renders a lazy menu’s items on %s, before it opens',
+    async (type) => {
+      const {menu} = mount([{label: 'Edit'}], {lazy: true});
+      await nextTick();
+
+      menu
+        .querySelector('[slot="invoker"]')!
+        .dispatchEvent(new Event(type, {bubbles: true}));
+      await nextTick();
+
+      expect(labels(menu)).toEqual(['Edit']);
+      expect(menu.hasAttribute('open')).toBe(false);
+    }
+  );
+
+  it('renders a lazy menu’s items straight away among the page’s actions', async () => {
+    const parent = document.createElement('div');
+    parent.setAttribute(PAGE_ACTIONS_ATTRIBUTE, '');
+    document.body.append(parent);
+    const {menu} = mount([{label: 'Edit'}], {lazy: true, parent});
+    await nextTick();
+
+    expect(labels(menu)).toEqual(['Edit']);
+    parent.remove();
   });
 
   it('keeps a later item inside that wrapper', async () => {

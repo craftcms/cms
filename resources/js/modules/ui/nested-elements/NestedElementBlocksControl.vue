@@ -461,6 +461,7 @@
             v-if="editable"
             :actions="blockActions(uid)"
             :flush="false"
+            lazy
             :label="
               t('{type} actions', {
                 type: entryType(uid)?.label ?? uid,
