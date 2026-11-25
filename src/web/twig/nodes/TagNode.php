@@ -8,7 +8,9 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\Html;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
+use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 /**
@@ -17,6 +19,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
+#[YieldReady]
 class TagNode extends Node
 {
     /**
@@ -24,13 +27,18 @@ class TagNode extends Node
      */
     public function compile(Compiler $compiler): void
     {
+        $content = new CaptureNode($this->getNode('content'), $this->getTemplateLine());
+        $content->setAttribute('raw', true);
+        $var = $compiler->getVarName();
+
         $compiler
             ->addDebugInfo($this)
-            ->write("ob_start();\n")
-            ->subcompile($this->getNode('content'))
-            ->write('echo ' . Html::class . '::tag(')
+            ->write("\$$var = ")
+            ->subcompile($content)
+            ->raw("\n")
+            ->write('yield ' . Html::class . '::tag(')
             ->subcompile($this->getNode('name'))
-            ->raw(', ob_get_clean()');
+            ->raw(", \$$var");
 
         if ($this->hasNode('options')) {
             $compiler
@@ -38,6 +46,8 @@ class TagNode extends Node
                 ->subcompile($this->getNode('options'));
         }
 
-        $compiler->raw(");\n");
+        $compiler
+            ->raw(");\n")
+            ->write("unset(\$$var);\n");
     }
 }

@@ -9,7 +9,9 @@ namespace craft\web\twig\nodes;
 
 use Craft;
 use craft\helpers\Html;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
+use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 /**
@@ -18,6 +20,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class NamespaceNode extends Node
 {
     /**
@@ -25,6 +28,9 @@ class NamespaceNode extends Node
      */
     public function compile(Compiler $compiler): void
     {
+        $body = new CaptureNode($this->getNode('body'), $this->getTemplateLine());
+        $body->setAttribute('raw', true);
+
         $compiler
             ->addDebugInfo($this)
             ->write('$_namespace = ')
@@ -34,18 +40,10 @@ class NamespaceNode extends Node
             ->indent()
             ->write('$_originalNamespace = ' . Craft::class . "::\$app->getView()->getNamespace();\n")
             ->write(Craft::class . '::$app->getView()->setNamespace(' . Craft::class . "::\$app->getView()->namespaceInputName(\$_namespace));\n")
-            ->write("ob_start();\n")
-            ->write("try {\n")
-            ->indent()
-            ->subcompile($this->getNode('body'))
-            ->outdent()
-            ->write("} catch (Exception \$e) {\n")
-            ->indent()
-            ->write("ob_end_clean();\n\n")
-            ->write("throw \$e;\n")
-            ->outdent()
-            ->write("}\n")
-            ->write('echo ' . Html::class . '::namespaceHtml(ob_get_clean(), $_namespace, ')
+            ->write('$_namespacedHtml = ')
+            ->subcompile($body)
+            ->raw("\n")
+            ->write('yield ' . Html::class . '::namespaceHtml($_namespacedHtml, $_namespace, ')
             ->raw($this->hasAttribute('withClasses') ? 'true' : 'false')
             ->raw(");\n")
             ->write(Craft::class . "::\$app->getView()->setNamespace(\$_originalNamespace);\n")
@@ -55,6 +53,6 @@ class NamespaceNode extends Node
             ->subcompile($this->getNode('body'))
             ->outdent()
             ->write("}\n")
-            ->write("unset(\$_originalNamespace, \$_namespace);\n");
+            ->write("unset(\$_originalNamespace, \$_namespace, \$_namespacedHtml);\n");
     }
 }

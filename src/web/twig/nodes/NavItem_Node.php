@@ -8,8 +8,9 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\Template as TemplateHelper;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
-use Twig\Node\Expression\AssignNameExpression;
+use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Node\Node;
 use Twig\Template;
 
@@ -19,18 +20,19 @@ use Twig\Template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class NavItem_Node extends Node
 {
     /**
      * NavItem_Node constructor.
      *
-     * @param AssignNameExpression $valueTarget
+     * @param AssignContextVariable $valueTarget
      * @param Node|null $indent
      * @param Node|null $outdent
      * @param Node|null $lowerBody
      * @param int $lineno
      */
-    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno)
+    public function __construct(AssignContextVariable $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno)
     {
         parent::__construct([
             'value_target' => $valueTarget,

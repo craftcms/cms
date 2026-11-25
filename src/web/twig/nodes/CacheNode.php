@@ -10,7 +10,9 @@ namespace craft\web\twig\nodes;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
+use Twig\Node\CaptureNode;
 use Twig\Node\Node;
 
 /**
@@ -19,6 +21,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class CacheNode extends Node
 {
     /**
@@ -32,6 +35,8 @@ class CacheNode extends Node
     public function compile(Compiler $compiler): void
     {
         $n = self::$_cacheCount++;
+        $body = new CaptureNode($this->getNode('body'), $this->getTemplateLine());
+        $body->setAttribute('raw', true);
 
         $conditions = $this->hasNode('conditions') ? $this->getNode('conditions') : null;
         $ignoreConditions = $this->hasNode('ignoreConditions') ? $this->getNode('ignoreConditions') : null;
@@ -88,9 +93,9 @@ class CacheNode extends Node
             ->write("\$cacheService->startTemplateCache(true, $global);\n")
             ->outdent()
             ->write("}\n")
-            ->write("ob_start();\n")
-            ->subcompile($this->getNode('body'))
-            ->write("\$cacheBody$n = ob_get_clean();\n")
+            ->write("\$cacheBody$n = ")
+            ->subcompile($body)
+            ->raw("\n")
             ->write("if (!\$ignoreCache$n) {\n")
             ->indent()
             ->write("\$cacheService->endTemplateCache(\$cacheKey$n, $global, ");
@@ -118,6 +123,6 @@ class CacheNode extends Node
             ->write("}\n")
             ->outdent()
             ->write("}\n")
-            ->write("echo \$cacheBody$n;\n");
+            ->write("yield \$cacheBody$n;\n");
     }
 }

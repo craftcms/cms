@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\Template;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Extension\CoreExtension;
 use Twig\Node\IncludeNode;
@@ -21,6 +22,7 @@ use Twig\Node\IncludeNode;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.12.0
  */
+#[YieldReady]
 class RenderNode extends IncludeNode
 {
     /**
@@ -30,7 +32,7 @@ class RenderNode extends IncludeNode
     {
         $compiler
             ->addDebugInfo($this)
-            ->write(sprintf('echo %s::render(', Template::class))
+            ->write(sprintf('yield %s::render(', Template::class))
             ->subcompile($this->getNode('expr'))
             ->raw(', ');
 
