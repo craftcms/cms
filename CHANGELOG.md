@@ -30,9 +30,9 @@
 - Added the `storage-key` attribute to `craft-dialog` and `craft-resize-grips`, and the `storageKey` prop to `ModalForm`. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element saves, deletions, restorations, nested element reordering, and URI updates now invalidate each cache tag once per operation, and propagations once per element. Element cache tags invalidated inside a database transaction are now invalidated when it commits. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Added `CraftCms\Cms\Element\ElementCaches::deferInvalidations()` and `hasPendingInvalidations()`. ([#21058](https://github.com/craftcms/cms/pull/21058))
-- Fixed a bug where Json, Country, Range, Money, and Content Block fields’ `phpType()` methods didn’t describe their normalized values, so the custom field IDE helper declared the wrong types for them.
-- Fixed a bug where relational and Matrix fields’ `phpType()` methods, and the custom field IDE helper’s Matrix types, specified only one of `CraftCms\Cms\Element\ElementCollection`’s two template types, so PHPStan couldn’t tell which elements they contained.
-- Fixed an error that occurred when a Range field was normalized from a non-numeric value.
+- Fixed a bug where Json, Country, Range, Money, and Content Block fields’ `phpType()` methods didn’t describe their normalized values, so the custom field IDE helper declared the wrong types for them. ([#21131](https://github.com/craftcms/cms/pull/21131))
+- Fixed a bug where relational and Matrix fields’ `phpType()` methods, and the custom field IDE helper’s Matrix types, specified only one of `CraftCms\Cms\Element\ElementCollection`’s two template types, so PHPStan couldn’t tell which elements they contained. ([#21131](https://github.com/craftcms/cms/pull/21131))
+- Fixed an error that occurred when a Range field was normalized from a non-numeric value. ([#21131](https://github.com/craftcms/cms/pull/21131))
 - Fixed bugs where Markdown fields’ character counters covered the text and weren’t fully announced by screen readers. ([#21069](https://github.com/craftcms/cms/issues/21069))
 - Fixed a bug where shared caches could store responses to token and site token requests. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Fixed a bug where shared caches could store responses that saved or refreshed a lazy session. ([#20953](https://github.com/craftcms/cms/pull/20953))
