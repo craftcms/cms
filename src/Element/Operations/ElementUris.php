@@ -75,16 +75,18 @@ readonly class ElementUris
 
             event(new ElementSlugAndUriUpdating($element));
 
-            DB::table(Table::ELEMENTS_SITES)
+            $row = DB::table(Table::ELEMENTS_SITES)
                 ->where('elementId', $element->id)
-                ->where('siteId', $element->siteId)
-                ->update([
-                    'slug' => $element->slug,
-                    'uri' => $element->uri,
-                    'dateUpdated' => Query::prepareDateForDb(now()),
-                ]);
+                ->where('siteId', $element->siteId);
+            $oldUri = (clone $row)->value('uri');
 
-            event(new ElementSlugAndUriUpdated($element));
+            $row->update([
+                'slug' => $element->slug,
+                'uri' => $element->uri,
+                'dateUpdated' => Query::prepareDateForDb(now()),
+            ]);
+
+            event(new ElementSlugAndUriUpdated($element, $oldUri));
 
             $this->elementCaches->invalidateForElement($element);
 
