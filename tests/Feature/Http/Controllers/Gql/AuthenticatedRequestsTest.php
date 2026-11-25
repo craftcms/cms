@@ -288,3 +288,43 @@ it('pairs X-Craft-Gql-Token headers with the user’s access token or session', 
         ->assertOk()
         ->assertJsonPath('data.entry.title', 'Unsaved changes');
 });
+
+it('requires control panel access for access tokens sent to the control panel’s action URL', function (): void {
+    $cpPath = '/'.Cms::config()->cpTrigger.'/actions/graphql/api';
+    $request = function (string $token, string $path = '/actions/graphql/api'): TestResponse {
+        app(Factory::class)->forgetGuards();
+
+        return $this->postJson($path, ['query' => '{ ping }'], ['Authorization' => "Bearer $token"]);
+    };
+    $siteUser = UserModel::factory()->createElement(['admin' => false]);
+
+    $request(gqlUserToken($siteUser), $cpPath)->assertForbidden();
+    $request(gqlUserToken($this->editor), $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
+    $request(gqlUserToken($siteUser))->assertOk()->assertJsonPath('data.ping', 'pong');
+});
+
+it('requires offline access for access tokens while the system is offline', function (): void {
+    $cpPath = '/'.Cms::config()->cpTrigger.'/actions/graphql/api';
+    $request = function (string $token, string $path = '/actions/graphql/api'): TestResponse {
+        app(Factory::class)->forgetGuards();
+
+        return $this->postJson($path, ['query' => '{ ping }'], ['Authorization' => "Bearer $token"]);
+    };
+    $user = fn (array $permissions) => UserModel::factory()->withPermissions($permissions)->createElement(['admin' => false]);
+    $tokens = [
+        'none' => gqlUserToken($user([])),
+        'site' => gqlUserToken($user(['accessSiteWhenSystemIsOff'])),
+        'cp' => gqlUserToken($user(['accessCp'])),
+        'cpOffline' => gqlUserToken($user(['accessCp', 'accessCpWhenSystemIsOff'])),
+    ];
+    app()->maintenanceMode()->activate([]);
+
+    try {
+        $request($tokens['none'])->assertServiceUnavailable();
+        $request($tokens['site'])->assertOk()->assertJsonPath('data.ping', 'pong');
+        $request($tokens['cp'], $cpPath)->assertServiceUnavailable();
+        $request($tokens['cpOffline'], $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
+    } finally {
+        app()->maintenanceMode()->deactivate();
+    }
+});

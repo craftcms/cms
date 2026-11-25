@@ -3741,6 +3741,7 @@ return [
     '“{handle}” isn’t a valid handle.' => '“{handle}” não é um identificador válido.',
     '“{name}” deleted.' => '“{name}” excluído.',
     '“{name}” value copied.' => 'Valor de “{name}” copiado.',
+    '“{name}” was saved, but it can’t be selected here.' => '“{name}” foi guardado, mas não pode ser selecionado aqui.',
     'Deprecated' => 'Descontinuado',
     '“{{entry}}” is approved' => '“{{entry}}” foi aprovada',
     'About Craft CMS' => 'Acerca do Craft CMS',

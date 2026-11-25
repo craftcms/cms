@@ -81,7 +81,7 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
 
     public function setTransform(mixed $transform): self
     {
-        if ($this->allowTransforms()) {
+        if ($transform === null || $this->allowTransforms()) {
             $this->_transform = ImageTransformHelper::normalizeTransform($transform);
         }
 
@@ -161,7 +161,7 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
 
     private function allowTransforms(): bool
     {
-        return match ($this->getMimeType()) {
+        return match (parent::getMimeType()) {
             'image/gif' => Cms::config()->transformGifs,
             'image/svg+xml' => Cms::config()->transformSvgs,
             default => true,

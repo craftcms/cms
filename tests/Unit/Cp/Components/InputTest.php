@@ -78,11 +78,11 @@ describe('input', function () {
             ->and($html)->toContain('aria-expanded="false"');
     });
 
-    it('marks the input for the chars-left counter with matching padding', function () {
+    it('shows the chars-left counter on the host', function () {
         $html = Input::make()->id('i')->maxlength(255)->showCharsLeft()->toHtml();
 
-        expect($html)->toContain('data-show-chars-left')
-            ->and($html)->toContain('padding-right: 35.6px');
+        expect($html)->toContain('<craft-input maxlength="255" show-chars-left')
+            ->and($html)->not->toContain('padding');
     });
 
     it('lets inputAttributes override computed defaults like dir', function () {

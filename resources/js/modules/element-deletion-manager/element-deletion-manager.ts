@@ -182,6 +182,7 @@ export class ElementDeletionManager extends Base {
     dialog.setAttribute('no-header', '');
     dialog.nonModal = true;
     dialog.resizable = true;
+    dialog.storageKey = 'ElementDeletionModal.size';
 
     const heading = document.createElement('h1');
     heading.className = 'edm-heading';

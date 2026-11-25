@@ -39,6 +39,7 @@ export type TextControlProps = {
   max?: number | string;
   step?: number | string;
   maxLength?: number;
+  showCharsLeft?: boolean;
   placeholder?: string;
   inputMode?: string;
   autofocus?: boolean;
