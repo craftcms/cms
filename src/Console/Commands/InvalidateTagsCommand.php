@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Console\Command;
 
 use function CraftCms\Cms\t;
@@ -56,9 +56,7 @@ class InvalidateTagsCommand extends Command
 
         $this->components->task(
             t('Invalidating:').' '.$option['label'],
-            function () use ($option) {
-                TagDependency::invalidate($option['tag']);
-            }
+            fn () => app(ElementCaches::class)->invalidateTags([$option['tag']]),
         );
 
         return self::SUCCESS;

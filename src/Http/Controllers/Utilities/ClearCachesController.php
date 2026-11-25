@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
+use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -40,16 +40,14 @@ readonly class ClearCachesController
         return $request->expectsJson() ? $this->asJsonSuccess(t('Caches cleared.')) : back();
     }
 
-    public function invalidateTags(Request $request): Response
+    public function invalidateTags(Request $request, ElementCaches $elementCaches): Response
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
             'tags.*' => ['string'],
         ])['tags'];
 
-        foreach ($tags as $tag) {
-            TagDependency::invalidate($tag);
-        }
+        $elementCaches->invalidateTags(array_values($tags));
 
         return back();
     }

@@ -261,6 +261,7 @@
 - `csrfInput()` no longer accepts an `async` option or tag attributes. ([#20429](https://github.com/craftcms/cms/pull/20429))
 - Craft now records which elements site responses to GET and HEAD requests query, for cache integrations to read with `ResponseCacheInfo`, and caps those responses’ `max-age`, `s-maxage` and `Expires` at the earliest expiry date of those elements, so caches stop serving an expired entry on time. ([#21032](https://github.com/craftcms/cms/pull/21032))
 - Added `ResponseCacheInfo.addTags()`, which tags the response with arbitrary strings, such as `{% do ResponseCacheInfo.addTags(['nav']) %}`. Tags added inside `{% cache %}` blocks are added again on cache hits, and `CraftCms\Cms\Element\ElementCaches::invalidateTags()` clears the blocks that depend on them. Craft doesn’t send tags itself; cache integrations such as `craftcms/http-cache` do. ([#21032](https://github.com/craftcms/cms/pull/21032))
+- Invalidating tags with the Caches utility or `craft:invalidate-tags` now fires `ElementCachesInvalidated`, so cache integrations purge the responses tagged with them too. ([#21032](https://github.com/craftcms/cms/pull/21032))
 
 #### GraphQL
 - Added the `hasUrls` field to volumes in GraphQL queries.

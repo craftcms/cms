@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -69,8 +71,12 @@ test('requires caches parameter', function () {
 });
 
 test('can invalidate cache tags', function () {
+    Event::fake([ElementCachesInvalidated::class]);
+
     postJson(action([ClearCachesController::class, 'invalidateTags']), [
         'tags' => ['test-tag-1', 'test-tag-2'],
     ])
         ->assertRedirectBack();
+
+    Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === ['test-tag-1', 'test-tag-2']);
 });
