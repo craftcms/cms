@@ -44,6 +44,7 @@ class TrashedEntriesBlocker extends BaseResolvableDeletionBlocker
         $this->count = Craft::configure(Entry::find(), $this->criteria)
             ->drafts(null)
             ->draftOf(false)
+            ->andWhere(['elements.canonicalId' => null])
             ->site('*')
             ->unique()
             ->status(null)

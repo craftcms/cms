@@ -61,6 +61,7 @@ class EntryTypeUsageBlocker extends BaseResolvableDeletionBlocker
                 ->typeId($this->entryType->id)
                 ->drafts(null)
                 ->draftOf(false)
+                ->andWhere(['elements.canonicalId' => null])
                 ->site('*')
                 ->unique()
                 ->status(null);
@@ -68,7 +69,8 @@ class EntryTypeUsageBlocker extends BaseResolvableDeletionBlocker
             if ($usage instanceof Section) {
                 $query->sectionId($usage->id);
             } else {
-                $query->fieldId($usage->id);
+                // Nested entries in unpublished owner drafts are trashed too
+                $query->fieldId($usage->id)->allowOwnerDrafts();
             }
 
             $count = (int)$query->count();

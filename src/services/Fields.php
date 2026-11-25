@@ -945,6 +945,7 @@ class Fields extends Component
                 'elements.fieldLayoutId' => $layout->id,
                 'elements.draftId' => null,
                 'elements.revisionId' => null,
+                'elements.canonicalId' => null,
                 'elements.dateDeleted' => null,
             ])
             ->andWhere($conditions)
