@@ -145,11 +145,17 @@ $.extend(Craft, {
         pos = close;
       }
       if (depth === 0) {
+        // Split at the first two commas only, like PHP's explode(',', $token, 3),
+        // so commas in plural and select options (including nested arguments)
+        // stay in the format
+        const parts = chars
+          .slice(start + 1, pos)
+          .join('')
+          .split(',');
         tokens.push(
-          chars
-            .slice(start + 1, pos)
-            .join('')
-            .split(',', 3)
+          parts.length > 3
+            ? parts.slice(0, 2).concat(parts.slice(2).join(','))
+            : parts
         );
         start = pos + 1;
         tokens.push(chars.slice(start, open).join(''));
