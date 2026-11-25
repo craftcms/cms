@@ -39,8 +39,8 @@ use yii\base\InvalidArgumentException;
 class DeletionBlockers extends Component
 {
     /**
-     * @event RegisterDeletionSubjectTypesEvent The event that is triggered when registering the types of things that
-     * can show deletion blockers.
+     * @event RegisterDeletionSubjectTypesEvent The event that is triggered when registering the subject types that
+     * can have deletion blockers.
      *
      * ```php
      * use craft\events\RegisterDeletionSubjectTypesEvent;
@@ -58,7 +58,7 @@ class DeletionBlockers extends Component
 
     /**
      * @event DefineDeletionBlockersEvent The event that is triggered when defining the blockers that should be
-     * addressed before something is deleted.
+     * addressed before a subject is deleted.
      *
      * ```php
      * use craft\events\DefineDeletionBlockersEvent;
@@ -81,7 +81,7 @@ class DeletionBlockers extends Component
     private array $_subjectTypes;
 
     /**
-     * Returns the types of things that can show deletion blockers, indexed by their keys.
+     * Returns the subject types that can have deletion blockers, indexed by their keys.
      *
      * @return array<string, array{find: callable(int|string): mixed, label?: callable(mixed): string, requireAdmin?: bool}>
      */
@@ -99,7 +99,7 @@ class DeletionBlockers extends Component
     }
 
     /**
-     * Returns the thing to be deleted, or `null` if it doesn’t exist.
+     * Returns the subject to be deleted, or `null` if it doesn’t exist.
      *
      * @param string $type The subject type, such as `volume`
      * @param int|string $id The subject’s ID (or handle or UID, depending on the type)
@@ -111,7 +111,7 @@ class DeletionBlockers extends Component
     }
 
     /**
-     * Returns the name of the thing to be deleted.
+     * Returns the name of the subject to be deleted.
      *
      * @param string $type The subject type, such as `volume`
      * @param mixed $subject The subject
@@ -140,12 +140,12 @@ class DeletionBlockers extends Component
     }
 
     /**
-     * Returns the blockers that should be addressed before something is deleted.
+     * Returns the blockers that should be addressed before a subject is deleted.
      *
      * Only active blockers apply; see [[DeletionBlockerInterface::isActive()]].
      *
      * @param string $type The subject type, such as `volume`
-     * @param mixed $subject The thing to be deleted
+     * @param mixed $subject The subject to be deleted
      * @return DeletionBlockerInterface[]
      */
     public function getBlockers(string $type, mixed $subject): array

@@ -23,7 +23,7 @@ use yii\base\BaseObject;
 abstract class BaseResolvableDeletionBlocker extends BaseObject implements ResolvableDeletionBlockerInterface
 {
     /**
-     * @var bool Whether the control panel should show the blocker’s details when it opens.
+     * @var bool Whether the blocker’s details should be expanded when the modal opens.
      */
     public bool $expandDetails = true;
 
@@ -77,7 +77,7 @@ abstract class BaseResolvableDeletionBlocker extends BaseObject implements Resol
     }
 
     /**
-     * Returns whether resolving the blocker agrees to something destructive, such as trashing elements.
+     * Returns whether the blocker’s action is destructive, such as moving elements to the trash.
      */
     protected function isDestructive(): bool
     {

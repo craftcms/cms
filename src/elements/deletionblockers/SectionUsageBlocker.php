@@ -50,7 +50,9 @@ class SectionUsageBlocker extends BaseResolvableDeletionBlocker
 
     protected function getResolvedMessage(): string
     {
-        return Craft::t('app', 'The fields will stop offering the section once it’s deleted.');
+        return Craft::t('app', 'The {num, plural, =1{field} other{fields}} will no longer include the section as a source once it’s deleted.', [
+            'num' => count($this->getItems()),
+        ]);
     }
 
     protected function defineItems(): array
@@ -86,7 +88,7 @@ class SectionUsageBlocker extends BaseResolvableDeletionBlocker
             $items[] = [
                 'label' => $field->getUiLabel(),
                 'count' => $count,
-                'description' => Craft::t('app', '{count, number} {count, plural, =1{element relates} other{elements relate}} to its entries.', [
+                'description' => Craft::t('app', '{count, number} {count, plural, =1{element relates} other{elements relate}} to entries in this section.', [
                     'count' => $count,
                 ]),
             ];

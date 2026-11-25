@@ -19,13 +19,13 @@ use craft\elements\deletionblockers\DeletionBlockerInterface;
 class DefineDeletionBlockersEvent extends Event
 {
     /**
-     * @var string The type of thing to be deleted, such as `element`, `field`, or `volume`.
+     * @var string The subject type to be deleted, such as `element`, `field`, or `volume`.
      * @see \craft\services\DeletionBlockers::getSubjectTypes()
      */
     public string $type;
 
     /**
-     * @var mixed The thing to be deleted, such as a field or volume. For the `element` type, it’s an
+     * @var mixed The subject to be deleted, such as a field or volume. For the `element` type, it’s an
      * [[\craft\elements\ElementCollection]] of the elements to be deleted.
      */
     public mixed $subject;

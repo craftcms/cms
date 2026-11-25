@@ -133,10 +133,9 @@ class DeletionBlockersTest extends TestCase
 
         $blockers = $this->blockers('entry-type', $this->page);
 
-        self::assertSame(
-            ['blockerBlog' => 1, 'blockerPages' => 2],
-            array_column($this->activeBlocker($blockers, EntryTypeUsageBlocker::class)->getItems(), 'count', 'label'),
-        );
+        $usage = $this->activeBlocker($blockers, EntryTypeUsageBlocker::class);
+        self::assertSame(['blockerBlog' => 1, 'blockerPages' => 2], array_column($usage->getItems(), 'count', 'label'));
+        self::assertSame('The entry type is used by 2 sections.', $usage->getSummary());
         self::assertSame('3 entries will be moved to the trash.', $this->activeBlocker($blockers, TrashedEntriesBlocker::class)->getSummary());
     }
 

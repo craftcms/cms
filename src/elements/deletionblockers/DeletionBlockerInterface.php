@@ -8,7 +8,7 @@
 namespace craft\elements\deletionblockers;
 
 /**
- * DeletionBlockerInterface defines the common interface to be implemented by element deletion blocker classes.
+ * DeletionBlockerInterface defines the common interface to be implemented by deletion blocker classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.10.0
@@ -40,7 +40,7 @@ interface DeletionBlockerInterface
      * - `label` – The button’s label
      * - `icon` _(optional)_ – The button icon name
      * - `action` _(optional)_ – The controller action that the button should trigger; if omitted, the blocker will be treated as resolved when the button is pressed
-     * - `params` _(optional)_ – Additional request parameters that should be sent to the controller action (an `elementIds` param will be sent automatically)
+     * - `params` _(optional)_ – Additional request parameters that should be sent to the controller action (the deletion params are sent automatically: `type` and `id` for config deletions, or `elementIds` and the other element params below for element deletions)
      * - `callback` _(optional)_ – JavaScript code that should be executed when the button is activated
      * - `destructive` – Whether the action is destructive
      * - `confirm` _(optional)_ – A confirmation message that should be presented to the user before triggering the action
@@ -53,7 +53,9 @@ interface DeletionBlockerInterface
      *
      * If `callback` is defined, it should be set to JavaScript code that can expect the following predefined variables:
      *
-     * - `elementType` – The element type being deleted
+     * - `type` – The subject type being deleted, for config deletions
+ * - `id` – The ID, handle, or UID of the subject being deleted, for config deletions
+ * - `elementType` – The element type being deleted
      * - `elementIds` – An array of the element IDs being deleted
      * - `siteId` – The site ID the elements were loaded in, if applicable
      * - `ownerId` – The owner element ID the elements were loaded with, if applicable

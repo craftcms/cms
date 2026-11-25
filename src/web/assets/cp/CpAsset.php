@@ -155,6 +155,7 @@ JS;
             'Back to pages',
             'Back to sources',
             'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
+            'Before deleting “{name}”, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',

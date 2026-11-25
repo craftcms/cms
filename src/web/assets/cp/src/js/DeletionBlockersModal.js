@@ -25,7 +25,7 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
 
     /**
      * @param {string} type The subject type, such as `field` or `volume`
-     * @param {number|string} id The ID of the thing to be deleted (or its handle or UID, depending on the type)
+     * @param {number|string} id The ID of the subject to be deleted (or its handle or UID, depending on the type)
      * @param {Object} settings
      */
     init: function (type, id, settings) {
@@ -36,7 +36,7 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
     },
 
     /**
-     * Resolves to `true` once the blockers are addressed (or if there are none), or `false` if the modal is closed.
+     * Resolves to `true` if there are no blockers or the user addresses them and confirms the deletion, or `false` if the modal is closed or the blockers can’t be loaded.
      *
      * @returns {Promise<boolean>}
      */
@@ -206,7 +206,7 @@ Craft.DeletionBlockersModal = Garnish.Base.extend(
     defaults: {},
 
     /**
-     * Shows the blockers for something to be deleted, for an admin table’s `beforeDelete` setting.
+     * Shows the blockers for a subject to be deleted, for an admin table’s `beforeDelete` setting.
      *
      * Resolves to `{confirmed: true}` if the user addressed the blockers and confirmed the deletion, `true` if there
      * were no blockers, or `false` if the user closed the modal.

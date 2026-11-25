@@ -19,13 +19,13 @@ class RegisterDeletionSubjectTypesEvent extends Event
 {
     /**
      * @var array<string, array{find: callable(int|string): mixed, label?: callable(mixed): string, requireAdmin?: bool}>
-     * The types of things that can be deleted, indexed by a key such as `volume`.
+     * The subject types that can have deletion blockers, indexed by a key such as `volume`.
      *
      * Each type has the following keys:
      *
-     * - `find` – A function that returns the subject for an ID (or handle or UID), or `null` if it doesn’t exist
-     *   or the current user can’t delete it
-     * - `label` _(optional)_ – A function that returns the subject’s name. Defaults to its UI label or `name`.
+     * - `find` – A callable that returns the subject for an ID (or handle or UID), or `null` if it doesn’t exist
+     *   or the current user can’t delete it.
+     * - `label` _(optional)_ – A callable that returns the subject’s name. Defaults to its UI label or `name`.
      * - `requireAdmin` _(optional)_ – Whether only admins can view its blockers. Defaults to `true`.
      */
     public array $types = [];

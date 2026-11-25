@@ -21,6 +21,16 @@ use craft\models\Section;
 class EntryTypeUsageBlocker extends BaseResolvableDeletionBlocker
 {
     /**
+     * @var int The number of sections that use the entry type
+     */
+    private int $numSections = 0;
+
+    /**
+     * @var int The number of fields that use the entry type
+     */
+    private int $numFields = 0;
+
+    /**
      * Constructor
      */
     public function __construct(
@@ -37,18 +47,61 @@ class EntryTypeUsageBlocker extends BaseResolvableDeletionBlocker
 
     public function getSummary(): string
     {
-        return Craft::t('app', 'The entry type is used by {num, number} {num, plural, =1{section or field} other{sections and fields}}.', [
-            'num' => count($this->getItems()),
+        $this->getItems();
+
+        if (!$this->numFields) {
+            return Craft::t('app', 'The entry type is used by {num, number} {num, plural, =1{section} other{sections}}.', [
+                'num' => $this->numSections,
+            ]);
+        }
+
+        if (!$this->numSections) {
+            return Craft::t('app', 'The entry type is used by {num, number} {num, plural, =1{field} other{fields}}.', [
+                'num' => $this->numFields,
+            ]);
+        }
+
+        return Craft::t('app', 'The entry type is used by {numSections, number} {numSections, plural, =1{section} other{sections}} and {numFields, number} {numFields, plural, =1{field} other{fields}}.', [
+            'numSections' => $this->numSections,
+            'numFields' => $this->numFields,
         ]);
     }
 
     public function getResolutionLabel(): string
     {
+        $this->getItems();
+
+        if (!$this->numFields) {
+            return Craft::t('app', 'Remove from {num, plural, =1{section} other{sections}}', [
+                'num' => $this->numSections,
+            ]);
+        }
+
+        if (!$this->numSections) {
+            return Craft::t('app', 'Remove from {num, plural, =1{field} other{fields}}', [
+                'num' => $this->numFields,
+            ]);
+        }
+
         return Craft::t('app', 'Remove from sections and fields');
     }
 
     protected function getResolvedMessage(): string
     {
+        $this->getItems();
+
+        if (!$this->numFields) {
+            return Craft::t('app', 'The entry type will be removed from the {num, plural, =1{section} other{sections}} once it’s deleted.', [
+                'num' => $this->numSections,
+            ]);
+        }
+
+        if (!$this->numSections) {
+            return Craft::t('app', 'The entry type will be removed from the {num, plural, =1{field} other{fields}} once it’s deleted.', [
+                'num' => $this->numFields,
+            ]);
+        }
+
         return Craft::t('app', 'The entry type will be removed from the sections and fields once it’s deleted.');
     }
 
@@ -67,8 +120,10 @@ class EntryTypeUsageBlocker extends BaseResolvableDeletionBlocker
                 ->status(null);
 
             if ($usage instanceof Section) {
+                $this->numSections++;
                 $query->sectionId($usage->id);
             } else {
+                $this->numFields++;
                 // Nested entries in unpublished owner drafts are trashed too
                 $query->fieldId($usage->id)->allowOwnerDrafts();
             }

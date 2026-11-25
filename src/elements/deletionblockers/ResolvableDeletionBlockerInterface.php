@@ -11,7 +11,7 @@ namespace craft\elements\deletionblockers;
  * ResolvableDeletionBlockerInterface defines a deletion blocker that describes what it affects as plain data, so it
  * can be shown and resolved without the control panel’s JavaScript.
  *
- * Resolving it means agreeing to what the deletion does to the items it lists. The deletion takes care of them.
+ * Resolving it acknowledges what the deletion does to the items it lists. No separate action runs before the deletion.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.13.0
@@ -37,7 +37,7 @@ interface ResolvableDeletionBlockerInterface extends DeletionBlockerInterface
     public function getItems(): array;
 
     /**
-     * Returns a short description of what resolving the blocker agrees to, such as “Remove from layouts”.
+     * Returns the resolution button’s label, such as “Remove from field layouts”.
      */
     public function getResolutionLabel(): string;
 }

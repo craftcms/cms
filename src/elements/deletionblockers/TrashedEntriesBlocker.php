@@ -67,7 +67,9 @@ class TrashedEntriesBlocker extends BaseResolvableDeletionBlocker
 
     public function getResolutionLabel(): string
     {
-        return Craft::t('app', 'Move entries to the trash');
+        return Craft::t('app', 'Move {num, plural, =1{entry} other{entries}} to the trash', [
+            'num' => $this->count,
+        ]);
     }
 
     public function getDetails(): ?string
@@ -88,7 +90,9 @@ class TrashedEntriesBlocker extends BaseResolvableDeletionBlocker
 
     protected function getResolvedMessage(): string
     {
-        return Craft::t('app', 'The entries will be moved to the trash.');
+        return Craft::t('app', 'The {num, plural, =1{entry} other{entries}} will be moved to the trash.', [
+            'num' => $this->count,
+        ]);
     }
 
     protected function isDestructive(): bool

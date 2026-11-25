@@ -896,7 +896,7 @@ class Fields extends Component
      * Returns how many elements have a value for any of the given fields in a field layout.
      *
      * Drafts, revisions, and trashed elements aren’t counted. Returns `null` if a field stores its values
-     * somewhere other than the elements’ content, and isn’t a Matrix field.
+     * somewhere other than the elements’ content and isn’t a Matrix field.
      *
      * @param FieldLayout $layout The field layout
      * @param FieldInterface[] $fields Field instances from the layout, as returned by [[FieldLayout::getCustomFields()]]

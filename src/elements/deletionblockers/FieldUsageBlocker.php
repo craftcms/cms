@@ -43,19 +43,23 @@ class FieldUsageBlocker extends BaseResolvableDeletionBlocker
 
     public function getSummary(): string
     {
-        return Craft::t('app', 'The field is used by {num, number} field {num, plural, =1{layout} other{layouts}}.', [
+        return Craft::t('app', 'The field is used by {num, number} {num, plural, =1{field layout} other{field layouts}}.', [
             'num' => count($this->getItems()),
         ]);
     }
 
     public function getResolutionLabel(): string
     {
-        return Craft::t('app', 'Remove from field layouts');
+        return Craft::t('app', 'Remove from {num, plural, =1{field layout} other{field layouts}}', [
+            'num' => count($this->getItems()),
+        ]);
     }
 
     protected function getResolvedMessage(): string
     {
-        return Craft::t('app', 'The field will be removed from the field layouts once it’s deleted.');
+        return Craft::t('app', 'The field will be removed from the {num, plural, =1{field layout} other{field layouts}} once it’s deleted.', [
+            'num' => count($this->getItems()),
+        ]);
     }
 
     protected function defineItems(): array
