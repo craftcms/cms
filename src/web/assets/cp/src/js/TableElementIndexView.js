@@ -206,7 +206,11 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       });
 
       this.addListener(this.$elementContainer, 'keydown', (event) => {
-        if (event.keyCode === Garnish.RETURN_KEY) {
+        if (
+          event.keyCode === Garnish.RETURN_KEY &&
+          (event.target.nodeName !== 'TEXTAREA' ||
+            Garnish.isCtrlKeyPressed(event))
+        ) {
           this.$saveBtn.trigger('click');
         } else if (
           event.keyCode === Garnish.S_KEY &&
@@ -645,7 +649,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     this.elementIndex.updateElements();
 
     // No need for two spinners
-    this.elementIndex.setIndexAvailable();
+    this.elementIndex.hideIndexLoadingStyles();
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {

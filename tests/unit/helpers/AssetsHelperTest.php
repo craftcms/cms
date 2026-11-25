@@ -9,7 +9,10 @@ namespace crafttests\unit\helpers;
 
 use Craft;
 use craft\elements\Asset;
+use craft\fs\Local;
+use craft\fs\Temp;
 use craft\helpers\Assets;
+use craft\services\Assets as AssetsService;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use UnitTester;
@@ -161,8 +164,34 @@ class AssetsHelperTest extends TestCase
      */
     public function testMaxUploadSize(): void
     {
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
-        self::assertSame(1, Assets::getMaxUploadSize());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $originalMaxUploadFileSize = $generalConfig->maxUploadFileSize;
+        $generalConfig->maxUploadFileSize = 1;
+
+        try {
+            self::assertSame(1, Assets::getMaxUploadSize());
+        } finally {
+            $generalConfig->maxUploadFileSize = $originalMaxUploadFileSize;
+        }
+    }
+
+    public function testTempUploadFsCanBeReplacedViaContainer(): void
+    {
+        // Hosts such as Craft Cloud map craft\fs\Temp to shared storage that doesn't extend it
+        Craft::$container->set(Temp::class, ['class' => Local::class, 'path' => sys_get_temp_dir() . '/craft-temp-upload-fs-test']);
+        Craft::$app->set('assets', AssetsService::class);
+
+        try {
+            $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+            self::assertInstanceOf(Local::class, $fs);
+            self::assertNotInstanceOf(Temp::class, $fs);
+            self::assertTrue(Assets::isTempUploadFs($fs));
+            self::assertTrue(Assets::isTempUploadFs(Craft::$app->getVolumes()->getTemporaryVolume()->getFs()));
+            self::assertFalse(Assets::isTempUploadFs(new Local(['path' => sys_get_temp_dir()])));
+        } finally {
+            Craft::$container->clear(Temp::class);
+            Craft::$app->set('assets', AssetsService::class);
+        }
     }
 
     /**
@@ -222,6 +251,8 @@ class AssetsHelperTest extends TestCase
             ['Filename', 'filename'],
             ['File name is with chars', 'file.name_is-with chars'],
             ['File name is with chars', 'file.name_is-with chars!@#$%^&*()'],
+            ['Long' . str_repeat(' long', 50), str_repeat('long-', 60)],
+            ['É' . str_repeat('é', 254), str_repeat('é', 300)],
         ];
     }
 

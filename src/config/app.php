@@ -3,14 +3,16 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.8.19',
-    'schemaVersion' => '5.8.0.3',
+    'version' => '5.12.3',
+    'schemaVersion' => '5.13.0.2',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'oauth' => ['class' => craft\services\OAuth::class],
+        'mcp' => ['class' => craft\services\Mcp::class],
         'addresses' => [
             'class' => craft\services\Addresses::class,
         ],
@@ -26,6 +28,10 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
+        'assetManager' => function() {
+            $config = craft\helpers\App::assetManagerConfig();
+            return Craft::createObject($config);
+        },
         'auth' => [
             'class' => craft\services\Auth::class,
         ],
@@ -71,6 +77,9 @@ return [
         'gql' => [
             'class' => craft\services\Gql::class,
         ],
+        'icons' => [
+            'class' => craft\services\Icons::class,
+        ],
         'images' => [
             'class' => craft\services\Images::class,
         ],
@@ -88,6 +97,9 @@ return [
         ],
         'plugins' => [
             'class' => craft\services\Plugins::class,
+        ],
+        'personalAccessTokens' => [
+            'class' => craft\services\PersonalAccessTokens::class,
         ],
         'pluginStore' => [
             'class' => craft\services\PluginStore::class,
@@ -137,6 +149,9 @@ return [
         ],
         'updates' => [
             'class' => craft\services\Updates::class,
+        ],
+        'uploads' => [
+            'class' => craft\services\Uploads::class,
         ],
         'urlManager' => [
             'class' => craft\web\UrlManager::class,

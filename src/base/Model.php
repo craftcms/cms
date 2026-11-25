@@ -21,6 +21,7 @@ use yii\validators\Validator;
 /**
  * Model base class.
  *
+ * @method ($attribute is string ? string[] : array<string,string[]>) getErrors(?string $attribute = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

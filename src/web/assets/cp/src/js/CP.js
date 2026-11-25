@@ -1441,6 +1441,20 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    hideSiteCrumbMenuItem: function (siteId) {
+      const menuItem = document.querySelector(
+        `#site-crumb-menu a[data-site-id="${siteId}"]`
+      );
+      if (menuItem) {
+        const li = menuItem.closest('li');
+        li.classList.add('hidden');
+        const group = li.closest('.menu-group');
+        if (group && !group.querySelector('li:not(.hidden)')) {
+          group.classList.add('hidden');
+        }
+      }
+    },
+
     setSiteCrumbMenuItemStatus: function (siteId, status) {
       const menuItem = document.querySelector(
         `#site-crumb-menu a[data-site-id="${siteId}"]`
@@ -1775,6 +1789,8 @@ Craft.CP = Garnish.Base.extend(
         if (this.jobInfo.length) {
           // Check again after a delay
           this.trackJobProgress(true);
+        } else {
+          this.trigger('queueCompleted');
         }
 
         // Notify the other browser tabs about the jobs
@@ -2320,6 +2336,7 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
             type: e.type,
             id: e.id,
             siteId: e.siteId,
+            revisionId: e.revisionId ?? null,
             instances: [
               {
                 ui: 'chip',

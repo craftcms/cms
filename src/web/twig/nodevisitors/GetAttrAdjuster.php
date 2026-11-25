@@ -41,18 +41,37 @@ class GetAttrAdjuster implements NodeVisitorInterface
             $nodes['arguments'] = $node->getNode('arguments');
         }
 
+        $isDefinedTest = $node->isDefinedTestEnabled();
+
         $attributes = [
             'type' => $node->getAttribute('type'),
-            'is_defined_test' => $node->getAttribute('is_defined_test'),
+            'is_defined_test' => $isDefinedTest,
             'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
             'optimizable' => $node->getAttribute('optimizable'),
+            'null_safe' => $node->getAttribute('null_safe'),
+            'is_short_circuited' => false,
+            'var_name' => null,
         ];
 
         if ($node->hasAttribute('spread')) {
             $attributes['spread'] = $node->getAttribute('spread');
         }
 
-        return new GetAttrNode($nodes, $attributes, $node->getTemplateLine());
+        // Preserve the attributes set for `attribute()` function calls, so SandboxNodeVisitor can still enforce the
+        // `allowedFunctions` allowlist
+        foreach (['sandboxed_function_name', 'sandboxed_function'] as $name) {
+            if ($node->hasAttribute($name)) {
+                $attributes[$name] = $node->getAttribute($name);
+            }
+        }
+
+        $getAttrNode = new GetAttrNode($nodes, $attributes, $node->getTemplateLine());
+
+        if ($isDefinedTest) {
+            $getAttrNode->enableDefinedTest();
+        }
+
+        return $getAttrNode;
     }
 
     /**

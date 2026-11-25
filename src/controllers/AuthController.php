@@ -10,11 +10,14 @@ namespace craft\controllers;
 use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
+use craft\filters\IpRateLimitIdentity;
 use craft\helpers\Html;
+use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
 use yii\base\InvalidConfigException;
+use yii\filters\RateLimiter;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -35,6 +38,21 @@ class AuthController extends Controller
         'verify-recovery-code' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'verify-totp' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return parent::behaviors() + [
+            'rateLimiter' => [
+                'class' => RateLimiter::class,
+                'only' => ['verify-totp', 'verify-recovery-code'],
+                'enableRateLimitHeaders' => false,
+                'user' => fn() => IpRateLimitIdentity::createDefault('auth-verify'),
+            ],
+        ];
+    }
 
     /**
      * Returns the HTML for an authentication method’s setup slideout.
@@ -177,10 +195,14 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyCreationOptions(static::currentUser());
+
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 
@@ -194,10 +216,15 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyRequestOptions();
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
+
+        SessionHelper::set($authService->passkeyRequestOptionsParam, $serializedData);
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 
@@ -237,6 +264,7 @@ class AuthController extends Controller
         $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
+        $this->requireElevatedSession();
 
         $uid = $this->request->getRequiredBodyParam('uid');
         Craft::$app->getAuth()->deletePasskey(static::currentUser(), $uid);

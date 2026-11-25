@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Tools and dependencies are restored from the snapshot, and the database
+# services are supervised by Amp. Nothing needs repair on wake.

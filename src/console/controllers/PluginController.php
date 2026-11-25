@@ -183,6 +183,18 @@ class PluginController extends Controller
             $this->_installPluginByHandle($handle, $edition);
         }
 
+        // get plugin license info
+        $this->stdout('Updating license info ... ');
+        $apiService = Craft::$app->getApi();
+        try {
+            $apiService->request('GET', 'cms-licenses', [
+                'query' => ['include' => 'plugins'],
+            ]);
+        } catch (Throwable $e) {
+            // do nothing
+        }
+        $this->stdout("done\n", Console::FG_GREEN);
+
         return ExitCode::OK;
     }
 

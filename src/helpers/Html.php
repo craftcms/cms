@@ -143,9 +143,15 @@ class Html extends \yii\helpers\Html
      */
     public static function csrfInput(array $options = []): string
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->enableCsrfProtection && $generalConfig->csrfOriginOnly) {
+            // Tokens are never checked
+            return '';
+        }
+
         $request = Craft::$app->getRequest();
         $async = ArrayHelper::remove($options, 'async')
-            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+            ?? ($request->getIsSiteRequest() && $generalConfig->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
@@ -723,7 +729,7 @@ class Html extends \yii\helpers\Html
     }
 
     /**
-     * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
+     * Normalizes an element ID into only alphanumeric characters, underscores, and hyphens, or generates one at random.
      *
      * @param string $id
      * @return string
@@ -737,7 +743,12 @@ class Html extends \yii\helpers\Html
             return $id;
         }
 
-        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        // remove any non-alphanumeric characters that are already preceded/followed by a hyphen
+        $id = preg_replace('/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/', '', $id);
+
+        // convert any remaining consecutive non-alphanumeric characters to hyphens
+        $id = trim(preg_replace('/[^A-Za-z0-9_.-]+/', '-', $id), '-');
+
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -891,13 +902,14 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|aria\\-activedescendant|aria\\-flowto|aria\\-owns|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function(array $match) use ($namespace, $ids): string {
                 $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
                 $namespacedIds = '';
                 foreach ($matchIds as $i => $id) {
                     if (
                         $i % 2 === 0 && // not a delimiter
+                        $id !== '' && // check if it's not an empty string, or the next line will error
                         $id[0] !== '.' // not a class name
                     ) {
                         $isHash = $id[0] === '#';
@@ -1065,7 +1077,7 @@ class Html extends \yii\helpers\Html
 
         $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
 
-        // make sure it's contained within the project rot
+        // make sure it's contained within the project root
         $rootPath = FileHelper::absolutePath(Craft::getAlias('@root'), '/');
         if (!str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
@@ -1233,7 +1245,8 @@ class Html extends \yii\helpers\Html
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
-            if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+            // Only local file paths are allowed, not stream wrapper URLs (`ftp://`, `phar://`, etc.)
+            if (str_contains($svg, '://') || !is_file($svg) || !FileHelper::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }
@@ -1266,5 +1279,18 @@ class Html extends \yii\helpers\Html
         }
 
         return $svg;
+    }
+
+    /**
+     * Returns JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param callable $jsFn callback function that returns the JS code to be registered.
+     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @since 5.10.0
+     */
+    public static function jsWithVars(callable $jsFn, array $vars): string
+    {
+        $jsVars = array_map(fn($variable) => Json::encode($variable), $vars);
+        return call_user_func($jsFn, ...array_values($jsVars));
     }
 }

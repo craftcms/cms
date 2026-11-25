@@ -488,49 +488,4 @@ class CategoriesController extends Controller
             $category->setParentId($parentId);
         }
     }
-
-    /**
-     * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
-     *
-     * @return Response
-     * @since 4.0.0
-     */
-    public function actionInputHtml(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $categoryIds = $this->request->getParam('categoryIds', []);
-
-        $categories = [];
-
-        if (!empty($categoryIds)) {
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->id($categoryIds)
-                ->siteId($this->request->getParam('siteId'))
-                ->status(null)
-                ->all();
-
-            // Fill in the gaps
-            $structuresService = Craft::$app->getStructures();
-            $structuresService->fillGapsInElements($categories);
-
-            // Enforce the branch limit
-            if ($branchLimit = $this->request->getParam('branchLimit')) {
-                $structuresService->applyBranchLimitToElements($categories, $branchLimit);
-            }
-        }
-
-        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input.twig',
-            [
-                'elements' => $categories,
-                'id' => $this->request->getParam('id'),
-                'name' => $this->request->getParam('name'),
-                'selectionLabel' => $this->request->getParam('selectionLabel'),
-            ]);
-
-        return $this->asJson([
-            'html' => $html,
-        ]);
-    }
 }

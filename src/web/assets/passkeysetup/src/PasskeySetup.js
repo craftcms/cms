@@ -104,7 +104,9 @@ Craft.PasskeySetup = Garnish.Base.extend({
     let regResponse;
 
     try {
-      regResponse = await startRegistration(data.options);
+      regResponse = await startRegistration({
+        optionsJSON: JSON.parse(data.options),
+      });
     } catch (e) {
       Craft.cp.displayError(e?.message);
       return;
@@ -159,6 +161,17 @@ Craft.PasskeySetup = Garnish.Base.extend({
         )
       )
     ) {
+      return;
+    }
+
+    // Deleting a passkey removes a way of authenticating, so make them reverify first
+    try {
+      await new Promise((resolve, reject) => {
+        Craft.elevatedSessionManager
+          .requireElevatedSession(resolve, reject)
+          .catch(reject);
+      });
+    } catch (e) {
       return;
     }
 

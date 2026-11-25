@@ -21,11 +21,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $editorContainer: null,
     $straighten: null,
     $croppingCanvas: null,
-    $cropperMoveBtn: null,
-    $cropperEditBtn: null,
+    $fabricElementEditBtn: null,
     $spinner: null,
     $constraintContainer: null,
     $constraintRadioInputs: null,
+    $orientationField: null,
     $customConstraints: null,
 
     // FabricJS objects
@@ -33,13 +33,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     image: null,
     viewport: null,
     focalPoint: null,
+    prevFocalPoint: null,
     focalPointInnerCircle: null,
     focalPointOuterCircle: null,
     focalPointPickedIndicator: null,
     grid: null,
     croppingCanvas: null,
     clipper: null,
-    cropperHandleIndicator: null,
+    handleFocusIndicator: null,
     croppingRectangle: null,
     cropperHandles: null,
     cropperGrid: null,
@@ -66,7 +67,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     handlePicked: false,
     draggingFocal: false,
     cropperPickedUp: false,
-    cropperEditBtnFocused: null,
+    focusedEditButton: null,
     focalPickedUp: false,
     focalClicked: false,
     cropperClicked: false,
@@ -86,8 +87,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     croppingConstraint: false,
     constraintOrientation: 'landscape',
     showingCustomConstraint: false,
+    rectangleHasFocusOutline: false,
     saving: false,
-    nonDragEditMode: false,
+    dragEditMode: true,
 
     announcerTimeout: null,
 
@@ -206,20 +208,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         '[name="constraint"]',
         this.$constraintContainer
       );
+      this.$orientationField = $('#orientation', this.$body);
       this.$focalPointBtn = $('.focal-point', this.$body);
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
 
       // Keyboard accessibility
-      this.$cropperMoveBtn = $('#cropper-handle', this.$body);
-      this.$cropperEditBtn = $('[data-crop-editor]', this.$body);
+      this.$fabricElementEditBtn = $('[data-fabric-element]', this.$body);
 
       // Get SVG to use for move/active indicator
       const $moveSvg = $('#move-icon-wrapper svg').prop('outerHTML');
 
       // Store move icon for later use
-      fabric.loadSVGFromString($moveSvg, (objects, options) => {
-        var obj = fabric.util.groupSVGElements(objects, options);
+      fabric.loadSVGFromString($moveSvg).then(({objects, options}) => {
+        var obj = fabric.util.groupSVGElements(
+          objects.filter((object) => object !== null),
+          options
+        );
         obj.set({
           left: 0,
           top: 0,
@@ -307,7 +312,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       // Load image and set up the initial properties
-      fabric.Image.fromURL(imageUrl, (imageObject) => {
+      fabric.FabricImage.fromURL(imageUrl).then((imageObject) => {
         this.image = imageObject;
         this.image.set({
           originX: 'center',
@@ -317,8 +322,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         });
         this.canvas.add(this.image);
 
-        this.originalHeight = this.image.getHeight();
-        this.originalWidth = this.image.getWidth();
+        this.originalHeight = this.image.height;
+        this.originalWidth = this.image.width;
         this.zoomRatio = 1;
 
         this.lastLoadedDimensions = this.getScaledImageDimensions();
@@ -412,9 +417,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         cacheBust: this.cacheBust,
       });
 
-      this.image.setSrc(imageUrl, (imageObject) => {
-        this.originalHeight = imageObject.getHeight();
-        this.originalWidth = imageObject.getWidth();
+      this.image.setSrc(imageUrl).then(() => {
+        this.originalHeight = this.image.height;
+        this.originalWidth = this.image.width;
         this.lastLoadedDimensions = {
           width: this.originalHeight,
           height: this.originalWidth,
@@ -539,8 +544,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      */
     _createViewport: function () {
       this.viewport = new fabric.Rect({
-        width: this.image.width,
-        height: this.image.height,
+        width: this.image.getScaledWidth(),
+        height: this.image.getScaledHeight(),
         fill: 'rgba(127,0,0,1)',
         originX: 'center',
         originY: 'center',
@@ -661,11 +666,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     toggleFocalPoint: function () {
       if (!this.focalPoint) {
         this._createFocalPoint();
-        this.$focalPointBtn.attr('aria-pressed', 'true');
+        this.prevFocalPoint = null;
       } else {
+        this.prevFocalPoint = this.focalPoint;
         this.canvas.remove(this.focalPoint);
         this.focalPoint = null;
-        this.$focalPointBtn.attr('aria-pressed', 'false');
       }
 
       this.renderImage();
@@ -718,7 +723,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         var offsetX = this.focalPoint.left - this.editorWidth / 2;
         var offsetY = this.focalPoint.top - this.editorHeight / 2;
 
-        var currentWidth = this.image.width;
+        var currentWidth = this.image.getScaledWidth();
         var newWidth = this.getScaledImageDimensions().width * this.zoomRatio;
         var ratio = newWidth / currentWidth / this.scaleFactor;
 
@@ -793,10 +798,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
 
       this._zoomImage._.imageDimensions = this.getScaledImageDimensions();
-      this.image.set({
-        width: this._zoomImage._.imageDimensions.width * this.zoomRatio,
-        height: this._zoomImage._.imageDimensions.height * this.zoomRatio,
-      });
+      const scale = this._getImageScale(
+        this._zoomImage._.imageDimensions.width * this.zoomRatio
+      );
+      this.image.set({scaleX: scale, scaleY: scale});
+    },
+
+    /**
+     * Get the scale that draws the image at a given displayed width.
+     *
+     * fabric's image `width` and `height` are the image's natural size, so the
+     * displayed size has to be set with `scaleX` and `scaleY` instead.
+     *
+     * @param {number} displayedWidth
+     * @returns {number}
+     */
+    _getImageScale: function (displayedWidth) {
+      return this.originalWidth > 0 ? displayedWidth / this.originalWidth : 1;
     },
 
     /**
@@ -878,9 +896,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       });
 
-      // Focal point
-      this.addListener(this.$focalPointBtn, 'click', this.toggleFocalPoint);
-
       // Rotate controls
       this.addListener($('.rotate-left'), 'click', function () {
         this.rotateImage(-90);
@@ -895,22 +910,37 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.flipImage('x');
       });
 
-      // Cropper
-      this.addListener(this.$cropperEditBtn, 'click', (ev) => {
-        this._handleCropperEditBtnClick(ev);
+      // FabricJS canvas
+      this.addListener(this.$fabricElementEditBtn, 'click', (ev) => {
+        this._handleEditButtonClick(ev);
       });
-      this.addListener(this.$cropperEditBtn, 'keydown', (ev) => {
-        this._handleKeydownOnCropperEditBtn(ev);
+      this.addListener(this.$fabricElementEditBtn, 'keydown', (ev) => {
+        this.dragEditMode = false;
+        this._handleKeydownOnFabricElementEditBtn(ev);
       });
-      this.addListener(this.$cropperEditBtn, 'blur', (ev) => {
-        this._handleCropperEditBtnBlur(ev);
-        this._redrawCropperElements();
-        this.renderCropper();
-      });
-      this.addListener(this.$cropperEditBtn, 'focus', (ev) => {
-        this.cropperEditBtnFocused = $(ev.target);
-        this._redrawCropperElements();
-        this.renderCropper();
+
+      this.addListener(Garnish.$doc, 'focusin', (ev) => {
+        const targetIsEditButton = $(ev.target).is(this.$fabricElementEditBtn);
+
+        const showingEditorFocusOutlines =
+          this.handleFocusIndicator || this.rectangleHasFocusOutline;
+        const outlinesShouldBeErased =
+          showingEditorFocusOutlines && !targetIsEditButton;
+
+        if (targetIsEditButton || outlinesShouldBeErased) {
+          if (targetIsEditButton) {
+            this.focusedEditButton = $(ev.target);
+          } else {
+            this.focusedEditButton = null;
+          }
+
+          this._resetEditState();
+
+          if (this.clipper) {
+            this._redrawCropperElements();
+            this.renderCropper();
+          }
+        }
       });
 
       // Straighten slider
@@ -944,11 +974,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         'change',
         this._handleConstraintChange
       );
-      this.addListener(
-        $('.orientation input', this.$container),
-        'click',
-        this._handleOrientationClick
-      );
+      this.orientationBtnGroup = new Craft.Listbox(this.$orientationField, {
+        onChange: ($option) => {
+          this._handleOrientationClick($option);
+        },
+      });
       this.addListener(
         $('.constraint-group .custom input', this.$container),
         'keyup',
@@ -1004,11 +1034,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      *
      * @param {Object} ev
      */
-    _handleOrientationClick: function (ev) {
-      if (ev.currentTarget.value === this.constraintOrientation) {
+    _handleOrientationClick: function ($option) {
+      if ($option.data('value') === this.constraintOrientation) {
         return;
       }
-      this.constraintOrientation = ev.currentTarget.value;
+      this.constraintOrientation = $option.data('value');
 
       const $constraints = $('.flip', this.$constraintContainer);
 
@@ -1017,7 +1047,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         const labelSelector = 'label[for="' + $constraint.attr('id') + '"]';
         const $label = $(labelSelector, this.$constraintContainer);
         $constraint.val(1 / $constraint.val());
-        $label.html(
+        $label.text(
           $label.text().split(':').reverse().join(':').replace(/\s/g, '')
         );
       }
@@ -1279,8 +1309,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         var imageProperties = {
           angle: newAngle,
-          width: scaledImageDimensions.width * imageZoomRatio,
-          height: scaledImageDimensions.height * imageZoomRatio,
         };
 
         var scaleFactor = 1;
@@ -1296,10 +1324,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.scaleFactor = scaleFactor;
         }
 
-        if (scaleFactor < 1) {
-          imageProperties.width *= scaleFactor;
-          imageProperties.height *= scaleFactor;
-        }
+        var turnedScale = this._getImageScale(
+          scaledImageDimensions.width *
+            imageZoomRatio *
+            (scaleFactor < 1 ? scaleFactor : 1)
+        );
+        imageProperties.scaleX = turnedScale;
+        imageProperties.scaleY = turnedScale;
 
         var state = this.cropperState;
 
@@ -1339,7 +1370,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.canvas.remove(this.focalPoint);
         }
 
-        this.viewport.animate(viewportProperties, {
+        this._animate(this.viewport, viewportProperties, {
           duration: this.settings.animationDuration,
           onComplete: () => {
             // If we're zooming the image in or out, better do the same to viewport
@@ -1351,7 +1382,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         });
 
         // Animate the rotation and dimension change
-        this.image.animate(imageProperties, {
+        this._animate(this.image, imageProperties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
@@ -1427,10 +1458,39 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.storeCropperState(cropperState);
         this.storeFocalPointState(focalPointState);
 
-        this.image.animate(properties, {
+        // Temporarily bypass fabric.js's _set normalization for scale properties.
+        // fabric.js normalizes negative scaleX/scaleY by toggling flipX/flipY and
+        // making the value positive. During animation, set() is called on every
+        // frame, so each frame with a negative scale value toggles flipX/flipY.
+        // The final flip state becomes non-deterministic based on frame count.
+        var originalSet = this.image._set;
+        this.image._set = function (key, value) {
+          if (key === 'scaleX' || key === 'scaleY') {
+            this[key] = value;
+            this.dirty = true;
+            return this;
+          }
+          return originalSet.call(this, key, value);
+        };
+
+        // Ensure flipX/flipY are reset before animating, in case a previous
+        // buggy animation left them in an inconsistent state.
+        this.image.flipX = false;
+        this.image.flipY = false;
+
+        this._animate(this.image, properties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
+            this.image._set = originalSet;
+
+            // Settle the mirror back into the flip flags, from the record of it
+            // rather than the sign the animation happened to leave.
+            this.image.flipX = this.flipData.x === 1;
+            this.image.flipY = this.flipData.y === 1;
+            this.image.scaleX = Math.abs(this.image.scaleX);
+            this.image.scaleY = Math.abs(this.image.scaleY);
+
             this.animationInProgress = false;
             if (this.focalPoint) {
               // Well this is handy
@@ -1968,9 +2028,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         height: this.editorHeight,
       };
 
+      var fitScale = this._getImageScale(
+        imageDimensions.width * this.zoomRatio
+      );
       var imageProperties = {
-        width: imageDimensions.width * this.zoomRatio,
-        height: imageDimensions.height * this.zoomRatio,
+        scaleX: fitScale,
+        scaleY: fitScale,
         left: this.editorWidth / 2,
         top: this.editorHeight / 2,
       };
@@ -2024,9 +2087,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       var inverseZoomFactor = targetZoom / this.zoomRatio;
       this.zoomRatio = targetZoom;
 
+      var coverScale = this._getImageScale(
+        imageDimensions.width * this.zoomRatio
+      );
       var imageProperties = {
-        width: imageDimensions.width * this.zoomRatio,
-        height: imageDimensions.height * this.zoomRatio,
+        scaleX: coverScale,
+        scaleY: coverScale,
         left: this.editorWidth / 2,
         top: this.editorHeight / 2,
       };
@@ -2101,7 +2167,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.renderImage();
         }
 
-        this.image.animate(imageProperties, {
+        this._animate(this.image, imageProperties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
@@ -2112,7 +2178,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           },
         });
 
-        this.viewport.animate(viewportProperties, {
+        this._animate(this.viewport, viewportProperties, {
           duration: this.settings.animationDuration,
         });
       }
@@ -2237,6 +2303,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Redraw the cropper boundaries
      */
     _redrawCropperElements: function () {
+      if (!this.croppingCanvas) return;
+
       if (typeof this._redrawCropperElements._ === 'undefined') {
         this._redrawCropperElements._ = {};
       }
@@ -2247,15 +2315,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.croppingCanvas.remove(this.croppingRectangle);
       }
 
-      if (this.cropperHandleIndicator) {
-        this.croppingCanvas.remove(this.cropperHandleIndicator);
-        this.cropperHandleIndicator = null;
+      if (this.handleFocusIndicator) {
+        this.croppingCanvas.remove(this.handleFocusIndicator);
+        this.handleFocusIndicator = null;
       }
 
       this._redrawCropperElements._.lineOptions = {
         strokeWidth: 4,
         stroke: this.settings.colors.white,
-        fill: false,
+        fill: null,
       };
 
       this._redrawCropperElements._.gridOptions = {
@@ -2315,7 +2383,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       );
 
-      this.cropperHandleIndicator = this._getCropperHandleIndicator();
+      this.handleFocusIndicator = this._getHandleFocusIndicator();
 
       // Don't forget the rectangle
       this.croppingRectangle = this._getCroppingRectangle();
@@ -2385,42 +2453,46 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.croppingCanvas.add(this.cropperHandles);
       this.croppingCanvas.add(this.cropperGrid);
 
-      if (this.cropperHandleIndicator) {
-        this.croppingCanvas.add(this.cropperHandleIndicator);
+      if (this.handleFocusIndicator) {
+        this.croppingCanvas.add(this.handleFocusIndicator);
       }
+    },
+
+    _resetEditState: function () {
+      this.cropperPickedUp = false;
+      this.handlePicked = false;
+      this.focalPickedUp = false;
     },
 
     /**
      * Whether the cropping rectangle edit button is focused.
      * @returns {boolean}
      */
-    _getCroppingRectangleEditBtnIsFocused: function () {
-      if (this.cropperEditBtnFocused) {
-        // Check button properties. If rectangle, use rectangle styles
-        const cropperElement = this._getCropperElementFromEditBtn(
-          this.cropperEditBtnFocused
-        );
+    _getRectangleButtonIsFocused: function () {
+      if (!this.focusedEditButton) return;
 
-        if (cropperElement === 'rectangle') {
-          return true;
-        }
-
-        return false;
+      // Check button properties. If rectangle, use rectangle styles
+      if (
+        this._getElementHandleFromButton(this.focusedEditButton) === 'rectangle'
+      ) {
+        return true;
       }
+
+      return false;
     },
 
     /**
      * Whether one of the handle edit buttons is focused.
      * @returns {boolean}
      */
-    _getCropperHandleEditBtnIsFocused: function () {
-      if (this.cropperEditBtnFocused) {
+    _getHandleButtonIsFocused: function () {
+      if (this.focusedEditButton) {
         // Check button properties. If rectangle, use rectangle styles
-        const cropperElement = this._getCropperElementFromEditBtn(
-          this.cropperEditBtnFocused
+        const cropperElement = this._getElementHandleFromButton(
+          this.focusedEditButton
         );
 
-        if (cropperElement !== 'rectangle') {
+        if (cropperElement !== 'rectangle' && cropperElement !== 'focalpoint') {
           return true;
         }
 
@@ -2436,6 +2508,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       const strokeWidth = 2;
       const width = this.clipper.width;
       const height = this.clipper.height;
+      this.rectangleHasFocusOutline = false;
       const rectangleOptions = {
         fill: this.settings.colors.transparent,
         top: 0,
@@ -2476,10 +2549,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       );
 
-      if (
-        this.cropperPickedUp ||
-        this._getCroppingRectangleEditBtnIsFocused()
-      ) {
+      if (this.cropperPickedUp || this._getRectangleButtonIsFocused()) {
+        this.rectangleHasFocusOutline = true;
         outerOutline.set({
           stroke: this.settings.colors.white,
         });
@@ -2511,13 +2582,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Creates and returns a cropper handle indicator group.
      * @returns {fabric.Group} The created cropper handle indicator group.
      */
-    _getCropperHandleIndicator: function () {
-      if (!this._getCropperHandleEditBtnIsFocused() && !this.handlePicked)
+    _getHandleFocusIndicator: function () {
+      if (
+        this.dragEditMode ||
+        (!this._getHandleButtonIsFocused() && !this.handlePicked)
+      ) {
         return;
+      }
 
       const handle = this.handlePicked
         ? this.handlePicked
-        : this._getCropperElementFromEditBtn(this.cropperEditBtnFocused);
+        : this._getElementHandleFromButton(this.focusedEditButton);
 
       let handleCoordinates = this._getClipperHandlePosition(handle);
       const size = 12;
@@ -2654,17 +2729,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Handle click events on the cropper rectangle or cropper handle edit buttons.
      * @param ev
      */
-    _handleCropperEditBtnClick: function (ev) {
+    _handleEditButtonClick: function (ev) {
       const $btn = $(ev.target.closest('button'));
       const btnPressed = $btn.attr('aria-pressed') === 'true';
-      const itemPicked = this._getCropperElementFromEditBtn($btn);
+      const elementHandle = this._getElementHandleFromButton($btn);
+
+      if (elementHandle === 'focalpoint') {
+        this.toggleFocalPoint();
+      }
+
+      // TODO: Make sure we're dropping the currently picked item, not just any item
 
       if (btnPressed) {
-        this.nonDragEditMode = false;
-        this._dropCropperElement(itemPicked);
+        this._dropFabricElement(elementHandle);
       } else {
-        this.nonDragEditMode = true;
-        this._pickUpCropperElement(itemPicked);
+        this.dragEditMode = false;
+        this._pickUpFabricElement(elementHandle);
       }
     },
 
@@ -2676,14 +2756,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _getRelativePositionMessage: function (item) {
       if (!item.left || !item.top) return;
 
+      const imageWidth = this.image.getScaledWidth();
+      const imageHeight = this.image.getScaledHeight();
       const xPercent = (
-        ((item.left - this.image.left + this.image.width / 2) /
-          this.image.width) *
+        ((item.left - this.image.left + imageWidth / 2) / imageWidth) *
         100
       ).toFixed(1);
       const yPercent = (
-        ((item.top - this.image.top + this.image.height / 2) /
-          this.image.height) *
+        ((item.top - this.image.top + imageHeight / 2) / imageHeight) *
         100
       ).toFixed(1);
 
@@ -2721,41 +2801,44 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param $btn
      * @returns {'rectangle'|'tl'|'t'|'tr'|'l'|'r'|'bl'|'b'|'br'}
      */
-    _getCropperElementFromEditBtn: function ($btn) {
-      return $($btn).attr('data-crop-editor');
+    _getElementHandleFromButton: function ($btn) {
+      return $($btn).attr('data-fabric-element');
     },
 
     /**
-     * Returns the edit button for a given cropper element handle.
-     * @param {string} element - The cropper element handle, e.g. 'rectangle', 'tl', 't', etc.
+     * Returns the edit button for a given fabric element handle.
+     * @param {string} element - The fabric element handle, e.g. 'rectangle', 'tl', 't', etc.
      * @returns {jQuery}
      */
-    _getCropperEditBtnFromElementHandle: function (element) {
-      return this.$cropperEditBtn.filter(`[data-crop-editor="${element}"]`);
+    _getEditButtonFromElementHandle: function (element) {
+      return this.$fabricElementEditBtn.filter(
+        `[data-fabric-element="${element}"]`
+      );
     },
 
     /**
-     * Pick up a cropper element given its handle.
-     * @param {string} element - The cropper element handle, e.g. 'rectangle', 'tl', 't', etc.
+     * Pick up a fabric element given its handle.
+     * @param {string} element - The fabric element handle, e.g. 'rectangle', 'tl', 't', etc.
      */
-    _pickUpCropperElement: function (element) {
-      this.cropperPickedUp = false;
-      this.handlePicked = false;
+    _pickUpFabricElement: function (handle) {
+      this._resetEditState();
 
       let stateMessage = '';
       let positionMessage = '';
       let instructionMessage = '';
 
-      const $btn = this._getCropperEditBtnFromElementHandle(element);
+      const $btn = this._getEditButtonFromElementHandle(handle);
       $btn.attr('aria-pressed', 'true');
-      const itemName = $btn.find('[data-item-name]').text();
+      const itemName = $btn.attr('data-item-name');
 
-      if (element === 'rectangle') {
+      if (handle === 'rectangle') {
         this.cropperPickedUp = true;
         positionMessage = this._getRelativePositionMessage(this.clipper);
+      } else if (handle === 'focalpoint') {
+        this.focalPickedUp = true;
+        positionMessage = this._getRelativePositionMessage(this.focalPoint);
       } else {
-        $btn.attr('aria-pressed', 'true');
-        this.handlePicked = element;
+        this.handlePicked = handle;
       }
 
       stateMessage = Craft.t('app', '{item} picked up.', {
@@ -2770,36 +2853,41 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._announce(
         `${stateMessage} ${positionMessage} ${instructionMessage}`
       );
-
-      this._redrawCropperElements();
-      this.renderCropper();
+      if (this.renderCropper) {
+        this._redrawCropperElements();
+        this.renderCropper();
+      }
     },
 
     /**
-     * Drops a cropper element given its handle.
-     * @param {string} element - The cropper element handle, e.g. 'rectangle', 'tl', 't', etc.
+     * Drops a fabric element given its handle.
+     * @param {string} element - The fabric element handle, e.g. 'rectangle', 'tl', 't', etc.
      */
-    _dropCropperElement: function (element) {
-      const $btn = this._getCropperEditBtnFromElementHandle(element);
-      const itemName = $btn.find('[data-item-name]').text();
-
-      // Messages
-      let stateMessage = '';
+    _dropFabricElement: function (handle) {
+      const $btn = this._getEditButtonFromElementHandle(handle);
+      const itemName = $btn.attr('data-item-name');
       let positionMessage = '';
 
+      if (handle === 'rectangle') {
+        positionMessage = this._getRelativePositionMessage(this.clipper);
+      } else if (handle === 'focalpoint') {
+        // Use the prev focal point, since the current one should be null after toggle
+        positionMessage = this._getRelativePositionMessage(this.prevFocalPoint);
+      }
+
       // Defaults
-      this.cropperPickedUp = false;
-      this.handlePicked = false;
+      this._resetEditState();
       $btn.attr('aria-pressed', 'false');
 
-      stateMessage = Craft.t('app', '{item} dropped.', {
+      const stateMessage = Craft.t('app', '{item} dropped.', {
         item: itemName,
       });
 
       this._announce(`${stateMessage} ${positionMessage}`);
-
-      this._redrawCropperElements();
-      this.renderCropper();
+      if (this.renderCropper) {
+        this._redrawCropperElements();
+        this.renderCropper();
+      }
     },
 
     _toggleFocalModeStyles: function () {
@@ -2828,7 +2916,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Handle keydown events on the cropper rectangle or cropper handle edit buttons.
      * @param ev
      */
-    _handleKeydownOnCropperEditBtn: function (ev) {
+    _handleKeydownOnFabricElementEditBtn: function (ev) {
       const {target} = ev;
 
       if (!this.focalPoint && !this.cropperPickedUp && !this.handlePicked)
@@ -2841,25 +2929,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         Garnish.DOWN_KEY,
       ].includes(ev.keyCode);
 
-      if (!isDirectionalKey) return;
-
-      event.preventDefault();
-
-      if (this.croppingCanvas) {
-        this._handleCropperKeyboardEdit(ev);
-      }
-    },
-
-    _handleCropperEditBtnBlur: function (ev) {
-      const $btn = $(ev.target.closest('button'));
-      const btnPressed = $btn.attr('aria-pressed') !== 'false';
-
-      this.cropperEditBtnFocused = null;
-      this.nonDragEditMode = false;
-
-      if (btnPressed) {
-        const elementToDrop = this._getCropperElementFromEditBtn($btn);
-        this._dropCropperElement(elementToDrop);
+      if (isDirectionalKey) {
+        event.preventDefault();
+        this._handleFabricElementKeyboardEdit(ev);
       }
     },
 
@@ -2869,6 +2941,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {Object} ev
      */
     _handleMouseDown: function (ev) {
+      this.dragEditMode = true;
       // Focal before resize before dragging
       var focal = this.focalPoint && this._isMouseOver(ev, this.focalPoint);
       var move = this.croppingCanvas && this._isMouseOver(ev, this.clipper);
@@ -2894,8 +2967,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {Object} ev
      */
     _handleMouseMove: function (ev) {
-      if (this.nonDragEditMode) return;
-
       if (this.mouseMoveEvent !== null) {
         Garnish.requestAnimationFrame(this._handleMouseMoveInternal.bind(this));
       }
@@ -2907,28 +2978,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         return;
       }
 
-      if (this.focalPoint && this.focalClicked) {
-        this.draggingFocal = true;
-        this._handleFocalDrag(this.mouseMoveEvent);
-        this.storeFocalPointState();
-        this.renderImage();
-      } else if (this.cropperClicked || this.handlePicked) {
-        if (this.cropperClicked) {
-          this.draggingCropper = true;
-          this._handleCropperDrag(this.mouseMoveEvent);
-        } else {
-          this.scalingCropper = true;
-          this._handleCropperResize(this.mouseMoveEvent);
+      if (this.dragEditMode) {
+        if (this.focalPoint && this.focalClicked) {
+          this.draggingFocal = true;
+          this._handleFocalDrag(this.mouseMoveEvent);
+          this.storeFocalPointState();
+          this.renderImage();
+        } else if (this.cropperClicked || this.handlePicked) {
+          if (this.cropperClicked) {
+            this.draggingCropper = true;
+            this._handleCropperDrag(this.mouseMoveEvent);
+          } else {
+            this.scalingCropper = true;
+            this._handleCropperResize(this.mouseMoveEvent);
+          }
+
+          this._redrawCropperElements();
+
+          this.storeCropperState();
+          this.renderCropper();
         }
-
-        this._redrawCropperElements();
-
-        this.storeCropperState();
-        this.renderCropper();
-      } else {
-        this._setMouseCursor(this.mouseMoveEvent);
       }
-
+      this._setMouseCursor(this.mouseMoveEvent);
       this.previousMouseX = this.mouseMoveEvent.pageX;
       this.previousMouseY = this.mouseMoveEvent.pageY;
 
@@ -3102,7 +3173,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Handle keyboard events for editing the cropper.
      * @param ev
      */
-    _handleCropperKeyboardEdit: function (ev) {
+    _handleFabricElementKeyboardEdit: function (ev) {
       let direction;
 
       // Figure out which direction to move the cropper
@@ -3130,6 +3201,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           x: deltaValues.deltaX,
           y: deltaValues.deltaY,
         });
+      } else if (this.focalPickedUp) {
+        this._moveFocalPointByDelta(deltaValues.deltaX, deltaValues.deltaY);
+        this.storeFocalPointState();
+        this.renderImage();
       }
     },
 
@@ -3274,6 +3349,59 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     },
 
     /**
+     * Moves the cropper rectangle by a given delta.
+     * @param deltaX
+     * @param deltaY
+     */
+    _moveFocalPointByDelta: function (deltaX, deltaY) {
+      if (typeof this._moveFocalPointByDelta._ === 'undefined') {
+        this._moveFocalPointByDelta._ = {};
+      }
+
+      if (this.focalPoint) {
+        if (deltaX === 0 && deltaY === 0) {
+          return;
+        }
+
+        this._moveFocalPointByDelta._.newX = this.focalPoint.left + deltaX;
+        this._moveFocalPointByDelta._.newY = this.focalPoint.top + deltaY;
+
+        // Just make sure that the focal point stays inside the image
+        if (this.currentView === 'crop') {
+          if (
+            !this.arePointsInsideRectangle(
+              [
+                {
+                  x: this._moveFocalPointByDelta._.newX,
+                  y: this._moveFocalPointByDelta._.newY,
+                },
+              ],
+              this.imageVerticeCoords
+            )
+          ) {
+            return;
+          }
+        } else {
+          if (
+            !this.isPointInsideViewport({
+              x: this._moveFocalPointByDelta._.newX,
+              y: this._moveFocalPointByDelta._.newY,
+            })
+          ) {
+            return;
+          }
+        }
+
+        this.focalPoint.set({
+          left: this.focalPoint.left + deltaX,
+          top: this.focalPoint.top + deltaY,
+        });
+
+        this._announce(this._getRelativePositionMessage(this.focalPoint));
+      }
+    },
+
+    /**
      * Try to find the farthest possible placement based on the proposed move.
      * @param moveObj
      */
@@ -3388,48 +3516,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._handleFocalDrag._.deltaX = ev.pageX - this.previousMouseX;
         this._handleFocalDrag._.deltaY = ev.pageY - this.previousMouseY;
 
-        if (
-          this._handleFocalDrag._.deltaX === 0 &&
-          this._handleFocalDrag._.deltaY === 0
-        ) {
-          return;
-        }
-
-        this._handleFocalDrag._.newX =
-          this.focalPoint.left + this._handleFocalDrag._.deltaX;
-        this._handleFocalDrag._.newY =
-          this.focalPoint.top + this._handleFocalDrag._.deltaY;
-
-        // Just make sure that the focal point stays inside the image
-        if (this.currentView === 'crop') {
-          if (
-            !this.arePointsInsideRectangle(
-              [
-                {
-                  x: this._handleFocalDrag._.newX,
-                  y: this._handleFocalDrag._.newY,
-                },
-              ],
-              this.imageVerticeCoords
-            )
-          ) {
-            return;
-          }
-        } else {
-          if (
-            !this.isPointInsideViewport({
-              x: this._handleFocalDrag._.newX,
-              y: this._handleFocalDrag._.newY,
-            })
-          ) {
-            return;
-          }
-        }
-
-        this.focalPoint.set({
-          left: this.focalPoint.left + this._handleFocalDrag._.deltaX,
-          top: this.focalPoint.top + this._handleFocalDrag._.deltaY,
-        });
+        this._moveFocalPointByDelta(
+          this._handleFocalDrag._.deltaX,
+          this._handleFocalDrag._.deltaY
+        );
       }
     },
 
@@ -3562,7 +3652,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       };
 
       // Make sure to redraw cropper handles and gridlines when resizing
-      this.clipper.animate(this.enforceCroppingConstraint._.properties, {
+      this._animate(this.clipper, this.enforceCroppingConstraint._.properties, {
         onChange: () => {
           this._redrawCropperElements();
           this.croppingCanvas.renderAll();
@@ -4129,6 +4219,48 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     },
 
     /**
+     * Animate several properties of a fabric object at once.
+     *
+     * fabric fires `onChange` and `onComplete` once per animated property, so
+     * this calls `onChange` once per frame and `onComplete` once, after every
+     * property has landed.
+     *
+     * @param {fabric.FabricObject} object
+     * @param {Object} properties
+     * @param {Object} [options]
+     */
+    _animate: function (object, properties, options = {}) {
+      const {duration, onChange, onComplete} = options;
+      const entries = Object.entries(properties);
+
+      if (entries.length === 0) {
+        onComplete?.();
+        return;
+      }
+
+      let remaining = entries.length;
+
+      entries.forEach(([key, value], index) => {
+        const last = index === entries.length - 1;
+
+        object.animate(
+          {[key]: value},
+          {
+            duration,
+            ...(last && onChange ? {onChange} : {}),
+            onComplete: () => {
+              remaining -= 1;
+
+              if (remaining === 0) {
+                onComplete?.();
+              }
+            },
+          }
+        );
+      });
+    },
+
+    /**
      * Debug stuff by continuously rendering a fabric object on canvas.
      *
      * @param {Object} fabricObj
@@ -4172,6 +4304,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.arePointsInsideRectangle._.bc
       );
 
+      // Allow points up to 1px outside the rectangle, to account for floating point errors
+      this.arePointsInsideRectangle._.toleranceAb = Math.sqrt(
+        this.arePointsInsideRectangle._.scalarAbAb
+      );
+      this.arePointsInsideRectangle._.toleranceBc = Math.sqrt(
+        this.arePointsInsideRectangle._.scalarBcBc
+      );
+
       for (
         this.arePointsInsideRectangle._.i = 0;
         this.arePointsInsideRectangle._.i < points.length;
@@ -4202,13 +4342,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         );
 
         this.arePointsInsideRectangle._.projectsOnAB =
-          0 <= this.arePointsInsideRectangle._.scalarAbAp &&
+          -this.arePointsInsideRectangle._.toleranceAb <=
+            this.arePointsInsideRectangle._.scalarAbAp &&
           this.arePointsInsideRectangle._.scalarAbAp <=
-            this.arePointsInsideRectangle._.scalarAbAb;
+            this.arePointsInsideRectangle._.scalarAbAb +
+              this.arePointsInsideRectangle._.toleranceAb;
         this.arePointsInsideRectangle._.projectsOnBC =
-          0 <= this.arePointsInsideRectangle._.scalarBcBp &&
+          -this.arePointsInsideRectangle._.toleranceBc <=
+            this.arePointsInsideRectangle._.scalarBcBp &&
           this.arePointsInsideRectangle._.scalarBcBp <=
-            this.arePointsInsideRectangle._.scalarBcBc;
+            this.arePointsInsideRectangle._.scalarBcBc +
+              this.arePointsInsideRectangle._.toleranceBc;
 
         if (
           !(

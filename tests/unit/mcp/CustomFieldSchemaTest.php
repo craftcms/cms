@@ -1,0 +1,228 @@
+<?php
+
+namespace crafttests\unit\mcp;
+
+use Craft;
+use craft\base\ElementInterface;
+use craft\base\FieldInterface;
+use craft\base\InputSchemaFieldInterface;
+use craft\db\Connection;
+use craft\elements\Entry;
+use craft\fieldlayoutelements\CustomField;
+use craft\fields\Date;
+use craft\fields\Dropdown;
+use craft\fields\Email;
+use craft\fields\MultiSelect;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\mcp\schema\CustomFieldSchema;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\services\Config;
+use Mcp\Capability\Discovery\SchemaValidator;
+use Mcp\Exception\ToolCallException;
+use PHPUnit\Framework\TestCase;
+use yii\console\Application;
+
+class CustomFieldSchemaTest extends TestCase
+{
+    private mixed $originalApp;
+    private array $originalAliases;
+    private string $originalTimezone;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->originalApp = Craft::$app;
+        $this->originalAliases = Craft::$aliases;
+        $this->originalTimezone = date_default_timezone_get();
+
+        new SchemaTestApplication([
+            'id' => 'mcp-field-schema-test',
+            'basePath' => dirname(__DIR__, 3) . '/src',
+            'components' => [
+                'db' => ['class' => Connection::class, 'dsn' => 'sqlite::memory:'],
+                'config' => ['class' => Config::class, 'configDir' => sys_get_temp_dir() . '/mcp-field-schema-test-config'],
+            ],
+        ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Craft::$app = $this->originalApp;
+        Craft::$aliases = $this->originalAliases;
+        date_default_timezone_set($this->originalTimezone);
+        parent::tearDown();
+    }
+
+    public function testGeneratedSchemaValidatesNativeAndPluginFieldInput(): void
+    {
+        $layoutFields = [
+            $this->layoutField(new Email(['name' => 'Contact email', 'handle' => 'email']), required: true),
+            $this->layoutField(new Dropdown(['name' => 'Priority', 'handle' => 'priority', 'options' => [['label' => 'Low', 'value' => 'low'], ['label' => 'High', 'value' => 'high']]])),
+            $this->layoutField(new MultiSelect(['name' => 'Regions', 'handle' => 'regions', 'options' => [['label' => 'Europe', 'value' => 'eu']]])),
+            $this->layoutField(new Number(['name' => 'Price', 'handle' => 'price'])),
+            $this->layoutField(new SchemaPluginField(['name' => 'Coordinates', 'handle' => 'coordinates'])),
+        ];
+        $schema = (new CustomFieldSchema())->forElement($this->element($layoutFields));
+        $validator = new SchemaValidator();
+        $values = ['email' => 'editor@example.com', 'priority' => 'high', 'regions' => ['eu'], 'price' => 12.5, 'coordinates' => ['latitude' => 50.8]];
+
+        self::assertSame([], $validator->validateAgainstJsonSchema($values, $schema));
+        self::assertSame([], $validator->validateAgainstJsonSchema(['email' => 'editor@example.com', 'priority' => null, 'regions' => null, 'price' => null, 'coordinates' => null], $schema));
+
+        foreach ([
+            ['email' => null],
+            ['priority' => 'urgent'],
+            ['regions' => ['us']],
+            ['price' => 'twelve'],
+            ['coordinates' => ['latitude' => 95]],
+            ['coordinates' => ['longitude' => 4.3]],
+            ['unexpected' => true],
+        ] as $invalid) {
+            self::assertNotEmpty($validator->validateAgainstJsonSchema(array_replace($values, $invalid), $schema), json_encode($invalid));
+        }
+
+        unset($values['email']);
+        self::assertNotEmpty($validator->validateAgainstJsonSchema($values, $schema));
+    }
+
+    public function testPreparedValuesMustMatchTheSchemaExceptForRequiredFields(): void
+    {
+        $element = $this->element([
+            $this->layoutField(new Email(['name' => 'Contact email', 'handle' => 'email']), required: true),
+            $this->layoutField(new Dropdown(['name' => 'Priority', 'handle' => 'priority', 'options' => [['label' => 'High', 'value' => 'high']]])),
+        ]);
+        $schema = new CustomFieldSchema();
+
+        self::assertSame(['priority' => 'high'], $schema->prepareValues($element, ['priority' => 'high']));
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('Invalid fields: /priority: ');
+
+        $schema->prepareValues($element, ['priority' => 'urgent']);
+    }
+
+    public function testDateValuesTheFieldCannotParseAreRejected(): void
+    {
+        $element = $this->element([$this->layoutField(new Date(['name' => 'Published', 'handle' => 'published']))]);
+        $schema = new CustomFieldSchema();
+
+        self::assertSame(['published' => '2026-11-22'], $schema->prepareValues($element, ['published' => '2026-11-22']));
+        self::assertSame(['published' => null], $schema->prepareValues($element, ['published' => null]));
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessage('published: The value couldn’t be parsed.');
+
+        $schema->prepareValues($element, ['published' => 'next Tuesday-ish']);
+    }
+
+    public function testFieldsHiddenByTheLayoutAreLeftOutOfTheSchema(): void
+    {
+        $conditional = new class(new PlainText(['name' => 'Conditional', 'handle' => 'conditional'])) extends CustomField {
+            public function showInForm(?ElementInterface $element = null): bool
+            {
+                return $element?->slug === 'show-conditional';
+            }
+        };
+        $conditional->uid = 'conditional';
+        $tab = new class([new CustomField(new PlainText(['name' => 'Always', 'handle' => 'always'])), $conditional]) extends FieldLayoutTab {
+            public function __construct(private array $layoutElements)
+            {
+            }
+
+            public function getElements(): array
+            {
+                return $this->layoutElements;
+            }
+        };
+        $layout = new class($tab) extends FieldLayout {
+            public function __construct(private FieldLayoutTab $tab)
+            {
+            }
+
+            public function getTabs(): array
+            {
+                return [$this->tab];
+            }
+        };
+        $entry = $this->entry($layout);
+        $schema = new CustomFieldSchema();
+
+        $entry->slug = 'other';
+        self::assertSame(['always'], array_keys($schema->forElement($entry)['properties']));
+
+        $entry->slug = 'show-conditional';
+        self::assertSame(['always', 'conditional'], array_keys($schema->forElement($entry)['properties']));
+    }
+
+    /**
+     * @param  list<CustomField>  $layoutFields
+     */
+    private function element(array $layoutFields): Entry
+    {
+        $layout = new class($layoutFields) extends FieldLayout {
+            public function __construct(private array $layoutFields)
+            {
+            }
+
+            public function getEditableCustomFieldElements(ElementInterface $element): array
+            {
+                return $this->layoutFields;
+            }
+
+            public function getFieldByHandle(string $handle): ?FieldInterface
+            {
+                foreach ($this->layoutFields as $layoutField) {
+                    if ($layoutField->getField()->handle === $handle) {
+                        return $layoutField->getField();
+                    }
+                }
+
+                return null;
+            }
+        };
+
+        return $this->entry($layout);
+    }
+
+    private function entry(FieldLayout $layout): Entry
+    {
+        return new class($layout) extends Entry {
+            public function __construct(private FieldLayout $layout)
+            {
+            }
+
+            public function getFieldLayout(): FieldLayout
+            {
+                return $this->layout;
+            }
+        };
+    }
+
+    private function layoutField(FieldInterface $field, bool $required = false): CustomField
+    {
+        return new CustomField($field, ['required' => $required]);
+    }
+}
+
+class SchemaTestApplication extends Application
+{
+    public function getConfig(): Config
+    {
+        return $this->get('config');
+    }
+}
+
+class SchemaPluginField extends PlainText implements InputSchemaFieldInterface
+{
+    public function getInputSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'properties' => ['latitude' => ['type' => 'number', 'minimum' => -90, 'maximum' => 90]],
+            'required' => ['latitude'],
+            'additionalProperties' => false,
+        ];
+    }
+}

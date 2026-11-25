@@ -28,6 +28,7 @@ use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color as ColorEnum;
 use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
@@ -42,6 +43,7 @@ use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -54,6 +56,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
+use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use GraphQL\Type\Definition\Type;
@@ -83,6 +86,8 @@ class Matrix extends Field implements
 
     /** @since 5.0.0 */
     public const VIEW_MODE_CARDS = 'cards';
+    /** @since 5.0.0 */
+    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
     /** @since 5.0.0 */
     public const VIEW_MODE_BLOCKS = 'blocks';
     /** @since 5.0.0 */
@@ -224,6 +229,7 @@ class Matrix extends Field implements
     /**
      * @var bool Whether cards should be shown in a multi-column grid
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $showCardsInGrid = false;
 
@@ -321,6 +327,11 @@ class Matrix extends Field implements
             $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
         }
 
+        if (!empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
+            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
+        }
+        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
+
         parent::__construct($config);
     }
 
@@ -389,6 +400,7 @@ class Matrix extends Field implements
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
         $rules[] = [['viewMode'], 'in', 'range' => [
             self::VIEW_MODE_CARDS,
+            self::VIEW_MODE_CARDS_GRID,
             self::VIEW_MODE_INDEX,
             self::VIEW_MODE_BLOCKS,
         ]];
@@ -693,6 +705,8 @@ class Matrix extends Field implements
             $entryTypeSelectJs = $view->clearJsBuffer();
         }
 
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
             'entryTypes' => $entryTypes,
@@ -705,6 +719,7 @@ class Matrix extends Field implements
                 Entry::indexViewModes(),
                 fn(array $viewMode) => !($viewMode['structuresOnly'] ?? false),
             ),
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
             'readOnly' => $readOnly,
         ]);
     }
@@ -761,7 +776,7 @@ class Matrix extends Field implements
                     CancelableEvent $event,
                     EntryQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -867,124 +882,24 @@ class Matrix extends Field implements
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(?ElementInterface $element): ?string
+    {
+        return $this->entryManager()->getTranslationDescription($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function actionMenuItems(): array
     {
-        $items = [];
-        $view = Craft::$app->getView();
-
-        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
-            // Expand/Collapse all
-            $expandAllId = sprintf('expand-all-%s', mt_rand());
-            $collapseAllId = sprintf('collapse-all-%s', mt_rand());
-            $items[] = [
-                'id' => $expandAllId,
-                'icon' => 'expand',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Expand all blocks', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-            $items[] = [
-                'id' => $collapseAllId,
-                'icon' => 'collapse',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Collapse all blocks', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-            $view->registerJsWithVars(fn($expandAllId, $collapseAllId, $fieldId) => <<<JS
-(() => {
-  const expandAllBtn = $('#' + $expandAllId);
-  const collapseAllBtn = $('#' + $collapseAllId);
-  const getBlocks = () => $('#' + $fieldId + ' > .blocks > .matrixblock');
-
-  expandAllBtn.on('activate', () => {
-    getBlocks().each((i, block) => {
-      $(block).data('entry').expand();
-    });
-  });
-
-  collapseAllBtn.on('activate', () => {
-    getBlocks().each((i, block) => {
-      $(block).data('entry').collapse();
-    });
-  });
-
-  setTimeout(() => {
-    const menu = expandAllBtn.closest('.menu').data('disclosureMenu');
-    menu.on('show', () => {
-      const blocks = getBlocks();
-      menu.toggleItem(expandAllBtn[0], blocks.is('.collapsed'));
-      menu.toggleItem(collapseAllBtn[0], blocks.is(':not(.collapsed)'));
-    });
-  }, 1);
-})();
-JS, [
-                $view->namespaceInputId($expandAllId),
-                $view->namespaceInputId($collapseAllId),
-                $view->namespaceInputId($this->getInputId()),
-            ]);
-        }
-
-        // Copy all
-        if ($this->maxEntries !== 1 && $this->viewMode !== self::VIEW_MODE_INDEX) {
-            if (!empty($items)) {
-                $items[] = ['type' => 'hr'];
-            }
-            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
-            $items[] = [
-                'id' => $copyAllId,
-                'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-
-            if ($this->viewMode === self::VIEW_MODE_CARDS) {
-                $copyAllJs = <<<JS
-copyAllBtn.on('activate', () => {
-  Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
-});
-JS;
-            } else {
-                $baseInfo = Json::encode([
-                    'type' => Entry::class,
-                    'fieldId' => $this->id,
-                ]);
-                $copyAllJs = <<<JS
-copyAllBtn.on('activate', () => {
-  const elementInfo = [];
-  field.find('> .blocks > .matrixblock').each((i, element) => {
-    element = $(element);
-    elementInfo.push(Object.assign({
-        id: element.data('id'),
-        draftId: element.data('draftId'),
-        revisionId: element.data('revisionId'),
-        ownerId: element.data('ownerId'),
-        siteId: element.data('siteId'),
-      }, $baseInfo));
-  });
-  Craft.cp.copyElements(elementInfo);
-});
-JS;
-            }
-
-            $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
-(() => {
-  const copyAllBtn = $('#' + $copyAllId);
-  const field = $('#' + $fieldId);
-  if (field.length) {
-    $copyAllJs
-  } else {
-    setTimeout(() => {
-      const menu = copyAllBtn.closest('.menu').data('disclosureMenu');
-      menu.removeItem(copyAllBtn[0]);
-    }, 1);
-  }
-})();
-JS, [
-                $view->namespaceInputId($copyAllId),
-                $view->namespaceInputId($this->getInputId()),
-            ]);
+        if ($this->maxEntries !== 1) {
+            $items = match ($this->viewMode) {
+                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
+                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
+                default => [],
+            };
+        } else {
+            $items = [];
         }
 
         $parentItems = parent::actionMenuItems();
@@ -1000,12 +915,141 @@ JS, [
         return [...$items, ...$parentItems];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getTranslationDescription(?ElementInterface $element): ?string
+    private function blockViewActionMenuItems(): array
     {
-        return $this->entryManager()->getTranslationDescription($element);
+        $items = [];
+        $view = Craft::$app->getView();
+
+        // Expand/Collapse
+        $expandAllId = sprintf('expand-all-%s', mt_rand());
+        $collapseAllId = sprintf('collapse-all-%s', mt_rand());
+        $items[] = [
+            'id' => $expandAllId,
+            'icon' => 'expand',
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Expand all blocks', [
+                'type' => Entry::pluralLowerDisplayName(),
+            ])),
+        ];
+        $items[] = [
+            'id' => $collapseAllId,
+            'icon' => 'collapse',
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Collapse all blocks', [
+                'type' => Entry::pluralLowerDisplayName(),
+            ])),
+        ];
+        $view->registerJsWithVars(fn($expandAllId, $collapseAllId, $fieldId) => <<<JS
+(() => {
+  const field = $('#' + $fieldId);
+  const expandBtn = $('#' + $expandAllId);
+  const collapseBtn = $('#' + $collapseAllId);
+  const menu = expandBtn.closest('.menu');
+  const getBlocks = () => field.find(' > .blocks > .matrixblock');
+
+  expandBtn.on('activate', () => {
+    getBlocks().each((i, block) => {
+      $(block).data('entry').expand();
+    });
+  });
+
+  collapseBtn.on('activate', () => {
+    getBlocks().each((i, block) => {
+      $(block).data('entry').collapse();
+    });
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu?.on('show', () => {
+      let blocks = getBlocks();
+      disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
+      disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($expandAllId),
+            $view->namespaceInputId($collapseAllId),
+            $view->namespaceInputId($this->getInputId()),
+        ]);
+
+        $items[] = $this->copyAction(Craft::t('app', 'blocks'), ' > .blocks > .matrixblock');
+
+        return $items;
+    }
+
+    private function cardViewActionMenuItems(): array
+    {
+        $items = [];
+
+        // Copy
+        $items[] = $this->copyAction(
+            Entry::pluralLowerDisplayName(),
+            ' > .nested-element-cards > .elements > li > .element',
+        );
+
+        return $items;
+    }
+
+    private function copyAction(string $type, string $entrySelector): array
+    {
+        $view = Craft::$app->getView();
+        $id = sprintf('action-copy-%s', mt_rand());
+
+        $baseInfo = Json::encode([
+            'type' => Entry::class,
+            'fieldId' => $this->id,
+        ]);
+
+        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getEntries = () => field.find($entrySelector);
+
+  btn.on('activate', () => {
+    Craft.cp.copyElements(getEntries().toArray().map((element) => {
+      element = $(element);
+      return {
+          ... $baseInfo,
+          id: element.data('id'),
+          draftId: element.data('draftId'),
+          revisionId: element.data('revisionId'),
+          ownerId: element.data('ownerId'),
+          siteId: element.data('siteId'),
+        };
+    }));
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu?.on('show', () => {
+      btn.toggleClass('disabled', !getEntries().length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($id),
+            $view->namespaceInputId($this->getInputId()),
+            $entrySelector,
+        ]);
+
+        return [
+            'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => ColorEnum::Fuchsia,
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'type' => $type,
+            ])),
+        ];
     }
 
     /**
@@ -1014,15 +1058,28 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->inputHtmlInternal($value, $element, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         return match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element),
-            default => Html::tag('div', $this->nestedElementManagerHtml($element), [
+            self::VIEW_MODE_BLOCKS => $this->blockInputHtml($value, $element, $static),
+            default => Html::tag('div', $this->nestedElementManagerHtml($value, $element, $static), [
                 'id' => $this->getInputId(),
             ]),
         };
     }
 
-    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element): string
+    private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element, bool $static): string
     {
         if (!$element?->id) {
             $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
@@ -1045,6 +1102,10 @@ JS, [
                 ->all();
         }
 
+        if ($static && empty($value)) {
+            return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';
+        }
+
         $view = Craft::$app->getView();
         $id = $this->getInputId();
         /** @var Entry[] $value */
@@ -1062,9 +1123,12 @@ JS, [
             !$element->hasErrors($this->handle)
         );
         $staticEntries = (
-            $createDefaultEntries &&
-            $this->minEntries == $this->maxEntries &&
-            $this->maxEntries >= count($value)
+            $static ||
+            (
+                $createDefaultEntries &&
+                $this->minEntries == $this->maxEntries &&
+                $this->maxEntries >= count($value)
+            )
         );
 
         $view->registerAssetBundle(MatrixAsset::class);
@@ -1077,6 +1141,7 @@ JS, [
             'ownerElementType' => $element::class,
             'ownerId' => $element->id,
             'siteId' => $element->siteId,
+            'static' => $static,
             'staticEntries' => $staticEntries,
         ];
 
@@ -1128,24 +1193,50 @@ JS;
             'name' => $this->handle,
             'entryTypes' => $entryTypes,
             'entries' => $value,
-            'static' => false,
+            'static' => $static,
             'staticEntries' => $staticEntries,
             'createButtonLabel' => $this->createButtonLabel(),
             'labelId' => $this->getLabelId(),
         ]);
     }
 
-    private function nestedElementManagerHtml(?ElementInterface $owner, bool $static = false): string
+    /**
+     * @param EntryQuery|ElementCollection|null $value
+     * @param ElementInterface|null $owner
+     * @param bool $static
+     * @return string
+     */
+    private function nestedElementManagerHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static = false): string
     {
-        $entryTypes = $this->getEntryTypes();
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            if ($owner?->hasEagerLoadedElements($this->handle)) {
+                $value = $owner->getEagerLoadedElements($this->handle);
+            }
+
+            if ($value instanceof ElementCollection) {
+                $value = $value->all();
+            } elseif ($value instanceof EntryQuery) {
+                $value = $value->getCachedResult() ?? (clone $value)
+                    ->status(null)
+                    ->limit(null)
+                    ->all();
+            }
+
+            /** @var Entry[]|null $value */
+            $entryTypes = $this->getEntryTypesForField($value ?? [], $owner);
+        } else {
+            $entryTypes = $this->getEntryTypes();
+        }
+
         $config = [
-            'showInGrid' => $this->showCardsInGrid,
+            'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
             'prevalidate' => false,
         ];
 
         if (!$static) {
             $entryTypeIdsJs = Json::encode(array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes));
             $config += [
+                'selectable' => true,
                 'sortable' => true,
                 'canCreate' => true,
                 'canPaste' => <<<JS
@@ -1178,7 +1269,7 @@ JS,
             }
         }
 
-        if ($this->viewMode === self::VIEW_MODE_CARDS) {
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
             return $this->entryManager()->getCardsHtml($owner, $config);
         }
 
@@ -1189,19 +1280,17 @@ JS,
             ]),
             'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
                 $entryType->hasTitleField ||
-                $entryType->titleFormat
+                $entryType->titleFormat ||
+                ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}')
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
             'defaultViewMode' => $this->defaultIndexViewMode,
+            'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
+            // field layouts are needed in the read-only (static) mode
+            // so that you can choose to show columns representing the custom fields when using index view mode with table view
+            'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
         ];
-
-        if (!$static) {
-            $config += [
-                'fieldLayouts' => array_map(fn(EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes),
-                'defaultTableColumns' => array_map(fn(string $attribute) => [$attribute], $this->defaultTableColumns),
-            ];
-        }
 
         return $this->entryManager()->getIndexHtml($owner, $config);
     }
@@ -1263,13 +1352,12 @@ JS,
             $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
+                /** @var Entry $entry */
                 $entry->setOwner($element);
 
-                /** @var Entry $entry */
-                if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
-                ) {
+                if (!$entry->enabled) {
+                    $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+                } else {
                     $entry->setScenario($scenario);
                 }
 
@@ -1335,46 +1423,6 @@ JS,
 
     /**
      * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
-            return $this->nestedElementManagerHtml($element, true);
-        }
-
-        /** @var EntryQuery|ElementCollection $value */
-        $entries = $value->status(null)->all();
-
-        if (empty($entries)) {
-            return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';
-        }
-
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(MatrixAsset::class);
-
-        $id = StringHelper::randomString();
-        $js = '';
-
-        foreach ($entries as $entry) {
-            $js .= <<<JS
-Craft.MatrixInput.initTabs($('.matrixblock[data-uid="$entry->uid"] > .titlebar .matrixblock-tabs'));
-JS;
-        }
-
-        $view->registerJs("(() => {\n$js\n})();");
-
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
-            'id' => $id,
-            'name' => $id,
-            'entryTypes' => $this->getEntryTypes(),
-            'entries' => $entries,
-            'static' => true,
-            'staticEntries' => true,
-        ]);
-    }
-
-    /**
-     * @inheritdoc
      * @return EagerLoadingMap|null|false
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
@@ -1414,6 +1462,9 @@ JS;
                 'revisions' => Collection::make($sourceElements)
                     ->contains(fn($sourceElement) => $sourceElement->getIsRevision()),
             ],
+            'createElement' => fn(EntryQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 
@@ -1469,6 +1520,16 @@ JS;
             'args' => $arguments,
             'resolve' => EntryResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions(): ?array
+    {
+        return [
+            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
         ];
     }
 
@@ -1619,9 +1680,8 @@ JS;
 
         /** @var Entry[] $entries */
         $entries = Entry::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($entries as $entry) {
@@ -1677,8 +1737,7 @@ JS;
             /** @var Entry[] $oldEntriesById */
             $oldEntriesById = Entry::find()
                 ->fieldId($this->id)
-                ->ownerId($element->id)
-                ->siteId($element->siteId)
+                ->owner($element)
                 ->drafts(null)
                 ->status(null)
                 ->indexBy($uids ? 'uid' : 'id')
@@ -1769,7 +1828,7 @@ JS;
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
-                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    ElementHelper::belongsToCanonicalOwner($entry, $element) &&
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (
@@ -1849,14 +1908,15 @@ JS;
             }
 
             if (isset($entryData['fields'])) {
-                foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($entry, $entryData['fields']);
+                } else {
+                    foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $entry->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

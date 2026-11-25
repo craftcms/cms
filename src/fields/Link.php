@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
@@ -31,6 +32,7 @@ use craft\fields\linktypes\Phone;
 use craft\fields\linktypes\Sms;
 use craft\fields\linktypes\Url as UrlType;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\GqlInputSchema;
 use craft\gql\types\generators\LinkDataType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -52,7 +54,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface, InputSchemaFieldInterface
 {
     use RelationalFieldTrait;
 
@@ -119,7 +121,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     /**
      * @return array<string,class-string<BaseLinkType>>
      */
-    private static function types(): array
+    public static function types(): array
     {
         if (!isset(self::$_types)) {
             /** @var class-string<BaseLinkType>[] $types */
@@ -506,7 +508,8 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
-        // and an element is selected, swap it with the same element in the current site (if it exists)
+        // and an element is selected, swap it with the same element in the current site (if it exists);
+        // this flow will kick in for all cases apart from nested entries when field uses "none" propagation method
         if (
             $value instanceof LinkData &&
             $element?->propagating &&
@@ -514,19 +517,18 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             isset($element->propagatingFrom) &&
             $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
         ) {
-            $linkedElement = $value->getElement();
-            if ($linkedElement && $linkedElement::isLocalized()) {
-                $localizedQuery = $linkedElement->getLocalized();
-                if (
-                    $localizedQuery instanceof ElementQueryInterface &&
-                    $localizedQuery->siteId($element->siteId)->exists()
-                ) {
-                    $type = $value->getType();
-                    $value = [
-                        'type' => $type,
-                        'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
-                    ];
-                }
+            $value = $this->localizeLinkValue($value, $element);
+        }
+
+        // as above but specifically for nested entries when field uses "none" propagation method
+        if (
+            $value instanceof LinkData &&
+            !$element?->propagating &&
+            isset($element->duplicateOf) &&
+            ($element->propagateAll || $element->isNewForSite)
+        ) {
+            if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->duplicateOf)) {
+                $value = $this->localizeLinkValue($value, $element);
             }
         }
 
@@ -591,6 +593,33 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         }
 
         return new LinkData($value, $linkType, $config);
+    }
+
+    /**
+     * Localize the value of the link field when linking to an element.
+     *
+     * @param LinkData $value
+     * @param ElementInterface $element
+     * @return LinkData|array
+     */
+    private function localizeLinkValue(LinkData $value, ElementInterface $element): LinkData|array
+    {
+        $linkedElement = $value->getElement();
+        if ($linkedElement && $linkedElement::isLocalized()) {
+            $localizedQuery = $linkedElement->getLocalized();
+            if (
+                $localizedQuery instanceof ElementQueryInterface &&
+                $localizedQuery->siteId($element->siteId)->exists()
+            ) {
+                $type = $value->getType();
+                return [
+                    'type' => $type,
+                    'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
+                ];
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -954,5 +983,14 @@ JS;
             $targetIds[] = $element->id;
         }
         return $targetIds;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return GqlInputSchema::fromType($this->getContentGqlMutationArgumentType());
     }
 }

@@ -48,6 +48,17 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           const $button = $(ev.currentTarget);
           this.addComponent($button.data('type'), $button.data('id'));
         });
+
+        // Forget the chip being replaced if the menu closes without a selection.
+        // Deferred so an option's activate handler can read it first.
+        this.$addBtn
+          .disclosureMenu()
+          .data('disclosureMenu')
+          .on('hide', () => {
+            setTimeout(() => {
+              this.$replaceComponent = null;
+            });
+          });
       }
 
       if (this.$createBtn.length && this.settings.createAction) {
@@ -124,7 +135,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     },
 
     initComponentSort: function () {
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.componentSort = new Garnish.DragSort({
           container: this.$list,
           filter: this.settings.selectable
@@ -252,7 +263,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           ev.stopPropagation();
           ev.preventDefault();
           const $selected = this.componentSelect.getSelectedItems();
-          for (let i = 0; i < $selected.length; i++) {
+          for (let i = 0; i < $selected.length && !this.isAtMinimum(); i++) {
             this.removeComponent($selected.eq(i));
           }
         }
@@ -293,27 +304,14 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           if (moveBackwardBtn) {
             disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
           }
-
-          // Get the component select instance to check if we're at minimum
-          const componentSelect = $component
-            .closest('.componentselect')
-            .data('componentSelect');
-          const isAtMin = componentSelect.isAtMinimum();
-
-          // Count available options (excluding the current component's option)
-          const currentId = $component.data('id');
-          const otherOptionsCount = componentSelect
-            .getOptions()
-            .filter((index, btn) => $(btn).data('id') !== currentId).length;
-
-          // Only show replace if at minimum AND there are other options available
-          const canReplace = isAtMin && otherOptionsCount > 0;
-
           if (removeBtn) {
-            disclosureMenu.toggleItem(removeBtn, !isAtMin);
+            disclosureMenu.toggleItem(removeBtn, !this.isAtMinimum());
           }
           if (replaceBtn) {
-            disclosureMenu.toggleItem(replaceBtn, canReplace);
+            disclosureMenu.toggleItem(
+              replaceBtn,
+              this.getOptions().parent(':not(.hidden)').length
+            );
           }
         });
 
@@ -326,7 +324,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         });
       }
 
-      if (this.settings.sortable) {
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         const $chipActions = $component.find('.chip-actions');
         if (!$chipActions.has('.move').length) {
           $('<button/>', {
@@ -419,22 +417,21 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         },
       });
 
-      actions.push({
-        icon: async () => await Craft.ui.icon('refresh'),
-        label: Craft.t('app', 'Replace'),
-        onActivate: (el) => {
-          // don't use `this` in case the chip ends up getting assigned to a different component select
-          $(el)
-            .closest('.menu')
-            .data('disclosureMenu')
-            .$trigger.closest('.componentselect')
-            .data('componentSelect')
-            .replaceComponent($component);
-        },
-        attributes: {
-          'data-replace-action': true,
-        },
-      });
+      if (this.$addBtn.length) {
+        actions.push({
+          icon: async () => await Craft.ui.icon('arrows-rotate'),
+          label: Craft.t('app', 'Replace'),
+          callback: () => {
+            const menu = this.$addBtn.disclosureMenu().data('disclosureMenu');
+            menu.$alignmentElement = $component;
+            menu.show();
+            this.$replaceComponent = $component;
+          },
+          attributes: {
+            'data-replace-action': true,
+          },
+        });
+      }
 
       return actions;
     },
@@ -503,47 +500,27 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.onChange();
     },
 
-    removeComponent: function ($component) {
+    removeComponent: function ($component, animate = true, callback = null) {
+      if (typeof animate == 'function') {
+        callback = animate;
+        animate = true;
+      }
+
       // Remove any inputs from the form data
       $('[name]', $component).removeAttr('name');
       this.removeComponents($component);
-      this.animateComponentAway($component, () => {
+
+      const afterRemove = () => {
         $component.parent('li').remove();
-      });
-    },
-
-    replaceComponent: function ($component) {
-      // Store the component to be replaced
-      this.$replaceComponent = $component;
-      const id = $component.data('id');
-
-      // Show the option being replaced so it appears in the menu
-      this.showOption(id);
-
-      // Open the add button's disclosure menu
-      if (this.$addBtn.length) {
-        const disclosureMenu = this.$addBtn
-          .disclosureMenu()
-          .data('disclosureMenu');
-
-        if (disclosureMenu) {
-          // Store original hide handler to clean up
-          const originalHideHandler = () => {
-            // Reset replace state if menu is closed without selection
-            setTimeout(() => {
-              if (this.$replaceComponent !== null) {
-                this.hideOption(id);
-                this.$replaceComponent = null;
-              }
-            }, 10);
-            disclosureMenu.off('hide', originalHideHandler);
-          };
-
-          disclosureMenu.on('hide', originalHideHandler);
-
-          // Trigger the button click to open menu
-          this.$addBtn.trigger('click');
+        if (callback) {
+          callback();
         }
+      };
+
+      if (animate) {
+        this.animateComponentAway($component, afterRemove);
+      } else {
+        afterRemove();
       }
     },
 
@@ -586,14 +563,8 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         ? this.$addBtn.disclosureMenu().data('disclosureMenu')
         : null;
 
-      // Capture replace state before async operation
-      const $componentToReplace = this.$replaceComponent;
-      const isReplacing = $componentToReplace !== null;
-
-      // Clear replace state immediately to prevent cleanup handler from interfering
-      if (isReplacing) {
-        this.$replaceComponent = null;
-      }
+      const $replaceComponent = this.$replaceComponent;
+      this.$replaceComponent = null;
 
       const {data} = await Craft.sendActionRequest(
         'POST',
@@ -613,41 +584,25 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         }
       );
 
-      const canAdd = this.canAddMoreComponents() || isReplacing;
-      let $item = false;
+      const $component = $(data.components[type][id][0]);
 
-      if (canAdd) {
-        const $component = $(data.components[type][id][0]);
-
-        if (isReplacing) {
-          // Replace mode: insert new component at the position of the old one
-          const $li = $componentToReplace.parent('li');
-          $li.before($('<li/>').append($component));
-
-          // Remove the old component
-          $('[name]', $componentToReplace).removeAttr('name');
-          this.removeComponents($componentToReplace);
-          this.animateComponentAway($componentToReplace, () => {
-            $componentToReplace.parent('li').remove();
-          });
-
-          // Add the new component
-          this.addComponents($component);
-        } else {
-          // Normal add mode
-          this.insertComponent($component);
-          this.addComponents($component);
+      if ($replaceComponent) {
+        $replaceComponent.parent('li').before($('<li/>').append($component));
+        this.removeComponent($replaceComponent, false);
+      } else {
+        if (!this.canAddMoreComponents()) {
+          this.removeComponent(this.getComponents().last(), false);
         }
-
-        $item = $component;
+        this.insertComponent($component);
       }
+
+      this.addComponents($component);
+      let $item = $component;
 
       if (addToMenu && disclosureMenu) {
         const $menuItem = $(data.menuItems[type][id]);
         disclosureMenu.addItem($menuItem);
-        if (canAdd) {
-          disclosureMenu.hideItem($menuItem.children()[0]);
-        }
+        disclosureMenu.hideItem($menuItem.children()[0]);
         $item = $menuItem;
         $menuItem.find('button').on('activate', () => {
           this.addComponent(type, id);
@@ -698,7 +653,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       sortable: true,
       selectable: true,
       showActionMenus: true,
-      hyperlinks: true,
+      hyperlinks: false,
       createAction: null,
       addItemsToActionMenus: true,
     },

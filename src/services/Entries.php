@@ -31,6 +31,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Markdown;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -54,7 +55,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
-use yii\helpers\Markdown;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -225,6 +225,17 @@ class Entries extends Component
     }
 
     /**
+     * Forgets the cached sections and entry types, so they’re loaded again the next time they’re needed.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_sections = null;
+        $this->_entryTypes = null;
+    }
+
+    /**
      * Returns a memoizable array of all sections.
      *
      * @return MemoizableArray<Section>
@@ -273,7 +284,7 @@ class Entries extends Component
      */
     private function _createSectionQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -296,6 +307,13 @@ class Entries extends Component
             ->from(['sections' => Table::SECTIONS])
             ->where(['sections.dateDeleted' => null])
             ->orderBy(['name' => SORT_ASC]);
+
+        // todo: remove this after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::SECTIONS, 'minAuthors')) {
+            $query->addSelect('sections.minAuthors');
+        }
+
+        return $query;
     }
 
     /**
@@ -649,6 +667,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
+            $sectionRecord->minAuthors = $data['minAuthors'] ?? 0;
             $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
@@ -928,12 +947,16 @@ class Entries extends Component
      *
      * @param Section $section
      * @param array|null $siteSettings
-     * @return Entry The
      * @throws Exception if reasons
      * @see saveSection()
      */
-    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): Entry
+    private function _ensureSingleEntry(Section $section, ?array $siteSettings = null): void
     {
+        // Don't resave the entry if we are mid-migrations
+        if (Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            return;
+        }
+
         // Get the section's supported sites
         // ---------------------------------------------------------------------
 
@@ -945,11 +968,11 @@ class Entries extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), fn(Site $site) =>
-            // Only include it if it's one of this section's sites
-            isset($siteSettings[$site->uid]), true, true, false);
-
-        $siteIds = array_map(fn(Site $site) => $site->id, $sites);
+        $siteIds = Collection::make(Craft::$app->getSites()->getAllSites())
+            ->filter(fn(Site $site) => isset($siteSettings[$site->uid]))
+            ->map(fn(Site $site) => $site->id)
+            ->values()
+            ->all();
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
@@ -971,6 +994,12 @@ class Entries extends Component
             ->sectionId($section->id)
             ->siteId($siteIds)
             ->status(null);
+
+        // Prefer the primary site if it's enabled for the section
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+        if (in_array($primarySiteId, $siteIds)) {
+            $baseEntryQuery->preferSites([$primarySiteId]);
+        }
 
         // If there are any existing entries, find the first one with a valid typeId
         /** @var Entry|null $entry */
@@ -1017,6 +1046,7 @@ class Entries extends Component
             $entry->sectionId = $section->id;
             $entry->setTypeId($entryTypeIds[0]);
             $entry->title = $section->name;
+            $entry->postDate = new DateTime();
         }
 
         // Validate first
@@ -1055,8 +1085,6 @@ class Entries extends Component
                 $elementsService->deleteElement($entryToDelete, true);
             }
         }
-
-        return $entry;
     }
 
     /**
@@ -1452,6 +1480,12 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
             $query->addSelect('color');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+            $query->addSelect('uiLabelFormat');
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
+            $query->addSelect('allowLineBreaksInTitles');
+        }
 
         return $query;
     }
@@ -1673,8 +1707,15 @@ SQL)->execute();
             $entryTypeRecord->uid = $entryTypeUid;
 
             // todo: remove after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'description')) {
+            $db = Craft::$app->getDb();
+            if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
                 $entryTypeRecord->description = $data['description'] ?? null;
+            }
+            if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+                $entryTypeRecord->uiLabelFormat = ($data['uiLabelFormat'] ?? null) ?: '{title}';
+            }
+            if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
+                $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
             }
 
             if (!empty($data['fieldLayouts'])) {
@@ -1961,7 +2002,7 @@ SQL)->execute();
         $usages = $this->allEntryTypeUsages();
 
         foreach ($entryTypes as $entryType) {
-            $label = $entryType->getUiLabel();
+            $label = Html::encode($entryType->getUiLabel());
             $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']) .
                 Cp::chipHtml($entryType, [
                     'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
@@ -1980,7 +2021,7 @@ SQL)->execute();
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
-                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
+                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? [], ['hyperlink' => true]),
             ];
         }
 
@@ -2029,11 +2070,12 @@ SQL)->execute();
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 
@@ -2191,6 +2233,12 @@ SQL)->execute();
             throw new Exception('Attempting to move a nested element.');
         }
 
+        $sectionEntryTypeIds = array_map(fn($entryType) => $entryType->id, $section->getEntryTypes());
+
+        if (!in_array($entry->typeId, $sectionEntryTypeIds, true)) {
+            throw new Exception('Entry type is not supported by the target section.');
+        }
+
         // Ensure all fields have been normalized
         $entry->getFieldValues();
 
@@ -2317,5 +2365,39 @@ SQL)->execute();
         }
 
         return true;
+    }
+
+    /**
+     * Reassigns entries to a new author.
+     *
+     * @param int|int[] $oldUserId
+     * @param int $newUserId
+     * @return int The number of affected entries
+     * @since 5.10.0
+     */
+    public function reassignEntries(int|array $oldUserId, int $newUserId): int
+    {
+        $count = Db::update(Table::ENTRIES_AUTHORS, [
+            'authorId' => $newUserId,
+        ], [
+            'and',
+            ['authorId' => $oldUserId],
+            [
+                'not in',
+                'entryId',
+                (new Query())
+                    ->from(
+                        (new Query())
+                            ->select(['entryId'])
+                            ->from(['ea2' => Table::ENTRIES_AUTHORS])
+                            ->where(['authorId' => $newUserId])
+                    ),
+            ],
+        ], [], false);
+
+        // Invalidate all entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
+
+        return $count;
     }
 }

@@ -20,6 +20,14 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 interface FieldConditionRuleInterface extends ElementConditionRuleInterface
 {
     /**
+     * Returns the UUID of the custom field associated with this rule.
+     *
+     * @return string
+     * @since 5.11.0
+     */
+    public function getFieldUid(): string;
+
+    /**
      * Sets the UUID of the custom field associated with this rule.
      *
      * @param string $uid

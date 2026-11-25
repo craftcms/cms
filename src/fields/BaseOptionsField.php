@@ -9,8 +9,10 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\QueryParam;
@@ -37,7 +39,12 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+abstract class BaseOptionsField extends Field implements
+    PreviewableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
@@ -123,7 +130,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 }
             }
 
-            return $negate ? ['not', $condition] : $condition;
+            // if we're negating, include elements with empty value (or no value) as they don't match any of the values that can be specified
+            return $negate ? ['or', [$valueSql => null], ['not', $condition]] : $condition;
         }
 
         return parent::queryCondition($instances, $value, $params);
@@ -351,6 +359,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function getDefaultValue(): array|string|null
+    {
+        return $this->defaultValue();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
@@ -466,7 +482,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 }
             }
 
-            return $serialized;
+            // return null if there are no selected options
+            // (see https://github.com/craftcms/cms/pull/19019)
+            return $serialized ?: null;
         }
 
         return parent::serializeValue($value, $element);
@@ -604,6 +622,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if (static::$multi) {
             $labels[] = array_pop($options)['label'];
         }
+
+        $labels = array_map(fn($label) => Html::encode($label), $labels);
 
         return implode(', ', $labels);
     }
@@ -808,5 +828,26 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        $values = array_values(array_map(
+            static fn(array $option): string => (string) $option['value'],
+            array_filter($this->options, static fn(array $option): bool => isset($option['value'])),
+        ));
+        $itemSchema = ['type' => 'string'];
+
+        if (!$this->customOptions && $values !== []) {
+            $itemSchema['enum'] = $values;
+        }
+
+        return $this->getIsMultiOptionsField()
+            ? ['type' => 'array', 'items' => $itemSchema]
+            : $itemSchema;
     }
 }

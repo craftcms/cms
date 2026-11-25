@@ -14,6 +14,7 @@ use yii\base\Behavior;
 /**
  * Control panel modal response behavior.
  *
+ * @extends Behavior<Response>
  * @property Response $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0

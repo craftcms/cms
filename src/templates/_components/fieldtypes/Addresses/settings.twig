@@ -32,17 +32,30 @@
   disabled: readOnly,
 }) }}
 
-{{ forms.selectField({
+{% embed '_includes/forms/field.twig' with {
   label: 'View Mode'|t('app'),
   instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
     type: 'addresses'|t('app'),
   }),
-  id: 'view-mode',
-  name: 'viewMode',
-  options: [
-    {label: 'As cards'|t('app'), value: constant('VIEW_MODE_CARDS', field)},
-    {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
-  ],
-  value: field.viewMode,
-  disabled: readOnly,
-}) }}
+} %}
+  {% block input %}
+    <div class="flex items-start gap-l fieldtoggle" data-target-prefix="view-mode--">
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/cards.svg" width="80" height="60" alt="">
+        {{ input('radio', 'viewMode', 'cards', {
+          checked: field.viewMode == 'cards',
+          disabled: readOnly,
+        }) }}
+        {{ 'Cards'|t('app') }}
+      </label>
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/index.svg" width="80" height="60" alt="">
+        {{ input('radio', 'viewMode', 'index', {
+          checked: field.viewMode == 'index',
+          disabled: readOnly,
+        }) }}
+        {{ 'Index'|t('app') }}
+      </label>
+    </div>
+  {% endblock %}
+{% endembed %}

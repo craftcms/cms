@@ -7,8 +7,12 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayAccess;
+use ArrayIterator;
 use ArrayObject;
 use Craft;
+use craft\base\Model;
+use craft\base\Renderable;
 use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
@@ -16,16 +20,29 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\Template as TemplateHelper;
+use craft\models\FieldLayout;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use DateTimeInterface;
+use DirectoryIterator;
 use Illuminate\Support\Collection;
+use IteratorAggregate;
+use ReflectionMethod;
+use SimpleXMLElement;
+use stdClass;
+use Throwable;
+use Traversable;
+use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Twig\Extension\SandboxExtension;
+use Twig\Markup;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -126,7 +143,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
@@ -192,6 +209,88 @@ class ExtensionTest extends TestCase
                 'foo' => new PlainText(),
             ]
         );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testNullSafeOperator(): void
+    {
+        // property access on null short-circuits instead of erroring
+        $this->testRenderResult(
+            '',
+            '{{ user?.name }}',
+            ['user' => null]
+        );
+
+        // method call on null short-circuits
+        $this->testRenderResult(
+            '',
+            '{{ user?.getName() }}',
+            ['user' => null]
+        );
+
+        // chained null-safe access short-circuits at the first null
+        $this->testRenderResult(
+            '',
+            '{{ user?.profile?.name }}',
+            ['user' => null]
+        );
+
+        // non-null case still resolves normally
+        $this->testRenderResult(
+            'Bob',
+            '{{ user?.name }}',
+            ['user' => ['name' => 'Bob']]
+        );
+
+        // non-null case still resolves normally for method calls
+        $this->testRenderResult(
+            'Bob',
+            '{{ user?.getName() }}',
+            [
+                'user' => new class() {
+                    public function getName(): string
+                    {
+                        return 'Bob';
+                    }
+                },
+            ]
+        );
+    }
+
+    /**
+     *
+     */
+    public function testEmptyTest(): void
+    {
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => null,
+        ]);
+
+        $this->testRenderResult('empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('not empty', '{{ foo is empty ? "empty" : "not empty" }}', [
+            'foo' => new class() extends Model {
+            },
+        ]);
     }
 
     /**
@@ -280,6 +379,75 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             'foo Bar',
             '{{ "Foo Bar"|lcfirst }}'
+        );
+    }
+
+    /**
+     * `title`, `capitalize`, `upper`, and `lower` all accept an optional `language` argument
+     * that should be respected for language-specific casing rules
+     * (https://github.com/craftcms/cms/discussions/19555).
+     */
+    public function testTitleFilter(): void
+    {
+        $this->testRenderResult(
+            'Ijsselmeer',
+            '{{ "ijsselmeer"|title }}'
+        );
+
+        // Dutch title-cases the "ij" digraph as a single letter, capitalizing both characters
+        $this->testRenderResult(
+            'IJsselmeer',
+            '{{ "ijsselmeer"|title("nl") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testCapitalizeFilter(): void
+    {
+        $this->testRenderResult(
+            'Istanbul',
+            '{{ "istanbul"|capitalize }}'
+        );
+
+        // Turkish uppercases a dotted "i" to a dotted "İ", not "I"
+        $this->testRenderResult(
+            'İstanbul',
+            '{{ "istanbul"|capitalize("tr") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testUpperFilter(): void
+    {
+        $this->testRenderResult(
+            'ISTANBUL',
+            '{{ "istanbul"|upper }}'
+        );
+
+        $this->testRenderResult(
+            'İSTANBUL',
+            '{{ "istanbul"|upper("tr") }}'
+        );
+    }
+
+    /**
+     * @see testTitleFilter()
+     */
+    public function testLowerFilter(): void
+    {
+        $this->testRenderResult(
+            'istanbul',
+            '{{ "Istanbul"|lower }}'
+        );
+
+        // Turkish lowercases a dotless "I" to a dotless "ı", not "i"
+        $this->testRenderResult(
+            'ıstanbul',
+            '{{ "Istanbul"|lower("tr") }}'
         );
     }
 
@@ -732,6 +900,362 @@ class ExtensionTest extends TestCase
     }
 
     /**
+     * The `has some`/`has every` operators must reject callables that aren't real Closures
+     * (e.g. a bare string naming a PHP function) when rendered within the Twig sandbox,
+     * rather than silently invoking arbitrary PHP functions.
+     *
+     * `str_contains()` is used here (rather than something like `strtoupper()`) because it
+     * happily accepts the two arguments (`$value`, `$key`) that `has some`/`has every` pass
+     * to the callable, so if the sandbox bypass were still present, the function would just
+     * execute and return a boolean rather than incidentally erroring out for unrelated
+     * (arg-count) reasons, which would mask the real vulnerability.
+     */
+    public function testHasSomeSandboxRejectsNonClosureCallable(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some "str_contains" }}'
+        );
+    }
+
+    /**
+     * @see testHasSomeSandboxRejectsNonClosureCallable()
+     */
+    public function testHasEverySandboxRejectsNonClosureCallable(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderSandboxedString(
+            '{{ {x: "y"} has every "str_contains" }}'
+        );
+    }
+
+    /**
+     * Legitimate arrow-function usages of `has some`/`has every` should still work fine
+     * when rendered within the Twig sandbox.
+     */
+    public function testHasSomeAndHasEveryWorkWithinSandbox(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some (v => v is same as("y")) ? "yes" : "no" }}'
+        );
+        self::assertSame('yes', $result);
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has every (v => v is same as("y")) ? "yes" : "no" }}'
+        );
+        self::assertSame('yes', $result);
+
+        $result = $this->view->renderSandboxedString(
+            '{{ {x: "y"} has some (v => v is same as("z")) ? "yes" : "no" }}'
+        );
+        self::assertSame('no', $result);
+    }
+
+    /**
+     * Array filters that read a key from each element must not let sandboxed templates access anything that they
+     * couldn’t access directly, whether via nested key paths or properties the sandbox doesn’t allow.
+     *
+     * @dataProvider sandboxedArrayFilterKeyDataProvider
+     */
+    public function testSandboxedArrayFiltersCheckKeys(string $template, string $templateMode = View::TEMPLATE_MODE_SITE): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $obj = new stdClass();
+        $obj->secret = 'shh';
+        // ArrayAccess objects that aren’t one of Twig’s array-like classes get the same checks as properties
+        $arrayAccess = new class() implements ArrayAccess {
+            public function offsetExists(mixed $offset): bool
+            {
+                return $offset === 'secret';
+            }
+
+            public function offsetGet(mixed $offset): mixed
+            {
+                return 'shh';
+            }
+
+            public function offsetSet(mixed $offset, mixed $value): void
+            {
+            }
+
+            public function offsetUnset(mixed $offset): void
+            {
+            }
+        };
+
+        $stringable = new class() {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
+
+        $target = new class() {
+            public int $calls = 0;
+
+            public function boom(): bool
+            {
+                $this->calls++;
+                return true;
+            }
+        };
+
+        self::expectException(TwigError::class);
+        try {
+            $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable, 'target' => $target], $templateMode);
+        } finally {
+            self::assertSame(0, $target->calls);
+        }
+    }
+
+    public static function sandboxedArrayFilterKeyDataProvider(): array
+    {
+        return [
+            'index with a key path' => ["{{ [craft]|index(['app', 'config', 'general', 'securityKey'])|keys|first }}"],
+            'index with a group path' => ["{{ [craft]|index(null, [['app', 'config', 'general', 'securityKey']])|keys|first }}"],
+            'index with an object as its groups' => ["{{ [{shh: 'hit'}]|index(null, obj)|keys|first }}"],
+            'column with a key path' => ["{{ [craft]|column(['app', 'config', 'general', 'securityKey'])|first }}"],
+            'multisort with a key path' => ["{{ [craft]|multisort([['app', 'config', 'general', 'securityKey']])|length }}"],
+            'where with a callable array' => ["{{ ['x']|where([target, 'boom'])|length }}"],
+            'contains with a callable array' => ["{{ ['x']|contains([target, 'boom']) ? 'y' : 'n' }}"],
+            'multisort with a callable array' => ["{{ ['x', 'y']|multisort([target, 'boom'])|length }}"],
+            'index with a disallowed property' => ["{{ [obj]|index('secret')|keys|first }}"],
+            'where with a disallowed property' => ["{{ [obj]|where('secret', 'shh')|length }}"],
+            'contains with a disallowed property' => ["{{ [obj]|contains('secret', 'shh') }}"],
+            'multisort with a disallowed property' => ["{{ [obj]|multisort('secret')|length }}"],
+            'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
+            // group used to render property names as object templates in the site template mode’s environment
+            'group with a disallowed property in a control panel template' => ["{{ [obj]|group('secret')|keys|first }}", View::TEMPLATE_MODE_CP],
+            'group with an arrow function returning an object that can’t be a string' => ["{{ [1]|group(i => stringable)|keys|first }}"],
+            'multisort with a sort key that can’t be a string' => ["{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}"],
+            'multisort with sort keys that can’t be strings' => ["{{ [1, 2]|multisort([v => stringable, v => 1], 4, 2)|length }}"],
+            'multisort with an array sort key containing an object that can’t be a string' => ["{{ [1, 2]|multisort(v => [stringable])|length }}"],
+            // Comparing objects with strings using == calls __toString()
+            'where comparing an object that can’t be a string with a string' => ["{{ [1]|where(v => stringable, 'shh')|length }}"],
+            'where comparing an array containing an object that can’t be a string with an array' => ["{{ [1]|where(v => [stringable], ['shh'])|length }}"],
+            'contains comparing an object that can’t be a string with a string' => ["{{ [1]|contains(v => stringable, 'shh') ? 'y' : 'n' }}"],
+            'filterByValue comparing an object that can’t be a string with a string' => ["{{ [1]|filterByValue(v => stringable, 'shh')|length }}"],
+            'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
+        ];
+    }
+
+    /**
+     * multisort must read each item of a key list as a key name in the sandbox, never call it as a callable array.
+     */
+    public function testSandboxedMultisortNeverCallsCallableArrays(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        self::$callableArrayTargetCalls = 0;
+
+        $this->view->renderSandboxedString("{{ ['x', 'y']|multisort([targetClass, 'callableArrayTarget'])|length }}", ['targetClass' => self::class]);
+        self::assertSame(0, self::$callableArrayTargetCalls);
+    }
+
+    private static int $callableArrayTargetCalls = 0;
+
+    public static function callableArrayTarget(): int
+    {
+        self::$callableArrayTargetCalls++;
+        return 0;
+    }
+
+    /**
+     * Calls every filter and function allowed in the sandbox with an object whose properties and methods the sandbox
+     * doesn’t allow, and makes sure none of them expose its data: neither by returning it (or an object the template
+     * couldn’t access), nor by returning different results depending on it. Filters and functions are covered as soon
+     * as they’re added to the sandbox config.
+     */
+    public function testSandboxedCallablesDontExposeDisallowedObjectData(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $twig = $this->view->getTwig();
+        $config = require Craft::getAlias('@app/config/twig-sandbox.php');
+
+        $obj = new class() {
+            public string $pub = 'SECRET_PUB';
+            protected string $prot = 'SECRET_PROT';
+            private string $priv = 'SECRET_PRIV';
+            public ArrayObject $inner;
+
+            public function __construct()
+            {
+                $this->inner = new ArrayObject(['x' => 'SECRET_INNER']);
+            }
+
+            public function getSecret(): string
+            {
+                return 'SECRET_GETTER';
+            }
+
+            // Reads $priv without exposing it, so static analysis keeps the property
+            public function privLength(): int
+            {
+                return strlen($this->priv);
+            }
+        };
+        $secrets = ['pub' => 'SECRET_PUB', 'prot' => 'SECRET_PROT', 'priv' => 'SECRET_PRIV', 'secret' => 'SECRET_GETTER'];
+        $inputs = [$obj, [$obj], ['k' => $obj], ['data' => ['k' => $obj]]];
+        $argSets = [[], ['pub'], ['prot'], ['priv'], ['secret'], ['inner'], ['inner.x'], [['inner', 'x']], [[['inner', 'x']]], [null, ['inner']], [[$obj, 'getSecret']], [$obj]];
+
+        // Returns a description of any secret or new object within the result
+        $findLeak = function(mixed $value, int $depth = 0) use (&$findLeak, $obj): ?string {
+            if (is_string($value)) {
+                return str_contains($value, 'SECRET_') ? $value : null;
+            }
+            if (is_object($value) && $value !== $obj) {
+                if ($value instanceof Markup) {
+                    return $findLeak((string)$value);
+                }
+                if (!$value instanceof Traversable) {
+                    return $value instanceof DateTimeInterface ? null : get_class($value);
+                }
+            }
+            if (is_iterable($value) && $depth < 5) {
+                foreach ($value as $k => $item) {
+                    if ($leak = $findLeak($k) ?? $findLeak($item, $depth + 1)) {
+                        return $leak;
+                    }
+                }
+            }
+            return null;
+        };
+        $fingerprint = function(mixed $value) use (&$fingerprint): string {
+            if (is_array($value)) {
+                return '[' . implode(',', array_map(fn($k) => "$k:" . $fingerprint($value[$k]), array_keys($value))) . ']';
+            }
+            return is_object($value) ? 'object#' . spl_object_id($value) : var_export($value, true);
+        };
+
+        $failures = [];
+        $checker = $twig->getExtension(SandboxExtension::class)->getChecker();
+        $checker->setSandboxed(true);
+
+        try {
+            $callables = [
+                ...array_map(fn($name) => ['filter', $name, $twig->getFilter($name)], array_unique($config['allowedFilters'])),
+                ...array_map(fn($name) => ['function', $name, $twig->getFunction($name)], array_unique($config['allowedFunctions'])),
+            ];
+
+            foreach ($callables as [$type, $name, $callable]) {
+                if (!$callable) {
+                    continue;
+                }
+
+                $fn = $callable->getCallable();
+                if (is_array($fn) && is_string($fn[0]) && !(new ReflectionMethod($fn[0], $fn[1]))->isStatic()) {
+                    // Twig calls non-static callbacks on the class’s runtime, e.g. EscaperRuntime::escape()
+                    $fn = [$twig->getRuntime($fn[0]), $fn[1]];
+                }
+
+                $call = function(mixed ...$args) use ($callable, $fn, $twig): mixed {
+                    $prefix = array_filter([
+                        $callable->needsCharset() ? ['UTF-8'] : null,
+                        $callable->needsEnvironment() ? [$twig] : null,
+                        $callable->needsContext() ? [[]] : null,
+                        $callable->needsIsSandboxed() ? [true] : null,
+                    ]);
+                    try {
+                        return $fn(...array_merge(...$prefix), ...$args);
+                    } catch (Throwable) {
+                        return 'error';
+                    }
+                };
+
+                foreach ($inputs as $i => $input) {
+                    foreach ($argSets as $j => $args) {
+                        if ($leak = $findLeak($call($input, ...$args))) {
+                            $failures["$type $name"] ??= "input $i, args $j: $leak";
+                        }
+                    }
+
+                    // The result must not depend on whether a value matches a secret
+                    foreach ($secrets as $key => $secret) {
+                        [$a, $b, $c] = array_map(fn($value) => $fingerprint($call($input, $key, $value)), [$secret, 'SECRET_X', 'SECRET_Y']);
+                        if ($b === $c && $a !== $b) {
+                            $failures["$type $name"] ??= "input $i: reveals whether \"$key\" matches";
+                        }
+                    }
+                }
+            }
+        } finally {
+            $checker->setSandboxed(false);
+        }
+
+        self::assertSame([], $failures);
+    }
+
+    /**
+     * Passing a single non-traversable object to an array filter in the sandbox must not enumerate its public
+     * properties, while legitimate array filter usages still work.
+     */
+    public function testSandboxedArrayFiltersWork(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $obj = new stdClass();
+        $obj->secret = 'shh';
+
+        self::assertSame('ok', $this->view->renderSandboxedString(
+            "{{ obj|column(v => v is same as('shh') ? 'leaked' : 'ok')|join }}",
+            ['obj' => $obj],
+        ));
+
+        // Comparisons that don’t cast objects to strings still work with objects that can’t be strings
+        $stringable = new class() {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
+        self::assertSame('0|1', $this->view->renderSandboxedString(implode('|', [
+            "{{ [1]|where(v => stringable, 'shh', true)|length }}",
+            '{{ [1]|where(v => stringable)|length }}',
+        ]), ['stringable' => $stringable]));
+
+        self::assertSame('x,y|1,2|1|2,4|x,y', $this->view->renderSandboxedString(implode('|', [
+            "{{ [{a: 'x'}, {a: 'y'}]|index('a')|keys|join(',') }}",
+            "{{ [{a: 2}, {a: 1}]|multisort('a')|column('a')|join(',') }}",
+            "{{ [{a: 1}, {a: 2}]|where(i => i.a, 2)|length }}",
+            "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
+            "{{ [{a: 'x'}, {a: 'y'}, {a: 'x'}]|group('a')|keys|join(',') }}",
+        ])));
+        self::assertSame('x', $this->view->renderSandboxedString("{{ [{a: 'x'}]|group('a')|keys|first }}", templateMode: View::TEMPLATE_MODE_CP));
+
+        // Twig allows offset reads on its array-like classes, e.g. `row[0]`
+        self::assertSame('7,8|1|7', $this->view->renderSandboxedString(implode('|', [
+            "{{ rows|column(0)|join(',') }}",
+            '{{ rows|where(0, 8)|length }}',
+            '{{ rows|index(0)|keys|first }}',
+        ]), ['rows' => [new ArrayObject([7]), new ArrayObject([8])]]));
+    }
+
+    /**
+     *
+     */
+    public function testHashFilter(): void
+    {
+        $this->testRenderResult(
+            Craft::$app->getSecurity()->hashData('test'),
+            '{{ "test"|hash }}'
+        );
+
+        $this->testRenderResult(
+            '098f6bcd4621d373cade4e832627b4f6',
+            '{{ "test"|hash("md5") }}'
+        );
+
+        $this->testRenderResult(
+            '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+            '{{ "test"|hash("sha256") }}'
+        );
+    }
+
+    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
@@ -921,6 +1445,11 @@ class ExtensionTest extends TestCase
             '{{ 1000|number(decimals=2) }}'
         );
 
+        $this->testRenderResult(
+            '1 000,00',
+            '{{ 1000|number(decimals=2, locale="fr") }}',
+        );
+
         // |number should swallow the InvalidArgumentException here
         $this->testRenderResult(
             'foo',
@@ -966,6 +1495,49 @@ class ExtensionTest extends TestCase
     /**
      *
      */
+    public function testDefaultFilter(): void
+    {
+        $this->testRenderResult('default', '{{ foo|default("default") }}');
+
+        $this->testRenderResult('default', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() implements IteratorAggregate {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+                public function getIterator(): Traversable
+                {
+                    return new ArrayIterator([1, 2, 3]);
+                }
+            },
+        ]);
+
+        $this->testRenderResult('foo', '{{ foo|default("default") }}', [
+            'foo' => new class() extends Model {
+                public function __toString(): string
+                {
+                    return 'foo';
+                }
+            },
+        ]);
+    }
+
+    /**
+     *
+     */
     public function testCloneFunction(): void
     {
         $this->testRenderResult(
@@ -975,6 +1547,134 @@ class ExtensionTest extends TestCase
                 'q' => Entry::find()->sectionId(10),
             ]
         );
+    }
+
+    /**
+     * @dataProvider createFunctionDataProvider
+     */
+    public function testCreateFunction(bool $allowed, string $class): void
+    {
+        if (!class_exists($class) && !interface_exists($class)) {
+            self::markTestSkipped(sprintf('%s isn\'t available in this environment.', $class));
+        }
+
+        if (!$allowed) {
+            $this->expectException(RuntimeError::class);
+            $this->expectExceptionMessage(sprintf('create() cannot be used to create instances of %s.', $class));
+        }
+
+        $result = trim($this->view->renderTemplate('create.twig', compact('class'), View::TEMPLATE_MODE_SITE));
+
+        if ($allowed) {
+            self::assertSame('created', $result);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function createFunctionDataProvider(): array
+    {
+        return [
+            // Ordinary classes remain creatable.
+            'Craft model' => [true, FieldLayout::class],
+            'craft\helpers class' => [true, 'craft\\helpers\\StringHelper'],
+            // The read gadget from the report: not on the denylist by class or by the
+            // Spl*/*Iterator name patterns, so it was reachable despite GHSA-957r-qf9p-67xw.
+            'DOMDocument (reported bypass)' => [false, 'DOMDocument'],
+            // Pre-existing denylist entries.
+            'SplFileObject' => [false, 'SplFileObject'],
+            'SimpleXMLElement' => [false, SimpleXMLElement::class],
+            'DirectoryIterator' => [false, DirectoryIterator::class],
+            'AttributeTypecastBehavior' => [false, \yii\behaviors\AttributeTypecastBehavior::class],
+            // Newly added denylist entries.
+            'XMLReader' => [false, \XMLReader::class],
+            'XSLTProcessor' => [false, \XSLTProcessor::class],
+            'SoapClient' => [false, \SoapClient::class],
+            \GuzzleHttp\Client::class => [false, \GuzzleHttp\Client::class],
+            'PDO' => [false, \PDO::class],
+            'mysqli' => [false, \mysqli::class],
+            'ReflectionClass (via the Reflector interface)' => [false, \ReflectionClass::class],
+            'ReflectionMethod (via the Reflector interface)' => [false, \ReflectionMethod::class],
+            // Only present when the optional imagick extension is installed; skipped
+            // otherwise (see the class_exists() guard above).
+            'Imagick' => [false, \Imagick::class],
+            // Phar/PharData aren't listed explicitly: they extend RecursiveDirectoryIterator,
+            // which extends FilesystemIterator, which extends DirectoryIterator, so is_a()'s
+            // ancestry walk already denies them via the DirectoryIterator entry above.
+            'PharData (via DirectoryIterator ancestry)' => [false, \PharData::class],
+            // File-writing classes
+            'XMLWriter' => [false, \XMLWriter::class],
+            'ZipArchive' => [false, \ZipArchive::class],
+            'SQLite3' => [false, \SQLite3::class],
+            // *Iterator classes
+            'ArrayIterator' => [false, \ArrayIterator::class],
+        ];
+    }
+
+    /**
+     * @dataProvider createFunctionInStringTemplateDataProvider
+     */
+    public function testCreateFunctionInStringTemplate(callable $render): void
+    {
+        $this->expectException(RuntimeError::class);
+        $this->expectExceptionMessage('create() cannot be used in string or object templates.');
+        $render($this->view);
+    }
+
+    /**
+     * @return array
+     */
+    public function createFunctionInStringTemplateDataProvider(): array
+    {
+        $create = '{{ create("stdClass") ? "created" : "not created" }}';
+
+        return [
+            'renderString()' => [
+                fn(View $view) => $view->renderString($create),
+            ],
+            'renderSandboxedString() with the sandbox disabled' => [
+                function(View $view) use ($create) {
+                    $generalConfig = Craft::$app->getConfig()->getGeneral();
+                    $generalConfig->enableTwigSandbox = false;
+                    try {
+                        $view->renderSandboxedString($create);
+                    } finally {
+                        $generalConfig->enableTwigSandbox = true;
+                    }
+                },
+            ],
+            'renderObjectTemplate()' => [
+                fn(View $view) => $view->renderObjectTemplate($create, new stdClass()),
+            ],
+            'renderObjectTemplate() with XMLWriter' => [
+                fn(View $view) => $view->renderObjectTemplate('{% set w = create("XMLWriter") %}', new stdClass()),
+            ],
+            'renderObjectTemplate() with a config array' => [
+                fn(View $view) => $view->renderObjectTemplate('{{ create({class: "stdClass"}) ? "created" }}', new stdClass()),
+            ],
+            'file template included from a string template' => [
+                fn(View $view) => $view->renderString('{% include "create.twig" %}', ['class' => stdClass::class], View::TEMPLATE_MODE_SITE),
+            ],
+            'object template nested in a string template' => [
+                fn(View $view) => $view->renderString('{{ view.renderObjectTemplate(t, o) }}', [
+                    'view' => $view,
+                    't' => $create,
+                    'o' => new stdClass(),
+                ]),
+            ],
+        ];
+    }
+
+    public function testCreateFunctionAfterStringTemplate(): void
+    {
+        try {
+            $this->view->renderObjectTemplate('{{ create("stdClass") }}', new stdClass());
+        } catch (RuntimeError) {
+        }
+
+        self::assertFalse($this->view->getIsRenderingStringTemplate());
+        self::assertSame('created', trim($this->view->renderTemplate('create.twig', ['class' => stdClass::class], View::TEMPLATE_MODE_SITE)));
     }
 
     /**
@@ -1099,6 +1799,16 @@ class ExtensionTest extends TestCase
     public function testTagFunction(): void
     {
         $this->testRenderResult(
+            '<p>Hello</p>',
+            '{{ tag("p", "Hello") }}'
+        );
+
+        $this->testRenderResult(
+            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '{{ tag("p", "<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
             '<p class="foo">Hello</p>',
             '{{ tag("p", {text: "Hello", class: "foo"}) }}'
         );
@@ -1112,6 +1822,50 @@ class ExtensionTest extends TestCase
             '<p><script>alert(\'Hello\');</script></p>',
             '{{ tag("p", {html: "<script>alert(\'Hello\');</script>"}) }}'
         );
+    }
+
+    /**
+     *
+     */
+    public function testHeadingFunctions(): void
+    {
+        for ($i = 1; $i <= 6; $i++) {
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ heading($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h$i('Hello') }}"
+            );
+        }
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '{{ h1("<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
+            '<h1 class="foo">Hello</h1>',
+            '{{ h1({text: "Hello", class: "foo"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '{{ h1({text: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1><script>alert(\'Hello\');</script></h1>',
+            '{{ h1({html: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderString("{{ heading(7, 'Hello') }}");
     }
 
     /**
@@ -1132,6 +1886,14 @@ class ExtensionTest extends TestCase
             '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
         );
+
+        // Tokens are never checked in origin-only mode
+        Craft::$app->getConfig()->getGeneral()->csrfOriginOnly = true;
+        try {
+            $this->testRenderResult('', '{{ csrfInput() }}');
+        } finally {
+            Craft::$app->getConfig()->getGeneral()->csrfOriginOnly = false;
+        }
     }
 
     /**
@@ -1237,6 +1999,187 @@ class ExtensionTest extends TestCase
             [Collection::class, [$entry, 'foo']],
             [ElementCollection::class, [$entry]],
         ];
+    }
+
+    public function testSwitchTag(): void
+    {
+        $vars = [
+            'foo' => 'foo',
+            'bar' => 'bar or baz',
+            'baz' => 'bar or baz',
+            'qux' => 'qux or quux or corge',
+            'quux' => 'qux or quux or corge',
+            'corge' => 'qux or quux or corge',
+            'xyz' => 'default',
+        ];
+
+        $template = <<<EOL
+{%- switch var -%}
+  {%- case 'foo' -%}
+    foo
+  {%- case 'bar' or 'baz' -%}
+    bar or baz
+  {%- case 'qux' or 'quux' or 'corge' -%}
+    qux or quux or corge
+  {%- default -%}
+    default
+{%- endswitch -%}
+EOL;
+
+        foreach ($vars as $var => $expected) {
+            $this->testRenderResult(
+                $expected,
+                $template,
+                ['var' => $var],
+            );
+        }
+    }
+
+    public function testRenderTag(): void
+    {
+        $template = '{{ name }}:{{ foo ?? "-" }}:{{ bar ?? "-" }}';
+        $a = $this->renderable('a', $template);
+        $b = $this->renderable('b', $template);
+        $c = $this->renderable('c', $template);
+        $vars = [
+            'one' => $a,
+            'array' => [$a, $b, $c],
+            'collection' => Collection::make([$a, $b, $c]),
+            'foo' => 'F',
+        ];
+
+        // individual objects
+        $this->testRenderResult('a:F:-', '{% render one %}', $vars);
+        $this->testRenderResult('a:F:B', '{% render one with {bar: "B"} %}', $vars);
+        $this->testRenderResult('a:-:-', '{% render one only %}', $vars);
+        $this->testRenderResult('a:-:B', '{% render one with {bar: "B"} only %}', $vars);
+
+        // arrays
+        $this->testRenderResult("a:F:-\nb:F:-\nc:F:-", '{% render array %}', $vars);
+        $this->testRenderResult("a:F:B\nb:F:B\nc:F:B", '{% render array with {bar: "B"} %}', $vars);
+        $this->testRenderResult("a:-:-\nb:-:-\nc:-:-", '{% render array only %}', $vars);
+        $this->testRenderResult("a:-:B\nb:-:B\nc:-:B", '{% render array with {bar: "B"} only %}', $vars);
+        $this->testRenderResult("a:F:-\nb:F:-", '{% render [one, array[1]] %}', $vars);
+        $this->testRenderResult('', '{% render [] %}', $vars);
+
+        // collections
+        $this->testRenderResult("a:F:-\nb:F:-\nc:F:-", '{% render collection %}', $vars);
+        $this->testRenderResult("a:F:B\nb:F:B\nc:F:B", '{% render collection with {bar: "B"} %}', $vars);
+        $this->testRenderResult("a:-:-\nb:-:-\nc:-:-", '{% render collection only %}', $vars);
+        $this->testRenderResult("a:-:B\nb:-:B\nc:-:B", '{% render collection with {bar: "B"} only %}', $vars);
+        $this->testRenderResult("b:F:-\nc:F:-", '{% render collection.slice(1) %}', $vars);
+        $this->testRenderResult("a:-:B\nb:-:B\nc:-:B", '{{ collection.render({bar: "B"}) }}', $vars);
+
+        // null
+        $this->testRenderResult('', '{% render null %}', $vars);
+
+        // non-renderable items
+        $this->expectException(RuntimeError::class);
+        $this->view->renderString('{% render [one, "foo"] %}', $vars);
+    }
+
+    public function testRenderTagLoop(): void
+    {
+        $template = '{{ name }}:{{ loop.index }}/{{ loop.length }}:{{ loop.index0 }}:{{ loop.revindex }}:{{ loop.revindex0 }}:{{ loop.first ? "first" }}{{ loop.last ? "last" }}:{{ loop.parent.foo ?? "-" }}';
+        $a = $this->renderable('a', $template);
+        $b = $this->renderable('b', $template);
+        $c = $this->renderable('c', $template);
+        $expected = implode("\n", [
+            'a:1/3:0:3:2:first:F',
+            'b:2/3:1:2:1::F',
+            'c:3/3:2:1:0:last:F',
+        ]);
+        $vars = [
+            'array' => [$a, $b, $c],
+            'collection' => Collection::make([$a, $b, $c]),
+            'foo' => 'F',
+        ];
+
+        $this->testRenderResult($expected, '{% render array %}', $vars);
+        $this->testRenderResult($expected, '{% render collection %}', $vars);
+        $this->testRenderResult($expected, '{{ collection.render({foo: "F"}) }}', $vars);
+
+        // non-sequential keys
+        $this->testRenderResult($expected, '{% render {x: array[0], y: array[1], z: array[2]} %}', $vars);
+
+        // `loop` still works with `only`, but `loop.parent` won't have the context
+        $this->testRenderResult('a:1/1:0:1:0:firstlast:-', '{% render [array[0]] only %}', $vars);
+
+        // single item
+        $this->testRenderResult('a:1/1:0:1:0:firstlast:F', '{% render [array[0]] %}', $vars);
+
+        // within a {% for %} loop, rendered objects get their own `loop` variable, and the outer loop is available
+        // via `loop.parent.loop`
+        $inner = $this->renderable('i', '{{ name }}{{ loop.index }}/{{ loop.parent.loop.index }}');
+        $this->testRenderResult(
+            "i1/1\ni2/1\ni1/2\ni2/2",
+            '{% for x in 1..2 %}{% render items %}{% if not loop.last %}{{ "\n" }}{% endif %}{% endfor %}',
+            ['items' => [$inner, $inner]],
+        );
+
+        // a `loop` variable passed via `with` is left alone
+        $custom = $this->renderable('a', '{{ name }}:{{ loop }}');
+        $this->testRenderResult('a:custom', '{% render [obj] with {loop: "custom"} %}', ['obj' => $custom]);
+        $this->testRenderResult('a:custom', '{% render [obj] with {loop: "custom"} only %}', ['obj' => $custom]);
+        $this->testRenderResult(
+            'a:custom',
+            '{% for x in 1..1 %}{% render [obj] with {loop: "custom"} %}{% endfor %}',
+            ['obj' => $custom],
+        );
+
+        // ...whereas `loop` variables in the context are replaced
+        $this->testRenderResult('a1/1', '{% render [obj] %}', [
+            'obj' => $this->renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}'),
+            'loop' => 'context',
+        ]);
+
+        // the same goes for Template::render()
+        self::assertSame('a:custom', (string)TemplateHelper::render([$custom], ['loop' => 'custom']));
+        self::assertSame('a1/1', (string)TemplateHelper::render(
+            [$this->renderable('a', '{{ name }}{{ loop.index }}/{{ loop.length }}')],
+            context: ['loop' => 'context'],
+        ));
+
+        // individual objects rendered within a {% for %} loop get its `loop` variable
+        $this->testRenderResult(
+            implode("\n", [
+                'a:1/3:0:3:2:first:F',
+                'b:2/3:1:2:1::F',
+                'c:3/3:2:1:0:last:F',
+            ]),
+            '{% for obj in array %}{% render obj %}{% if not loop.last %}{{ "\n" }}{% endif %}{% endfor %}',
+            $vars,
+        );
+
+        // ...unless `only` is used
+        $loopCheck = $this->renderable('a', '{{ loop is defined ? "yes" : "no" }}');
+        $this->testRenderResult('yes,no', '{% for i in 1..1 %}{% render one %},{% render one only %}{% endfor %}', [
+            'one' => $loopCheck,
+        ]);
+
+        // individual objects rendered outside of a {% for %} loop don’t get a `loop` variable
+        $this->testRenderResult('no', '{% render one %}', [
+            'one' => $loopCheck,
+        ]);
+    }
+
+    private function renderable(string $name, string $template): Renderable
+    {
+        return new class($name, $template) implements Renderable {
+            public function __construct(
+                public string $name,
+                private string $template,
+            ) {
+            }
+
+            public function render(array $variables = []): Markup
+            {
+                $output = Craft::$app->getView()->renderString($this->template, array_merge($variables, [
+                    'name' => $this->name,
+                ]));
+                return new Markup($output, Craft::$app->charset);
+            }
+        };
     }
 
     /**

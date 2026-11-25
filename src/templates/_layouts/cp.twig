@@ -56,7 +56,7 @@
 {% endif %}
 {% endjs %}
 
-{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') ?? 'expanded' %}
+{% set sidebarState = craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar") ?? 'expanded' %}
 {% set bodyAttributes = {
     data: {
         sidebar: sidebarState,
@@ -327,7 +327,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
-                                <div id="details-container" tabindex="-1" data-state="{{  craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':sidebar-details')}}">
+                                <div id="details-container" tabindex="-1" data-state="{{ craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar-details")}}">
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}

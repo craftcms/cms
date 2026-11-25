@@ -50,7 +50,8 @@ html {
 }
 
 html.noscroll,
-html.noscroll body {
+html.noscroll body,
+body:has(.menu.visible) {
   overflow: hidden;
 }
 
@@ -574,7 +575,7 @@ table.editable textarea {
 }
 
 [data-icon]::before {
-  content: attr(data-icon);
+  content: attr(data-icon) / '';
 }
 
 [data-icon-after]::after {
@@ -621,7 +622,7 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .icon.add::before {
-  content: 'plus';
+  content: 'plus' / '';
 }
 
 .icon.edit::before {
@@ -657,7 +658,7 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .preview-btn::before {
-  content: 'view';
+  content: 'view' / '';
 }
 
 .view-btn::before {
@@ -671,7 +672,7 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .action-btn::before {
-  content: 'ellipsis';
+  content: 'ellipsis' / '';
 }
 
 /* headings */
@@ -696,6 +697,7 @@ h3,
 .h3 {
   margin-block: 14px;
   margin-inline: 0;
+  font-size: 14px;
   font-weight: bold;
   line-height: 1.2;
 }
@@ -860,11 +862,11 @@ li.sel > a {
   padding-inline-start: 4px;
 
   body.ltr & {
-    content: 'circlerarr';
+    content: 'circlerarr' / '';
   }
 
   body.rtl & {
-    content: 'circlelarr';
+    content: 'circlelarr' / '';
   }
 }
 
@@ -1272,30 +1274,24 @@ td.right {
   @include mixins.active-token-styles;
 }
 
-// Override .token for Prism
-.highlight {
-  .token {
-    display: inline;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    font-size: inherit;
-    line-height: inherit;
-    text-shadow: none;
-    background: transparent;
-    box-shadow: none;
-  }
-}
-
 .pane.highlight {
-  pre[class*='language-'] {
+  pre.th-code {
     overflow: visible;
 
-    & > code.diff-highlight .token:not(.prefix) {
-      margin-block: 0;
-      margin-inline: -24px;
-      padding-block: 0;
-      padding-inline: 24px;
+    & > code > .th-line {
+      &.diff-inserted,
+      &.diff-deleted {
+        margin-inline: -24px;
+        padding-inline: 24px;
+      }
+
+      &.diff-inserted {
+        background-color: rgb(0 255 128 / 10%);
+      }
+
+      &.diff-deleted {
+        background-color: rgb(255 0 0 / 10%);
+      }
     }
   }
 }
@@ -1487,93 +1483,145 @@ td.right {
   @include mixins.clearafter;
 }
 
-.customize-sources-modal {
-  padding-inline-start: 200px;
-  overflow: visible !important;
+.cs-modal {
+  display: flex !important;
+  flex-direction: column;
 
-  & > .cs-sidebar {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    margin: 0;
-    padding-block: 10px;
-    padding-inline: 0;
-    border: none;
-    width: 200px;
+  & > .cs-body {
+    flex: 1;
+    display: flex;
+    flex-flow: row nowrap;
     height: calc(100% - 44px);
-    box-sizing: border-box;
-    background-color: var(--gray-050);
-    overflow: auto;
-    box-shadow: inset -1px 0 0 var(--border-hairline);
-    border-start-start-radius: var(--radius-lg);
+    container-type: inline-size;
 
-    & > .btn {
-      margin-inline: 14px 0;
-      margin-block: 10px 0;
-      display: block;
-      width: calc(100% - 28px);
+    @container (max-width: 699px) {
+      & > .cs-sidebar,
+      & > .cs-source-settings--outer {
+        &.cs-selected-screen {
+          flex: 1;
+        }
+
+        &:not(.cs-selected-screen) {
+          display: none;
+        }
+      }
     }
-  }
 
-  &.sidebar-hidden {
-    padding-inline-start: 0;
+    .cs-header {
+      height: 44px;
+      border-block-end: 1px solid var(--hairline-color);
+      display: flex;
+      align-items: center;
+      gap: var(--s);
+      padding-inline: var(--m);
+
+      .cs-back-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-inline-start: -6px;
+        width: var(--touch-target-size);
+        height: var(--touch-target-size);
+
+        @container (min-width: 700px) {
+          display: none;
+        }
+      }
+
+      h2 {
+        margin-block: 0;
+      }
+    }
 
     & > .cs-sidebar {
-      display: none;
-    }
-  }
+      flex: 0 0 200px;
+      height: 100%;
+      border-inline-end: 1px solid var(--hairline-color);
 
-  & > .source-settings {
-    position: relative;
-    height: calc(100% - 44px);
-    box-sizing: border-box;
-    padding: 24px;
-    overflow: auto;
+      & > .cs-sidebar-content {
+        padding: var(--m);
+        border: none;
+        height: calc(100% - 44px);
+        box-sizing: border-box;
+        overflow: auto;
+
+        & > .cs-sidebar-list {
+          padding-inline-start: 0;
+
+          &:not(:empty) {
+            margin-block-end: var(--m);
+          }
+        }
+      }
+    }
+
+    &.sidebar-hidden {
+      padding-inline-start: 0;
+
+      & > .cs-sidebar {
+        display: none;
+      }
+    }
+
+    & > .cs-source-settings--outer {
+      flex: 1;
+      height: 100%;
+
+      & > .cs-source-settings {
+        height: calc(100% - 44px);
+        position: relative;
+        padding: var(--m);
+        overflow: auto;
+      }
+    }
   }
 
   & > .footer {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline-start: 0;
+    flex: 0 0 44px;
     width: 100%;
   }
 }
 
-.customize-sources-item {
+.cs-item {
   --light-text-color: var(--gray-600);
   --selected-item-color: var(--white);
   display: flex;
-  width: calc(100% - 1px);
-  box-sizing: border-box;
+  gap: var(--s);
+  padding-inline-end: var(--s);
+  flex-direction: row;
+  width: 100%;
   align-items: center;
   position: relative;
-  margin-block-start: -1px;
   background-color: var(--gray-100);
-  border: solid var(--border-hairline);
-  border-width: 1px 0;
+  border-radius: var(--radius-lg);
   user-select: none;
   cursor: default;
 
-  & + .customize-sources-item {
-    &.heading {
-      margin-block-start: 10px;
+  & + .cs-item {
+    &.cs-item--heading {
+      margin-block-start: var(--m);
     }
 
-    &:not(.heading) {
-      border-block-start: 1px solid var(--border-hairline);
+    &:not(.cs-item--heading) {
+      margin-block-start: var(--2xs);
     }
   }
 
-  &.sel {
-    --focus-ring: var(--focus-ring-outset);
-    --ui-control-color: var(--selected-item-color);
-    background-color: var(--bg-selection-dark);
-    color: var(--selected-item-color);
-    z-index: 1;
+  @container (min-width: 700px) {
+    &.sel,
+    &.active {
+      --focus-ring: var(--focus-ring-outset);
+      --ui-control-color: var(--selected-item-color);
+      --text-color: var(--selected-item-color);
+      background-color: var(--bg-selection-dark);
+      color: var(--selected-item-color);
+    }
   }
 
-  .label {
-    flex: 1;
+  .label,
+  .handle {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .handle {
@@ -1585,7 +1633,13 @@ td.right {
     color: var(--fg-subtle);
   }
 
-  &.heading {
+  @container (max-width: 699px) {
+    .handle {
+      color: var(--fg-subtle);
+    }
+  }
+
+  &.cs-item--heading {
     .label {
       text-transform: uppercase;
       color: var(--light-text-color);
@@ -1593,17 +1647,15 @@ td.right {
       font-weight: bold;
     }
 
-    &.sel .label {
-      color: var(--selected-item-color);
+    @container (min-width: 700px) {
+      &.sel .label {
+        color: var(--selected-item-color);
+      }
     }
   }
 }
 
-.customize-sources-item__move {
-  position: absolute;
-  inset-block-start: 50%;
-  inset-inline-end: 3px;
-  transform: translate(-50%, -50%);
+.cs-item__move {
   justify-content: center;
   align-items: center;
 
@@ -1613,11 +1665,28 @@ td.right {
   }
 }
 
-.customize-sources-item__btn {
+.cs-item__btn {
   flex: 1;
   padding-block: 6px;
-  padding-inline: var(--xl);
-  padding-inline-end: 30px;
+  padding-inline-start: var(--m);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+
+  &.cs-item__page-btn {
+    display: flex;
+    flex-direction: row;
+    gap: var(--s);
+    align-items: center;
+
+    .cp-icon:empty {
+      display: none;
+    }
+  }
+
+  &:focus {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .checkbox-select-item {
@@ -1791,6 +1860,10 @@ ul.icons {
   .centeralign & {
     justify-content: center;
   }
+
+  &.rightalign {
+    justify-content: right;
+  }
 }
 
 .inline-flex {
@@ -1826,6 +1899,10 @@ ul.icons {
 
 .items-stretch {
   align-items: stretch;
+}
+
+.gap-0 {
+  gap: 0;
 }
 
 .gap-2xs {
@@ -3442,9 +3519,9 @@ table {
 .card,
 .matrixblock {
   position: relative;
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
+    border-radius: var(--radius-lg);
     color: var(--custom-text-color, var(--text-color));
   }
 
@@ -3522,7 +3599,6 @@ table {
   padding-block: 0;
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
     padding-inline: var(--s);
@@ -3649,9 +3725,15 @@ table {
     svg {
       display: block;
       flex-shrink: 0;
-      border-radius: var(--radius-sm);
       max-width: 100%;
       max-height: 100%;
+    }
+
+    &:not(.cp-icon) {
+      img,
+      svg {
+        border-radius: var(--radius-sm);
+      }
     }
 
     svg {
@@ -4064,6 +4146,10 @@ table {
 
 .element-index {
   .source-path {
+    // see https://github.com/craftcms/cms/issues/18876
+    position: relative;
+    z-index: 1;
+
     background-color: var(--gray-050);
     border-radius: 3px;
 
@@ -4173,6 +4259,8 @@ table {
   }
 
   &.pane {
+    overflow: auto;
+
     .toolbar {
       position: relative;
       z-index: 2;
@@ -4225,6 +4313,10 @@ table {
 .elements {
   position: relative;
 
+  .update-spinner {
+    inset-block-start: 50%;
+  }
+
   &:not(.busy) {
     .update-spinner {
       display: none;
@@ -4256,6 +4348,11 @@ table {
     background-color: var(--gray-050);
     box-shadow: none;
     border-radius: var(--border-radius, var(--radius-sm));
+
+    // adjust the margin-block
+    @media only screen and (width <= 767px) {
+      margin-block: calc(var(--s) * -1 + 2px) var(--s);
+    }
 
     &::after {
       content: '';
@@ -5544,6 +5641,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
   display: none;
 }
 
+.elementselect.can-paste:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--small-border-radius);
+}
+
 .elementselect.uploading {
   position: relative;
 }
@@ -5651,6 +5754,57 @@ table.data tbody tr:not(.disabled).active-drop-target {
   &.chromeless {
     background-color: transparent !important;
     box-shadow: none;
+  }
+
+  &.tip,
+  &.warning {
+    padding-inline-start: 50px;
+
+    &::before {
+      @include mixins.icon;
+      opacity: 1;
+      position: absolute;
+      inset-block-start: var(--pane-padding);
+      inset-inline-start: 18px;
+      font-size: 18px;
+      width: 24px;
+    }
+
+    &.dismissible {
+      padding-inline-end: 48px;
+    }
+
+    .tip-dismiss-btn {
+      position: absolute;
+      inset-block-start: 23px;
+      inset-inline-end: 18px;
+
+      & + p {
+        margin-block-start: 0;
+      }
+    }
+  }
+
+  &.tip {
+    border-color: var(--sky-600) !important;
+    background-color: var(--sky-050) !important;
+    color: var(--fg-notice);
+
+    &::before {
+      content: 'lightbulb';
+      color: var(--fg-notice);
+    }
+  }
+
+  &.warning {
+    border-color: var(--amber-600) !important;
+    background-color: var(--amber-050) !important;
+    color: var(--fg-warning);
+
+    &::before {
+      content: 'alert';
+      color: var(--fg-warning);
+    }
   }
 
   &.padding-xs {
@@ -5963,6 +6117,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
     margin-inline: 0;
   }
 
+  // Line pane headings up with the labels within the panes
+  & > fieldset > legend,
+  & > .field > .heading > label.h6 {
+    margin-inline-start: calc(var(--m) - var(--padding));
+  }
+
   & > .field > .heading > label,
   & > fieldset > legend {
     font-weight: normal;
@@ -6020,6 +6180,9 @@ $min2ColWidth: 400px;
 
   --heading-width: 150px;
 
+  // Space between the checkmark/plus icons and the site names in the element editor’s Sites pane
+  --site-checkmark-gap: var(--s);
+
   #details & {
     --heading-width: 132px;
   }
@@ -6050,8 +6213,6 @@ $min2ColWidth: 400px;
       }
 
       &.add {
-        background-color: color.adjust(mixins.$grey050, $lightness: -2%);
-
         &::before {
           position: absolute;
           inset-block-start: var(--m);
@@ -6059,12 +6220,34 @@ $min2ColWidth: 400px;
           width: 48px;
           text-align: end;
           @include mixins.icon;
-          content: 'plus';
+          content: 'plus' / '';
           color: var(--light-text-color);
         }
 
         .input {
           width: 100%;
+        }
+
+        // Line the “Add a site” select up with the site names in the element editor’s Sites pane,
+        // with the plus icon in the same column as the current site’s checkmark
+        &.add-site-field {
+          padding-inline-start: calc(
+            var(--m) + 14rem / 16 + var(--site-checkmark-gap) - var(--s)
+          );
+
+          &::before {
+            inset-inline-start: var(--m);
+            width: calc(14rem / 16);
+            text-align: start;
+          }
+
+          @media screen and (width < $min2ColWidth) {
+            padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+
+            &::before {
+              inset-inline-start: 10px;
+            }
+          }
         }
       }
 
@@ -6077,9 +6260,48 @@ $min2ColWidth: 400px;
         }
       }
 
+      // Sites in the element editor’s Sites pane, with a checkmark beside the current site
+      // (like the site menu in the breadcrumbs)
+      &.element-site-field {
+        padding-inline-start: 0;
+
+        @media screen and (min-width: $min2ColWidth) {
+          & > .heading {
+            padding-inline-start: var(--m);
+          }
+        }
+
+        & > .heading > label {
+          position: relative;
+          padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+        }
+      }
+
+      &.element-site-field.sel > .heading > label::before {
+        @include mixins.icon;
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-start: 0;
+        transform: translateY(-50%);
+        font-size: calc(14rem / 16);
+        content: 'check' / '';
+      }
+
+      // Undo buttons for newly-added sites in the element editor’s Sites pane
+      & > .heading:has(> .remove-site-btn) {
+        display: flex;
+        align-items: center;
+        gap: var(--s);
+
+        & > .remove-site-btn {
+          margin-inline-start: auto;
+        }
+      }
+
       #details &,
       .so-sidebar.details & {
-        &.lightswitch-field > .heading {
+        &.lightswitch-field > .heading,
+        &.element-site-field > .heading {
           flex: 1;
           border-inline-end: none;
         }
@@ -6301,6 +6523,63 @@ $min2ColWidth: 400px;
   }
 }
 
+// The element editor’s Sites pane lists its sites without hairlines or padding between them
+// (the “Add a site” field keeps its hairline)
+.meta.element-sites-pane > .element-site-field {
+  min-height: auto;
+  border-block-start: none;
+
+  & > .heading {
+    padding-block: var(--xs);
+  }
+
+  &:first-child > .heading {
+    padding-block-start: 12px;
+  }
+
+  &:not(:has(+ .element-site-field:not(.hidden))) > .heading {
+    padding-block-end: 12px;
+  }
+
+  // Status toggles
+  & > .input {
+    padding-block: var(--xs);
+  }
+
+  &:first-child > .input {
+    padding-block-start: 12px;
+  }
+
+  &:not(:has(+ .element-site-field:not(.hidden))) > .input {
+    padding-block-end: 12px;
+  }
+
+  // Keep undo buttons close to the status toggles beside them
+  &.lightswitch-field:has(> .heading > .remove-site-btn) {
+    & > .heading {
+      padding-inline-end: 0;
+    }
+
+    & > .input {
+      padding-inline-start: var(--xs);
+    }
+  }
+
+  // Disclosure toggle for elements that are saved to multiple sites
+  // (with the chevron in the same column as the current site’s checkmark)
+  & > .heading > .element-sites-toggle {
+    position: relative;
+    padding-inline-start: calc(14rem / 16 + var(--site-checkmark-gap));
+    cursor: pointer;
+
+    &::before {
+      position: absolute;
+      inset-block-start: calc(50% - 5px);
+      inset-inline-start: 3px;
+    }
+  }
+}
+
 .meta > .field > .input > .select {
   display: block;
   margin-block: calc(var(--s) * -1);
@@ -6309,10 +6588,6 @@ $min2ColWidth: 400px;
   border-radius: 0;
   box-shadow: none;
   background-color: transparent;
-
-  &::after {
-    inset-inline-end: 0;
-  }
 
   & + .spinner {
     position: absolute;
@@ -6400,7 +6675,7 @@ $min2ColWidth: 400px;
   pointer-events: none;
 
   &.so-lp {
-    position: absolute;
+    position: fixed;
     inset-block-start: var(--m);
     inset-inline-start: var(--m);
     width: calc(100% - var(--m) * 2);
@@ -6431,6 +6706,7 @@ $min2ColWidth: 400px;
     inset-inline-start: 0;
     transition: inset-block-start linear 250ms;
     will-change: inset-block-start;
+    box-shadow: none !important;
   }
 
   &.so-mobile {
@@ -6458,7 +6734,7 @@ $min2ColWidth: 400px;
       transition:
         inset-inline-start linear 250ms,
         inset-inline-end linear 250ms;
-      will-change: inset-inline-start, inset-inline-end;
+      will-change: transform;
     }
   }
 
@@ -7122,7 +7398,7 @@ $min2ColWidth: 400px;
 
 /* element selector modals & customize sources modal */
 .elementselectormodal,
-.customize-sources-modal {
+.cs-modal {
   .main-header {
     display: flex;
     align-items: center;
@@ -7415,6 +7691,44 @@ $min2ColWidth: 400px;
   }
 }
 
+/* element deletion modal */
+.element-deletion-modal {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+
+  .body {
+    flex: 1;
+    height: calc(100% - 44px);
+    overflow: auto;
+
+    .edm-blockers {
+      margin-inline: calc(var(--pane-padding) * -1);
+      border-block-start: var(--hr-border);
+
+      .edm-blocker {
+        padding: var(--pane-padding);
+
+        &:nth-child(odd) {
+          background-color: var(--secondary-pane-bg);
+        }
+      }
+
+      .edm-details {
+        .element-index {
+          border-color: var(--border-hairline-dark) !important;
+          background-color: var(--white) !important;
+          max-height: 272px;
+        }
+      }
+
+      .edm-blocker-resolved-message {
+        margin-block-start: var(--s);
+      }
+    }
+  }
+}
+
 /* delete user modal */
 .deleteusermodal {
   .content-summary {
@@ -7499,18 +7813,21 @@ $min2ColWidth: 400px;
 
 .menu,
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   @include mixins.menu-styles;
 }
 
 .ui-datepicker,
-.ui-timepicker-list {
+.ui-timepicker-wrapper {
   padding: 0;
 }
 
 .menu {
-  display: none;
   position: absolute;
+
+  &:not(.visible) {
+    display: none;
+  }
 
   &.padded {
     padding-block: var(--s);
@@ -7561,7 +7878,7 @@ $min2ColWidth: 400px;
               margin-block: 4px 0;
               font-size: 14px;
               width: 14px;
-              content: 'check';
+              content: 'check' / '';
               color: currentcolor;
               margin-block-start: 3px !important;
             }
@@ -7618,6 +7935,10 @@ $min2ColWidth: 400px;
           align-items: flex-start;
           margin-inline-start: var(--s);
           font-size: 0.8em;
+        }
+
+        .menu-item-description:empty {
+          display: none;
         }
       }
     }
@@ -8211,8 +8532,21 @@ fieldset {
   }
 }
 
+.read-only-badge {
+  font-size: calc(11rem / 16);
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding-block: 0;
+  padding-inline: 0.25em;
+  line-height: 1.45;
+}
+
 .field > .instructions,
 .markdown,
+.warning.pane,
+.tip.pane,
   // BC
 .field > .heading > .instructions,
 .checkboxfield .instructions {
@@ -8402,7 +8736,7 @@ div.checkbox.checked:not(.indeterminate)::before,
   .elements
   .disabled
   .checkbox::before {
-  content: 'check';
+  content: 'check' / '';
   font-size: calc(var(--checkbox-size) * 0.8);
 }
 
@@ -9225,13 +9559,12 @@ body {
 /* timepicker */
 .ui-timepicker-wrapper {
   z-index: 101;
+  overflow-y: auto;
+  max-height: 210px;
 }
 
 .ui-timepicker-list {
-  margin-inline-start: 1px;
-  overflow-y: auto;
   width: calc(14px + 6em);
-  height: 210px;
   z-index: 100;
 }
 
@@ -9403,6 +9736,18 @@ body {
           &:hover {
             border-color: var(--link-color);
             background-color: var(--blue-100);
+          }
+        }
+
+        .icon-picker-modal--heading {
+          flex-basis: 100%;
+
+          &:not(:first-child) {
+            margin-block-start: var(--s);
+          }
+
+          h3 {
+            margin: 0;
           }
         }
       }
@@ -9759,6 +10104,34 @@ body.licensing-issues {
   & > .buttons {
     margin-block-start: 0;
     height: 30px;
+  }
+}
+
+/* number field */
+.number-container {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+
+  .number-currency-label {
+    @include mixins.input-styles;
+    border-inline-end: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    align-items: center;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    min-height: var(--input-height);
+    padding-block: 6px;
+    padding-inline: 9px;
+    white-space: nowrap;
+
+    & + .text {
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
+    }
   }
 }
 

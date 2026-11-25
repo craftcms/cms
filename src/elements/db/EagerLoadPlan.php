@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Closure;
 use yii\base\BaseObject;
 
 /**
@@ -44,14 +45,14 @@ class EagerLoadPlan extends BaseObject
     public bool $count = false;
 
     /**
-     * @var callable|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
+     * @var Closure|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
      *
      * The signature of the callable should be `function (\craft\base\ElementInterface $element): bool`, where `$element` refers to the element
      * the eager-loaded elements are about to be applied to. The callable should return a boolean value.
      *
      * @since 3.5.12
      */
-    public $when;
+    public ?Closure $when = null;
 
     /**
      * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.
@@ -63,4 +64,20 @@ class EagerLoadPlan extends BaseObject
      * @since 5.0.0
      */
     public bool $lazy = false;
+
+    /**
+     * @var int[]|null Restricts the site(s) elements get eager-loaded from.
+     *
+     * If `criteria['siteId']` is also specified, the actual sites will be the intersection of
+     * this property and the criteria.
+     *
+     * @since 5.11.2
+     */
+    public ?array $siteIds = null;
+
+    /**
+     * @var Closure|null Applies constraints after mapping criteria have been configured.
+     * @since 5.12.0
+     */
+    public ?Closure $configureQuery = null;
 }

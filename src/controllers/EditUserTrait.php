@@ -36,6 +36,7 @@ trait EditUserTrait
     private const SCREEN_PREFERENCES = 'preferences';
     private const SCREEN_PASSWORD = 'password';
     private const SCREEN_PASSKEYS = 'passkeys';
+    private const SCREEN_TOKENS = 'tokens';
 
     /**
      * Returns the user being edited.
@@ -110,6 +111,10 @@ trait EditUserTrait
         if ($user->getIsCurrent() && $user->getHasPassword()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];
             $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
+        }
+
+        if ($this->showTokensScreen($user)) {
+            $screens[self::SCREEN_TOKENS] = ['label' => Craft::t('app', 'Tokens')];
         }
 
         if (!isset($screens[$screen])) {
@@ -192,6 +197,18 @@ trait EditUserTrait
                 (Craft::$app->edition->value >= CmsEdition::Pro->value && $currentUser->can('assignUserPermissions')) ||
                 $currentUser->canAssignUserGroups()
             )
+        );
+    }
+
+    private function showTokensScreen(User $user): bool
+    {
+        // Users who can't create tokens still see the apps they've authorized.
+        // Without OAuth keys, only admins see the screen, so they can find out how to set them up.
+        $tokens = Craft::$app->getPersonalAccessTokens();
+        return (
+            $user->getIsCurrent() &&
+            ($tokens->scopeGroupsFor($user) || $tokens->grants($user)) &&
+            ($user->admin || Craft::$app->getOAuth()->hasKeys())
         );
     }
 

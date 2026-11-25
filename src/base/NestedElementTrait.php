@@ -12,7 +12,10 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -77,6 +80,7 @@ trait NestedElementTrait
     /**
      * @var int|null Field ID
      */
+    #[AllowedInSandbox]
     public ?int $fieldId = null;
 
     /**
@@ -98,6 +102,17 @@ trait NestedElementTrait
      * @since 5.2.0
      */
     public bool $updateSearchIndexForOwner = false;
+
+    /**
+     * @var bool Whether the owner element’s `dateUpdated` timestamp should be updated (recursively, up
+     * through any further ancestors) when this (canonical) element is saved.
+     *
+     * This is set to `false` when a nested element is being saved as part of its owner’s own save
+     * operation, since the owner’s `dateUpdated` will already be getting updated in that case.
+     *
+     * @since 5.12.0
+     */
+    public bool $touchOwnersOnSave = true;
 
     /**
      * @var ElementInterface|false|null The primary owner element, or false if [[primaryOwnerId]] is invalid
@@ -324,6 +339,7 @@ trait NestedElementTrait
                 if (!empty($ownerIds)) {
                     $query = $ownerType::find()
                         ->id($ownerIds);
+                    $criteria = ComponentHelper::cleanseConfig(ElementHelper::cleanseQueryCriteria($criteria));
                     Craft::configure($query, $criteria + $this->ownerCriteria());
                     $this->_owners = $query->all();
                 }
@@ -368,8 +384,8 @@ trait NestedElementTrait
         $field = null;
 
         try {
-            $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId);
-        } catch (InvalidConfigException $e) {
+            $field = $this->getOwner()?->getFieldLayout()?->getFieldById($this->fieldId);
+        } catch (InvalidConfigException) {
             // carry on as we might still be able to get the field by ID
         }
 
@@ -464,7 +480,7 @@ trait NestedElementTrait
      */
     private function saveOwnership(bool $isNew, string $elementTable, string $fieldIdColumn = 'fieldId'): void
     {
-        if (!$this->saveOwnership || !isset($this->fieldId)) {
+        if (!$this->saveOwnership || !isset($this->fieldId) || $this->resaving) {
             return;
         }
         
@@ -513,24 +529,41 @@ trait NestedElementTrait
             $this->sortOrder = $max ? $max + 1 : 1;
         }
 
-        $ownerIds = array_unique([
-            $this->getPrimaryOwnerId(),
-            $ownerId,
-        ]);
-
-        if (!$isNew) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $this->id,
-                'ownerId' => $ownerIds,
-            ]);
-        }
-
-        foreach ($ownerIds as $ownerId) {
+        if ($isNew) {
             Db::insert(Table::ELEMENTS_OWNERS, [
                 'elementId' => $this->id,
                 'ownerId' => $ownerId,
                 'sortOrder' => $this->sortOrder,
             ]);
+        } else {
+            Db::upsert(Table::ELEMENTS_OWNERS, [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+                'sortOrder' => $this->sortOrder,
+            ], [
+                'sortOrder' => $this->sortOrder,
+            ]);
+        }
+
+        // make sure we're also storing ownership for the primary owner
+        // (see https://github.com/craftcms/cms/pull/16933)
+        $primaryOwnerId = $this->getPrimaryOwnerId();
+        if ($primaryOwnerId !== $ownerId) {
+            $exists = (new Query())
+                ->from(Table::ELEMENTS_OWNERS)
+                ->where([
+                    'elementId' => $this->id,
+                    'ownerId' => $primaryOwnerId,
+                ])
+                ->exists();
+
+            if (!$exists) {
+                Db::insert(Table::ELEMENTS_OWNERS, [
+                    'elementId' => $this->id,
+                    'ownerId' => $primaryOwnerId,
+                    'sortOrder' => $this->sortOrder,
+                ]);
+            }
         }
     }
 }

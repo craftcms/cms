@@ -8,8 +8,11 @@ Craft.EntrySelectInput = Craft.BaseElementSelectInput.extend({
     if (!this.settings.sectionId) {
       return null;
     }
+    const siteId = this.settings.criteria.siteId;
     return Craft.publishableSections.find(
-      (s) => s.id === this.settings.sectionId
+      (s) =>
+        s.id === this.settings.sectionId &&
+        (!siteId || s.sites.includes(siteId))
     );
   },
 

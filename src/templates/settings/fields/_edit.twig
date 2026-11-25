@@ -50,6 +50,34 @@
   disabled: readOnly,
 }) }}
 
+{{ forms.textareaField({
+  label: "Default Tip"|t('app'),
+  id: 'tip',
+  class: 'nicetext',
+  name: 'tip',
+  value: field.tip,
+  rows: 1,
+  errors: field.getErrors('tip'),
+  data: {
+    'error-key': 'tip',
+  },
+  disabled: readOnly,
+}) }}
+
+{{ forms.textareaField({
+  label: "Default Warning"|t('app'),
+  id: 'warning',
+  class: 'nicetext',
+  name: 'warning',
+  value: field.warning,
+  rows: 1,
+  errors: field.getErrors('warning'),
+  data: {
+    'error-key': 'warning',
+  },
+  disabled: readOnly,
+}) }}
+
 {{ forms.lightswitchField({
   label: 'Use this field’s values as search keywords'|t('app'),
   id: 'searchable',

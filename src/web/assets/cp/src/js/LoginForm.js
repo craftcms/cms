@@ -210,7 +210,7 @@ Craft.LoginForm = Garnish.Base.extend(
       this.clearErrors();
       this.$form.addClass('hidden');
 
-      const $authForm = $(data.authForm).insertAfter(this.$form);
+      const $authForm = $(data.authForm);
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
       Craft.initUiElements($authForm);
@@ -225,6 +225,10 @@ Craft.LoginForm = Garnish.Base.extend(
           this.showError(error);
         }
       );
+
+      // defer injecting the form until after the form handlers (_authFormHandlers) are loaded
+      // see https://craftcms.slack.com/archives/C040W72JA5N/p1787812546586339
+      $authForm.insertAfter(this.$form);
 
       if (!Garnish.isMobileBrowser()) {
         setTimeout(() => {
@@ -331,15 +335,15 @@ Craft.LoginForm = Garnish.Base.extend(
           'POST',
           'auth/passkey-request-options'
         );
-        const authResponse = await startAuthentication(
-          optionsResponse.data.options
-        );
+        const authResponse = await startAuthentication({
+          optionsJSON: JSON.parse(optionsResponse.data.options),
+        });
         const loginResponse = await Craft.sendActionRequest(
           'POST',
           'users/login-with-passkey',
           {
             data: {
-              requestOptions: JSON.stringify(optionsResponse.data.options),
+              requestOptions: optionsResponse.data.options,
               response: JSON.stringify(authResponse),
             },
           }
@@ -354,6 +358,8 @@ Craft.LoginForm = Garnish.Base.extend(
 
         if (message) {
           this.showError(message);
+        } else {
+          console.warn(e);
         }
       } finally {
         this.passkeyBtn.endBusyState();

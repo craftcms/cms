@@ -14,6 +14,8 @@ use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
+use craft\helpers\Json;
+use craft\helpers\UrlHelper;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -393,6 +395,7 @@ abstract class Controller extends \yii\web\Controller
     ): ?YiiResponse {
         $modelName ??= 'model';
         $routeParams += [$modelName => $model];
+
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
@@ -424,18 +427,26 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         ?string $redirect = null,
     ): YiiResponse {
-        $data += array_filter([
+        $modelData = $model->toArray();
+
+        $isCpRequest = $this->request->getIsCpRequest();
+
+        if (!$isCpRequest && !static::currentUser()?->can('accessCp')) {
+            unset($modelData['cpEditUrl']);
+        }
+
+        $data += [
             'modelName' => $modelName,
             'modelClass' => get_class($model),
-            ($modelName ?? 'model') => $model->toArray(),
-        ]);
+            ($modelName ?? 'model') => $modelData,
+        ];
 
         if ($model instanceof Identifiable) {
             $data['modelId'] = $model->getId();
         }
 
         $notificationSettings = [];
-        if ($model instanceof Chippable) {
+        if ($isCpRequest && $model instanceof Chippable) {
             $notificationSettings['details'] = Cp::chipHtml($model);
         }
 
@@ -568,7 +579,8 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken(): void
     {
-        if (!$this->request->getHadToken()) {
+        $tokenRoute = $this->request->getTokenRoute()[0] ?? null;
+        if ($tokenRoute !== $this->getRoute()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -647,6 +659,17 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url && $object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
+        }
+
+        $params = $this->request->getBodyParam('redirectParams');
+        if ($params) {
+            try {
+                $params = Json::decode($params);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException($e->getMessage(), previous: $e);
+            }
+
+            $url = UrlHelper::urlWithParams($url, $params);
         }
 
         return $url;

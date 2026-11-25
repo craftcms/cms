@@ -37,24 +37,31 @@ class AppHelperTest extends TestCase
         self::assertSame('server', App::env('TEST_SERVER_ENV'));
         unset($_SERVER['TEST_SERVER_ENV']);
 
-        putenv('TEST_GETENV_ENV=getenv');
-        self::assertSame('getenv', App::env('TEST_GETENV_ENV'));
-        putenv('TEST_GETENV_ENV');
+        $variables = [
+            'TEST_1' => 'testing1',
+            'TEST_2' => 'foo-${TEST_1}-bar',
+            'TEST_3' => 'true',
+            'TEST_4' => 'false',
+            'TEST_EMPTY' => '',
+        ];
 
-        putenv('TEST_GETENV_TRUE_ENV=true');
-        self::assertTrue(App::env('TEST_GETENV_TRUE_ENV'));
-        putenv('TEST_GETENV_TRUE_ENV');
+        foreach ($variables as $name => $value) {
+            putenv("$name=$value");
+        }
 
-        putenv('TEST_GETENV_FALSE_ENV=false');
-        self::assertFalse(App::env('TEST_GETENV_FALSE_ENV'));
-        putenv('TEST_GETENV_FALSE_ENV');
+        self::assertSame('testing1', App::env('TEST_1'));
+        self::assertSame('foo-testing1-bar', App::env('TEST_2'));
+        self::assertTrue(App::env('TEST_3'));
+        self::assertFalse(App::env('TEST_4'));
+        // todo: this should be assertNull() in v6
+        self::assertSame('', App::env('TEST_EMPTY'));
+
+        foreach (array_keys($variables) as $name) {
+            putenv($name);
+        }
 
         self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
         self::assertNull(App::env('TEST_NONEXISTENT_ENV'));
-
-        putenv('SHH=foo');
-        self::assertSame('foo', App::env('SHH'));
-        putenv('SHH');
     }
 
     /**
@@ -92,12 +99,53 @@ class AppHelperTest extends TestCase
      */
     public function testParseEnv(): void
     {
-        self::assertNull(App::parseEnv(null));
+        $variables = [
+            'TEST_1' => 'testing1',
+            'TEST_2' => 'foo${TEST_1}bar',
+            'TEST_3' => 'true',
+            'TEST_4' => 'false',
+            'TEST_ALIAS' => '@vendor/foo/bar',
+            'TEST_DEFAULT_SITE_API_KEY' => 'abcdef',
+            'TEST_EMPTY' => '',
+        ];
+
+        foreach ($variables as $name => $value) {
+            putenv("$name=$value");
+        }
+
+        self::assertSame('testing1', App::parseEnv('$TEST_1'));
+        self::assertSame('testing1', App::parseEnv('${TEST_1}'));
+        self::assertSame('testing1/foo/bar', App::parseEnv('$TEST_1/foo/bar'));
+        self::assertSame('foo/testing1/bar', App::parseEnv('foo/$TEST_1/bar'));
+        self::assertSame('footesting1bar', App::parseEnv('$TEST_2'));
+        self::assertSame('footesting1bar', App::parseEnv('${TEST_2}'));
+        self::assertSame('foo/footesting1bar/bar', App::parseEnv('foo/$TEST_2/bar'));
+        self::assertSame(true, App::parseEnv('$TEST_3'));
+        self::assertSame(false, App::parseEnv('$TEST_4'));
+        self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('$TEST_ALIAS'));
+        self::assertSame('defaultSite', App::parseEnv('$CRAFT_SITE'));
+        self::assertSame('DEFAULT_SITE', App::parseEnv('$CRAFT_SITE_UPPER'));
+        self::assertSame('abcdef', App::parseEnv('$TEST_${CRAFT_SITE_UPPER}_API_KEY'));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
-        self::assertSame(null, App::parseEnv('$TEST_MISSING'));
         self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('@vendor/foo/bar'));
+        // todo: this should be assertNull() in v6
+        self::assertSame(null, App::parseEnv('$TEST_EMPTY'));
+        self::assertNull(App::parseEnv('$TEST_MISSING'));
+        self::assertNull(App::parseEnv(null));
+
+        // https://github.com/craftcms/cms/issues/19522
+        self::assertSame('$58 million', App::parseEnv('$58 million'));
+        self::assertSame('the $58 million', App::parseEnv('the $58 million'));
+        self::assertSame('the $58', App::parseEnv('the $58'));
+        self::assertSame('/test', App::parseEnv('$58/test'));
+        self::assertSame('test//test', App::parseEnv('test/$58/test'));
+        self::assertSame('test/', App::parseEnv('test/$58'));
+
+        foreach (array_keys($variables) as $name) {
+            putenv($name);
+        }
     }
 
     /**
@@ -105,9 +153,23 @@ class AppHelperTest extends TestCase
      * @param bool|null $expected
      * @param mixed $value
      */
-    public function testParseBooleanEnv(?bool $expected, mixed $value): void
+    public function testParseBooleanEnv(?bool $expected, mixed $value, array $values = []): void
     {
+        foreach ($values as $name => $v) {
+            putenv("$name=$v");
+        }
+
         self::assertSame($expected, App::parseBooleanEnv($value));
+    }
+
+    /**
+     * @dataProvider normalizeBooleanValueDataProvider
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testNormalizeBooleanEnv(?bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::normalizeBooleanValue($value));
     }
 
     /**
@@ -146,6 +208,32 @@ class AppHelperTest extends TestCase
 
         self::expectException(InvalidArgumentException::class);
         App::cliOption('no-dash');
+    }
+
+    public function testTerminalCommands(): void
+    {
+        // the tests might be running in DDEV
+        $server = $_SERVER['IS_DDEV_PROJECT'] ?? null;
+        $env = getenv('IS_DDEV_PROJECT');
+        unset($_SERVER['IS_DDEV_PROJECT']);
+
+        try {
+            putenv('IS_DDEV_PROJECT');
+            self::assertSame('php craft oauth/generate-keys', App::craftCommand('oauth/generate-keys'));
+            self::assertSame('composer install', App::composerCommand('install'));
+
+            putenv('IS_DDEV_PROJECT=true');
+            self::assertSame('ddev craft oauth/generate-keys', App::craftCommand('oauth/generate-keys'));
+            self::assertSame('ddev composer install', App::composerCommand('install'));
+
+            putenv('IS_DDEV_PROJECT=false');
+            self::assertSame('php craft oauth/generate-keys', App::craftCommand('oauth/generate-keys'));
+        } finally {
+            putenv($env === false ? 'IS_DDEV_PROJECT' : "IS_DDEV_PROJECT=$env");
+            if ($server !== null) {
+                $_SERVER['IS_DDEV_PROJECT'] = $server;
+            }
+        }
     }
 
     /**
@@ -335,6 +423,46 @@ class AppHelperTest extends TestCase
         self::assertSame(250, strlen(App::licenseKey()));
     }
 
+    public function testLicensingIssuesEncodesLicensedDomain(): void
+    {
+        $cache = Craft::$app->getCache();
+        $updatesCacheKey = Craft::$app->getUpdates()->cacheKey;
+        $hadUpdatesCache = $cache->exists($updatesCacheKey);
+        $payload = 'poison.test"><img src=x onerror=alert(document.domain)>';
+
+        // Simulate a poisoned cache that predates validation of the header
+        $cache->set(App::CACHE_KEY_LICENSE_INFO, [
+            'craft' => ['id' => '1', 'edition' => 'pro', 'status' => 'mismatched', 'timestamp' => time()],
+        ]);
+        $request = Craft::$app->getRequest();
+        $originalHostInfo = $request->getHostInfo();
+        $originalIsConsoleRequest = $request->getIsConsoleRequest();
+        $request->setIsConsoleRequest(false);
+        $request->setHostInfo('https://craft.test');
+        $cache->set(App::CACHE_KEY_LICENSE_INFO_HOST, 'craft.test');
+        $cache->set('licensedDomain', $payload);
+        if (!$hadUpdatesCache) {
+            $cache->set($updatesCacheKey, []);
+        }
+
+        try {
+            $issues = App::licensingIssues(['mismatched']);
+            self::assertCount(1, $issues);
+            $message = $issues[0][1];
+            self::assertStringNotContainsString('<img', $message);
+            self::assertStringContainsString('&lt;img src=x onerror=alert(document.domain)&gt;', $message);
+        } finally {
+            $request->setIsConsoleRequest($originalIsConsoleRequest);
+            $request->setHostInfo($originalHostInfo);
+            $cache->delete(App::CACHE_KEY_LICENSE_INFO);
+            $cache->delete(App::CACHE_KEY_LICENSE_INFO_HOST);
+            $cache->delete('licensedDomain');
+            if (!$hadUpdatesCache) {
+                $cache->delete($updatesCacheKey);
+            }
+        }
+    }
+
     /**
      * @dataProvider configsDataProvider
      * @param string $method
@@ -428,19 +556,75 @@ class AppHelperTest extends TestCase
             [true, true],
             [false, false],
             [true, 'yes'],
+            [true, 'YES'],
             [false, 'no'],
+            [true, 'ON'],
             [true, 'on'],
+            [false, 'OFF'],
             [false, 'off'],
+            [true, 'TRUE'],
             [true, '1'],
             [false, '0'],
             [true, 'true'],
+            [false, 'FALSE'],
             [false, 'false'],
-            [false, ''],
+            [null, ''],
             [null, 'whatever'],
             [true, 1],
             [false, 0],
             [null, 2],
             [null, '$TEST_MISSING'],
+            [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'false'],
+            ],
+            [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'FALSE'],
+            ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'true'],
+            ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'TRUE'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function normalizeBooleanValueDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [true, 'YES'],
+            [false, 'no'],
+            [false, 'no'],
+            [true, 'ON'],
+            [true, 'on'],
+            [false, 'off'],
+            [false, 'OFF'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [null, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+            [null, null],
         ];
     }
 

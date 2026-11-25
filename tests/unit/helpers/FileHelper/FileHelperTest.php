@@ -446,6 +446,11 @@ class FileHelperTest extends TestCase
             ['iPS(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
             ['not||a||file', 'not a file', ['separator' => '||']],
             ['not🐧a🐧file', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
+            ['testing', '"testing"', []],
+            ['testing', '\'testing\'', []],
+            ['testing', '“testing”', []],
+            ['testing', '‘testing’', []],
+            ['invoicefdp.exe', "invoice\u{202E}fdp.exe", []],
         ];
     }
 

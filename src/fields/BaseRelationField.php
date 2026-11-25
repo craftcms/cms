@@ -34,6 +34,7 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
@@ -46,6 +47,7 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
+use craft\web\assets\cp\CpAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -74,6 +76,17 @@ abstract class BaseRelationField extends Field implements
      * @since 3.4.16
      */
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+
+    /** @since 5.9.0 */
+    public const VIEW_MODE_LIST = 'list';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_LIST_INLINE = 'list-inline';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_THUMBS = 'thumbs';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_CARDS = 'cards';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
 
     /** @since 5.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
@@ -140,8 +153,34 @@ abstract class BaseRelationField extends Field implements
         $conditions = [];
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
-            $emptyCondition = array_shift($value);
-            if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
+            $emptyParam = array_shift($value);
+
+            if (self::isQueryConditionFieldMultiInstance($instances)) {
+                // look at the JSON values rather than the `relations` table data
+                // (see https://github.com/craftcms/cms/issues/17290 + https://github.com/craftcms/cms/pull/18092)
+                if (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
+                    $emptyCondition = ['or'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'and',
+                            ['not', [$valueSql => null]],
+                            ['not', [$valueSql => '[]']],
+                        ];
+                    }
+                } else {
+                    $emptyCondition = ['and'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'or',
+                            [$valueSql => null],
+                            [$valueSql => '[]'],
+                        ];
+                    }
+                }
+                $conditions[] = $emptyCondition;
+            } elseif (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
                 $conditions[] = static::existsQueryCondition($field);
             } else {
                 $conditions[] = ['not', static::existsQueryCondition($field)];
@@ -149,6 +188,7 @@ abstract class BaseRelationField extends Field implements
         }
 
         if (!empty($value)) {
+            $siteId = ElementQuery::$activeQuery?->siteId;
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $field->handle => $field,
@@ -157,7 +197,7 @@ abstract class BaseRelationField extends Field implements
             $condition = $parser->parse([
                 'targetElement' => $value,
                 'field' => $field->handle,
-            ]);
+            ], $siteId !== '*' ? $siteId : null);
             if ($condition !== false) {
                 $conditions[] = $condition;
             }
@@ -169,6 +209,27 @@ abstract class BaseRelationField extends Field implements
 
         array_unshift($conditions, 'or');
         return $conditions;
+    }
+
+    /**
+     * @param self[] $instances
+     * @return bool
+     */
+    private static function isQueryConditionFieldMultiInstance(array $instances): bool
+    {
+        foreach ($instances as $instance) {
+            // See if this instance is used multiple times within its field layout
+            $allInstances = $instance->layoutElement?->getLayout()->getFields(fn(BaseField $field) => (
+                $field instanceof CustomField &&
+                $field->getFieldUid() === $instance->uid
+            ));
+
+            if ($allInstances && count($allInstances) > 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -268,6 +329,7 @@ abstract class BaseRelationField extends Field implements
     /**
      * @var bool Whether cards should be shown in a multi-column grid
      * @since 5.0.0
+     * @deprecated in 5.9.0.
      */
     public bool $showCardsInGrid = false;
 
@@ -409,6 +471,17 @@ abstract class BaseRelationField extends Field implements
             $config['localizeRelations'] = ($config['translationMethod'] ?? self::TRANSLATION_METHOD_NONE) !== self::TRANSLATION_METHOD_NONE;
         }
 
+        $config['viewMode'] ??= self::VIEW_MODE_LIST;
+
+        if (!empty($config['showCardsInGrid']) && $config['viewMode'] === self::VIEW_MODE_CARDS) {
+            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
+        }
+        $config['showCardsInGrid'] = $config['viewMode'] === self::VIEW_MODE_CARDS_GRID;
+
+        if ($config['viewMode'] === 'large') {
+            $config['viewMode'] = self::VIEW_MODE_THUMBS;
+        }
+
         parent::__construct($config);
     }
 
@@ -479,7 +552,6 @@ abstract class BaseRelationField extends Field implements
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
-        $attributes[] = 'showCardsInGrid';
         $attributes[] = 'showSearchInput';
         $attributes[] = 'showSiteMenu';
         $attributes[] = 'source';
@@ -613,17 +685,18 @@ JS, [
                 ->eagerly();
         }
 
-        $errorCount = 0;
+        $invalidTargetIds = [];
 
         foreach ($value->all() as $i => $target) {
             if (!self::_validateRelatedElement($element, $target)) {
                 /** @phpstan-ignore-next-line */
                 $element->addModelErrors($target, "$this->handle[$i]");
-                $errorCount++;
+                $invalidTargetIds[] = $target->id;
             }
         }
 
-        if ($errorCount) {
+        if (!empty($invalidTargetIds)) {
+            $element->addInvalidNestedElementIds($invalidTargetIds);
             $selectedCount = (int)$value->count();
             $element->addError($this->handle, Craft::t('app', 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
                 'relatedType' => $selectedCount === 1
@@ -736,37 +809,35 @@ JS, [
                     CancelableEvent $event,
                     ElementQuery $query,
                 ) use ($element, $relationsAlias) {
-                    if ($query->id === null) {
-                        // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
-                        // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
-                        // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
-                        // to the eager-loading query and cause a SQL error.
-                        foreach ([$query->query, $query->subQuery] as $q) {
-                            $q->innerJoin(
-                                [$relationsAlias => DbTable::RELATIONS],
+                    // Make these changes directly on the prepared queries, so `sortOrder` doesn't ever make it into
+                    // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
+                    // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
+                    // to the eager-loading query and cause a SQL error.
+                    foreach ([$query->query, $query->subQuery] as $q) {
+                        $q->innerJoin(
+                            [$relationsAlias => DbTable::RELATIONS],
+                            [
+                                'and',
+                                "[[$relationsAlias.targetId]] = [[elements.id]]",
                                 [
-                                    'and',
-                                    "[[$relationsAlias.targetId]] = [[elements.id]]",
-                                    [
-                                        "$relationsAlias.sourceId" => $element->id,
-                                        "$relationsAlias.fieldId" => $this->id,
-                                    ],
-                                    [
-                                        'or',
-                                        ["$relationsAlias.sourceSiteId" => null],
-                                        ["$relationsAlias.sourceSiteId" => $element->siteId],
-                                    ],
-                                ]
-                            );
+                                    "$relationsAlias.sourceId" => $element->id,
+                                    "$relationsAlias.fieldId" => $this->id,
+                                ],
+                                [
+                                    'or',
+                                    ["$relationsAlias.sourceSiteId" => null],
+                                    ["$relationsAlias.sourceSiteId" => $element->siteId],
+                                ],
+                            ]
+                        );
 
-                            if (
-                                $this->sortable &&
-                                !$this->maintainHierarchy &&
-                                count($query->orderBy ?? []) === 1 &&
-                                ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
-                            ) {
-                                $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
-                            }
+                        if (
+                            $this->sortable &&
+                            !$this->maintainHierarchy &&
+                            count($query->orderBy ?? []) === 1 &&
+                            ($query->orderBy[0] ?? null) instanceof OrderByPlaceholderExpression
+                        ) {
+                            $q->orderBy(["$relationsAlias.sortOrder" => SORT_ASC]);
                         }
                     }
                 },
@@ -787,7 +858,7 @@ JS, [
         return $query;
     }
 
-    private function fetchRelationsFromDbTable(?Elementinterface $element): bool
+    private function fetchRelationsFromDbTable(?ElementInterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {
             return false;
@@ -874,14 +945,6 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(?ElementInterface $element): bool
-    {
-        return $this->localizeRelations;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
@@ -901,10 +964,9 @@ JS, [
 
         /** @var ElementInterface[] $value */
         $variables = $this->inputTemplateVariables($value, $element);
-        $variables['inline'] = $inline || $variables['viewMode'] === 'large';
 
-        if ($inline) {
-            $variables['viewMode'] = 'list';
+        if ($inline && !in_array($variables['viewMode'], [self::VIEW_MODE_LIST_INLINE, self::VIEW_MODE_THUMBS])) {
+            $variables['viewMode'] = self::VIEW_MODE_LIST_INLINE;
         }
 
         if ($static) {
@@ -933,6 +995,8 @@ JS, [
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
+        } elseif ($value instanceof ElementCollection) {
+            $value = $value->all();
         } else {
             $value = $this->_all($value, $element)->all();
         }
@@ -1294,7 +1358,14 @@ JS, [
                 'structure-id' => $s['structureId'] ?? null,
             ],
         ], $this->availableSources());
-        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
+
+        ArrayHelper::multisort(
+            $options,
+            fn(array $option) => $option['value'] === '*' ? 0 : $option['label'],
+            SORT_ASC,
+            SORT_NATURAL | SORT_FLAG_CASE,
+        );
+
         return $options;
     }
 
@@ -1373,21 +1444,52 @@ JS, [
             return null;
         }
 
-        $viewModeOptions = [];
+        if (empty(array_diff(array_keys($supportedViewModes), [
+            self::VIEW_MODE_LIST,
+            self::VIEW_MODE_LIST_INLINE,
+            self::VIEW_MODE_THUMBS,
+            self::VIEW_MODE_CARDS,
+            self::VIEW_MODE_CARDS_GRID,
+        ]))) {
+            $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
+            $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+            $baseIconsUrl = "$bundle->baseUrl/images/view-modes";
 
-        foreach ($supportedViewModes as $key => $label) {
-            $viewModeOptions[] = ['label' => $label, 'value' => $key];
+            foreach ($supportedViewModes as $key => $label) {
+                $html .= Html::beginTag('label', ['class' => 'nowrap']) .
+                    Html::img("$baseIconsUrl/$key.svg", [
+                        'class' => 'mb-xs',
+                        'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
+                        'height' => 60,
+                        'alt' => '',
+                    ]) .
+                    Html::radio('viewMode', $key === $this->viewMode, [
+                        'value' => $key,
+                    ]) .
+                    ' ' . $label .
+                    Html::endTag('label');
+            }
+
+            $html .= Html::endTag('div');
+        } else {
+            $viewModeOptions = [];
+
+            foreach ($supportedViewModes as $key => $label) {
+                $viewModeOptions[] = ['label' => $label, 'value' => $key];
+            }
+
+            $html = Cp::selectHtml([
+                'id' => 'viewMode',
+                'name' => 'viewMode',
+                'options' => $viewModeOptions,
+                'value' => $this->viewMode,
+            ]);
         }
 
-        return Cp::selectFieldHtml([
+        return Cp::fieldHtml($html, [
             'label' => Craft::t('app', 'View Mode'),
             'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
             'id' => 'viewMode',
-            'name' => 'viewMode',
-            'options' => $viewModeOptions,
-            'value' => $this->viewMode,
-            'toggle' => true,
-            'targetPrefix' => 'view-mode--',
         ]);
     }
 
@@ -1416,7 +1518,6 @@ JS, [
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
-            $selectionCondition->queryParams[] = 'status';
 
             $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => Craft::t('app', 'Selectable {type} Condition', [
@@ -1452,7 +1553,7 @@ JS, [
             $value = [];
         }
 
-        ElementHelper::swapInProvisionalDrafts($value);
+        ElementHelper::loadProvisionalChanges($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
@@ -1501,6 +1602,8 @@ JS, [
             }
         }
 
+        $targetSiteId = $this->_targetSiteId();
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => $elementType,
@@ -1517,6 +1620,7 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
+            'siteIds' => $targetSiteId ? [$targetSiteId] : null,
             'allowSelfRelations' => $this->allowSelfRelations,
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1525,12 +1629,11 @@ JS, [
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'defaultPlacement' => $this->defaultPlacement,
             'viewMode' => $this->viewMode(),
-            'showCardsInGrid' => $this->showCardsInGrid,
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
-                'defaultSiteId' => $element->siteId ?? null,
+                'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
     }
@@ -1697,14 +1800,16 @@ JS, [
     protected function supportedViewModes(): array
     {
         $viewModes = [
-            'list' => Craft::t('app', 'List'),
+            self::VIEW_MODE_LIST => Craft::t('app', 'List'),
+            self::VIEW_MODE_LIST_INLINE => Craft::t('app', 'Inline list'),
         ];
 
         if ($this->allowLargeThumbsView) {
-            $viewModes['large'] = Craft::t('app', 'Large Thumbnails');
+            $viewModes[self::VIEW_MODE_THUMBS] = Craft::t('app', 'Thumbs');
         }
 
-        $viewModes['cards'] = Craft::t('app', 'Cards');
+        $viewModes[self::VIEW_MODE_CARDS] = Craft::t('app', 'Cards');
+        $viewModes[self::VIEW_MODE_CARDS_GRID] = Craft::t('app', 'Card grid');
 
         return $viewModes;
     }
@@ -1723,7 +1828,7 @@ JS, [
             return $viewMode;
         }
 
-        return 'list';
+        return self::VIEW_MODE_LIST;
     }
 
     /**

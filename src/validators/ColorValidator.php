@@ -38,9 +38,15 @@ class ColorValidator extends RegularExpressionValidator
             $color = '#' . $color;
         }
 
-        // #abc => #aabbcc
-        if (strlen($color) === 4) {
-            $color = '#' . $color[1] . $color[1] . $color[2] . $color[2] . $color[3] . $color[3];
+        // #abc => #aabbcc, #abcd => #aabbccdd
+        $length = strlen($color);
+        if ($length === 4 || $length === 5) {
+            $color = '#' . implode('', array_map(fn(string $char) => $char . $char, str_split(substr($color, 1))));
+        }
+
+        // #aabbccff => #aabbcc
+        if (strlen($color) === 9 && str_ends_with($color, 'ff')) {
+            $color = substr($color, 0, 7);
         }
 
         return $color;
@@ -50,6 +56,24 @@ class ColorValidator extends RegularExpressionValidator
      * @inheritdoc
      */
     public $pattern = '/^(?:#[0-9a-f]{6}|transparent)$/';
+
+    /**
+     * @var bool Whether 8-digit hex values with an alpha channel should be allowed.
+     * @since 5.12.0
+     */
+    public bool $allowAlpha = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        if ($this->allowAlpha) {
+            $this->pattern = '/^(?:#[0-9a-f]{6}(?:[0-9a-f]{2})?|transparent)$/';
+        }
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc

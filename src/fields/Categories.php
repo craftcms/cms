@@ -9,9 +9,13 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\behaviors\EventBehavior;
+use craft\db\FixedOrderExpression;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
+use craft\events\CancelableEvent;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -105,16 +109,89 @@ class Categories extends BaseRelationField
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if (is_array($value) && $this->maintainHierarchy) {
-            /** @var Category[] $categories */
-            $categories = Category::find()
-                ->siteId($this->targetSiteId($element))
-                ->id(array_values(array_filter($value)))
-                ->status(null)
-                ->all();
+        $query = parent::normalizeValue($value, $element);
+
+        // Fill in gaps and enforce the branch limit, but only once this query actually gets
+        // executed on its own - if it's about to be discarded in favor of eager-loaded results
+        // (e.g. via `.eagerly()`), there's no point doing this work just to throw it away.
+        if (is_array($value) && $this->maintainHierarchy && $query instanceof ElementQuery) {
+            $query->attachBehavior(self::class, new EventBehavior([
+                ElementQuery::EVENT_BEFORE_PREPARE => function(CancelableEvent $event, ElementQuery $query) use ($element) {
+                    /** @var Category[] $categories */
+                    $categories = Category::find()
+                        ->siteId($this->targetSiteId($element))
+                        ->id($query->where['elements.id'] ?? [])
+                        ->status(null)
+                        ->all();
+
+                    $structuresService = Craft::$app->getStructures();
+                    $structuresService->fillGapsInElements($categories);
+
+                    if ($this->branchLimit) {
+                        $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
+                    }
+
+                    $finalIds = array_map(fn(Category $category) => $category->id, $categories);
+                    $query->where(['elements.id' => $finalIds]);
+                    if (!empty($finalIds)) {
+                        $query->orderBy([new FixedOrderExpression('elements.id', $finalIds, Craft::$app->getDb())]);
+                    }
+                },
+            ]));
+        }
+
+        return $query;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * Note: when Categories field is used across multiple field layouts (e.g. several entry types in
+     * the same section), calling `.eagerly()` without an explicit alias on a loop of mixed-type
+     * elements will re-trigger this method once per distinct field-layout provider, each time
+     * recomputing results for every source element that has this field, not just its own type's
+     * subset. (`ElementQuery`'s default eager-loading alias is derived from the *triggering*
+     * element's own provider handle, even though eager-loading map resolution itself matches by
+     * field ID across all providers.) Pass an explicit alias (`.eagerly('someAlias')`) in that
+     * scenario so every element shares one dedup key and only the first trigger actually runs.
+     */
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
+    {
+        $map = parent::getEagerLoadingMap($sourceElements);
+
+        // if we're not maintaining hierarchy, go with the default behavior
+        if (!$this->maintainHierarchy || !is_array($map) || empty($map['map'])) {
+            return $map;
+        }
+
+        // array keyed by the sourceId with value containing all its target IDs
+        $targetIdsBySource = [];
+        foreach ($map['map'] as $mapping) {
+            $targetIdsBySource[$mapping['source']][] = $mapping['target'];
+        }
+
+        // Fetch every referenced category in one batched query, rather than per source element
+        // (this allows us to lower the number of queries needed to complete the task)
+        $allTargetIds = array_values(array_unique(array_merge(...array_values($targetIdsBySource))));
+        /** @var Category[] $categoriesById */
+        $categoriesById = Category::find()
+            ->siteId($sourceElements[0]->siteId)
+            ->id($allTargetIds)
+            ->status(null)
+            ->indexBy('id')
+            ->all();
+
+        $structuresService = Craft::$app->getStructures();
+        $newMap = [];
+
+        // now for each source, fill the gaps and apply branch limit
+        foreach ($targetIdsBySource as $sourceId => $targetIds) {
+            $categories = array_values(array_filter(array_map(
+                fn($id) => $categoriesById[$id] ?? null,
+                $targetIds,
+            )));
 
             // Fill in any gaps
-            $structuresService = Craft::$app->getStructures();
             $structuresService->fillGapsInElements($categories);
 
             // Enforce the branch limit
@@ -122,10 +199,16 @@ class Categories extends BaseRelationField
                 $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
-            $value = array_map(fn(Category $category) => $category->id, $categories);
+            foreach ($categories as $category) {
+                $newMap[] = ['source' => $sourceId, 'target' => $category->id];
+            }
         }
 
-        return parent::normalizeValue($value, $element);
+        // update the map
+        $map['map'] = $newMap;
+
+        /** @phpstan-ignore-next-line */
+        return $map;
     }
 
     /**

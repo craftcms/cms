@@ -29,16 +29,15 @@ class NavItem_Node extends Node
      * @param Node|null $outdent
      * @param Node|null $lowerBody
      * @param int $lineno
-     * @param string|null $tag
      */
-    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno, string $tag = null)
+    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno)
     {
         parent::__construct([
             'value_target' => $valueTarget,
             'indent' => $indent,
             'outdent' => $outdent,
             'lower_body' => $lowerBody,
-        ], [], $lineno, $tag);
+        ], [], $lineno);
     }
 
     /**

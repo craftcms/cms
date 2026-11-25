@@ -451,6 +451,7 @@ class Deprecator extends Component
                 } else {
                     $strValue = '"' . $value . '"';
                 }
+                $strValue = mb_convert_encoding($strValue, 'UTF-8');
             } elseif (is_array($value)) {
                 $strValue = '[' . $this->_argsToString($value) . ']';
             } elseif ($value === null) {

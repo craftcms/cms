@@ -10,6 +10,9 @@ namespace crafttests\unit\elements;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
+use craft\elements\Asset;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\helpers\Session;
@@ -351,6 +354,67 @@ class UserElementTest extends TestCase
     {
         self::assertTrue($this->activeUser->getIsCredentialed());
         self::assertFalse($this->inactiveUser->getIsCredentialed());
+    }
+
+    /**
+     * `photo` is a magic property that resolves to `getPhoto()`. Since eager-loading the `photo`
+     * handle bypasses the generic `Element::$_eagerLoadedElements` array (see
+     * `User::setEagerLoadedElements()`), property access should always match `getPhoto()`,
+     * whether or not the photo has been eager-loaded.
+     */
+    public function testPhotoPropertyMatchesGetter(): void
+    {
+        // No photo set at all
+        $user = new User(['id' => 600]);
+        self::assertNull($user->getPhoto());
+        self::assertSame($user->getPhoto(), $user->photo);
+
+        // Photo set directly, not via eager-loading
+        $photo = new Asset(['id' => 601]);
+        $user->setPhoto($photo);
+        self::assertSame($photo, $user->getPhoto());
+        self::assertSame($user->getPhoto(), $user->photo);
+
+        // Photo eager-loaded
+        $user2 = new User(['id' => 602]);
+        $plan = new EagerLoadPlan(['handle' => 'photo']);
+        $user2->setEagerLoadedElements('photo', [$photo], $plan);
+        self::assertSame($photo, $user2->getPhoto());
+        self::assertSame($user2->getPhoto(), $user2->photo);
+
+        // No photo eager-loaded (empty result)
+        $user3 = new User(['id' => 603]);
+        $user3->setEagerLoadedElements('photo', [], $plan);
+        self::assertNull($user3->getPhoto());
+        self::assertSame($user3->getPhoto(), $user3->photo);
+    }
+
+    /**
+     * `addresses` is a magic property that resolves to `getAddresses()`. Since eager-loading the
+     * `addresses` handle bypasses the generic `Element::$_eagerLoadedElements` array (see
+     * `User::setEagerLoadedElements()`), property access should always match `getAddresses()`,
+     * whether or not the addresses have been eager-loaded.
+     */
+    public function testAddressesPropertyMatchesGetter(): void
+    {
+        // Not eager-loaded (no addresses saved for this user)
+        $user = new User(['id' => 999999]);
+        self::assertCount(0, $user->getAddresses());
+        self::assertSame($user->getAddresses(), $user->addresses);
+
+        // Addresses eager-loaded
+        $address = new Address(['id' => 9001, 'countryCode' => 'US']);
+        $user2 = new User(['id' => 500]);
+        $plan = new EagerLoadPlan(['handle' => 'addresses']);
+        $user2->setEagerLoadedElements('addresses', [$address], $plan);
+        self::assertSame([$address], $user2->getAddresses()->all());
+        self::assertSame($user2->getAddresses(), $user2->addresses);
+
+        // No addresses eager-loaded (empty result)
+        $user3 = new User(['id' => 501]);
+        $user3->setEagerLoadedElements('addresses', [], $plan);
+        self::assertCount(0, $user3->getAddresses());
+        self::assertSame($user3->getAddresses(), $user3->addresses);
     }
 
     /**

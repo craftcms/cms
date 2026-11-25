@@ -9,10 +9,14 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\Renderable;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
+use ReflectionClass;
+use Stringable;
 use Twig\Environment;
+use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\SandboxExtension;
@@ -21,6 +25,7 @@ use Twig\Source;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
@@ -68,6 +73,7 @@ class Template
      * @param string $name
      * @return bool
      * @since 4.4.0
+     * @deprecated in 5.9.15
      */
     public static function fallbackExists(string $name): bool
     {
@@ -80,6 +86,7 @@ class Template
      * @param string $name
      * @throws UnknownPropertyException if `$name` isn’t defined as a fallback variable.
      * @since 4.4.0
+     * @deprecated in 5.9.15
      */
     public static function fallback(string $name): mixed
     {
@@ -145,6 +152,11 @@ class Template
         }
 
         try {
+            // workaround for https://github.com/twigphp/Twig/issues/4701
+            if ($type !== TwigTemplate::METHOD_CALL && $item instanceof Stringable) {
+                $item = (string) $item;
+            }
+
             return CoreExtension::getAttribute(
                 $env,
                 $source,
@@ -355,10 +367,11 @@ class Template
             return false;
         }
 
+        // Only the compiled class's metadata is needed, and its constructor could load other templates, such as traits,
+        // that the current template mode can't resolve
         /** @var TwigTemplate $template */
-        $template = new $class(Craft::$app->getView()->getTwig());
-        $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: null;
+        $template = (new ReflectionClass($class))->newInstanceWithoutConstructor();
+        $templatePath = self::resolveSourcePath($template, $contents);
         $templateLine = null;
 
         if ($line !== null) {
@@ -371,6 +384,132 @@ class Template
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Returns the source path of a compiled template.
+     *
+     * When Dev Mode is disabled, compiled templates don't store their source path, and Twig asks the loader for it,
+     * which resolves the template name for the current template mode. The template may have been rendered in another
+     * mode, where the same name can resolve to a different template, so this prefers the mode whose environment
+     * compiles the template name to the same class. That class also depends on settings that can change while
+     * rendering, such as the escaping strategy, so when no mode matches it, the path is used if only one mode resolves
+     * the name.
+     *
+     * @param TwigTemplate $template
+     * @param string $compiledCode
+     * @return string|null
+     */
+    private static function resolveSourcePath(TwigTemplate $template, string $compiledCode): ?string
+    {
+        if (!str_contains($compiledCode, 'Source::createWithLazyPath(')) {
+            return $template->getSourceContext()->getPath() ?: null;
+        }
+
+        $view = Craft::$app->getView();
+        $oldTemplateMode = $view->getTemplateMode();
+        // Changing the template mode resets the templates path, which could be a custom one
+        $oldTemplatesPath = $view->getTemplatesPath();
+        $class = get_class($template);
+        $templateModes = array_unique([$oldTemplateMode, View::TEMPLATE_MODE_SITE, View::TEMPLATE_MODE_CP]);
+        $paths = [];
+
+        try {
+            foreach ($templateModes as $templateMode) {
+                $view->setTemplateMode($templateMode);
+                $twig = $view->getTwig();
+                $name = $template->getTemplateName();
+
+                try {
+                    $path = $twig->getLoader()->getSourceContext($name)->getPath();
+                    $compiledHere = $twig->getTemplateClass($name) === $class;
+                } catch (LoaderError) {
+                    continue;
+                }
+
+                if ($path === '') {
+                    continue;
+                }
+
+                if ($compiledHere) {
+                    return $path;
+                }
+
+                $paths[] = $path;
+            }
+        } finally {
+            $view->setTemplateMode($oldTemplateMode);
+            $view->setTemplatesPath($oldTemplatesPath);
+        }
+
+        // Both modes can resolve the name to the same file, such as when a plugin registers the same template root for both
+        $paths = array_unique($paths);
+
+        return count($paths) === 1 ? $paths[0] : null;
+    }
+
+    /**
+     * Renders the given renderable object(s).
+     *
+     * If an array or other iterable is passed, each of its items will be rendered and joined with newlines,
+     * and a `loop` variable will be made available to each of them, like within `{% for %}` loops. Any `loop`
+     * variable in `$context` will be replaced, but a `loop` variable in `$variables` will be left alone.
+     *
+     * @param Renderable|iterable<Renderable>|null $objects The object(s) to render
+     * @param array $variables Variables that should be passed to each object’s `render()` method
+     * @param array $context Additional variables that should be passed to each object’s `render()` method, such as
+     * the current template context. `$variables` will take precedence over them.
+     * @return Markup
+     * @throws InvalidArgumentException if any of the objects aren’t renderable
+     * @since 5.12.0
+     */
+    public static function render(Renderable|iterable|null $objects, array $variables = [], array $context = []): Markup
+    {
+        // If `loop` was explicitly passed in, leave it alone
+        $defineLoop = !array_key_exists('loop', $variables);
+        $variables = array_merge($context, $variables);
+
+        if ($objects instanceof Renderable) {
+            return $objects->render($variables);
+        }
+
+        if ($objects === null) {
+            $objects = [];
+        } elseif (is_array($objects)) {
+            $objects = array_values($objects);
+        } else {
+            $objects = iterator_to_array($objects, false);
+        }
+
+        $length = count($objects);
+        $output = [];
+
+        foreach ($objects as $i => $object) {
+            if (!$object instanceof Renderable) {
+                throw new InvalidArgumentException(sprintf('%s isn’t renderable.', get_debug_type($object)));
+            }
+
+            if (!$defineLoop) {
+                $output[] = (string)$object->render($variables);
+                continue;
+            }
+
+            // Provide a `loop` variable, like {% for %} loops
+            $output[] = (string)$object->render(array_merge($variables, [
+                'loop' => [
+                    'parent' => $variables,
+                    'index0' => $i,
+                    'index' => $i + 1,
+                    'revindex0' => $length - $i - 1,
+                    'revindex' => $length - $i,
+                    'first' => $i === 0,
+                    'last' => $i === $length - 1,
+                    'length' => $length,
+                ],
+            ]));
+        }
+
+        return new Markup(implode("\n", $output), Craft::$app->charset);
     }
 
     /**
@@ -394,14 +533,18 @@ class Template
      * @param string[] $handles
      * @since 4.4.0
      */
-    public static function preloadSingles(array $handles): void
+    public static function preloadSingles(array $handles, ?array &$context = null): void
     {
         // Ignore handles that are defined Twig globals
         $globals = Craft::$app->view->getTwig()->getGlobals();
         $handles = array_diff($handles, array_keys($globals));
 
         if (!empty($handles)) {
-            self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+            $singles = Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+            self::$_fallbacks += $singles;
+            if ($context !== null) {
+                $context += $singles;
+            }
         }
     }
 }

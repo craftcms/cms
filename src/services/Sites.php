@@ -16,6 +16,7 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
+use craft\enums\PropagationMethod;
 use craft\errors\SiteNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -26,9 +27,11 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
+use craft\models\Volume;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
@@ -197,6 +200,21 @@ class Sites extends Component
         $this->_loadAllSites();
     }
 
+    /**
+     * Forgets the cached site groups and reloads the sites.
+     *
+     * The current site is reloaded too. If it was the primary site or no longer exists, it becomes the new primary site.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $currentSiteId = $this->_currentSite?->primary ? null : $this->_currentSite?->id;
+        $this->_groups = null;
+        $this->refreshSites();
+        $this->_currentSite = $currentSiteId ? $this->getSiteById($currentSiteId, true) : null;
+    }
+
     // Groups
     // -------------------------------------------------------------------------
 
@@ -231,11 +249,28 @@ class Sites extends Component
      * Returns a site group by its ID.
      *
      * @param int $groupId The site group’s ID
+     * @param bool $withTrashed
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      */
-    public function getGroupById(int $groupId): ?SiteGroup
+    public function getGroupById(int $groupId, bool $withTrashed = false): ?SiteGroup
     {
-        return $this->_groups()->firstWhere('id', $groupId);
+        $group = $this->_groups()->firstWhere('id', $groupId);
+
+        if (!$group && $withTrashed) {
+            /** @var SiteGroupRecord|null $record */
+            $record = SiteGroupRecord::findWithTrashed()
+                ->andWhere(['id' => $groupId])
+                ->one();
+            if ($record) {
+                $group = new SiteGroup($record->toArray([
+                    'id',
+                    'name',
+                    'uid',
+                ]));
+            }
+        }
+
+        return $group;
     }
 
     /**
@@ -510,6 +545,14 @@ class Sites extends Component
         // (make sure the request component has been initialized first so we don't create an infinite loop)
         if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
             Craft::$app->language = $this->_currentSite->language;
+        }
+
+        // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
+        if (isset($this->_currentSite->handle)) {
+            $_SERVER['CRAFT_SITE'] = $this->_currentSite->handle;
+            $_SERVER['CRAFT_SITE_UPPER'] = strtoupper(StringHelper::toSnakeCase($this->_currentSite->handle));
+        } else {
+            unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         }
     }
 
@@ -855,12 +898,29 @@ class Sites extends Component
                 Tag::class,
             ];
 
+            // (skip assets in volumes with custom propagation, as they only get saved to the sites they're assigned to)
+            $customVolumeIds = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+                ->filter(fn(Volume $volume) => $volume->propagationMethod === PropagationMethod::Custom)
+                ->map(fn(Volume $volume) => $volume->id)
+                ->values()
+                ->all();
+
             foreach ($elementTypes as $elementType) {
+                $criteria = [
+                    'siteId' => $oldPrimarySiteId,
+                ];
+
+                if ($elementType === Asset::class && !empty($customVolumeIds)) {
+                    $criteria['where'] = [
+                        'or',
+                        ['assets.volumeId' => null],
+                        ['not', ['assets.volumeId' => $customVolumeIds]],
+                    ];
+                }
+
                 Queue::push(new PropagateElements([
                     'elementType' => $elementType,
-                    'criteria' => [
-                        'siteId' => $oldPrimarySiteId,
-                    ],
+                    'criteria' => $criteria,
                     'siteId' => $site->id,
                     'isNewSite' => true,
                 ]));
@@ -1198,7 +1258,6 @@ class Sites extends Component
             ->from(['s' => Table::SITES])
             ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
             ->where(['s.dateDeleted' => null])
-            ->andWhere(['sg.dateDeleted' => null])
             ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC, 's.id' => SORT_ASC])
             ->all();
 
@@ -1269,7 +1328,7 @@ class Sites extends Component
             $request = Craft::$app->getRequest();
             $withDisabled = (
                 $request->getIsConsoleRequest() ||
-                ($request->getIsCpRequest() && !Craft::$app->getUser()->getIsGuest())
+                ($request->getIsCpRequest() && Session::has(Craft::$app->getUser()->idParam))
             );
         }
 

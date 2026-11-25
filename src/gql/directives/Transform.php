@@ -102,8 +102,8 @@ class Transform extends Directive
                 case 'mimeType':
                     return $source->getMimeType($transform);
                 case 'url':
-                    $generateNow = $arguments['immediately'] ?? $generalConfig->generateTransformsBeforePageLoad;
-                    return $source->getUrl($transform, $generateNow);
+                    $immediately = $arguments['immediately'] ?? null;
+                    return $source->getUrl($transform, $immediately);
                 case 'width':
                     return $source->getWidth($transform);
             }

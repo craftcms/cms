@@ -61,7 +61,7 @@ class MoveDown extends ElementAction
     activate: async (selectedItems, elementIndex) => {
       const selectedItemIndex = Object.values(elementIndex.view.getAllElements()).indexOf(selectedItems[0]);
       const offset = selectedItemIndex + 1;
-      await elementIndex.settings.onBeforeReorderElements(selectedItems, offset);
+      await elementIndex.onBeforeReorderElements(selectedItems, offset);
       
       const data = Object.assign($params, {
         elementIds: elementIndex.getSelectedElementIds(),
@@ -83,7 +83,7 @@ class MoveDown extends ElementAction
       }
       
       Craft.cp.displayNotice(response.data.message);
-      await elementIndex.settings.onReorderElements(selectedItems, offset);
+      await elementIndex.onReorderElements(selectedItems, offset);
       elementIndex.updateElements(true, true);
     },
   });

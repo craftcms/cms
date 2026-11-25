@@ -25,6 +25,8 @@ export default Base.extend(
     mouseDistY: null,
     mouseOffsetX: null,
     mouseOffsetY: null,
+    scrollDeltaX: null,
+    scrollDeltaY: null,
 
     $targetItem: null,
 
@@ -72,7 +74,6 @@ export default Base.extend(
     startDragging: function () {
       this.onBeforeDragStart();
       this.dragging = true;
-      this.setScrollContainer();
       this.onDragStart();
 
       // Mute activate events
@@ -80,6 +81,11 @@ export default Base.extend(
     },
 
     setScrollContainer: function () {
+      // Account for any scrolling that happened in the previous container
+      if (this._.$scrollContainer) {
+        this._updateScrollDelta();
+      }
+
       this._.$scrollContainer = this.$targetItem.scrollParent();
 
       while (true) {
@@ -107,6 +113,9 @@ export default Base.extend(
 
         this._.$scrollContainer = this._.$scrollContainer.scrollParent();
       }
+
+      this._.lastScrollLeft = this._.$scrollContainer.scrollLeft();
+      this._.lastScrollTop = this._.$scrollContainer.scrollTop();
     },
 
     isScrollingWindow: function () {
@@ -413,17 +422,34 @@ export default Base.extend(
       this.$targetItem = $(item);
 
       // Capture the current mouse position
-      this.mousedownX = this.mouseX = ev.pageX;
-      this.mousedownY = this.mouseY = ev.pageY;
+      this.mousedownX = this.mouseX = this.realMouseX = ev.pageX;
+      this.mousedownY = this.mouseY = this.realMouseY = ev.pageY;
+      this.mouseDistX = this.mouseDistY = 0;
+      this._.clientX = ev.clientX;
+      this._.clientY = ev.clientY;
+
+      // Find the scroll container, so we can factor its scroll position into the mouse distance
+      this.scrollDeltaX = this.scrollDeltaY = 0;
+      this._.$scrollContainer = null;
+      this.setScrollContainer();
 
       // Capture the difference between the mouse position and the target item's offset
       var offset = this.$targetItem.offset();
       this.mouseOffsetX = ev.pageX - offset.left;
       this.mouseOffsetY = ev.pageY - offset.top;
 
-      // Listen for mousemove, mouseup
+      // Listen for mousemove, mouseup, scroll
       this.addListener(Garnish.$doc, 'mousemove', '_handleMouseMove');
       this.addListener(Garnish.$doc, 'mouseup', '_handleMouseUp');
+
+      // (scroll events don't bubble, so listen for them in the capture phase)
+      if (!this._handleScrollProxy) {
+        this._handleScrollProxy = this._handleScroll.bind(this);
+      }
+      document.addEventListener('scroll', this._handleScrollProxy, {
+        capture: true,
+        passive: true,
+      });
     },
 
     _getItemHandle: function (item) {
@@ -455,27 +481,17 @@ export default Base.extend(
     _handleMouseMove: function (ev) {
       ev.preventDefault();
 
-      this.realMouseX = ev.pageX;
-      this.realMouseY = ev.pageY;
-
-      if (this.settings.axis !== Garnish.Y_AXIS) {
-        this.mouseX = ev.pageX;
-      }
-
-      if (this.settings.axis !== Garnish.X_AXIS) {
-        this.mouseY = ev.pageY;
-      }
-
-      this.mouseDistX = this.mouseX - this.mousedownX;
-      this.mouseDistY = this.mouseY - this.mousedownY;
+      this._.clientX = ev.clientX;
+      this._.clientY = ev.clientY;
+      this._updateMousePosition();
 
       if (!this.dragging) {
         // Has the mouse moved far enough to initiate dragging yet?
         this._handleMouseMove._mouseDist = Garnish.getDist(
           this.mousedownX,
           this.mousedownY,
-          this.realMouseX,
-          this.realMouseY
+          this.realMouseX + this.scrollDeltaX,
+          this.realMouseY + this.scrollDeltaY
         );
 
         if (
@@ -497,6 +513,9 @@ export default Base.extend(
     _handleMouseUp: function (ev) {
       // Unbind the document events
       this.removeAllListeners(Garnish.$doc);
+      document.removeEventListener('scroll', this._handleScrollProxy, {
+        capture: true,
+      });
 
       if (this.dragging) {
         this.stopDragging();
@@ -528,18 +547,75 @@ export default Base.extend(
         }
       }
       this._.$scrollContainer[this.scrollProperty](this._.scrollTargetPos);
-
-      if (this.isScrollingWindow()) {
-        this['mouse' + this.scrollAxis] -=
-          this._.scrollPos - Garnish.$win[this.scrollProperty]();
-        this['realMouse' + this.scrollAxis] = this['mouse' + this.scrollAxis];
-      }
+      this._updateMousePosition();
 
       this.scrollFrame = Garnish.requestAnimationFrame(() => {
         this._scrollWindow();
       });
 
       this.drag(true);
+    },
+
+    /**
+     * Handle Scroll
+     */
+    _handleScroll: function () {
+      // If we're auto-scrolling, _scrollWindow() will take care of this
+      if (this.scrollFrame) {
+        return;
+      }
+
+      this._updateMousePosition();
+
+      if (this.dragging) {
+        this.drag(true);
+      }
+    },
+
+    /**
+     * Updates the mouse position and distance, factoring in the current window and scroll container scroll positions.
+     */
+    _updateMousePosition: function () {
+      this.realMouseX = this._.clientX + Garnish.$win.scrollLeft();
+      this.realMouseY = this._.clientY + Garnish.$win.scrollTop();
+
+      if (this.settings.axis !== Garnish.Y_AXIS) {
+        this.mouseX = this.realMouseX;
+      }
+
+      if (this.settings.axis !== Garnish.X_AXIS) {
+        this.mouseY = this.realMouseY;
+      }
+
+      this._updateScrollDelta();
+
+      this.mouseDistX = this.mouseX - this.mousedownX + this.scrollDeltaX;
+      this.mouseDistY = this.mouseY - this.mousedownY + this.scrollDeltaY;
+    },
+
+    /**
+     * Updates the scroll container's scroll delta since the mousedown event.
+     *
+     * (Window scrolling is already accounted for by the page-relative mouse coordinates.)
+     */
+    _updateScrollDelta: function () {
+      if (!this._.$scrollContainer || this.isScrollingWindow()) {
+        return;
+      }
+
+      const scrollLeft = this._.$scrollContainer.scrollLeft();
+      const scrollTop = this._.$scrollContainer.scrollTop();
+
+      if (this.settings.axis !== Garnish.Y_AXIS) {
+        this.scrollDeltaX += scrollLeft - this._.lastScrollLeft;
+      }
+
+      if (this.settings.axis !== Garnish.X_AXIS) {
+        this.scrollDeltaY += scrollTop - this._.lastScrollTop;
+      }
+
+      this._.lastScrollLeft = scrollLeft;
+      this._.lastScrollTop = scrollTop;
     },
 
     /**

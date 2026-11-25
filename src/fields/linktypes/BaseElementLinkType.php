@@ -158,6 +158,10 @@ JS, [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
+                'modalSettings' => [
+                    'matchSiteBeforeDisablingElement' => true,
+                    'siteId' => Cp::requestedSite()?->id,
+                ],
             ])) .
             Html::hiddenInput('value', $value);
     }

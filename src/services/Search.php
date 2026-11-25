@@ -31,6 +31,7 @@ use craft\search\SearchQueryTermGroup;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
 use yii\db\Schema;
@@ -188,10 +189,12 @@ class Search extends Component
         }
         Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
+        $rows = [];
+
         // Update the element attributes' keywords
         foreach (ElementHelper::searchableAttributes($element) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
-            $this->_indexKeywords($element, $value, attribute: $attribute);
+            $rows[] = $this->_keywordsRow($element, $value, attribute: $attribute);
         }
 
         // Update the custom fields' keywords
@@ -203,11 +206,19 @@ class Search extends Component
             }
         }
         foreach ($keywords as $fieldId => $instanceKeywords) {
-            $this->_indexKeywords($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
+            $rows[] = $this->_keywordsRow($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
         }
+
+        // Save 'em
+        $this->_insertKeywordsRows(array_filter($rows));
 
         // Release the lock
         $mutex->release($lockKey);
+
+        // Invalidate search query caches for this element type
+        TagDependency::invalidate(Craft::$app->getCache(), [
+            sprintf('element-search-query::%s', get_class($element)),
+        ]);
 
         return true;
     }
@@ -308,22 +319,9 @@ class Search extends Component
         }
 
         try {
-            for ($try = 0; $try < 3; $try++) {
-                try {
-                    if (!Db::update(Table::SEARCHINDEXQUEUE, ['reserved' => true], ['id' => $jobId])) {
-                        // another process must be handling the same job
-                        return;
-                    }
-                    break;
-                } catch (DbException $e) {
-                    if (str_contains($e->getPrevious()?->getMessage(), 'deadlock')) {
-                        // A gap lock was probably hit. Try again in one second
-                        // https://github.com/craftcms/cms/issues/17318
-                        sleep(1);
-                    } else {
-                        throw $e;
-                    }
-                }
+            if (!Db::update(Table::SEARCHINDEXQUEUE, ['reserved' => true], ['id' => $jobId])) {
+                // another process must be handling the same job
+                return;
             }
         } finally {
             $mutex->release($lockName);
@@ -438,7 +436,8 @@ class Search extends Component
             ->cache(true, new ElementQueryTagDependency($elementQuery, [
                 'tags' => [
                     'element-index-query',
-                    sprintf('element-index-query::%s', $elementQuery->elementType),
+                    "element-index-query::$elementQuery->elementType",
+                    "element-search-query::$elementQuery->elementType",
                 ],
             ]))
             ->all();
@@ -587,20 +586,20 @@ class Search extends Component
     {
         $db = Craft::$app->getDb();
         $searchIndexTable = Table::SEARCHINDEX;
-        $elementsTable = Table::ELEMENTS;
+        $elementsSitesTable = Table::ELEMENTS_SITES;
 
         if ($db->getIsMysql()) {
             $sql = <<<SQL
 DELETE s.* FROM $searchIndexTable s
-LEFT JOIN $elementsTable e ON e.id = s.elementId
-WHERE e.id IS NULL
+LEFT JOIN $elementsSitesTable es ON es.elementId = s.elementId AND es.siteId = s.siteId
+WHERE es.elementId IS NULL
 SQL;
         } else {
             $sql = <<<SQL
 DELETE FROM $searchIndexTable s
 WHERE NOT EXISTS (
-    SELECT * FROM $elementsTable
-    WHERE id = s."elementId"
+    SELECT * FROM $elementsSitesTable
+    WHERE "elementId" = s."elementId" AND "siteId" = s."siteId"
 )
 SQL;
         }
@@ -608,14 +607,44 @@ SQL;
     }
 
     /**
-     * Indexes keywords for a specific element attribute/field.
+     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     *
+     * @since 5.9.0
+     */
+    public function deleteOrphanedIndexJobs(): void
+    {
+        $db = Craft::$app->getDb();
+        $searchIndexQueueTable = Table::SEARCHINDEXQUEUE;
+        $elementsSitesTable = Table::ELEMENTS_SITES;
+
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE q.* FROM $searchIndexQueueTable q
+LEFT JOIN $elementsSitesTable es ON es.elementId = q.elementId AND es.siteId = q.siteId
+WHERE es.elementId IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $searchIndexQueueTable q
+WHERE NOT EXISTS (
+    SELECT * FROM $elementsSitesTable
+    WHERE "elementId" = q."elementId" AND "siteId" = q."siteId"
+)
+SQL;
+        }
+        $db->createCommand($sql)->execute();
+    }
+
+    /**
+     * Returns the `searchindex` row data for a specific element attribute/field’s keywords.
      *
      * @param ElementInterface $element
      * @param string $keywords
      * @param string|null $attribute
      * @param int|null $fieldId
+     * @return array|null The row data, or `null` if a `beforeIndexKeywords` event handler cancelled it
      */
-    private function _indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): void
+    private function _keywordsRow(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): ?array
     {
         if ($attribute !== null) {
             $attribute = strtolower($attribute);
@@ -636,13 +665,12 @@ SQL;
             $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
 
             if (!$event->isValid) {
-                return;
+                return null;
             }
 
             $keywords = $event->keywords;
         }
 
-        // Save 'em
         $columns = [
             'elementId' => $element->id,
             'attribute' => $attribute ?? 'field',
@@ -672,10 +700,47 @@ SQL;
             $columns['keywords_vector'] = $keywords;
         }
 
-        // Insert/update the row in searchindex
+        return $columns;
+    }
+
+    /**
+     * Inserts rows into the `searchindex` table, in as few queries as possible.
+     *
+     * @param array[] $rows The row data, as returned by [[_keywordsRow()]]
+     */
+    private function _insertKeywordsRows(array $rows): void
+    {
+        // Keep each query well below max_allowed_packet
+        $batch = [];
+        $batchSize = 0;
+
+        foreach ($rows as $row) {
+            $rowSize = strlen($row['keywords']);
+            if ($batch && $batchSize + $rowSize > 1024 * 1024) {
+                $this->_insertKeywordsBatch($batch);
+                $batch = [];
+                $batchSize = 0;
+            }
+            $batch[] = $row;
+            $batchSize += $rowSize;
+        }
+
+        if ($batch) {
+            $this->_insertKeywordsBatch($batch);
+        }
+    }
+
+    /**
+     * @param array[] $rows
+     */
+    private function _insertKeywordsBatch(array $rows): void
+    {
+        $columns = array_keys($rows[0]);
+        $values = array_map(fn(array $row) => array_values($row), $rows);
+
         for ($try = 0; $try < 3; $try++) {
             try {
-                Db::insert(Table::SEARCHINDEX, $columns);
+                Db::batchInsert(Table::SEARCHINDEX, $columns, $values);
                 return;
             } catch (DbException $e) {
                 if (str_contains($e->getPrevious()?->getMessage(), 'deadlock')) {
@@ -1044,9 +1109,11 @@ SQL;
      */
     private function _sqlWhere(string $key, string $oper, string|int $val): string
     {
-        $key = Craft::$app->getDb()->quoteColumnName($key);
+        $db = Craft::$app->getDb();
+        $key = $db->quoteColumnName($key);
+        $val = $db->quoteValue($val);
 
-        return sprintf("(%s %s '%s')", $key, $oper, $val);
+        return "($key $oper $val)";
     }
 
     /**

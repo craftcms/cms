@@ -107,7 +107,6 @@ export default BaseDrag.extend(
       );
 
       this.dragging = true;
-      this.setScrollContainer();
       this.onDragStart();
 
       // Mute activate events
@@ -270,6 +269,20 @@ export default BaseDrag.extend(
           callback
         );
       }
+    },
+
+    /**
+     * Fade out helpers
+     */
+    fadeOutHelpers: function () {
+      this.helpers.forEach(($draggeeHelper) => {
+        $draggeeHelper.velocity('fadeOut', {
+          duration: Garnish.FX_DURATION,
+          complete: function () {
+            $draggeeHelper.remove();
+          },
+        });
+      });
     },
 
     // Events

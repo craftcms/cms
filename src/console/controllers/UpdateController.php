@@ -216,8 +216,26 @@ class UpdateController extends Controller
         }
 
         $this->stdout('Updating license info ... ');
-        Craft::$app->getUpdates()->getUpdates(true);
-        $this->stdout("done\n", Console::FG_GREEN);
+
+        try {
+            Craft::$app->getCache()->delete(Craft::$app->getUpdates()->cacheKey);
+
+            // Use a fresh process so Craftnet receives the installed versions.
+            $php = App::phpExecutable() ?? 'php';
+            $script = $this->request->getScriptFile();
+            $process = new Process([$php, $script, 'update/info', '--interactive=0']);
+            $process->setTimeout(null);
+            $process->mustRun();
+
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        } catch (Throwable $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            $this->stdout('failed' . PHP_EOL, Console::FG_YELLOW);
+            $this->stderr(
+                'Run `' . App::craftCommand('update/info') . '` to retry the license refresh.' . PHP_EOL,
+                Console::FG_YELLOW,
+            );
+        }
 
         $this->stdout('Update complete!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
@@ -257,6 +275,11 @@ class UpdateController extends Controller
      */
     private function _allowUpdates(): bool
     {
+        if (($reason = Craft::$app->getComposer()->getUnavailableReason()) !== null) {
+            $this->stderr($reason . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->allowUpdates && !$this->force) {
             if (!$this->interactive) {
@@ -442,7 +465,7 @@ class UpdateController extends Controller
             return;
         }
 
-        $requirements[$update->packageName] = $to;
+        $requirements[$update->packageName] = "^$to";
         $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status, $update->phpConstraint];
 
         // Has the package name changed?

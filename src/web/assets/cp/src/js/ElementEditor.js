@@ -29,6 +29,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     siteIds: null,
     newSiteIds: null,
+    sitesPaneOnly: false,
 
     enableAutosave: null,
     lastSerializedValue: null,
@@ -57,6 +58,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
     activityTooltips: null,
+    _checkActivityTimeout: null,
 
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
@@ -142,6 +144,40 @@ Craft.ElementEditor = Garnish.Base.extend(
       }).appendTo($spinnerContainer);
 
       this.$expandSiteStatusesBtn = this.$container.find('.expand-status-btn');
+
+      // Elements may have a Sites pane in place of the Status pane, which lists their sites,
+      // lets authors add them to other sites, and may include status toggles for each site
+      const $sitesPane = this.$container.find('.element-sites-pane');
+
+      // If the element is saved to multiple sites, they'll be within a disclosure
+      const $sitesToggle = $sitesPane.find('.element-sites-toggle');
+      if ($sitesToggle.length) {
+        this.addListener($sitesToggle, 'click', () => {
+          const expanded = $sitesToggle.attr('aria-expanded') === 'true';
+          $sitesToggle.attr('aria-expanded', expanded ? 'false' : 'true');
+          $sitesToggle
+            .attr('aria-controls')
+            .split(' ')
+            .forEach((id) => {
+              $(document.getElementById(id)).toggleClass('hidden', expanded);
+            });
+        });
+      }
+      if ($sitesPane.length && this.settings.additionalSites?.length) {
+        this.$siteStatusPane = $sitesPane;
+        this.sitesPaneOnly = true;
+        this._createAddlSiteField();
+      }
+
+      // Within slideouts, switch the slideout to the clicked site
+      if ($sitesPane.length && this.slideout) {
+        $sitesPane.on('click', 'a[data-site-id]', (ev) => {
+          ev.preventDefault();
+          this.slideout.switchSite(
+            parseInt($(ev.currentTarget).data('site-id'))
+          );
+        });
+      }
 
       if (this.settings.canEditMultipleSites) {
         this.addListener(
@@ -239,17 +275,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       // handle closing tips
       this.handleDismissibleTips();
 
-      if (this.isFullPage && Craft.messageReceiver) {
+      if (Craft.messageReceiver) {
         // Listen on Craft.broadcaster to ignore any messages sent by this very page
         Craft.broadcaster.addEventListener('message', (ev) => {
           if (
-            (ev.data.event === 'saveDraft' &&
+            (['saveDraft', 'reorderNestedElements'].includes(ev.data.event) &&
               ev.data.canonicalId === this.settings.canonicalId &&
               (ev.data.draftId === this.settings.draftId ||
                 (ev.data.isProvisionalDraft && !this.settings.draftId))) ||
             (ev.data.event === 'saveElement' &&
               ev.data.id === this.settings.canonicalId &&
-              !this.settings.draftId)
+              (!this.settings.draftId || this.settings.isProvisionalDraft))
           ) {
             // Reload unless reloadOnBroadcastSave is disabled (unless the
             // draftId is different, in which case we really need to reload)
@@ -257,29 +293,43 @@ Craft.ElementEditor = Garnish.Base.extend(
               this.settings.reloadOnBroadcastSave ||
               ev.data.draftId !== this.settings.draftId
             ) {
-              Craft.setUrl(
-                Craft.getUrl(document.location.href, {
-                  scrollY: window.scrollY,
-                })
-              );
-              window.location.reload();
+              if (this.isFullPage) {
+                Craft.setUrl(
+                  Craft.getUrl(document.location.href, {
+                    scrollY: window.scrollY,
+                  })
+                );
+                window.location.reload();
+              } else if (this.slideout) {
+                this.queue?.push(async () => {
+                  this.slideout.reload();
+                });
+              }
             }
           } else if (
             ev.data.event === 'deleteDraft' &&
             ev.data.canonicalId === this.settings.canonicalId &&
             ev.data.draftId === this.settings.draftId
           ) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('draftId');
-            if (url.href !== document.location.href) {
-              window.location.href = url;
-            } else {
-              Craft.setUrl(
-                Craft.getUrl(document.location.href, {
-                  scrollY: window.scrollY,
-                })
-              );
-              window.location.reload();
+            if (this.isFullPage) {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('draftId');
+              if (url.href !== document.location.href) {
+                window.location.href = url;
+              } else {
+                Craft.setUrl(
+                  Craft.getUrl(document.location.href, {
+                    scrollY: window.scrollY,
+                  })
+                );
+                window.location.reload();
+              }
+            } else if (this.slideout) {
+              this.queue?.push(async () => {
+                this.slideout.settings.elementId = ev.data.id;
+                this.slideout.settings.draftId = false;
+                this.slideout.reload();
+              });
             }
           }
         });
@@ -439,7 +489,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             Craft.t('app', 'Are you sure you want to discard your changes?')
           )
         ) {
-          this.queue.unshift(
+          this.queue?.unshift(
             () =>
               new Promise((resolve, reject) => {
                 if (this.isFullPage) {
@@ -470,8 +520,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                       // Broadcast a saveMessage event, in case any chips/cards should be
                       // updated to stop showing the provisional changes
                       Craft.broadcaster.postMessage({
-                        event: 'saveElement',
-                        id: this.settings.canonicalId,
+                        event: 'deleteDraft',
+                        canonicalId: this.settings.canonicalId,
+                        draftId: this.settings.draftId,
                       });
 
                       this.slideout?.close();
@@ -590,8 +641,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Are there additional sites that can be added?
       if (
         this.settings.additionalSites &&
-        this.settings.additionalSites.length &&
-        this.isFullPage
+        this.settings.additionalSites.length
       ) {
         this._createAddlSiteField();
       }
@@ -802,6 +852,158 @@ Craft.ElementEditor = Garnish.Base.extend(
       return $field;
     },
 
+    _createSiteField: function (site) {
+      const nameId = `site-name-${Math.floor(Math.random() * 1000000000)}`;
+      const $field = $('<div/>', {
+        class: `field element-site-field site-${site.id}-field`,
+      }).append(
+        $('<div/>', {class: 'heading'}).append(
+          $('<label/>').append($('<span/>', {id: nameId, text: site.name}))
+        )
+      );
+
+      const name = this.namespaceInputName(`enabledForSite[${site.id}]`);
+
+      // Include a status toggle if the pane has them, and the element will be autosaved to the new site
+      if (
+        Garnish.hasAttr(this.$siteStatusPane, 'data-statuses') &&
+        this._autosavesDrafts()
+      ) {
+        const addlSiteInfo = this.settings.additionalSites.find(
+          (s) => s.siteId == site.id
+        );
+        $('<div/>', {class: 'input'})
+          .append(
+            Craft.ui.createLightswitch({
+              name,
+              on: addlSiteInfo?.enabledByDefault ?? true,
+              labelId: nameId,
+              small: true,
+            })
+          )
+          .appendTo($field);
+        $field.addClass('lightswitch-field');
+      } else {
+        $('<input/>', {type: 'hidden', name, value: '1'}).appendTo($field);
+      }
+
+      if (this.$additionalSiteField) {
+        $field.insertBefore(this.$additionalSiteField);
+      } else {
+        $field.appendTo(this.$siteStatusPane);
+      }
+
+      if (!this._autosavesDrafts()) {
+        this._createRemoveSiteBtn($field, site);
+      }
+
+      this._showField($field);
+
+      return $field;
+    },
+
+    _autosavesDrafts: function () {
+      return !!(this.settings.canCreateDrafts && this.enableAutosave);
+    },
+
+    _siteEditUrl: function (site) {
+      if (!this.settings.cpEditUrl) {
+        return null;
+      }
+
+      const url = new URL(this.settings.cpEditUrl, window.location.href);
+      url.searchParams.set('site', site.handle);
+      return url.toString();
+    },
+
+    _linkSiteName: function ($field, site) {
+      const url = this._siteEditUrl(site);
+      if (!url || site.id == this.settings.siteId) {
+        return;
+      }
+
+      const $label = $field.children('.heading').children('label').first();
+      const $nameContainer = $label.children('span[id]').first();
+      const $name = ($nameContainer.length ? $nameContainer : $label)
+        .contents()
+        .filter(
+          (i, node) =>
+            node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== ''
+        )
+        .first();
+
+      if ($name.length) {
+        $name.replaceWith(
+          $('<a/>', {href: url, text: site.name, 'data-site-id': site.id})
+        );
+      }
+    },
+
+    _createRemoveSiteBtn: function ($field, site, saved = false) {
+      const $btn = $('<button/>', {
+        type: 'button',
+        class: 'clear-btn remove-site-btn',
+        title: Craft.t('app', 'Remove'),
+        'aria-label': Craft.t('app', 'Remove {label}', {label: site.name}),
+      }).appendTo($field.children('.heading'));
+
+      this.addListener($btn, 'click', () => {
+        if (saved) {
+          this._deleteNewSite($field, site, $btn);
+        } else {
+          this._removeNewSite($field, site);
+        }
+      });
+    },
+
+    _deleteNewSite: async function ($field, site, $btn) {
+      $btn.prop('disabled', true);
+
+      try {
+        // Make sure any pending changes have been saved first
+        await this.checkForm();
+
+        const data = {
+          elementId: this.settings.canonicalId,
+          siteId: site.id,
+        };
+        if (this.settings.draftId && !this.settings.isProvisionalDraft) {
+          data.draftId = this.settings.draftId;
+        }
+        await Craft.sendActionRequest('POST', 'elements/delete-for-site', {
+          data,
+        });
+      } catch (e) {
+        $btn.prop('disabled', false);
+        Craft.cp.displayError(e?.response?.data?.message);
+        return;
+      }
+
+      Craft.cp.hideSiteCrumbMenuItem(site.id);
+      this._removeNewSite($field, site);
+    },
+
+    _removeNewSite: function ($field, site) {
+      // Remove the inputs right away so the form is no longer considered modified
+      $field.find('input').remove();
+      this._removeField($field);
+
+      this.siteIds = this.siteIds.filter((id) => id != site.id);
+      if (this.newSiteIds) {
+        this.newSiteIds = this.newSiteIds.filter((id) => id != site.id);
+        if (!this.newSiteIds.length) {
+          this.newSiteIds = null;
+        }
+      }
+
+      // Recreate the “Add a site…” field, so the site can be selected again
+      if (this.$additionalSiteField) {
+        this.$additionalSiteField.remove();
+        this.$additionalSiteField = null;
+      }
+      this._createAddlSiteField();
+    },
+
     _createAddlSiteField: function () {
       const additionalSites = Craft.sites.filter((site) => {
         return (
@@ -839,6 +1041,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         .addClass('nested add')
         .appendTo(this.$siteStatusPane);
 
+      if (this.sitesPaneOnly) {
+        this.$additionalSiteField.addClass('add-site-field');
+      }
+
       $addlSiteSelectLabel.prependTo(this.$additionalSiteField);
 
       const $addlSiteSelect = $addlSiteSelectContainer.find('select');
@@ -851,11 +1057,15 @@ Craft.ElementEditor = Garnish.Base.extend(
           return;
         }
 
-        const addlSiteInfo = this.settings.additionalSites.find(
-          (s) => s.siteId == site.id
-        );
-        this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
-        this._updateGlobalStatus();
+        if (this.sitesPaneOnly) {
+          this._createSiteField(site);
+        } else {
+          const addlSiteInfo = this.settings.additionalSites.find(
+            (s) => s.siteId == site.id
+          );
+          this._createSiteStatusField(site, addlSiteInfo.enabledByDefault);
+          this._updateGlobalStatus();
+        }
 
         $addlSiteSelect.val('').find(`option[value="${siteId}"]`).remove();
 
@@ -869,6 +1079,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         // Was that the last site?
         if ($addlSiteSelect.find('option').length === 1) {
           this._removeField(this.$additionalSiteField);
+          if (this.sitesPaneOnly) {
+            this.$additionalSiteField = null;
+          }
         }
       });
 
@@ -976,9 +1189,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       this.addListener($a, 'click', () => {
-        setTimeout(() => {
-          this.activatePreviewToken();
-        }, 1);
+        if (
+          decodeURIComponent($a.attr('href')).match(/\bpreview\/create-token\b/)
+        ) {
+          setTimeout(() => {
+            this.activatePreviewToken();
+          }, 1);
+        }
       });
 
       this.previewLinks.push($a);
@@ -1002,11 +1219,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     activatePreviewToken: function () {
-      if (this.settings.isLive) {
-        // don't do anything yet, but leave the event in case we need it later
-        return;
-      }
-
       this.activatedPreviewToken = true;
       this.updatePreviewLinks();
     },
@@ -1036,7 +1248,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         canonicalId: this.settings.canonicalId,
         siteId: this.settings.siteId,
         revisionId: this.settings.revisionId,
-        previewToken: this.settings.previewToken,
+        previewToken: this.settings.hashedPreviewToken,
       };
 
       if (this.settings.draftId && !this.settings.isProvisionalDraft) {
@@ -1074,11 +1286,11 @@ Craft.ElementEditor = Garnish.Base.extend(
      */
     getTokenizedPreviewUrl: function (url, previewParam, asPromise = true) {
       const params = {};
-
-      if (
+      const withPreviewParam =
         this.settings.previewParamValue &&
-        (previewParam || !this.settings.isLive)
-      ) {
+        (previewParam || !this.settings.isLive);
+
+      if (withPreviewParam) {
         // Randomize the URL so CDNs don't return cached pages
         params[previewParam || 'x-craft-preview'] =
           this.settings.previewParamValue;
@@ -1088,8 +1300,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         params[Craft.siteToken] = this.settings.siteToken;
       }
 
-      // No need for a token if we're looking at a live element
-      if (this.settings.isLive) {
+      if (!withPreviewParam) {
         const previewUrl = Craft.getUrl(url, params);
 
         if (asPromise) {
@@ -1101,7 +1312,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return previewUrl;
       }
 
-      if (!this.settings.previewToken) {
+      if (!this.settings.previewToken || !this.settings.hashedPreviewToken) {
         throw 'Missing preview token';
       }
 
@@ -1309,42 +1520,12 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     checkForm: function (force, saveDraft = null) {
-      return this.queue.push(
+      return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
-            // If this is a revision, there's nothing to check
-            if (this.settings.revisionId) {
+            // If this is a revision or the user can't save the element, there's nothing to check
+            if (this.settings.revisionId || !this.settings.canSave) {
               resolve();
-              return;
-            }
-
-            // If we're already saving a draft, try again later
-            if (this.savingDraft) {
-              this.saveDraftCallbacks.push(async () => {
-                try {
-                  await this.checkForm(force, saveDraft);
-                } catch (e) {
-                  reject(e);
-                  return;
-                }
-                resolve();
-              });
-            }
-
-            // If we haven't had a chance to fetch the initial data yet, try again in a bit
-            if (
-              typeof this.$container.data('initialSerializedValue') ===
-              'undefined'
-            ) {
-              setTimeout(async () => {
-                try {
-                  await this.checkForm(force, saveDraft);
-                } catch (e) {
-                  reject(e);
-                  return;
-                }
-                resolve();
-              }, 500);
               return;
             }
 
@@ -1387,7 +1568,8 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise<void>}
      */
     async refreshContent(params) {
-      this.settings.visibleLayoutElements = [];
+      this.settings.visibleLayoutElements = {};
+      this.settings.staticLayoutElements = {};
       const data = [this.serializeForm(true)];
       data.push(
         $.param({
@@ -1408,7 +1590,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     saveDraft: function () {
-      return this.queue.push(
+      return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             this._saveDraftInternal(this.serializeForm(true))
@@ -1479,6 +1661,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         $.param({
           [this.namespaceInputName('visibleLayoutElements')]:
             this.settings.visibleLayoutElements,
+        }),
+        $.param({
+          [this.namespaceInputName('staticLayoutElements')]:
+            this.settings.staticLayoutElements,
         })
       );
 
@@ -1654,6 +1840,23 @@ Craft.ElementEditor = Garnish.Base.extend(
             siteId,
             enabled ? 'enabled' : 'disabled'
           );
+
+          // Now that the element exists in the site, link to it
+          const site = Craft.sites.find((s) => s.id == siteId);
+          const $field = this.sitesPaneOnly
+            ? this.$siteStatusPane.children(`.site-${siteId}-field`)
+            : null;
+          if (site && $field?.length) {
+            this._linkSiteName($field, site);
+
+            // Let the user remove the element from the site again
+            if (
+              response.data.canDeleteForSite &&
+              !$field.find('.remove-site-btn').length
+            ) {
+              this._createRemoveSiteBtn($field, site, true);
+            }
+          }
         });
         this.newSiteIds = null;
       }
@@ -1756,6 +1959,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       const extraData = {
         [this.namespaceInputName('visibleLayoutElements')]:
           this.settings.visibleLayoutElements,
+        [this.namespaceInputName('staticLayoutElements')]:
+          this.settings.staticLayoutElements,
       };
 
       // Are we editing a provisional draft?
@@ -1797,7 +2002,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.httpError = e.response.data ? e.response.data.message : null;
           }
           this._showFailStatus();
-          reject(e);
+          throw e;
         }
       }
 
@@ -1917,6 +2122,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Update the visible elements
       let $allTabContainers = $();
       const visibleLayoutElements = {};
+      const staticLayoutElements = {};
       let changedElements = false;
 
       for (const tabInfo of response.data.missingElements) {
@@ -1945,6 +2151,13 @@ Craft.ElementEditor = Garnish.Base.extend(
               visibleLayoutElements[tabInfo.uid] = [];
             }
             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (elementInfo.static) {
+              if (!staticLayoutElements[tabInfo.uid]) {
+                staticLayoutElements[tabInfo.uid] = [];
+              }
+              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
+            }
 
             if (typeof elementInfo.html === 'string') {
               const $oldElement = $tabContainer.children(
@@ -2002,6 +2215,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.settings.visibleLayoutElements = visibleLayoutElements;
+      this.settings.staticLayoutElements = staticLayoutElements;
 
       // Update the tabs
       const updateTabs =
@@ -2299,7 +2513,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hideTip: function (ev) {
       const targetElement = ev.target;
       if (targetElement) {
-        const $targetParent = $(targetElement).closest('.readable');
+        const $targetParent = $(targetElement).closest('[data-layout-element]');
         if ($targetParent.length) {
           const layoutElementUid = $targetParent.data('layout-element');
           $targetParent.remove();
@@ -2324,7 +2538,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
-      this.queue.push(
+      this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'elements/recent-activity', {
@@ -2458,7 +2672,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
                 this.trigger('checkActivity', data);
 
-                setTimeout(() => {
+                this._checkActivityTimeout = setTimeout(() => {
                   this._checkActivity();
                 }, 15000);
                 resolve();
@@ -2479,12 +2693,14 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     destroy: function () {
-      this.queue.destroy();
+      this.queue?.destroy();
       delete this.queue;
       this.formObserver?.destroy();
       delete this.formObserver;
       this.preview?.destroy();
       delete this.preview;
+      this.$container.removeData('elementEditor');
+      clearTimeout(this._checkActivityTimeout);
       this.base();
     },
   },
@@ -2510,6 +2726,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       isUnpublishedDraft: false,
       previewTargets: [],
       previewToken: null,
+      hashedPreviewToken: null,
       previewParamValue: null,
       revisionId: null,
       fieldId: null,
@@ -2519,6 +2736,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       saveParams: null,
       siteToken: null,
       visibleLayoutElements: {},
+      staticLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
       reloadOnBroadcastSave: true,

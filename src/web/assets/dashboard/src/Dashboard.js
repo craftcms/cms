@@ -687,6 +687,7 @@ import './dashboard.scss';
           '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="' +
           Craft.t('app', 'Reorder') +
           '" role="button"></a></td>' +
+          '<td class="widgetmanagerhud-col-actions thin actions-container"></td>' +
           '<td class="thin"><a class="delete icon" tabindex="0" type="button" title="' +
           Craft.t('app', 'Delete') +
           '" role="button" aria-label="' +

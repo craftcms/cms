@@ -162,6 +162,7 @@ class CategoryGroup extends Model implements
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class];
         $rules[] = [['name', 'handle', 'siteSettings'], 'required'];
@@ -283,7 +284,7 @@ class CategoryGroup extends Model implements
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
             'siteSettings' => [],
-            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+            'defaultPlacement' => $this->defaultPlacement,
         ];
 
         $fieldLayout = $this->getFieldLayout();

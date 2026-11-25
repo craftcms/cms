@@ -36,8 +36,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\helpers\Template;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
@@ -110,6 +112,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * The query’s results are assigned to [[PopulateElementsEvent::$elements]], and are returned after all handlers are invoked. Handlers may add, remove, modify, and replace populated elements.
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
+
+    /**
+     * The current element query instance being prepared, for reference by fields’ `queryCondition()` methods.
+     *
+     * @since 5.10.0
+     */
+    public static ?self $activeQuery = null;
 
     // Base config attributes
     // -------------------------------------------------------------------------
@@ -480,10 +489,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?bool $hasDescendants = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
+     * @var int|ElementInterface|false|null The element (or its ID) that results must be an ancestor of.
      * @used-by ancestorOf()
      */
-    public ElementInterface|int|null $ancestorOf = null;
+    public ElementInterface|int|false|null $ancestorOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
@@ -492,10 +501,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $ancestorDist = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
+     * @var int|ElementInterface|false|null The element (or its ID) that results must be a descendant of.
      * @used-by descendantOf()
      */
-    public ElementInterface|int|null $descendantOf = null;
+    public ElementInterface|int|false|null $descendantOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
@@ -504,34 +513,34 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $descendantDist = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be a sibling of.
      * @used-by siblingOf()
      */
-    public ElementInterface|int|null $siblingOf = null;
+    public ElementInterface|int|false|null $siblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the result must be the previous sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the result must be the previous sibling of.
      * @used-by prevSiblingOf()
      */
-    public ElementInterface|int|null $prevSiblingOf = null;
+    public ElementInterface|int|false|null $prevSiblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the result must be the next sibling of.
+     * @var int|ElementInterface|false|null The element (or its ID) that the result must be the next sibling of.
      * @used-by nextSiblingOf()
      */
-    public ElementInterface|int|null $nextSiblingOf = null;
+    public ElementInterface|int|false|null $nextSiblingOf = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned before.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be positioned before.
      * @used-by positionedBefore()
      */
-    public ElementInterface|int|null $positionedBefore = null;
+    public ElementInterface|int|false|null $positionedBefore = null;
 
     /**
-     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned after.
+     * @var int|ElementInterface|false|null The element (or its ID) that the results must be positioned after.
      * @used-by positionedAfter()
      */
-    public ElementInterface|int|null $positionedAfter = null;
+    public ElementInterface|int|false|null $positionedAfter = null;
 
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
@@ -543,6 +552,12 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     // For internal use
     // -------------------------------------------------------------------------
+
+    /**
+     * @var array|null The [[orderBy]] value at the time [[prepForEagerLoading()]] was called.
+     * @see eagerLoad()
+     */
+    private ?array $_eagerLoadOrderBy = null;
 
     /**
      * @var mixed The placeholder condition for this query.
@@ -1496,6 +1511,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->eagerLoadSourceElement = $sourceElement;
 
+        // Remember the current `orderBy` value, so eagerLoad() can tell whether it was customized afterward
+        $this->_eagerLoadOrderBy = $this->orderBy;
+
         return $this;
     }
 
@@ -1632,10 +1650,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
         $this->_columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
             'dateCreated' => 'elements.dateCreated',
             'dateUpdated' => 'elements.dateUpdated',
+            'enabled' => 'elements.enabled',
+            'id' => 'elements.id',
+            'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
         ];
 
@@ -1914,6 +1933,19 @@ class ElementQuery extends Query implements ElementQueryInterface
         };
 
         if (!$eagerLoaded) {
+            // Only pass `orderBy` along if it was customized after prepForEagerLoading() was called.
+            // Otherwise it's either the placeholder or ordering that only applies to this query's source element
+            // (e.g. a relation field’s fixed order), and the eager-loading map's order should be used instead.
+            if ($this->orderBy !== $this->_eagerLoadOrderBy) {
+                $criteria += ['orderBy' => $this->orderBy];
+            }
+
+            // `offset` and `limit` aren't included in getCriteria() either
+            $criteria += array_filter([
+                'offset' => $this->offset,
+                'limit' => $this->limit,
+            ], fn($value) => $value !== null);
+
             Craft::$app->getElements()->eagerLoadElements(
                 $this->eagerLoadSourceElement::class,
                 $this->eagerLoadSourceElement->elementQueryResult,
@@ -2059,6 +2091,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public function collectIds(?YiiConnection $db = null): Collection
+    {
+        return Collection::make($this->ids($db));
+    }
+
+    /**
      * Executes the query and renders the resulting elements using their partial templates.
      *
      * If no partial template exists for an element, its string representation will be output instead.
@@ -2067,12 +2107,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
-     * @see ElementHelper::renderElements()
+     * @see Template::render()
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements($this->all(), $variables);
+        return Template::render($this->all(), $variables);
     }
 
     /**
@@ -2338,30 +2379,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['title'] = (string)($row['title'] ?? '');
         }
 
-        // Set the field values
-        $content = ArrayHelper::remove($row, 'content');
-        $row['fieldValues'] = [];
-
-        if (!empty($content) && (!empty($this->customFields) || !empty($this->generatedFields))) {
-            if (is_string($content)) {
-                $content = Json::decode($content);
-            }
-
-            foreach ($this->customFields as $field) {
-                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
-                    $handle = $field->layoutElement->handle ?? $field->handle;
-                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
-                }
-            }
-
-            foreach ($this->generatedFields as $field) {
-                if (isset($content[$field['uid']])) {
-                    $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
-                    if (($field['handle'] ?? '') !== '') {
-                        $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
-                    }
-                }
-            }
+        // Remove the field values
+        // (We'll set them after the element bas been created, and we have its field layout.)
+        $content = ArrayHelper::remove($row, 'content') ?? [];
+        if (is_string($content)) {
+            $content = Json::decode($content);
         }
 
         if (array_key_exists('dateDeleted', $row)) {
@@ -2410,6 +2432,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
             $row = $event->row ?? $row;
@@ -2421,11 +2444,38 @@ class ElementQuery extends Query implements ElementQueryInterface
         $element ??= new $class($row);
         $element->attachBehaviors($behaviors);
 
+        // Set the custom field values
+        if (!empty($content)) {
+            $fieldLayout = $element->getFieldLayout();
+            if ($fieldLayout) {
+                $element->setDirtyFieldTracking(false);
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                        $handle = $field->layoutElement->handle ?? $field->handle;
+                        $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
+                    }
+                }
+                $element->setDirtyFieldTracking();
+
+                $generatedFieldValues = [];
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    if (isset($content[$field['uid']])) {
+                        $generatedFieldValues[$field['uid']] = $content[$field['uid']];
+                        if (($field['handle'] ?? '') !== '') {
+                            $generatedFieldValues[$field['handle']] = $content[$field['uid']];
+                        }
+                    }
+                }
+                $element->setGeneratedFieldValues($generatedFieldValues);
+            }
+        }
+
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             return $event->element;
@@ -2828,7 +2878,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
                         $firstInstance = $instances[0];
-                        $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                        static::$activeQuery = $this;
+                        try {
+                            $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                        } finally {
+                            static::$activeQuery = null;
+                        }
 
                         // aborting?
                         if ($condition === false) {
@@ -3062,7 +3117,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ];
 
             foreach ($structureParams as $param) {
-                if ($this->$param !== null) {
+                if (!in_array($this->$param, [null, false], true)) {
                     throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
@@ -3248,9 +3303,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
-            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
-            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $useInnerJoin = $this->drafts === true;
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -3261,16 +3314,27 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
             if ($this->draftId) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } elseif (isset($this->draftOf)) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+            if (isset($this->draftOf)) {
+                if ($this->draftOf === '*') {
+                    // drafts of any other element
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['not', ['drafts.canonicalId' => null]]);
+                } elseif ($this->draftOf === false) {
+                    // unpublished drafts only
+                    $this->subQuery->andWhere(['drafts.canonicalId' => null]);
+                } else {
+                    // drafts of specific owner elements
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['drafts.canonicalId' => $this->draftOf]);
+                }
             }
 
             if ($this->draftCreator) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
@@ -3299,6 +3363,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.saved' => true],
                 ]);
             }
+
+            $joinType = $useInnerJoin ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
@@ -3716,6 +3784,28 @@ class ElementQuery extends Query implements ElementQueryInterface
             $caseParams[$param] = $siteId;
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
+
+        if (
+            $db->getDriverName() === Connection::DRIVER_PGSQL &&
+            !$this->subQuery->distinct &&
+            empty($this->subQuery->groupBy)
+        ) {
+            // Pick each element's preferred row with a single DISTINCT ON subquery, rather than
+            // a correlated subquery that PostgreSQL ends up evaluating against all elements_sites rows
+            $subSelectSql = (clone $this->subQuery)
+                ->select([new Expression('distinct on ([[elements.id]]) [[elements_sites.id]]')])
+                ->orderBy([
+                    'elements.id' => SORT_ASC,
+                    new Expression($caseSql, $caseParams),
+                    'elements_sites.id' => SORT_ASC,
+                ])
+                ->offset(null)
+                ->limit(null)
+                ->getRawSql();
+
+            $this->subQuery->andWhere(new Expression("[[elements_sites.id]] in ($subSelectSql)"));
+            return;
+        }
 
         $subSelectSql = (clone $this->subQuery)
             ->select(['elements_sites.id'])

@@ -37,6 +37,9 @@ class ChartsController extends Controller
      */
     public function actionGetNewUsersData(): Response
     {
+        $this->requireCpRequest();
+        $this->requirePermission('viewUsers');
+
         $userGroupId = $this->request->getBodyParam('userGroupId');
         $startDateParam = $this->request->getRequiredBodyParam('startDate');
         $endDateParam = $this->request->getRequiredBodyParam('endDate');

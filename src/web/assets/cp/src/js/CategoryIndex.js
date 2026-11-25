@@ -236,12 +236,12 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
               updateSearchIndexImmediately: 1,
             },
           });
-          slideout.on('submit', (ev) => {
+          slideout.on('submit', async (ev) => {
             // Make sure the right group is selected
             const groupSourceKey = `group:${group.uid}`;
 
             if (this.sourceKey !== groupSourceKey) {
-              this.selectSourceByKey(groupSourceKey);
+              await this.asyncSelectSourceByKey(groupSourceKey);
             }
 
             this.clearSearch(false);

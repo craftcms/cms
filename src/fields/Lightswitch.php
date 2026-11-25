@@ -9,9 +9,11 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\InputSchemaFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
@@ -30,7 +32,13 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Lightswitch extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface,
+    InputSchemaFieldInterface
 {
     /**
      * @inheritdoc
@@ -107,6 +115,12 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     public ?string $offLabel = null;
 
     /**
+     * @var bool Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.
+     * @since 5.9.0
+     */
+    public bool $showLabelsInCards = false;
+
+    /**
      * @inheritdoc
      */
     public function __construct($config = [])
@@ -160,7 +174,23 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
                 'name' => 'onLabel',
                 'value' => $this->onLabel,
                 'disabled' => $readOnly,
+            ]) .
+            Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Show ON/OFF labels in cards'),
+                'instructions' => Craft::t('app', 'Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
+                'id' => 'show-labels-in-cards',
+                'name' => 'showLabelsInCards',
+                'on' => $this->showLabelsInCards,
+                'disabled' => $readOnly,
             ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): bool
+    {
+        return $this->default;
     }
 
     /**
@@ -261,7 +291,12 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
-        if ($element->viewMode === 'cards') {
+        $canShowLabel = ($value && $this->onLabel) || (!$value && $this->offLabel);
+
+        if (
+            $element->viewMode === 'cards' &&
+            (!$this->showLabelsInCards || !$canShowLabel)
+        ) {
             return Cp::statusLabelHtml([
                 'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
                 'label' => $this->getUiLabel(),
@@ -307,5 +342,14 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
         }
 
         return $this->getPreviewHtml($value, $element ?? new Entry(['viewMode' => 'cards']));
+    }
+
+    /**
+     * @inheritdoc
+     * @since 5.12.0
+     */
+    public function getInputSchema(): array
+    {
+        return ['type' => 'boolean'];
     }
 }

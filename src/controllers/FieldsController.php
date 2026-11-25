@@ -152,7 +152,7 @@ class FieldsController extends Controller
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {
@@ -377,6 +377,7 @@ JS, [
                 }
             }, ARRAY_FILTER_USE_KEY);
 
+            $settings = Component::cleanseConfig($settings);
             Typecast::properties($type, $settings);
             Craft::configure($field, $settings);
         }
@@ -409,10 +410,11 @@ JS, [
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            $oldField = Craft::$app->getFields()->getFieldById($fieldId);
             if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
+            $oldField = clone $oldField;
             $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;
@@ -426,6 +428,8 @@ JS, [
             'handle' => $this->request->getBodyParam('handle'),
             'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $this->request->getBodyParam('instructions'),
+            'tip' => $this->request->getBodyParam('tip'),
+            'warning' => $this->request->getBodyParam('warning'),
             'searchable' => (bool)$this->request->getBodyParam('searchable', true),
             'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
@@ -608,33 +612,11 @@ JS, [
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
-        $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
-        $cardElements = $this->request->getRequiredBodyParam('cardElements');
-        $showThumb = $this->request->getBodyParam('showThumb', false);
-        $thumbAlignment = $this->request->getBodyParam('thumbAlignment', false);
-
-        if (!isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...$fieldLayoutConfig,
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        if (!$fieldLayout) {
-            throw new BadRequestHttpException('Invalid field layout');
-        }
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayoutConfig = Component::cleanseConfig($this->request->getRequiredBodyParam('fieldLayoutConfig'));
+        $fieldLayout = Craft::$app->getFields()->createLayout($fieldLayoutConfig);
 
         return $this->asJson([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
         ]);
     }
 
@@ -648,7 +630,7 @@ JS, [
     {
         $uid = $this->request->getRequiredBodyParam('uid');
         $elementType = $this->request->getRequiredBodyParam('elementType');
-        $layoutConfig = $this->request->getRequiredBodyParam('layoutConfig');
+        $layoutConfig = Component::cleanseConfig($this->request->getRequiredBodyParam('layoutConfig'));
 
         if (!isset($layoutConfig['tabs'])) {
             throw new BadRequestHttpException('Layout config doesn’t have any tabs.');
@@ -667,6 +649,8 @@ JS, [
             $componentConfig = array_merge($componentConfig, $settings);
         }
 
+        $componentConfig = Component::cleanseConfig($componentConfig);
+
         $isTab = false;
 
         foreach ($layoutConfig['tabs'] as &$tabConfig) {
@@ -679,6 +663,19 @@ JS, [
             foreach ($tabConfig['elements'] as &$elementConfig) {
                 if (isset($elementConfig['uid']) && $elementConfig['uid'] === $uid) {
                     $elementConfig = array_merge($elementConfig, $componentConfig);
+
+                    // If fieldId is set, we're replacing the selected field
+                    if ($elementConfig['type'] === CustomField::class && isset($elementConfig['fieldId'])) {
+                        if (!empty($elementConfig['fieldId'])) {
+                            // Keep track of the old field's UUID so we can update any conditions referencing it on save
+                            $elementConfig['oldFieldUid'] ??= $elementConfig['fieldUid'] ?? null;
+
+                            unset($elementConfig['fieldUid']);
+                        } else {
+                            unset($elementConfig['fieldId']);
+                        }
+                    }
+
                     break 2;
                 }
             }

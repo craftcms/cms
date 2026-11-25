@@ -15,8 +15,10 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
+use craft\helpers\Gql;
 use craft\models\EntryType;
 use craft\models\Section;
+use craft\models\Site;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -94,7 +96,15 @@ class Entry extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            $this->requireUserAuthorization($entry, 'save');
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -106,6 +116,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 
@@ -126,6 +139,11 @@ class Entry extends ElementMutationResolver
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
+        $hardDelete = $arguments['hardDelete'] ?? false;
+
+        if ($siteId) {
+            $this->requireAllowedSite($siteId);
+        }
 
         $elementService = Craft::$app->getElements();
         /** @var EntryElement|null $entry */
@@ -137,8 +155,10 @@ class Entry extends ElementMutationResolver
 
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
+        $this->requireAllowedSitesForElement($entry);
+        $this->requireUserAuthorization($entry, 'delete');
 
-        return $elementService->deleteElementById($entryId);
+        return $elementService->deleteElementById($entryId, hardDelete: $hardDelete);
     }
 
     /**
@@ -154,9 +174,14 @@ class Entry extends ElementMutationResolver
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $entryId = $arguments['id'];
+        $siteIds = array_map(fn(Site $site) => $site->id, Gql::getAllowedSites());
+
+        if (empty($siteIds)) {
+            throw new Error('Unable to perform the action.');
+        }
 
         /** @var EntryElement|null $entry */
-        $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
+        $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class, array_values($siteIds));
 
         if (!$entry) {
             throw new Error('Unable to perform the action.');
@@ -173,12 +198,14 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
+        $this->requireUserAuthorization($entry, 'createDrafts');
+
         $draftName = $arguments['name'] ?? '';
         $draftNotes = $arguments['notes'] ?? '';
         $provisional = $arguments['provisional'] ?? false;
-        $creatorId = $arguments['creatorId'] ?? null;
+        // Authenticated users can only create drafts for themselves
+        $creatorId = Gql::getSchemaUser()->id ?? $arguments['creatorId'] ?? null;
 
-        /** @var EntryElement|DraftBehavior $draft */
         $draft = Craft::$app->getDrafts()->createDraft($entry, $creatorId ?? $entry->getAuthorId(), $draftName, $draftNotes, [], $provisional);
 
         return $draft->draftId;
@@ -219,6 +246,11 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
+        // Publishing the draft affects every site its canonical entry is saved in
+        $this->requireAllowedSitesForElement($draft);
+        $this->requireUserAuthorization($draft, 'save');
+        $this->requireUserAuthorization($draft, 'saveCanonical');
+
         /** @var EntryElement $draft */
         $draft = Craft::$app->getDrafts()->applyDraft($draft);
 
@@ -234,6 +266,10 @@ class Entry extends ElementMutationResolver
      */
     protected function getEntryElement(array $arguments): EntryElement
     {
+        if (isset($arguments['siteId'])) {
+            $this->requireAllowedSite($arguments['siteId']);
+        }
+
         /** @var Section|null $section */
         $section = $this->getResolutionData('section');
         /** @var ElementContainerFieldInterface|null $field */
@@ -262,8 +298,17 @@ class Entry extends ElementMutationResolver
         $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
+            if (isset($arguments['siteId'])) {
+                $siteId = $arguments['siteId'];
+            } else {
+                $siteId = array_map(fn(Site $site) => $site->id, Gql::getAllowedSites());
+                $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+                if (in_array($primarySiteId, $siteId)) {
+                    $siteId = $primarySiteId;
+                }
+            }
+
             // Prepare the element query
-            $siteId = $arguments['siteId'] ?? Craft::$app->getSites()->getPrimarySite()->id;
             /** @var EntryQuery $entryQuery */
             $entryQuery = $elementService->createElementQuery(EntryElement::class)->status(null)->siteId($siteId);
             $entryQuery = $this->identifyEntry($entryQuery, $arguments);

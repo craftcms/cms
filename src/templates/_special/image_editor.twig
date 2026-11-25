@@ -10,7 +10,7 @@
     text: 'Edit Image'|t('app'),
 }) }}
 
-{% macro cropperButton(config) %}
+{% macro editButton(config) %}
     {% set id = config.id ?? null %}
     {% tag 'button' with {
         id: id,
@@ -19,8 +19,14 @@
             pressed: 'false',
         },
     }|merge(config.buttonAttributes ?? {}, recursive=true) %}
-        <div data-item-name>{{ config.label }}</div>
+        {{ config.label }}
     {% endtag %}
+{% endmacro %}
+
+{% macro focalPointBtn() %}
+    <div class="btngroup">
+        <button type="button" class="focal-point btn icon leftalign" data-fabric-element="focalpoint" data-item-name="{{ 'Focal Point'|t('app') }}" aria-pressed="false">{{ 'Focal Point'|t('app') }}</button>
+    </div>
 {% endmacro %}
 
 <div class="tabs">
@@ -39,19 +45,38 @@
             <button type="button" class="flip-vertical btn icon leftalign">{{ 'Flip Vertical'|t('app') }}</button>
             <button type="button" class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</button>
         </div>
-        <div class="btngroup">
-            <button type="button" class="focal-point btn icon leftalign" aria-pressed="false">{{ 'Focal Point'|t('app') }}</button>
-        </div>
+        {{ _self.focalPointBtn() }}
     </div>
     <div role="tabpanel" class="crop hidden" data-view="crop" data-crop="true" aria-labelledby="crop-tab">
-        <div class="btngroup">
-            <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
-        </div>
 
-        <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
-            <input type="radio" aria-label="{{ 'Landscape'|t('app') }}" name="orientation" value="landscape" checked/>
-            <input type="radio" aria-label="{{ 'Portrait'|t('app') }}"  name="orientation" value="portrait"/>
-        </fieldset>
+        {{ forms.buttonGroupField({
+            id: 'orientation',
+            name: 'orientation',
+            label: 'Orientation'|t('app'),
+            value: 'landscape',
+            options: [
+                {
+                    icon: 'image-landscape',
+                    value: 'landscape',
+                    attributes: {
+                        title: 'Landscape'|t('app'),
+                        aria: {
+                            label: 'Landscape'|t('app'),
+                        },
+                    },
+                },
+                {
+                    icon: 'image-portrait',
+                    value: 'portrait',
+                    attributes: {
+                        title: 'Portrait'|t('app'),
+                        aria: {
+                            label: 'Portrait'|t('app'),
+                        },
+                    },
+                },
+            ],
+        }) }}
 
         {% set constraintOptions = [] %}
         {% for label, ratio in craft.app.config.general.imageEditorRatios %}
@@ -129,46 +154,53 @@
                 direction: orientation == 'ltr' ? 'right' : 'left',
             },
         ] %}
-
-        <fieldset data-cropper-edit>
-            <legend>
-                {{ 'Edit {type}'|t('app', {
-                    type: 'Cropping Rectangle'|t('app'),
-                }) }}
-            </legend>
-            <div id="move-icon-wrapper" style="display: none;">{{ iconSvg('up-down-left-right') }}</div>
-            <div role="application">
-                <div>
-                    {{ _self.cropperButton({
-                        label: 'Cropping Rectangle'|t('app'),
-                        id: 'cropper-handle',
-                        buttonAttributes: {
-                            data: {
-                                'crop-editor': 'rectangle',
-                            },
-                            class: ['cropper-edit__btn']
-                        }
+        <div role="application">
+            {{ _self.focalPointBtn() }}
+            <fieldset data-cropper-edit>
+                <legend>
+                    {{ 'Edit {type}'|t('app', {
+                        type: 'Cropping Rectangle'|t('app'),
                     }) }}
-                </div>
-
-                <div>
-                    {% for button in cropHandleBtns %}
-                        {% if loop.index == 5 %}
-                            <div></div>
-                        {% endif %}
-                        {{ _self.cropperButton({
-                            label: button.label,
+                </legend>
+                <div id="move-icon-wrapper" style="display: none;">{{ iconSvg('up-down-left-right') }}</div>
+                <div role="application">
+                    <div>
+                        {{ _self.editButton({
+                            label: 'Cropping Rectangle'|t('app'),
+                            id: 'cropper-handle',
                             buttonAttributes: {
                                 data: {
-                                    'crop-editor': button.handle,
+                                    'edit-rectangle': true,
+                                    'fabric-element': 'rectangle',
+                                    'item-name': 'Cropping Rectangle'|t('app'),
                                 },
                                 class: ['cropper-edit__btn']
                             }
                         }) }}
-                    {% endfor %}
+                    </div>
+
+                    <div>
+                        {% for button in cropHandleBtns %}
+                            {% if loop.index == 5 %}
+                                <div></div>
+                            {% endif %}
+                            {{ _self.editButton({
+                                label: button.label,
+                                buttonAttributes: {
+                                    data: {
+                                        'edit-rectangle': true,
+                                        'fabric-element': button.handle,
+                                        'item-name': button.label,
+                                    },
+                                    class: ['cropper-edit__btn']
+                                }
+                            }) }}
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-        </fieldset>
+            </fieldset>
+        </div>
+
     </div>
 </div>
 <div class="image-container">

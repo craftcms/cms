@@ -386,7 +386,7 @@ import './CraftSupportWidget.scss';
                     '<span class="status ' +
                     this.getSearchResultStatus(results[i]) +
                     '"></span>' +
-                    this.getSearchResultText(results[i]),
+                    Craft.escapeHtml(this.getSearchResultText(results[i])),
                 })
               )
             );
@@ -567,7 +567,9 @@ import './CraftSupportWidget.scss';
             if (response.errors.hasOwnProperty(attribute)) {
               for (var i = 0; i < response.errors[attribute].length; i++) {
                 var error = response.errors[attribute][i];
-                $('<li>' + error + '</li>').appendTo(this.$supportErrorList);
+                $('<li/>', {
+                  text: error,
+                }).appendTo(this.$supportErrorList);
               }
             }
           }

@@ -194,6 +194,7 @@ class PluginStore extends Component
      */
     public function getTokenByUserId(int $userId): ?CraftIdToken
     {
+        // @phpstan-ignore mspirkovYii2.activeRecordConditionValidation (Unknown attribute "provider" for ActiveRecord craft\records\CraftIdToken in findOne() condition.)
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 
         if (!$record) {

@@ -147,7 +147,7 @@
             rows: collect(craft.app.sites.getAllSites())
                 .keyBy(site => site.uid)
                 .map(site => {
-                    heading: site.getUiLabel(),
+                    heading: site.getUiLabel()|e,
                     ...(settings.siteOverrides[site.uid] ?? {})
                 })
                 .all(),

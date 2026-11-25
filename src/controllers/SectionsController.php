@@ -175,7 +175,9 @@ class SectionsController extends Controller
         $section->handle = $this->request->getBodyParam('handle');
         $section->type = $this->request->getBodyParam('type') ?? Section::TYPE_CHANNEL;
         $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
+        $minAuthors = $this->request->getBodyParam('minAuthors');
         $maxAuthors = $this->request->getBodyParam('maxAuthors');
+        $section->minAuthors = is_numeric($minAuthors) ? (int)$minAuthors : 0;
         $section->maxAuthors = is_numeric($maxAuthors) ? (int)$maxAuthors : null;
         $section->propagationMethod = PropagationMethod::tryFrom($this->request->getBodyParam('propagationMethod') ?? '')
             ?? PropagationMethod::All;

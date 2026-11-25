@@ -5,16 +5,8 @@ namespace craft\auth\passkeys;
 use Cose\Algorithm\Manager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
 use Cose\Algorithm\Signature\ECDSA\ES256K;
-use Cose\Algorithm\Signature\ECDSA\ES384;
-use Cose\Algorithm\Signature\ECDSA\ES512;
-use Cose\Algorithm\Signature\EdDSA\Ed256;
-use Cose\Algorithm\Signature\EdDSA\Ed512;
 use Cose\Algorithm\Signature\RSA\PS256;
-use Cose\Algorithm\Signature\RSA\PS384;
-use Cose\Algorithm\Signature\RSA\PS512;
 use Cose\Algorithm\Signature\RSA\RS256;
-use Cose\Algorithm\Signature\RSA\RS384;
-use Cose\Algorithm\Signature\RSA\RS512;
 use Cose\Algorithms;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\AttestationObjectLoader;
@@ -24,10 +16,9 @@ use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponseValidator;
 use Webauthn\AuthenticatorSelectionCriteria;
+use Webauthn\CeremonyStep\CeremonyStepManagerFactory;
 use Webauthn\Denormalizer\WebauthnSerializerFactory;
-use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialParameters;
-use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
 
 /**
  * Webauthn server.
@@ -38,17 +29,15 @@ use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
  */
 class WebauthnServer
 {
-    /**
-     * Returns the token binding handler.
-     *
-     * > At the time of writing, we recommend to ignore this feature.
-     *
-     * @return IgnoreTokenBindingHandler
-     * @see https://webauthn-doc.spomky-labs.com/v/v4.5/pure-php/the-hard-way#token-binding-handler
-     */
-    public function getTokenBindingHandler(): IgnoreTokenBindingHandler
+    private CeremonyStepManagerFactory $csmFactory;
+    private ?SerializerInterface $serializer = null;
+    private ?CredentialRepository $credentialRepository = null;
+
+    public function __construct()
     {
-        return IgnoreTokenBindingHandler::create();
+        $this->csmFactory = new CeremonyStepManagerFactory();
+        $this->csmFactory->setAlgorithmManager($this->getAlgorithmManager());
+        $this->csmFactory->setExtensionOutputCheckerHandler($this->getExtensionOutputCheckerHandler());
     }
 
     /**
@@ -73,25 +62,25 @@ class WebauthnServer
      *
      * @return AttestationObjectLoader
      * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#attestation-object-loader
+     * @deprecated in 5.9.16
      */
     public function getAttestationObjectLoader(): AttestationObjectLoader
     {
-        return AttestationObjectLoader::create(
-            $this->getAttestationStatementManager()
-        );
+        return AttestationObjectLoader::create($this->getAttestationStatementManager());
     }
 
     /**
-     * Returns the object that will load the Public Key.
+     * Returns the credential repository.
      *
-     * @return PublicKeyCredentialLoader
-     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#public-key-credential-loader
+     * @return CredentialRepository
      */
-    public function getPublicKeyCredentialLoader(): PublicKeyCredentialLoader
+    public function getCredentialRepository(): CredentialRepository
     {
-        return PublicKeyCredentialLoader::create(
-            $this->getAttestationObjectLoader()
-        );
+        if ($this->credentialRepository === null) {
+            $this->credentialRepository = new CredentialRepository();
+        }
+
+        return $this->credentialRepository;
     }
 
     /**
@@ -102,11 +91,14 @@ class WebauthnServer
      */
     public function getSerializer(): SerializerInterface
     {
-        $attestationStatementSupportManager = AttestationStatementSupportManager::create();
-        $attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
-        $factory = new WebauthnSerializerFactory($attestationStatementSupportManager);
+        if ($this->serializer == null) {
+            $attestationStatementSupportManager = AttestationStatementSupportManager::create();
+            $attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
+            $factory = new WebauthnSerializerFactory($attestationStatementSupportManager);
+            $this->serializer = $factory->create();
+        }
 
-        return $factory->create();
+        return $this->serializer;
     }
 
     /**
@@ -132,19 +124,8 @@ class WebauthnServer
             ->add(
                 ES256::create(),
                 ES256K::create(),
-                ES384::create(),
-                ES512::create(),
-
                 RS256::create(),
-                RS384::create(),
-                RS512::create(),
-
                 PS256::create(),
-                PS384::create(),
-                PS512::create(),
-
-                Ed256::create(),
-                Ed512::create(),
             );
     }
 
@@ -156,12 +137,7 @@ class WebauthnServer
      */
     public function getAuthenticatorAttestationResponseValidator(): AuthenticatorAttestationResponseValidator
     {
-        return AuthenticatorAttestationResponseValidator::create(
-            $this->getAttestationStatementManager(),
-            new CredentialRepository(),
-            $this->getTokenBindingHandler(),
-            $this->getExtensionOutputCheckerHandler(),
-        );
+        return AuthenticatorAttestationResponseValidator::create(ceremonyStepManager: $this->csmFactory->creationCeremony());
     }
 
     /**
@@ -172,12 +148,7 @@ class WebauthnServer
      */
     public function getAuthenticatorAssertionResponseValidator(): AuthenticatorAssertionResponseValidator
     {
-        return AuthenticatorAssertionResponseValidator::create(
-            new CredentialRepository(),
-            $this->getTokenBindingHandler(),
-            $this->getExtensionOutputCheckerHandler(),
-            $this->getAlgorithmManager(),
-        );
+        return AuthenticatorAssertionResponseValidator::create(ceremonyStepManager: $this->csmFactory->requestCeremony());
     }
 
     /**
@@ -193,7 +164,6 @@ class WebauthnServer
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ES256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_RS256),
             PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_PS256),
-            PublicKeyCredentialParameters::create('public-key', Algorithms::COSE_ALGORITHM_ED256),
         ];
     }
 
@@ -208,7 +178,6 @@ class WebauthnServer
             authenticatorAttachment: null,
             userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
-            requireResidentKey: true,
         );
     }
 }

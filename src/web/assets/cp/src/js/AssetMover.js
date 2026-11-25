@@ -272,7 +272,18 @@ Craft.AssetMover = Garnish.Base.extend(
 
           // Loop through all the responses
           for (const response of responses) {
-            if (response.success) {
+            // Push prompt into prompt array
+            if (response.conflict) {
+              this.conflictCount++;
+              Craft.elementIndex.promptHandler.addPrompt(
+                Object.assign({}, response, {
+                  prompt: {
+                    message: response.conflict,
+                    choices: settings.conflictChoices,
+                  },
+                })
+              );
+            } else if (response.success) {
               if (response.newFolderId) {
                 this.undoMovedFolders.folderIds.push(response.newFolderId);
                 if (this.undoMovedFolders.targetFolderId === null) {
@@ -289,23 +300,16 @@ Craft.AssetMover = Garnish.Base.extend(
                 }
               }
               totalMoved++;
-            }
+            } else {
+              const message =
+                response.error ??
+                response.message ??
+                Craft.t(
+                  'app',
+                  'An error occurred while processing your request.'
+                );
 
-            // Push prompt into prompt array
-            if (response.conflict) {
-              this.conflictCount++;
-              Craft.elementIndex.promptHandler.addPrompt(
-                Object.assign({}, response, {
-                  prompt: {
-                    message: response.conflict,
-                    choices: settings.conflictChoices,
-                  },
-                })
-              );
-            }
-
-            if (response.error) {
-              Craft.cp.displayError(response.error);
+              Craft.cp.displayError(message);
             }
           }
 

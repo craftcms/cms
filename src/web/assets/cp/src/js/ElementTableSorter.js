@@ -641,13 +641,15 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
         if (this._updateAncestors._$ancestor.data('descendants') == 1) {
           // Create its toggle
           const ancestorTitle = this._updateAncestors._$ancestor.data('title');
-          $(
-            '<button class="toggle expanded" type="button" aria-expanded="true" title="' +
-              Craft.t('app', 'Show/hide children') +
-              '" aria-label="' +
-              Craft.t('app', 'Show {title} children', {title: ancestorTitle}) +
-              '"></button>'
-          ).insertAfter(
+          $('<button/>', {
+            class: 'toggle expanded',
+            type: 'button',
+            'aria-expanded': 'true',
+            title: Craft.t('app', 'Show/hide children'),
+            'aria-label': Craft.t('app', 'Show {title} children', {
+              title: ancestorTitle,
+            }),
+          }).insertAfter(
             this._updateAncestors._$ancestor.find('> th .move:first')
           );
         }

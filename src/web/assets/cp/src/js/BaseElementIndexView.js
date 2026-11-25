@@ -120,7 +120,20 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             Garnish.hasAttr($element, 'data-editable') &&
             !$element.closest('.elementselect').length
           ) {
-            Craft.createElementEditor($element.data('type'), $element);
+            const slideout = Craft.createElementEditor(
+              $element.data('type'),
+              $element,
+              {
+                onLoad:
+                  this.elementIndex.settings.context === 'embedded-index'
+                    ? () => {
+                        slideout.elementEditor.on('update', () => {
+                          Craft.Preview.refresh();
+                        });
+                      }
+                    : null,
+              }
+            );
           }
         };
 
@@ -318,6 +331,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       }
     },
 
+    selectElementsById: function (ids) {
+      for (const id of ids) {
+        this.selectElementById(id);
+      }
+    },
+
     selectAllElements: function () {
       this.elementSelect.selectAll();
     },
@@ -364,6 +383,15 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
      */
     canLoadMore: function () {
       if (!this.getMorePending() || !this.elementIndex.settings.batchSize) {
+        return false;
+      }
+
+      // A hidden scroll area (e.g. a closed element selector modal) reports a height of 0,
+      // which would otherwise look like the user has reached the bottom
+      if (
+        this.$scroller[0] !== Garnish.$win[0] &&
+        !this.$scroller.is(':visible')
+      ) {
         return false;
       }
 

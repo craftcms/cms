@@ -159,6 +159,39 @@ class UrlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider removeParamDataProvider
+     * @param string $expected
+     * @param string $url
+     * @param string $param
+     */
+    public function testRemoveParam(string $expected, string $url, string $param): void
+    {
+        self::assertSame($expected, UrlHelper::removeParam($url, $param));
+    }
+
+    /**
+     * @dataProvider removeParamsDataProvider
+     * @param string $expected
+     * @param string $url
+     * @param string[] $params
+     */
+    public function testRemoveParams(string $expected, string $url, array $params): void
+    {
+        self::assertSame($expected, UrlHelper::removeParams($url, $params));
+    }
+
+    /**
+     * @dataProvider removeAllParamsDataProvider
+     * @param string $expected
+     * @param string $url
+     * @param string[] $except
+     */
+    public function testRemoveAllParams(string $expected, string $url, array $except = []): void
+    {
+        self::assertSame($expected, UrlHelper::removeAllParams($url, $except));
+    }
+
+    /**
      * @dataProvider encodeParamsDataProvider
      */
     public function testEncodeParams(string $expected, string $url): void
@@ -187,16 +220,29 @@ class UrlHelperTest extends TestCase
     }
 
     /**
+     * Tests the UrlHelper::absoluteUrl() method.
+     *
+     * @dataProvider absoluteUrlDataProvider
+     * @param string $expected
+     * @param string $url
+     * @param string|null $baseUrl
+     */
+    public function testAbsoluteUrl(string $expected, string $url, ?string $baseUrl): void
+    {
+        self::assertSame($expected, UrlHelper::absoluteUrl($url, $baseUrl));
+    }
+
+    /**
      * Tests the UrlHelper::url() method.
      *
      * @dataProvider urlFunctionDataProvider
      * @param string $expected
      * @param string $path
-     * @param array|null $params
+     * @param array|string|false|null $params
      * @param string|null $scheme
      * @param bool|null $showScriptName
      */
-    public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
+    public function testUrlFunction(string $expected, string $path = '', array|string|false|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
     {
         $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -251,6 +297,9 @@ class UrlHelperTest extends TestCase
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
         ]);
+        $this->tester->mockCraftMethods('tokens', [
+            'getRemainingTokenUsages' => 1,
+        ]);
 
         $expected = TestSetup::SITE_URL . 'endpoint?token=t0k3n';
         self::assertSame($expected, UrlHelper::url('endpoint'));
@@ -291,15 +340,20 @@ class UrlHelperTest extends TestCase
             ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
-            ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
-            ['foo[bar]=baz', ['foo[bar]' => 'baz']],
-            ['foo[bar]=baz', ['foo' => ['bar' => 'baz']]],
+            ['foo%5B0%5D=1&foo%5B1%5D=2', ['foo' => [1, 2]]],
+            ['foo%5Bbar%5D=baz', ['foo[bar]' => 'baz']],
+            ['foo%5Bbar%5D=baz', ['foo' => ['bar' => 'baz']]],
             ['foo=bar%2Bbaz', ['foo' => 'bar+baz']],
-            ['foo+bar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Bbar=baz', ['foo+bar' => 'baz']],
+            ['foo%2Fbar=baz', ['foo/bar' => 'baz']],
+            ['foo%5B{bar}%5D=baz', ['foo[{bar}]' => 'baz']],
             ['foo=bar%5Bbaz%5D', ['foo' => 'bar[baz]']],
             ['foo={bar}', ['foo' => '{bar}']],
-            ['foo[1]=bar', ['foo[1]' => 'bar']],
-            ['foo[1][bar]=1&foo[1][baz]=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
+            ['foo=some%2Fpath%2F{bar}', ['foo' => 'some/path/{bar}']],
+            ['p=actions/endpoint', ['p' => 'actions/endpoint']],
+            ['returnUrl=https%3A%2F%2Fexample.test%2Fpath%2F{id}%3Ffoo%3Dbar', ['returnUrl' => 'https://example.test/path/{id}?foo=bar']],
+            ['foo%5B1%5D=bar', ['foo[1]' => 'bar']],
+            ['foo%5B1%5D%5Bbar%5D=1&foo%5B1%5D%5Bbaz%5D=2', ['foo[1][bar]' => 1, 'foo[1][baz]' => 2]],
         ];
     }
 
@@ -367,6 +421,16 @@ class UrlHelperTest extends TestCase
                 'nav',
                 ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
+            'test-token-and-forward-slash-params' => [
+                '{cpUrl}/nav?redirect=some%2Fpath%2F{id}&site={handle}',
+                'nav',
+                ['redirect' => 'some/path/{id}', 'site' => '{handle}'],
+            ],
+            'test-return-url-param' => [
+                '{cpUrl}/nav?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}',
+                'nav',
+                ['returnUrl' => 'https://example.test/admin/entries?site={handle}'],
+            ],
             'test-preexisting-endpoints' => [
                 '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
@@ -418,6 +482,129 @@ class UrlHelperTest extends TestCase
     }
 
     /**
+     * Tests for UrlHelper::removeParam() method
+     *
+     * @return array
+     */
+    public static function removeParamDataProvider(): array
+    {
+        return [
+            'basic' => [
+                self::ABSOLUTE_URL_HTTPS . '?param2=value2',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2',
+                'param1',
+            ],
+            'last-param' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                'param1',
+            ],
+            'missing-param' => [
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                'param2',
+            ],
+            'no-params' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS,
+                'param1',
+            ],
+            'keeps-fragment' => [
+                self::ABSOLUTE_URL_HTTPS . '?param2=value2#anchor',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2#anchor',
+                'param1',
+            ],
+        ];
+    }
+
+    /**
+     * Tests for UrlHelper::removeParams() method
+     *
+     * @return array
+     */
+    public static function removeParamsDataProvider(): array
+    {
+        return [
+            'multiple' => [
+                self::ABSOLUTE_URL_HTTPS . '?param2=value2',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2&param3=value3',
+                ['param1', 'param3'],
+            ],
+            'all-params' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2',
+                ['param1', 'param2'],
+            ],
+            'missing-params' => [
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                ['param2', 'param3'],
+            ],
+            'empty-params' => [
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1',
+                [],
+            ],
+            'no-params' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS,
+                ['param1'],
+            ],
+            'keeps-fragment' => [
+                self::ABSOLUTE_URL_HTTPS . '?param2=value2#anchor',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2&param3=value3#anchor',
+                ['param1', 'param3'],
+            ],
+        ];
+    }
+
+    /**
+     * Tests for UrlHelper::removeAllParams() method
+     *
+     * @return array
+     */
+    public static function removeAllParamsDataProvider(): array
+    {
+        return [
+            'basic' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2',
+                [],
+            ],
+            'except' => [
+                self::ABSOLUTE_URL_HTTPS . '?param2=value2',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2&param3=value3',
+                ['param2'],
+            ],
+            'except-multiple' => [
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param3=value3',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2&param3=value3',
+                ['param1', 'param3'],
+            ],
+            'except-missing' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2',
+                ['param3'],
+            ],
+            'no-params' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS,
+                [],
+            ],
+            'keeps-fragment' => [
+                self::ABSOLUTE_URL_HTTPS . '#anchor',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2#anchor',
+                [],
+            ],
+            'except-keeps-fragment' => [
+                self::ABSOLUTE_URL_HTTPS . '?param2=value2#anchor',
+                self::ABSOLUTE_URL_HTTPS . '?param1=value1&param2=value2#anchor',
+                ['param2'],
+            ],
+        ];
+    }
+
+    /**
      * Tests for UrlHelper::urlWithParams() method
      *
      * @return array
@@ -441,14 +628,14 @@ class UrlHelperTest extends TestCase
                 '?param1=entry1&param2=entry2',
             ],
             '#' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2#anchor',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor'],
+                ['param1' => 'value', 'param2' => 'value2', '#' => 'anchor'],
             ],
             'basic-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2'],
+                ['param1' => 'value', 'param2' => 'value2'],
             ],
             'empty-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW,
@@ -466,9 +653,44 @@ class UrlHelperTest extends TestCase
                 ['someparam'],
             ],
             'query-string' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value1&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1=name&param2=name2',
+                '?param1=value1&param2=value2',
+            ],
+            'query-string-with-token' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1={value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1={value}',
+            ],
+            'query-string-with-token-name' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5B{key}%5D={value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1[{key}]={value}',
+            ],
+            'query-string-with-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5Bkey%5D={value}&param1%5Bkey2%5D=value2&param2%5Bkey%5D={value3}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1[key]={value}&param1[key2]=value2&param2[key]={value3}',
+            ],
+            'query-string-with-with-non-indexed-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5B0%5D=value1&param1%5B1%5D=value2',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1[]=value1&param1[]=value2',
+            ],
+            'query-string-with-forward-slash' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some%2Fpath',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=some/path',
+            ],
+            'query-string-with-token-and-forward-slash' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some%2Fpath%2F{value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=some/path/{value}',
+            ],
+            'return-url-with-query-string' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fcontent%2Fentries%2Fsingles%3Fsource%3Dsingles',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                ['returnUrl' => 'https://example.test/admin/content/entries/singles?source=singles'],
             ],
             'pre-queried-url' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param3=name3&param1=name&param2=name2',
@@ -584,6 +806,8 @@ class UrlHelperTest extends TestCase
             ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+            ['http://example.test?foo=some%2Fpath%2F{token}', 'http://example.test?foo=some/path/{token}'],
+            ['http://example.test?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'http://example.test?returnUrl=https://example.test/admin/entries?site={handle}'],
         ];
     }
 
@@ -597,6 +821,25 @@ class UrlHelperTest extends TestCase
             ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/genêve?foo=bar'],
             ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/gen%C3%AAve?foo=bar'],
             ['foo+bar', 'foo bar'],
+        ];
+    }
+
+    /**
+     * Tests for UrlHelper::absoluteUrl()
+     *
+     * @return array
+     */
+    public static function absoluteUrlDataProvider(): array
+    {
+        return [
+            'root-relative, current site' => ['https://test.craftcms.test/uploads/a.png', '/uploads/a.png', null],
+            'root-relative, base with a path' => ['https://example.com/uploads/a.png', '/uploads/a.png', 'https://example.com/fr/'],
+            'path-relative, base with a path' => ['https://example.com/fr/uploads/a.png', 'uploads/a.png', 'https://example.com/fr/'],
+            'protocol-relative' => ['http://cdn.example.com/a.png', '//cdn.example.com/a.png', 'http://example.com/'],
+            'query and fragment' => ['https://example.com/a.png?v=2#top', '/a.png?v=2#top', 'https://example.com/'],
+            'unencoded characters' => ['https://example.com/uploads/caf%C3%A9%20au%20lait.png', '/uploads/café au lait.png', 'https://example.com/'],
+            'already absolute' => ['https://cdn.example.com/a.png', 'https://cdn.example.com/a.png', 'https://example.com/'],
+            'relative base' => ['/a.png', '/a.png', '/fr/'],
         ];
     }
 
@@ -649,6 +892,23 @@ class UrlHelperTest extends TestCase
                 ['param1' => 'entry1', 'param2' => 'entry2'],
                 'https',
             ],
+            'token-and-forward-slash-param-add' => [
+                self::ABSOLUTE_URL_HTTPS . '?redirect=some%2Fpath%2F{id}',
+                self::ABSOLUTE_URL,
+                ['redirect' => 'some/path/{id}'],
+                'https',
+            ],
+            'return-url-param-add' => [
+                self::ABSOLUTE_URL_HTTPS . '?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}',
+                self::ABSOLUTE_URL,
+                ['returnUrl' => 'https://example.test/admin/entries?site={handle}'],
+                'https',
+            ],
+            'remove-params' => [
+                self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?x-craft-preview=foo&test=bar',
+                false,
+            ],
         ];
     }
 
@@ -668,7 +928,9 @@ class UrlHelperTest extends TestCase
         return [
             ['{siteUrl}endpoint', 'endpoint'],
             // https://github.com/craftcms/cms/issues/4778
-            ['{siteUrl}endpoint?param1=x&param2[0]=y&param2[1]=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?param1=x&param2%5B0%5D=y&param2%5B1%5D=z', 'endpoint', 'param1=x&param2[]=y&param2[]=z'],
+            ['{siteUrl}endpoint?redirect=some%2Fpath%2F{id}', 'endpoint', ['redirect' => 'some/path/{id}']],
+            ['{siteUrl}endpoint?returnUrl=https%3A%2F%2Fexample.test%2Fadmin%2Fentries%3Fsite%3D{handle}', 'endpoint', ['returnUrl' => 'https://example.test/admin/entries?site={handle}']],
         ];
     }
 

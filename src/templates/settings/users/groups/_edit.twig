@@ -1,78 +1,66 @@
-{% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
-{% set readOnly = not craft.app.config.general.allowAdminChanges %}
-{% set fullPageForm = not readOnly %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}
 {% endif %}
 
-{% block content %}
-    {% if not readOnly %}
-        {{ actionInput('user-settings/save-group') }}
-        {{ redirectInput('settings/users') }}
-        {% if group.id %}
-            {{ hiddenInput('groupId', group.id) }}
-        {% endif %}
-    {% endif %}
+{% if group.id %}
+    {{ hiddenInput('groupId', group.id) }}
+{% endif %}
 
-    {{ forms.textField({
-        first: true,
-        label: "Name"|t('app'),
-        id: 'name',
-        name: 'name',
-        value: group.name,
-        errors: group.getErrors('name'),
-        autofocus: true,
-        required: true,
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: group.name,
+    errors: group.getErrors('name'),
+    data: {'error-key': 'name'},
+    autofocus: true,
+    required: true,
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: group.handle,
+    errors: group.getErrors('handle'),
+    data: {'error-key': 'handle'},
+    required: true,
+    disabled: readOnly,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: group.description ?? null,
+    errors: group.getErrors('description'),
+    data: {'error-key': 'description'},
+    disabled: readOnly,
+}) }}
+
+<hr>
+
+<h2>{{ "Permissions"|t('app') }}</h2>
+
+<div id="permissions">
+    {% include "_includes/permissions" with {
+        subject: group ?? null,
+        permissions: craft.app.userPermissions.getAllPermissions(),
+        includeGroupPlaceholder: not group.id,
         disabled: readOnly,
-    }) }}
+    } only %}
+</div>
 
-    {{ forms.textField({
-        label: "Handle"|t('app'),
-        id: 'handle',
-        name: 'handle',
-        class: 'code',
-        autocorrect: false,
-        autocapitalize: false,
-        value: group.handle,
-        errors: group.getErrors('handle'),
-        required: true,
-        disabled: readOnly,
-    }) }}
-
-    {{ forms.textareaField({
-        label: 'Description'|t('app'),
-        id: 'description',
-        class: 'nicetext',
-        name: 'description',
-        value: group.description ?? null,
-        errors: group.getErrors('description'),
-        disabled: readOnly,
-    }) }}
-
-    <hr>
-
-    <h2>{{ "Permissions"|t('app') }}</h2>
-
-    <div id="permissions">
-        {% include "_includes/permissions" with {
-            subject: group ?? null,
-            permissions: craft.app.userPermissions.getAllPermissions(),
-            includeGroupPlaceholder: not group.id,
-            disabled: readOnly,
-        } only %}
-    </div>
-{% endblock %}
-
-{% js %}
-    {% if not group.handle %}
-        new Craft.HandleGenerator('#name', '#handle');
-    {% endif %}
-
-    {% if group.id %}
-        new Craft.ElevatedSessionForm('#main-form', [
-            '#permissions input[type="checkbox"]:not(:checked)'
-        ]);
-    {% endif %}
-{% endjs %}
+{% if not group.handle %}
+    {% js %}
+        new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
+    {% endjs %}
+{% endif %}

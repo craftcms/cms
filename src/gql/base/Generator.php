@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
+use craft\helpers\Gql as GqlHelper;
 use craft\models\FieldLayout;
 use GraphQL\Type\Definition\Type;
 
@@ -45,9 +46,21 @@ abstract class Generator
         if ($layout) {
             foreach ($layout->getCustomFields() as $contentField) {
                 /** @var Field $contentField */
-                if ($contentField->includeInGqlSchema($schema)) {
-                    $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                if (!$contentField->includeInGqlSchema($schema)) {
+                    continue;
                 }
+
+                $definition = $contentField->getContentGqlType();
+
+                // Respect field layout conditions for schemas authenticated as a user
+                if ($schema->user) {
+                    if (!GqlHelper::isFieldVisibleToUser($contentField)) {
+                        continue;
+                    }
+                    $definition = GqlHelper::guardContentFieldDefinition($contentField, $definition);
+                }
+
+                $contentFieldGqlTypes[$contentField->handle] = $definition;
             }
     
             foreach ($layout->getGeneratedFields() as $generatedField) {

@@ -13,11 +13,13 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Iconic;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\MissingComponentException;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\ConfigEvent;
@@ -34,6 +36,7 @@ use craft\fields\ButtonGroup;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
+use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\fields\ContentBlock;
 use craft\fields\Country;
 use craft\fields\Date;
@@ -590,6 +593,8 @@ class Fields extends Component
             'handle' => $field->handle,
             'columnSuffix' => $field->columnSuffix,
             'instructions' => $field->instructions,
+            'tip' => $field->tip,
+            'warning' => $field->warning,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
@@ -815,6 +820,32 @@ class Fields extends Component
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
+    }
+
+    /**
+     * Forgets the cached fields and field layouts, so they’re loaded again the next time they’re needed.
+     *
+     * Unlike [[refreshFields()]], this doesn’t update the field version. Instead, it tells the already-loaded
+     * [[CustomFieldBehavior]] class about any field handles that have been added since.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_fields = null;
+        $this->_layouts = null;
+
+        foreach ($this->getAllFields(false) as $field) {
+            CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        }
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFieldElements() as $layoutElement) {
+                if (isset($layoutElement->handle)) {
+                    CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
+                }
+            }
+        }
     }
 
     /**
@@ -1128,8 +1159,7 @@ class Fields extends Component
         $request = Craft::$app->getRequest();
         $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = $request->getBodyParam("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'thumbAlignment');
+        $config = ComponentHelper::cleanseConfig($config);
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
@@ -1186,6 +1216,12 @@ class Fields extends Component
             $layoutRecord = new FieldLayoutRecord();
         }
 
+        if (!$isNewLayout) {
+            // capture any replaced custom fields, and update internal conditions with the new UUIDs where possible
+            $replacedFields = $this->captureReplacedFields($layout);
+            $this->updateFieldConditionRules($layout, $replacedFields);
+        }
+
         // Save the layout
         $layoutRecord->type = $layout->type;
         $layoutRecord->config = $layout->getConfig();
@@ -1231,13 +1267,72 @@ class Fields extends Component
         return true;
     }
 
+    private function captureReplacedFields(FieldLayout $layout): array
+    {
+        $replacedFields = [];
+
+        foreach ($layout->getCustomFieldElements() as $layoutElement) {
+            if (isset($layoutElement->oldFieldUid)) {
+                if ($layoutElement->oldFieldUid !== $layoutElement->getFieldUid()) {
+                    $replacedFields[$layoutElement->oldFieldUid] = [$layoutElement->getFieldUid(), $layoutElement->uid];
+                }
+
+                $layoutElement->oldFieldUid = null;
+            }
+        }
+
+        return $replacedFields;
+    }
+
+    private function updateFieldConditionRules(FieldLayout $layout, array $replacedFields): void
+    {
+        if (empty($replacedFields)) {
+            return;
+        }
+
+        foreach ($layout->getTabs() as $tab) {
+            $this->updateElementCondition($tab->getUserCondition(), $replacedFields);
+            $this->updateElementCondition($tab->getElementCondition(), $replacedFields);
+
+            foreach ($tab->getElements() as $layoutElement) {
+                $this->updateElementCondition($layoutElement->getUserCondition(), $replacedFields);
+                $this->updateElementCondition($layoutElement->getElementCondition(), $replacedFields);
+
+                if ($layoutElement instanceof CustomField) {
+                    $this->updateElementCondition($layoutElement->getEditCondition(), $replacedFields);
+                    $this->updateElementCondition($layoutElement->getElementEditCondition(), $replacedFields);
+                }
+            }
+        }
+    }
+
+    private function updateElementCondition(?ElementConditionInterface $condition, array $replacedFields): void
+    {
+        if (!$condition) {
+            return;
+        }
+
+        foreach ($condition->getConditionRules() as $rule) {
+            if (!$rule instanceof FieldConditionRuleInterface) {
+                continue;
+            }
+
+            $fieldUid = $rule->getFieldUid();
+
+            if (isset($replacedFields[$fieldUid])) {
+                $rule->setFieldUid($replacedFields[$fieldUid][0]);
+            }
+        }
+    }
+
     /**
      * Deletes a field layout(s) by its ID.
      *
      * @param int|int[] $layoutId The field layout’s ID
+     * @param bool $hardDelete Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById(array|int $layoutId): bool
+    public function deleteLayoutById(array|int $layoutId, bool $hardDelete = false): bool
     {
         if (!$layoutId) {
             return false;
@@ -1247,7 +1342,7 @@ class Fields extends Component
             $layout = $this->getLayoutById($thisLayoutId);
 
             if ($layout) {
-                $this->deleteLayout($layout);
+                $this->deleteLayout($layout, $hardDelete);
             }
         }
 
@@ -1258,9 +1353,10 @@ class Fields extends Component
      * Deletes a field layout.
      *
      * @param FieldLayout $layout The field layout
+     * @param bool $hardDelete Whether the field layout should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout): bool
+    public function deleteLayout(FieldLayout $layout, bool $hardDelete = false): bool
     {
         // Fire a 'beforeDeleteFieldLayout' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
@@ -1269,9 +1365,15 @@ class Fields extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
-            ->execute();
+        if ($hardDelete) {
+            Craft::$app->getDb()->createCommand()
+                ->delete(Table::FIELDLAYOUTS, ['id' => $layout->id])
+                ->execute();
+        } else {
+            Craft::$app->getDb()->createCommand()
+                ->softDelete(Table::FIELDLAYOUTS, ['id' => $layout->id])
+                ->execute();
+        }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
             $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
@@ -1405,6 +1507,8 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
+            $fieldRecord->tip = $data['tip'] ?? null;
+            $fieldRecord->warning = $data['warning'] ?? null;
             $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
@@ -1536,7 +1640,7 @@ class Fields extends Component
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
+                    'icon' => Cp::iconSvg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
@@ -1560,11 +1664,12 @@ class Fields extends Component
     private function _getSearchParams(string $term): array
     {
         $searchParams = ['name', 'handle', 'instructions', 'type'];
+        $isPgsql = Craft::$app->getDb()->getIsPgsql();
         $searchQueries = [];
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$isPgsql ? 'ilike' : 'like', $param, "%$term%", false];
             }
         }
 
@@ -1601,6 +1706,11 @@ class Fields extends Component
         // todo: remove after the next breakpoint
         if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'dateDeleted')) {
             $query->where(['fields.dateDeleted' => null]);
+        }
+
+        // todo: remove after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::FIELDS, 'tip')) {
+            $query->addSelect(['fields.tip', 'fields.warning']);
         }
 
         return $query;

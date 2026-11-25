@@ -25,18 +25,17 @@ class RequireAdminTokenParser extends AbstractTokenParser
     public function parse(Token $token): RequireAdminNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [];
 
         if (!$stream->test(Token::BLOCK_END_TYPE)) {
-            $nodes['requireAdminChanges'] = $parser->getExpressionParser()->parseExpression();
+            $nodes['requireAdminChanges'] = $this->parser->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RequireAdminNode($nodes, [], $lineno, $this->getTag());
+        return new RequireAdminNode($nodes, [], $lineno);
     }
 
     /**

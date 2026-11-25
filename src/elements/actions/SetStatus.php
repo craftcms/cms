@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 
 /**
  * SetStatus represents a Set Status element action.
@@ -85,21 +86,18 @@ JS, [static::class]);
         $elementType = $this->elementType;
         $isLocalized = $elementType::isLocalized() && Craft::$app->getIsMultiSite();
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
 
-        $elements = $query->all();
         $failCount = 0;
+        $total = 0;
 
-        // Make sure the user has permission to edit each of the elements
-        foreach ($elements as $element) {
-            if (!$elementsService->canSave($element)) {
-                $this->setMessage(Craft::t('app', 'Couldn’t save {type}.', [
-                    'type' => count($elements) === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                ]));
-                return false;
+        foreach (Db::each($query) as $element) {
+            $total++;
+
+            if (!$elementsService->canSave($element, $user)) {
+                continue;
             }
-        }
 
-        foreach ($elements as $element) {
             switch ($this->status) {
                 case self::ENABLED:
                     // Skip if there's nothing to change
@@ -137,8 +135,8 @@ JS, [static::class]);
         }
 
         // Did all of them fail?
-        if ($failCount === count($elements)) {
-            if (count($elements) === 1) {
+        if ($failCount === $total) {
+            if ($total === 1) {
                 $this->setMessage(Craft::t('app', 'Could not update status due to a validation error.'));
             } else {
                 $this->setMessage(Craft::t('app', 'Could not update statuses due to validation errors.'));
@@ -150,7 +148,7 @@ JS, [static::class]);
         if ($failCount !== 0) {
             $this->setMessage(Craft::t('app', 'Status updated, with some failures due to validation errors.'));
         } else {
-            if (count($elements) === 1) {
+            if ($total === 1) {
                 $this->setMessage(Craft::t('app', 'Status updated.'));
             } else {
                 $this->setMessage(Craft::t('app', 'Statuses updated.'));

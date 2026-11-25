@@ -11,6 +11,9 @@ use Craft;
 use craft\console\Request as ConsoleRequest;
 use craft\errors\SiteNotFoundException;
 use craft\web\Request as WebRequest;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
+use InvalidArgumentException;
 use yii\base\Exception;
 
 /**
@@ -78,9 +81,35 @@ class UrlHelper
     }
 
     /**
+     * Resolves a relative URL, such as `/uploads/a.png` or `//cdn.example.com/a.png`, against a base URL, as a browser
+     * would. The base URL defaults to the current site’s base URL. The URL is returned as it is when it’s already
+     * absolute, when the base URL isn’t absolute, or when either can’t be parsed.
+     *
+     * @param string $url
+     * @param string|null $baseUrl
+     * @return string
+     * @since 5.12.2
+     */
+    public static function absoluteUrl(string $url, ?string $baseUrl = null): string
+    {
+        $baseUrl ??= static::baseSiteUrl();
+
+        if (static::isAbsoluteUrl($url) || !static::isAbsoluteUrl($baseUrl)) {
+            return $url;
+        }
+
+        try {
+            return (string)UriResolver::resolve(new Uri($baseUrl), new Uri($url));
+        } catch (InvalidArgumentException) {
+            return $url;
+        }
+    }
+
+    /**
      * Returns a query string based on the given params.
      *
-     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     * Param names and values will be encoded, except for `{` and `}` characters.
+     * Path param values will also preserve `/` characters.
      *
      * @param array $params
      * @return string
@@ -96,12 +125,17 @@ class UrlHelper
         if ($query === '') {
             return '';
         }
-        // Decode the param names and a few select chars in param values
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
-            $n = urldecode($n);
-            $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
+            $n = str_replace(['%7B', '%7D'], ['{', '}'], $n);
+            $v = str_replace(['%7B', '%7D'], ['{', '}'], $v);
+
+            // Preserve the long-standing `?p=actions/foo` format, even though the encoded value should resolve the same.
+            if ($n === $pathParam) {
+                $v = str_replace('%2F', '/', $v);
+            }
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
         return implode('&', $params);
@@ -150,11 +184,60 @@ class UrlHelper
      */
     public static function removeParam(string $url, string $param): string
     {
+        return static::removeParams($url, [$param]);
+    }
+
+    /**
+     * Removes query string params from a URL.
+     *
+     * @param string $url
+     * @param string[] $params
+     * @return string
+     * @since 5.11.0
+     */
+    public static function removeParams(string $url, array $params): string
+    {
+        // Extract any params/fragment from the base URL
+        [$url, $urlParams, $fragment] = self::_extractParams($url);
+
+        // Remove the params
+        foreach ($params as $param) {
+            unset($urlParams[$param]);
+        }
+
+        // Rebuild
+        if (($query = static::buildQuery($urlParams)) !== '') {
+            $url .= '?' . $query;
+        }
+        if ($fragment !== null) {
+            $url .= '#' . $fragment;
+        }
+        return $url;
+    }
+
+    /**
+     * Removes all query string params from a URL.
+     *
+     * @param string $url
+     * @param string[] $except Any params that should be left alone
+     * @return string
+     * @since 5.11.0
+     */
+    public static function removeAllParams(string $url, array $except = []): string
+    {
         // Extract any params/fragment from the base URL
         [$url, $params, $fragment] = self::_extractParams($url);
 
-        // Remove the param
-        unset($params[$param]);
+        // Remove the params
+        if (!empty($except)) {
+            foreach (array_keys($params) as $param) {
+                if (!in_array($param, $except)) {
+                    unset($params[$param]);
+                }
+            }
+        } else {
+            $params = [];
+        }
 
         // Rebuild
         if (($query = static::buildQuery($params)) !== '') {
@@ -269,18 +352,20 @@ class UrlHelper
      * Returns either a control panel or a site URL, depending on the request type.
      *
      * @param string $path
-     * @param array|string|null $params
+     * @param array|string|false|null $params The query params to add to the URL. If `false`, any existing params will be removed.
      * @param string|null $scheme
      * @param bool|null $showScriptName Whether the script name (index.php) should be included in the URL.
      * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function url(string $path = '', array|string|false|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
                 $path = static::urlWithParams($path, $params);
+            } elseif ($params === false) {
+                $path = static::removeAllParams($path);
             }
 
             if ($scheme !== null) {
@@ -306,7 +391,7 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, showScriptName: $showScriptName);
+        return self::_createUrl($path, $params ?: null, $scheme, $cpUrl, showScriptName: $showScriptName);
     }
 
     /**
@@ -575,6 +660,38 @@ class UrlHelper
     }
 
     /**
+     * Returns a CP referral URL.
+     *
+     * @return string|null
+     * @since 5.9.0
+     * @deprecated in 5.10.0
+     */
+    public static function cpReferralUrl(): ?string
+    {
+        $referrer = Craft::$app->getRequest()->getReferrer();
+
+        if ($referrer === null) {
+            return null;
+        }
+
+        // Make sure the CP referred it
+        if (!str_starts_with($referrer, static::baseCpUrl())) {
+            return null;
+        }
+
+        // to ensure we're comparing uris strip base cp url and query string from the referrer first
+        $referrerFullUri = ltrim(StringHelper::removeLeft($referrer, static::baseCpUrl()), '/');
+        $referrerFullUri = substr($referrerFullUri, 0, strpos($referrerFullUri, '?') ?: null);
+
+        // Make sure it didn't refer itself
+        if ($referrerFullUri === Craft::$app->getRequest()->getFullUri()) {
+            return null;
+        }
+
+        return $referrer;
+    }
+
+    /**
      * Parses a URL for the host info.
      *
      * @param string $url
@@ -658,9 +775,15 @@ class UrlHelper
                 $params[$generalConfig->siteToken] = $siteToken;
             }
             if ($request->getIsSiteRequest()) {
-                if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                if (
+                    $addToken &&
+                    !isset($params[$generalConfig->tokenParam]) &&
+                    ($token = $request->getToken()) !== null &&
+                    Craft::$app->getTokens()->getRemainingTokenUsages($token) !== 0
+                ) {
                     $params[$generalConfig->tokenParam] = $token;
                 }
+
                 if (
                     !isset($params['x-craft-preview']) &&
                     !isset($params['x-craft-live-preview']) &&

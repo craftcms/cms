@@ -109,7 +109,15 @@ class Assets extends Component
     private array $_userTempFolders = [];
 
     /**
+     * @see getTempAssetUploadFs()
+     */
+    private ?FsInterface $_tempAssetUploadFs = null;
+
+    /**
      * Returns a file by its ID.
+     *
+     * If no site ID is passed, the asset will be returned in the current site if it exists there,
+     * or in another site it exists in otherwise (e.g. for volumes with custom propagation).
      *
      * @param int $assetId
      * @param int|null $siteId
@@ -117,7 +125,17 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        if ($siteId !== null) {
+            return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+        }
+
+        /** @var Asset|null */
+        return Asset::find()
+            ->id($assetId)
+            ->site('*')
+            ->preferSites([Craft::$app->getSites()->getCurrentSite()->id])
+            ->unique()
+            ->one();
     }
 
     /**
@@ -285,18 +303,42 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
-        $descendantFolders = $this->getAllDescendantFolders($folder);
+        $oldFolderPath = $folder->path;
+        $volume->renameDirectory(rtrim($oldFolderPath, '/'), $newName);
 
-        foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^' . $folder->path . '#', $newFolderPath, $descendantFolder->path);
-            $this->storeFolderRecord($descendantFolder);
-        }
-
-        // Now change the affected folder
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
+
+        // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder's
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            $childFolders = $this->findFolders(['parentId' => $parentIds]);
+            $parentIds = array_keys($childFolders);
+
+            foreach ($childFolders as $childFolder) {
+                $oldChildPath = $childFolder->path;
+                // Take the prefix by path segment, since case variants can differ in length
+                $oldPrefix = implode('/', array_slice(explode('/', $oldChildPath), 0, substr_count($oldFolderPath, '/'))) . '/';
+                if (mb_convert_case($oldPrefix, MB_CASE_FOLD) !== mb_convert_case($oldFolderPath, MB_CASE_FOLD)) {
+                    continue;
+                }
+
+                // Keep the rest of the path as stored, so it still matches the directories below the renamed one
+                $newChildPath = $newFolderPath . substr($oldChildPath, strlen($oldPrefix));
+
+                // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
+                if (
+                    $oldPrefix !== $oldFolderPath &&
+                    (!$volume->directoryExists(rtrim($newChildPath, '/')) || $volume->directoryExists(rtrim($oldChildPath, '/')))
+                ) {
+                    continue;
+                }
+
+                $childFolder->path = $newChildPath;
+                $this->storeFolderRecord($childFolder);
+            }
+        }
 
         return $newName;
     }
@@ -335,7 +377,7 @@ class Assets extends Component
         }
 
         // Delete the elements
-        $assetQuery = Asset::find()->folderId($allFolderIds);
+        $assetQuery = Asset::find()->folderId($allFolderIds)->site('*')->unique();
         $elementService = Craft::$app->getElements();
 
         foreach (Db::each($assetQuery) as $asset) {
@@ -870,9 +912,11 @@ class Assets extends Component
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
+        $fullPath = trim($fullPath, '/\\');
+
         if ($fullPath !== '') {
             // If we don't have a folder matching these, create a new one
-            $parts = preg_split('/\\\\|\//', trim($fullPath, '/\\'));
+            $parts = preg_split('/\\\\|\//', $fullPath);
 
             // creep up the folder path
             $path = '';
@@ -943,7 +987,9 @@ class Assets extends Component
     {
         $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
         if (!$handle) {
-            return new Temp();
+            // Created via the DI container, so hosts can replace it, such as with shared storage for load-balanced
+            // servers. It's reused so Assets::isTempUploadFs() can recognize it whatever its class.
+            return $this->_tempAssetUploadFs ??= Craft::createObject(Temp::class);
         }
 
         $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
@@ -1066,7 +1112,7 @@ class Assets extends Component
             Asset::KIND_IMAGE => new ImagePreview($asset),
             Asset::KIND_PDF => new Pdf($asset),
             Asset::KIND_VIDEO => new Video($asset),
-            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
+            Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_MARKDOWN, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
             default => null,
         };
     }

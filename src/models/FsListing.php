@@ -43,13 +43,11 @@ class FsListing extends Model
 
     /**
      * @var int|null The filesize.
-     * @phpstan-ignore property.unusedType
      */
     private ?int $fileSize = null;
 
     /**
      * @var int|null Timestamp of date modified.
-     * @phpstan-ignore property.unusedType
      */
     private ?int $dateModified = null;
 

@@ -101,7 +101,7 @@ class Users extends BaseRelationField
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $userGroupUids = $allowedEntities['usergroups'] ?? [];
 
-        if (in_array('everyone', $userGroupUids, false)) {
+        if (in_array('everyone', $userGroupUids, false) || in_array('solo', $userGroupUids, false)) {
             return [];
         }
 

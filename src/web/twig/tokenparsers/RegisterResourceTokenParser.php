@@ -78,9 +78,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     public function parse(Token $token): RegisterResourceNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
-        $expressionParser = $parser->getExpressionParser();
+        $stream = $this->parser->getStream();
 
         $nodes = [];
 
@@ -96,7 +94,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             $capture = true;
         } else {
             $capture = false;
-            $nodes['value'] = $expressionParser->parseExpression();
+            $nodes['value'] = $this->parser->parseExpression();
         }
 
         // Is there a position param?
@@ -127,7 +125,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
         // Is there an options param?
         if ($this->allowOptions && $stream->test(Token::NAME_TYPE, 'with')) {
             $stream->next();
-            $nodes['options'] = $expressionParser->parseExpression();
+            $nodes['options'] = $this->parser->parseExpression();
         }
 
         // Close out the tag
@@ -135,7 +133,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
 
         if ($capture) {
             // Tag pair. Capture the value.
-            $nodes['value'] = $parser->subparse([$this, 'decideBlockEnd'], true);
+            $nodes['value'] = $this->parser->subparse([$this, 'decideBlockEnd'], true);
             $stream->expect(Token::BLOCK_END_TYPE);
         }
 
@@ -149,7 +147,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'position' => $position,
         ];
 
-        return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());
+        return new RegisterResourceNode($nodes, $attributes, $lineno);
     }
 
     /**

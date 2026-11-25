@@ -55,6 +55,14 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
+    public function getTriggerId(): string
+    {
+        return sprintf('%s-actiontrigger', static::class);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTriggerLabel(): string
     {
         return static::displayName();

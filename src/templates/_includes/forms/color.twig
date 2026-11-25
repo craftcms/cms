@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms -%}
 
 {% set id = id ?? "color#{random()}" -%}
-{% set containerId = containerId ?? id~'-container' -%}
+{% set containerId = containerId ?? "#{id}-container" -%}
 {% set hexLabelId = "#{id}-label" %}
 {% set hexDescriptionId = "#{id}-desc" %}
 {% set name = name ?? null -%}
@@ -9,6 +9,7 @@
 {% set small = small ?? false -%}
 {% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
 {% set disabled = disabled ?? false -%}
+{% set alpha = alpha ?? false -%}
 {% set labelledBy = labelledBy ?? null %}
 
 {% set containerAttributes = {
@@ -57,5 +58,6 @@
 {% js %}
     new Craft.ColorInput('#{{ containerId|namespaceInputId }}', {
         presets: {{ (presets ?? [])|json_encode|raw }},
+        alpha: {{ alpha ? 'true' : 'false' }},
     });
 {% endjs -%}

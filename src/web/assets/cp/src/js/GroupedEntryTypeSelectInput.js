@@ -46,7 +46,7 @@
 
     addComponents: function ($components) {
       this.base($components);
-      this.manager?.entryTypeSort.addItems($components.parent('li'));
+      this.manager?.entryTypeSort?.addItems($components.parent('li'));
     },
 
     addComponentInternal: function ($component) {
@@ -79,45 +79,56 @@
     defineComponentActions: function ($component) {
       const actions = this.base($component);
 
-      actions.push({
-        icon: async () =>
-          await Craft.ui.icon(
-            Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right'
-          ),
-        label: Craft.t('app', 'Move to previous group'),
-        onActivate: (el) => {
-          // don't use `this` in case the chip ends up getting assigned to a different component select
-          $(el)
-            .closest('.menu')
-            .data('disclosureMenu')
-            .$trigger.closest('.componentselect')
-            .data('componentSelect')
-            .moveEntryTypeToPreviousGroup($component);
-        },
-        attributes: {
-          'data-move-to-previous-group': true,
-        },
-      });
+      const lastMoveAction = actions.findLastIndex(
+        (a) => a.attributes && a.attributes['data-move-backward']
+      );
 
-      actions.push({
-        icon: async () =>
-          await Craft.ui.icon(
-            Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left'
-          ),
-        label: Craft.t('app', 'Move to next group'),
-        callback: (el) => {
-          // don't use `this` in case the chip ends up getting assigned to a different component select
-          $(el)
-            .closest('.menu')
-            .data('disclosureMenu')
-            .$trigger.closest('.componentselect')
-            .data('componentSelect')
-            .moveEntryTypeToNextGroup($component);
+      const moveActions = [
+        {
+          icon: async () =>
+            await Craft.ui.icon(
+              Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right'
+            ),
+          label: Craft.t('app', 'Move to previous group'),
+          onActivate: (el) => {
+            // don't use `this` in case the chip ends up getting assigned to a different component select
+            $(el)
+              .closest('.menu')
+              .data('disclosureMenu')
+              .$trigger.closest('.componentselect')
+              .data('componentSelect')
+              .moveEntryTypeToPreviousGroup($component);
+          },
+          attributes: {
+            'data-move-to-previous-group': true,
+          },
         },
-        attributes: {
-          'data-move-to-next-group': true,
+        {
+          icon: async () =>
+            await Craft.ui.icon(
+              Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left'
+            ),
+          label: Craft.t('app', 'Move to next group'),
+          callback: (el) => {
+            // don't use `this` in case the chip ends up getting assigned to a different component select
+            $(el)
+              .closest('.menu')
+              .data('disclosureMenu')
+              .$trigger.closest('.componentselect')
+              .data('componentSelect')
+              .moveEntryTypeToNextGroup($component);
+          },
+          attributes: {
+            'data-move-to-next-group': true,
+          },
         },
-      });
+      ];
+
+      if (lastMoveAction !== -1) {
+        actions.splice(lastMoveAction, 0, ...moveActions);
+      } else {
+        actions.push(...moveActions);
+      }
 
       return actions;
     },

@@ -11,16 +11,16 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\deletionblockers\DeletionBlockerInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 use yii\web\Response;
 
 /**
@@ -42,7 +42,8 @@ interface ElementInterface extends
     CpEditable,
     Thumbable,
     Statusable,
-    Actionable
+    Actionable,
+    Renderable
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -262,11 +263,20 @@ interface ElementInterface extends
     public static function createCondition(): ElementConditionInterface;
 
     /**
+     * Returns whether the element type’s sources can be split into multiple pages.
+     *
+     * @return bool
+     * @since 5.9.0
+     */
+    public static function multiPageSources(): bool;
+
+    /**
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
      * Each item in the array should be set to an array that has the following keys:
+     * - **`page`** – The source’s page label. (Optional)
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
@@ -547,10 +557,13 @@ interface ElementInterface extends
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
+     * @param FieldLayout|null $fieldLayout
+     * @since 5.9.0
      * @return array The card attributes.
+     *
      * @since 5.5.0
      */
-    public static function cardAttributes(): array;
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
 
     /**
      * Returns the list of card attribute keys that should be shown by default, if the field layout hasn't been customised.
@@ -637,6 +650,16 @@ interface ElementInterface extends
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
 
     /**
+     * Returns any deletion blockers for the given elements.
+     *
+     * @param ElementCollection $elements The elements to be deleted
+     * @param bool $hardDelete Whether the elements will be hard-deleted
+     * @return DeletionBlockerInterface[]
+     * @since 5.10.0
+     */
+    public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array;
+
+    /**
      * Returns the base GraphQL type name that represents elements of this type.
      *
      * @return Type
@@ -659,6 +682,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public function getIsDraft(): bool;
 
     /**
@@ -667,6 +691,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.2.0
      */
+    #[AllowedInSandbox]
     public function getIsRevision(): bool;
 
     /**
@@ -675,6 +700,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getIsCanonical(): bool;
 
     /**
@@ -683,6 +709,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getIsDerivative(): bool;
 
     /**
@@ -694,6 +721,7 @@ interface ElementInterface extends
      * @return self
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getCanonical(bool $anySite = false): self;
 
     /**
@@ -712,6 +740,7 @@ interface ElementInterface extends
      * @return int|null
      * @since 3.7.0
      */
+    #[AllowedInSandbox]
     public function getCanonicalId(): ?int;
 
     /**
@@ -730,6 +759,7 @@ interface ElementInterface extends
      * @return string|null
      * @since 3.7.11
      */
+    #[AllowedInSandbox]
     public function getCanonicalUid(): ?string;
 
     /**
@@ -738,6 +768,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.6.0
      */
+    #[AllowedInSandbox]
     public function getIsUnpublishedDraft(): bool;
 
     /**
@@ -760,6 +791,7 @@ interface ElementInterface extends
      *
      * @return Site
      */
+    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -768,6 +800,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
+    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -822,6 +855,7 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
+    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -829,6 +863,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -836,6 +871,7 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
+    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -907,6 +943,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getRef(): ?string;
 
     /**
@@ -930,6 +967,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canView(User $user): bool;
 
     /**
@@ -941,6 +979,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canSave(User $user): bool;
 
     /**
@@ -952,6 +991,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDuplicate(User $user): bool;
 
     /**
@@ -961,6 +1001,7 @@ interface ElementInterface extends
      * @return bool
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public function canDuplicateAsDraft(User $user): bool;
 
     /**
@@ -970,6 +1011,7 @@ interface ElementInterface extends
      * @return bool
      * @since 5.7.0
      */
+    #[AllowedInSandbox]
     public function canCopy(User $user): bool;
 
     /**
@@ -981,6 +1023,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDelete(User $user): bool;
 
     /**
@@ -992,6 +1035,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canDeleteForSite(User $user): bool;
 
     /**
@@ -1008,6 +1052,7 @@ interface ElementInterface extends
      * @return bool
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function canCreateDrafts(User $user): bool;
 
     /**
@@ -1090,6 +1135,7 @@ interface ElementInterface extends
      * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getEnabledForSite(?int $siteId = null): ?bool;
 
     /**
@@ -1108,6 +1154,7 @@ interface ElementInterface extends
      * @return self
      * @since 5.4.0
      */
+    #[AllowedInSandbox]
     public function getRootOwner(): self;
 
     /**
@@ -1115,6 +1162,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getLocalized(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1123,6 +1171,7 @@ interface ElementInterface extends
      * @param mixed $criteria
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getNext(mixed $criteria = false): ?self;
 
     /**
@@ -1131,6 +1180,7 @@ interface ElementInterface extends
      * @param mixed $criteria
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getPrev(mixed $criteria = false): ?self;
 
     /**
@@ -1152,6 +1202,7 @@ interface ElementInterface extends
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getParent(): ?self;
 
     /**
@@ -1161,6 +1212,7 @@ interface ElementInterface extends
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getParentUri(): ?string;
 
     /**
@@ -1176,6 +1228,7 @@ interface ElementInterface extends
      * @param int|null $dist
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getAncestors(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1184,6 +1237,7 @@ interface ElementInterface extends
      * @param int|null $dist
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getDescendants(?int $dist = null): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1191,6 +1245,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getChildren(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1198,6 +1253,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface|ElementCollection
      */
+    #[AllowedInSandbox]
     public function getSiblings(): ElementQueryInterface|ElementCollection;
 
     /**
@@ -1205,6 +1261,7 @@ interface ElementInterface extends
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getPrevSibling(): ?self;
 
     /**
@@ -1212,6 +1269,7 @@ interface ElementInterface extends
      *
      * @return self|null
      */
+    #[AllowedInSandbox]
     public function getNextSibling(): ?self;
 
     /**
@@ -1219,6 +1277,7 @@ interface ElementInterface extends
      *
      * @return bool
      */
+    #[AllowedInSandbox]
     public function getHasDescendants(): bool;
 
     /**
@@ -1226,6 +1285,7 @@ interface ElementInterface extends
      *
      * @return int
      */
+    #[AllowedInSandbox]
     public function getTotalDescendants(): int;
 
     /**
@@ -1234,6 +1294,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isAncestorOf(self $element): bool;
 
     /**
@@ -1242,6 +1303,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isDescendantOf(self $element): bool;
 
     /**
@@ -1250,6 +1312,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isParentOf(self $element): bool;
 
     /**
@@ -1258,6 +1321,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isChildOf(self $element): bool;
 
     /**
@@ -1266,6 +1330,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isSiblingOf(self $element): bool;
 
     /**
@@ -1274,6 +1339,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isPrevSiblingOf(self $element): bool;
 
     /**
@@ -1282,6 +1348,7 @@ interface ElementInterface extends
      * @param self $element
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isNextSiblingOf(self $element): bool;
 
     /**
@@ -1296,6 +1363,7 @@ interface ElementInterface extends
      * Sets the element’s attributes from an element editor submission.
      *
      * @param array $values The attribute values
+     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 
@@ -1440,6 +1508,7 @@ interface ElementInterface extends
      * @param string $handle
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isFieldEmpty(string $handle): bool;
 
     /**
@@ -1450,6 +1519,7 @@ interface ElementInterface extends
      * returned. If it is an array, only the fields in the array will be returned.
      * @return array The field values (handle => value)
      */
+    #[AllowedInSandbox]
     public function getFieldValues(?array $fieldHandles = null): array;
 
     /**
@@ -1488,6 +1558,7 @@ interface ElementInterface extends
      * @return mixed The field value
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
+    #[AllowedInSandbox]
     public function getFieldValue(string $fieldHandle): mixed;
 
     /**
@@ -1507,6 +1578,15 @@ interface ElementInterface extends
      * @since 4.5.0
      */
     public function setFieldValueFromRequest(string $fieldHandle, mixed $value): void;
+
+    /**
+     * Enables or disables dirty field tracking.
+     *
+     * @param bool $enabled
+     * @see getDirtyFields()
+     * @since 5.10.0
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void;
 
     /**
      * Returns the field handles that have been updated on the canonical element since the last time it was
@@ -1660,6 +1740,7 @@ interface ElementInterface extends
      * @param string $handle The handle of the eager-loaded elements
      * @return bool Whether elements have been eager-loaded with the given handle
      */
+    #[AllowedInSandbox]
     public function hasEagerLoadedElements(string $handle): bool;
 
     /**
@@ -1668,6 +1749,7 @@ interface ElementInterface extends
      * @param string $handle The handle of the eager-loaded elements
      * @return ElementCollection|null The eager-loaded elements, or null if they hadn't been eager-loaded
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElements(string $handle): ?ElementCollection;
 
     /**
@@ -1694,6 +1776,7 @@ interface ElementInterface extends
      * @return int|null The eager-loaded element count, or null if it hadn't been eager-loaded
      * @since 3.4.0
      */
+    #[AllowedInSandbox]
     public function getEagerLoadedElementCount(string $handle): ?int;
 
     /**
@@ -1841,6 +1924,13 @@ interface ElementInterface extends
     public function afterSave(bool $isNew): void;
 
     /**
+     * Performs actions after the element is assigned an ID.
+     *
+     * @since 5.10.5
+     */
+    public function afterAssignedId(): void;
+
+    /**
      * Performs actions after an element is fully saved and propagated to other sites.
      *
      * ::: tip
@@ -1900,9 +1990,6 @@ interface ElementInterface extends
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1910,9 +1997,6 @@ interface ElementInterface extends
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 
@@ -1920,17 +2004,4 @@ interface ElementInterface extends
      * Returns the string representation of the element.
      */
     public function __toString(): string;
-
-    /**
-     * Renders the element using its partial template.
-     *
-     * If no partial template exists for the element, its string representation will be output instead.
-     *
-     * @param array $variables
-     * @return Markup
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     * @since 5.8.0
-     */
-    public function render(array $variables = []): Markup;
 }

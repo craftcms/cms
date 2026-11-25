@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -32,7 +34,9 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\web\twig\AllowedInSandbox;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -199,7 +203,7 @@ class Category extends Element
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
-                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("viewCategories:$group->uid"),
+                'structureEditable' => Craft::$app->getRequest()->getIsConsoleRequest() || Craft::$app->getUser()->checkPermission("saveCategories:$group->uid"),
             ];
         }
 
@@ -313,6 +317,19 @@ class Category extends Element
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
             [
+                'label' => Craft::t('app', 'Group'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $groupIds = Collection::make(Craft::$app->getCategories()->getAllGroups())
+                        ->sort(fn(CategoryGroup $a, CategoryGroup $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(CategoryGroup $group) => $group->id)
+                        ->all();
+                    return new FixedOrderExpression('categories.groupId', $groupIds, $db);
+                },
+                'attribute' => 'group',
+            ],
+            [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
@@ -331,6 +348,7 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
+            'group' => ['label' => Craft::t('app', 'Group')],
             'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
         ]);
@@ -378,6 +396,7 @@ class Category extends Element
     /**
      * @var int|null Group ID
      */
+    #[AllowedInSandbox]
     public ?int $groupId = null;
 
     /**
@@ -501,7 +520,10 @@ class Category extends Element
         foreach ($ancestors->all() as $ancestor) {
             if ($elementsService->canView($ancestor, $user)) {
                 $crumbs[] = [
-                    'html' => Cp::elementChipHtml($ancestor, ['class' => 'chromeless']),
+                    'html' => Cp::elementChipHtml($ancestor, [
+                        'class' => 'chromeless',
+                        'hyperlink' => true,
+                    ]),
                 ];
             }
         }
@@ -768,6 +790,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
+    #[AllowedInSandbox]
     public function getGroup(): CategoryGroup
     {
         if (!isset($this->groupId)) {
@@ -785,6 +808,19 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    protected function attributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'group':
+                return Html::encode($this->getGroup()->getUiLabel());
+            default:
+                return parent::attributeHtml($attribute);
+        }
+    }
 
     /**
      * @inheritdoc

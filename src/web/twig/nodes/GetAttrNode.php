@@ -10,6 +10,7 @@ namespace craft\web\twig\nodes;
 use craft\helpers\Template as TemplateHelper;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
+use Twig\Node\Expression\ConstantExpression;
 use Twig\Node\Expression\GetAttrExpression;
 use Twig\Node\Node;
 use Twig\Template;
@@ -50,7 +51,7 @@ class GetAttrNode extends GetAttrExpression
         if (
             $this->getAttribute('optimizable')
             && (!$env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
-            && !$this->getAttribute('is_defined_test')
+            && !$this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
             && Template::ARRAY_CALL === $this->getAttribute('type')
         ) {
             $var = '$' . $compiler->getVarName();
@@ -58,7 +59,8 @@ class GetAttrNode extends GetAttrExpression
                 ->raw('((' . $var . ' = ')
                 ->subcompile($this->getNode('node'))
                 ->raw(') && is_array(')
-                ->raw($var);
+                ->raw($var)
+            ;
 
             if (!$env->hasExtension(SandboxExtension::class)) {
                 $compiler
@@ -66,10 +68,10 @@ class GetAttrNode extends GetAttrExpression
                     ->raw($var)
                     ->raw(' instanceof ArrayAccess ? (')
                     ->raw($var)
-                    ->raw('[(string)') // DIFF: `(string)` added
-                    ->subcompile($this->getNode('attribute'))
-                    ->raw('] ?? null) : null)')
+                    ->raw('[')
                 ;
+                $this->compileArrayKey($compiler);
+                $compiler->raw('] ?? null) : null)');
 
                 return;
             }
@@ -83,21 +85,51 @@ class GetAttrNode extends GetAttrExpression
                 ->raw($var . '::class')
                 ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
                 ->raw($var)
-                ->raw('[(string)') // DIFF: `(string)` added
-                ->subcompile($this->getNode('attribute'))
-                ->raw('] ?? null) : ')
+                ->raw('[')
             ;
+            $this->compileArrayKey($compiler);
+            $compiler->raw('] ?? null) : ');
         }
-
-        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
-        $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
 
         if ($this->getAttribute('ignore_strict_check')) {
             $this->getNode('node')->setAttribute('ignore_strict_check', true);
         }
 
+        // DIFF: null-safe (`?.`) short-circuit support, ported from GetAttrExpression::compile()
+        $nullSafe = $this->getAttribute('null_safe');
+
+        if (null === $nullSafeNode = $nullSafe ? $this : null) {
+            $node = $this->getNode('node');
+            while ($node instanceof self) {
+                if ($node->getAttribute('null_safe')) {
+                    $nullSafeNode = $node;
+                    break;
+                }
+                $node = $node->getNode('node');
+            }
+        }
+
+        $isShortCircuited = false;
+        if (null !== $nullSafeNode && !$nullSafeNode->isShortCircuited()) {
+            $compiler
+                ->raw('((null === (' . $nullSafeNode->getVarName($compiler) . ' = ')
+                ->subcompile($nullSafeNode->getNode('node'))
+                ->raw(')) ? null : ');
+
+            $nullSafeNode->markAsShortCircuited();
+            $isShortCircuited = true;
+        }
+
+        // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
+        $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
+
+        if ($nullSafe) {
+            $compiler->raw($this->getVarName($compiler));
+        } else {
+            $compiler->subcompile($this->getNode('node'));
+        }
+
         $compiler
-            ->subcompile($this->getNode('node'))
             ->raw(', ')
             ->subcompile($this->getNode('attribute'))
         ;
@@ -110,7 +142,7 @@ class GetAttrNode extends GetAttrExpression
 
         $compiler->raw(', ')
             ->repr($this->getAttribute('type'))
-            ->raw(', ')->repr($this->getAttribute('is_defined_test'))
+            ->raw(', ')->repr($this->isDefinedTestEnabled()) // DIFF: $this->definedTest is private
             ->raw(', ')->repr($this->getAttribute('ignore_strict_check'))
             ->raw(', ')->repr($env->hasExtension(SandboxExtension::class))
             ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
@@ -120,5 +152,61 @@ class GetAttrNode extends GetAttrExpression
         if ($arrayAccessSandbox) {
             $compiler->raw(')');
         }
+
+        if ($isShortCircuited) {
+            $compiler->raw(')');
+        }
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     *
+     * DIFF: Stringable keys are always coerced to strings, rather than only for arrays, `ArrayObject`, and
+     * `ArrayIterator`, to match [[TemplateHelper::attribute()]].
+     */
+    private function compileArrayKey(Compiler $compiler): void
+    {
+        $attribute = $this->getNode('attribute');
+
+        if ($attribute instanceof ConstantExpression) {
+            $compiler->subcompile($attribute);
+
+            return;
+        }
+
+        $key = '$' . $compiler->getVarName();
+        $compiler
+            ->raw('((' . $key . ' = ')
+            ->subcompile($attribute)
+            ->raw(') instanceof \Stringable ? (string) ' . $key . ' : ' . $key . ')')
+        ;
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function isShortCircuited(): bool
+    {
+        return $this->getAttribute('is_short_circuited');
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function markAsShortCircuited(): void
+    {
+        $this->setAttribute('is_short_circuited', true);
+    }
+
+    /**
+     * DIFF: reimplemented because GetAttrExpression's version is private.
+     */
+    private function getVarName(Compiler $compiler): string
+    {
+        if (null === $this->getAttribute('var_name')) {
+            $this->setAttribute('var_name', $compiler->getVarName());
+        }
+
+        return '$' . $this->getAttribute('var_name');
     }
 }

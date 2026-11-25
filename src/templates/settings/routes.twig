@@ -1,3 +1,4 @@
+{% from '_includes/forms.twig' import button %}
 {% requireAdmin false %}
 
 {% extends "_layouts/cp" %}
@@ -35,6 +36,22 @@
 
 {% set routes = craft.routes.getProjectConfigRoutes() %}
 
+{% set actionMenuItems = [
+    {
+        icon: 'arrow-up',
+        label: 'Move up'|t('app'),
+        attributes: {
+            data: {action: 'moveUp'},
+        },
+    },
+    {
+        label: 'Move down'|t('app'),
+        attributes: {
+            data: {icon: 'arrow-down', action: 'moveDown'},
+        },
+    },
+] %}
+
 {% block main %}
     <div id="routes">
         {% if readOnly %}
@@ -58,6 +75,35 @@
                     {% endapply -%}
                 </div>
                 <div class="template">{{ route.template }}</div>
+                {% if not readOnly %}
+                    <div class="actions">
+                        {{ button({
+                            class: ['chromeless', 'small', 'edit-btn'],
+                            icon: 'edit',
+                            attributes: {
+                                title: 'Edit'|t('app'),
+                                aria: {label: 'Edit'|t('app')},
+                                role: 'none',
+                            },
+                        }) }}
+                        {{ disclosureMenu(actionMenuItems, {
+                            hiddenLabel: 'Actions'|t('app'),
+                            buttonAttributes: {
+                                class: ['action-btn', 'small'],
+                                title: 'Actions'|t('app'),
+                                data: {
+                                    'disclosure-trigger': true,
+                                },
+                            },
+                        }) }}
+                        {{ tag('a', {
+                            class: ['move', 'icon'],
+                            title: 'Reorder'|t('app'),
+                            aria: {label: 'Reorder'|t('app')},
+                            tabindex: '-1',
+                        }) }}
+                    </div>
+                {% endif %}
             </div>
         {% endfor %}
     </div>

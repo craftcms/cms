@@ -248,7 +248,7 @@ class SitesController extends Controller
             $groupId = $siteModel->groupId ?? $allGroups[0]->id;
         }
 
-        $siteGroup = $sitesService->getGroupById($groupId);
+        $siteGroup = $sitesService->getGroupById($groupId, true);
 
         if ($siteGroup === null) {
             throw new NotFoundHttpException('Site group not found');

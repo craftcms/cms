@@ -22,10 +22,15 @@ import './routes.scss';
         this.routes.push(route);
       }
 
-      this.sorter = new Garnish.DragSort($routes, {
-        axis: Garnish.Y_AXIS,
-        onSortChange: this.updateRouteOrder.bind(this),
-      });
+      if (Craft.hasMousePointerEvents()) {
+        this.sorter = new Garnish.DragSort($routes, {
+          handle: '.move',
+          axis: Garnish.Y_AXIS,
+          onSortChange: this.updateRouteOrder.bind(this),
+        });
+      } else {
+        $('#routes .move').hide();
+      }
 
       this.$addRouteBtn = $('#add-route-btn');
 
@@ -58,7 +63,9 @@ import './routes.scss';
     },
 
     addRoute: function () {
-      new RouteSettingsModal();
+      new RouteSettingsModal(null, {
+        triggerElement: this.$addRouteBtn,
+      });
     },
   });
 
@@ -70,6 +77,9 @@ import './routes.scss';
     $uri: null,
     $template: null,
     modal: null,
+    $actionMenu: null,
+    actionDisclosure: null,
+    $actionMenuOptions: null,
 
     init: function (container) {
       this.$container = $(container);
@@ -82,13 +92,79 @@ import './routes.scss';
       if (Craft.allowAdminChanges) {
         this.addListener(this.$container, 'click', 'edit');
       }
+
+      const $actionMenuBtn = this.$container.find('> .actions > .action-btn');
+      const actionDisclosure =
+        $actionMenuBtn.data('disclosureMenu') ||
+        new Garnish.DisclosureMenu($actionMenuBtn);
+
+      this.$actionMenu = actionDisclosure.$container;
+      this.actionDisclosure = actionDisclosure;
+
+      actionDisclosure.on('show', () => {
+        this.$container.addClass('active');
+        const hideActions = [];
+
+        if (!this.$container.prev('.route').length) {
+          hideActions.push('moveUp');
+        }
+
+        if (!this.$container.next('.route').length) {
+          hideActions.push('moveDown');
+        }
+
+        const $buttons = this.$actionMenu.find('button[data-action]');
+        const $hideButtons = hideActions.length
+          ? $buttons.filter(
+              hideActions.map((a) => `[data-action=${a}]`).join(',')
+            )
+          : $();
+
+        const disclosureMenu = this.$actionMenu.data('disclosureMenu');
+        $hideButtons.each((i, button) => {
+          disclosureMenu.hideItem(button);
+        });
+        $buttons.not($hideButtons).each((i, button) => {
+          disclosureMenu.showItem(button);
+        });
+      });
+
+      actionDisclosure.on('hide', () => {
+        this.$container.removeClass('active');
+      });
+
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
+
+      this.addListener(
+        this.$actionMenuOptions,
+        'activate',
+        this.handleActionClick
+      );
     },
 
     edit: function () {
       if (!this.modal) {
-        this.modal = new RouteSettingsModal(this);
+        this.modal = new RouteSettingsModal(this, {
+          triggerElement: this.$container.find('.edit-btn'),
+        });
       } else {
         this.modal.show();
+      }
+    },
+
+    moveUp: function () {
+      let $prev = this.$container.prev('.route');
+      if ($prev.length) {
+        this.$container.insertBefore($prev);
+        Craft.routes.updateRouteOrder();
+      }
+    },
+
+    moveDown: function () {
+      let $next = this.$container.next('.route');
+      if ($next.length) {
+        this.$container.insertAfter($next);
+        Craft.routes.updateRouteOrder();
       }
     },
 
@@ -123,6 +199,29 @@ import './routes.scss';
       this.$uri.html(uriHtml);
       this.$template.text(this.modal.$templateInput.val());
     },
+
+    handleActionClick: function (event) {
+      event.preventDefault();
+      this.onActionSelect(event.target);
+    },
+
+    onActionSelect: function (option) {
+      const $option = $(option);
+
+      switch ($option.data('action')) {
+        case 'moveUp': {
+          this.moveUp();
+          break;
+        }
+
+        case 'moveDown': {
+          this.moveDown();
+          break;
+        }
+      }
+
+      this.actionDisclosure?.hide();
+    },
   });
 
   var RouteSettingsModal = Garnish.Modal.extend({
@@ -138,7 +237,7 @@ import './routes.scss';
     $deleteBtn: null,
     loading: false,
 
-    init: function (route) {
+    init: function (route, settings) {
       this.route = route;
 
       var tokenHtml = '<h4>' + Craft.t('app', 'Add a token') + '</h4>';
@@ -291,7 +390,7 @@ import './routes.scss';
         this.$templateInput.val(templateVal);
       }
 
-      this.base($container);
+      this.base($container, settings);
 
       // We must add vars on mousedown, so that text elements don't have a chance
       // to lose focus, thus losing the caret position.
@@ -361,7 +460,7 @@ import './routes.scss';
       this.base();
     },
 
-    saveRoute: function (event) {
+    saveRoute: async function (event) {
       event.preventDefault();
 
       if (this.loading) {
@@ -437,59 +536,144 @@ import './routes.scss';
       this.$saveBtn.addClass('active');
       this.$spinner.show();
 
-      Craft.sendActionRequest('POST', 'routes/save-route', {data})
-        .then((response) => {
-          // Is this a new route?
-          if (!this.route) {
-            var routeHtml =
-              '<div class="route" data-uid="' +
-              response.data.routeUid +
-              '"' +
-              (response.data.siteUid
-                ? ' data-site-uid="' + response.data.siteUid + '"'
-                : '') +
-              '>' +
-              '<div class="uri-container">';
+      let response;
 
-            if (Craft.isMultiSite) {
-              routeHtml += '<span class="site"></span>';
-            }
-
-            routeHtml +=
-              '<span class="uri" dir="ltr"></span>' +
-              '</div>' +
-              '<div class="template" dir="ltr"></div>' +
-              '</div>';
-
-            var $route = $(routeHtml);
-
-            $route.appendTo('#routes');
-
-            this.route = new Route($route);
-            this.route.modal = this;
-
-            Craft.routes.sorter.addItems($route);
-
-            // Was this the first one?
-            if (Craft.routes.sorter.$items.length === 1) {
-              $('#noroutes').addClass('hidden');
-            }
-          }
-
-          this.route.siteUid = response.data.siteUid;
-          this.route.updateHtmlFromModal();
-          this.hide();
-
-          Craft.cp.displaySuccess(Craft.t('app', 'Route saved.'));
-        })
-        .catch(() => {
-          Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
-        })
-        .finally(() => {
-          this.$saveBtn.removeClass('active');
-          this.$spinner.hide();
-          this.loading = false;
+      try {
+        response = await Craft.sendActionRequest('POST', 'routes/save-route', {
+          data,
         });
+      } catch (e) {
+        Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
+      } finally {
+        this.$saveBtn.removeClass('active');
+        this.$spinner.hide();
+        this.loading = false;
+      }
+
+      // Is this a new route?
+      if (!this.route) {
+        let routeHtml =
+          '<div class="route" data-uid="' +
+          response.data.routeUid +
+          '"' +
+          (response.data.siteUid
+            ? ' data-site-uid="' + response.data.siteUid + '"'
+            : '') +
+          '>' +
+          '<div class="uri-container">';
+
+        if (Craft.isMultiSite) {
+          routeHtml += '<span class="site"></span>';
+        }
+
+        const icon = await Craft.ui.icon('edit');
+        routeHtml +=
+          '<span class="uri" dir="ltr"></span>' +
+          '</div>' +
+          '<div class="template" dir="ltr"></div>' +
+          '<div class="actions">' +
+          `<button class="chromeless small edit-btn" title="${Craft.t(
+            'app',
+            'Edit'
+          )}" aria-label="${Craft.t('app', 'Edit')}" role="none">` +
+          '<div class="inline-flex">' +
+          '<div class="cp-icon">' +
+          $(icon).html() +
+          '</div>' +
+          '</div>' +
+          '</button>' +
+          '</div>' +
+          '</div>';
+
+        var $route = $(routeHtml);
+
+        $route.appendTo('#routes');
+
+        this.addNewRouteActions($route);
+
+        this.route = new Route($route);
+        this.route.modal = this;
+
+        Craft.routes.sorter?.addItems($route);
+
+        // Was this the first one?
+        if (Craft.routes.sorter?.$items.length === 1) {
+          $('#noroutes').addClass('hidden');
+        }
+      }
+
+      this.route.siteUid = response.data.siteUid;
+      this.route.updateHtmlFromModal();
+      this.hide();
+
+      Craft.cp.displaySuccess(Craft.t('app', 'Route saved.'));
+    },
+
+    addNewRouteActions: function ($route) {
+      let $actionsContainer = $route.find('.actions');
+
+      Craft.ui
+        .createButton({
+          class: 'chromeless small edit-btn',
+          icon: 'edit',
+        })
+        .attr({
+          title: Craft.t('app', 'Edit'),
+          'aria-label': Craft.t('app', 'Edit'),
+          role: 'none',
+        })
+        .appendTo($actionsContainer);
+      $(' ').appendTo($actionsContainer);
+
+      const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
+      const $menuButton = Craft.ui
+        .createButton({
+          class: 'menubtn action-btn small',
+          controls: menuId,
+          ariaLabel: Craft.t('app', 'Actions'),
+        })
+        .attr({
+          'data-disclosure-trigger': 'true',
+          title: Craft.t('app', 'Actions'),
+        })
+        .appendTo($actionsContainer);
+      $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).appendTo($actionsContainer);
+
+      const disclosureMenu = $menuButton
+        .disclosureMenu()
+        .data('disclosureMenu');
+
+      disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon('arrow-up'),
+        label: Craft.t('app', 'Move up'),
+        onActivate: () => {
+          this.route.moveUp();
+        },
+        attributes: {
+          'data-action': 'moveUp',
+        },
+      });
+
+      disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon('arrow-down'),
+        label: Craft.t('app', 'Move down'),
+        onActivate: () => {
+          this.route.moveDown();
+        },
+        attributes: {
+          'data-action': 'moveDown',
+        },
+      });
+
+      $('<a />', {
+        class: 'move icon',
+        title: Craft.t('app', 'Reorder'),
+        'aria-label': Craft.t('app', 'Reorder'),
+        tabindex: '-1',
+      }).appendTo($actionsContainer);
     },
 
     addUriError: function (error) {
@@ -520,12 +704,13 @@ import './routes.scss';
           Craft.cp.displaySuccess(Craft.t('app', 'Route deleted.'));
         });
 
-        Craft.routes.sorter.removeItems(this.route.$container);
+        Craft.routes.sorter?.removeItems(this.route.$container);
         this.route.$container.remove();
+        this.$triggerElement = Craft.routes.$addRouteBtn;
         this.hide();
 
         // Was this the last one?
-        if (Craft.routes.sorter.$items.length === 0) {
+        if (Craft.routes.sorter?.$items.length === 0) {
           $('#noroutes').removeClass('hidden');
         }
       }

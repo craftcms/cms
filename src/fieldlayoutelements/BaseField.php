@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\events\DefineFieldActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -24,6 +25,13 @@ use craft\helpers\StringHelper;
  */
 abstract class BaseField extends FieldLayoutElement
 {
+    /**
+     * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
+     * @see actionMenuItems()
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
     /**
      * @var string|null The field’s label
      */
@@ -52,12 +60,14 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field should be used to define element thumbnails.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $providesThumbs = false;
 
     /**
      * @var bool Whether this field’s contents should be included in element cards.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $includeInCards = false;
 
@@ -74,11 +84,34 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['includeInCards'], $fields['providesThumbs']);
+        return $fields;
+    }
+
+    /**
      * Returns the element attribute this field is for.
      *
      * @return string
      */
     abstract public function attribute(): string;
+
+    /**
+     * Returns the key for this field.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function key(): string
+    {
+        $uid = $this->uid ?? '{uid}';
+
+        return "layoutElement:$uid";
+    }
 
     /**
      * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
@@ -159,6 +192,46 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the card preview options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.0
+     */
+    public function getPreviewOptions(): ?array
+    {
+        if (!$this->previewable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
+    }
+
+    /**
+     * Returns the card thumbnail options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.6
+     */
+    public function getThumbOptions(): ?array
+    {
+        if (!$this->thumbable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -236,7 +309,8 @@ abstract class BaseField extends FieldLayoutElement
                 'mandatory' => $this->mandatory(),
                 'requirable' => $this->requirable(),
                 'thumbable' => $this->thumbable(),
-                'previewable' => $this->previewable(),
+                'preview-options' => $this->getPreviewOptions(),
+                'thumb-options' => $this->getThumbOptions(),
             ],
         ];
     }
@@ -308,22 +382,6 @@ abstract class BaseField extends FieldLayoutElement
             ];
         }
 
-        if ($this->thumbable() && $this->providesThumbs) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
-                'icon' => 'image',
-                'iconColor' => 'violet',
-            ];
-        }
-
-        if ($this->previewable() && $this->includeInCards) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field is included in element cards'),
-                'icon' => 'eye',
-                'iconColor' => 'blue',
-            ];
-        }
-
         return $indicators;
     }
 
@@ -352,6 +410,8 @@ abstract class BaseField extends FieldLayoutElement
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),
+            'defaultTip' => $this->defaultTip(),
+            'defaultWarning' => $this->defaultWarning(),
             'labelHidden' => !$this->showLabel(),
         ]);
     }
@@ -374,6 +434,16 @@ abstract class BaseField extends FieldLayoutElement
         $warning = $this->warning($element, $static);
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $actionMenuItems,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            $actionMenuItems = $event->items;
+        }
 
         if (
             $this->uid &&
@@ -423,6 +493,7 @@ abstract class BaseField extends FieldLayoutElement
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
+            'static' => $static,
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'showAttribute' => $this->showAttribute(),
@@ -765,7 +836,20 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function tip(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->tip ? Craft::t('site', $this->tip) : null;
+        return $this->tip ? Craft::t('site', $this->tip) : $this->defaultTip($element, $static);
+    }
+
+    /**
+     * Returns the field’s default tip text, which will be used if [[tip]] is null.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     * @since 5.12.0
+     */
+    protected function defaultTip(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**
@@ -777,7 +861,20 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->warning ? Craft::t('site', $this->warning) : null;
+        return $this->warning ? Craft::t('site', $this->warning) : $this->defaultWarning($element, $static);
+    }
+
+    /**
+     * Returns the field’s default warning text, which will be used if [[warning]] is null.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     * @since 5.12.0
+     */
+    protected function defaultWarning(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        return null;
     }
 
     /**
@@ -852,6 +949,47 @@ abstract class BaseField extends FieldLayoutElement
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
         return [];
+    }
+
+    /**
+     * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param array $config
+     * @return array
+     * @since 5.9.0
+     */
+    protected function copyAttributeAction(array $config = []): array
+    {
+        $config += [
+            'id' => sprintf('action-copy-handle-%s', mt_rand()),
+            'icon' => 'clipboard',
+            'label' => Craft::t('app', 'Copy attribute name'),
+            'promptLabel' => Craft::t('app', 'Attribute Name'),
+            'attribute' => $this->attribute(),
+        ];
+
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($id, $promptLabel, $attribute) => <<<JS
+(() => {
+  $('#' + $id).on('activate', () => {
+    Craft.ui.createCopyTextPrompt({
+      label: $promptLabel,
+      value: $attribute,
+    });
+  });
+})();
+JS, [
+            $view->namespaceInputId($config['id']),
+            $config['promptLabel'],
+            $config['attribute'],
+        ]);
+
+        return [
+            'id' => $config['id'],
+            'icon' => $config['icon'],
+            'label' => $config['label'],
+        ];
     }
 
     /**

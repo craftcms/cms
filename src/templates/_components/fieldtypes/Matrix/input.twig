@@ -1,8 +1,9 @@
 {% set singleType = entryTypes|length == 1 %}
+{% set static = static ?? false %}
 
-{% import '_includes/forms.twig' as forms %}
-
-{{ hiddenInput(name, '') }}
+{% if not static %}
+  {{ hiddenInput(name, '') }}
+{% endif %}
 
 <div class="matrix matrix-field" id="{{ id }}">
   <span role="status" class="visually-hidden" data-status-message></span>
@@ -13,63 +14,7 @@
   </div>
   {% if not static and not staticEntries %}
     <div class="buttons">
-      {% if singleType %}
-        {{ forms.button({
-          label: createButtonLabel,
-          class: ['dashed', 'add', 'icon', 'wrap'],
-          spinner: true,
-          attributes: {
-            data: {
-              type: entryTypes|first.handle,
-            },
-            aria: {
-              describedby: labelId,
-            },
-          },
-        }) }}
-      {% else %}
-        {% set groupedEntryTypes = collect(entryTypes).groupBy(et => et.group ?? 'General'|t('app')) %}
-        {% if groupedEntryTypes.count() > 1 %}
-          {% set items = groupedEntryTypes.map((entryTypes, group) => [
-            {hr: true, padded: false},
-            {
-              heading: group|t('site'),
-              padded: false,
-              items: entryTypes|map(entryType => {
-                icon: entryType.icon,
-                color: entryType.color,
-                label: entryType.name|t('site'),
-                value: entryType.handle,
-                attributes: {
-                  data: {
-                    type: entryType.handle,
-                  },
-                },
-              }),
-            },
-          ]).flatten(1).all() %}
-        {% else %}
-          {% set items = groupedEntryTypes.map((entryTypes) => entryTypes|map(entryType => {
-            icon: entryType.icon,
-            color: entryType.color,
-            label: entryType.name|t('site'),
-            value: entryType.handle,
-            attributes: {
-              data: {
-                type: entryType.handle,
-              },
-            },
-          })).flatten(1).all() %}
-        {% endif %}
-        {{ disclosureMenu(items, {
-          buttonLabel: createButtonLabel,
-          buttonSpinner: true,
-          buttonAttributes: {
-            class: ['dashed', 'add', 'icon'],
-          },
-          withSearchInput: entryTypes|length > 5,
-        }) }}
-      {% endif %}
+      {% include '_components/fieldtypes/Matrix/create-button.twig' %}
     </div>
   {% endif %}
 </div>

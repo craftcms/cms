@@ -46,6 +46,7 @@
     id: 'icon',
     name: 'icon',
     value: entryType.icon,
+    sets: '*',
     errors: entryType.getErrors('icon'),
     data: {
         'error-key': 'icon',
@@ -63,6 +64,20 @@
         'error-key': 'color',
     },
     disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+  label: 'UI Label Format'|t('app'),
+  instructions: 'How entries should be labeled within the control panel.'|t('app'),
+  id: 'uiLabelFormat',
+  name: 'uiLabelFormat',
+  class: 'code',
+  value: entryType.uiLabelFormat,
+  errors: entryType.getErrors('uiLabelFormat'),
+  data: {
+    'error-key': 'uiLabelFormat',
+  },
+  disabled: readOnly,
 }) }}
 
 <hr>
@@ -124,6 +139,13 @@
         'error-key': 'titleFormat',
     },
     disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
+  label: 'Allow line breaks in titles'|t('app'),
+  name: 'allowLineBreaksInTitles',
+  on: entryType.allowLineBreaksInTitles,
+  disabled: readOnly,
 }) }}
 
 {{ forms.lightswitchField({

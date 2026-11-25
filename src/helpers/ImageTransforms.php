@@ -21,6 +21,7 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
 use Imagine\Image\Format;
+use Throwable;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -68,7 +69,7 @@ class ImageTransforms
             'width' => $matches['width'] ?? null,
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
-            'position' => $matches['position'],
+            'position' => $matches['position'] ?? 'center-center',
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
@@ -148,11 +149,25 @@ class ImageTransforms
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            if (!$volume->getFs() instanceof LocalFsInterface) {
+            $fs = $volume->getFs();
+            if (!$fs instanceof LocalFsInterface) {
                 // This is a non-local fs
-                if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
+                $remoteDateModified = null;
+                if (is_file($imageSourcePath) && filesize($imageSourcePath) !== 0) {
+                    try {
+                        $remoteDateModified = $fs->getDateModified($asset->getPath());
+                    } catch (Throwable) {
+                        // Can't tell whether the cache is still fresh; assume it is rather than
+                        // re-downloading on every request just because the fs is being flaky.
+                    }
+                }
+
+                // Stale if the remote object has been modified more recently than our local copy.
+                $sourceIsStale = $remoteDateModified !== null && filemtime($imageSourcePath) < $remoteDateModified;
+
+                if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0 || $sourceIsStale) {
                     if (is_file($imageSourcePath)) {
-                        // Delete since it's a 0-byter
+                        // Delete since it's either a 0-byter or stale
                         FileHelper::unlink($imageSourcePath);
                     }
 
@@ -225,9 +240,13 @@ class ImageTransforms
             return '_' . $transform->handle;
         }
 
+        $position = preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)
+            ? $transform->position
+            : 'center-center';
+
         return '_' . ($transform->width ?: 'AUTO') . 'x' . ($transform->height ?: 'AUTO') .
             '_' . $transform->mode .
-            '_' . $transform->position .
+            "_$position" .
             ($transform->quality ? '_' . $transform->quality : '') .
             '_' . $transform->interlace .
             ($transform->fill ? '_' . ltrim($transform->fill, '#') : '') .
@@ -282,6 +301,12 @@ class ImageTransforms
         }
 
         if (is_array($transform)) {
+            $transform = Component::cleanseConfig($transform);
+
+            if (array_key_exists('class', $transform) || array_key_exists('__class', $transform)) {
+                throw new InvalidArgumentException('Invalid transform config.');
+            }
+
             if (!empty($transform['width']) && !is_numeric($transform['width'])) {
                 Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
                 $transform['width'] = null;
@@ -308,8 +333,8 @@ class ImageTransforms
             }
 
             return Craft::createObject([
-                'class' => ImageTransform::class,
                 ...$transform,
+                'class' => ImageTransform::class,
             ]);
         }
 
@@ -339,7 +364,7 @@ class ImageTransforms
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
         if (!$destination) {
-            $source = $destination;
+            $destination = $source;
         }
 
         $maxCachedImageSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
@@ -386,9 +411,11 @@ class ImageTransforms
         $imagesService = Craft::$app->getImages();
 
         $supported = match ($format) {
+            Format::ID_BMP => $imagesService->getSupportsBmp(),
             Format::ID_WEBP => $imagesService->getSupportsWebP(),
             Format::ID_AVIF => $imagesService->getSupportsAvif(),
             Format::ID_HEIC => $imagesService->getSupportsHeic(),
+            Format::ID_JXL => $imagesService->getSupportsJxl(),
             default => true,
         };
 
@@ -413,10 +440,10 @@ class ImageTransforms
 
         if ($asset->getHasFocalPoint() && $transform->mode === 'crop') {
             $position = $asset->getFocalPoint();
-        } elseif (!preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
-            $position = 'center-center';
-        } else {
+        } elseif (preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
             $position = $transform->position;
+        } else {
+            $position = 'center-center';
         }
 
         $scaleIfSmaller = $transform->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;

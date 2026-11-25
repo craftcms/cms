@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Closure;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
@@ -36,6 +37,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\caching\ExpressionDependency;
+use yii\db\Expression;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -62,9 +64,11 @@ class ProjectConfig extends Component
      */
     public const IGNORE_CACHE_KEY = 'projectConfig:ignore';
     /**
-     * The cache key that is used to store the loaded project config data.
+     * The cache key that is used to store the index of the loaded project config data.
+     *
+     * Top-level keys that aren’t in the index itself are stored under this key, followed by `:` and the top-level key.
      */
-    public const STORED_CACHE_KEY = 'projectConfig:internal';
+    public const STORED_CACHE_KEY = 'projectConfig:index';
     /**
      * The cache key that is used to store whether there were any issues writing the project config files out.
      *
@@ -98,7 +102,7 @@ class ProjectConfig extends Component
     public const ASSOC_KEY = '__assoc__';
 
     /**
-     * @see _acquireLock()
+     * @see acquireLock()
      * @see _releaseLock()
      * @since 3.7.35
      */
@@ -109,6 +113,8 @@ class ProjectConfig extends Component
     public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = 'dateModified';
     public const PATH_ELEMENT_SOURCES = 'elementSources';
+    /** @since 5.9.0 */
+    public const PATH_ELEMENT_SOURCE_PAGES = 'elementSourcesPages';
     public const PATH_ENTRY_TYPES = 'entryTypes';
     public const PATH_FIELDS = 'fields';
     public const PATH_GLOBAL_SETS = 'globalSets';
@@ -132,6 +138,19 @@ class ProjectConfig extends Component
     public const PATH_USER_FIELD_LAYOUTS = self::PATH_USERS . '.' . 'fieldLayouts';
     public const PATH_USER_GROUPS = self::PATH_USERS . '.groups';
     public const PATH_VOLUMES = 'volumes';
+
+    /**
+     * Top-level keys that nearly every request reads, which are stored in the cached index, so one cache read gets them.
+     */
+    private const BOOT_ROOTS = [
+        self::PATH_FS,
+        self::PATH_GRAPHQL,
+        'mcp',
+        self::PATH_PLUGINS,
+        self::PATH_ROUTES,
+        self::PATH_SYSTEM,
+        self::PATH_USERS,
+    ];
 
     // Regexp patterns
     // -------------------------------------------------------------------------
@@ -324,6 +343,12 @@ class ProjectConfig extends Component
     private array $_appliedChanges = [];
 
     /**
+     * @var int The number of applied changes that have been saved so far
+     * @see saveModifiedConfigData()
+     */
+    private int $_savedChanges = 0;
+
+    /**
      * @var ReadOnlyProjectConfigData|null Config as defined in the external config.
      */
     private ?ReadOnlyProjectConfigData $_externalConfig = null;
@@ -338,6 +363,23 @@ class ProjectConfig extends Component
      * applied during this request.
      */
     private ?ProjectConfigData $_currentWorkingConfig = null;
+
+    /**
+     * @var array|null The whole config this request read from the database. Later reads use it, so they don’t read
+     * the database again when the cache doesn’t hold it.
+     */
+    private ?array $_storedConfig = null;
+
+    /**
+     * @var array|null The cached index this request checked, with its version, top-level keys, and boot keys’ values.
+     * @phpstan-var array{version:string,roots:string[],boot:array}|null
+     */
+    private ?array $_storedIndex = null;
+
+    /**
+     * @var array Top-level keys this request loaded from the cache, before anything rebuilt [[$_storedConfig]].
+     */
+    private array $_storedRoots = [];
 
     /**
      * @var array[] Config change handlers
@@ -376,7 +418,7 @@ class ProjectConfig extends Component
 
     /**
      * @var bool Whether a mutex lock was acquired for this request
-     * @see _acquireLock()
+     * @see acquireLock()
      * @see _releaseLock()
      */
     private bool $_locked = false;
@@ -430,15 +472,37 @@ class ProjectConfig extends Component
     public function reset(): void
     {
         $this->_internalConfig = null;
+        $this->_storedConfig = null;
+        $this->_storedIndex = null;
+        $this->_storedRoots = [];
         $this->_externalConfig = null;
         $this->_currentWorkingConfig = null;
         $this->_configFileList = [];
         $this->_updateYaml = false;
         $this->_appliedChanges = [];
+        $this->_savedChanges = 0;
         $this->_applyingExternalChanges = false;
         $this->_timestampUpdated = false;
 
         $this->init();
+    }
+
+    /**
+     * Forgets the loaded project config, so it’s loaded again the next time it’s needed.
+     *
+     * Unlike [[reset()]], this doesn’t register the event handlers again. Call it only once changes have been saved.
+     *
+     * @internal
+     */
+    public function forgetLoadedConfig(): void
+    {
+        $this->_internalConfig = null;
+        $this->_storedConfig = null;
+        $this->_storedIndex = null;
+        $this->_storedRoots = [];
+        $this->_externalConfig = null;
+        $this->_currentWorkingConfig = null;
+        $this->_configFileList = [];
     }
 
     /**
@@ -458,6 +522,9 @@ class ProjectConfig extends Component
     {
         if ($getFromExternalConfig) {
             $source = $this->getExternalConfig();
+        } elseif ($path !== null && $this->_currentWorkingConfig === null) {
+            // Nothing has changed yet, so read the stored config, which only loads the top-level keys it’s asked for
+            $source = $this->getInternalConfig();
         } else {
             $source = $this->getCurrentWorkingConfig();
         }
@@ -560,7 +627,7 @@ class ProjectConfig extends Component
         }
 
         if ($valueHasChanged) {
-            $this->_acquireLock();
+            $this->acquireLock();
         }
 
         $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
@@ -611,7 +678,7 @@ class ProjectConfig extends Component
      */
     public function applyExternalChanges(): void
     {
-        $this->_acquireLock();
+        $this->acquireLock();
 
         // Disable read/write splitting for the remainder of this request
         Craft::$app->getDb()->enableReplicas = false;
@@ -686,8 +753,8 @@ class ProjectConfig extends Component
      */
     public function areChangesPending(?string $path = null, bool $force = false): bool
     {
-        // If the path is currently being processed, return true
-        if ($path !== null && $this->getCurrentWorkingConfig()->getHasPathBeenModified($path)) {
+        // If the path is currently being processed, return true. Nothing has been modified if the working config isn’t loaded.
+        if ($path !== null && $this->_currentWorkingConfig?->getHasPathBeenModified($path)) {
             return true;
         }
 
@@ -725,8 +792,6 @@ class ProjectConfig extends Component
             return false;
         }
 
-        // Clear the cached config, just in case it conflicts with what we've got here
-        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
         $this->_currentWorkingConfig = null;
         return true;
     }
@@ -793,12 +858,16 @@ class ProjectConfig extends Component
      */
     public function saveModifiedConfigData(): void
     {
-        if (!empty($this->_appliedChanges)) {
+        // Only save changes that haven't been saved yet, so changes saved earlier in a long-running
+        // process (e.g. the stdio MCP server) don't overwrite newer values stored by other requests
+        $changeSets = array_slice($this->_appliedChanges, $this->_savedChanges);
+
+        if (!empty($changeSets)) {
             $deltaChanges = [];
             $db = Craft::$app->getDb();
 
-            $db->transaction(function() use ($db, &$deltaChanges) {
-                foreach ($this->_appliedChanges as $changeSet) {
+            $db->transaction(function() use ($db, $changeSets, &$deltaChanges) {
+                foreach ($changeSets as $changeSet) {
                     // Allow modification of the array being looped over.
                     $currentSet = $changeSet;
 
@@ -871,12 +940,17 @@ class ProjectConfig extends Component
                 $this->_releaseLock();
             });
 
+            $this->_savedChanges += count($changeSets);
+
             if (!empty($deltaChanges)) {
                 $this->storeYamlHistory([
                     'dateApplied' => date('Y-m-d H:i:s'),
                     'changes' => $deltaChanges,
                 ]);
             }
+        } else {
+            // Nothing changed after the lock was acquired, e.g. via acquireLock()
+            $this->_releaseLock();
         }
     }
 
@@ -916,6 +990,7 @@ class ProjectConfig extends Component
      * Returns a summary of all pending config changes.
      *
      * @return array
+     * @deprecated in 5.9.19
      */
     public function getPendingChangeSummary(): array
     {
@@ -927,7 +1002,7 @@ class ProjectConfig extends Component
         foreach ($pendingChanges as $type => $changes) {
             $summary[$type] = [];
             foreach ($changes as $path) {
-                $pathParts = explode('.', $path);
+                $pathParts = ProjectConfigHelper::pathSegments($path);
                 if (count($pathParts) > 1) {
                     $summary[$type][$pathParts[0] . '.' . $pathParts[1]] = true;
                 }
@@ -1123,7 +1198,7 @@ class ProjectConfig extends Component
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
     {
-        $specificity = substr_count($path, '.');
+        $specificity = ProjectConfigHelper::pathDepth($path);
         $pattern = '/^(?P<path>' . preg_quote($path, '/') . ')(?P<extra>\..+)?$/';
         $pattern = str_replace('\\{uid\\}', '(' . self::UID_PATTERN . ')', $pattern);
 
@@ -1164,6 +1239,9 @@ class ProjectConfig extends Component
                     $newValue = $incomingConfig->get($path);
                     $extraPath = StringHelper::removeLeft($matches['extra'], '.');
                     $newNestedValue = $event->newValue;
+                    if ($newValue === null && $newNestedValue !== null) {
+                        $newValue = [];
+                    }
                     if (is_array($newValue)) {
                         ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
                     }
@@ -1216,7 +1294,7 @@ class ProjectConfig extends Component
      */
     public function rebuild(): void
     {
-        $this->_acquireLock();
+        $this->acquireLock();
         $this->reset();
 
         $this->muteEvents = true;
@@ -1483,11 +1561,33 @@ class ProjectConfig extends Component
 
         unset($removedItem);
 
-        // Sort by number of dots to ensure deepest paths listed first
+        // Group paths by similarity, sorted by depth (descending), e.g.:
+        // - foo1.bar.baz
+        // - foo1.bar
+        // - foo2.bar.baz
+        // - foo2.bar
         $sorter = function($a, $b) {
-            $aDepth = substr_count($a, '.');
-            $bDepth = substr_count($b, '.');
-            return $bDepth <=> $aDepth;
+            if (str_starts_with($a, "$b.")) {
+                // a is a subpath of b
+                return -1;
+            }
+            if (str_starts_with($b, "$a.")) {
+                // b is a subpath of a
+                return 1;
+            }
+
+            // find the first segment where they differ and sort based on that
+            $aSegs = ProjectConfigHelper::pathSegments($a);
+            $bSegs = ProjectConfigHelper::pathSegments($b);
+
+            foreach ($aSegs as $i => $aSeg) {
+                $result = $aSeg <=> $bSegs[$i];
+                if ($result !== 0) {
+                    return $result;
+                }
+            }
+
+            return 0;
         };
 
         $newItems = array_unique($newItems);
@@ -1613,10 +1713,15 @@ class ProjectConfig extends Component
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
-            // Delete everything except hidden files/folders
-            FileHelper::clearDirectory($basePath, [
-                'except' => ['.*', '.*/'],
-            ]);
+            // Existing files get overwritten in place, and stale ones are only deleted once everything else
+            // has been written, so a failed write doesn't leave the folder empty (except hidden files/folders)
+            $existingFiles = [];
+            $existingFilesByLowerPath = [];
+            foreach (FileHelper::findFiles($basePath, ['except' => ['.*', '.*/']]) as $file) {
+                $file = FileHelper::normalizePath($file);
+                $existingFiles[$file] = true;
+                $existingFilesByLowerPath[strtolower($file)][] = $file;
+            }
 
             $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
@@ -1625,8 +1730,12 @@ class ProjectConfig extends Component
 
             if (!empty($projectConfigNames)) {
                 foreach ($projectConfigNames as $uid => $name) {
-                    $uids[] = '/^(.*' . preg_quote($uid) . '.*)$/mi';
-                    $replacements[] = '$1 # ' . $name;
+                    $name = trim((string)$name);
+
+                    if ($name !== '') {
+                        $uids[] = sprintf('/^.*\b%s\b.*$/m', preg_quote($uid));
+                        $replacements[] = "$0 # $name";
+                    }
                 }
             }
 
@@ -1634,26 +1743,41 @@ class ProjectConfig extends Component
             foreach ($splitConfig as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
-                $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
+                $filePath = FileHelper::normalizePath($basePath . DIRECTORY_SEPARATOR . $relativeFile);
                 $yamlContent = Yaml::dump($configData, 20, 2);
                 if (!empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
+
+                // Delete any existing file whose name only differs in case (e.g. a renamed handle),
+                // so case-insensitive file systems pick up the new name
+                foreach ($existingFilesByLowerPath[strtolower($filePath)] ?? [] as $existingFile) {
+                    if ($existingFile !== $filePath) {
+                        $this->deleteYamlFile($existingFile);
+                        unset($existingFiles[$existingFile]);
+                    }
+                }
+
                 FileHelper::writeToFile($filePath, $yamlContent);
+                unset($existingFiles[$filePath]);
             }
-        } catch (Throwable $e) {
-            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
-            if (isset($basePath)) {
-                // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
-                try {
-                    FileHelper::clearDirectory($basePath, [
-                        'except' => ['.*', '.*/'],
-                    ]);
-                } catch (Throwable $e) {
-                    // oh well
+
+            // Delete stale files and any folders left empty
+            foreach (array_keys($existingFiles) as $file) {
+                $this->deleteYamlFile($file);
+            }
+            $dirs = FileHelper::findDirectories($basePath, ['except' => ['.*/']]);
+            rsort($dirs);
+            foreach ($dirs as $dir) {
+                // Only remove folders with nothing left in them, including hidden files/folders
+                if (count(scandir($dir)) === 2) {
+                    FileHelper::removeDirectory($dir);
                 }
             }
-            throw new Exception('Unable to write new project config files', 0, $e);
+        } catch (Throwable $e) {
+            // Don't use the YAML files until they've been written successfully
+            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            throw new Exception("Unable to write new project config files: {$e->getMessage()}", 0, $e);
         }
 
         Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);
@@ -1662,6 +1786,13 @@ class ProjectConfig extends Component
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
 
         $this->_updateYaml = false;
+    }
+
+    private function deleteYamlFile(string $file): void
+    {
+        if (!FileHelper::unlink($file) && file_exists($file)) {
+            throw new ErrorException("Unable to delete \"$file\".");
+        }
     }
 
     /**
@@ -1839,35 +1970,215 @@ class ProjectConfig extends Component
             ]);
         }
 
-        // See if we can get away with using the cached data
-        $data = Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
-            $data = [];
-            // Load the project config data
-            $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
-            foreach ($rows as $path => $value) {
-                $current = &$data;
-                $segments = explode('.', $path);
-                foreach ($segments as $segment) {
-                    // If we're still traversing, enforce array to avoid errors.
-                    /** @phpstan-ignore-next-line */
-                    if (!is_array($current)) {
-                        $current = [];
-                    }
-                    /** @phpstan-ignore-next-line */
-                    if (!array_key_exists($segment, $current)) {
-                        $current[$segment] = [];
-                    }
-                    $current = &$current[$segment];
-                }
-                $current = Json::decode(StringHelper::decdec($value));
-            }
-            return ProjectConfigHelper::cleanupConfig($data);
-        }, $this->cacheDuration, $this->getCacheDependency());
+        $loadRoot = fn(string $root): mixed => $this->_loadStoredRoot($root);
+        $loadAll = fn(): array => $this->_loadStoredConfig();
 
-        return Craft::createObject(ReadOnlyProjectConfigData::class, [
-            'data' => $data,
-            'projectConfig' => $this,
-        ]);
+        return new class($loadRoot, $loadAll, $this) extends ReadOnlyProjectConfigData {
+            private bool $loaded = false;
+
+            public function __construct(private Closure $loadRoot, private Closure $loadAll, ProjectConfig $projectConfig)
+            {
+                parent::__construct([], $projectConfig);
+            }
+
+            public function get(array|string $path): mixed
+            {
+                if ($this->loaded) {
+                    return parent::get($path);
+                }
+
+                $segments = is_string($path) ? ProjectConfigHelper::pathSegments($path) : $path;
+                $value = ($this->loadRoot)((string)array_shift($segments));
+
+                // Traversed by value, as traverseDataArray() would copy the shared arrays it descends by reference
+                foreach ($segments as $segment) {
+                    if (!is_array($value)) {
+                        return null;
+                    }
+
+                    $value = $value[$segment] ?? null;
+                }
+
+                return $value;
+            }
+
+            public function export(): array
+            {
+                if (!$this->loaded) {
+                    $this->data = ($this->loadAll)();
+                    $this->loaded = true;
+                }
+
+                return $this->data;
+            }
+        };
+    }
+
+    /**
+     * Returns the stored value of a top-level key.
+     *
+     * The cache holds an index of the top-level keys, which includes the values of [[BOOT_ROOTS]], plus one entry per
+     * other top-level key. Each is tagged with the `configVersion` it was built from.
+     */
+    private function _loadStoredRoot(string $root): mixed
+    {
+        // Once this request has read the database, every read uses that, so it doesn't mix in older cached keys
+        if ($this->_storedConfig !== null) {
+            return $this->_storedConfig[$root] ?? null;
+        }
+
+        if (array_key_exists($root, $this->_storedRoots)) {
+            return $this->_storedRoots[$root];
+        }
+
+        return $this->_storedRoots[$root] = $this->_readStoredRoot($root);
+    }
+
+    private function _readStoredRoot(string $root): mixed
+    {
+        $version = Craft::$app->getInfo()->configVersion;
+        $cache = Craft::$app->getCache();
+        $this->_storedIndex ??= $cache->get(self::STORED_CACHE_KEY) ?: null;
+
+        if (($this->_storedIndex['version'] ?? null) !== $version) {
+            return $this->_rebuildStoredConfig()[$root] ?? null;
+        }
+
+        if (!in_array($root, $this->_storedIndex['roots'], true)) {
+            return null;
+        }
+
+        if (array_key_exists($root, $this->_storedIndex['boot'])) {
+            return $this->_storedIndex['boot'][$root];
+        }
+
+        $entry = $cache->get($this->_storedRootCacheKey($root));
+
+        if (($entry['version'] ?? null) !== $version) {
+            return $this->_rebuildStoredConfig($root)[$root] ?? null;
+        }
+
+        return $entry['value'];
+    }
+
+    /**
+     * Returns the whole stored config.
+     */
+    private function _loadStoredConfig(): array
+    {
+        if ($this->_storedConfig !== null) {
+            return $this->_storedConfig;
+        }
+
+        $version = Craft::$app->getInfo()->configVersion;
+        $cache = Craft::$app->getCache();
+        $this->_storedIndex ??= $cache->get(self::STORED_CACHE_KEY) ?: null;
+        $index = $this->_storedIndex;
+
+        if (($index['version'] ?? null) !== $version) {
+            return $this->_rebuildStoredConfig();
+        }
+
+        $roots = array_values(array_diff($index['roots'], array_keys($index['boot'])));
+        $entries = $roots ? $cache->multiGet(array_map(fn(string $root) => $this->_storedRootCacheKey($root), $roots)) : [];
+        $data = [];
+
+        foreach ($index['roots'] as $root) {
+            if (array_key_exists($root, $index['boot'])) {
+                $data[$root] = $index['boot'][$root];
+                continue;
+            }
+
+            $entry = $entries[$this->_storedRootCacheKey($root)] ?? null;
+
+            if (($entry['version'] ?? null) !== $version) {
+                return $this->_rebuildStoredConfig($root);
+            }
+
+            $data[$root] = $entry['value'];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Reads the whole config from the database, and writes it to the cache unless another request is already doing so.
+     *
+     * @param string|null $missingRoot The top-level key whose entry was missing or stale, if the cached index was current.
+     */
+    private function _rebuildStoredConfig(?string $missingRoot = null): array
+    {
+        // Another request may have changed the config since this one loaded its version, so tag the entries with the
+        // stored version. It’s read before the rows: if a change lands in between, the entries get the older version
+        // and the next reader rebuilds them, rather than storing old rows under the new version.
+        $version = (new Query())
+            ->select(['configVersion'])
+            ->from([Table::INFO])
+            ->scalar();
+        $data = [];
+        // Paths only need parent-before-child ordering, not locale-aware sorting.
+        $orderBy = Craft::$app->getDb()->getIsPgsql() ? new Expression('[[path]] COLLATE "C"') : 'path';
+        $rows = $this->_createProjectConfigQuery()->orderBy($orderBy)->pairs();
+        foreach ($rows as $path => $value) {
+            $current = &$data;
+            $segments = ProjectConfigHelper::pathSegments($path);
+            foreach ($segments as $segment) {
+                // If we're still traversing, enforce array to avoid errors.
+                if (!is_array($current)) {
+                    $current = [];
+                }
+                if (!array_key_exists($segment, $current)) {
+                    $current[$segment] = [];
+                }
+                $current = &$current[$segment];
+            }
+            $current = Json::decode(StringHelper::decdec($value));
+        }
+        unset($current);
+        $data = $this->_storedConfig = ProjectConfigHelper::cleanupConfig($data);
+
+        // Every request that misses needs the data, but only one needs to write it. Requests that miss while it's
+        // being written skip the write, and ones that get the lock afterward find the index already written.
+        $mutex = Craft::$app->getMutex();
+        $lockName = self::STORED_CACHE_KEY . ':rebuild';
+
+        if (!$mutex->acquire($lockName)) {
+            return $data;
+        }
+
+        try {
+            $cache = Craft::$app->getCache();
+
+            // Another request may have written the cache while this one read the database
+            $written = ($cache->get(self::STORED_CACHE_KEY)['version'] ?? null) === $version
+                && ($missingRoot === null || ($cache->get($this->_storedRootCacheKey($missingRoot))['version'] ?? null) === $version);
+
+            if (!$written) {
+                $boot = array_intersect_key($data, array_flip(self::BOOT_ROOTS));
+                $entries = [];
+
+                foreach (array_diff_key($data, $boot) as $root => $value) {
+                    $entries[$this->_storedRootCacheKey((string)$root)] = ['version' => $version, 'value' => $value];
+                }
+
+                // The index goes last, so stores that write one entry at a time never point readers at missing entries
+                $entries[self::STORED_CACHE_KEY] = [
+                    'version' => $version,
+                    'roots' => array_map('strval', array_keys($data)),
+                    'boot' => $boot,
+                ];
+                $cache->multiSet($entries, $this->cacheDuration);
+            }
+        } finally {
+            $mutex->release($lockName);
+        }
+
+        return $data;
+    }
+
+    private function _storedRootCacheKey(string $root): string
+    {
+        return self::STORED_CACHE_KEY . ':' . $root;
     }
 
     /**
@@ -2182,12 +2493,15 @@ class ProjectConfig extends Component
 
     /**
      * Acquires a mutex lock on the project config, and then ensures that we’ve actually got the latest
-     * and greatest version of it.
+     * and greatest version of it. The lock is held until modified config data is saved.
+     *
+     * Call it before reading values that a change depends on, so no other process can change them in between.
      *
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
+     * @since 5.12.1
      */
-    private function _acquireLock(): void
+    public function acquireLock(): void
     {
         if ($this->_locked) {
             return;

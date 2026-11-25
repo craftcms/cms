@@ -40,6 +40,8 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% set context = context ?? 'field' %}
+
 {% from "_includes/forms" import text %}
 
 {% tag 'div' with containerAttributes %}
@@ -47,24 +49,24 @@
         {{ include('_elements/structurelist.twig', {
             id,
             elements,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
-    {% elseif viewMode == 'cards' %}
+    {% elseif viewMode in ['cards', 'cards-grid'] %}
         {{ include('_elements/cards.twig', {
             elements,
-            viewMode,
-            showInGrid: showCardsInGrid ?? false,
+            showInGrid: showInGrid ?? (viewMode == 'cards-grid'),
             disabled,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% else %}
         {{ include('_elements/list.twig', {
             elements,
-            viewMode,
+            size: size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small'),
+            inline: inline ?? (viewMode in ['list-inline', 'thumbs', 'large']),
             disabled,
-            context: 'field',
+            context,
             sortable: false,
         }) }}
     {% endif %}
@@ -111,6 +113,7 @@
         id: id|namespaceInputId,
         name: name ? name|namespaceInputName : null,
         elementType: elementType,
+        context,
         sources: sources,
         condition: condition ? condition.getConfig() : null,
         referenceElementId: referenceElement.id ?? null,
@@ -132,6 +135,7 @@
         single: single,
         limit: limit,
         showSiteMenu: showSiteMenu ?? false,
+        siteIds: siteIds ?? null,
         modalStorageKey: storageKey,
         fieldId: fieldId,
         sortable: sortable,

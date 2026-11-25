@@ -899,7 +899,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
         $this->normalizeNestedElementParams();
 
         // Only join the elements_owners table if fieldId is specified
-        if (!empty($this->fieldId)) {
+        if (isset($this->fieldId)) {
             $this->applyNestedElementParams('addresses.fieldId', 'addresses.primaryOwnerId');
         } elseif (isset($this->primaryOwnerId) || isset($this->ownerId)) {
             // User addresses don't get rows in the elements_owners table
@@ -966,6 +966,11 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
         }
 
         return true;
+    }
+
+    protected function mustHaveField(): bool
+    {
+        return false;
     }
 
     /**

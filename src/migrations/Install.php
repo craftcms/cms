@@ -74,12 +74,14 @@ class Install extends Migration
     public function safeUp(): bool
     {
         if (!$this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
+            $message = "Project config validation failed: $error\n\nRun `" . App::composerCommand('install') . "` or remove your `config/project/` folder and try again.";
             echo "\n$message\n\nAborting install.\n\n";
             throw new OperationAbortedException($message);
         }
 
         $this->createTables();
+        (new m261007_100000_oauth())->createTables();
+        (new m261117_000000_upload_sessions())->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
@@ -447,10 +449,12 @@ class Install extends Migration
             'description' => $this->text(),
             'icon' => $this->string(),
             'color' => $this->string(),
+            'uiLabelFormat' => $this->string()->defaultValue('{title}')->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
             'titleFormat' => $this->string(),
+            'allowLineBreaksInTitles' => $this->boolean()->notNull()->defaultValue(false),
             'showSlugField' => $this->boolean()->defaultValue(true),
             'slugTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'slugTranslationKeyFormat' => $this->text(),
@@ -476,6 +480,8 @@ class Install extends Migration
             'context' => $this->string()->notNull()->defaultValue('global'),
             'columnSuffix' => $this->char(8),
             'instructions' => $this->text(),
+            'tip' => $this->text(),
+            'warning' => $this->text(),
             'searchable' => $this->boolean()->notNull()->defaultValue(true),
             'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->text(),
@@ -606,6 +612,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
+            'minAuthors' => $this->smallInteger()->unsigned()->notNull()->defaultValue(1),
             'maxAuthors' => $this->smallInteger()->unsigned(),
             'propagationMethod' => $this->string()->defaultValue(PropagationMethod::All->value)->notNull(),
             'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
@@ -832,6 +839,7 @@ class Install extends Migration
             'titleTranslationKeyFormat' => $this->text(),
             'altTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'altTranslationKeyFormat' => $this->text(),
+            'propagationMethod' => $this->string()->defaultValue(PropagationMethod::Custom->value)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -856,7 +864,6 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'colspan' => $this->tinyInteger(),
             'settings' => $this->json(),
-            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -868,6 +875,7 @@ class Install extends Migration
      */
     public function createIndexes(): void
     {
+        $this->createIndex(null, Table::ADDRESSES, ['primaryOwnerId'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
@@ -901,6 +909,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
         $this->createIndex(null, Table::ELEMENTS_BULKOPS, ['timestamp'], false);
+        $this->createIndex(null, Table::ELEMENTS_OWNERS, ['sortOrder'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId'], false);
@@ -937,6 +946,7 @@ class Install extends Migration
         $this->createIndex(null, Table::PLUGINS, ['handle'], true);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
+        $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'priority', 'id', 'timePushed', 'delay']);
         $this->createIndex(null, Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], true);
         $this->createIndex(null, Table::RELATIONS, ['sourceId'], false);
         $this->createIndex(null, Table::RELATIONS, ['targetId'], false);
@@ -1081,7 +1091,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['siteId'], Table::SITES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::ELEMENTACTIVITY, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'SET NULL');
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
@@ -1107,7 +1116,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::REVISIONS, ['canonicalId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::SEARCHINDEXQUEUE, 'elementId', Table::ELEMENTS, 'id', 'CASCADE', null);
         $this->addForeignKey(null, Table::SEARCHINDEXQUEUE_FIELDS, 'jobId', Table::SEARCHINDEXQUEUE, 'id', 'CASCADE', null);
         $this->addForeignKey(null, Table::SECTIONS, ['structureId'], Table::STRUCTURES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::SECTIONS_ENTRYTYPES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
@@ -1183,7 +1191,7 @@ class Install extends Migration
             $site = $sitesService->getPrimarySite();
             $site->setBaseUrl($this->site->getBaseUrl(false));
             $site->hasUrls = $this->site->hasUrls;
-            $site->language = $this->site->language;
+            $site->language = $this->site->getLanguage(false);
             $site->setName($this->site->getName(false));
             $sitesService->saveSite($site);
         }
@@ -1321,7 +1329,7 @@ class Install extends Migration
                     'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
-                    'language' => $this->site->language,
+                    'language' => $this->site->getLanguage(false),
                     'name' => $this->site->getName(false),
                     'primary' => true,
                     'siteGroup' => $siteGroupUid,

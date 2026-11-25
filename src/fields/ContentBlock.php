@@ -16,7 +16,6 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\ContentBlock as ContentBlockElement;
 use craft\elements\db\ContentBlockQuery;
 use craft\elements\db\EagerLoadPlan;
@@ -31,10 +30,13 @@ use craft\events\CancelableEvent;
 use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
 use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
 use craft\gql\types\input\ContentBlock as ContentBlockInputType;
+use craft\helpers\Component;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json as JsonHelper;
 use craft\models\FieldLayout;
+use craft\web\assets\cp\CpAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -233,7 +235,7 @@ class ContentBlock extends Field implements
     public function setFieldLayout(FieldLayout|array|string $layout): void
     {
         if (is_string($layout)) {
-            $layout = JsonHelper::decode($layout);
+            $layout = Component::cleanseConfig(JsonHelper::decode($layout));
         }
 
         if (is_array($layout)) {
@@ -408,9 +410,12 @@ class ContentBlock extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/ContentBlock/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
         ]);
     }
 
@@ -497,18 +502,25 @@ class ContentBlock extends Field implements
                 ->all();
 
             if (count($sameSiteElements) > 1) {
-                $contentBlocks = ContentBlockElement::find()
+                $query = ContentBlockElement::find()
                     ->fieldId($this->id)
-                    ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
-                    ->siteId($element->siteId)
-                    ->indexBy('ownerId')
-                    ->collect();
+                    ->owner($sameSiteElements)
+                    ->indexBy('ownerId');
+
+                // If the owner element is a revision, allow revision content blocks to be returned as
+                // well (see https://github.com/craftcms/cms/pull/18161) -- as well as trashed/canonical
+                // ones, since a nested content block isn't necessarily forked into its own revision row
+                // just because its owner was revisioned (it may still be the canonical row, merely
+                // relinked to the revision-owned owner). This mirrors the single-owner code path in
+                // createContentBlockQuery(). (see https://github.com/craftcms/cms/issues/19543)
+                if ($element->getIsRevision()) {
+                    $query->revisions(null)->trashed(null);
+                }
+
+                $contentBlocks = $query->collect();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
-                    if ($contentBlock) {
-                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
-                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
                         'handle' => $handle,
                     ]));
@@ -550,7 +562,7 @@ class ContentBlock extends Field implements
                     CancelableEvent $event,
                     ContentBlockQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -774,41 +786,6 @@ JS, [
     /**
      * @inheritdoc
      */
-//    public function getEagerLoadingMap(array $sourceElements): array|null|false
-//    {
-//        // Get the source element IDs
-//        $sourceElementIds = array_map(fn(elementInterface $element) => $element->id, $sourceElements);
-//
-//        // Return any relation data on these elements, defined with this field
-//        $map = (new Query())
-//            ->select([
-//                'source' => 'elements_owners.ownerId',
-//                'target' => 'contentblocks.id',
-//            ])
-//            ->from(['contentblocks' => DbTable::CONTENTBLOCKS])
-//            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
-//                'and',
-//                '[[elements_owners.elementId]] = [[contentblocks.id]]',
-//                ['elements_owners.ownerId' => $sourceElementIds],
-//            ])
-//            ->where(['contentblocks.fieldId' => $this->id])
-//            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
-//            ->all();
-//
-//        return [
-//            'elementType' => ContentBlockElement::class,
-//            'map' => $map,
-//            'criteria' => [
-//                'fieldId' => $this->id,
-//                'allowOwnerDrafts' => true,
-//                'allowOwnerRevisions' => true,
-//            ],
-//        ];
-//    }
-
-    /**
-     * @inheritdoc
-     */
     public function getContentGqlType(): Type|array
     {
         return [
@@ -872,9 +849,8 @@ JS, [
 
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($contentBlocks as $contentBlock) {
@@ -959,14 +935,15 @@ JS, [
         }
 
         if (isset($value['fields'])) {
-            foreach ($value['fields'] as $fieldHandle => $fieldValue) {
-                try {
-                    if ($fromRequest) {
-                        $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                    } else {
+            if ($fromRequest) {
+                // Respect field layout conditions
+                ElementHelper::setNestedFieldValuesFromRequest($contentBlock, $value['fields']);
+            } else {
+                foreach ($value['fields'] as $fieldHandle => $fieldValue) {
+                    try {
                         $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (InvalidFieldException) {
                     }
-                } catch (InvalidFieldException) {
                 }
             }
         }

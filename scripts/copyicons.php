@@ -20,6 +20,7 @@ $lightIcons = [
     'newspaper',
     'pen-to-square',
     'plug',
+    'robot',
     'signs-post',
     'sitemap',
     'sliders',

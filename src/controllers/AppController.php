@@ -28,12 +28,15 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Number;
 use craft\helpers\Search;
-use craft\helpers\Session;
+use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
+use craft\icons\IconSet;
 use craft\models\Update;
 use craft\models\Updates;
+use craft\services\Icons;
 use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
@@ -110,27 +113,6 @@ class AppController extends Controller
     }
 
     /**
-     * Loads the given JavaScript resource URL and returns it.
-     *
-     * @param string $url
-     * @return Response
-     */
-    public function actionResourceJs(string $url): Response
-    {
-        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
-            throw new BadRequestHttpException("$url does not appear to be a resource URL");
-        }
-
-        // Close the PHP session in case this takes a while
-        Session::close();
-
-        $response = Craft::createGuzzleClient()->get($url);
-        $this->response->setCacheHeaders();
-        $this->response->getHeaders()->set('content-type', 'application/javascript');
-        return $this->asRaw($response->getBody());
-    }
-
-    /**
      * Returns the HTML for a control panel icon.
      *
      * @return Response
@@ -141,8 +123,14 @@ class AppController extends Controller
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
+        $icon = $this->request->getRequiredParam('icon');
+
+        if (!preg_match('/^[\w\-]+$/', $icon) && !Icons::parse($icon)) {
+            throw new BadRequestHttpException("Invalid icon: $icon");
+        }
+
         return $this->asJson([
-            'iconSvg' => Cp::iconSvg($this->request->getRequiredParam('icon')),
+            'iconSvg' => Cp::iconSvg($icon),
         ]);
     }
 
@@ -170,6 +158,19 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
+        if (!is_array($headers)) {
+            throw new BadRequestHttpException('Invalid headers.');
+        }
+
+        // Only admins can relay headers that write license keys or affect trial licensing
+        if (!Craft::$app->getUser()->getIsAdmin()) {
+            $headers = array_filter($headers, fn($name) => !in_array(strtolower((string)$name), [
+                'x-craft-allow-trials',
+                'x-craft-license',
+                'x-craft-plugin-licenses',
+            ], true), ARRAY_FILTER_USE_KEY);
+        }
+
         Api::processResponseHeaders($headers);
 
         // return the updated headers
@@ -209,11 +210,12 @@ class AppController extends Controller
      */
     public function actionCacheUpdates(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
-        $updates = $updatesService->cacheUpdates($updateData);
+        $updates = $updatesService->cacheUpdates(Component::cleanseConfig($updateData));
         $includeDetails = (bool)$this->request->getParam('includeDetails');
         return $this->_updatesResponse($updates, $includeDetails);
     }
@@ -230,7 +232,8 @@ class AppController extends Controller
         $allowUpdates = (
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&
-            Craft::$app->getUser()->checkPermission('performUpdates')
+            Craft::$app->getUser()->checkPermission('performUpdates') &&
+            Craft::$app->getComposer()->getIsAvailableForUi()
         );
 
         $res = [
@@ -477,14 +480,24 @@ class AppController extends Controller
      */
     public function actionSetLicenseShunCookie(): Response
     {
+        $hash = $this->request->getRequiredBodyParam('hash');
+
+        if (!StringHelper::isMd5($hash)) {
+            throw new BadRequestHttpException('Invalid hash');
+        }
+
         $cookieName = App::licenseShunCookieName();
         $oldCookie = $this->request->getCookies()->get($cookieName);
         $data = $oldCookie ? Json::decode($oldCookie->value) : [];
 
+        if (isset($data['count']) && !Number::isInt($data['count'])) {
+            throw new BadRequestHttpException('Invalid count');
+        }
+
         $newCookie = new Cookie(Craft::cookieConfig([
             'name' => $cookieName,
             'value' => Json::encode([
-                'hash' => $this->request->getRequiredBodyParam('hash'),
+                'hash' => $hash,
                 'timestamp' => DateTimeHelper::toIso8601(DateTimeHelper::now()),
                 'count' => ($data['count'] ?? 0) + 1,
             ]),
@@ -526,27 +539,6 @@ class AppController extends Controller
         }
 
         return $this->asSuccess();
-    }
-
-    /**
-     * Switches Craft to the edition it's licensed for.
-     *
-     * @return Response
-     */
-    public function actionSwitchToLicensedEdition(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        if (Craft::$app->getHasWrongEdition()) {
-            $licensedEdition = Craft::$app->getLicensedEdition();
-            $success = Craft::$app->setEdition($licensedEdition);
-        } else {
-            // Just fake it
-            $success = true;
-        }
-
-        return $success ? $this->asSuccess() : $this->asFailure();
     }
 
     /**
@@ -801,13 +793,22 @@ class AppController extends Controller
                     ->ownerId($ownerId);
             }
 
+            // if we have revisionId, then we might need to look through soft-deleted elements too
+            if (isset($criterion['revisionId'])) {
+                $query->trashed(null);
+            }
+
             $elements = $query->all();
 
-            // See if there are any provisional drafts we should swap these out with
-            ElementHelper::swapInProvisionalDrafts($elements);
+            // See if there are any provisional changes we should show
+            ElementHelper::loadProvisionalChanges($elements);
 
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
+                    if (isset($instance['returnUrl'])) {
+                        $instance['returnUrl'] = $this->validateReturnUrl($instance['returnUrl']);
+                    }
+
                     $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
@@ -826,6 +827,26 @@ class AppController extends Controller
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
         ]);
+    }
+
+    private function validateReturnUrl(mixed $returnUrl): string
+    {
+        if (!is_string($returnUrl)) {
+            throw new BadRequestHttpException('Invalid returnUrl param');
+        }
+
+        // only require the URL to be hashed if it contains Twig code
+        $validated = Craft::$app->getSecurity()->validateData($returnUrl);
+
+        if ($validated !== false) {
+            return $validated;
+        }
+
+        if (str_contains($returnUrl, '{')) {
+            throw new BadRequestHttpException('Invalid returnUrl param');
+        }
+
+        return $returnUrl;
     }
 
     /**
@@ -856,11 +877,21 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Missing component ID');
             }
 
+            if (!is_string($componentType) || !is_subclass_of($componentType, Chippable::class) || !is_callable([$componentType, 'get'])) {
+                throw new BadRequestHttpException('Invalid component type');
+            }
+
             $component = $componentType::get($id);
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
-                    if (!empty($config['overrides'])) {
-                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                    // Only the name, handle, and description can be overridden (e.g. for entry types in Matrix fields)
+                    $overrides = is_array($config['overrides'] ?? null) ? array_filter(
+                        array_intersect_key($config['overrides'], array_flip(['name', 'handle', 'description'])),
+                        fn($value) => is_string($value),
+                    ) : [];
+                    if (!empty($overrides)) {
+                        $component = clone $component;
+                        Craft::configure($component, $overrides);
                     }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }
@@ -907,20 +938,55 @@ class AppController extends Controller
 
         $search = $this->request->getRequiredBodyParam('search');
         $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
-        $noSearch = $search === '';
+        $iconsService = Craft::$app->getIcons();
+        $setHandles = $this->request->getBodyParam('sets') ?? [Icons::FONT_AWESOME];
+        $setNames = $iconsService->getIconSetNames();
 
-        if ($noSearch) {
+        if ($setHandles === '*') {
+            $setHandles = array_keys($setNames);
+        } else {
+            // Preserve the requested order
+            $setHandles = array_values(array_unique(array_filter((array)$setHandles, fn($handle) => isset($setNames[$handle]))));
+        }
+
+        $searchTerms = $search !== '' ? explode(' ', Search::normalizeKeywords($search)) : null;
+        $listHtml = '';
+
+        foreach ($setHandles as $handle) {
+            if ($handle === Icons::FONT_AWESOME) {
+                $setHtml = $this->fontAwesomeIconListHtml($searchTerms, $freeOnly);
+            } else {
+                $setHtml = $this->customIconListHtml($iconsService->getIconSetByHandle($handle), $searchTerms);
+            }
+
+            if ($setHtml === '') {
+                continue;
+            }
+
+            if (count($setHandles) > 1) {
+                $listHtml .= Html::tag('li', Html::tag('h3', Html::encode($setNames[$handle])), [
+                    'class' => 'icon-picker-modal--heading',
+                    'role' => 'presentation',
+                ]);
+            }
+
+            $listHtml .= $setHtml;
+        }
+
+        return $this->asJson([
+            'listHtml' => $listHtml,
+        ]);
+    }
+
+    private function fontAwesomeIconListHtml(?array $searchTerms, bool $freeOnly): string
+    {
+        if (!$searchTerms) {
             $cache = Craft::$app->getCache();
             $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
             $listHtml = $cache->get($cacheKey);
             if ($listHtml !== false) {
-                return $this->asJson([
-                    'listHtml' => $listHtml,
-                ]);
+                return $listHtml;
             }
-            $searchTerms = null;
-        } else {
-            $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
         $indexPath = '@app/icons/index.php';
@@ -942,15 +1008,7 @@ class AppController extends Controller
             }
 
             $file = Craft::getAlias("@appicons/$name.svg");
-            $output[] = Html::beginTag('li') .
-                Html::button(file_get_contents($file), [
-                    'class' => 'icon-picker--icon',
-                    'title' => $name,
-                    'aria' => [
-                        'label' => $name,
-                    ],
-                ]) .
-                Html::endTag('li');
+            $output[] = $this->iconPickerOptionHtml((string)$name, (string)$name, file_get_contents($file));
         }
 
         if ($searchTerms) {
@@ -959,16 +1017,62 @@ class AppController extends Controller
 
         $listHtml = implode('', $output);
 
-        if ($noSearch) {
+        if (!$searchTerms) {
             /** @phpstan-ignore-next-line */
             $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
                 'fileName' => $indexPath,
             ]));
         }
 
-        return $this->asJson([
-            'listHtml' => $listHtml,
-        ]);
+        return $listHtml;
+    }
+
+    private function customIconListHtml(IconSet $iconSet, ?array $searchTerms): string
+    {
+        $output = [];
+        $scores = [];
+
+        foreach ($iconSet->getIcons() as $name) {
+            if ($searchTerms) {
+                $nameTerms = sprintf(' %s ', Search::normalizeKeywords(str_replace(['-', '_'], ' ', $name)));
+                $keywords = sprintf(' %s ', Search::normalizeKeywords(implode(' ', $iconSet->getKeywords($name))));
+                $score = $this->matchTerms($searchTerms, $nameTerms) * 5 + $this->matchTerms($searchTerms, $keywords);
+                if ($score === 0) {
+                    continue;
+                }
+                $scores[] = $score;
+            }
+
+            $value = "$iconSet->handle:$name";
+            $svg = Cp::iconSvg($value);
+            if ($svg) {
+                $output[] = $this->iconPickerOptionHtml($value, $name, $svg);
+            } elseif ($searchTerms) {
+                array_pop($scores);
+            }
+        }
+
+        if ($searchTerms) {
+            array_multisort($scores, SORT_DESC, $output);
+        }
+
+        return implode('', $output);
+    }
+
+    private function iconPickerOptionHtml(string $value, string $name, string $svg): string
+    {
+        return Html::beginTag('li') .
+            Html::button($svg, [
+                'class' => 'icon-picker--icon',
+                'title' => $name,
+                'aria' => [
+                    'label' => $name,
+                ],
+                'data' => [
+                    'value' => $value,
+                ],
+            ]) .
+            Html::endTag('li');
     }
 
     private function matchTerms(array $searchTerms, string $indexTerms): int

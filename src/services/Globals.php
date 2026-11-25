@@ -497,23 +497,18 @@ class Globals extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Get the field layout
+            // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
                 ->from([Table::GLOBALSETS])
                 ->where(['id' => $globalSetRecord->id])
                 ->scalar();
 
-            Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
-
             if ($fieldLayoutId) {
-                $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
-
-                // Delete the field layout after the element has been deleted
-                if ($fieldLayout) {
-                    Craft::$app->getFields()->deleteLayout($fieldLayout);
-                }
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId, true);
             }
+
+            Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
             $transaction->commit();
         } catch (Throwable $e) {

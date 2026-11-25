@@ -10,6 +10,7 @@ namespace craft\gql\types\input;
 use craft\base\Field;
 use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\InputObjectType;
 
 /**
@@ -37,7 +38,7 @@ class ContentBlock extends InputObjectType
                 $fields = [];
 
                 // Get the field input types
-                foreach ($context->getFieldLayout()->getCustomFields() as $field) {
+                foreach (GqlHelper::filterMutableFields($context->getFieldLayout()->getCustomFields()) as $field) {
                     /** @var Field $field */
                     $fields[$field->handle] = $field->getContentGqlMutationArgumentType();
                 }

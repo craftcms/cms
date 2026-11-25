@@ -88,8 +88,10 @@ class Svg extends Image
         [$width, $height] = ImageHelper::parseSvgSize($svg);
 
         // If the size is defined by viewbox only, add in width and height attributes
-        if (!preg_match(self::SVG_WIDTH_RE, $svg) && preg_match(self::SVG_HEIGHT_RE, $svg)) {
-            $svg = preg_replace(self::SVG_TAG_RE,
+        if (!preg_match(self::SVG_WIDTH_RE, $svg) && !preg_match(self::SVG_HEIGHT_RE, $svg)) {
+            $svg = preg_replace('/(<svg[^>]*\s)width="[\d\.]+%"\s*/i', '${1}', $svg);
+            $svg = preg_replace('/(<svg[^>]*\s)height="[\d\.]+%"\s*/i', '${1}', $svg);
+            $svg = preg_replace('/<svg\s*/i',
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
 

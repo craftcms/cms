@@ -17,6 +17,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
+use craft\test\ElementFixtureTrait;
 use yii\log\Logger;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
@@ -33,6 +34,7 @@ abstract class BaseElementFixture extends DbFixture
 {
     use FileFixtureTrait;
     use DbFixtureTrait;
+    use ElementFixtureTrait;
 
     /**
      * @var array
@@ -166,17 +168,6 @@ abstract class BaseElementFixture extends DbFixture
         foreach ($attributes as $name => $value) {
             $element->$name = $value;
         }
-    }
-
-    /**
-     * Saves an element.
-     *
-     * @param ElementInterface $element The element to be saved
-     * @return bool Whether the save was successful
-     */
-    protected function saveElement(ElementInterface $element): bool
-    {
-        return Craft::$app->getElements()->saveElement($element, true, true, false);
     }
 
     /**

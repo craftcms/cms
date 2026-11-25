@@ -33,22 +33,21 @@ class TagTokenParser extends AbstractTokenParser
     public function parse(Token $token): TagNode
     {
         $lineno = $token->getLine();
-        $expressionParser = $this->parser->getExpressionParser();
         $stream = $this->parser->getStream();
 
         $nodes = [
-            'name' => $expressionParser->parseExpression(),
+            'name' => $this->parser->parseExpression(),
         ];
 
         if ($stream->test(Token::NAME_TYPE, 'with')) {
             $stream->next();
-            $nodes['options'] = $expressionParser->parseExpression();
+            $nodes['options'] = $this->parser->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
         $nodes['content'] = $this->parser->subparse(fn(Token $token) => $token->test('endtag'), true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new TagNode($nodes, [], $lineno, $this->getTag());
+        return new TagNode($nodes, [], $lineno);
     }
 }

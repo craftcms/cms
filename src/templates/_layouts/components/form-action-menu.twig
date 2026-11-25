@@ -31,7 +31,7 @@
 {% endmacro %}
 
 {% set safeActions = formActions|filter(a => not (a.destructive ?? false)) %}
-{% set destructiveActions = formActions|filter(a => a.destructive ?? false) %}
+{% set destructiveActions = formActions|filter(a => (a.destructive ?? false)) %}
 
 <div id="form-action-menu" class="menu menu--disclosure" data-align="right">
     {% if safeActions %}

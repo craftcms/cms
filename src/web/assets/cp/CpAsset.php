@@ -10,10 +10,13 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\base\TemporaryUploadUrlInterface;
 use craft\config\GeneralConfig;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Assets;
+use craft\helpers\ConfigHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -128,21 +131,30 @@ JS;
             'Add…',
             'All',
             'Announcements',
+            'Another page already has that name.',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
+            'Are you sure you want to delete the selected {type}?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete this {type}?',
+            'Are you sure you want to delete {numElements, plural, =1{this} other{these}} {type}?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
             'Are you sure you want to move the selected items?',
+            'Are you sure you want to permanently delete {numElements, plural, =1{this} other{these}} {type}?',
+            'Are you sure you want to remove the page “{name}”?',
+            'Are you sure you want to switch sites? Any changes will be lost.',
             'Are you sure you want to transfer your license to this domain?',
             'Are you sure you want to undo the move?',
             'Ascending',
             'Assets',
             'Attributes',
+            'Back to pages',
+            'Back to sources',
+            'Before deleting {label}, please address the following {numBlockers, plural, =1{issue} other{issues}}:',
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
@@ -150,7 +162,6 @@ JS;
             'Changes saved.',
             'Check your email for instructions to reset your password.',
             'Choose a page',
-            'Choose a user',
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
             'Choose which user groups should have access to this source.',
@@ -159,13 +170,17 @@ JS;
             'Clear',
             'Close Preview',
             'Close',
+            'Collapse all blocks',
+            'Collapse',
             'Color hex value',
             'Color picker',
             'Content',
             'Continue',
             'Copied to clipboard.',
             'Copy URL',
+            'Copy all {type}',
             'Copy from',
+            'Copy selected {type}',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',
@@ -184,15 +199,15 @@ JS;
             'Default View Mode',
             'Delete custom source',
             'Delete folder',
-            'Delete heading',
-            'Delete their content',
+            'Delete selected {type}',
             'Delete them',
-            'Delete {num, plural, =1{user} other{users}} and content',
-            'Delete {num, plural, =1{user} other{users}}',
             'Delete',
+            'Delete {type}',
+            'Delete {types}',
             'Descending',
             'Desktop',
             'Device type',
+            'Disable selected {type}',
             'Discard changes',
             'Discard',
             'Display as cards',
@@ -200,9 +215,8 @@ JS;
             'Display in a structured table',
             'Display in a table',
             'Done',
-            'Don’t show in element cards',
-            'Don’t use for element thumbnails',
             'Draft Name',
+            'Duplicate selected {type}',
             'Duplicate',
             'Edit draft settings',
             'Edit {type}',
@@ -210,12 +224,15 @@ JS;
             'Edited',
             'Element',
             'Elements',
+            'Enable selected {type}',
             'Enabled for all sites',
             'Enabled',
             'Enter the name of the folder',
             'Enter your password to log back in.',
             'Error',
             'Existing {type}',
+            'Expand all blocks',
+            'Expand',
             'Export Type',
             'Export',
             'Export…',
@@ -277,6 +294,7 @@ JS;
             'Move to previous group',
             'Move to the left',
             'Move to the right',
+            'Move to {page}',
             'Move to',
             'Move up',
             'Move',
@@ -291,6 +309,7 @@ JS;
             'New file uploaded.',
             'New heading',
             'New order saved.',
+            'New page',
             'New position saved.',
             'New position saved.',
             'New subfolder',
@@ -305,9 +324,14 @@ JS;
             'OK',
             'Open in a new tab',
             'Options',
+            'Page Name',
+            'Page settings',
+            'Pages',
             'Password',
             'Past year',
             'Past {num} days',
+            'Paste {type} above',
+            'Paste {type} before',
             'Paste {type}',
             'Pay {price}',
             'Pending',
@@ -324,6 +348,8 @@ JS;
             'Recent Activity',
             'Refresh',
             'Reload',
+            'Remove heading',
+            'Remove page',
             'Remove {label}',
             'Remove',
             'Rename folder',
@@ -333,6 +359,7 @@ JS;
             'Replace the folder (all existing files will be deleted)',
             'Replace',
             'Required',
+            'Resolved',
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',
             'Row could not be deleted. Minimum number of rows reached.',
@@ -351,7 +378,6 @@ JS;
             'Select {element}',
             'Select',
             'Settings',
-            'Show in element cards',
             'Show nav',
             'Show nested sources',
             'Show sidebar',
@@ -372,7 +398,7 @@ JS;
             'Sort direction',
             'Source settings saved',
             'Source settings',
-            'Source',
+            'Sources',
             'Structure',
             'Submit',
             'Success',
@@ -395,7 +421,6 @@ JS;
             'To {date}',
             'To',
             'Today',
-            'Transfer it to:',
             'Try again',
             'Try another way',
             'Undo',
@@ -406,7 +431,6 @@ JS;
             'Upload failed.',
             'Upload files',
             'Use defaults',
-            'Use for element thumbnails',
             'Use the arrow keys to change position, Tab or Spacebar to drop.',
             'User Groups',
             'View in a new tab',
@@ -416,7 +440,6 @@ JS;
             'View',
             'Volume path',
             'Warning',
-            'What do you want to do with their content?',
             'What do you want to do?',
             'Width unit',
             'You must specify a tab name.',
@@ -465,6 +488,7 @@ JS;
         ]);
 
         $view->registerTranslations('yii', [
+            '{attribute} cannot be blank.',
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
             '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
         ]);
@@ -477,6 +501,7 @@ JS;
             'arrows-rotate',
             'asterisk',
             'asterisk-slash',
+            'check',
             'clipboard',
             'clone',
             'clone-dashed',
@@ -580,7 +605,11 @@ JS;
 
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
-            'allowUpdates' => $generalConfig->allowUpdates,
+            'allowUpdates' => (
+                $generalConfig->allowUpdates &&
+                $userSession->checkPermission('performUpdates') &&
+                Craft::$app->getComposer()->getIsAvailableForUi()
+            ),
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'appId' => Craft::$app->id,
@@ -605,6 +634,11 @@ JS;
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
+            'maxUploadSessionSize' => ConfigHelper::sizeInBytes($generalConfig->maxUploadFileSize),
+            'uploadSessionFsTypes' => array_values(array_filter(
+                Craft::$app->getFs()->getAllFilesystemTypes(),
+                fn(string $class) => is_subclass_of($class, TemporaryUploadUrlInterface::class),
+            )),
             'notificationDuration' => (int)(
                 $currentUser->getPreference('notificationDuration')
                 ?? $generalConfig->accessibilityDefaults['notificationDuration']
@@ -725,15 +759,26 @@ JS;
     private function _publishableSections(User $currentUser): array
     {
         $sections = [];
+        $requestedSiteId = Cp::requestedSite()?->id;
 
         foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
+                // Only include the sites where some entry types are available
+                $entryTypesBySite = array_filter(array_map(
+                    fn(int $siteId) => $this->_entryTypes($section, $siteId, $currentUser),
+                    array_combine($section->getSiteIds(), $section->getSiteIds()),
+                ));
+                if (empty($entryTypesBySite)) {
+                    continue;
+                }
+
                 $sections[] = [
-                    'entryTypes' => $this->_entryTypes($section),
+                    'entryTypes' => $entryTypesBySite[$requestedSiteId] ?? reset($entryTypesBySite),
+                    'entryTypesBySite' => $entryTypesBySite,
                     'handle' => $section->handle,
                     'id' => (int)$section->id,
                     'name' => Craft::t('site', $section->name),
-                    'sites' => $section->getSiteIds(),
+                    'sites' => array_keys($entryTypesBySite),
                     'type' => $section->type,
                     'uid' => $section->uid,
                     'canSave' => $currentUser->can("saveEntries:$section->uid"),
@@ -744,11 +789,20 @@ JS;
         return $sections;
     }
 
-    private function _entryTypes(Section $section): array
+    private function _entryTypes(Section $section, int $siteId, User $currentUser): array
     {
+        // Get the entry types the same way EntriesController::actionCreate() will
+        $entry = new Entry([
+            'sectionId' => $section->id,
+            'siteId' => $siteId,
+        ]);
+        if ($section->maxAuthors !== 0) {
+            $entry->setAuthorIds([$currentUser->id]);
+        }
+
         $types = [];
 
-        foreach ($section->getEntryTypes() as $type) {
+        foreach ($entry->getAvailableEntryTypes() as $type) {
             $types[] = [
                 'handle' => $type->handle,
                 'id' => (int)$type->id,

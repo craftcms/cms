@@ -30,7 +30,7 @@ All commands should be run from the cms repo’s location
 ## Notes
 
 - it uses the same fixtures mechanism as our Codeception tests (`*Fixture.php` files from `<cms repo directory>/tests/fixtures` are copied over to the ddev env and have their namespace adjusted)
-- it uses ddev with MySQL 8 as a default, but can be switched to PostgreSQL by editing `<cms repo directory>/tests-playwright/ddev-config/config.local.yaml` file
+- it uses ddev with MySQL 8 as a default, but can be switched to PostgreSQL by editing `<cms repo directory>/tests-playwright/ddev-config/config.local.yaml` file; remember to also check your `<cms repo directory>/tests-playwright/.env` file; 
 - tests are located here: `<cms repo directory>/tests-playwright/tests`
 
 > [!TIP]

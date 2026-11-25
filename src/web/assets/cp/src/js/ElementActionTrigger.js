@@ -39,9 +39,11 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 
       this.setSettings(settings, Craft.ElementActionTrigger.defaults);
 
-      this.$trigger = $(
-        `#${this.elementIndex.namespaceId(settings.type)}-actiontrigger`
-      ).data('trigger', this);
+      const triggerId = settings.triggerId ?? `${settings.type}-actiontrigger`;
+      this.$trigger = $(`#${this.elementIndex.namespaceId(triggerId)}`).data(
+        'trigger',
+        this
+      );
 
       // Do we have a custom handler?
       if (this.settings.activate) {

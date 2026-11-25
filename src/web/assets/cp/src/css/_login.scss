@@ -37,7 +37,12 @@ body.login {
     gap: var(--m);
     padding: var(--padding);
 
+    h1 {
+      width: 100%;
+    }
+
     img#login-logo {
+      margin-inline: auto;
       width: auto;
       max-width: calc(15rem + var(--pane-padding) * 2);
     }

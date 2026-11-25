@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
+use craft\enums\PropagationMethod;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
@@ -197,6 +198,8 @@ class VolumesController extends Controller
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
             'altTranslationMethod' => $this->request->getBodyParam('altTranslationMethod', Field::TRANSLATION_METHOD_NONE),
             'altTranslationKeyFormat' => $this->request->getBodyParam('altTranslationKeyFormat'),
+            'propagationMethod' => PropagationMethod::tryFrom($this->request->getBodyParam('propagationMethod') ?? '')
+                ?? $oldVolume->propagationMethod ?? PropagationMethod::Custom,
         ]);
 
         // Set the field layout

@@ -24,9 +24,9 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color as ColorEnum;
 use craft\enums\ElementIndexViewMode;
 use craft\errors\InvalidFieldException;
 use craft\events\CancelableEvent;
@@ -36,10 +36,12 @@ use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
-use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use craft\web\assets\cp\CpAsset;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -266,12 +268,34 @@ class Addresses extends Field implements
      */
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
-        if (!Craft::$app->getElements()->canSave($element->getOwner(), $user)) {
+        $elementsService = Craft::$app->getElements();
+        $owner = $element->getOwner();
+
+        if (!$owner) {
             return false;
         }
 
+        if (!$elementsService->canSave($owner, $user)) {
+            // Check all the owners. Maybe the user can save one of the other ones?
+            if ($owner->getIsRevision()) {
+                return false;
+            }
+
+            $authorized = false;
+            foreach ($element->getOwners(['revisions' => false]) as $o) {
+                if ($o->id !== $owner->id && $elementsService->canSave($o, $user)) {
+                    $authorized = true;
+                    break;
+                }
+            }
+
+            if (!$authorized) {
+                return false;
+            }
+        }
+
         // If this is a new address, make sure we aren't hitting the Max Addresses limit
-        if (!$element->id && $element->getIsCanonical() && $this->maxAddressesReached($element->getOwner())) {
+        if (!$element->id && $element->getIsCanonical() && $this->maxAddressesReached($owner)) {
             return false;
         }
 
@@ -365,9 +389,12 @@ class Addresses extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
         ]);
     }
 
@@ -419,8 +446,7 @@ class Addresses extends Field implements
             /** @var Address[] $oldAddressesById */
             $oldAddressesById = Address::find()
                 ->fieldId($this->id)
-                ->ownerId($element->id)
-                ->siteId($element->siteId)
+                ->owner($element)
                 ->drafts(null)
                 ->revisions(null)
                 ->status(null)
@@ -502,14 +528,15 @@ class Addresses extends Field implements
             }
 
             if (isset($addressData['fields'])) {
-                foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $address->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($address, $addressData['fields']);
+                } else {
+                    foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $address->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }
@@ -526,22 +553,22 @@ class Addresses extends Field implements
             $addresses[] = $address;
         }
 
-        /** @var Entry[] $addresses */
+        /** @var Address[] $addresses */
         return $addresses;
     }
 
-    private function createAddressQuery(?ElementInterface $element = null): AddressQuery
+    private function createAddressQuery(?ElementInterface $owner = null): AddressQuery
     {
         $query = Address::find();
 
         // Existing element?
-        if ($element && $element->id) {
+        if ($owner && $owner->id) {
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_BEFORE_PREPARE => function(
                     CancelableEvent $event,
                     AddressQuery $query,
-                ) use ($element) {
-                    $query->ownerId = $element->id;
+                ) use ($owner) {
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -549,7 +576,7 @@ class Addresses extends Field implements
                     }
 
                     // If the owner is a revision, allow revision addresses to be returned as well
-                    if ($element->getIsRevision()) {
+                    if ($owner->getIsRevision()) {
                         $query
                             ->revisions(null)
                             ->trashed(null);
@@ -558,14 +585,14 @@ class Addresses extends Field implements
             ], true));
 
             // Prepare the query for lazy eager loading
-            $query->prepForEagerLoading($this->handle, $element);
+            $query->prepForEagerLoading($this->handle, $owner);
         } else {
             $query->id = false;
         }
 
         $query
             ->fieldId($this->id)
-            ->siteId($element->siteId ?? null);
+            ->siteId($owner->siteId ?? null);
 
         return $query;
     }
@@ -638,6 +665,76 @@ class Addresses extends Field implements
 
     /**
      * @inheritdoc
+     */
+    protected function actionMenuItems(): array
+    {
+        $items = [];
+
+        if ($this->viewMode === self::VIEW_MODE_CARDS && $this->maxAddresses !== 1) {
+            $items[] = $this->copyAction();
+        }
+
+        $parentItems = parent::actionMenuItems();
+
+        if (!empty($items) && !empty($parentItems)) {
+            return [
+                ...$items,
+                ['type' => 'hr'],
+                ...$parentItems,
+            ];
+        }
+
+        return [...$items, ...$parentItems];
+    }
+
+    private function copyAction(): array
+    {
+        $view = Craft::$app->getView();
+        $id = sprintf('action-copy-%s', mt_rand());
+
+        $view->registerJsWithVars(fn($id, $fieldId) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  const field = $('#' + $fieldId);
+  const menu = btn.closest('.menu');
+
+  if (!field.length) {
+    setTimeout(() => {
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
+    }, 1);
+    return;
+  }
+
+  const getAddresses = () => field.find(' > .nested-element-cards > .elements > li > .element');
+
+  btn.on('activate', () => {
+    Craft.cp.copyElements(getAddresses());
+  });
+
+  setTimeout(() => {
+    const disclosureMenu = menu.data('disclosureMenu');
+    disclosureMenu?.on('show', () => {
+      btn.toggleClass('disabled', !getAddresses().length);
+    });
+  }, 1);
+})();
+JS, [
+            $view->namespaceInputId($id),
+            $view->namespaceInputId($this->getInputId()),
+        ]);
+
+        return [
+            'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => ColorEnum::Fuchsia,
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'type' => Address::pluralLowerDisplayName(),
+            ])),
+        ];
+    }
+
+    /**
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
@@ -670,15 +767,14 @@ class Addresses extends Field implements
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
-            return $this->addressManager()->getCardsHtml($owner, $config);
+            return Html::tag('div', $this->addressManager()->getCardsHtml($owner, $config), [
+                'id' => $this->getInputId(),
+            ]);
         }
 
         $config += [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
-            // addresses don't have drafts, but in this particular context we need to allow drafts,
-            // so that addresses show while adding them via slideout in the element index view mode
-            'canHaveDrafts' => true,
         ];
 
         return $this->addressManager()->getIndexHtml($owner, $config);
@@ -821,6 +917,9 @@ class Addresses extends Field implements
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
             ],
+            'createElement' => fn(AddressQuery $query, array $result, ElementInterface $sourceElement) => $query
+                ->owner($sourceElement)
+                ->createElement($result),
         ];
     }
 
@@ -844,6 +943,16 @@ class Addresses extends Field implements
             'args' => AddressArguments::getArguments(),
             'resolve' => AddressResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingGqlConditions(): ?array
+    {
+        return [
+            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
         ];
     }
 

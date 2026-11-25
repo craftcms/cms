@@ -17,6 +17,7 @@
             :enabled="checks.length ? true : false"
             :error="action.error"
             :ajax="action.ajax"
+            :handle-click="action.handleClick ?? true"
             v-on:reload="reload"
             v-on:click="handleActionClick"
           >
@@ -498,7 +499,8 @@
         isEmpty: false,
         isLoading: true,
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: '',
+        searchTerm:
+          new URL(window.location.href).searchParams.get('search') || '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -717,6 +719,14 @@
           }
           this.reload();
         }
+
+        const url = new URL(window.location.href);
+        if (this.searchTerm) {
+          url.searchParams.set('search', this.searchTerm);
+        } else {
+          url.searchParams.delete('search');
+        }
+        window.history.replaceState({}, '', url);
       }, 500),
 
       resetSearch: function () {

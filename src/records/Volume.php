@@ -28,6 +28,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string|null $titleTranslationKeyFormat
  * @property string $altTranslationMethod
  * @property string|null $altTranslationKeyFormat
+ * @property string $propagationMethod Propagation method
  * @property int $sortOrder Sort order
  * @property FieldLayout $fieldLayout Field layout
  * @mixin SoftDeleteBehavior

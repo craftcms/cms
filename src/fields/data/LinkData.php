@@ -7,14 +7,19 @@
 
 namespace craft\fields\data;
 
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
 use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Html;
 use craft\helpers\Template;
+use craft\web\twig\AllowedInSandbox;
 use Twig\Markup;
+use yii\base\Arrayable;
+use yii\base\ArrayableTrait;
 use yii\base\BaseObject;
 
 /**
@@ -22,7 +27,8 @@ use yii\base\BaseObject;
  *
  * @property-read ElementInterface|null $element The element linked by the field, if there is one
  * @property-read ElementQueryInterface|null $elementQuery An element query that will fetch the element linked by the field, if there is one
- * @property-read Markup|null $link An anchor tag for this link
+ * @property-read Markup $link An anchor tag for this link
+ * @property-read array|null $attributes The attributes that should be added to `<a>` tags for this link
  * @property-read string $label The link label
  * @property-read string $type The link type ID
  * @property-read string $url The full link URL, including the suffix
@@ -31,54 +37,66 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class LinkData extends BaseObject implements Serializable
+class LinkData extends BaseObject implements Serializable, Arrayable
 {
+    use ArrayableTrait {
+        fields as traitFields;
+    }
+
     /**
      * @var string|null The link’s URL suffix value.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $urlSuffix = null;
 
     /**
      * @var string|null The link’s `target` attribute.
      * @since 5.5.0
      */
+    #[AllowedInSandbox]
     public ?string $target = null;
 
     /**
      * @var string|null The link’s `title` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $title = null;
 
     /**
      * @var string|null The link’s `class` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $class = null;
 
     /**
      * @var string|null The link’s `id` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $id = null;
 
     /**
      * @var string|null The link’s `rel` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $rel = null;
 
     /**
      * @var string|null The link’s `aria-label` attribute.
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?string $ariaLabel = null;
 
     /**
      * @var bool Whether the link should have a `download` attribute.
      * @since 5.7.0
      */
+    #[AllowedInSandbox]
     public bool $download = false;
 
     private string $renderedValue;
@@ -99,10 +117,34 @@ class LinkData extends BaseObject implements Serializable
     }
 
     /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = $this->traitFields();
+
+        $fields['type'] = 'type';
+        $fields['value'] = 'value';
+        $fields['url'] = 'url';
+        $fields['label'] = 'label';
+        $fields['filename'] = 'filename';
+        $fields['link'] = 'link';
+        $fields['attributes'] = 'attributes';
+        $fields['defaultLabel'] = fn() => $this->getLabel(false);
+        $fields['elementType'] = fn() => $this->getElement() ? $this->getElement()::class : null;
+        $fields['elementId'] = fn() => $this->getElement()?->id;
+        $fields['elementSiteId'] = fn() => $this->getElement()?->siteId;
+        $fields['elementTitle'] = fn() => $this->getElement() ? (string)$this->getElement() : null;
+
+        return $fields;
+    }
+
+    /**
      * Returns the link type ID.
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getType(): string
     {
         return $this->linkType::id();
@@ -111,6 +153,7 @@ class LinkData extends BaseObject implements Serializable
     /**
      * Returns the link value.
      */
+    #[AllowedInSandbox]
     public function getValue(): string
     {
         if (!isset($this->renderedValue)) {
@@ -122,11 +165,26 @@ class LinkData extends BaseObject implements Serializable
     /**
      * Returns the full link URL.
      *
+     * @param bool $anyStatus Whether to return a value regardless of the linked element’s status
      * @since 5.6.0
      */
-    public function getUrl(): string
+    #[AllowedInSandbox]
+    public function getUrl(bool $anyStatus = true): string
     {
-        return sprintf('%s%s', $this->getValue(), $this->urlSuffix ?? '');
+        $url = $this->getValue();
+
+        if ($url === '') {
+            return $url;
+        }
+
+        if (!$anyStatus) {
+            $status = $this->getElement()?->getStatus();
+            if ($status && !in_array($status, [Element::STATUS_ENABLED, Entry::STATUS_LIVE])) {
+                return '';
+            }
+        }
+
+        return sprintf('%s%s', $url, $this->urlSuffix ?? '');
     }
 
     /**
@@ -135,6 +193,7 @@ class LinkData extends BaseObject implements Serializable
      * @param bool|null $custom Whether to return the custom label
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getLabel(?bool $custom = null): ?string
     {
         if ($custom || (isset($this->label) && $custom === null)) {
@@ -162,6 +221,7 @@ class LinkData extends BaseObject implements Serializable
      * @return string|null
      * @since 5.7.0
      */
+    #[AllowedInSandbox]
     public function getFilename(bool $custom = true): ?string
     {
         return $custom ? $this->filename : $this->linkType->filename($this->value);
@@ -183,27 +243,51 @@ class LinkData extends BaseObject implements Serializable
      *
      * @return Markup
      */
+    #[AllowedInSandbox]
     public function getLink(): Markup
     {
-        $url = $this->getUrl();
-        if ($url === '') {
+        $attributes = $this->getAttributes();
+
+        if ($attributes === null) {
             $html = '';
         } else {
             $label = $this->getLabel();
-            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, [
-                'target' => $this->target,
-                'title' => $this->title,
-                'class' => $this->class,
-                'id' => $this->id,
-                'rel' => $this->rel,
-                'aria' => [
-                    'label' => $this->ariaLabel,
-                ],
-                'download' => $this->download ? ($this->filename ?? true) : false,
-            ]);
+            if ($label === '') {
+                $label = $this->getUrl();
+            }
+            $html = Html::a(Html::encode($label), options: $attributes);
         }
 
         return Template::raw($html);
+    }
+
+    /**
+     * Returns the attributes that should be added to `<a>` tags for this link.
+     *
+     * @return array|null
+     * @since 5.9.0
+     */
+    #[AllowedInSandbox]
+    public function getAttributes(): ?array
+    {
+        $url = $this->getUrl();
+
+        if ($url === '') {
+            return null;
+        }
+
+        return [
+            'href' => $url,
+            'target' => $this->target,
+            'title' => $this->title,
+            'class' => $this->class,
+            'id' => $this->id,
+            'rel' => $this->rel,
+            'aria' => [
+                'label' => $this->ariaLabel,
+            ],
+            'download' => $this->download ? ($this->filename ?? true) : false,
+        ];
     }
 
     /**
@@ -212,6 +296,7 @@ class LinkData extends BaseObject implements Serializable
      * @return ElementQueryInterface|null
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getElementQuery(): ?ElementQueryInterface
     {
         if (!$this->linkType instanceof BaseElementLinkType) {
@@ -225,6 +310,7 @@ class LinkData extends BaseObject implements Serializable
      *
      * @return ElementInterface|null
      */
+    #[AllowedInSandbox]
     public function getElement(): ?ElementInterface
     {
         if (!$this->linkType instanceof BaseElementLinkType) {

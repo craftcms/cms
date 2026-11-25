@@ -181,6 +181,13 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     protected function matchValue(array|string|null $value): bool
     {
+        if (in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY])) {
+            return match ($this->operator) {
+                self::OPERATOR_EMPTY => empty($value),
+                self::OPERATOR_NOT_EMPTY => !empty($value),
+            };
+        }
+        
         if (!$this->_values) {
             return true;
         }
@@ -194,8 +201,6 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         return match ($this->operator) {
             self::OPERATOR_IN => !empty(array_intersect($value, $this->_values)),
             self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
-            self::OPERATOR_NOT_EMPTY => !empty($value),
-            self::OPERATOR_EMPTY => empty($value),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
     }

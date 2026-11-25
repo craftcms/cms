@@ -136,6 +136,10 @@ export default Drag.extend(
         }
       }
 
+      // PERFORMANCE: Pre-calculate all midpoints in a single read pass
+      // This eliminates layout thrashing during drag operations
+      this._precalculateMidpoints();
+
       this.base();
     },
 
@@ -224,6 +228,74 @@ export default Drag.extend(
     // Private methods
     // ---------------------------------------------------------------------
 
+    /**
+     * Pre-calculates all item midpoints in a single read pass.
+     * This prevents layout thrashing during drag operations.
+     */
+    _precalculateMidpoints: function () {
+      // Store midpoints in a Map for O(1) lookup
+      this._allMidpoints = new Map();
+
+      // Batch ALL DOM reads together (no writes interleaved)
+      this.$items.each((i, item) => {
+        this._allMidpoints.set(item, this._measureMidpoint(item));
+      });
+    },
+
+    /**
+     * Measures an item’s midpoint.
+     *
+     * Coordinates are document-relative, as of when the scroll container was
+     * at its mousedown scroll position, so they remain valid as it’s scrolled.
+     */
+    _measureMidpoint: function (item) {
+      const rect = item.getBoundingClientRect();
+      const offsetX = window.pageXOffset + this.scrollDeltaX;
+      const offsetY = window.pageYOffset + this.scrollDeltaY;
+
+      return {
+        x: rect.left + offsetX + rect.width / 2,
+        y: rect.top + offsetY + rect.height / 2,
+        width: rect.width,
+        height: rect.height,
+        top: rect.top + offsetY,
+        bottom: rect.bottom + offsetY,
+      };
+    },
+
+    /**
+     * Gets items that are currently visible or near the viewport.
+     * Returns array of items to check for closest match.
+     */
+    _getVisibleItems: function () {
+      // Get viewport bounds (in the same coordinate space as the midpoints)
+      const viewportTop = window.pageYOffset + this.scrollDeltaY;
+      const viewportBottom = viewportTop + window.innerHeight;
+      const buffer = 300; // Check items 300px outside viewport
+
+      const visibleItems = [];
+
+      this.$items.each((i, item) => {
+        // Skip draggee items
+        if (this.$draggee && $.contains(this.$draggee[0], item)) {
+          return;
+        }
+
+        const midpoint = this._allMidpoints.get(item);
+        if (!midpoint) return;
+
+        // Check if item is in or near viewport
+        if (
+          midpoint.bottom >= viewportTop - buffer &&
+          midpoint.top <= viewportBottom + buffer
+        ) {
+          visibleItems.push(item);
+        }
+      });
+
+      return visibleItems;
+    },
+
     _getItemIndex: function (item) {
       return this.$items.index(item);
     },
@@ -243,6 +315,12 @@ export default Drag.extend(
      */
     _getClosestItem: function () {
       this._getClosestItem._closestItem = null;
+
+      // PERFORMANCE: For large datasets, only check items in viewport
+      const visibleItems =
+        this._allMidpoints && this.$items.length > 200
+          ? this._getVisibleItems()
+          : null;
 
       // Start by checking the draggee/insertion, if either are visible
       if (!this.settings.removeDraggee) {
@@ -274,116 +352,135 @@ export default Drag.extend(
             : null;
       }
 
-      this._getClosestItem._$otherItem = this.getPrevItem(
-        this.$draggee.first()
-      );
-
-      while (this._getClosestItem._$otherItem) {
-        // See if we're just getting further away
-        this._getClosestItem._midpoint = this._getItemMidpoint(
-          this._getClosestItem._$otherItem[0]
-        );
-        if (this.settings.axis !== Garnish.Y_AXIS) {
-          this._getClosestItem._xDist = Math.abs(
-            this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX
-          );
-        }
-        if (this.settings.axis !== Garnish.X_AXIS) {
-          this._getClosestItem._yDist = Math.abs(
-            this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY
-          );
-        }
-
-        if (
-          !(
-            (this.settings.axis === Garnish.Y_AXIS ||
-              (this._getClosestItem._lastXDist !== null &&
-                this._getClosestItem._xDist >
-                  this._getClosestItem._lastXDist)) &&
-            (this.settings.axis === Garnish.X_AXIS ||
-              (this._getClosestItem._lastYDist !== null &&
-                this._getClosestItem._yDist > this._getClosestItem._lastYDist))
-          )
-        ) {
-          if (this.settings.axis !== Garnish.Y_AXIS) {
-            this._getClosestItem._lastXDist = this._getClosestItem._xDist;
-          }
-          if (this.settings.axis !== Garnish.X_AXIS) {
-            this._getClosestItem._lastYDist = this._getClosestItem._yDist;
-          }
+      // PERFORMANCE: Use viewport filtering for large datasets
+      if (visibleItems) {
+        // Fast path: Only check visible items
+        for (let i = 0; i < visibleItems.length; i++) {
+          const item = visibleItems[i];
+          const $item = $(item);
 
           // Give the extending class a chance to allow/disallow this item
-          if (
-            this.canInsertBefore(this._getClosestItem._$otherItem) ||
-            this.canInsertAfter(this._getClosestItem._$otherItem)
-          ) {
-            this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+          if (this.canInsertBefore($item) || this.canInsertAfter($item)) {
+            this._testForClosestItem(item);
           }
         }
-
-        // Prep the next item
+      } else {
+        // Original path: Check all items (for small datasets)
         this._getClosestItem._$otherItem = this.getPrevItem(
-          this._getClosestItem._$otherItem
+          this.$draggee.first()
         );
-      }
 
-      // Check items after the draggee
-      if (this.settings.axis !== Garnish.Y_AXIS) {
-        this._getClosestItem._lastXDist = this._getClosestItem._startXDist;
-      }
-      if (this.settings.axis !== Garnish.X_AXIS) {
-        this._getClosestItem._lastYDist = this._getClosestItem._startYDist;
-      }
-
-      this._getClosestItem._$otherItem = this.getNextItem(this.$draggee.last());
-
-      while (this._getClosestItem._$otherItem) {
-        // See if we're just getting further away
-        this._getClosestItem._midpoint = this._getItemMidpoint(
-          this._getClosestItem._$otherItem[0]
-        );
-        if (this.settings.axis !== Garnish.Y_AXIS) {
-          this._getClosestItem._xDist = Math.abs(
-            this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX
+        while (this._getClosestItem._$otherItem) {
+          // See if we're just getting further away
+          this._getClosestItem._midpoint = this._getItemMidpoint(
+            this._getClosestItem._$otherItem[0]
           );
-        }
-        if (this.settings.axis !== Garnish.X_AXIS) {
-          this._getClosestItem._yDist = Math.abs(
-            this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY
-          );
-        }
-
-        if (
-          !(
-            (this.settings.axis === Garnish.Y_AXIS ||
-              (this._getClosestItem._lastXDist !== null &&
-                this._getClosestItem._xDist >
-                  this._getClosestItem._lastXDist)) &&
-            (this.settings.axis === Garnish.X_AXIS ||
-              (this._getClosestItem._lastYDist !== null &&
-                this._getClosestItem._yDist > this._getClosestItem._lastYDist))
-          )
-        ) {
           if (this.settings.axis !== Garnish.Y_AXIS) {
-            this._getClosestItem._lastXDist = this._getClosestItem._xDist;
+            this._getClosestItem._xDist = Math.abs(
+              this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX
+            );
           }
           if (this.settings.axis !== Garnish.X_AXIS) {
-            this._getClosestItem._lastYDist = this._getClosestItem._yDist;
+            this._getClosestItem._yDist = Math.abs(
+              this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY
+            );
           }
 
-          // Give the extending class a chance to allow/disallow this item
           if (
-            this.canInsertBefore(this._getClosestItem._$otherItem) ||
-            this.canInsertAfter(this._getClosestItem._$otherItem)
+            !(
+              (this.settings.axis === Garnish.Y_AXIS ||
+                (this._getClosestItem._lastXDist !== null &&
+                  this._getClosestItem._xDist >
+                    this._getClosestItem._lastXDist)) &&
+              (this.settings.axis === Garnish.X_AXIS ||
+                (this._getClosestItem._lastYDist !== null &&
+                  this._getClosestItem._yDist >
+                    this._getClosestItem._lastYDist))
+            )
           ) {
-            this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+            if (this.settings.axis !== Garnish.Y_AXIS) {
+              this._getClosestItem._lastXDist = this._getClosestItem._xDist;
+            }
+            if (this.settings.axis !== Garnish.X_AXIS) {
+              this._getClosestItem._lastYDist = this._getClosestItem._yDist;
+            }
+
+            // Give the extending class a chance to allow/disallow this item
+            if (
+              this.canInsertBefore(this._getClosestItem._$otherItem) ||
+              this.canInsertAfter(this._getClosestItem._$otherItem)
+            ) {
+              this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+            }
           }
+
+          // Prep the next item
+          this._getClosestItem._$otherItem = this.getPrevItem(
+            this._getClosestItem._$otherItem
+          );
         }
 
-        // Prep the next item
+        // Check items after the draggee
+        if (this.settings.axis !== Garnish.Y_AXIS) {
+          this._getClosestItem._lastXDist = this._getClosestItem._startXDist;
+        }
+        if (this.settings.axis !== Garnish.X_AXIS) {
+          this._getClosestItem._lastYDist = this._getClosestItem._startYDist;
+        }
+
         this._getClosestItem._$otherItem = this.getNextItem(
-          this._getClosestItem._$otherItem
+          this.$draggee.last()
         );
+
+        while (this._getClosestItem._$otherItem) {
+          // See if we're just getting further away
+          this._getClosestItem._midpoint = this._getItemMidpoint(
+            this._getClosestItem._$otherItem[0]
+          );
+          if (this.settings.axis !== Garnish.Y_AXIS) {
+            this._getClosestItem._xDist = Math.abs(
+              this._getClosestItem._midpoint.x - this.draggeeVirtualMidpointX
+            );
+          }
+          if (this.settings.axis !== Garnish.X_AXIS) {
+            this._getClosestItem._yDist = Math.abs(
+              this._getClosestItem._midpoint.y - this.draggeeVirtualMidpointY
+            );
+          }
+
+          if (
+            !(
+              (this.settings.axis === Garnish.Y_AXIS ||
+                (this._getClosestItem._lastXDist !== null &&
+                  this._getClosestItem._xDist >
+                    this._getClosestItem._lastXDist)) &&
+              (this.settings.axis === Garnish.X_AXIS ||
+                (this._getClosestItem._lastYDist !== null &&
+                  this._getClosestItem._yDist >
+                    this._getClosestItem._lastYDist))
+            )
+          ) {
+            if (this.settings.axis !== Garnish.Y_AXIS) {
+              this._getClosestItem._lastXDist = this._getClosestItem._xDist;
+            }
+            if (this.settings.axis !== Garnish.X_AXIS) {
+              this._getClosestItem._lastYDist = this._getClosestItem._yDist;
+            }
+
+            // Give the extending class a chance to allow/disallow this item
+            if (
+              this.canInsertBefore(this._getClosestItem._$otherItem) ||
+              this.canInsertAfter(this._getClosestItem._$otherItem)
+            ) {
+              this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+            }
+          }
+
+          // Prep the next item
+          this._getClosestItem._$otherItem = this.getNextItem(
+            this._getClosestItem._$otherItem
+          );
+        }
       }
 
       // Return the result
@@ -406,6 +503,13 @@ export default Drag.extend(
     },
 
     _getItemMidpoint: function (item) {
+      // PERFORMANCE: Use pre-calculated midpoints from Map
+      // Falls back to old behavior if midpoints not pre-calculated
+      if (this._allMidpoints && this._allMidpoints.has(item)) {
+        return this._allMidpoints.get(item);
+      }
+
+      // Fallback to original logic (for backward compatibility)
       if ($.data(item, 'midpointVersion') !== this._midpointVersion) {
         // If this isn't the draggee, temporarily move the draggee to this item
         this._getItemMidpoint._repositionDraggee =
@@ -447,9 +551,11 @@ export default Drag.extend(
         $.data(item, 'midpoint', {
           x:
             this._getItemMidpoint._offset.left +
+            this.scrollDeltaX +
             this._getItemMidpoint._$item.outerWidth() / 2,
           y:
             this._getItemMidpoint._offset.top +
+            this.scrollDeltaY +
             this._getItemMidpoint._$item.outerHeight() / 2,
         });
 
@@ -475,11 +581,14 @@ export default Drag.extend(
 
     _testForClosestItem: function (item) {
       this._testForClosestItem._midpoint = this._getItemMidpoint(item);
+      // (midpoints are relative to the scroll container's mousedown scroll position)
       this._testForClosestItem._mouseDistX = Math.abs(
-        this._testForClosestItem._midpoint.x - this.draggeeVirtualMidpointX
+        this._testForClosestItem._midpoint.x -
+          (this.draggeeVirtualMidpointX + this.scrollDeltaX)
       );
       this._testForClosestItem._mouseDistY = Math.abs(
-        this._testForClosestItem._midpoint.y - this.draggeeVirtualMidpointY
+        this._testForClosestItem._midpoint.y -
+          (this.draggeeVirtualMidpointY + this.scrollDeltaY)
       );
 
       switch (this.settings.axis) {
@@ -517,8 +626,26 @@ export default Drag.extend(
         this._moveDraggeeToItem(this.closestItem);
       }
 
-      // Now that things have shifted around, invalidate the midpoints
-      this._clearMidpoints();
+      // PERFORMANCE: Only recalculate affected midpoints instead of all
+      // For pre-calculated midpoints, we recalculate the moved item and neighbors
+      if (this._allMidpoints && this.closestItem) {
+        // Recalculate midpoints for the items that moved
+        const itemsToUpdate = [this.closestItem];
+
+        // Add previous and next items
+        const $prev = this.getPrevItem($(this.closestItem));
+        const $next = this.getNextItem($(this.closestItem));
+        if ($prev && $prev.length) itemsToUpdate.push($prev[0]);
+        if ($next && $next.length) itemsToUpdate.push($next[0]);
+
+        // Update only these items
+        itemsToUpdate.forEach((item) => {
+          this._allMidpoints.set(item, this._measureMidpoint(item));
+        });
+      } else {
+        // Fallback: invalidate all midpoints (original behavior)
+        this._clearMidpoints();
+      }
 
       this.onInsertionPointChange();
     },

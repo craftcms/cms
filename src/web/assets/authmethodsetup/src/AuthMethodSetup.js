@@ -91,7 +91,9 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         () => {
           button.classList.remove('loading');
         },
-        // give them 5 minutes to complete setup
+        // Re-request elevated session even if user just logged in
+        // to ensure they have full elevated session duration time or 5 minutes (whichever's lower)
+        // to complete the setup.
         Math.min(Craft.elevatedSessionDuration, 300)
       );
     },

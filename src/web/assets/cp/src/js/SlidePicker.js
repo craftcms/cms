@@ -144,6 +144,10 @@
       setValue: function (value, triggerEvent) {
         value = Math.max(Math.min(value, this.max), this.min);
 
+        // ensure that the value is valid - matches min, max or any of the steps in between
+        // if it doesn't match it already, choose the step value that's closest to it
+        value = Math.round(value / this.settings.step) * this.settings.step;
+
         if (this.value === (this.value = value)) {
           return;
         }

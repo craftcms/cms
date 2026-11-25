@@ -7,6 +7,7 @@ use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
@@ -20,6 +21,8 @@ use Illuminate\Support\Collection;
  */
 class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
+    use HintableConditionRuleTrait;
+
     /**
      * @inheritdoc
      */
@@ -48,7 +51,10 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     {
         return $this->nestedEntryFields()
             ->keyBy(fn(ElementContainerFieldInterface $field) => $field->uid)
-            ->map(fn(ElementContainerFieldInterface $field) => $field->getUiLabel())
+            ->map(
+                fn(ElementContainerFieldInterface $field) =>
+                    $field->getUiLabel() . ($this->showLabelHint() ? " ($field->handle)" : '')
+            )
             ->all();
     }
 

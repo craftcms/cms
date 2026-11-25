@@ -130,7 +130,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        if (Craft::$app->getSecurity()->isSystemDir($this->getRootPath())) {
+        if (Craft::$app->getSecurity()->isRestrictedDir($this->getRootPath())) {
             $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within or above system directories.'));
         }
     }
@@ -424,11 +424,13 @@ class Local extends Fs implements LocalFsInterface
      */
     protected function prefixPath(string $path = ''): string
     {
+        $path = FileHelper::normalizePath($path);
+
         if (!Path::ensurePathIsContained($path)) {
             throw new FsException("The path `$path` is not contained.");
         }
 
-        return $this->getRootPath() . DIRECTORY_SEPARATOR . FileHelper::normalizePath($path);
+        return $this->getRootPath() . DIRECTORY_SEPARATOR . $path;
     }
 
     /**

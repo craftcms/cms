@@ -9,6 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 
 /**
@@ -97,7 +98,11 @@ class TitleField extends TextField
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        if ($element?->getIsFresh() && !$static) {
+        if (
+            $element &&
+            !$static &&
+            (!isset($element->slug) || ElementHelper::isTempSlug($element->slug))
+        ) {
             $view = Craft::$app->getView();
 
             $language = $element->getSite()->language;
@@ -130,5 +135,19 @@ JS, [
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction();
+        }
+
+        return $items;
     }
 }
