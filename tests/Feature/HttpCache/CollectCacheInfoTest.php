@@ -62,6 +62,7 @@ class RecordCacheInfo
 }
 
 it('keeps a private response private when capping its lifetimes', function () {
+    $this->freezeSecond();
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
     Route::get('/page', function () use ($entry) {
@@ -76,7 +77,52 @@ it('keeps a private response private when capping its lifetimes', function () {
     $response = $this->get('/page');
 
     expect($response->headers->hasCacheControlDirective('private'))->toBeTrue()
-        ->and($response->headers->hasCacheControlDirective('public'))->toBeFalse();
+        ->and($response->headers->hasCacheControlDirective('public'))->toBeFalse()
+        ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600')
+        ->and($response->headers->getCacheControlDirective('s-maxage'))->toBe('600');
+});
+
+it('caps lifetimes at expiry dates added through the facade', function () {
+    $this->freezeSecond();
+
+    Route::get('/page', function () {
+        ResponseCacheInfo::addExpiryDate(now()->addMinutes(5));
+
+        return response('ok')->setPublic()->setMaxAge(3600);
+    });
+
+    expect($this->get('/page')->headers->getCacheControlDirective('max-age'))->toBe('300');
+});
+
+it('caps the lifetimes of 304 responses', function () {
+    $this->freezeSecond();
+    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
+
+    Route::get('/page', function (Request $request) use ($entry) {
+        Entry::find()->id($entry->id)->one();
+
+        $response = response('ok')->setPublic()->setMaxAge(3600)->setEtag('abc');
+        $response->isNotModified($request);
+
+        return $response;
+    });
+
+    $response = $this->get('/page', ['If-None-Match' => '"abc"']);
+
+    expect($response->getStatusCode())->toBe(304)
+        ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600');
+});
+
+it('leaves the lifetimes of error responses alone', function () {
+    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
+
+    Route::get('/page', function () use ($entry) {
+        Entry::find()->id($entry->id)->one();
+
+        return response('gone', 410)->setPublic()->setMaxAge(3600);
+    });
+
+    expect($this->get('/page')->headers->getCacheControlDirective('max-age'))->toBe('3600');
 });
 
 it('leaves lifetimes shorter than the earliest expiry alone', function () {
@@ -103,17 +149,25 @@ it('collects tags added through the facade and the Twig global', function () {
     expect(ResponseCacheInfo::getTags())->toBe(['from-php', 'from-twig']);
 });
 
-it('keeps tags added inside a cached block on a cache hit', function () {
-    Route::get('/page', fn () => response(renderString(
-        "{% cache globally using key 'nav' %}{% do ResponseCacheInfo.addTags(['nav']) %}nav{% endcache %}",
-    )));
+it('keeps tags and element expiry dates from inside a cached block on a cache hit', function () {
+    $this->freezeSecond();
+    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
-    $this->get('/page');
-    expect(ResponseCacheInfo::getTags())->toBe(['nav']);
+    Route::get('/page', fn () => response(renderString(
+        "{% cache globally using key 'nav' %}{% do ResponseCacheInfo.addTags(['nav']) %}"
+        ."{{ craft.entries.id({$entry->id}).one().id }}-{{ random() }}{% endcache %}",
+    ))->setPublic()->setMaxAge(3600));
+
+    $first = $this->get('/page');
+    expect(ResponseCacheInfo::getTags())->toContain('nav', 'element::'.Entry::class);
 
     app()->forgetScopedInstances();
-    $this->get('/page');
-    expect(ResponseCacheInfo::getTags())->toContain('nav');
+    $second = $this->get('/page');
+
+    expect($second->getContent())->toBe($first->getContent())
+        ->and(ResponseCacheInfo::getTags())->toContain('nav', 'element::'.Entry::class)
+        ->and(ResponseCacheInfo::getExpiryDate()?->getTimestamp())->toBe(now()->addMinutes(10)->getTimestamp())
+        ->and($second->headers->getCacheControlDirective('max-age'))->toBe('600');
 });
 
 it('only collects element tags for eligible requests', function (string $method, string $uri) {
@@ -123,12 +177,15 @@ it('only collects element tags for eligible requests', function (string $method,
     Route::match(['GET', 'POST'], $uri, function () use ($entry) {
         Entry::find()->id($entry->id)->one();
 
-        return response('ok');
+        return response(renderString("{% cache globally using key 'block' %}{{ craft.entries.id({$entry->id}).one().id }}{% endcache %}"));
     });
 
-    $this->call($method, $uri);
+    // The second request replays the cached block.
+    $this->call($method, $uri)->assertOk();
+    $this->call($method, $uri)->assertOk();
 
-    expect(ResponseCacheInfo::getTags())->toBe([]);
+    expect(ResponseCacheInfo::getTags())->toBe([])
+        ->and(ResponseCacheInfo::getExpiryDate())->toBeNull();
 })->with([
     'POST' => ['POST', '/page'],
     'control panel' => ['GET', 'cp'],

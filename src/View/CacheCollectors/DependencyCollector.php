@@ -104,8 +104,8 @@ class DependencyCollector implements CacheCollectorInterface
             $this->tags[$tag] = true;
         }
 
-        // So cache drivers anywhere in the request can read the response's element tags as they're collected.
-        $this->responseCacheInfo->addTags($tags);
+        // So cache integrations anywhere in the request can read the response's element tags as they're collected.
+        $this->responseCacheInfo->addElementTags($tags);
     }
 
     public function setExpiryDate(DateTimeInterface $expiryDate): void
@@ -210,7 +210,7 @@ class DependencyCollector implements CacheCollectorInterface
 
     private function mergeExpiryTimestamp(int $expiryTimestamp): void
     {
-        $this->responseCacheInfo->addExpiryDate(new DateTimeImmutable("@{$expiryTimestamp}"));
+        $this->responseCacheInfo->addElementExpiryDate(new DateTimeImmutable("@{$expiryTimestamp}"));
 
         if ($this->expiryTimestamp === null || $expiryTimestamp < $this->expiryTimestamp) {
             $this->expiryTimestamp = $expiryTimestamp;

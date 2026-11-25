@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http;
 
+use CraftCms\Cms\Http\Middleware\CollectCacheInfo;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
- * Collects the tags the current response depends on and the earliest expiry date of its elements.
+ * Collects the tags the current response depends on and the earliest expiry date among them.
  *
- * Tags are opaque strings. Craft adds the tags of elements the request queries as they're collected, along with
- * the earliest expiry date among those elements ({@see getExpiryDate()}). Templates, controllers and plugins add
- * their own tags through the `ResponseCacheInfo` facade, which is also a Twig global:
+ * Tags are opaque strings. For GET and HEAD site requests outside the control panel and actions, {@see CollectCacheInfo}
+ * adds the tags of the elements the request queries, along with their earliest expiry date ({@see getExpiryDate()}).
+ * Templates, controllers and plugins add their own tags and expiry dates through the `ResponseCacheInfo` facade,
+ * which is also a Twig global:
  *
  * ```twig
  * {% do ResponseCacheInfo.addTags(['nav']) %}
@@ -42,6 +44,8 @@ class ResponseCacheInfo
 
     private ?int $expiryTimestamp = null;
 
+    private bool $collectingElements = false;
+
     /**
      * @param  string|list<string>  $tags
      */
@@ -65,7 +69,55 @@ class ResponseCacheInfo
     }
 
     /**
-     * Starts recording the tags added from now on, such as inside a `{% cache %}` block. Captures can nest.
+     * Sets whether the element tags and expiry dates Craft collects are added to the response. {@see CollectCacheInfo}
+     * turns this on for the requests it collects for.
+     *
+     * @internal
+     */
+    public function collectElements(bool $collect = true): void
+    {
+        $this->collectingElements = $collect;
+    }
+
+    /**
+     * Adds element tags Craft collected, if {@see collectElements()} is on.
+     *
+     * They aren't captured for `{% cache %}` blocks, which replay element tags themselves.
+     *
+     * @param  list<string>  $tags
+     *
+     * @internal
+     */
+    public function addElementTags(array $tags): void
+    {
+        if (! $this->collectingElements) {
+            return;
+        }
+
+        foreach ($tags as $tag) {
+            if ($tag !== '') {
+                $this->tags[$tag] = true;
+            }
+        }
+    }
+
+    /**
+     * Adds an element expiry date Craft collected, if {@see collectElements()} is on.
+     *
+     * @internal
+     */
+    public function addElementExpiryDate(DateTimeInterface $date): void
+    {
+        if ($this->collectingElements) {
+            $this->addExpiryDate($date);
+        }
+    }
+
+    /**
+     * Starts recording the tags added with {@see addTags()} from now on, for a `{% cache %}` block to replay on a hit.
+     * Captures can nest.
+     *
+     * @internal
      */
     public function startCapture(): void
     {
@@ -76,6 +128,8 @@ class ResponseCacheInfo
      * Stops the innermost capture and returns the tags added since it started.
      *
      * @return list<string>
+     *
+     * @internal
      */
     public function stopCapture(): array
     {
@@ -105,7 +159,7 @@ class ResponseCacheInfo
     }
 
     /**
-     * The earliest expiry date among the elements the response depends on, if any expire.
+     * The earliest expiry date the response depends on, if any.
      */
     public function getExpiryDate(): ?DateTimeImmutable
     {
