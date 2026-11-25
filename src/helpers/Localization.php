@@ -50,8 +50,9 @@ class Localization
     /**
      * Normalizes a user-submitted number for use in code and/or to be saved into the database.
      *
-     * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
-     * locale uses something else.
+     * Group symbols are removed (e.g. 1,000,000 => 1000000), and the locale’s decimal symbol, minus sign, and digits are
+     * converted to a period, a hyphen, and ASCII digits, such as `−1 234,50` in `sv-SE` => `-1234.50`. Direction marks
+     * are removed.
      *
      * @param mixed $number The number that should be normalized.
      * @param string|null $localeId The locale ID that the number is set in
@@ -68,11 +69,23 @@ class Localization
                 $locale = Craft::$app->getI18n()->getLocaleById($localeId);
             }
 
-            $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
+            $replacements = [
+                "\u{061C}" => '',
+                "\u{200E}" => '',
+                "\u{200F}" => '',
+                $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR) => '',
+                $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR) => '.',
+                $locale->getNumberSymbol(Locale::SYMBOL_MINUS_SIGN) => '-',
+            ];
 
-            // Remove any group symbols and use a period for the decimal symbol
-            $number = str_replace([$groupSymbol, $decimalSymbol], ['', '.'], $number);
+            // Locales such as ar-EG write their own digits, which follow their zero in Unicode.
+            $zero = mb_ord($locale->getNumberSymbol(Locale::SYMBOL_ZERO_DIGIT));
+            foreach (range(0, 9) as $digit) {
+                $replacements[mb_chr($zero + $digit)] = (string)$digit;
+            }
+
+            // strtr() replaces the longest matches first, so a minus sign that includes a direction mark wins over the mark.
+            $number = strtr($number, $replacements);
         }
 
         return $number;

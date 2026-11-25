@@ -8,7 +8,7 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\PaginateNode;
-use Twig\Node\Expression\AssignNameExpression;
+use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -37,14 +37,14 @@ class PaginateTokenParser extends AbstractTokenParser
 
         if (count($targets) > 1) {
             $infoVariable = $targets->getNode('0');
-            $nodes['infoVariable'] = new AssignNameExpression($infoVariable->getAttribute('name'), $infoVariable->getTemplateLine());
+            $nodes['infoVariable'] = new AssignContextVariable($infoVariable->getAttribute('name'), $infoVariable->getTemplateLine());
             $resultVariable = $targets->getNode('1');
         } else {
-            $nodes['infoVariable'] = new AssignNameExpression('paginate', $lineno);
+            $nodes['infoVariable'] = new AssignContextVariable('paginate', $lineno);
             $resultVariable = $targets->getNode('0');
         }
 
-        $nodes['resultVariable'] = new AssignNameExpression($resultVariable->getAttribute('name'), $resultVariable->getTemplateLine());
+        $nodes['resultVariable'] = new AssignContextVariable($resultVariable->getAttribute('name'), $resultVariable->getTemplateLine());
 
         return new PaginateNode($nodes, [], $lineno);
     }

@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
+- Fixed an error that occurred when `{% namespace %}` tags were nested. ([#21117](https://github.com/craftcms/cms/pull/21117))
+- Fixed a bug where Number fields and Table fields’ Number columns could save `0`, or drop the minus sign, for numbers written with the formatting locale’s own digits or minus sign, such as Arabic digits or Swedish negative numbers. ([#21110](https://github.com/craftcms/cms/pull/21110))
+- Fixed a bug where typing a character that a number input doesn’t allow could move the cursor to the wrong place. ([#21110](https://github.com/craftcms/cms/pull/21110))
+
 ## 5.12.3 - 2026-11-24
 
 - Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))

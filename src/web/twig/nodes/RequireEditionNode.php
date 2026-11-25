@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 use yii\web\NotFoundHttpException;
@@ -17,6 +18,7 @@ use yii\web\NotFoundHttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class RequireEditionNode extends Node
 {
     /**

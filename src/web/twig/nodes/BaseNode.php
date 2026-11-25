@@ -7,12 +7,14 @@
 
 namespace craft\web\twig\nodes;
 
+use Twig\Attribute\YieldReady;
 use Twig\Node\Node;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.15.0
  */
+#[YieldReady]
 class BaseNode extends Node
 {
 }

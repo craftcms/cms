@@ -13,6 +13,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use DateTime;
+use GraphQL\Error\UserError;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -29,6 +30,16 @@ class FormatDateTime extends Directive
 {
     public const DEFAULT_FORMAT = 'Y-m-d\TH:i:sP';
     public const DEFAULT_TIMEZONE = 'UTC';
+    /** @since 5.13.0 */
+    public const DEFAULT_DATE_FORMAT = 'Y-m-d';
+    /** @since 5.13.0 */
+    public const DEFAULT_TIME_FORMAT = 'H:i:sP';
+    /** @since 5.13.0 */
+    public const OUTPUT_DATETIME = 'datetime';
+    /** @since 5.13.0 */
+    public const OUTPUT_DATE = 'date';
+    /** @since 5.13.0 */
+    public const OUTPUT_TIME = 'time';
 
     /**
      * @inheritdoc
@@ -61,6 +72,12 @@ class FormatDateTime extends Directive
                     'description' => 'The locale to use when formatting the date. (E.g., en-US)',
                 ]),
                 new FieldArgument([
+                    'name' => 'output',
+                    'type' => Type::string(),
+                    'defaultValue' => self::OUTPUT_DATETIME,
+                    'description' => 'Which part of the date to output: `datetime`, `date`, or `time`. With `date` or `time`, `format` defaults to `' . self::DEFAULT_DATE_FORMAT . '` or `' . self::DEFAULT_TIME_FORMAT . '`, and `short`, `medium`, `long`, and `full` use the locale’s date or time format.',
+                ]),
+                new FieldArgument([
                     'name' => 'withTimeZone',
                     'type' => Type::boolean(),
                     'description' => 'Whether the time zone abbreviation should be appended to the formatted time.',
@@ -86,7 +103,17 @@ class FormatDateTime extends Directive
     {
         if ($value instanceof DateTime) {
             /** @var DateTime $value */
+            $output = $arguments['output'] ?? self::OUTPUT_DATETIME;
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
+
+            // The format argument always defaults to the date time format, so swap in the output's own default
+            if ($format === self::DEFAULT_FORMAT) {
+                $format = match ($output) {
+                    self::OUTPUT_DATE => self::DEFAULT_DATE_FORMAT,
+                    self::OUTPUT_TIME => self::DEFAULT_TIME_FORMAT,
+                    default => $format,
+                };
+            }
 
             // Is this a custom PHP date format?
             if (!in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -114,7 +141,13 @@ class FormatDateTime extends Directive
 
             $formatter->timeZone = $timezone;
 
-            $value = $formatter->asDatetime($value, $format, $arguments['withTimeZone'] ?? false);
+            $withTimeZone = $arguments['withTimeZone'] ?? false;
+            $value = match ($output) {
+                self::OUTPUT_DATE => $formatter->asDate($value, $format),
+                self::OUTPUT_TIME => $formatter->asTime($value, $format, $withTimeZone),
+                self::OUTPUT_DATETIME => $formatter->asDatetime($value, $format, $withTimeZone),
+                default => throw new UserError("Invalid output: $output"),
+            };
         }
 
         return $value;
