@@ -46,7 +46,7 @@
                 {{ 'Personal'|t('app') }}
               {% else %}
                 {# Apps show the APIs they were authorized for #}
-                {{ grant.scopes|keys|map(handle => groups[handle].label ?? null)|filter|join(', ')|default('App'|t('app')) }}
+                {{ grant.scopes|keys|map(handle => (groups[handle].label ?? null))|filter|join(', ')|default('App'|t('app')) }}
               {% endif %}
             </td>
             <td>{{ grant.expiresAt|date('short') }}</td>
