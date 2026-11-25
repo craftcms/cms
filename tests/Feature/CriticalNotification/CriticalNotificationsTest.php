@@ -150,16 +150,16 @@ it('warns about debug mode only in production', function () {
     $environment = app()->environment();
 
     try {
-        app()->bind('env', 'production');
+        app()->instance('env', 'production');
         expect(app(DebugInProductionCheck::class)->run())->toBeInstanceOf(CriticalNotification::class);
 
-        app()->bind('env', 'staging');
+        app()->instance('env', 'staging');
         expect(app(DebugInProductionCheck::class)->run())->toBeNull();
 
-        app()->bind('env', 'production');
+        app()->instance('env', 'production');
         config()->set('app.debug', false);
         expect(app(DebugInProductionCheck::class)->run())->toBeNull();
     } finally {
-        app()->bind('env', $environment);
+        app()->instance('env', $environment);
     }
 });
