@@ -57,6 +57,11 @@ class GraphqlController extends Controller
     public $defaultAction = 'api';
 
     /**
+     * @var string[] The scopes of the request’s OAuth access token, once it’s authenticated
+     */
+    private array $_oauthScopes;
+
+    /**
      * @inheritdoc
      * @throws NotFoundHttpException
      */
@@ -68,6 +73,22 @@ class GraphqlController extends Controller
 
         if ($action->id === 'api') {
             $this->enableCsrfValidation = false;
+
+            // Authenticate OAuth access tokens before the base controller's checks, so their users go through the
+            // same checks as any other signed-in request, including control panel access for control panel requests.
+            // Preflight requests stay anonymous, and admins' X-Craft-Gql-Schema requests are handled by _schema().
+            // OAuth access tokens are JWTs, whereas GraphQL tokens never contain dots.
+            $bearerToken = $this->request->getBearerToken();
+            if (
+                !$this->request->getIsOptions() &&
+                !$this->request->getHeaders()->has('x-craft-gql-schema') &&
+                $bearerToken &&
+                substr_count($bearerToken, '.') === 2
+            ) {
+                $this->response->format = YiiResponse::FORMAT_JSON;
+                $this->_authenticateOAuth();
+                $this->allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+            }
         }
 
         if (!parent::beforeAction($action)) {
@@ -90,7 +111,7 @@ class GraphqlController extends Controller
         // Add CORS headers
         $headers = $this->response->getHeaders();
         $headers->setDefault('Access-Control-Allow-Credentials', 'true');
-        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
+        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Gql-Token, X-Craft-Token');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
@@ -268,10 +289,10 @@ class GraphqlController extends Controller
             return $schema;
         }
 
-        // OAuth access tokens are JWTs, whereas GraphQL tokens never contain dots
-        $bearerToken = $this->request->getBearerToken();
-        if ($bearerToken && substr_count($bearerToken, '.') === 2) {
-            return $this->_oauthSchema($gqlService);
+        // OAuth requests were authenticated by beforeAction(). When an X-Craft-Gql-Token header is present, its token
+        // determines the schema, so the access token only logs the user in.
+        if (isset($this->_oauthScopes) && !$requestHeaders->has('x-craft-gql-token')) {
+            return $gqlService->getSchemaForUser(static::currentUser(), in_array(GqlService::SCOPE_WRITE, $this->_oauthScopes, true));
         }
 
         $token = $this->_token($gqlService);
@@ -299,13 +320,11 @@ class GraphqlController extends Controller
     }
 
     /**
-     * Authenticates the request’s OAuth access token, and returns a schema for the authenticated user.
+     * Authenticates the request’s OAuth access token, and sets its user as the identity for the request.
      *
-     * @param GqlService $gqlService
-     * @return GqlSchema
      * @throws UnauthorizedHttpException
      */
-    private function _oauthSchema(GqlService $gqlService): GqlSchema
+    private function _authenticateOAuth(): void
     {
         $oauth = Craft::$app->getOAuth();
         $session = Craft::$app->getUser();
@@ -325,12 +344,28 @@ class GraphqlController extends Controller
 
         // Set the user as the identity for the request, so permission checks and element queries apply to them
         $session->setIdentity($user);
-
-        return $gqlService->getSchemaForUser($user, in_array(GqlService::SCOPE_WRITE, $scopes, true));
+        $this->_oauthScopes = $scopes;
     }
 
     private function _token(GqlService $gqlService): ?GqlToken
     {
+        // A GraphQL token in an X-Craft-Gql-Token header takes precedence, so requests can pair it with an OAuth
+        // access token in the Authorization header
+        $headerToken = $this->request->getHeaders()->get('x-craft-gql-token');
+        if ($headerToken !== null) {
+            try {
+                $token = $gqlService->getTokenByAccessToken($headerToken);
+            } catch (InvalidArgumentException) {
+                $token = null;
+            }
+
+            if (!$token?->getIsValid()) {
+                throw new BadRequestHttpException('Invalid X-Craft-Gql-Token header');
+            }
+
+            return $token;
+        }
+
         $bearerToken = $this->request->getBearerToken();
 
         if ($bearerToken) {

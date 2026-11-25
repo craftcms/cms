@@ -1,5 +1,17 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where Number fields and Table fields’ Number columns could save `0`, or drop the minus sign, for numbers written with the formatting locale’s own digits or minus sign, such as Arabic digits or Swedish negative numbers. ([#21110](https://github.com/craftcms/cms/pull/21110))
+- Fixed a bug where typing a character that a number input doesn’t allow could move the cursor to the wrong place. ([#21110](https://github.com/craftcms/cms/pull/21110))
+
+## 5.12.3 - 2026-11-24
+
+- Updated Twig to 3.31.1. ([#21081](https://github.com/craftcms/cms/pull/21081))
+- GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` objects. ([#21081](https://github.com/craftcms/cms/pull/21081))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
+
 ## 5.12.2 - 2026-11-20
 
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails. ([#20742](https://github.com/craftcms/cms/pull/20742))

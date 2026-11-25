@@ -95,8 +95,8 @@ enum ConfigurationType: string
     public function notes(): array
     {
         return match ($this) {
-            self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.'],
-            self::Fields => ['Creating a field requires a valid, selectable field class. Updates cannot change the field class. Supplied settings merge with existing settings.'],
+            self::EntryTypes, self::Volumes => ['On update, an omitted fieldLayout retains the current layout; null clears it.', 'Field layout tabs and elements take userCondition and elementCondition visibility conditions. Call condition_schema with context field-layout for their rules.'],
+            self::Fields => ['Creating a field requires a valid, selectable field class. Updates cannot change the field class. Supplied settings merge with existing settings.', 'Relation fields such as Entries, Assets, and Users take settings.selectionCondition, which replaces the saved condition as a whole rather than merging its rules. Call condition_schema with context relation-selection for its rules.'],
             self::UserGroups => ['Assign permissions separately with user_permissions_group_set, which replaces the complete permission list.'],
             self::Routes => ['Lookup accepts UID or computed URI. uriParts contains literal strings or [name, regex] tuples. Lists routes available to the current site.'],
             default => [],

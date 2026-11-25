@@ -13,8 +13,10 @@ use craft\base\Renderable;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
+use ReflectionClass;
 use Stringable;
 use Twig\Environment;
+use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\SandboxExtension;
@@ -365,10 +367,11 @@ class Template
             return false;
         }
 
+        // Only the compiled class's metadata is needed, and its constructor could load other templates, such as traits,
+        // that the current template mode can't resolve
         /** @var TwigTemplate $template */
-        $template = new $class(Craft::$app->getView()->getTwig());
-        $src = $template->getSourceContext();
-        $templatePath = $src->getPath() ?: null;
+        $template = (new ReflectionClass($class))->newInstanceWithoutConstructor();
+        $templatePath = self::resolveSourcePath($template, $contents);
         $templateLine = null;
 
         if ($line !== null) {
@@ -381,6 +384,68 @@ class Template
         }
 
         return [$templatePath, $templateLine];
+    }
+
+    /**
+     * Returns the source path of a compiled template.
+     *
+     * When Dev Mode is disabled, compiled templates don't store their source path, and Twig asks the loader for it,
+     * which resolves the template name for the current template mode. The template may have been rendered in another
+     * mode, where the same name can resolve to a different template, so this prefers the mode whose environment
+     * compiles the template name to the same class. That class also depends on settings that can change while
+     * rendering, such as the escaping strategy, so when no mode matches it, the path is used if only one mode resolves
+     * the name.
+     *
+     * @param TwigTemplate $template
+     * @param string $compiledCode
+     * @return string|null
+     */
+    private static function resolveSourcePath(TwigTemplate $template, string $compiledCode): ?string
+    {
+        if (!str_contains($compiledCode, 'Source::createWithLazyPath(')) {
+            return $template->getSourceContext()->getPath() ?: null;
+        }
+
+        $view = Craft::$app->getView();
+        $oldTemplateMode = $view->getTemplateMode();
+        // Changing the template mode resets the templates path, which could be a custom one
+        $oldTemplatesPath = $view->getTemplatesPath();
+        $class = get_class($template);
+        $templateModes = array_unique([$oldTemplateMode, View::TEMPLATE_MODE_SITE, View::TEMPLATE_MODE_CP]);
+        $paths = [];
+
+        try {
+            foreach ($templateModes as $templateMode) {
+                $view->setTemplateMode($templateMode);
+                $twig = $view->getTwig();
+                $name = $template->getTemplateName();
+
+                try {
+                    $path = $twig->getLoader()->getSourceContext($name)->getPath();
+                    $compiledHere = $twig->getTemplateClass($name) === $class;
+                } catch (LoaderError) {
+                    continue;
+                }
+
+                if ($path === '') {
+                    continue;
+                }
+
+                if ($compiledHere) {
+                    return $path;
+                }
+
+                $paths[] = $path;
+            }
+        } finally {
+            $view->setTemplateMode($oldTemplateMode);
+            $view->setTemplatesPath($oldTemplatesPath);
+        }
+
+        // Both modes can resolve the name to the same file, such as when a plugin registers the same template root for both
+        $paths = array_unique($paths);
+
+        return count($paths) === 1 ? $paths[0] : null;
     }
 
     /**

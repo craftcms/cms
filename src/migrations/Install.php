@@ -74,13 +74,14 @@ class Install extends Migration
     public function safeUp(): bool
     {
         if (!$this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
+            $message = "Project config validation failed: $error\n\nRun `" . App::composerCommand('install') . "` or remove your `config/project/` folder and try again.";
             echo "\n$message\n\nAborting install.\n\n";
             throw new OperationAbortedException($message);
         }
 
         $this->createTables();
         (new m261007_100000_oauth())->createTables();
+        (new m261117_000000_upload_sessions())->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
@@ -874,6 +875,7 @@ class Install extends Migration
      */
     public function createIndexes(): void
     {
+        $this->createIndex(null, Table::ADDRESSES, ['primaryOwnerId'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
         $this->createIndex(null, Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);

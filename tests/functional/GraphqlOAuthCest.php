@@ -10,11 +10,20 @@ namespace crafttests\functional;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\models\EntryType;
+use craft\models\FieldLayout;
+use craft\models\GqlSchema;
+use craft\models\GqlToken;
+use craft\models\Section;
+use craft\models\Section_SiteSettings;
 use craft\oauth\ScopeGroup;
 use craft\oauth\User as OAuthUser;
 use craft\services\Gql;
@@ -58,6 +67,7 @@ class GraphqlOAuthCest
     public function _after(FunctionalTester $I): void
     {
         Craft::$app->get('mcp')->resetSettings();
+        ElementHelper::setProvisionalDraftUser(null);
     }
 
     public function testSchemaIsBasedOnTheTokensUser(FunctionalTester $I): void
@@ -247,6 +257,121 @@ class GraphqlOAuthCest
         }
     }
 
+    public function testGqlTokenHeaderPairsWithAccessTokens(FunctionalTester $I): void
+    {
+        $entries = Craft::$app->getEntries();
+        $entryType = new EntryType(['name' => 'Page', 'handle' => 'page', 'hasTitleField' => true]);
+        $entryType->setFieldLayout(FieldLayout::createFromConfig([
+            'type' => Entry::class,
+            'tabs' => [['name' => 'Content', 'elements' => [['type' => EntryTitleField::class]]]],
+        ]));
+        $entries->saveEntryType($entryType);
+        $section = new Section(['name' => 'Pages', 'handle' => 'pages', 'type' => Section::TYPE_CHANNEL]);
+        $section->setEntryTypes([$entryType]);
+        $section->setSiteSettings([
+            new Section_SiteSettings(['siteId' => Craft::$app->getSites()->getPrimarySite()->id, 'hasUrls' => false]),
+        ]);
+        $entries->saveSection($section);
+        $entry = new Entry(['sectionId' => $section->id, 'typeId' => $entryType->id, 'title' => 'Published']);
+        Craft::$app->getElements()->saveElement($entry);
+
+        $gql = Craft::$app->getGql();
+        $schema = new GqlSchema([
+            'name' => 'Front end',
+            'scope' => [
+                'sites.' . Craft::$app->getSites()->getPrimarySite()->uid . ':read',
+                'elements.drafts:read',
+                "sections.$section->uid:read",
+            ],
+        ]);
+        $gql->saveSchema($schema);
+        $gqlToken = new GqlToken([
+            'name' => 'Front end',
+            'accessToken' => StringHelper::randomString(32),
+            'enabled' => true,
+            'schemaId' => $schema->id,
+        ]);
+        $gql->saveToken($gqlToken);
+
+        // The user has no permissions, so the schema can only come from the GraphQL token
+        $user = $this->user([]);
+        $draft = Craft::$app->getDrafts()->createDraft($entry, $user->id, provisional: true);
+        $draft->title = 'Unsaved changes';
+        Craft::$app->getElements()->saveElement($draft);
+        $userToken = $this->token($user);
+        $query = sprintf('{ entry(id: %s, withProvisionalDrafts: true) { title } }', $entry->id);
+
+        // Results are cached, so the user's provisional drafts must not leak into the next request. Save the pending
+        // project config first, so the cache keys don't change between requests.
+        Craft::$app->getProjectConfig()->saveModifiedConfigData();
+        $gql->flushCaches();
+        $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken, 'Authorization' => "Bearer $userToken"]);
+        $I->assertSame('Unsaved changes', $data['data']['entry']['title']);
+        $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
+        $I->assertSame('Published', $data['data']['entry']['title']);
+
+        // The same goes for users authenticated by their session
+        $gql->flushCaches();
+        $I->amLoggedInAs($user);
+        $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
+        $I->assertSame('Unsaved changes', $data['data']['entry']['title']);
+        $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
+        $I->assertSame('Published', $data['data']['entry']['title']);
+
+        // Without the GraphQL token, the schema is the user's own, which can't query entries
+        $data = $this->request($I, $query, ['Authorization' => "Bearer $userToken"]);
+        $I->assertNull($data['data']['entry'] ?? null);
+
+        // Results that depend on the user's permissions change with them
+        $headers = ['X-Craft-Gql-Token' => $gqlToken->accessToken, 'Authorization' => "Bearer $userToken"];
+        $editableQuery = '{ entries(editable: true) { title } }';
+        $I->assertSame([], $this->request($I, $editableQuery, $headers)['data']['entries']);
+        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ["viewEntries:$section->uid", "viewPeerEntries:$section->uid"]);
+        $I->assertSame([['title' => 'Published']], $this->request($I, $editableQuery, $headers)['data']['entries']);
+
+        $this->request($I, $query, ['X-Craft-Gql-Token' => 'nope', 'Authorization' => "Bearer $userToken"], 400);
+        $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken, 'Authorization' => 'Bearer aaa.bbb.ccc'], 401);
+    }
+
+    public function testControlPanelRequestsRequireControlPanelAccess(FunctionalTester $I): void
+    {
+        $cpPath = '/' . Craft::$app->getConfig()->getGeneral()->cpTrigger . '/actions/graphql/api';
+
+        $this->graphql($I, '{ ping }', $this->token($this->user([])), $cpPath, 403);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user(['accessCp'])), $cpPath)['data']);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user([])))['data']);
+
+        // GraphQL tokens don't sign anyone in, so they still work on control panel URLs
+        $gql = Craft::$app->getGql();
+        $schema = new GqlSchema(['name' => 'Test schema', 'scope' => ['sites.' . Craft::$app->getSites()->getPrimarySite()->uid . ':read']]);
+        $gql->saveSchema($schema);
+        $gqlToken = new GqlToken(['name' => 'Test token', 'schemaId' => $schema->id, 'accessToken' => StringHelper::randomString(32)]);
+        $gql->saveToken($gqlToken);
+        $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $gqlToken->accessToken, $cpPath)['data']);
+
+        // Preflight requests aren't authenticated
+        $I->haveHttpHeader('Authorization', 'Bearer aaa.bbb.ccc');
+        $I->sendAjaxRequest('OPTIONS', $cpPath);
+        $I->seeResponseCodeIs(200);
+    }
+
+    public function testOfflineRequestsRequireOfflineAccess(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $cpPath = "/$general->cpTrigger/actions/graphql/api";
+        $original = $general->isSystemLive;
+        $general->isSystemLive = false;
+
+        try {
+            $this->graphql($I, '{ ping }', $this->token($this->user([])), status: 503);
+            $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user(['accessSiteWhenSystemIsOff'])))['data']);
+            $this->graphql($I, '{ ping }', $this->token($this->user(['accessCp'])), $cpPath, 503);
+            $I->assertSame(['ping' => 'pong'], $this->graphql($I, '{ ping }', $this->token($this->user(['accessCp', 'accessCpWhenSystemIsOff'])), $cpPath)['data']);
+        } finally {
+            $general->isSystemLive = $original;
+        }
+    }
+
     public function testInvalidTokensAreRejected(FunctionalTester $I): void
     {
         $I->haveHttpHeader('Authorization', 'Bearer aaa.bbb.ccc');
@@ -272,14 +397,31 @@ class GraphqlOAuthCest
         return $user;
     }
 
-    private function graphql(FunctionalTester $I, string $query, string $token): array
+    private function graphql(FunctionalTester $I, string $query, string $token, string $path = '/actions/graphql/api', int $status = 200): array
     {
         Craft::$app->getGql()->flushCaches();
         $I->haveHttpHeader('Authorization', "Bearer $token");
-        $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => $query]));
-        $I->seeResponseCodeIs(200);
+        $I->amOnPage("$path?" . http_build_query(['query' => $query]));
+        $I->seeResponseCodeIs($status);
 
         return Json::decode($I->grabPageSource());
+    }
+
+    private function request(FunctionalTester $I, string $query, array $headers, int $status = 200): array
+    {
+        $I->deleteHeader('Authorization');
+        $I->deleteHeader('X-Craft-Gql-Token');
+        foreach ($headers as $name => $value) {
+            $I->haveHttpHeader($name, $value);
+        }
+        $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => $query]));
+        $I->seeResponseCodeIs($status);
+
+        // The application persists between requests here, so forget the request's user, as a new PHP process would
+        ElementHelper::setProvisionalDraftUser(null);
+        Craft::$app->getUser()->setIdentity(null);
+
+        return Json::decode($I->grabPageSource()) ?? [];
     }
 
     private function token(User $user, string $scope = Gql::SCOPE_READ, string $resource = 'graphql', string $clientId = 'test-graphql'): string

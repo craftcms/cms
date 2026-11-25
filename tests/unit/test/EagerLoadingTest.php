@@ -9,9 +9,11 @@ namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
@@ -251,6 +253,306 @@ class EagerLoadingTest extends TestCase
     }
 
     /**
+     * Test that every map returned for a handle gets loaded, when the maps cover more than one element type
+     *
+     * @return void
+     */
+    public function testEagerLoadingMapsWithMultipleElementTypes(): void
+    {
+        [$entryA, $entryB] = Entry::find()->limit(2)->orderBy(['elements.id' => SORT_ASC])->all();
+        $user = User::find()->one();
+        self::assertNotNull($entryB);
+        self::assertNotNull($user);
+
+        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+
+        $maps = [
+            'list of maps' => [
+                [
+                    'elementType' => Entry::class,
+                    'map' => [
+                        ['source' => 1, 'target' => $entryA->id],
+                        ['source' => 2, 'target' => $entryB->id],
+                    ],
+                ],
+                [
+                    'elementType' => User::class,
+                    'map' => [
+                        ['source' => 1, 'target' => $user->id],
+                    ],
+                ],
+            ],
+            'map with mixed target types' => [
+                'map' => [
+                    ['source' => 1, 'target' => $entryA->id],
+                    ['source' => 2, 'target' => $entryB->id],
+                    ['source' => 1, 'target' => $user->id],
+                ],
+            ],
+        ];
+
+        foreach ($maps as $name => $map) {
+            EagerLoadingTestSourceElement::$map = $map;
+            $sourceA = new EagerLoadingTestSourceElement(['id' => 1, 'siteId' => $siteId]);
+            $sourceB = new EagerLoadingTestSourceElement(['id' => 2, 'siteId' => $siteId]);
+
+            Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$sourceA, $sourceB], [
+                'mixed',
+                ['path' => 'mixed as mixedCount', 'count' => true],
+                ['path' => 'mixed as firstMixed', 'criteria' => ['limit' => 1]],
+                ['path' => 'mixed as otherMixed', 'criteria' => ['offset' => 1]],
+            ]);
+
+            $ids = fn(ElementInterface $source, string $alias = 'mixed') => array_map(
+                fn(ElementInterface $element) => [$element::class, $element->id],
+                $source->getEagerLoadedElements($alias)->all(),
+            );
+
+            self::assertSame([[Entry::class, $entryA->id], [User::class, $user->id]], $ids($sourceA), $name);
+            self::assertSame([[Entry::class, $entryB->id]], $ids($sourceB), $name);
+            self::assertSame(2, $sourceA->getEagerLoadedElementCount('mixedCount'), $name);
+            self::assertSame(1, $sourceB->getEagerLoadedElementCount('mixedCount'), $name);
+
+            // the plan's offset and limit apply to each source's combined elements
+            self::assertSame([[Entry::class, $entryA->id]], $ids($sourceA, 'firstMixed'), $name);
+            self::assertSame([[User::class, $user->id]], $ids($sourceA, 'otherMixed'), $name);
+            self::assertSame([], $ids($sourceB, 'otherMixed'), $name);
+        }
+    }
+
+    /**
+     * Test that each map keeps its own limit when several maps are combined, and that the plan's limit
+     * can be a numeric string
+     *
+     * @return void
+     */
+    public function testEagerLoadingMapsWithOwnLimits(): void
+    {
+        $entries = Entry::find()->limit(4)->orderBy(['elements.id' => SORT_ASC])->ids();
+        self::assertCount(4, $entries);
+
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entries[0]],
+                    ['source' => 1, 'target' => $entries[1]],
+                ],
+                'criteria' => ['limit' => 1],
+            ],
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entries[2]],
+                    ['source' => 1, 'target' => $entries[3]],
+                ],
+            ],
+        ];
+        $source = new EagerLoadingTestSourceElement([
+            'id' => 1,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+        ]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$source], [
+            'mixed',
+            ['path' => 'mixed as limited', 'criteria' => ['limit' => '2']],
+        ]);
+
+        $ids = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => $element->id,
+            $source->getEagerLoadedElements($alias)->all(),
+        );
+
+        self::assertSame([$entries[0], $entries[2], $entries[3]], $ids('mixed'));
+        self::assertSame([$entries[0], $entries[2]], $ids('limited'));
+    }
+
+    /**
+     * Test that a map split up by element type keeps its mapping order, and that the plan's `inReverse`
+     * applies to each source's combined elements
+     *
+     * @return void
+     */
+    public function testEagerLoadingMapsKeepMappingOrder(): void
+    {
+        [$entryA, $entryB] = Entry::find()->limit(2)->orderBy(['elements.id' => SORT_ASC])->all();
+        $user = User::find()->one();
+        self::assertNotNull($entryB);
+        self::assertNotNull($user);
+
+        EagerLoadingTestSourceElement::$map = [
+            'map' => [
+                ['source' => 1, 'target' => $entryA->id],
+                ['source' => 1, 'target' => $user->id],
+                ['source' => 1, 'target' => $entryB->id],
+            ],
+        ];
+        $source = new EagerLoadingTestSourceElement([
+            'id' => 1,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+        ]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$source], [
+            'mixed',
+            ['path' => 'mixed as page', 'criteria' => ['offset' => 1, 'limit' => 1]],
+            ['path' => 'mixed as reversed', 'criteria' => ['inReverse' => true]],
+            ['path' => 'mixed as reversedPage', 'criteria' => ['inReverse' => true, 'offset' => 1, 'limit' => 1]],
+            ['path' => 'mixed as negativeLimit', 'criteria' => ['limit' => -1]],
+            ['path' => 'mixed as zeroLimit', 'criteria' => ['offset' => 1, 'limit' => 0]],
+            ['path' => 'mixed as negativeOffset', 'criteria' => ['offset' => -1]],
+        ]);
+
+        $ids = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $source->getEagerLoadedElements($alias)->all(),
+        );
+
+        $a = [Entry::class, $entryA->id];
+        $u = [User::class, $user->id];
+        $b = [Entry::class, $entryB->id];
+        self::assertSame([$a, $u, $b], $ids('mixed'));
+        self::assertSame([$u], $ids('page'));
+        self::assertSame([$b, $u, $a], $ids('reversed'));
+        self::assertSame([$u], $ids('reversedPage'));
+
+        // nonpositive limits and offsets are ignored, as they are with a single map
+        self::assertSame([$a, $u, $b], $ids('negativeLimit'));
+        self::assertSame([$u, $b], $ids('zeroLimit'));
+        self::assertSame([$a, $u, $b], $ids('negativeOffset'));
+
+        // a map's own inReverse is kept
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entryA->id],
+                    ['source' => 1, 'target' => $entryB->id],
+                ],
+                'criteria' => ['inReverse' => true],
+            ],
+            [
+                'elementType' => User::class,
+                'map' => [
+                    ['source' => 1, 'target' => $user->id],
+                ],
+            ],
+        ];
+        $source = new EagerLoadingTestSourceElement([
+            'id' => 1,
+            'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
+        ]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$source], [
+            'mixed',
+            ['path' => 'mixed as firstMixed', 'criteria' => ['limit' => 1]],
+        ]);
+
+        $ids = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $source->getEagerLoadedElements($alias)->all(),
+        );
+
+        self::assertSame([$b, $a, $u], $ids('mixed'));
+        self::assertSame([$b], $ids('firstMixed'));
+
+        // a map's own inReverse only affects the sources it covers
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'map' => [
+                    ['source' => 1, 'target' => $entryA->id],
+                    ['source' => 1, 'target' => $user->id],
+                    ['source' => 1, 'target' => $entryB->id],
+                ],
+            ],
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 2, 'target' => $entryA->id],
+                    ['source' => 2, 'target' => $entryB->id],
+                ],
+                'criteria' => ['inReverse' => true],
+            ],
+        ];
+        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        $sourceA = new EagerLoadingTestSourceElement(['id' => 1, 'siteId' => $siteId]);
+        $sourceB = new EagerLoadingTestSourceElement(['id' => 2, 'siteId' => $siteId]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$sourceA, $sourceB], [
+            'mixed',
+        ]);
+
+        $sourceIds = fn(ElementInterface $source) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $source->getEagerLoadedElements('mixed')->all(),
+        );
+
+        self::assertSame([$a, $u, $b], $sourceIds($sourceA));
+        self::assertSame([$b, $a], $sourceIds($sourceB));
+
+        // an interleaved map and a reversed map for the same source each keep their own order
+        [, , $entryC, $entryD] = Entry::find()->limit(4)->orderBy(['elements.id' => SORT_ASC])->all();
+        self::assertNotNull($entryD);
+        $c = [Entry::class, $entryC->id];
+        $d = [Entry::class, $entryD->id];
+
+        EagerLoadingTestSourceElement::$map = [
+            [
+                'map' => [
+                    ['source' => 1, 'target' => $entryA->id],
+                    ['source' => 1, 'target' => $user->id],
+                    ['source' => 1, 'target' => $entryB->id],
+                ],
+            ],
+            [
+                'elementType' => Entry::class,
+                'map' => [
+                    ['source' => 1, 'target' => $entryC->id],
+                    ['source' => 1, 'target' => $entryD->id],
+                ],
+                'criteria' => ['inReverse' => true],
+            ],
+        ];
+        $sourceA = new EagerLoadingTestSourceElement(['id' => 1, 'siteId' => $siteId]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$sourceA], [
+            'mixed',
+            ['path' => 'mixed as page', 'criteria' => ['offset' => 2, 'limit' => 2]],
+        ]);
+
+        $sourceIds = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $sourceA->getEagerLoadedElements($alias)->all(),
+        );
+
+        self::assertSame([$a, $u, $b, $d, $c], $sourceIds('mixed'));
+        self::assertSame([$b, $d], $sourceIds('page'));
+
+        // an untyped map's own inReverse reverses the whole map, not each element type within it
+        EagerLoadingTestSourceElement::$map = [
+            'map' => [
+                ['source' => 1, 'target' => $entryA->id],
+                ['source' => 1, 'target' => $entryB->id],
+                ['source' => 1, 'target' => $user->id],
+            ],
+            'criteria' => ['inReverse' => true],
+        ];
+        $sourceA = new EagerLoadingTestSourceElement(['id' => 1, 'siteId' => $siteId]);
+
+        Craft::$app->getElements()->eagerLoadElements(EagerLoadingTestSourceElement::class, [$sourceA], [
+            'mixed',
+            ['path' => 'mixed as firstMixed', 'criteria' => ['limit' => 1]],
+        ]);
+
+        $sourceIds = fn(string $alias) => array_map(
+            fn(ElementInterface $element) => [$element::class, $element->id],
+            $sourceA->getEagerLoadedElements($alias)->all(),
+        );
+
+        self::assertSame([$u, $b, $a], $sourceIds('mixed'));
+        self::assertSame([$u], $sourceIds('firstMixed'));
+    }
+
+    /**
      * @param callable(EntryQuery): EntryQuery $modifyQuery
      * @param bool $one Whether to execute the query with `one()` rather than `all()`
      * @return int[]
@@ -292,5 +594,18 @@ class EagerLoadingTest extends TestCase
         self::assertNotNull($entry);
 
         return array_map(fn(ElementInterface $element) => $element->id, $entry->getEagerLoadedElements('matrixSecond')->all());
+    }
+}
+
+/**
+ * A source element for [[EagerLoadingTest]] that returns a preset eager-loading map.
+ */
+class EagerLoadingTestSourceElement extends Element
+{
+    public static array $map = [];
+
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
+    {
+        return static::$map;
     }
 }

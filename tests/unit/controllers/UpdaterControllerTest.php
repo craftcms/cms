@@ -14,15 +14,14 @@ use craft\controllers\pluginstore\RemoveController;
 use craft\controllers\UpdaterController;
 use craft\elements\User;
 use craft\helpers\Json;
+use craft\services\Composer;
 use craft\test\TestCase;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
 /**
- * Unit tests for the updater controllers’ handling of signed updater data.
- *
- * Composer actions are only run through `beforeAction()`, so a regression can’t end up running Composer.
+ * Tests signed updater data and recovery when system Composer is unavailable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.12.1
@@ -32,6 +31,54 @@ class UpdaterControllerTest extends TestCase
     private ?string $originalRequestMethod = null;
     private bool $originalAllowUpdates;
     private bool $originalAllowAdminChanges;
+    private string|false $originalPath;
+    private Composer $originalComposer;
+
+    public function testMissingComposerDoesNotStartUpdate(): void
+    {
+        $this->disableComposer();
+        $this->loginAdmin();
+        $this->prepareRequest(null);
+        Craft::$app->getRequest()->setBodyParams([
+            'install' => ['craft' => '^5.13.0'],
+            'packageNames' => ['craft' => 'craftcms/cms'],
+        ]);
+
+        try {
+            $this->controller(UpdaterController::class, 'updater')->runAction('index');
+            self::assertFalse(Craft::$app->getIsInMaintenanceMode());
+            $js = implode("\n", array_merge(...array_values(Craft::$app->getView()->js)));
+            self::assertSame(1, preg_match('/\.setState\((.+)\);/', $js, $matches));
+            $state = Json::decode($matches[1]);
+            self::assertStringContainsString('Composer 2.2.0 or later', $state['error']);
+            self::assertArrayNotHasKey('nextAction', $state);
+            self::assertSame('recheck-composer', $state['options'][0]['nextAction']);
+        } finally {
+            Craft::$app->disableMaintenanceMode();
+        }
+    }
+
+    /** @dataProvider missingComposerActionDataProvider */
+    public function testMissingComposerActionsReturnExplanation(string $actionId): void
+    {
+        $this->disableComposer();
+        $this->loginAdmin();
+        // Deliberately no package data. The unavailable response must precede any attempted changes.
+        $response = $this->runUpdaterAction($actionId, Craft::$app->getSecurity()->hashData(Json::encode([])));
+
+        self::assertStringContainsString('Composer 2.2.0 or later', $response->data['error']);
+        self::assertArrayNotHasKey('nextAction', $response->data);
+        self::assertSame($actionId, $response->data['options'][0]['nextAction']);
+    }
+
+    public static function missingComposerActionDataProvider(): array
+    {
+        return [
+            ['composer-install'],
+            ['composer-remove'],
+            ['revert'],
+        ];
+    }
 
     /**
      * Data signed with the global security key, as the `|hash` filter does, is only trusted for Composer
@@ -165,6 +212,7 @@ class UpdaterControllerTest extends TestCase
 
     public function testPrecheckWithPendingUpdate(): void
     {
+        $this->disableComposer();
         $data = Craft::$app->getSecurity()->hashData(Json::encode([
             'migrate' => ['craft'],
             'postPrecheckState' => ['nextAction' => UpdaterController::ACTION_BACKUP],
@@ -227,9 +275,17 @@ class UpdaterControllerTest extends TestCase
         ]));
     }
 
+    private function disableComposer(): void
+    {
+        putenv('PATH=' . sys_get_temp_dir() . '/craft-no-composer-' . uniqid());
+        Craft::$app->set('composer', new Composer());
+    }
+
     protected function _before(): void
     {
         parent::_before();
+        $this->originalPath = getenv('PATH');
+        $this->originalComposer = Craft::$app->getComposer();
         $this->originalRequestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->originalAllowUpdates = $generalConfig->allowUpdates;
@@ -238,6 +294,8 @@ class UpdaterControllerTest extends TestCase
 
     protected function _after(): void
     {
+        putenv($this->originalPath === false ? 'PATH' : "PATH=$this->originalPath");
+        Craft::$app->set('composer', $this->originalComposer);
         Craft::$app->getUser()->setIdentity(null);
         $request = Craft::$app->getRequest();
         $request->setIsCpRequest(null);

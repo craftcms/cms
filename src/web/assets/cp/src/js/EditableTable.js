@@ -808,7 +808,12 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             {tdIndex: i, type: col.type},
             'handleKeypress'
           );
-          this.addListener($input, 'input', {type: col.type}, 'validateValue');
+          this.addListener(
+            $input,
+            'input',
+            {type: col.type, localized: !!col.locale},
+            'validateValue'
+          );
           $input.trigger('input');
 
           if (col.type !== 'multiline') {
@@ -1099,7 +1104,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
       }
 
       if (ev.data.type === 'number') {
-        Craft.filterNumberInputVal(ev.currentTarget);
+        Craft.filterNumberInputVal(ev.currentTarget, ev.data.localized);
         return;
       }
 

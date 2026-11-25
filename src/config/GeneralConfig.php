@@ -694,6 +694,30 @@ class GeneralConfig extends BaseConfig
     public ?string $cpTrigger = 'admin';
 
     /**
+     * @var bool Whether requests should be protected against CSRF by their `Sec-Fetch-Site` and `Origin` headers alone, without CSRF tokens.
+     *
+     * Requests that browsers mark with a `Sec-Fetch-Site: same-origin` header, or without `Sec-Fetch-Site` and with an `Origin` header that
+     * matches the request’s scheme and host, are always accepted without a CSRF token. When this is enabled, CSRF tokens are never checked,
+     * so other requests are rejected even when they have one, and `csrfInput()` outputs nothing. Pages that call it can then be cached.
+     *
+     * Only applies if <config5:enableCsrfProtection> is enabled.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->csrfOriginOnly(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CSRF_ORIGIN_ONLY=true
+     * ```
+     * :::
+     *
+     * @group Security
+     * @see enableCsrfProtection
+     * @since 5.13.0
+     */
+    public bool $csrfOriginOnly = false;
+
+    /**
      * @var string The name of CSRF token used for CSRF validation if <config5:enableCsrfProtection> is set to `true`.
      *
      * ::: code
@@ -4188,6 +4212,26 @@ class GeneralConfig extends BaseConfig
     public function cpTrigger(?string $value): self
     {
         $this->cpTrigger = $value;
+        return $this;
+    }
+
+    /**
+     * Whether requests should be protected against CSRF by their `Sec-Fetch-Site` and `Origin` headers alone, without CSRF tokens.
+     *
+     * ```php
+     * ->csrfOriginOnly(true)
+     * ```
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $csrfOriginOnly
+     * @see enableCsrfProtection
+     * @since 5.13.0
+     */
+    public function csrfOriginOnly(bool $value = true): self
+    {
+        $this->csrfOriginOnly = $value;
         return $this;
     }
 
