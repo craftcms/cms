@@ -81,13 +81,13 @@ TWIG;
     public function testMacrosImportedInCapturingTagsStayAvailable(): void
     {
         self::assertSame(
-            '<p>hi</p>|hi|hi|hi',
+            '<p>hi</p>|hi|hi|hi|hi',
             Craft::$app->getView()->renderString(<<<'TWIG'
 {%- macro hi() %}hi{% endmacro -%}
 {% tag 'p' %}{% import _self as a %}{{ a.hi() }}{% endtag %}|{{ a.hi() }}
 {%- namespace 'n' %}{% import _self as b %}{% endnamespace %}|{{ b.hi() }}
 {%- cache if false %}{% import _self as c %}{% endcache %}|{{ c.hi() }}
-{%- css %}{% import _self as d %}{% endcss %}
+{%- css %}{% import _self as d %}{% endcss %}|{{ d.hi() }}
 TWIG),
         );
     }
