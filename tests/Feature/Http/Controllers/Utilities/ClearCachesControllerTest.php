@@ -7,10 +7,11 @@ use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Exceptions;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -84,13 +85,36 @@ test('can invalidate cache tags', function () {
 });
 
 test('reports a failure when the cache store fails to invalidate tags', function () {
-    Exceptions::fake();
-    // Only invalidation fails; everything else still reaches the real store.
-    $store = Mockery::mock(DependencyCache::store())->makePartial();
-    $store->shouldReceive('deleteMultiple')->andThrow(new RuntimeException('Cache store unavailable'));
-    DependencyCache::partialMock()->shouldReceive('store')->andReturn($store);
+    failCacheStore();
 
     postJson(action([ClearCachesController::class, 'invalidateTags']), [
         'tags' => ['test-tag-1'],
     ])->assertBadRequest();
+
+    // Many tags too, which aren't kept for a retry
+    postJson(action([ClearCachesController::class, 'invalidateTags']), [
+        'tags' => array_map(fn (int $i) => "tag-$i", range(1, 1001)),
+    ])->assertBadRequest();
+});
+
+test('reports the failure as form errors to the utility', function () {
+    failCacheStore();
+
+    post(action([ClearCachesController::class, 'invalidateTags']), [
+        'tags' => ['test-tag-1'],
+    ], ['X-Inertia' => 'true'])
+        ->assertRedirect()
+        ->assertSessionHasErrors('tags');
+});
+
+test('invalidates tags right away inside a transaction', function () {
+    DependencyCache::put('tagged', 'value', null, new TagDependency(['test-tag-1']));
+
+    DB::transaction(function () {
+        postJson(action([ClearCachesController::class, 'invalidateTags']), [
+            'tags' => ['test-tag-1'],
+        ])->assertRedirectBack();
+
+        expect(DependencyCache::get('tagged'))->toBeNull();
+    });
 });

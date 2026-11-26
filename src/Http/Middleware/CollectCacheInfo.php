@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Http\CacheInfo;
+use DateTimeImmutable;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -39,7 +40,7 @@ readonly class CollectCacheInfo
 
         // Redirects can depend on elements too, and a 304 updates the stored response's freshness.
         if ($expiryDate !== null && ($response->isSuccessful() || $response->isRedirection())) {
-            $this->capLifetime($response, max(0, $expiryDate->getTimestamp() - now()->getTimestamp()));
+            $this->capLifetime($response, $expiryDate);
         }
 
         return $response;
@@ -61,8 +62,10 @@ readonly class CollectCacheInfo
     /**
      * Caps the response's lifetimes at its earliest expiry, so a page stops showing an expired entry on time.
      */
-    private function capLifetime(Response $response, int $ttl): void
+    private function capLifetime(Response $response, DateTimeImmutable $expiryDate): void
     {
+        $ttl = max(0, $expiryDate->getTimestamp() - now()->getTimestamp());
+
         // Set the directives directly: `setSharedMaxAge()` also makes the response public.
         foreach (['s-maxage', 'max-age'] as $directive) {
             $value = $response->headers->getCacheControlDirective($directive);
@@ -73,10 +76,9 @@ readonly class CollectCacheInfo
         }
 
         $expires = $response->getExpires();
-        $cap = now()->addSeconds($ttl);
 
-        if ($expires !== null && $expires > $cap) {
-            $response->setExpires($cap);
+        if ($expires !== null && $expires > $expiryDate) {
+            $response->setExpires($expiryDate);
         }
     }
 }

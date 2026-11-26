@@ -134,6 +134,15 @@ it('is a singleton and is available via the facade', function () {
     expect($this->elementCaches)->toBe(ElementCachesFacade::getFacadeRoot());
 });
 
+it('invalidates tags, skipping empty ones', function () {
+    Event::fake([ElementCachesInvalidated::class]);
+
+    expect($this->elementCaches->invalidateTags(['nav', '', 'nav', '0']))->toBe(['nav', '0'])
+        ->and($this->elementCaches->invalidateTags(['']))->toBe([]);
+    Event::assertDispatchedTimes(ElementCachesInvalidated::class, 1);
+    Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === ['nav', '0']);
+});
+
 it('collects cache info through the extracted service', function () {
     $this->elementCaches->startCollectingCacheInfo();
 

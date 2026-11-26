@@ -277,14 +277,14 @@ class Entries
                 }
 
                 DB::commit();
-
-                // Invalidate caches for the old section
-                ElementCaches::invalidateTags([sprintf('element::%s::section:%s', Entry::class, $oldSection->id)]);
             } catch (Throwable $e) {
                 DB::rollBack();
                 throw $e;
             }
         });
+
+        // After the move is committed, so a listener that throws can't make it look like the move failed
+        ElementCaches::invalidateTags([sprintf('element::%s::section:%s', Entry::class, $oldSection->id)]);
 
         event(new EntryMovedToSection($entry, $section));
 

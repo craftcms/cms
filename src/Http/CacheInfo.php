@@ -38,11 +38,6 @@ class CacheInfo
 {
     private bool $collecting = false;
 
-    /**
-     * How many collections were open before {@see start()}.
-     */
-    private int $parentDepth = 0;
-
     public function __construct(
         private readonly ElementCaches $elementCaches,
         private readonly DependencyCollector $dependencies,
@@ -53,9 +48,7 @@ class CacheInfo
      */
     public function addTags(string|array $tags): static
     {
-        $this->elementCaches->collectCacheTags(
-            array_values(array_filter(array_map(strval(...), (array) $tags), fn (string $tag) => $tag !== '')),
-        );
+        $this->dependencies->collectTags((array) $tags);
 
         return $this;
     }
@@ -73,7 +66,7 @@ class CacheInfo
      */
     public function addExpiryDate(DateTimeInterface $date): static
     {
-        $this->elementCaches->setCacheExpiryDate($date);
+        $this->dependencies->setExpiryDate($date);
 
         return $this;
     }
@@ -98,7 +91,6 @@ class CacheInfo
             return;
         }
 
-        $this->parentDepth = $this->dependencies->depth();
         $this->elementCaches->startCollectingCacheInfo();
         $this->collecting = true;
     }
@@ -117,8 +109,8 @@ class CacheInfo
         $this->collecting = false;
 
         // Also closes collections left open inside it, so they don't leak into the next request.
-        while ($this->dependencies->depth() > $this->parentDepth) {
-            $this->elementCaches->stopCollectingCacheInfo();
+        while ($this->dependencies->isCollecting()) {
+            $this->dependencies->stop();
         }
     }
 }

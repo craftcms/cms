@@ -222,14 +222,47 @@ class ElementCaches
         return $tags;
     }
 
-    /** @return list<string> */
-    public function invalidateAll(): array
+    /**
+     * Invalidates the caches tagged with any of the given tags like {@see invalidateTags()}, but right away, even
+     * inside a database transaction or a {@see deferInvalidations()} call, and returns whether the cache store
+     * cleared them. For places where someone asked for the caches to be cleared and should hear if they weren't.
+     *
+     * If the cache store fails, the error is reported and the tags stay pending for the next flush.
+     *
+     * @param  list<string>  $tags
+     *
+     * @internal
+     */
+    public function invalidateTagsNow(array $tags): bool
     {
-        $tags = $this->queueInvalidations(['element']);
+        $tags = array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== '')));
+
+        if ($tags === []) {
+            return true;
+        }
+
+        $invalidated = true;
+
+        try {
+            TagDependency::invalidate($tags);
+        } catch (Throwable $e) {
+            report($e);
+            $invalidated = false;
+
+            foreach ($tags as $tag) {
+                $this->pendingTags[$tag] = true;
+            }
+        }
 
         event(new ElementCachesInvalidated($tags));
 
-        return $tags;
+        return $invalidated;
+    }
+
+    /** @return list<string> */
+    public function invalidateAll(): array
+    {
+        return $this->invalidateTags(['element']);
     }
 
     /**
@@ -238,11 +271,7 @@ class ElementCaches
      */
     public function invalidateForElementType(string $elementType): array
     {
-        $tags = $this->queueInvalidations(["element::$elementType"]);
-
-        event(new ElementCachesInvalidated($tags));
-
-        return $tags;
+        return $this->invalidateTags(["element::$elementType"]);
     }
 
     /**
@@ -278,10 +307,9 @@ class ElementCaches
         return $tags;
     }
 
-    /** @return list<string> */
     /**
-     * @param  string[]  $tags
-     * @return string[]
+     * @param  list<string>  $tags
+     * @return list<string>
      */
     private function queueInvalidations(array $tags): array
     {

@@ -100,7 +100,9 @@ class DependencyCollector implements CacheCollectorInterface
         }
 
         foreach ($tags as $tag) {
-            $this->tags[$tag] = true;
+            if ($tag !== '') {
+                $this->tags[$tag] = true;
+            }
         }
     }
 
@@ -226,7 +228,7 @@ class DependencyCollector implements CacheCollectorInterface
             $tags += $buffer['tags'];
         }
 
-        return array_map(strval(...), array_keys($tags));
+        return self::tagList($tags);
     }
 
     /**
@@ -242,16 +244,6 @@ class DependencyCollector implements CacheCollectorInterface
         ], is_int(...));
 
         return $timestamps === [] ? null : new DateTimeImmutable('@'.min($timestamps));
-    }
-
-    /**
-     * Returns how many collections are open.
-     *
-     * @internal
-     */
-    public function depth(): int
-    {
-        return $this->isCollecting() ? count($this->buffers) + 1 : 0;
     }
 
     public function collectElement(ElementInterface $element): void
@@ -290,8 +282,7 @@ class DependencyCollector implements CacheCollectorInterface
             throw new RuntimeException('Element cache invalidation tags are not currently being collected.');
         }
 
-        // Numeric tags become integer keys.
-        $tags = array_map(strval(...), array_keys($this->tags));
+        $tags = self::tagList($this->tags);
         $expiryTimestamp = $this->expiryTimestamp;
 
         if (! empty($this->buffers)) {
@@ -315,6 +306,17 @@ class DependencyCollector implements CacheCollectorInterface
         }
 
         return [new TagDependency($tags), $expiryTimestamp];
+    }
+
+    /**
+     * The tags in a set keyed by tag. Numeric tags become integer keys, so they're turned back into strings.
+     *
+     * @param  array<array-key, bool>  $tags
+     * @return list<string>
+     */
+    private static function tagList(array $tags): array
+    {
+        return array_map(strval(...), array_keys($tags));
     }
 
     /**

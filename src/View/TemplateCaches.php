@@ -142,7 +142,6 @@ class TemplateCaches
             return;
         }
 
-        $cacheInfo = $this->withTemplateTag($cacheInfo);
         $duration = $this->normalizeDuration($duration, $expiration);
         $maxDuration = $this->durationFromCacheInfo($cacheInfo);
 
@@ -302,20 +301,6 @@ class TemplateCaches
             'cacheInfo' => DependencyCollector::normalizeCacheInfo($data['cacheInfo'] ?? []),
             'collectors' => is_array($data['collectors'] ?? null) ? $data['collectors'] : [],
         ];
-    }
-
-    /**
-     * @param  array{tags: list<string>, expiryDate: string|null}  $cacheInfo
-     * @return array{tags: list<string>, expiryDate: string|null}
-     */
-    private function withTemplateTag(array $cacheInfo): array
-    {
-        $cacheInfo['tags'] = array_values(array_unique([
-            ...$cacheInfo['tags'],
-            'template',
-        ]));
-
-        return $cacheInfo;
     }
 
     private function normalizeDuration(?string $duration, mixed $expiration): ?int
