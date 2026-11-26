@@ -232,9 +232,9 @@ describe('bulkDuplicate', function () {
             ->assertJson(fn (AssertableJson $json) => $json
                 ->where('message', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])))
                 ->where('newElements', [])
-                ->where('messages.0.type', 'success')
                 ->etc()
-            );
+            )
+            ->assertCpMessage('success', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])));
     });
 
     it('forbids bulk duplication when the user cannot duplicate the element', function () {
@@ -404,9 +404,9 @@ describe('bulkDuplicate', function () {
                 ->where('message', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])))
                 ->has('newElements', 1)
                 ->where('newElements.0.title', 'Original Title')
-                ->where('messages.0.type', 'success')
                 ->etc()
-            );
+            )
+            ->assertCpMessage('success', mb_ucfirst(t('{type} duplicated.', ['type' => Entry::displayName()])));
 
         /** @var Entry $duplicate */
         $duplicate = Entry::find()

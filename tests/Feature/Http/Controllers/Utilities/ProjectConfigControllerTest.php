@@ -43,7 +43,7 @@ it('can get a diff', function () {
 it('can rebuild the project config', function () {
     post(action([ProjectConfigController::class, 'rebuild']))
         ->assertRedirectBack()
-        ->assertMessage('success', t('Project config rebuilt successfully.'));
+        ->assertCpMessage('success', t('Project config rebuilt successfully.'));
 });
 
 it('cannot rebuild the project config if it is readonly', function () {
@@ -56,7 +56,7 @@ it('cannot rebuild the project config if it is readonly', function () {
 it('can discard the project config changes', function () {
     post(action([ProjectConfigController::class, 'discard']))
         ->assertRedirectBack()
-        ->assertMessage('success', t('External project config changes discarded.'));
+        ->assertCpMessage('success', t('External project config changes discarded.'));
 });
 
 it('reports when the project config files can’t be written', function () {
@@ -68,7 +68,7 @@ it('reports when the project config files can’t be written', function () {
     try {
         post(action([ProjectConfigController::class, 'discard']))
             ->assertRedirectBack()
-            ->assertMessage('error', t('Project config YAML files can’t be written in this environment.'));
+            ->assertCpMessage('error', t('Project config YAML files can’t be written in this environment.'));
     } finally {
         File::delete($blocker);
     }
