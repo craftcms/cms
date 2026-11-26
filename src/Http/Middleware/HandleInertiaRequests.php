@@ -9,6 +9,7 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\AboutCraft;
+use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Enums\Theme;
@@ -39,6 +40,7 @@ use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
+use Inertia\DeferProp;
 use Inertia\Inertia;
 use Inertia\Middleware;
 use Inertia\OnceProp;
@@ -228,6 +230,9 @@ class HandleInertiaRequests extends Middleware
                 return ! $generalConfig->allowAdminChanges && $request->is($settingsPath, "$settingsPath/*");
             },
             'locale' => fn () => app()->getLocale(),
+            ...($currentUser !== null ? [
+                'alerts' => $this->alertsProp($request),
+            ] : []),
             ...($currentUser !== null && $nav->hasSourceBadges() ? [
                 'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
             ] : []),
@@ -298,6 +303,21 @@ class HandleInertiaRequests extends Middleware
                     : (object) $nav->getBadgeCounts(),
             ],
         ];
+    }
+
+    /**
+     * The control panel alerts: resolved with the page once what they come from is cached, and otherwise deferred,
+     * so fetching it from Craft Console doesn't hold up the page.
+     */
+    private function alertsProp(Request $request): Closure|DeferProp
+    {
+        $path = $request->craftPath();
+
+        if (app(Alerts::class)->areCached()) {
+            return fn (): array => app(Alerts::class)->get($path);
+        }
+
+        return Inertia::defer(fn (): array => app(Alerts::class)->get($path, fetch: true));
     }
 
     /**
