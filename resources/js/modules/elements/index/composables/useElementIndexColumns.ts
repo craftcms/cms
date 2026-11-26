@@ -159,6 +159,11 @@ export function useElementIndexColumns(
     viewState.value.sources = sources;
   }
 
+  // Column visits also reload `viewState`, whose `tableColumns` names the
+  // columns the rows were rendered with; `restore()` reads it from the page's
+  // history state.
+  const COLUMN_PROPS = ['data', 'viewState'];
+
   // The server only renders the columns it's asked for, so any change to the
   // visible set refetches the rows with the new `columns` selection. Ordering
   // is purely presentational and stays client-side.
@@ -168,7 +173,7 @@ export function useElementIndexColumns(
   ) {
     visitor.merge(
       {columns: visible},
-      {only: ['data'], replace: options.replace ?? false}
+      {only: COLUMN_PROPS, replace: options.replace ?? false}
     );
   }
 
@@ -227,11 +232,20 @@ export function useElementIndexColumns(
       return null;
     }
 
-    if (!persisted?.length || matches) {
+    // With nothing saved, the source's default columns show, so rows rendered
+    // for columns the URL holds, such as from an older session copy, are
+    // requested again without them.
+    if (!persisted?.length) {
+      return queryHasParam(visitor.currentQuery(), 'columns')
+        ? {params: {columns: null}, only: COLUMN_PROPS}
+        : null;
+    }
+
+    if (matches) {
       return null;
     }
 
-    return {params: {columns: persisted}, only: ['data']};
+    return {params: {columns: persisted}, only: COLUMN_PROPS};
   }
 
   function reorder(options: Array<{value: string}>) {
@@ -275,7 +289,7 @@ export function useElementIndexColumns(
     };
     viewState.value.sources = sources;
 
-    return {params: {columns: null}, only: ['data']};
+    return {params: {columns: null}, only: COLUMN_PROPS};
   }
 
   return {

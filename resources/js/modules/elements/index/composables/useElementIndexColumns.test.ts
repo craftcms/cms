@@ -55,7 +55,7 @@ describe('useElementIndexColumns', () => {
   }
 
   it.each([
-    [{}, {params: {columns: ['postDate']}, only: ['data']}],
+    [{}, {params: {columns: ['postDate']}, only: ['data', 'viewState']}],
     [{'columns[0]': 'postDate'}, null],
     [{columns: ['postDate']}, null],
   ])(
@@ -78,8 +78,48 @@ describe('useElementIndexColumns', () => {
 
     expect(restore({})).toEqual({
       params: {columns: ['postDate']},
-      only: ['data'],
+      only: ['data', 'viewState'],
     });
+  });
+
+  // Otherwise the table would show the default columns, which rows rendered
+  // for the session's columns have no data for.
+  it('requests the default columns when none are saved', () => {
+    const {restore, viewState} = columnsFor({'columns[0]': 'postDate'}, [
+      'postDate',
+    ]);
+    viewState.value.sources = {};
+
+    expect(restore({})).toEqual({
+      params: {columns: null},
+      only: ['data', 'viewState'],
+    });
+  });
+
+  // A page restored from history keeps the props from its last response, so
+  // a column change that left `viewState` out would leave it naming the old
+  // columns.
+  it('reloads the view state along with the rows when columns change', () => {
+    const merge = vi.fn();
+    const {tableColumns} = useElementIndexColumns(
+      {
+        tableColumns: [
+          {label: 'Post Date', value: 'postDate'},
+          {label: 'Author', value: 'author'},
+        ],
+        defaultTableColumns: ['author'],
+      },
+      ref<ViewState>({showHeaderColumn: true, static: false}),
+      null,
+      {...visitor, merge}
+    );
+
+    tableColumns.value = ['author', 'postDate'];
+
+    expect(merge).toHaveBeenCalledWith(
+      {columns: ['author', 'postDate']},
+      expect.objectContaining({only: ['data', 'viewState']})
+    );
   });
 
   // Otherwise the table would show the saved columns, which the rows have no

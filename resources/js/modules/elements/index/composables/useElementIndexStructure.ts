@@ -538,11 +538,7 @@ export function useElementIndexStructure(
   function restore(
     query: IndexQueryParams = visitor.currentQuery()
   ): IndexRestore | null {
-    if (
-      queryHasParam(query, 'collapsedElementIds') ||
-      !isStructure.value ||
-      collapsedIds.value.length === 0
-    ) {
+    if (queryHasParam(query, 'collapsedElementIds') || !isStructure.value) {
       return null;
     }
 
