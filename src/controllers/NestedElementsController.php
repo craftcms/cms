@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\NestedElementManagerProviderInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
@@ -54,7 +55,16 @@ class NestedElementsController extends Controller
 
         $this->owner = $owner;
         $this->attribute = $this->request->getRequiredBodyParam('attribute');
-        $this->nestedElements = $owner->{$this->attribute};
+
+        if ($owner instanceof NestedElementManagerProviderInterface) {
+            $manager = $owner->getNestedElementManager($this->attribute);
+            if (!$manager) {
+                throw new BadRequestHttpException('Invalid attribute param');
+            }
+            $this->nestedElements = $manager->getValue($owner, true);
+        } else {
+            $this->nestedElements = $owner->{$this->attribute};
+        }
 
         return true;
     }
