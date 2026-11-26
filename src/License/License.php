@@ -32,7 +32,7 @@ use function CraftCms\Cms\t;
  * @internal
  *
  * @phpstan-type Resolution array{type: string, plugin?: string, licenseId: string|int|null, edition?: string}
- * @phpstan-type Issue array{string, string, Resolution|null}
+ * @phpstan-type Issue array{0: string, 1: string, 2: Resolution|null, 3?: list<array{label: string, url: string}>}
  * @phpstan-type LicenseInfo array{id: string|int|null, edition: string|null, status: string|LicenseKeyStatus, timestamp?: int|null}
  *
  * @since 6.0.0
@@ -406,18 +406,11 @@ readonly class License
             ]);
         }
 
-        $learnMoreLink = Html::a(
-            text: t('Learn more'),
-            url: 'https://craftcms.com/support/resolving-mismatched-licenses',
-            options: [
-                'class' => 'go',
-            ],
-        );
-
         return [
             $licenseData->name,
-            "$message $learnMoreLink",
+            $message,
             null,
+            [['label' => t('Learn more'), 'url' => 'https://craftcms.com/support/resolving-mismatched-licenses']],
         ];
     }
 

@@ -10,6 +10,7 @@
 - GraphQL requests authenticated with OAuth access tokens now work while the system is offline, for users who can access the site or control panel while it’s offline.
 - Improved the performance of edit pages with many fields or nested entries. ([#21077](https://github.com/craftcms/cms/pull/21077))
 - Improved the performance of edit pages with many callouts, button groups, and Button Group fields. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21065](https://github.com/craftcms/cms/pull/21065))
+- Improved the responsiveness of large control panel pages, which no longer restyle every element whenever content is added or a class or inline style changes. ([#21039](https://github.com/craftcms/cms/issues/21039), [#21150](https://github.com/craftcms/cms/issues/21150), [#21125](https://github.com/craftcms/cms/pull/21125))
 - Element indexes now load their rows along with the page, rather than showing placeholders first. ([#21156](https://github.com/craftcms/cms/pull/21156))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
@@ -41,6 +42,11 @@
 - Added the `storage-key` attribute to `craft-dialog` and `craft-resize-grips`, and the `storageKey` prop to `ModalForm`. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element saves, deletions, restorations, nested element reordering, and URI updates now invalidate each cache tag once per operation, and propagations once per element. Element cache tags invalidated inside a database transaction are now invalidated when it commits. ([#21058](https://github.com/craftcms/cms/pull/21058))
 - Added `CraftCms\Cms\Element\ElementCaches::deferInvalidations()` and `hasPendingInvalidations()`. ([#21058](https://github.com/craftcms/cms/pull/21058))
+- Added `CraftCms\Cms\Cp\Alerts::areCached()`. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Control panel alerts can now have `title`, `actions`, and `refreshable` keys, which are shown in the alert’s heading and buttons. Plugins can pass them from `CpAlertsResolving` to show their links as buttons. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- `CraftCms\Cms\License\License::issues()` can now return a fourth item per issue, with link buttons for its alert. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Fixed a bug where control panel alerts weren’t shown on Inertia pages. ([#21083](https://github.com/craftcms/cms/issues/21083), [#21108](https://github.com/craftcms/cms/pull/21108))
+- Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
 - `CraftCms\Cms\Element\Queries\AssetQuery` now has a template type for the asset class it returns, like `EntryQuery`, so static analysis can type queries for asset subclasses. ([#21138](https://github.com/craftcms/cms/pull/21138))
 - Fixed a bug where macros imported within `{% namespace %}` tags weren’t available after the closing tag. ([#21117](https://github.com/craftcms/cms/pull/21117))
@@ -133,6 +139,9 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where the custom field IDE helper was only regenerated after the first content model change in a request or command, so it missed the rest, such as other entry types added by the same project config apply. ([#21137](https://github.com/craftcms/cms/pull/21137))
 - Fixed a bug where control panel links lost their `#fragment` when the URL had more than one query parameter. ([#21093](https://github.com/craftcms/cms/issues/21093), [#21140](https://github.com/craftcms/cms/pull/21140))
 - Fixed a bug where element actions and exports on the Assets index ignored the subfolder being viewed and “Search in subfolders”. ([#21146](https://github.com/craftcms/cms/issues/21146), [#21148](https://github.com/craftcms/cms/pull/21148))
+- Fixed a bug where `or` conditions passed to element queries’ legacy `andWhere()` method could match elements that the query’s other params excluded. ([#21147](https://github.com/craftcms/cms/issues/21147), [#21149](https://github.com/craftcms/cms/pull/21149))
+- Fixed errors that occurred when calling element queries’ legacy `filterWhere()`, `andFilterWhere()`, and `orFilterWhere()` methods. ([#21147](https://github.com/craftcms/cms/issues/21147), [#21149](https://github.com/craftcms/cms/pull/21149))
+- Fixed a bug where required Dropdown fields without a default option showed their first option when empty, but saved no value. ([#21152](https://github.com/craftcms/cms/issues/21152), [#21154](https://github.com/craftcms/cms/pull/21154))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 

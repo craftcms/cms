@@ -1,5 +1,8 @@
 {
-  "plugins": ["stylelint-use-logical-spec"],
+  "plugins": [
+    "stylelint-use-logical-spec",
+    "./scripts/stylelint-has-argument.mjs"
+  ],
   "overrides": [
     {
       "files": ["**/*.vue", "**/*.html"],
@@ -27,6 +30,7 @@
           "max-width"
         ]
       }
-    ]
+    ],
+    "craft/has-argument-positive": true
   }
 }
