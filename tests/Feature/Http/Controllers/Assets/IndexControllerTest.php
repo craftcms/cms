@@ -431,6 +431,22 @@ it('shows the volume breadcrumb when selecting a source from the sidebar', funct
         );
 });
 
+it('sends breadcrumb labels as plain text, for the page to escape', function () {
+    $volumeModel = Volume::factory()->create([
+        'disk' => 'test-disk',
+        'handle' => 'testvolume',
+        'name' => 'Photos & <b>Art</b>',
+    ]);
+    Folders::ensureFolderByFullPathAndVolume('R&D', Volumes::getVolumeById($volumeModel->id));
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume/R&D']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('breadcrumbs.0.label', 'Photos & <b>Art</b>')
+            ->where('breadcrumbs.1.label', 'R&D')
+        );
+});
+
 it('provides current-folder actions and moves relative to its parent', function () {
     $volumeModel = Volume::factory()->create([
         'disk' => 'test-disk',

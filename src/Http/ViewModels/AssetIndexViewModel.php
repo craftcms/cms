@@ -17,7 +17,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -255,10 +254,11 @@ class AssetIndexViewModel extends ContentIndexViewModel
 
             $isCurrent = $i === $lastIndex;
 
+            // Plain text, which the page escapes. The source path info’s labels are HTML-encoded for the legacy element index.
             $crumb = [
                 'label' => $folder->parentId
-                    ? $info['label']
-                    : Html::encode(t($folder->getVolume()->name, category: 'site')),
+                    ? (string) $folder->name
+                    : t($folder->getVolume()->name, category: 'site'),
                 'icon' => $info['icon'] ?? null,
                 'href' => $isCurrent ? null : Url::cpUrl($info['uri']),
             ];
