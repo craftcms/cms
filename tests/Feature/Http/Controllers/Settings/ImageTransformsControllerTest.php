@@ -285,7 +285,7 @@ it('redirects to the saved transform edit page when saving and continuing', func
 
     post(action([ImageTransformsController::class, 'store']), $payload)
         ->assertRedirect(Url::cpUrl('settings/assets/transforms/continuedTransform'))
-        ->assertMessage('success', t('Transform saved.'));
+        ->assertCpMessage('success', t('Transform saved.'));
 });
 
 it('redirects to the posted redirect when saving normally', function () {
@@ -296,7 +296,7 @@ it('redirects to the posted redirect when saving normally', function () {
 
     post(action([ImageTransformsController::class, 'store']), $payload)
         ->assertRedirect(Url::cpUrl('settings/assets/transforms'))
-        ->assertMessage('success', t('Transform saved.'));
+        ->assertCpMessage('success', t('Transform saved.'));
 });
 
 it('updates an existing transform', function () {

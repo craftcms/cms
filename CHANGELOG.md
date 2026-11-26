@@ -21,6 +21,7 @@
 - Added the `condition_schema` MCP tool, which lists the rules a condition accepts for custom sources, field layout visibility, and relation field selection. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - The `configuration_*` MCP tools now reject condition rules that Craft would drop, and accept field layouts in the shape `configuration_get` returns them. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - Added the `output` argument to the `@formatDateTime` GraphQL directive. It can be set to `date` or `time` to output only the date or time, using the locale’s date or time format for `short`, `medium`, `long`, and `full`. ([#21084](https://github.com/craftcms/cms/pull/21084))
+- Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `Craft.Grid::queueRefreshCols()`. ([#21062](https://github.com/craftcms/cms/pull/21062))
