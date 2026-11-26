@@ -88,64 +88,31 @@ it('caps lifetimes at expiry dates added through the facade', function () {
     expect($this->get('/page')->headers->getCacheControlDirective('max-age'))->toBe('300');
 });
 
-it('caps the lifetimes of 304 responses', function () {
+it('caps the lifetimes of successful responses, 304s and redirects only', function (Closure $respond, array $headers, int $status, string $maxAge) {
     $this->freezeSecond();
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
-    Route::get('/page', function (Request $request) use ($entry) {
+    Route::get('/page', function (Request $request) use ($entry, $respond) {
         Entry::find()->id($entry->id)->one();
 
+        return $respond($request);
+    });
+
+    $response = $this->get('/page', $headers);
+
+    expect($response->getStatusCode())->toBe($status)
+        ->and($response->headers->getCacheControlDirective('max-age'))->toBe($maxAge);
+})->with([
+    '304' => [function (Request $request) {
         $response = response('ok')->setPublic()->setMaxAge(3600)->setEtag('abc');
         $response->isNotModified($request);
 
         return $response;
-    });
-
-    $response = $this->get('/page', ['If-None-Match' => '"abc"']);
-
-    expect($response->getStatusCode())->toBe(304)
-        ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600');
-});
-
-it('caps the lifetimes of redirects', function () {
-    $this->freezeSecond();
-    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
-
-    Route::get('/page', function () use ($entry) {
-        Entry::find()->id($entry->id)->one();
-
-        return redirect('/elsewhere', 301)->setPublic()->setMaxAge(3600);
-    });
-
-    $response = $this->get('/page');
-
-    expect($response->getStatusCode())->toBe(301)
-        ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600');
-});
-
-it('leaves the lifetimes of error responses alone', function () {
-    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
-
-    Route::get('/page', function () use ($entry) {
-        Entry::find()->id($entry->id)->one();
-
-        return response('gone', 410)->setPublic()->setMaxAge(3600);
-    });
-
-    expect($this->get('/page')->headers->getCacheControlDirective('max-age'))->toBe('3600');
-});
-
-it('leaves lifetimes shorter than the earliest expiry alone', function () {
-    $entry = EntryFactory::new()->create(['expiryDate' => now()->addDay()]);
-
-    Route::get('/page', function () use ($entry) {
-        Entry::find()->id($entry->id)->one();
-
-        return response('ok')->setPublic()->setMaxAge(60);
-    });
-
-    expect($this->get('/page')->headers->getCacheControlDirective('max-age'))->toBe('60');
-});
+    }, ['If-None-Match' => '"abc"'], 304, '600'],
+    'redirect' => [fn () => redirect('/elsewhere', 301)->setPublic()->setMaxAge(3600), [], 301, '600'],
+    'error' => [fn () => response('gone', 410)->setPublic()->setMaxAge(3600), [], 410, '3600'],
+    'shorter lifetime' => [fn () => response('ok')->setPublic()->setMaxAge(60), [], 200, '60'],
+]);
 
 it('collects tags added through the facade and the Twig global', function () {
     Route::get('/page', function () {
