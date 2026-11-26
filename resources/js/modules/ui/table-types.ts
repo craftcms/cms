@@ -20,6 +20,11 @@ export interface TableLink {
   slideout?: boolean;
   /** The slideout's width, as a CSS length. */
   slideoutWidth?: string | null;
+  /**
+   * Also reloads the table when the slideout closes without saving, for a
+   * screen whose changes are made by actions within it rather than its save.
+   */
+  refreshOnClose?: boolean;
 }
 
 /** A menu item that opens a server-built form in a modal instead of following a link. */
