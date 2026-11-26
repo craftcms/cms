@@ -69,6 +69,7 @@
       ref="target"
       :data-layout-scope="registry.scope"
       :data-layout-slot="name"
+      :data-empty="filled ? undefined : ''"
       :style="{display: filled ? 'contents' : 'none'}"
     ></div>
     <slot v-if="!filled"></slot>
@@ -78,6 +79,7 @@
       ref="target"
       :data-layout-scope="registry.scope"
       :data-layout-slot="name"
+      :data-empty="filled ? undefined : ''"
       :style="{display: filled ? 'contents' : 'none'}"
     ></div>
     <slot v-if="!filled"></slot>
