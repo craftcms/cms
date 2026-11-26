@@ -81,22 +81,28 @@ export default class CraftMediaItem extends LitElement {
       <div class="media-item" part="base">
         ${this._renderThumbnail()}
         <div class="media-item__content" part="content">
-          ${hasSlotted(this, 'heading')
-            ? html`<div class="media-item__heading" part="heading">
-                <slot name="heading"></slot>
-              </div>`
-            : nothing}
-          ${this._hasBody()
-            ? html`<div class="media-item__body" part="body">
-                <slot></slot>
-              </div>`
-            : nothing}
+          ${
+            hasSlotted(this, 'heading')
+              ? html`<div class="media-item__heading" part="heading">
+                  <slot name="heading"></slot>
+                </div>`
+              : nothing
+          }
+          ${
+            this._hasBody()
+              ? html`<div class="media-item__body" part="body">
+                  <slot></slot>
+                </div>`
+              : nothing
+          }
         </div>
-        ${hasSlotted(this, 'suffix')
-          ? html`<div class="media-item__suffix" part="suffix">
-              <slot name="suffix"></slot>
-            </div>`
-          : nothing}
+        ${
+          hasSlotted(this, 'suffix')
+            ? html`<div class="media-item__suffix" part="suffix">
+                <slot name="suffix"></slot>
+              </div>`
+            : nothing
+        }
       </div>
     `;
   }

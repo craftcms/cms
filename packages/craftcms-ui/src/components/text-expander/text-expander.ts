@@ -202,11 +202,13 @@ export default class CraftTextExpander extends LitElement {
         @craft-after-hide=${this.#stopPopoverEvent}
       >
         <div class="text-expander__popup" slot="content">
-          ${this.loading
-            ? html`<div class="text-expander__loading" part="loading">
-                <slot name="loading">${t('Loading')}</slot>
-              </div>`
-            : nothing}
+          ${
+            this.loading
+              ? html`<div class="text-expander__loading" part="loading">
+                  <slot name="loading">${t('Loading')}</slot>
+                </div>`
+              : nothing
+          }
           <slot name="listbox"></slot>
         </div>
       </craft-popover>

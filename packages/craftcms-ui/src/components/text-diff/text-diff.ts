@@ -72,24 +72,26 @@ export default class CraftTextDiff extends LitElement {
 
     return html`
       <p id="text" class="text" part="text">${text}</p>
-      ${this.collapse && collapsible
-        ? html`<craft-button
-            part="toggle"
-            type="button"
-            variant="plain"
-            size="small"
-            flush="inline"
-            aria-controls="text"
-            aria-expanded=${this.expanded ? 'true' : 'false'}
-            @click=${() => (this.expanded = !this.expanded)}
-          >
-            ${this.expanded
-              ? t('Show changes only')
-              : t('Show full text')}${this.label
-              ? html`<span class="cp-visually-hidden"> ${this.label}</span>`
-              : nothing}
-          </craft-button>`
-        : nothing}
+      ${
+        this.collapse && collapsible
+          ? html`<craft-button
+              part="toggle"
+              type="button"
+              variant="plain"
+              size="small"
+              flush="inline"
+              aria-controls="text"
+              aria-expanded=${this.expanded ? 'true' : 'false'}
+              @click=${() => (this.expanded = !this.expanded)}
+            >
+              ${this.expanded ? t('Show changes only') : t('Show full text')}${
+                this.label
+                  ? html`<span class="cp-visually-hidden"> ${this.label}</span>`
+                  : nothing
+              }
+            </craft-button>`
+          : nothing
+      }
     `;
   }
 

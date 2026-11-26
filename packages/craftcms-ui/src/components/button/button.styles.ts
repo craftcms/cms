@@ -477,13 +477,13 @@ export default css`
 
   :host(
     [variant~='outline']:not([variant~='primary']):not([variant~='danger']):not(
-      [inherit]
-    ):not([active]):not(.is-active)
+        [inherit]
+      ):not([active]):not(.is-active)
   ),
   :host(
     [variant~='dashed']:not([variant~='primary']):not([variant~='danger']):not(
-      [inherit]
-    ):not([active]):not(.is-active)
+        [inherit]
+      ):not([active]):not(.is-active)
   ) {
     border-color: var(--c-form-control-border-color);
     border-inline-start-color: var(

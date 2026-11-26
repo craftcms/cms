@@ -31,9 +31,11 @@ const meta = {
       ?disabled="${args.disabled}"
     >
       <label slot="label">${args['label-slot']}</label>
-      ${args['help-text-slot']
-        ? html`<span slot="help-text">${args['help-text-slot']}</span>`
-        : ''}
+      ${
+        args['help-text-slot']
+          ? html`<span slot="help-text">${args['help-text-slot']}</span>`
+          : ''
+      }
       <select slot="input">
         <option value="">Select a language</option>
         <option value="fr-FR">French</option>

@@ -133,25 +133,27 @@ export const TokenMapping: Story = {
                       <div
                         style="display: flex; align-items: center; gap: 0.5rem;"
                       >
-                        ${isFill
-                          ? html`<div
-                              class="swatch"
-                              style="background-color: var(${resolved}); width: 24px;"
-                            ></div>`
-                          : isBorder
+                        ${
+                          isFill
                             ? html`<div
                                 class="swatch"
-                                style="border: 3px solid var(${resolved}); width: 24px;"
+                                style="background-color: var(${resolved}); width: 24px;"
                               ></div>`
-                            : html`<div
-                                class="swatch"
-                                style="background-color: var(--c-color-${group}-fill-${token.replace(
-                                  'on-',
-                                  ''
-                                )}); color: var(${resolved}); width: 24px;"
-                              >
-                                Aa
-                              </div>`}
+                            : isBorder
+                              ? html`<div
+                                  class="swatch"
+                                  style="border: 3px solid var(${resolved}); width: 24px;"
+                                ></div>`
+                              : html`<div
+                                  class="swatch"
+                                  style="background-color: var(--c-color-${group}-fill-${token.replace(
+                                    'on-',
+                                    ''
+                                  )}); color: var(${resolved}); width: 24px;"
+                                >
+                                  Aa
+                                </div>`
+                        }
                         <code style="font-size: 0.75em">${resolved}</code>
                       </div>
                     </td>

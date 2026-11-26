@@ -124,9 +124,11 @@ export default class CraftOption extends LitElement {
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>
-      ${this.selected
-        ? html`<craft-icon class="check" name="check"></craft-icon>`
-        : nothing}
+      ${
+        this.selected
+          ? html`<craft-icon class="check" name="check"></craft-icon>`
+          : nothing
+      }
     `;
   }
 }

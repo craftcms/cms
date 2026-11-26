@@ -51,8 +51,8 @@ class CpNotificationList extends LitElement {
     }
 
     .notification-item:has(.notification-card-link):hover:not(
-      :has(craft-button:hover)
-    ) {
+        :has(craft-button:hover)
+      ) {
       background-color: color-mix(in oklab, currentColor 5%, transparent);
 
       .notification-title {
@@ -211,49 +211,59 @@ class CpNotificationList extends LitElement {
     return html`
       <article
         part=${first ? 'item first-item' : 'item'}
-        class="notification-item ${notification.unread
-          ? ''
-          : 'notification-item--read'}"
+        class="notification-item ${
+          notification.unread ? '' : 'notification-item--read'
+        }"
         role="listitem"
         @click=${(event: MouseEvent) =>
           this.#handleLinkClick(notification, event)}
       >
-        ${notification.url
-          ? html`
-              <a
-                class="notification-card-link"
-                href=${notification.url}
-                aria-label=${notification.title ?? t('Open notification')}
-              ></a>
-            `
-          : nothing}
+        ${
+          notification.url
+            ? html`
+                <a
+                  class="notification-card-link"
+                  href=${notification.url}
+                  aria-label=${notification.title ?? t('Open notification')}
+                ></a>
+              `
+            : nothing
+        }
         <craft-media-item
           icon=${notification.image ? nothing : (notification.icon ?? 'bell')}
         >
-          ${notification.image
-            ? html`
-                <craft-thumbnail
-                  slot="thumbnail"
-                  class="notification-thumbnail"
-                >
-                  <img
-                    src=${notification.image}
-                    alt=${notification.imageAlt ?? ''}
-                  />
-                </craft-thumbnail>
-              `
-            : nothing}
-          <div slot="heading" class="notification-title-row">
-            ${notification.title
-              ? html`<h3 class="notification-title">${notification.title}</h3>`
-              : nothing}
-            ${notification.unread
+          ${
+            notification.image
               ? html`
-                  <craft-badge-indicator
-                    alt-text=${t('Unread')}
-                  ></craft-badge-indicator>
+                  <craft-thumbnail
+                    slot="thumbnail"
+                    class="notification-thumbnail"
+                  >
+                    <img
+                      src=${notification.image}
+                      alt=${notification.imageAlt ?? ''}
+                    />
+                  </craft-thumbnail>
                 `
-              : nothing}
+              : nothing
+          }
+          <div slot="heading" class="notification-title-row">
+            ${
+              notification.title
+                ? html`<h3 class="notification-title">
+                    ${notification.title}
+                  </h3>`
+                : nothing
+            }
+            ${
+              notification.unread
+                ? html`
+                    <craft-badge-indicator
+                      alt-text=${t('Unread')}
+                    ></craft-badge-indicator>
+                  `
+                : nothing
+            }
           </div>
 
           <div class="notification-message">
@@ -261,60 +271,66 @@ class CpNotificationList extends LitElement {
           </div>
 
           <div class="notification-meta">
-            ${notification.byline
-              ? html`
-                  <span>${notification.byline}</span>
-                  <span aria-hidden="true">·</span>
-                `
-              : nothing}
+            ${
+              notification.byline
+                ? html`
+                    <span>${notification.byline}</span>
+                    <span aria-hidden="true">·</span>
+                  `
+                : nothing
+            }
             <time datetime=${notification.createdAt}
               >${notification.createdAtLabel}</time
             >
-            ${notification.unread
-              ? html`
-                  <span aria-hidden="true">·</span>
-                  <craft-button
-                    class="notification-mark-read"
-                    type="button"
-                    size="small"
-                    variant="link"
-                    @click=${(event: MouseEvent) => {
-                      event.stopPropagation();
-                      const item = (event.currentTarget as HTMLElement).closest(
-                        'article'
-                      );
-                      void this.#markReadFromButton([notification.id], () =>
-                        item?.querySelector<HTMLElement>(
-                          '.notification-card-link'
-                        )
-                      );
-                    }}
-                  >
-                    ${t('Mark as read')}
-                  </craft-button>
-                `
-              : nothing}
+            ${
+              notification.unread
+                ? html`
+                    <span aria-hidden="true">·</span>
+                    <craft-button
+                      class="notification-mark-read"
+                      type="button"
+                      size="small"
+                      variant="link"
+                      @click=${(event: MouseEvent) => {
+                        event.stopPropagation();
+                        const item = (
+                          event.currentTarget as HTMLElement
+                        ).closest('article');
+                        void this.#markReadFromButton([notification.id], () =>
+                          item?.querySelector<HTMLElement>(
+                            '.notification-card-link'
+                          )
+                        );
+                      }}
+                    >
+                      ${t('Mark as read')}
+                    </craft-button>
+                  `
+                : nothing
+            }
           </div>
 
-          ${notification.buttons.length
-            ? html`
-                <div class="notification-actions">
-                  ${notification.buttons.map(
-                    (button) => html`
-                      <craft-button
-                        .href=${button.url}
-                        .target=${button.target}
-                        .icon=${button.icon}
-                        variant=${button.variant}
-                        size="small"
-                      >
-                        ${button.label}
-                      </craft-button>
-                    `
-                  )}
-                </div>
-              `
-            : nothing}
+          ${
+            notification.buttons.length
+              ? html`
+                  <div class="notification-actions">
+                    ${notification.buttons.map(
+                      (button) => html`
+                        <craft-button
+                          .href=${button.url}
+                          .target=${button.target}
+                          .icon=${button.icon}
+                          variant=${button.variant}
+                          size="small"
+                        >
+                          ${button.label}
+                        </craft-button>
+                      `
+                    )}
+                  </div>
+                `
+              : nothing
+          }
         </craft-media-item>
       </article>
     `;

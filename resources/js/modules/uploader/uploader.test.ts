@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {Uploader} from './uploader';
 import {FileUpload, UploadError} from '@/upload-client';
 

@@ -888,21 +888,29 @@ const permutationChip = (
     select-label="Select Homepage"
     title="${description}"
   >
-    ${has('prefix')
-      ? html`<craft-badge fill="amber" slot="prefix">Badge</craft-badge>`
-      : nothing}
-    ${has('thumbnail')
-      ? html`<img slot="thumbnail" src="${permutationThumb}" alt="" />`
-      : nothing}
-    ${has('status')
-      ? html`<craft-status slot="status" status="live"></craft-status>`
-      : nothing}
+    ${
+      has('prefix')
+        ? html`<craft-badge fill="amber" slot="prefix">Badge</craft-badge>`
+        : nothing
+    }
+    ${
+      has('thumbnail')
+        ? html`<img slot="thumbnail" src="${permutationThumb}" alt="" />`
+        : nothing
+    }
+    ${
+      has('status')
+        ? html`<craft-status slot="status" status="live"></craft-status>`
+        : nothing
+    }
     Homepage
-    ${has('suffix')
-      ? html`<craft-button icon size="small" variant="plain" slot="suffix">
-          <craft-icon name="ellipsis" label="Actions"></craft-icon>
-        </craft-button>`
-      : nothing}
+    ${
+      has('suffix')
+        ? html`<craft-button icon size="small" variant="plain" slot="suffix">
+            <craft-icon name="ellipsis" label="Actions"></craft-icon>
+          </craft-button>`
+        : nothing
+    }
   </craft-chip>`;
 };
 

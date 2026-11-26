@@ -1,5 +1,5 @@
 import {ref} from 'vue';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {useElementIndexThumbSize} from './useElementIndexThumbSize';
 import type {
   SourceViewState,

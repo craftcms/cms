@@ -30,9 +30,11 @@ const field = (args: Record<string, unknown>) => html`
     .value="${args.value ?? ''}"
   >
     <label slot="label">${args['label-slot']}</label>
-    ${args['help-text-slot']
-      ? html`<span slot="help-text">${args['help-text-slot']}</span>`
-      : ''}
+    ${
+      args['help-text-slot']
+        ? html`<span slot="help-text">${args['help-text-slot']}</span>`
+        : ''
+    }
   </craft-input-money>
 `;
 

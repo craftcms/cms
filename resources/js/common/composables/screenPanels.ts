@@ -213,7 +213,13 @@ export function createScreenPanels(): ScreenPanels {
       registered.delete(panelId);
     },
 
-    open(panelId, {withFocus = true, focus} = {}) {
+    open(
+      panelId,
+      {
+        withFocus = true,
+        focus,
+      }: {withFocus?: boolean; focus?: PanelFocusTarget} = {}
+    ) {
       pendingOpen = {panelId, withFocus, focus};
       flushPendingOpen();
     },

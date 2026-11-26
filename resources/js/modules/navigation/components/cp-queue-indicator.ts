@@ -119,11 +119,13 @@ class CpQueueIndicator extends LitElement {
         ></craft-progress>
         <div class="label">
           <span class="title">${this.displayedJob.description}</span>
-          ${this.displayedJob.progressLabel
-            ? html`<span class="progress-label"
-                >${this.displayedJob.progressLabel}</span
-              >`
-            : nothing}
+          ${
+            this.displayedJob.progressLabel
+              ? html`<span class="progress-label"
+                  >${this.displayedJob.progressLabel}</span
+                >`
+              : nothing
+          }
         </div>
       </craft-nav-item>
     `;

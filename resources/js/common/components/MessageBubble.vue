@@ -1,5 +1,5 @@
 <script setup lang="ts">
-   /**
+  /**
    * Something a person wrote, in a bubble tinted with their photo’s colors:
    * a prompt in the AI assistant’s conversation, or a comment in a timeline.
    * Pass `usePhotoColors()` as its `style`.

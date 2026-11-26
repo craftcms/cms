@@ -26,12 +26,7 @@
 /* --- Story layout ------------------------------------------------------- */
 /* Events surface in Storybook's Actions panel, so the canvas is just the demo. */
 .pg-story {
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--text);
   line-height: 1.5;
   max-width: 60ch;

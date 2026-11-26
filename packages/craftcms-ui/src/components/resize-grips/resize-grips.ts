@@ -336,9 +336,9 @@ export default class CraftResizeGrips extends LitElement {
       ></div>
       <button
         type="button"
-        class="grip grip--corner ${this.dragging === 'both'
-          ? 'grip--active'
-          : ''}"
+        class="grip grip--corner ${
+          this.dragging === 'both' ? 'grip--active' : ''
+        }"
         part="grip grip-corner"
         aria-label=${this.label || t('Resize')}
         @pointerdown=${corner.down}

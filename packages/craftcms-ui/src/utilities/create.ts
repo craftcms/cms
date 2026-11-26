@@ -12,9 +12,11 @@ type WritableKeys<T> = {
 
 /** The settable, non-method properties of an element. */
 export type ElementProps<E> = Partial<{
-  [K in WritableKeys<E> as E[K] extends (...args: never[]) => unknown
-    ? never
-    : K]: E[K];
+  [
+    K in WritableKeys<E> as E[K] extends (...args: never[]) => unknown
+      ? never
+      : K
+  ]: E[K];
 }>;
 
 export type CreateProps<E> = ElementProps<E> & {

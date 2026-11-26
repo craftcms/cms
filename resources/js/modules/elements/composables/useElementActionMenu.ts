@@ -375,18 +375,17 @@ export function createElementActionMenu(options: Options = {}) {
   const dispatch = createElementActionDispatcher(options);
 
   return (items: Array<ElementActionMenuItem>): Array<ActionItem> =>
-    items.map(
-      (item): ActionItem =>
-        item.type === 'hr'
-          ? {type: 'hr'}
-          : {
-              label: item.label,
-              icon: item.icon,
-              iconColor: item.color,
-              variant: item.destructive ? 'danger' : undefined,
-              onClick: (event: Event) =>
-                dispatch(item.behavior, item.destructive, event),
-            }
+    items.map((item): ActionItem =>
+      item.type === 'hr'
+        ? {type: 'hr'}
+        : {
+            label: item.label,
+            icon: item.icon,
+            iconColor: item.color,
+            variant: item.destructive ? 'danger' : undefined,
+            onClick: (event: Event) =>
+              dispatch(item.behavior, item.destructive, event),
+          }
     );
 }
 

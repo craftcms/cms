@@ -1,5 +1,5 @@
 import {effectScope, nextTick} from 'vue';
-import {afterEach, expect, it} from 'vitest';
+import {afterEach, expect, it} from 'vite-plus/test';
 import {prefixedKey} from '@/common/composables/useStorage';
 import {useElementIndexViewState} from './useElementIndexViewState';
 

@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftTruncate from './truncate.js';
 import './truncate.js';
 import {whenIdle} from '@src/utilities/idle';

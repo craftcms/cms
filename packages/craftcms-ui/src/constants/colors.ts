@@ -9,9 +9,13 @@ type PaletteColor = (typeof paletteColors)[number];
 type NamedColors = {
   readonly [K in PaletteColor as Capitalize<K>]: K;
 } & {
-  readonly [K in keyof typeof semanticColors as Capitalize<K>]: (typeof semanticColors)[K];
+  readonly [
+    K in keyof typeof semanticColors as Capitalize<K>
+  ]: (typeof semanticColors)[K];
 } & {
-  readonly [K in keyof typeof statusColors as Capitalize<K>]: (typeof statusColors)[K];
+  readonly [
+    K in keyof typeof statusColors as Capitalize<K>
+  ]: (typeof statusColors)[K];
 };
 
 const capitalize = (value: string): string =>

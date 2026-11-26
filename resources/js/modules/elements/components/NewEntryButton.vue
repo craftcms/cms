@@ -54,19 +54,17 @@
   }
 
   const menuItems = computed<Array<ActionItem>>(() =>
-    groupedMenuItems(
-      (creatable): ActionItemLink => ({
-        type: 'link',
-        href: createUrl(creatable),
-        label: creatable.entryType.name,
-        ...(creatable.entryType.icon
-          ? {icon: creatable.entryType.icon.name}
-          : {}),
-        // A full navigation: the entry editor these point at is still the legacy
-        // stack.
-        external: true,
-      })
-    )
+    groupedMenuItems((creatable): ActionItemLink => ({
+      type: 'link',
+      href: createUrl(creatable),
+      label: creatable.entryType.name,
+      ...(creatable.entryType.icon
+        ? {icon: creatable.entryType.icon.name}
+        : {}),
+      // A full navigation: the entry editor these point at is still the legacy
+      // stack.
+      external: true,
+    }))
   );
 
   const label = computed(() =>

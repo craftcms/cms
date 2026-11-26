@@ -1,5 +1,5 @@
 import {ref, type Ref} from 'vue';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {useElementIndexViewMode} from './useElementIndexViewMode';
 import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 

@@ -65,15 +65,17 @@ export default class CraftEmpty extends LitElement {
       <div class="cp-empty">
         <div class="cp-empty__content">
           <slot name="graphic">
-            ${this.icon
-              ? html`
-                  <craft-icon
-                    class="cp-empty__icon"
-                    name="${this.icon}"
-                    style="font-size: calc(48rem / 16)"
-                  ></craft-icon>
-                `
-              : nothing}
+            ${
+              this.icon
+                ? html`
+                    <craft-icon
+                      class="cp-empty__icon"
+                      name="${this.icon}"
+                      style="font-size: calc(48rem / 16)"
+                    ></craft-icon>
+                  `
+                : nothing
+            }
           </slot>
           <slot name="content">
             <p class="label">${this.label}</p>

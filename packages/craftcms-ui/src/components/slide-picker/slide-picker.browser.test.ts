@@ -29,6 +29,10 @@ async function render(
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
   await picker.updateComplete;
   await slider(picker).updateComplete;
+  // Wherever the pointer was left, it mustn't start the picker previewing.
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  await userEvent.hover(page.getByText('Elsewhere'));
+  await slider(picker).updateComplete;
   return picker;
 }
 

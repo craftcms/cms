@@ -98,7 +98,7 @@ it('takes its name and description from a surrounding field', async () => {
   const field = page.getByRole('combobox', {name: /^Card color/});
 
   await expect.element(field).toHaveAccessibleName('Card color');
-  await expect.element(field).toHaveTextContent('Red');
+  await expect.element(field).toMatchTextContent('Red');
   await expect
     .element(field)
     .toHaveAccessibleDescription(
@@ -181,7 +181,7 @@ it('is named and described by the elements its host references', async () => {
   const field = page.getByRole('combobox', {name: /^Card color/});
 
   await expect.element(field).toHaveAccessibleName('Card color');
-  await expect.element(field).toHaveTextContent('Red');
+  await expect.element(field).toMatchTextContent('Red');
   await expect
     .element(field)
     .toHaveAccessibleDescription("The color of the entry type's cards.");

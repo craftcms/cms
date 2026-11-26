@@ -1,4 +1,4 @@
-import {afterEach, expect, it, vi} from 'vitest';
+import {afterEach, expect, it, vi} from 'vite-plus/test';
 import './cp-messages';
 
 vi.mock('@craftcms/ui/utilities/translate', () => ({

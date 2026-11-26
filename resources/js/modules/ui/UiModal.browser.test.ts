@@ -151,7 +151,7 @@ it('prevents submission when the modal UI cannot render a control', async () => 
   await mount(true);
   await expect
     .element(page.getByRole('alert'))
-    .toHaveTextContent('component is not registered');
+    .toMatchTextContent('component is not registered');
 
   await page.getByRole('button', {name: 'Save', exact: true}).click();
 

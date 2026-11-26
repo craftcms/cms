@@ -254,13 +254,15 @@ export default class CraftDialog extends LitElement {
 
   override render(): TemplateResult {
     return html`
-      ${this.nonModal && this.open
-        ? html`<div
-            class="backdrop"
-            part="backdrop"
-            @click=${this.#onBackdropClick}
-          ></div>`
-        : nothing}
+      ${
+        this.nonModal && this.open
+          ? html`<div
+              class="backdrop"
+              part="backdrop"
+              @click=${this.#onBackdropClick}
+            ></div>`
+          : nothing
+      }
       <dialog
         part="dialog"
         aria-labelledby=${this.label !== '' ? this.titleId : nothing}
@@ -268,15 +270,17 @@ export default class CraftDialog extends LitElement {
         @close=${this.#onNativeClose}
         @click=${this.#onDialogClick}
       >
-        ${this.resizable && !this.fullscreen
-          ? html`<div class="frame">
-              ${this.#renderSurface()}
-              <craft-resize-grips
-                storage-key=${this.storageKey}
-                @craft-resize=${this.#onResize}
-              ></craft-resize-grips>
-            </div>`
-          : this.#renderSurface()}
+        ${
+          this.resizable && !this.fullscreen
+            ? html`<div class="frame">
+                ${this.#renderSurface()}
+                <craft-resize-grips
+                  storage-key=${this.storageKey}
+                  @craft-resize=${this.#onResize}
+                ></craft-resize-grips>
+              </div>`
+            : this.#renderSurface()
+        }
       </dialog>
     `;
   }
@@ -331,25 +335,29 @@ export default class CraftDialog extends LitElement {
   protected renderHeader(): TemplateResult {
     return html`
       <header class="header" part="header">
-        ${this.label === ''
-          ? html`<div></div>`
-          : html`<h2 class="title" part="title" id=${this.titleId}>
-              ${this.label}
-            </h2>`}
-        ${this.noClose
-          ? nothing
-          : html`<craft-button
-              type="button"
-              icon="xmark-large"
-              size="small"
-              variant="plain"
-              flush="inline-end block"
-              class="close"
-              part="close"
-              tabindex="0"
-              aria-label=${t('Close')}
-              @click=${() => this.requestClose()}
-            ></craft-button>`}
+        ${
+          this.label === ''
+            ? html`<div></div>`
+            : html`<h2 class="title" part="title" id=${this.titleId}>
+                ${this.label}
+              </h2>`
+        }
+        ${
+          this.noClose
+            ? nothing
+            : html`<craft-button
+                type="button"
+                icon="xmark-large"
+                size="small"
+                variant="plain"
+                flush="inline-end block"
+                class="close"
+                part="close"
+                tabindex="0"
+                aria-label=${t('Close')}
+                @click=${() => this.requestClose()}
+              ></craft-button>`
+        }
       </header>
     `;
   }

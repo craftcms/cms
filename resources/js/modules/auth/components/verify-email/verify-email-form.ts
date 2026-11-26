@@ -48,11 +48,13 @@ export default class CraftVerifyEmailForm extends LitElement {
           </div>
         </form>
 
-        ${this.initialError
-          ? html`<craft-callout class="auth-form__error" variant="danger"
-              >${this.initialError}</craft-callout
-            >`
-          : nothing}
+        ${
+          this.initialError
+            ? html`<craft-callout class="auth-form__error" variant="danger"
+                >${this.initialError}</craft-callout
+              >`
+            : nothing
+        }
       </craft-pane>
     `;
   }

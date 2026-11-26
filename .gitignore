@@ -59,3 +59,4 @@ resources/build
 
 # Benchmark workbench and opcache
 .benchmarks/
+.vitest/

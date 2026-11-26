@@ -43,13 +43,15 @@ export class AssetConflictResolutionElement extends LitElement {
       <craft-button @click=${() => this.resolve('keepBoth')}
         >${this.multiple ? t('Keep all') : t('Keep both')}</craft-button
       >
-      ${!this.multiple
-        ? html`<craft-button
-            variant="danger"
-            @click=${() => this.resolve('replace')}
-            >${t('Replace')}</craft-button
-          >`
-        : nothing}
+      ${
+        !this.multiple
+          ? html`<craft-button
+              variant="danger"
+              @click=${() => this.resolve('replace')}
+              >${t('Replace')}</craft-button
+            >`
+          : nothing
+      }
     `;
   }
 }

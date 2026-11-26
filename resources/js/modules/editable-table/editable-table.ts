@@ -813,26 +813,25 @@ export class EditableTable extends Base<EditableTableSettings> {
             combobox.name = name;
             combobox.label = col.heading ?? colId;
             combobox.options = Array.isArray(col.options)
-              ? col.options.map(
-                  (option): ComboboxItem =>
-                    isOptionGroup(option)
-                      ? {
-                          type: 'optgroup',
-                          label: option.label ?? '',
-                          options: option.options.map((groupedOption) => {
-                            const value = String(
-                              (groupedOption.value as
-                                | string
-                                | number
-                                | undefined) ?? ''
-                            );
-                            return {label: groupedOption.label ?? value, value};
-                          }),
-                        }
-                      : {
-                          label: option.label ?? String(option.value ?? ''),
-                          value: String(option.value ?? ''),
-                        }
+              ? col.options.map((option): ComboboxItem =>
+                  isOptionGroup(option)
+                    ? {
+                        type: 'optgroup',
+                        label: option.label ?? '',
+                        options: option.options.map((groupedOption) => {
+                          const value = String(
+                            (groupedOption.value as
+                              | string
+                              | number
+                              | undefined) ?? ''
+                          );
+                          return {label: groupedOption.label ?? value, value};
+                        }),
+                      }
+                    : {
+                        label: option.label ?? String(option.value ?? ''),
+                        value: String(option.value ?? ''),
+                      }
                 )
               : [];
             combobox.value = String(value ?? '');

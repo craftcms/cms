@@ -151,18 +151,22 @@ class CpNotificationCenter extends LitElement {
         >
           <span slot="prefix">
             <craft-icon
-              class="notification-trigger__icon ${this.#unread.length
-                ? 'notification-trigger__icon--indicated'
-                : ''}"
+              class="notification-trigger__icon ${
+                this.#unread.length
+                  ? 'notification-trigger__icon--indicated'
+                  : ''
+              }"
               name="bell"
             ></craft-icon>
-            ${this.#unread.length
-              ? html`
-                  <craft-badge-indicator
-                    class="notification-trigger__badge"
-                  ></craft-badge-indicator>
-                `
-              : nothing}
+            ${
+              this.#unread.length
+                ? html`
+                    <craft-badge-indicator
+                      class="notification-trigger__badge"
+                    ></craft-badge-indicator>
+                  `
+                : nothing
+            }
           </span>
         </craft-button>
 
@@ -171,18 +175,20 @@ class CpNotificationCenter extends LitElement {
             <h2 class="notification-heading" tabindex="-1">
               ${t('Notifications')}
             </h2>
-            ${this.#unread.length
-              ? html`
-                  <craft-button
-                    type="button"
-                    size="small"
-                    variant="link"
-                    @click=${() => this.#markAllRead()}
-                  >
-                    ${t('Mark all as read')}
-                  </craft-button>
-                `
-              : nothing}
+            ${
+              this.#unread.length
+                ? html`
+                    <craft-button
+                      type="button"
+                      size="small"
+                      variant="link"
+                      @click=${() => this.#markAllRead()}
+                    >
+                      ${t('Mark all as read')}
+                    </craft-button>
+                  `
+                : nothing
+            }
           </header>
           <cp-notification-list
             @cp-notification-navigate=${() => void this.popoverElement?.hide()}

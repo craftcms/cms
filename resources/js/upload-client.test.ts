@@ -1,6 +1,6 @@
 import {Blob as NodeBlob, File as NodeFile} from 'node:buffer';
 import {http} from '@craftcms/ui/utilities/api/http';
-import {afterEach, beforeEach, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {
   FileUpload,
   registerTransport,

@@ -1,4 +1,4 @@
-import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, vi} from 'vite-plus/test';
 import {FieldToggle} from './field-toggle';
 import {fieldToggleData} from './support';
 import {observeFieldToggles} from './observe';

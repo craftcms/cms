@@ -398,18 +398,20 @@ export default class CraftPane extends Paddable(LitElement, {
         role="${this._scrollable ? 'region' : nothing}"
         aria-label="${this._scrollable ? this._scrollRegionLabel : nothing}"
       >
-        ${showHeader
-          ? html`<slot name="header">
-              <div class="cp-pane__header" part="header">
-                <slot name="title" part="title">
-                  ${this.label ? this._renderTitle() : nothing}
-                </slot>
-                <div class="cp-pane__header-actions" part="header-actions">
-                  <slot name="header-actions"></slot>
+        ${
+          showHeader
+            ? html`<slot name="header">
+                <div class="cp-pane__header" part="header">
+                  <slot name="title" part="title">
+                    ${this.label ? this._renderTitle() : nothing}
+                  </slot>
+                  <div class="cp-pane__header-actions" part="header-actions">
+                    <slot name="header-actions"></slot>
+                  </div>
                 </div>
-              </div>
-            </slot>`
-          : nothing}
+              </slot>`
+            : nothing
+        }
 
         <slot name="body">
           <div class="cp-pane__body" part="body">
@@ -417,22 +419,27 @@ export default class CraftPane extends Paddable(LitElement, {
           </div>
         </slot>
 
-        ${this._hasSlottedFooter
-          ? html`<slot name="footer">
-              <div class="cp-pane__footer" part="footer">
-                <slot name="footer-content">
-                  <slot name="feedback"></slot>
-                  <div class="cp-pane__spacer"></div>
-                  <slot name="actions">
-                    <div class="cp-pane__footer-actions" part="footer-actions">
-                      <slot name="secondary-action"></slot>
-                      <slot name="primary-action"></slot>
-                    </div>
+        ${
+          this._hasSlottedFooter
+            ? html`<slot name="footer">
+                <div class="cp-pane__footer" part="footer">
+                  <slot name="footer-content">
+                    <slot name="feedback"></slot>
+                    <div class="cp-pane__spacer"></div>
+                    <slot name="actions">
+                      <div
+                        class="cp-pane__footer-actions"
+                        part="footer-actions"
+                      >
+                        <slot name="secondary-action"></slot>
+                        <slot name="primary-action"></slot>
+                      </div>
+                    </slot>
                   </slot>
-                </slot>
-              </div>
-            </slot>`
-          : nothing}
+                </div>
+              </slot>`
+            : nothing
+        }
       </div>
     `;
   }

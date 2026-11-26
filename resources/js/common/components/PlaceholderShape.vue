@@ -1,5 +1,5 @@
 <script setup lang="ts">
-   /**
+  /**
    * A block that stands in for content still loading. Size it with classes or
    * styles; it's a line of text by default. Hidden from assistive tech, since
    * the region it fills says it's busy instead.

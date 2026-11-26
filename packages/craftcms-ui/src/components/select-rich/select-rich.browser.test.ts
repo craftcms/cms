@@ -223,7 +223,7 @@ it('is a select-only combobox that keeps focus while its listbox is open', async
   const box = page.getByRole('combobox', {name: 'Status', expanded: false});
   await expect.element(box).toBeInTheDocument();
   await expect.element(box).toHaveAccessibleDescription('Pick one');
-  await expect.element(box).toHaveTextContent('Live');
+  await expect.element(box).toMatchTextContent('Live');
   await userEvent.click(box);
   await expect
     .element(page.getByRole('combobox', {name: 'Status', expanded: true}))

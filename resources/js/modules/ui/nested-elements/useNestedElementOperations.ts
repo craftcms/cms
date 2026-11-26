@@ -470,7 +470,7 @@ export function useNestedElementOperations(
       });
       await openSlideout(editUrl, {
         opener,
-        onSaved: ({draft} = {}) => onSaved(Boolean(draft)),
+        onSaved: ({draft}) => onSaved(Boolean(draft)),
       });
 
       return options.refreshCreatedElementOnOpen === false ? false : undefined;

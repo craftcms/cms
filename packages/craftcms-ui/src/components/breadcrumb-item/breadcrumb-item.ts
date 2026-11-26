@@ -124,9 +124,11 @@ export default class CraftBreadcrumbItem extends LitElement {
           href=${this.href}
           target=${target ?? nothing}
           rel=${target ? this.rel : nothing}
-          ><slot></slot>${!this.target && target
-            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
-            : nothing}</a
+          ><slot></slot>${
+            !this.target && target
+              ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+              : nothing
+          }</a
         >`
       : html`<span part="label" class="label"><slot></slot></span>`;
 

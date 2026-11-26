@@ -419,14 +419,18 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
       default:
         return html`
           <slot name="icon">
-            ${this.icon
-              ? html`<craft-icon
-                  name="${this.icon}"
-                  style="${this.iconColor
-                    ? `color: ${this.#iconColorValue(this.iconColor)}`
-                    : nothing}"
-                ></craft-icon>`
-              : nothing}
+            ${
+              this.icon
+                ? html`<craft-icon
+                    name="${this.icon}"
+                    style="${
+                      this.iconColor
+                        ? `color: ${this.#iconColorValue(this.iconColor)}`
+                        : nothing
+                    }"
+                  ></craft-icon>`
+                : nothing
+            }
           </slot>
         `;
     }
@@ -439,9 +443,11 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     return html`
       ${this.type === 'checkbox' ? this.renderCheckbox() : nothing}
       ${hasPrefix ? html`<slot name="prefix" part="prefix"></slot>` : nothing}
-      ${hasIcon
-        ? html`<div class="action-item__icon">${this.renderIcon()}</div>`
-        : nothing}
+      ${
+        hasIcon
+          ? html`<div class="action-item__icon">${this.renderIcon()}</div>`
+          : nothing
+      }
     `;
   }
 
@@ -487,13 +493,15 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
         })}"
       >
         <slot name="suffix"></slot>
-        ${this.shortcutKeys
-          ? html`<craft-shortcut
-              ?alt="${this.shortcutKeys.alt}"
-              ?shift="${this.shortcutKeys.shift}"
-              >${this.shortcutKeys.key}</craft-shortcut
-            >`
-          : nothing}
+        ${
+          this.shortcutKeys
+            ? html`<craft-shortcut
+                ?alt="${this.shortcutKeys.alt}"
+                ?shift="${this.shortcutKeys.shift}"
+                >${this.shortcutKeys.key}</craft-shortcut
+              >`
+            : nothing
+        }
       </span>
     `;
   }
@@ -518,9 +526,11 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
               this.rel ?? (target === '_blank' ? 'noopener' : null) ?? undefined
             )}"
           >
-            ${this.renderBody()}${!this.target && target
-              ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
-              : nothing}
+            ${this.renderBody()}${
+              !this.target && target
+                ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+                : nothing
+            }
           </a>
         `
       : html`

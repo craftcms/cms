@@ -75,15 +75,19 @@ export default class CraftMissingComponent extends LitElement {
   protected override render() {
     return html`
       <p class="error" role="alert">${this.error}</p>
-      ${this.pluginName
-        ? html`<div class="install-plugin">
-            <div class="icon" aria-hidden="true"><slot name="icon"></slot></div>
-            <div class="plugin">
-              <h3>${this.pluginName}</h3>
-              <slot name="action"></slot>
-            </div>
-          </div>`
-        : nothing}
+      ${
+        this.pluginName
+          ? html`<div class="install-plugin">
+              <div class="icon" aria-hidden="true">
+                <slot name="icon"></slot>
+              </div>
+              <div class="plugin">
+                <h3>${this.pluginName}</h3>
+                <slot name="action"></slot>
+              </div>
+            </div>`
+          : nothing
+      }
     `;
   }
 }

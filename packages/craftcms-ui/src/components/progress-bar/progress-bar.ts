@@ -182,11 +182,13 @@ export default class CraftProgressBar extends LitElement {
           style=${styleMap(fillStyles)}
         ></div>
       </div>
-      ${this.showStatus
-        ? html`<div class="progress-bar__status" part="status">
-            ${this.statusText}
-          </div>`
-        : nothing}
+      ${
+        this.showStatus
+          ? html`<div class="progress-bar__status" part="status">
+              ${this.statusText}
+            </div>`
+          : nothing
+      }
       <span class="visually-hidden">
         ${this.pending ? 'Loading' : `${this.progressPercent}%`}
       </span>

@@ -176,8 +176,10 @@
     translateY(
       calc(
         var(--cp-messages-direction) *
-          (var(--cp-message-offset, 0px) + var(--cp-message-index, 0) *
-            var(--cp-messages-gap))
+          (
+            var(--cp-message-offset, 0px) + var(--cp-message-index, 0) *
+              var(--cp-messages-gap)
+          )
       )
     );
 }

@@ -303,18 +303,20 @@ export default class CraftInputDateTime extends LitElement {
         <slot name="inputs"></slot>
       </div>
       <slot @slotchange=${() => this.#queueStackedSync()}></slot>
-      ${this.clearable && !this.disabled && !this.readonly
-        ? html`<craft-button
-            part="clear"
-            class=${this.#hasValue() ? '' : 'invisible'}
-            type="button"
-            icon="xmark-large"
-            aria-label=${t('Clear')}
-            variant="plain"
-            size="small"
-            @click=${this.#clear}
-          ></craft-button>`
-        : null}`;
+      ${
+        this.clearable && !this.disabled && !this.readonly
+          ? html`<craft-button
+              part="clear"
+              class=${this.#hasValue() ? '' : 'invisible'}
+              type="button"
+              icon="xmark-large"
+              aria-label=${t('Clear')}
+              variant="plain"
+              size="small"
+              @click=${this.#clear}
+            ></craft-button>`
+          : null
+      }`;
   }
 
   #hasValue(): boolean {

@@ -246,12 +246,10 @@ function keptWindows(
   const merged: Range[] = [];
 
   for (const [from, to] of windows
-    .map(
-      ([from, to]): Range => [
-        wordStart(text, Math.max(from, 0)),
-        wordEnd(text, Math.min(to, text.length)),
-      ]
-    )
+    .map(([from, to]): Range => [
+      wordStart(text, Math.max(from, 0)),
+      wordEnd(text, Math.min(to, text.length)),
+    ])
     .sort((a, b) => a[0] - b[0])) {
     const last = merged.at(-1);
 

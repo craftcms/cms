@@ -170,9 +170,9 @@ jobs:
 
       - name: Setup Vite+
         if: steps.cem.outputs.cache-hit != 'true' && !github.event.pull_request.head.repo.fork
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: '24'
+          node-version-file: .node-version
           cache: true
           run-install: false
 
@@ -263,9 +263,9 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: '24'
+          node-version-file: .node-version
           cache: true
           run-install: false
 

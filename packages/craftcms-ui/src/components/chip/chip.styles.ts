@@ -648,14 +648,14 @@ export default css`
    */
   :host(
       [data-color]:not([data-color='white'], [data-color='black']):not(
-        [selected]
-      )[appearance~='fill']
+          [selected]
+        )[appearance~='fill']
     )
     .cp-chip,
   :host(
       [data-color]:not([data-color='white'], [data-color='black']):not(
-        [selected]
-      )[appearance~='outline-fill']
+          [selected]
+        )[appearance~='outline-fill']
     )
     .cp-chip {
     background-color: color-mix(var(--c-color-fill-quiet), transparent 70%);
@@ -664,8 +664,8 @@ export default css`
 
   :host(
       [data-color]:not([data-color='white'], [data-color='black']):not(
-        [selected]
-      )[appearance~='outline-fill']
+          [selected]
+        )[appearance~='outline-fill']
     )
     .cp-chip {
     border-color: var(--c-color-border-quiet);
@@ -673,15 +673,15 @@ export default css`
 
   :host(
       [data-color]:not(
-        [data-color='white'],
-        [data-color='black']
-      )[selected][appearance~='fill']
+          [data-color='white'],
+          [data-color='black']
+        )[selected][appearance~='fill']
     )
     .cp-chip,
   :host(
       [data-color]:not(
-        [data-color='white']
-      )[selected][appearance~='outline-fill']
+          [data-color='white']
+        )[selected][appearance~='outline-fill']
     )
     .cp-chip {
     /* Controls that tint from these, like the move button, take the chip's

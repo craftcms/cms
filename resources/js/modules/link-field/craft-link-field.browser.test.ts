@@ -124,7 +124,7 @@ it('shows the linked element as a chip with its status', async () => {
 
   const chip = linkField.querySelector('craft-chip');
   expect(chip).not.toBeNull();
-  await expect.element(chip!).toHaveTextContent('pending');
+  await expect.element(chip!).toMatchTextContent('pending');
   await expect
     .element(page.getByRole('img', {name: 'Status: Pending'}))
     .toBeVisible();
@@ -421,7 +421,7 @@ describe('a linked element', () => {
       .toBeVisible();
     await expect
       .element(linkField.querySelector('craft-chip')!)
-      .toHaveTextContent('live');
+      .toMatchTextContent('live');
     expect(post).toHaveBeenCalledWith(
       'relational-fields/structured-elements',
       expect.objectContaining({
@@ -458,10 +458,10 @@ describe('a linked element', () => {
 
       await expect
         .element(other.querySelector('craft-chip')!)
-        .toHaveTextContent('renamed');
+        .toMatchTextContent('renamed');
       await expect
         .element(linkField.querySelector('craft-chip')!)
-        .toHaveTextContent('renamed');
+        .toMatchTextContent('renamed');
     } finally {
       other.remove();
     }
@@ -579,14 +579,14 @@ describe('a linked element', () => {
     await linkField.updateComplete;
     await expect
       .element(linkField.querySelector('craft-chip')!)
-      .toHaveTextContent('renamed');
+      .toMatchTextContent('renamed');
 
     linkField.modelValue = {...original, element: {...original.element!}};
     await linkField.updateComplete;
 
     await expect
       .element(linkField.querySelector('craft-chip')!)
-      .toHaveTextContent('pending');
+      .toMatchTextContent('pending');
   });
 
   it('draws only the latest fetch when it’s saved again while an earlier one is waiting', async () => {
@@ -713,7 +713,7 @@ describe('a linked element', () => {
       .toBeVisible();
     await expect
       .element(linkField.querySelector('craft-chip')!)
-      .toHaveTextContent('renamed');
+      .toMatchTextContent('renamed');
     post.mockRestore();
   });
 
@@ -805,7 +805,7 @@ describe('a linked element', () => {
 
     await expect
       .element(linkField.querySelector('craft-chip')!)
-      .toHaveTextContent('other');
+      .toMatchTextContent('other');
     expect(post).not.toHaveBeenCalled();
     post.mockRestore();
   });

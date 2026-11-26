@@ -41,7 +41,7 @@
   },
   "packageManager": "pnpm@11.25.0",
   "engines": {
-    "node": ">=22"
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
   },
   "devEngines": {
     "packageManager": {
@@ -78,10 +78,11 @@
     "stylelint": "catalog:",
     "stylelint-use-logical-spec": "catalog:",
     "typescript": "catalog:",
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.2.6",
+    "vite": "catalog:",
     "vite-plus": "catalog:",
-    "vitest": "4.1.10",
-    "vue-tsc": "^3.2.7"
+    "vitest": "catalog:",
+    "vue-tsc": "^3.2.7",
+    "@vitest/browser-playwright": "catalog:"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.110"

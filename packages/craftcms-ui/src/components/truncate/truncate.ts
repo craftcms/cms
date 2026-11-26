@@ -105,11 +105,13 @@ export default class CraftTruncate extends LitElement {
       <span class="truncate" id="content">
         <slot @slotchange=${this.#onSlotChange}></slot>
       </span>
-      ${showTooltip
-        ? html`<craft-tooltip for="content" placement=${this.placement}
-            >${this.text}</craft-tooltip
-          >`
-        : ''}
+      ${
+        showTooltip
+          ? html`<craft-tooltip for="content" placement=${this.placement}
+              >${this.text}</craft-tooltip
+            >`
+          : ''
+      }
     `;
   }
 }

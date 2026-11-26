@@ -1,5 +1,5 @@
 import {ref} from 'vue';
-import {describe, expect, it, vi} from 'vitest';
+import {describe, expect, it, vi} from 'vite-plus/test';
 import type {RowSelectionState} from '@tanstack/vue-table';
 import type {ViewState} from '@/modules/elements/types/view-state';
 import {

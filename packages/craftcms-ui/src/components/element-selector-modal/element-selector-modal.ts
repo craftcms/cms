@@ -194,11 +194,13 @@ export default class CraftElementSelectorModal extends CraftDialog {
   protected override renderBody(): TemplateResult {
     return html`
       <div class="body" part="body" ?inert=${this.busy}>
-        ${this.loading && !this.hasIndex
-          ? html`<slot name="loading"
-              ><div class="loading"><craft-spinner></craft-spinner></div
-            ></slot>`
-          : nothing}
+        ${
+          this.loading && !this.hasIndex
+            ? html`<slot name="loading"
+                ><div class="loading"><craft-spinner></craft-spinner></div
+              ></slot>`
+            : nothing
+        }
         <slot></slot>
       </div>
     `;

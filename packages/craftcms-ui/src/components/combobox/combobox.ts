@@ -1028,26 +1028,30 @@ export default class CraftCombobox extends FormAssociated(
         .hint=${data.hint ?? null}
         ?disabled=${option.disabled ?? false}
       >
-        ${this.#decorationTemplate(data)}${isEnv
-          ? html`<code>${label}</code>`
-          : label}
+        ${this.#decorationTemplate(data)}${
+          isEnv ? html`<code>${label}</code>` : label
+        }
       </craft-option>
     `;
   }
 
   /** The option's dot and icon, which only repeat what its label says. */
   #decorationTemplate(data: ComboboxOptionData) {
-    return html`${data.indicator
-      ? html`<craft-indicator
-          fill=${data.indicator.fill ?? nothing}
-          appearance=${data.indicator.appearance ?? nothing}
-        ></craft-indicator>`
-      : nothing}${data.icon
-      ? html`<craft-icon
-          name="${data.icon}"
-          style=${data.color ? `color: ${iconColor(data.color)}` : nothing}
-        ></craft-icon>`
-      : nothing}`;
+    return html`${
+      data.indicator
+        ? html`<craft-indicator
+            fill=${data.indicator.fill ?? nothing}
+            appearance=${data.indicator.appearance ?? nothing}
+          ></craft-indicator>`
+        : nothing
+    }${
+      data.icon
+        ? html`<craft-icon
+            name="${data.icon}"
+            style=${data.color ? `color: ${iconColor(data.color)}` : nothing}
+          ></craft-icon>`
+        : nothing
+    }`;
   }
 
   #hasValue(): boolean {
@@ -1158,35 +1162,39 @@ export default class CraftCombobox extends FormAssociated(
       <div class="input-group__input">
         <slot name="selection"></slot>
         <div class="combobox__textbox">
-          ${icon
-            ? html`<craft-icon
-                class="prefix"
-                name=${icon}
-                style=${color ? `color: ${iconColor(color)}` : nothing}
-              ></craft-icon>`
-            : indicator
-              ? html`<span class="prefix prefix--indicator">
-                  <craft-indicator
-                    fill=${indicator.fill ?? nothing}
-                    appearance=${indicator.appearance ?? nothing}
-                  ></craft-indicator>
-                </span>`
-              : nothing}
+          ${
+            icon
+              ? html`<craft-icon
+                  class="prefix"
+                  name=${icon}
+                  style=${color ? `color: ${iconColor(color)}` : nothing}
+                ></craft-icon>`
+              : indicator
+                ? html`<span class="prefix prefix--indicator">
+                    <craft-indicator
+                      fill=${indicator.fill ?? nothing}
+                      appearance=${indicator.appearance ?? nothing}
+                    ></craft-indicator>
+                  </span>`
+                : nothing
+          }
           <slot name="input"></slot>
-          ${this.clearable && this.#hasValue() && !this.#inactive
-            ? html`<craft-button
-                class="clear"
-                type="button"
-                variant="plain"
-                size="small"
-                icon
-                aria-label=${t('Clear')}
-                @mousedown=${(e: Event) => e.preventDefault()}
-                @click=${this.#clear}
-              >
-                <craft-icon name="xmark-large"></craft-icon>
-              </craft-button>`
-            : nothing}
+          ${
+            this.clearable && this.#hasValue() && !this.#inactive
+              ? html`<craft-button
+                  class="clear"
+                  type="button"
+                  variant="plain"
+                  size="small"
+                  icon
+                  aria-label=${t('Clear')}
+                  @mousedown=${(e: Event) => e.preventDefault()}
+                  @click=${this.#clear}
+                >
+                  <craft-icon name="xmark-large"></craft-icon>
+                </craft-button>`
+              : nothing
+          }
           <craft-icon
             class="indicator"
             name="chevron-down"
@@ -1198,14 +1206,16 @@ export default class CraftCombobox extends FormAssociated(
       <div class="overlay-layer" role="none" popover="manual">
         <div id="overlay-content-node-wrapper">
           <slot name="listbox"></slot>
-          ${this.overflowTotal
-            ? html`<div class="combobox__footer" aria-hidden="true">
-                ${t(
-                  'Showing {shown} of {total} — keep typing to narrow results.',
-                  {shown: this.limit, total: this.overflowTotal}
-                )}
-              </div>`
-            : nothing}
+          ${
+            this.overflowTotal
+              ? html`<div class="combobox__footer" aria-hidden="true">
+                  ${t(
+                    'Showing {shown} of {total} — keep typing to narrow results.',
+                    {shown: this.limit, total: this.overflowTotal}
+                  )}
+                </div>`
+              : nothing
+          }
         </div>
       </div>
       <div class="cp-visually-hidden" aria-live="polite" aria-atomic="true">

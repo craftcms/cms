@@ -360,9 +360,11 @@ export default class CraftCheckboxSelect extends LitElement {
     const movable = this.#movableItems();
 
     return html`
-      ${this.label
-        ? html`<div id="label" class="label" part="label">${this.label}</div>`
-        : nothing}
+      ${
+        this.label
+          ? html`<div id="label" class="label" part="label">${this.label}</div>`
+          : nothing
+      }
       <div
         class="group"
         part="group"
@@ -370,33 +372,37 @@ export default class CraftCheckboxSelect extends LitElement {
         aria-labelledby=${this.label ? 'label' : nothing}
       >
         <slot name="all"></slot>
-        ${rows.length
-          ? html`<div class="items" part="items">
-              ${repeat(
-                rows,
-                (item) => this.#keys.get(item)!,
-                (item) => this.#renderRow(item, movable)
-              )}
-            </div>`
-          : nothing}
-        ${this.presentation === 'add-menu' && addable.length && !this.disabled
-          ? html`<craft-action-menu
-              class="add"
-              part="add-menu"
-              ?searchable=${addable.length > 10}
-              .actions=${() => this.#addMenuActions()}
-            >
-              <craft-button
-                slot="invoker"
-                type="button"
-                size="small"
-                variant="dashed"
+        ${
+          rows.length
+            ? html`<div class="items" part="items">
+                ${repeat(
+                  rows,
+                  (item) => this.#keys.get(item)!,
+                  (item) => this.#renderRow(item, movable)
+                )}
+              </div>`
+            : nothing
+        }
+        ${
+          this.presentation === 'add-menu' && addable.length && !this.disabled
+            ? html`<craft-action-menu
+                class="add"
+                part="add-menu"
+                ?searchable=${addable.length > 10}
+                .actions=${() => this.#addMenuActions()}
               >
-                <craft-icon name="plus" slot="prefix"></craft-icon>
-                ${t('Add item')}
-              </craft-button>
-            </craft-action-menu>`
-          : nothing}
+                <craft-button
+                  slot="invoker"
+                  type="button"
+                  size="small"
+                  variant="dashed"
+                >
+                  <craft-icon name="plus" slot="prefix"></craft-icon>
+                  ${t('Add item')}
+                </craft-button>
+              </craft-action-menu>`
+            : nothing
+        }
       </div>
       <span class="cp-visually-hidden" role="status">${this._status}</span>
       <slot hidden></slot>
@@ -416,50 +422,62 @@ export default class CraftCheckboxSelect extends LitElement {
       class="row ${dragging ? 'row--dragging' : ''}"
       part="row"
       data-key=${key}
-      data-drop=${dropIndex === index
-        ? 'before'
-        : dropIndex === index + 1 && index === movable.length - 1
-          ? 'after'
-          : nothing}
+      data-drop=${
+        dropIndex === index
+          ? 'before'
+          : dropIndex === index + 1 && index === movable.length - 1
+            ? 'after'
+            : nothing
+      }
     >
-      ${this.sortable
-        ? html`<craft-reorder-button
-            class="handle"
-            position=${this.#positionOf(index, movable.length)}
-            ?disabled=${!isMovable || movable.length < 2}
-            @craft-reorder=${(
-              event: CustomEvent<{direction: ReorderDirection}>
-            ) =>
-              this.#moveRow(
-                index,
-                index + (event.detail.direction === 'up' ? -1 : 1),
-                true
-              )}
-          ></craft-reorder-button>`
-        : nothing}
-      ${addMenu
-        ? html`<span class="row__label">
-              ${option.labelHtml !== undefined
-                ? unsafeHTML(option.labelHtml)
-                : option.label}
-              ${option.info
-                ? html`<span class="row__info"
-                    >${unsafeHTML(option.info)}</span
-                  >`
-                : nothing}
-            </span>
-            ${!option.disabled && !this.disabled
-              ? html`<craft-button
-                  class="remove"
-                  type="button"
-                  icon="xmark"
-                  size="small"
-                  variant="plain"
-                  aria-label=${t('Remove {name}', {name: option.label})}
-                  @click=${() => this.#remove(item)}
-                ></craft-button>`
-              : nothing}`
-        : html`<slot name=${key}></slot>`}
+      ${
+        this.sortable
+          ? html`<craft-reorder-button
+              class="handle"
+              position=${this.#positionOf(index, movable.length)}
+              ?disabled=${!isMovable || movable.length < 2}
+              @craft-reorder=${(
+                event: CustomEvent<{direction: ReorderDirection}>
+              ) =>
+                this.#moveRow(
+                  index,
+                  index + (event.detail.direction === 'up' ? -1 : 1),
+                  true
+                )}
+            ></craft-reorder-button>`
+          : nothing
+      }
+      ${
+        addMenu
+          ? html`<span class="row__label">
+                ${
+                  option.labelHtml !== undefined
+                    ? unsafeHTML(option.labelHtml)
+                    : option.label
+                }
+                ${
+                  option.info
+                    ? html`<span class="row__info"
+                        >${unsafeHTML(option.info)}</span
+                      >`
+                    : nothing
+                }
+              </span>
+              ${
+                !option.disabled && !this.disabled
+                  ? html`<craft-button
+                      class="remove"
+                      type="button"
+                      icon="xmark"
+                      size="small"
+                      variant="plain"
+                      aria-label=${t('Remove {name}', {name: option.label})}
+                      @click=${() => this.#remove(item)}
+                    ></craft-button>`
+                  : nothing
+              }`
+          : html`<slot name=${key}></slot>`
+      }
     </div>`;
   }
 

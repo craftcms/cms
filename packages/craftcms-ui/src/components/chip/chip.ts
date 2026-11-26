@@ -412,23 +412,31 @@ export default class CraftChip extends LitElement {
 
   protected renderPrefix(filled: FilledParts) {
     return html`<div class="cp-chip__prefix">
-      ${filled.prefix
-        ? html`<slot name="prefix" part="prefix"></slot>`
-        : nothing}
-      ${filled.thumbnail
-        ? html`<slot
-            class="cp-chip__thumbnail"
-            name="thumbnail"
-            part="thumbnail"
-          ></slot>`
-        : nothing}
-      ${filled.icon
-        ? html`<slot class="cp-chip__icon" name="icon" part="icon"
-            >${this.icon
-              ? html`<craft-icon name="${this.icon}"></craft-icon>`
-              : nothing}</slot
-          >`
-        : nothing}
+      ${
+        filled.prefix
+          ? html`<slot name="prefix" part="prefix"></slot>`
+          : nothing
+      }
+      ${
+        filled.thumbnail
+          ? html`<slot
+              class="cp-chip__thumbnail"
+              name="thumbnail"
+              part="thumbnail"
+            ></slot>`
+          : nothing
+      }
+      ${
+        filled.icon
+          ? html`<slot class="cp-chip__icon" name="icon" part="icon"
+              >${
+                this.icon
+                  ? html`<craft-icon name="${this.icon}"></craft-icon>`
+                  : nothing
+              }</slot
+            >`
+          : nothing
+      }
     </div>`;
   }
 
@@ -438,16 +446,20 @@ export default class CraftChip extends LitElement {
    */
   protected renderMain(filled: FilledParts) {
     return html`<div class="cp-chip__main">
-      ${filled.status
-        ? html`<slot
-            class="cp-chip__status"
-            name="status"
-            part="status"
-          ></slot>`
-        : nothing}
-      ${filled.body
-        ? html`<slot class="cp-chip__body" part="body"></slot>`
-        : nothing}
+      ${
+        filled.status
+          ? html`<slot
+              class="cp-chip__status"
+              name="status"
+              part="status"
+            ></slot>`
+          : nothing
+      }
+      ${
+        filled.body
+          ? html`<slot class="cp-chip__body" part="body"></slot>`
+          : nothing
+      }
     </div>`;
   }
 
@@ -537,13 +549,15 @@ export default class CraftChip extends LitElement {
         ${this.selectable ? this.renderSelect() : nothing}
         ${renderPrefix ? this.renderPrefix(filled) : nothing}
         ${filled.status || filled.body ? this.renderMain(filled) : nothing}
-        ${filled.suffix
-          ? html`<slot
-              name="suffix"
-              class="cp-chip__suffix"
-              part="suffix"
-            ></slot>`
-          : nothing}
+        ${
+          filled.suffix
+            ? html`<slot
+                name="suffix"
+                class="cp-chip__suffix"
+                part="suffix"
+              ></slot>`
+            : nothing
+        }
       </div>
     `;
   }

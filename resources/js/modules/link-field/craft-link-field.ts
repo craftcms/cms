@@ -988,33 +988,41 @@ class CraftLinkField extends LitElement {
         @dblclick=${(event: MouseEvent) =>
           this.handleChipDoubleClick(type, event)}
       >
-        ${element.thumbHtml
-          ? html`<div slot="thumbnail" class="flex">
-              ${unsafeHTML(element.thumbHtml)}
-            </div>`
-          : nothing}
-        ${status
-          ? html`<div slot="status">
-              ${status.draft
-                ? html`<craft-icon
-                    name="scribble"
-                    label=${`${t('Status:')} ${status.label}`}
-                  ></craft-icon>`
-                : html`<craft-indicator
-                    fill=${status.fill}
-                    shape=${status.shape ?? nothing}
-                    label=${`${t('Status:')} ${status.label}`}
-                  ></craft-indicator>`}
-            </div>`
-          : nothing}
+        ${
+          element.thumbHtml
+            ? html`<div slot="thumbnail" class="flex">
+                ${unsafeHTML(element.thumbHtml)}
+              </div>`
+            : nothing
+        }
+        ${
+          status
+            ? html`<div slot="status">
+                ${
+                  status.draft
+                    ? html`<craft-icon
+                        name="scribble"
+                        label=${`${t('Status:')} ${status.label}`}
+                      ></craft-icon>`
+                    : html`<craft-indicator
+                        fill=${status.fill}
+                        shape=${status.shape ?? nothing}
+                        label=${`${t('Status:')} ${status.label}`}
+                      ></craft-indicator>`
+                }
+              </div>`
+            : nothing
+        }
         ${label}
-        ${hasActions
-          ? html`<div slot="suffix" class="flex items-center">
-              <craft-action-menu
-                .actions=${this.chipMenuProvider}
-              ></craft-action-menu>
-            </div>`
-          : nothing}
+        ${
+          hasActions
+            ? html`<div slot="suffix" class="flex items-center">
+                <craft-action-menu
+                  .actions=${this.chipMenuProvider}
+                ></craft-action-menu>
+              </div>`
+            : nothing
+        }
       </craft-chip>
     `;
   }
@@ -1031,22 +1039,26 @@ class CraftLinkField extends LitElement {
         <craft-field>
           ${this.renderLabel(type.label)}
           <div slot="input" class="craft-link-field__element">
-            ${this.chip
-              ? this.renderSelectedElement(type, this.chip)
-              : html`<craft-button
-                  type="button"
-                  variant="dashed"
-                  icon="plus"
-                  ?disabled=${this.disabled}
-                  aria-describedby=${this.valueError
-                    ? this.valueErrorId
-                    : nothing}
-                  aria-invalid=${this.valueError ? 'true' : nothing}
-                  @click=${(event: Event) =>
-                    void this.chooseElement(event.currentTarget as HTMLElement)}
-                >
-                  ${t('Choose')}
-                </craft-button>`}
+            ${
+              this.chip
+                ? this.renderSelectedElement(type, this.chip)
+                : html`<craft-button
+                    type="button"
+                    variant="dashed"
+                    icon="plus"
+                    ?disabled=${this.disabled}
+                    aria-describedby=${
+                      this.valueError ? this.valueErrorId : nothing
+                    }
+                    aria-invalid=${this.valueError ? 'true' : nothing}
+                    @click=${(event: Event) =>
+                      void this.chooseElement(
+                        event.currentTarget as HTMLElement
+                      )}
+                  >
+                    ${t('Choose')}
+                  </craft-button>`
+            }
           </div>
           ${this.renderValueError('feedback')}
         </craft-field>
@@ -1160,9 +1172,11 @@ class CraftLinkField extends LitElement {
               download,
             }))}
           ></craft-switch>
-          ${this.linkAttributes.download
-            ? this.renderTextAttribute('filename', t('Filename'))
-            : nothing}
+          ${
+            this.linkAttributes.download
+              ? this.renderTextAttribute('filename', t('Filename'))
+              : nothing
+          }
         `;
     }
   }
@@ -1199,20 +1213,22 @@ class CraftLinkField extends LitElement {
           ${t('Advanced')}
         </craft-button>
         <craft-field-group slot="content">
-          ${this.showLabelField
-            ? html`
-                <craft-input
-                  label=${t('Label')}
-                  type="text"
-                  placeholder=${this.chip?.label ||
-                  this.defaultLabel ||
-                  nothing}
-                  .value=${this.label}
-                  .disabled=${this.disabled}
-                  @input=${this.handleLabelChange}
-                ></craft-input>
-              `
-            : nothing}
+          ${
+            this.showLabelField
+              ? html`
+                  <craft-input
+                    label=${t('Label')}
+                    type="text"
+                    placeholder=${
+                      this.chip?.label || this.defaultLabel || nothing
+                    }
+                    .value=${this.label}
+                    .disabled=${this.disabled}
+                    @input=${this.handleLabelChange}
+                  ></craft-input>
+                `
+              : nothing
+          }
           ${fields.map((field) => this.renderAdvancedField(field))}
         </craft-field-group>
       </craft-disclosure>
@@ -1259,11 +1275,9 @@ class CraftLinkField extends LitElement {
         <input
           type="hidden"
           name=${`${this.name}[${key}]`}
-          .value=${typeof value === 'boolean'
-            ? value
-              ? '1'
-              : ''
-            : (value ?? '')}
+          .value=${
+            typeof value === 'boolean' ? (value ? '1' : '') : (value ?? '')
+          }
           ?disabled=${this.disabled}
         />
       `;
@@ -1281,14 +1295,16 @@ class CraftLinkField extends LitElement {
     `;
 
     return html`
-      ${this.live && this.showAdvancedFields
-        ? html`<craft-pane
-            class="craft-link-field__pane"
-            appearance="outline"
-            padding="lg"
-            >${content}</craft-pane
-          >`
-        : content}
+      ${
+        this.live && this.showAdvancedFields
+          ? html`<craft-pane
+              class="craft-link-field__pane"
+              appearance="outline"
+              padding="lg"
+              >${content}</craft-pane
+            >`
+          : content
+      }
       ${this.renderHiddenInputs()}
     `;
   }
