@@ -54,13 +54,16 @@ class ImageDuplicates
     /**
      * Returns the images in an asset’s volume that look like copies of it, closest first.
      *
+     * @param  int|null  $volumeId  The volume to look in instead, such as the one a temporary upload will be moved to
      * @return list<Asset>
      */
-    public function find(Asset $asset, int $limit = 5): array
+    public function find(Asset $asset, int $limit = 5, ?int $volumeId = null): array
     {
         $hash = $asset->analysis?->hash;
+        $volumeId ??= $asset->volumeId;
 
-        return $hash !== null ? $this->findByHash($hash, $limit, $asset->id, $asset->volumeId) : [];
+        // Temporary uploads with nowhere to go have no volume to look in
+        return $hash !== null && $volumeId !== null ? $this->findByHash($hash, $limit, $asset->id, $volumeId) : [];
     }
 
     /**

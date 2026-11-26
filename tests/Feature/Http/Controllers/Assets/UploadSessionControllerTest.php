@@ -362,6 +362,25 @@ describe('what the uploader read from the file', function () {
             ->and($copy['duplicates'][0]['chipHtml'])->toContain('<craft-chip', 'data-id="'.$original['assetId'].'"', 'href="'.$copy['duplicates'][0]['url'].'"');
     });
 
+    it('lists copies in the volume a temporary upload will be moved to', function () {
+        $field = Entry::factory()
+            ->withField('attachment', Assets::class, [
+                'defaultUploadLocationSource' => "volume:{$this->volume->uid}",
+                'defaultUploadLocationSubpath' => '{id}',
+            ])->createElementWithFields(save: false)->fields->get('attachment');
+        $otherVolume = Volume::factory()->create(['disk' => 'upload-destination']);
+        $otherFolder = VolumeFolder::factory()->create(['volumeId' => $otherVolume->id, 'path' => '']);
+
+        $original = ($this->uploadImage)(['folderId' => $this->folder->id]);
+        ($this->uploadImage)(['folderId' => $otherFolder->id]);
+        $staged = ($this->uploadImage)(['fieldId' => $field->id]);
+        $copy = ($this->uploadImage)(['fieldId' => $field->id]);
+
+        expect(Asset::findOne($copy['assetId'])->volumeId)->toBeNull()
+            ->and(array_column($staged['duplicates'], 'id'))->toBe([$original['assetId']])
+            ->and(array_column($copy['duplicates'], 'id'))->toBe([$original['assetId']]);
+    });
+
     it('only lists copies the uploader can view', function () {
         ($this->uploadImage)(['folderId' => $this->folder->id]);
         Gate::before(fn ($user, string $ability, array $arguments) => $ability === 'view' && ($arguments[0] ?? null) instanceof Asset ? false : null);
