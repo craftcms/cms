@@ -99,7 +99,7 @@
 ### Assets
 - Assets in more than one site can be compared between sites from the Sites panel, on the Compare screen, where field values can be copied from one site to the other. ([#20384](https://github.com/craftcms/cms/pull/20384))
 - Added background uploads in the Assets index, which continue during control panel navigation, with persistent progress, retry, cancellation, and filename-conflict controls.
-- Images uploaded from the Assets index that look like copies of images that are already in the same volume, even resized or recompressed, now wait within their upload notification, which shows the existing images’ chips and offers to cancel the upload, keep both, or replace the existing image’s file, like filename conflicts. ([#20113](https://github.com/craftcms/cms/pull/20113))
+- Images uploaded from the Assets index that look like copies of images that are already in the same volume, even resized or recompressed, now wait within their upload notification, which shows the existing images’ chips and offers to cancel the upload, keep both, or replace the existing image’s file, like filename conflicts. ([#20113](https://github.com/craftcms/cms/pull/20113), [#21151](https://github.com/craftcms/cms/pull/21151))
 - Added Undo/Redo support and a “Revert to original” button to the image editor. ([#19600](https://github.com/craftcms/cms/pull/19600))
 - The image editor now asks for confirmation in a dialog before discarding unsaved changes when it’s closed or reset to the original. ([#20466](https://github.com/craftcms/cms/pull/20466))
 - Image thumbnails and previews in the control panel now show a blurred placeholder based on the image’s colors while they load. ([#19750](https://github.com/craftcms/cms/pull/19750))
