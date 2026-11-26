@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use DateTimeInterface;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -37,28 +38,42 @@ class ElementIndexViewStates
      */
     public function put(array $states, bool $all = false): void
     {
-        $ttl = now()->addMinutes((int) config('session.lifetime', 120));
-
         foreach ($states as $key => $state) {
-            Cache::put($this->cacheKey($key), $state, $ttl);
+            Cache::put($this->cacheKey($key), $state, $this->ttl());
         }
 
         if ($all) {
-            Cache::put($this->cacheKey(), true, $ttl);
+            Cache::put($this->cacheKey(), true, $this->ttl());
         }
     }
 
     /**
      * An index's view state, or null when the browser has none for it.
      *
+     * Reading it renews it and the synced flag, as activity renews the
+     * session, so an index stays rendered with rows for as long as the
+     * session lasts.
+     *
      * @param  class-string  $elementType
      * @return array<string, mixed>|null
      */
     public function get(string $elementType, string $context): ?array
     {
-        $state = Cache::get($this->cacheKey("elementindex.$elementType.$context"));
+        $key = $this->cacheKey("elementindex.$elementType.$context");
+        $state = Cache::get($key);
+
+        Cache::touch($this->cacheKey(), $this->ttl());
+
+        if ($state !== null) {
+            Cache::touch($key, $this->ttl());
+        }
 
         return is_array($state) ? $state : null;
+    }
+
+    private function ttl(): DateTimeInterface
+    {
+        return now()->addMinutes((int) config('session.lifetime', 120));
     }
 
     private function cacheKey(?string $key = null): string

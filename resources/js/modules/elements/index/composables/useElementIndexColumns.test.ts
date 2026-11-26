@@ -122,6 +122,22 @@ describe('useElementIndexColumns', () => {
     );
   });
 
+  // Reordering columns doesn't update the URL, so a reload's URL can still
+  // list them in their old order.
+  it('keeps the saved order of the columns a link names', () => {
+    const {restore, viewState} = columnsFor(
+      {'columns[0]': 'author', 'columns[1]': 'postDate'},
+      ['author', 'postDate']
+    );
+    viewState.value.sources = {'*': {visible: ['postDate', 'author']}};
+
+    expect(restore()).toBeNull();
+    expect(viewState.value.sources?.['*']?.visible).toEqual([
+      'postDate',
+      'author',
+    ]);
+  });
+
   // Otherwise the table would show the saved columns, which the rows have no
   // data for.
   it('saves the columns a link names', () => {

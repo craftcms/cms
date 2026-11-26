@@ -331,6 +331,29 @@ it('waits for every view state before rendering page loads for them', function (
         );
 });
 
+it('keeps rendering page loads for the view state for as long as the session is active', function () {
+    EntryModel::factory()->count(2)->create();
+    $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
+    $lifetime = (int) config('session.lifetime');
+
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
+        'all' => true,
+    ])->assertNoContent();
+
+    $this->travel($lifetime - 1)->minutes();
+    get("/{$this->cpTrigger}/content/entries")->assertOk();
+    $this->travel($lifetime - 1)->minutes();
+
+    get("/{$this->cpTrigger}/content/entries")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('craft.currentUser.elementIndexViewStatesSynced', true)
+            ->where('viewState.mode', 'cards')
+            ->has('data', 2)
+        );
+});
+
 it('includes the active source exporters in the page payload', function () {
     get("/{$this->cpTrigger}/content/entries")
         ->assertOk()

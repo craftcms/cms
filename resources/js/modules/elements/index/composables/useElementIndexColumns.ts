@@ -220,7 +220,11 @@ export function useElementIndexColumns(
       columnsByKey.value.has(key)
     );
     const rendered = props.viewState?.tableColumns ?? defaultVisible.value;
-    const matches = JSON.stringify(persisted) === JSON.stringify(rendered);
+    // Rows have the same data whatever the columns' order, and reordering
+    // doesn't touch the URL, so only which columns show is compared.
+    const matches =
+      persisted?.length === rendered.length &&
+      rendered.every((key) => persisted.includes(key));
 
     // Columns the link names win, and become the source's, so the columns
     // shown are the ones the rows have data for.
