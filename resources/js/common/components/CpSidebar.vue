@@ -10,6 +10,9 @@
   import {usePage} from '@inertiajs/vue3';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
   import {usePageClickOutside} from '@/common/composables/usePageClickOutside';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
+  import {useShortcut} from '@/common/shortcuts';
+  import {topStackedPanel} from '@/common/slideouts/panel-stack';
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
@@ -84,6 +87,26 @@
     )?.updateComplete;
     collapseItem.value?.focus();
   }
+
+  const {announce} = useAnnouncer();
+
+  // Pressed from wherever focus is, such as a field, so focus stays there and
+  // the change is announced instead. Left alone while a slideout is open.
+  useShortcut(
+    'Mod+[Backslash]',
+    () => {
+      toggleSidebar();
+      announce(
+        sidebar.visibility === 'visible'
+          ? t('Global navigation expanded')
+          : t('Global navigation collapsed')
+      );
+    },
+    {
+      description: () => t('Collapse or expand the global navigation'),
+      isAvailable: () => !topStackedPanel(),
+    }
+  );
 </script>
 
 <template>

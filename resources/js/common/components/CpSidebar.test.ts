@@ -1,5 +1,7 @@
+import {detectPlatform} from '@tanstack/hotkeys';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {computed, createApp, nextTick, reactive, ref, type App} from 'vue';
+import {announcement} from '@/common/announcer';
 
 const state = vi.hoisted(() => ({
   page: null as any,
@@ -33,6 +35,13 @@ vi.mock('@/common/composables/useGlobalSidebar', () => ({
   }),
 }));
 
+const stack = vi.hoisted(() => ({top: null as unknown}));
+
+vi.mock('@/common/slideouts/panel-stack', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  topStackedPanel: () => stack.top,
+}));
+
 // Below `lg` the sidebar renders its header, with the close toggle the floating
 // focus test expects to land on.
 vi.mock('@/common/composables/useCpBreakpoints', () => ({
@@ -46,6 +55,8 @@ afterEach(() => {
   app?.unmount();
   app = null;
   extraElements.splice(0).forEach((el) => el.remove());
+  stack.top = null;
+  announcement.value = null;
 });
 
 function appendElement<T extends HTMLElement>(el: T): T {
@@ -183,4 +194,61 @@ it('stays open on a click elsewhere while docked', async () => {
   button.click();
 
   expect(state.sidebar.visibility).toBe('visible');
+});
+
+describe('Mod+Backslash', () => {
+  const mod = detectPlatform() === 'mac' ? 'metaKey' : 'ctrlKey';
+
+  function press(init: KeyboardEventInit = {}): void {
+    (document.activeElement ?? document.body).dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: '\\',
+        code: 'Backslash',
+        [mod]: true,
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        ...init,
+      })
+    );
+  }
+
+  it('collapses and expands the docked sidebar, leaving focus where it was', async () => {
+    await mountSidebar('docked', 'visible');
+    const field = appendElement(document.createElement('input'));
+    field.focus();
+
+    press();
+    await nextTick();
+
+    expect(state.sidebar.visibility).toBe('hidden');
+    expect(announcement.value).toBe('Global navigation collapsed');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(document.activeElement).toBe(field);
+
+    press();
+    await nextTick();
+
+    expect(state.sidebar.visibility).toBe('visible');
+    expect(announcement.value).toBe('Global navigation expanded');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(document.activeElement).toBe(field);
+  });
+
+  it('leaves Mod+Shift+Backslash to the details sidebar', async () => {
+    await mountSidebar('docked', 'visible');
+
+    press({shiftKey: true, key: '|'});
+
+    expect(state.sidebar.visibility).toBe('visible');
+  });
+
+  it('is left alone while a slideout is open', async () => {
+    await mountSidebar('docked', 'visible');
+    stack.top = {};
+
+    press();
+
+    expect(state.sidebar.visibility).toBe('visible');
+  });
 });
