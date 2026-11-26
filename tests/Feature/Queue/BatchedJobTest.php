@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestBatchedJob;
+use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestCsvBatchedJob;
 use Illuminate\Queue\Jobs\DatabaseJob;
 use Illuminate\Queue\Jobs\DatabaseJobRecord;
 use Illuminate\Queue\QueueManager;
@@ -250,4 +251,31 @@ it('does not process any items when already cancelled', function () {
 
     // Should not have processed any items
     expect($job->processedItems)->toBe([]);
+});
+
+it('processes a CSV file across queued batches', function () {
+    $path = tempnam(sys_get_temp_dir(), 'csv');
+    file_put_contents($path, "name\nAlpha\nBravo\nCharlie\nDelta\nEcho\n");
+
+    Queue::fake()->serializeAndRestore();
+
+    $job = new TestCsvBatchedJob($path);
+    $job->batchSize = 2;
+    $jobs = [$job];
+
+    for ($i = 0; isset($jobs[$i]); $i++) {
+        $jobs[$i]->handle();
+        $jobs = [$job, ...Queue::pushed(TestCsvBatchedJob::class)->all()];
+    }
+
+    unlink($path);
+
+    expect($jobs)->toHaveCount(3)
+        ->and(end($jobs)->processedItems)->toBe([
+            ['name' => 'Alpha'],
+            ['name' => 'Bravo'],
+            ['name' => 'Charlie'],
+            ['name' => 'Delta'],
+            ['name' => 'Echo'],
+        ]);
 });
