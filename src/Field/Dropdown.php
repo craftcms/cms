@@ -67,24 +67,32 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
     public function uiControl(FieldContext $context): Control
     {
         $hasBlankOption = collect($this->options)->contains(fn (array $option): bool => ($option['value'] ?? null) === '');
+        $value = $this->encodeValue($context->value);
+
+        // Without a blank option, an empty value is the control's own empty state, not an option's __blank__ value
+        if ($value === '__blank__' && ! $hasBlankOption) {
+            $value = null;
+        }
 
         // A native select can't show icons or colors
         if (collect($this->options)->contains(fn (array $option): bool => ($option['icon'] ?? '') !== '' || ($option['color'] ?? '') !== '')) {
-            $value = $this->encodeValue($context->value);
-
             return Combobox::make($context->path)
                 ->requireOptionMatch()
                 ->showAllOnEmpty()
                 ->clearable(! $hasBlankOption)
                 ->options($this->comboboxOptions($context))
-                ->value($value === '__blank__' && ! $hasBlankOption ? null : $value);
+                ->value($value);
         }
 
         $control = parent::uiControl($context);
 
-        // A blank option is encoded as __blank__, so Choice can't tell it supplies its own empty state
-        if ($control instanceof Choice && $hasBlankOption) {
-            $control->withoutPlaceholder();
+        if ($control instanceof Choice) {
+            $control->value($value);
+
+            // A blank option is encoded as __blank__, so Choice can't tell it supplies its own empty state
+            if ($hasBlankOption) {
+                $control->withoutPlaceholder();
+            }
         }
 
         return $control;
