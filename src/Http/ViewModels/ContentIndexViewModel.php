@@ -189,12 +189,10 @@ abstract class ContentIndexViewModel extends ViewModel
         }
 
         $structureId = $this->source()['structureId'] ?? null;
-        $modes = array_values(array_filter(array_map(
-            fn (array $viewMode): ?string => empty($viewMode['structuresOnly']) || $structureId
-                ? ($viewMode['mode'] ?? null)
-                : null,
+        $modes = array_column(array_filter(
             $this->viewModes(),
-        )));
+            fn (array $viewMode): bool => empty($viewMode['structuresOnly']) || $structureId,
+        ), 'mode');
         $mode = collect([$sourceState['mode'] ?? null, $this->mode(), $modes[0] ?? null])
             ->first(fn (mixed $mode): bool => in_array($mode, $modes, true))
             ?? ElementIndexViewMode::Table->value;
@@ -211,7 +209,8 @@ abstract class ContentIndexViewModel extends ViewModel
             $query['thumbSize'] = $thumbSize;
         }
 
-        $columns = array_values(array_filter((array) ($sourceState['visible'] ?? []), is_string(...)));
+        // Unknown and malformed columns are dropped when the rows are rendered.
+        $columns = (array) ($sourceState['visible'] ?? []);
 
         if ($columns !== []) {
             $query['columns'] = $columns;

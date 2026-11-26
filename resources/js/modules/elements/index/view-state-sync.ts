@@ -17,8 +17,8 @@ const VIEW_STATE_KEY = /^elementindex\.[\w\\]+\.[\w-]+$/;
 export function pushElementIndexViewStates(
   states: Record<string, ViewState>,
   all = false
-): Promise<unknown> {
-  return actionClient
+): void {
+  actionClient
     .post(ElementIndexViewStateController.url(), {states, all})
     .catch(() => {
       // The index requests its rows itself while the server doesn't know.
@@ -30,13 +30,10 @@ function storedViewStates(): Record<string, ViewState> {
   const prefix = prefixedKey('');
   const states: Record<string, ViewState> = {};
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const storageKey = localStorage.key(i);
-    const key = storageKey?.startsWith(prefix)
-      ? storageKey.slice(prefix.length)
-      : null;
+  for (const storageKey of Object.keys(localStorage)) {
+    const key = storageKey.slice(prefix.length);
 
-    if (!storageKey || !key || !VIEW_STATE_KEY.test(key)) continue;
+    if (!storageKey.startsWith(prefix) || !VIEW_STATE_KEY.test(key)) continue;
 
     try {
       const state = JSON.parse(localStorage.getItem(storageKey) ?? '');
@@ -75,6 +72,6 @@ export function installElementIndexViewStateSync(): void {
     if (pushed) return;
 
     pushed = true;
-    void pushElementIndexViewStates(storedViewStates(), true);
+    pushElementIndexViewStates(storedViewStates(), true);
   });
 }

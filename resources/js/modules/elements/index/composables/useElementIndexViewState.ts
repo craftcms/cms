@@ -41,7 +41,7 @@ export function useElementIndexViewState(
 
   watchDebounced(
     viewState,
-    (state) => void pushElementIndexViewStates({[storageKey]: state}),
+    (state) => pushElementIndexViewStates({[storageKey]: state}),
     {deep: true, debounce: 100}
   );
 

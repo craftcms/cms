@@ -45,11 +45,8 @@ readonly class ElementTypeIndexController
 
         abort_unless(is_string($elementType) && is_subclass_of($elementType, ElementInterface::class), 404);
 
-        $viewModel = $this->withStoredViewState(
-            $request,
-            new ElementTypeIndexViewModel($elementType, $request),
-            fn (): ElementTypeIndexViewModel => new ElementTypeIndexViewModel($elementType, $request),
-        );
+        $makeViewModel = fn (): ElementTypeIndexViewModel => new ElementTypeIndexViewModel($elementType, $request);
+        $viewModel = $this->withStoredViewState($request, $makeViewModel(), $makeViewModel);
 
         return Inertia::render('elements/Index', [$viewModel])
             ->with([
