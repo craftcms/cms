@@ -369,7 +369,8 @@ class Gql
                     ->setErrorsHandler($this->handleQueryErrors(...))
                     ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : DebugFlag::NONE);
 
-                // So the response gets the tag on a miss too, as it does when a hit applies the stored tags.
+                // So a site response that runs this query gets the tag on a miss too, as it does when a hit applies the
+                // stored tags.
                 if ($cacheKey) {
                     $this->elementCaches->collectCacheTags([self::CACHE_TAG]);
                 }

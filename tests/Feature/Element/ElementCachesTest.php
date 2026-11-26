@@ -143,6 +143,16 @@ it('invalidates tags, skipping empty ones', function () {
     Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === ['nav', '0']);
 });
 
+it('keeps tags it failed to invalidate right away pending, unless there are too many', function () {
+    failCacheStore();
+    $many = array_map(fn (int $i) => "many-$i", range(1, 1001));
+
+    expect(fn () => $this->elementCaches->invalidateTagsOrFail(['nav']))->toThrow(RuntimeException::class)
+        ->and(fn () => $this->elementCaches->invalidateTagsOrFail($many))->toThrow(RuntimeException::class)
+        ->and($this->elementCaches->hasPendingInvalidations(['nav']))->toBeTrue()
+        ->and($this->elementCaches->hasPendingInvalidations(['many-1']))->toBeFalse();
+});
+
 it('collects cache info through the extracted service', function () {
     $this->elementCaches->startCollectingCacheInfo();
 
@@ -162,6 +172,19 @@ it('collects cache info through the extracted service', function () {
         'element::'.TestElementCachesElement::class,
         'element::123',
     ]);
+});
+
+it('collects an element into a nested collection when the outer one already has it', function () {
+    $element = elementCachesTestElement(123);
+
+    $this->elementCaches->startCollectingCacheInfo();
+    $this->elementCaches->collectCacheInfoForElement($element);
+    $this->elementCaches->startCollectingCacheInfo();
+    $this->elementCaches->collectCacheInfoForElement($element);
+    [$inner] = $this->elementCaches->stopCollectingCacheInfo();
+    $this->elementCaches->stopCollectingCacheInfo();
+
+    expect($inner?->tags)->toContain('element::123');
 });
 
 it('returns null cache info when nothing was collected', function () {

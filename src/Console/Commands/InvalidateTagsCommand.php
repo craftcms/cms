@@ -57,24 +57,19 @@ class InvalidateTagsCommand extends Command
 
         $option = collect(ClearCaches::tagOptions())->firstWhere('tag', $tag);
 
-        $invalidated = false;
+        try {
+            // The task shows FAIL and rethrows if the closure throws.
+            $this->components->task(
+                t('Invalidating:').' '.$option['label'],
+                fn () => app(ElementCaches::class)->invalidateTagsOrFail([$option['tag']]),
+            );
+        } catch (Throwable $e) {
+            report($e);
 
-        $this->components->task(
-            t('Invalidating:').' '.$option['label'],
-            function () use ($option, &$invalidated): bool {
-                try {
-                    app(ElementCaches::class)->invalidateTagsOrFail([$option['tag']]);
-                } catch (Throwable $e) {
-                    report($e);
+            return self::FAILURE;
+        }
 
-                    return false;
-                }
-
-                return $invalidated = true;
-            },
-        );
-
-        return $invalidated ? self::SUCCESS : self::FAILURE;
+        return self::SUCCESS;
     }
 
     public function list(): int
@@ -99,11 +94,15 @@ class InvalidateTagsCommand extends Command
                 ->all(),
         );
 
+        $result = self::SUCCESS;
+
         foreach ($tags as $tag) {
-            $this->call("craft:invalidate-tags:$tag");
+            if ($this->call("craft:invalidate-tags:$tag") !== self::SUCCESS) {
+                $result = self::FAILURE;
+            }
         }
 
-        return self::SUCCESS;
+        return $result;
     }
 
     /**

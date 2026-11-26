@@ -248,7 +248,8 @@ class DependencyCollector implements CacheCollectorInterface
 
     public function collectElement(ElementInterface $element): void
     {
-        if (! $this->isCollecting()) {
+        // Twig collects an element on every attribute read, so skip elements this collection already has.
+        if (! $this->isCollecting() || isset($this->tags["element::{$element->id}"])) {
             return;
         }
 

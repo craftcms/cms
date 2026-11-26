@@ -90,11 +90,6 @@ test('reports a failure when the cache store fails to invalidate tags', function
     postJson(action([ClearCachesController::class, 'invalidateTags']), [
         'tags' => ['test-tag-1'],
     ])->assertBadRequest();
-
-    // Many tags too, which aren't kept for a retry
-    postJson(action([ClearCachesController::class, 'invalidateTags']), [
-        'tags' => array_map(fn (int $i) => "tag-$i", range(1, 1001)),
-    ])->assertBadRequest();
 });
 
 test('reports the failure as form errors to the utility', function () {

@@ -41,4 +41,7 @@ it('fails when the cache store fails', function () {
 
     artisan('craft:invalidate-tags:template')->assertFailed();
     artisan('craft:invalidate-tags:all')->assertFailed();
+    artisan('craft:invalidate-tags')
+        ->expectsQuestion('Which caches do you want to clear?', ['template'])
+        ->assertFailed();
 });

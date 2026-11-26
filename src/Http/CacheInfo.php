@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http;
 
-use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Http\Middleware\CollectCacheInfo;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
+use CraftCms\Cms\View\Data\TemplateCacheContext;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Illuminate\Container\Attributes\Scoped;
@@ -26,6 +26,9 @@ use Illuminate\Container\Attributes\Scoped;
  * stored with it and added again on a cache hit, and `ElementCaches::invalidateTags()` clears the blocks tagged with
  * them. Other responses have no cache info.
  *
+ * Action requests aren't collected, including the GraphQL API at `actions/graphql/api`. GraphQL queries run inside a
+ * site request, such as from a template, add their tags to that request's response.
+ *
  * Craft doesn't send the tags anywhere itself. Cache integrations, such as `craftcms/http-cache` or a plugin, read
  * them with {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`,
  * at {@see getExpiryDate()}. Read them before the response is sent: collection stops when {@see CollectCacheInfo}
@@ -39,7 +42,6 @@ class CacheInfo
     private bool $collecting = false;
 
     public function __construct(
-        private readonly ElementCaches $elementCaches,
         private readonly DependencyCollector $dependencies,
     ) {}
 
@@ -91,7 +93,7 @@ class CacheInfo
             return;
         }
 
-        $this->elementCaches->startCollectingCacheInfo();
+        $this->dependencies->begin(new TemplateCacheContext(cacheKey: '', global: false, resources: false));
         $this->collecting = true;
     }
 

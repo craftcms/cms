@@ -140,12 +140,7 @@ class ElementCaches
         try {
             TagDependency::invalidate($tags);
         } catch (Throwable $e) {
-            if (count($tags) <= self::MAX_RETRIED_TAGS) {
-                foreach ($tags as $tag) {
-                    $this->pendingTags[$tag] = true;
-                }
-            }
-
+            $this->retryLater($tags);
             report($e);
         }
     }
@@ -209,13 +204,13 @@ class ElementCaches
      */
     public function invalidateTags(array $tags): array
     {
-        $tags = array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== '')));
+        $tags = self::normalizeTags($tags);
 
         if ($tags === []) {
             return [];
         }
 
-        $tags = $this->queueInvalidations($tags);
+        $this->queueInvalidations($tags);
 
         event(new ElementCachesInvalidated($tags));
 
@@ -227,7 +222,7 @@ class ElementCaches
      * inside a database transaction or a {@see deferInvalidations()} call, and throws if the cache store fails. For
      * places where someone asked for the caches to be cleared and should hear if they weren't.
      *
-     * Tags the cache store failed to clear stay pending for the next flush.
+     * If the cache store fails, the tags stay pending for the next flush, unless there were more than 1,000.
      *
      * @param  list<string>  $tags
      *
@@ -237,7 +232,7 @@ class ElementCaches
      */
     public function invalidateTagsOrFail(array $tags): void
     {
-        $tags = array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== '')));
+        $tags = self::normalizeTags($tags);
 
         if ($tags === []) {
             return;
@@ -246,9 +241,7 @@ class ElementCaches
         try {
             TagDependency::invalidate($tags);
         } catch (Throwable $e) {
-            foreach ($tags as $tag) {
-                $this->pendingTags[$tag] = true;
-            }
+            $this->retryLater($tags);
 
             throw $e;
         } finally {
@@ -279,7 +272,8 @@ class ElementCaches
      */
     public function invalidateForElementAfterCommit(ElementInterface $element): void
     {
-        $tags = $this->queueInvalidations($this->tagsForElement($element));
+        $tags = $this->tagsForElement($element);
+        $this->queueInvalidations($tags);
 
         DB::afterCommit(function () use ($tags, $element): void {
             // Flush before the event, because a listener that throws makes Laravel skip the flush queued after this
@@ -297,7 +291,8 @@ class ElementCaches
      */
     public function invalidateForElement(ElementInterface $element): array
     {
-        $tags = $this->queueInvalidations($this->tagsForElement($element));
+        $tags = $this->tagsForElement($element);
+        $this->queueInvalidations($tags);
 
         event(new ElementCachesInvalidated($tags, $element));
 
@@ -306,9 +301,32 @@ class ElementCaches
 
     /**
      * @param  list<string>  $tags
-     * @return list<string>
      */
-    private function queueInvalidations(array $tags): array
+    private function queueInvalidations(array $tags): void
+    {
+        $this->markPending($tags);
+
+        if ($this->deferDepth === 0) {
+            $this->flushPendingInvalidations();
+        }
+    }
+
+    /**
+     * Keeps tags the cache store failed to clear pending for the next flush, unless there are too many to retry.
+     *
+     * @param  list<string>  $tags
+     */
+    private function retryLater(array $tags): void
+    {
+        if (count($tags) <= self::MAX_RETRIED_TAGS) {
+            $this->markPending($tags);
+        }
+    }
+
+    /**
+     * @param  list<string>  $tags
+     */
+    private function markPending(array $tags): void
     {
         foreach ($tags as $tag) {
             $this->pendingTags[$tag] = true;
@@ -326,12 +344,15 @@ class ElementCaches
             });
             self::$registeredShutdownFlush = true;
         }
+    }
 
-        if ($this->deferDepth === 0) {
-            $this->flushPendingInvalidations();
-        }
-
-        return $tags;
+    /**
+     * @param  list<string>  $tags
+     * @return list<string>
+     */
+    private static function normalizeTags(array $tags): array
+    {
+        return array_values(array_unique(array_filter($tags, fn (string $tag) => $tag !== '')));
     }
 
     /** @return list<string> */
