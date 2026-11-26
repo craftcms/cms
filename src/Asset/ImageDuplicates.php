@@ -52,7 +52,7 @@ class ImageDuplicates
     }
 
     /**
-     * Returns the images that look like copies of an asset, closest first.
+     * Returns the images in an asset’s volume that look like copies of it, closest first.
      *
      * @return list<Asset>
      */
@@ -60,16 +60,17 @@ class ImageDuplicates
     {
         $hash = $asset->analysis?->hash;
 
-        return $hash !== null ? $this->findByHash($hash, $limit, $asset->id) : [];
+        return $hash !== null ? $this->findByHash($hash, $limit, $asset->id, $asset->volumeId) : [];
     }
 
     /**
      * Returns the images that look like copies of the image a hash was found for, closest first.
      *
      * @param  int|null  $excludeId  An asset to leave out, such as the one the hash is for
+     * @param  int|null  $volumeId  The volume to look in, or `null` for all of them
      * @return list<Asset>
      */
-    public function findByHash(string $hash, int $limit = 5, ?int $excludeId = null): array
+    public function findByHash(string $hash, int $limit = 5, ?int $excludeId = null, ?int $volumeId = null): array
     {
         if (! ImageHash::isHash($hash)) {
             return [];
@@ -83,6 +84,7 @@ class ImageDuplicates
                 }
             })
             ->when($excludeId !== null, fn ($query) => $query->where('imagehashes.assetId', '!=', $excludeId))
+            ->when($volumeId !== null, fn ($query) => $query->where('assets.volumeId', $volumeId))
             // Keyed by asset ID, so assets that share several bands are only checked once
             ->pluck('assets.analysis', 'imagehashes.assetId');
 
