@@ -10,6 +10,7 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -47,7 +48,10 @@ readonly class ClearCachesController
             'tags.*' => ['string'],
         ])['tags'];
 
-        if (! $elementCaches->invalidateTagsNow(array_values($tags))) {
+        try {
+            $elementCaches->invalidateTagsOrFail(array_values($tags));
+        } catch (Throwable $e) {
+            report($e);
             $message = t('Couldn’t invalidate the caches.');
 
             // As validation errors, so the utility's form shows the failure instead of its success message.

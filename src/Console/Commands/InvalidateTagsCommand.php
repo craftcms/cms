@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Console\Command;
+use Throwable;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
@@ -61,7 +62,15 @@ class InvalidateTagsCommand extends Command
         $this->components->task(
             t('Invalidating:').' '.$option['label'],
             function () use ($option, &$invalidated): bool {
-                return $invalidated = app(ElementCaches::class)->invalidateTagsNow([$option['tag']]);
+                try {
+                    app(ElementCaches::class)->invalidateTagsOrFail([$option['tag']]);
+                } catch (Throwable $e) {
+                    report($e);
+
+                    return false;
+                }
+
+                return $invalidated = true;
             },
         );
 
