@@ -129,7 +129,10 @@ class AssetTransformers extends MultipleInstanceManager
             return is_array($config) ? $config : null;
         }
 
-        return Cms::config()->assetTransformers->transformerConfig($name);
+        $config = Cms::config()->assetTransformers->transformerConfig($name);
+
+        // Only a disk’s deprecated asset_transformer key can set has_urls. Otherwise the volume decides.
+        return $config !== null ? Arr::except($config, 'has_urls') : null;
     }
 
     /**
@@ -530,13 +533,16 @@ class AssetTransformers extends MultipleInstanceManager
      * Returns 6.0.0-beta.1 and beta.2’s deprecated `asset_transformer` key on a disk, following scoped disks to the disk they
      * wrap, or `null` if it isn’t set. A transformer name it names is returned as is. A driver name, or an array with
      * a `driver` key and inline settings, becomes a transformer config, with the `craft` driver’s beta setting
-     * names mapped to the current ones. Its `has_urls` keeps beta’s default: `false` when `output_disk` is set.
+     * names mapped to the current ones. Its `has_urls` keeps beta’s default: `false` when `output_disk` names a disk
+     * other than the volume’s.
      *
      * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
+     * @param  string|null  $volumeDisk  The volume’s own disk, when `$disk` is a disk it’s scoped to.
      * @return string|array<string, mixed>|null
      */
-    private function legacyDiskConfig(string|array $disk, int $depth = 0): string|array|null
+    private function legacyDiskConfig(string|array $disk, int $depth = 0, ?string $volumeDisk = null): string|array|null
     {
+        $volumeDisk ??= is_string($disk) ? $disk : null;
         $config = is_string($disk) ? ($this->config->get('filesystems.disks')[$disk] ?? null) : $disk;
 
         if (! is_array($config) || $depth > self::MAX_SCOPED_DEPTH) {
@@ -547,7 +553,7 @@ class AssetTransformers extends MultipleInstanceManager
             $wrapped = $config['disk'] ?? null;
 
             return ($config['driver'] ?? null) === 'scoped' && (is_string($wrapped) || is_array($wrapped))
-                ? $this->legacyDiskConfig($wrapped, $depth + 1)
+                ? $this->legacyDiskConfig($wrapped, $depth + 1, $volumeDisk)
                 : null;
         }
 
@@ -569,7 +575,7 @@ class AssetTransformers extends MultipleInstanceManager
             $value = [
                 'driver' => 'craft',
                 'outputDisk' => $outputDisk,
-                'has_urls' => is_bool($hasUrls) ? $hasUrls : ($outputDisk !== null && $outputDisk !== '' ? false : null),
+                'has_urls' => is_bool($hasUrls) ? $hasUrls : (in_array($outputDisk, [null, '', $volumeDisk], true) ? null : false),
                 'generateTransformsBeforePageLoad' => filter_var($value['generate_transforms_before_page_load'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
         }

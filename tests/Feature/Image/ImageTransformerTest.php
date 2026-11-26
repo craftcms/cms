@@ -371,6 +371,8 @@ it('follows has_urls in a disk’s deprecated asset_transformer key', function (
     'output disk, private, has_urls true' => [false, 'legacy-url-output', true, true],
     'own disk, public, has_urls false' => [true, null, false, false],
     'own disk, public, has_urls unset' => [true, null, null, true],
+    'own disk named as output disk, public, has_urls unset' => [true, 'legacy-url-source', null, true],
+    'own disk named as output disk, private, has_urls unset' => [false, 'legacy-url-source', null, false],
 ]);
 
 it('stores temporary uploads’ transforms on their own disk, not the output disk', function () {

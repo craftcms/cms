@@ -101,12 +101,14 @@ it('reports and skips a transformer that can’t be built when listing definitio
 });
 
 it('builds the craft driver from its settings', function () {
-    configureCraftTransformer(['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true]);
+    // has_urls only applies through a disk's deprecated asset_transformer key
+    configureCraftTransformer(['outputDisk' => 'transforms', 'generateTransformsBeforePageLoad' => true, 'has_urls' => false]);
     $driver = app(AssetTransformers::class)->transformer('craft');
 
     expect($driver)->toBeInstanceOf(CraftAssetTransformDriver::class)
         ->and($driver->outputDisk)->toBe('transforms')
-        ->and($driver->generateBeforePageLoad)->toBeTrue();
+        ->and($driver->generateBeforePageLoad)->toBeTrue()
+        ->and($driver->hasUrls)->toBeNull();
 });
 
 it('reserves the craft driver name', function () {
@@ -316,12 +318,14 @@ it('still reads a disk’s deprecated asset_transformer key, with a deprecation 
         ->and($transformers->forVolume(Asset::factory()->createElement(['volumeId' => $chosen->id])->getVolume())->name)->toBe('craft')
         // beta's driver-name APIs still work
         ->and($scopedTransformer->driver)->toBe('imgix')
+        ->and($scopedTransformer->settings)->toBe([])
         ->and($transformers->driver('imgix'))->toBe($imgix)
         ->and($transformers->driver())->toBeInstanceOf(CraftAssetTransformDriver::class)
         ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain(
             'filesystems.disks.legacy-child.asset_transformer',
             'filesystems.disks.legacy-craft.asset_transformer',
             AssetTransformer::class.'::$driver',
+            AssetTransformer::class.'::$settings',
             AssetTransformers::class.'::driver',
         );
 });
