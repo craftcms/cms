@@ -260,7 +260,7 @@
             ? {'--slideout-width': props.instance.width}
             : {}),
           ...resizer.style.value,
-          [positionProp.value]: offset.value,
+          '--slideout-offset': offset.value,
         }
   );
 
@@ -304,6 +304,8 @@
     :class="{
       'slideout-panel--resizing': resizer.isResizing.value,
       'slideout-panel--in-preview': previewEditor,
+      'slideout-panel--start':
+        !previewEditor && positionProp === 'inset-inline-end',
     }"
     tabindex="-1"
     :aria-labelledby="ariaLabelledBy"
@@ -353,9 +355,20 @@
       calc(100vw - 80px)
     );
 
+    --slideout-rest: calc(100vw - var(--slideout-panel-width));
+    --slideout-direction: 1;
+
     position: fixed;
     inset-block: 0;
-    /* The inline offset is set per-panel from `positionProp`/`offset`. */
+    /* Pinned where a panel comes to rest, and moved to its stack offset
+       (`--slideout-offset`) with `translate`, so the slide runs on the
+       compositor rather than waiting on layout while the screen renders. */
+    inset-inline-start: var(--slideout-rest);
+    translate: calc(
+        (var(--slideout-offset, var(--slideout-rest)) - var(--slideout-rest)) *
+          var(--slideout-direction)
+      )
+      0;
     width: var(--slideout-panel-width);
     /* Lets the shell lay itself out against the panel's width rather than the
        viewport's — the panel is far narrower, and `--slideout-width` is
@@ -372,14 +385,25 @@
     border-start-start-radius: var(--c-radius-lg, 0.5rem);
     border-end-start-radius: var(--c-radius-lg, 0.5rem);
 
-    /* Both sides, because `positionProp` picks one at runtime. Without this
-       the outer panel would jump aside rather than visibly slide out from
-       behind the new one. */
+    /* Without this the outer panel would jump aside rather than visibly slide
+       out from behind the new one. */
     @media screen and (prefers-reduced-motion: no-preference) {
-      transition:
-        inset-inline-start linear 250ms,
-        inset-inline-end linear 250ms;
+      transition: translate var(--ease-out) 300ms;
     }
+  }
+
+  .slideout-panel:dir(rtl) {
+    --slideout-direction: -1;
+  }
+
+  /* Anchored to the start edge when `Craft.slideoutPosition` is `start`. */
+  .slideout-panel--start {
+    --slideout-direction: -1;
+    inset-inline: auto var(--slideout-rest);
+  }
+
+  .slideout-panel--start:dir(rtl) {
+    --slideout-direction: 1;
   }
 
   /* Over Live Preview's editor pane, covering it exactly, as a nested view
@@ -390,6 +414,7 @@
     border-inline-start: 1px solid var(--c-color-border-quiet);
     border-radius: 0;
     box-shadow: none;
+    translate: none;
 
     @media screen and (prefers-reduced-motion: no-preference) {
       transition: inset-inline-start linear 250ms;
@@ -400,9 +425,10 @@
     .slideout-panel:not(.slideout-panel--in-preview) {
       /* Full-width sheet on small screens, matching the legacy slideout —
          there isn't room to peek, so stacked panels sit on top of each other.
-         `!important` because the inline offset is set per-panel. */
+         `!important` over the per-panel width and the anchored side's inset. */
       inset-inline: 0 !important;
       width: auto !important;
+      translate: none;
       inset-block-start: 15vh;
       border-start-end-radius: var(--c-radius-lg, 0.5rem);
       border-end-start-radius: 0;
