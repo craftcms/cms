@@ -3,8 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Field\Dropdown;
+use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Ui\Nodes\Field;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
+use Illuminate\Support\Facades\Event;
+use Symfony\Component\DomCrawler\Crawler;
 
 test('an option saved without a value is treated as a blank option', function () {
     $field = new Dropdown([
@@ -56,3 +64,33 @@ test('a dropdown without a blank option keeps the leading blank', function () {
 
     expect($field->uiControl(new FieldContext('value'))->props())->not->toHaveKey('placeholder');
 });
+
+test('an empty required dropdown selects its empty state, not its first option', function (array $options, string $selectedValue, bool $listenerAddsBlankOption = false) {
+    if ($listenerAddsBlankOption) {
+        Event::listen(function (InputOptionsResolving $event) {
+            $event->options[] = ['label' => 'None', 'value' => ''];
+        });
+    }
+
+    $field = new Dropdown(['options' => $options]);
+    $control = Field::make('Position', $field->uiControl(new FieldContext('position', $field->normalizeValue(null, null))))
+        ->required();
+    $payload = app(UiResolver::class)->resolve(Ui::make([$control]), new UiContext(namespace: 'fields'));
+    $selected = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('select option[selected]');
+
+    expect($selected)->toHaveCount(1)
+        ->and($selected->attr('value'))->toBe($selectedValue);
+})->with([
+    'without a blank option' => [[
+        ['label' => 'Left', 'value' => 'left', 'default' => ''],
+        ['label' => 'Center', 'value' => 'center', 'default' => ''],
+    ], ''],
+    'with a blank option' => [[
+        ['label' => 'Left', 'value' => 'left', 'default' => ''],
+        ['label' => 'None', 'value' => '', 'default' => ''],
+    ], '__blank__'],
+    'with a blank option added by a listener' => [[
+        ['label' => 'Left', 'value' => 'left', 'default' => ''],
+        ['label' => 'Center', 'value' => 'center', 'default' => ''],
+    ], '__blank__', true],
+]);
