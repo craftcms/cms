@@ -131,6 +131,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where the `@formatDateTime` GraphQL directive ignored its `timezone` argument for PHP date formats, including the default format. ([#21133](https://github.com/craftcms/cms/pull/21133))
 - Fixed a bug where the custom field IDE helper was only regenerated after the first content model change in a request or command, so it missed the rest, such as other entry types added by the same project config apply. ([#21137](https://github.com/craftcms/cms/pull/21137))
 - Fixed a bug where control panel links lost their `#fragment` when the URL had more than one query parameter. ([#21093](https://github.com/craftcms/cms/issues/21093), [#21140](https://github.com/craftcms/cms/pull/21140))
+- Fixed a bug where element actions and exports on the Assets index ignored the subfolder being viewed and “Search in subfolders”. ([#21146](https://github.com/craftcms/cms/issues/21146))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
