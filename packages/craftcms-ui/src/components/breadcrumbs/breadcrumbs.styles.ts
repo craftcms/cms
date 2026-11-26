@@ -7,6 +7,10 @@ export default css`
     display: block;
     min-width: 0;
     gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    /* Every crumb's width, so a content-sized container can regrow it. */
+    inline-size: var(--_natural-inline-size, auto);
+    max-inline-size: 100%;
   }
 
   /* Crumbs too, collapsed here or hidden by their author: important, so a

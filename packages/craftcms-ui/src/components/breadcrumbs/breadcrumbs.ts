@@ -10,6 +10,8 @@ import type {
 import type CraftBreadcrumbItem from '../breadcrumb-item/breadcrumb-item.js';
 import styles from './breadcrumbs.styles.js';
 import {t} from '../../utilities/translate';
+import {focusableWithin} from '../../utilities/focus-trap';
+import {isFocusable} from '../../utilities/focus-return';
 
 import '../action-menu/action-menu.js';
 import '../breadcrumb-item/breadcrumb-item.js';
@@ -21,6 +23,9 @@ import '../icon/icon.js';
  * leave a trail a hair wider than a container that does fit it.
  */
 const FIT_TOLERANCE = 1;
+
+/** Where focus is in the trail: a crumb, the overflow menu, or neither. */
+type FocusedPart = CraftBreadcrumbItem | 'menu' | null;
 
 /** The parts of a crumb around its label. */
 const AFFIXES = '[slot="separator"], [slot="prefix"], [slot="suffix"]';
@@ -34,6 +39,9 @@ const AFFIXES = '[slot="separator"], [slot="prefix"], [slot="suffix"]';
  * give way from the middle, into a menu that takes their place: the first and
  * last crumbs are kept for as long as there's room for them. With room for
  * only one, the last crumb stays and truncates its label.
+ *
+ * The trail is as wide as its crumbs, up to its container's width, so it can
+ * sit beside other content in a row.
  *
  * @slot - The `craft-breadcrumb-item`s making up the trail.
  * @slot separator - Drawn between crumbs. Defaults to a chevron.
@@ -246,7 +254,39 @@ export default class CraftBreadcrumbs extends LitElement {
       return;
     }
 
+    // Read before anything is hidden: hiding what has focus drops it to the
+    // page (see #keepFocus).
+    const focused = this.#focusedPart(items, overflow);
+    const wasCollapsed = [...this.#collapsed];
+
+    this.#fit(nav, overflow, items);
+    void this.#keepFocus(focused, wasCollapsed);
+  }
+
+  /**
+   * The part of the trail that has focus. Read through containment, because
+   * `:focus-within` doesn't match the menu while one of its items has focus.
+   */
+  #focusedPart(
+    items: CraftBreadcrumbItem[],
+    overflow: CraftBreadcrumbItem
+  ): FocusedPart {
+    const ownActive = this.shadowRoot?.activeElement ?? null;
+
+    if (ownActive && overflow.contains(ownActive)) {
+      return 'menu';
+    }
+
+    return items.find((item) => item.contains(document.activeElement)) ?? null;
+  }
+
+  #fit(
+    nav: HTMLElement,
+    overflow: CraftBreadcrumbItem,
+    items: CraftBreadcrumbItem[]
+  ) {
     if (items.length < 2) {
+      this.style.removeProperty('--_natural-inline-size');
       this.#apply([]);
       return;
     }
@@ -267,6 +307,14 @@ export default class CraftBreadcrumbs extends LitElement {
     const natural =
       widths.reduce((total, width) => total + width, 0) +
       gap * (items.length - 1);
+
+    // The trail asks for its full width even while collapsed (see the host
+    // styles), so a container sized by its content gives it more room as
+    // room comes back, and the resize brings the crumbs back.
+    this.style.setProperty(
+      '--_natural-inline-size',
+      `${Math.ceil(natural + this.#inlineBoxExtra())}px`
+    );
 
     if (natural <= available + FIT_TOLERANCE) {
       this.#apply([]);
@@ -297,6 +345,76 @@ export default class CraftBreadcrumbs extends LitElement {
     }
 
     this.#apply(items.map((_, index) => index).filter((i) => !kept.has(i)));
+  }
+
+  /**
+   * The host's inline padding and border, when its `inline-size` includes
+   * them, so the width asked for leaves the crumbs their full room.
+   */
+  #inlineBoxExtra(): number {
+    const style = getComputedStyle(this);
+
+    if (style.boxSizing !== 'border-box') {
+      return 0;
+    }
+
+    return [
+      style.paddingInlineStart,
+      style.paddingInlineEnd,
+      style.borderInlineStartWidth,
+      style.borderInlineEndWidth,
+    ].reduce((total, value) => total + (parseFloat(value) || 0), 0);
+  }
+
+  /**
+   * Puts focus back in the trail when measuring hid what had it, rather than
+   * leaving it on the page: a crumb that collapsed hands it to the menu's
+   * trigger, and a menu that went away hands it to the first crumb that came
+   * back out of it. Focus on anything still shown stays where it is.
+   */
+  async #keepFocus(focused: FocusedPart, wasCollapsed: CraftBreadcrumbItem[]) {
+    const overflow = this.#overflowItem;
+
+    if (!focused || !overflow) {
+      return;
+    }
+
+    if (focused !== 'menu') {
+      if (focused.hidden) {
+        overflow.querySelector<HTMLElement>('craft-button')?.focus();
+      }
+      return;
+    }
+
+    if (!overflow.hidden || wasCollapsed.length === 0) {
+      return;
+    }
+
+    // Closed first, or the popover hands focus back to its trigger as it
+    // closes, which is hidden now.
+    const menu = overflow.querySelector<CraftActionMenu>('craft-action-menu');
+    if (menu?.open) {
+      await menu.hide();
+    }
+
+    // The trail collapsed again while the menu closed.
+    if (!overflow.hidden) {
+      overflow.querySelector<HTMLElement>('craft-button')?.focus();
+      return;
+    }
+
+    // The first crumb out of the menu that can take focus: its link, or a
+    // switcher beside a crumb with no link. Failing those, the first such
+    // crumb after them, then the first in the trail.
+    const items = this.#items;
+    const followingCollapsed = items.slice(
+      items.indexOf(wasCollapsed.at(-1)!) + 1
+    );
+    const target = [...wasCollapsed, ...followingCollapsed, ...items]
+      .filter((item) => items.includes(item) && !item.hidden)
+      .flatMap((item) => focusableWithin(item).filter(isFocusable))[0];
+
+    target?.focus();
   }
 
   #apply(collapsed: number[]) {
