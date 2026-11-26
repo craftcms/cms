@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
+use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -314,15 +315,17 @@ readonly class AssetUploadHandler
 
     /**
      * Returns the images an uploaded one looks like a copy of, which the uploader can view, so they can be told
-     * before they use it.
+     * before they use it, with the details to compare them by.
      *
-     * @return list<array{id: int, title: string, url: string, chipHtml: string}>
+     * @return list<array{id: int, title: string, url: string, chipHtml: string, thumbUrl: string|null, filename: string, width: int|null, height: int|null, size: int|null, extension: string, location: string, dateCreated: string|null, uploader: string|null}>
      */
     private function duplicates(Asset $asset, ?int $destinationVolumeId): array
     {
         if ($asset->kind !== FileKind::Image->value) {
             return [];
         }
+
+        $formatter = I18N::getFormatter();
 
         return array_values(array_map(
             fn (Asset $duplicate): array => [
@@ -334,6 +337,20 @@ readonly class AssetUploadHandler
                     'hyperlink' => true,
                     'hyperlinkUrl' => (string) $duplicate->getCpEditUrl(),
                 ]),
+                'thumbUrl' => $this->assets->getThumbUrl($duplicate, 640, 640, false, ImageTransformMode::Fit),
+                'filename' => $duplicate->getFilename(),
+                'width' => $duplicate->getWidth(),
+                'height' => $duplicate->getHeight(),
+                'size' => $duplicate->size,
+                'extension' => $duplicate->getExtension(),
+                'location' => implode(' / ', [
+                    t($duplicate->getVolume()->name, category: 'site'),
+                    ...Arr::whereNotEmpty(explode('/', (string) $duplicate->folderPath)),
+                ]),
+                'dateCreated' => $duplicate->dateCreated
+                    ? $formatter->asDatetime($duplicate->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
+                    : null,
+                'uploader' => $duplicate->getUploader()?->getName(),
             ],
             array_filter(
                 $this->imageDuplicates->find($asset, volumeId: $destinationVolumeId),

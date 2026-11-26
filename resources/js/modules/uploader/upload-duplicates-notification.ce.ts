@@ -4,13 +4,9 @@ import {customElement, property} from 'lit/decorators.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
-export interface UploadDuplicate {
-  id: number;
-  title: string;
-  url: string;
-  /** The image's chip, linked to its edit page, as the server renders it. */
-  chipHtml: string;
-}
+export type UploadDuplicate = NonNullable<
+  CraftCms.Cms.Asset.Data.UploadResult['duplicates']
+>[number];
 
 /** How many images are drawn behind the closest one, at most. */
 const STACK_DEPTH = 4;

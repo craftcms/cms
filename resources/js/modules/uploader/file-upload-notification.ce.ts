@@ -97,7 +97,7 @@ export class FileUploadNotificationElement extends LitElement {
   }
 }
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
   const units = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte'];
   const exponent = Math.min(
     Math.floor(Math.log10(Math.max(bytes, 1)) / 3),

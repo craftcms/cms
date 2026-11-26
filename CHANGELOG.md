@@ -18,6 +18,7 @@
 - Slideouts now slide in, and step aside for the next one, smoothly while their content renders, easing into place. ([#21155](https://github.com/craftcms/cms/issues/21155), [#21157](https://github.com/craftcms/cms/pull/21157))
 - Element selector modals are now taller by default. ([#21067](https://github.com/craftcms/cms/pull/21067))
 - Element selector, Customize Sources, stack trace, and element deletion modals now remember the size they were resized to. ([#21045](https://github.com/craftcms/cms/discussions/21045), [#21067](https://github.com/craftcms/cms/pull/21067))
+- Upload notifications for images that look like copies of existing ones now have a “Compare” button, which shows the upload beside the existing images and can replace any one of them.
 - The Compare screen now shows two image assets’ images and file details side by side, or with a slider between them. ([#21197](https://github.com/craftcms/cms/pull/21197))
 - Navigation section headings and the items after expanded subnavs now have more space above them. ([#21102](https://github.com/craftcms/cms/pull/21102))
 - Navigation chevrons are now a step lighter than their labels. ([#21102](https://github.com/craftcms/cms/pull/21102))

@@ -21,6 +21,11 @@ vi.mock('@craftcms/ui', () => ({
   actionClient: {post: ui.post},
 }));
 
+const compareModal = vi.hoisted(() => vi.fn());
+vi.mock('./open-upload-duplicates-modal', () => ({
+  openUploadDuplicatesModal: compareModal,
+}));
+
 const notices: HTMLElement[] = [];
 function displayNotice(message: string, {details}: {details: HTMLElement}) {
   const notice = document.createElement('div');
@@ -120,6 +125,15 @@ const chip = (id: number, title: string) => ({
   title,
   url: `/admin/assets/edit/${id}`,
   chipHtml: `<craft-chip data-id="${id}"><a class="label-link" href="/admin/assets/edit/${id}"><span>${title}</span></a></craft-chip>`,
+  thumbUrl: null,
+  filename: 'photo.png',
+  width: null,
+  height: null,
+  size: null,
+  extension: 'png',
+  location: 'Images',
+  dateCreated: null,
+  uploader: null,
 });
 const duplicated = {
   assetId: 12,
@@ -127,6 +141,7 @@ const duplicated = {
 };
 
 beforeEach(() => {
+  compareModal.mockReset();
   ui.on.mockReset().mockReturnValue(vi.fn());
   ui.visit.mockReset();
   transfers.length = 0;
@@ -269,6 +284,38 @@ it('offers to keep all, and not replace, when an upload looks like a copy of sev
       button.textContent?.trim()
     )
   ).toEqual(['Cancel', 'Keep all']);
+});
+
+it('replaces the image picked in the comparison, of several an upload looks like a copy of', async () => {
+  const duplicates = [...duplicated.duplicates, chip(6, 'Harbor at night')];
+  await uploadDuplicate({...duplicated, duplicates});
+  compareModal.mockResolvedValue({choice: 'replace', assetId: 6});
+
+  await clickNotice(0, 'Compare');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
+  expect(compareModal).toHaveBeenCalledWith({
+    file: expect.objectContaining({name: 'photo.png'}),
+    location: 'Images',
+    duplicates,
+  });
+  expect(ui.post).toHaveBeenCalledExactlyOnceWith(
+    '/admin/actions/assets/resolve-upload-conflict',
+    {sourceAssetId: 12, assetId: 6}
+  );
+});
+
+it('keeps an upload held when its comparison is closed without a choice', async () => {
+  await uploadDuplicate();
+  compareModal.mockResolvedValue(undefined);
+
+  await clickNotice(0, 'Compare');
+  await vi.waitFor(() => expect(compareModal).toHaveBeenCalledOnce());
+  await Promise.resolve();
+  expect(queue.hasPending).toBe(true);
+  expect(ui.post).not.toHaveBeenCalled();
+
+  await clickNotice(0, 'Keep both');
+  await vi.waitFor(() => expect(queue.hasPending).toBe(false));
 });
 
 it('discards an upload that looks like a copy when canceled', async () => {

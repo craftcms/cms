@@ -15,11 +15,14 @@ import type {ConflictResolution} from './assetMover';
 export class AssetConflictResolutionElement extends LitElement {
   /**
    * Whether there's more than one file to keep alongside, such as images an
-   * upload looks like a copy of, which offers Keep all instead of Keep both,
-   * and nothing to replace.
+   * upload looks like a copy of, which offers Keep all instead of Keep both.
    */
   @property({type: Boolean})
   multiple = false;
+
+  /** Whether Replace is left out, such as when there's no one file it would replace. */
+  @property({type: Boolean, attribute: 'hide-replace'})
+  hideReplace = false;
 
   protected override createRenderRoot(): HTMLElement {
     return this;
@@ -43,7 +46,7 @@ export class AssetConflictResolutionElement extends LitElement {
       <craft-button @click=${() => this.resolve('keepBoth')}
         >${this.multiple ? t('Keep all') : t('Keep both')}</craft-button
       >
-      ${!this.multiple
+      ${!this.hideReplace
         ? html`<craft-button
             variant="danger"
             @click=${() => this.resolve('replace')}

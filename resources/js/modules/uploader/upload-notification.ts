@@ -157,12 +157,15 @@ export function createUploadConflictDetails(
     duplicates,
     navigate,
     multiple = false,
+    onCompare,
   }: {
     /** Images the upload looks like a copy of, listed under the message. */
     duplicates?: UploadDuplicate[];
     navigate?: (url: string) => void;
-    /** Whether it conflicts with more than one file. */
+    /** Whether it conflicts with more than one file, leaving no one file to replace. */
     multiple?: boolean;
+    /** Opens a comparison of the upload with `duplicates`, from a Compare button beside them. */
+    onCompare?: () => void;
   } = {}
 ): HTMLElement {
   const details = document.createElement('div');
@@ -170,12 +173,33 @@ export function createUploadConflictDetails(
   const choices = new AssetConflictResolutionElement();
   choices.className = 'flex flex-wrap gap-2';
   choices.multiple = multiple;
+  choices.hideReplace = multiple;
   choices.addEventListener('craft-conflict-resolve', (event) =>
     onChoice((event as CustomEvent<ConflictResolution>).detail)
   );
   render(html`<span class="wrap-anywhere">${message}</span>`, details);
   if (duplicates?.length) {
-    details.append(createDuplicateList(duplicates, navigate));
+    const list = createDuplicateList(duplicates, navigate);
+    if (onCompare) {
+      // Start-aligned, so Compare lines up with the front chip rather than the stack behind it
+      const row = document.createElement('div');
+      row.className = 'flex flex-wrap items-start gap-2';
+      row.append(list);
+      render(
+        html`<craft-button @click=${onCompare}
+          ><craft-icon
+            slot="prefix"
+            name="code-compare"
+            class="text-(--c-field-modified-indicator)"
+          ></craft-icon
+          >${t('Compare')}</craft-button
+        >`,
+        row
+      );
+      details.append(row);
+    } else {
+      details.append(list);
+    }
   }
   details.append(choices);
   return details;

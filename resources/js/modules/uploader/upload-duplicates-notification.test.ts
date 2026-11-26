@@ -10,6 +10,15 @@ const duplicate = (id: number, title: string): UploadDuplicate => ({
   title,
   url: `/admin/assets/edit/${id}`,
   chipHtml: `<craft-chip data-id="${id}"><a class="label-link" href="/admin/assets/edit/${id}"><span>${title}</span></a></craft-chip>`,
+  thumbUrl: null,
+  filename: 'photo.png',
+  width: null,
+  height: null,
+  size: null,
+  extension: 'png',
+  location: 'Images',
+  dateCreated: null,
+  uploader: null,
 });
 
 async function notification(count = 2): Promise<{
