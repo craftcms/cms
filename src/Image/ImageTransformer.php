@@ -78,7 +78,7 @@ class ImageTransformer
 
         $index = $this->getTransformIndex($asset, $imageTransform);
         $disk = $this->transformDisk($asset, $driver);
-        $transformHasUrls = $this->transformHasUrls($asset);
+        $transformHasUrls = $this->transformHasUrls($asset, $driver);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
@@ -182,7 +182,7 @@ class ImageTransformer
 
     public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
     {
-        return $this->transformHasUrls($asset);
+        return $this->transformHasUrls($asset, $this->currentDriver($asset));
     }
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
@@ -754,12 +754,19 @@ class ImageTransformer
     }
 
     /**
-     * Returns whether transforms get direct URLs on their output disk: when the source volume has public URLs. Other
-     * transforms are served through Craft’s action URL.
+     * Returns whether transforms get direct URLs on their output disk: when the source volume has public URLs, unless a
+     * disk’s deprecated `asset_transformer` key sets `has_urls`. Other transforms are served through Craft’s action URL.
      */
-    private function transformHasUrls(Asset $asset): bool
+    private function transformHasUrls(Asset $asset, CraftAssetTransformDriver $driver): bool
     {
-        return $asset->getVolume()->sourceHasUrls();
+        $volume = $asset->getVolume();
+
+        // Temporary uploads ignore the output disk, so they ignore its has_urls too
+        if ($driver->hasUrls !== null && ! $volume->isTemporary()) {
+            return $driver->hasUrls;
+        }
+
+        return $volume->sourceHasUrls();
     }
 
     /**

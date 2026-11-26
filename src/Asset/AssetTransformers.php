@@ -69,6 +69,9 @@ class AssetTransformers extends MultipleInstanceManager
     /** @var WeakMap<AssetTransformDriver, array<string, array<string, mixed>>> */
     private WeakMap $validatedParameters;
 
+    /** @var array<string, AssetTransformDriver> Drivers built by the deprecated `driver()` method without a transformer. */
+    private array $settingslessDrivers = [];
+
     /** @var array<string, true> Invalid transformer config warnings already logged by this process. */
     private array $reportedInvalidConfig = [];
 
@@ -163,6 +166,31 @@ class AssetTransformers extends MultipleInstanceManager
     }
 
     /**
+     * Returns the driver instance for a named transformer. A registered driver that no transformer is named after is
+     * built without settings, as in 6.0.0-beta.1 and beta.2.
+     *
+     * @throws AssetTransformDriverNotFoundException
+     *
+     * @deprecated in 6.0.0. [[transformer()]] should be used instead.
+     */
+    public function driver(?string $driver = null): AssetTransformDriver
+    {
+        Deprecator::log(__METHOD__, '`AssetTransformers::driver()` is deprecated. Use `transformer()` instead.');
+
+        if ($driver === null || $this->has($driver) || ! isset($this->customCreators[$driver])) {
+            return $this->transformer($driver);
+        }
+
+        $resolved = $this->settingslessDrivers[$driver] ??= $this->customCreators[$driver]($this->app, ['driver' => $driver]);
+
+        if (! $resolved instanceof AssetTransformDriver) {
+            throw new AssetTransformDriverNotFoundException("Asset transform driver [{$driver}] is invalid.");
+        }
+
+        return $resolved;
+    }
+
+    /**
      * Returns whether a transformer is defined and its driver is registered, without building it.
      */
     public function has(string $name): bool
@@ -226,8 +254,19 @@ class AssetTransformers extends MultipleInstanceManager
     public function forgetTransformers(): static
     {
         $this->instances = [];
+        $this->settingslessDrivers = [];
 
         return $this;
+    }
+
+    /**
+     * @deprecated in 6.0.0. [[forgetTransformers()]] should be used instead.
+     */
+    public function forgetDrivers(): static
+    {
+        Deprecator::log(__METHOD__, '`AssetTransformers::forgetDrivers()` is deprecated. Use `forgetTransformers()` instead.');
+
+        return $this->forgetTransformers();
     }
 
     /**
@@ -251,7 +290,7 @@ class AssetTransformers extends MultipleInstanceManager
         if ($legacyConfig !== null) {
             Deprecator::log(
                 "filesystems.disks.$disk.asset_transformer",
-                "The `asset_transformer` key on the `$disk` disk is deprecated. Set the volume’s Asset Transformer setting or the `assetTransformers` config setting instead. Its `has_urls` setting is ignored.",
+                "The `asset_transformer` key on the `$disk` disk is deprecated. Set the volume’s Asset Transformer setting or the `assetTransformers` config setting instead.",
             );
 
             $name = is_string($legacyConfig) ? $legacyConfig : self::LEGACY_DISK_PREFIX.$disk;
@@ -418,9 +457,12 @@ class AssetTransformers extends MultipleInstanceManager
             throw new InvalidAssetTransformException('The craft asset transform driver’s outputDisk must be a disk name.');
         }
 
+        $hasUrls = $config['has_urls'] ?? null;
+
         return $this->app->make(CraftAssetTransformDriver::class, [
             'outputDisk' => $outputDisk !== '' ? $outputDisk : null,
             'generateBeforePageLoad' => ($config['generateTransformsBeforePageLoad'] ?? false) === true,
+            'hasUrls' => is_bool($hasUrls) ? $hasUrls : null,
         ]);
     }
 
@@ -428,7 +470,7 @@ class AssetTransformers extends MultipleInstanceManager
      * Returns 6.0.0-beta.1 and beta.2’s deprecated `asset_transformer` key on a disk, following scoped disks to the disk they
      * wrap, or `null` if it isn’t set. A transformer name it names is returned as is. A driver name, or an array with
      * a `driver` key and inline settings, becomes a transformer config, with the `craft` driver’s beta setting
-     * names mapped to the current ones.
+     * names mapped to the current ones. Its `has_urls` keeps beta’s default: `false` when `output_disk` is set.
      *
      * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
      * @return string|array<string, mixed>|null
@@ -462,9 +504,12 @@ class AssetTransformers extends MultipleInstanceManager
         }
 
         if (($value['driver'] ?? null) === 'craft') {
+            $outputDisk = $value['output_disk'] ?? null;
+            $hasUrls = $value['has_urls'] ?? null;
             $value = [
                 'driver' => 'craft',
-                'outputDisk' => $value['output_disk'] ?? null,
+                'outputDisk' => $outputDisk,
+                'has_urls' => is_bool($hasUrls) ? $hasUrls : ($outputDisk !== null && $outputDisk !== '' ? false : null),
                 'generateTransformsBeforePageLoad' => filter_var($value['generate_transforms_before_page_load'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
         }

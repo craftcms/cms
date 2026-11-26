@@ -346,6 +346,33 @@ it('gives transforms direct URLs on their output disk only for public volumes', 
     'output disk with a url, private' => [false, 'url-output', false],
 ]);
 
+it('follows has_urls in a disk’s deprecated asset_transformer key', function (bool $volumeHasUrls, ?string $outputDisk, ?bool $hasUrls, bool $direct) {
+    $root = storage_path('framework/testing/image-transformer-test/legacy-url-cases');
+    config()->set('filesystems.disks.legacy-url-output', ['driver' => 'local', 'root' => "{$root}/output", 'url' => 'https://transforms.example.test']);
+    config()->set('filesystems.disks.legacy-url-source', ['driver' => 'local', 'root' => "{$root}/source", 'url' => 'https://source.example.test', 'asset_transformer' => [
+        'driver' => 'craft',
+        'output_disk' => $outputDisk,
+        ...($hasUrls !== null ? ['has_urls' => $hasUrls] : []),
+    ]]);
+    $volume = Volume::factory()->create(['disk' => 'legacy-url-source', 'hasUrls' => $volumeHasUrls]);
+    $asset = ($this->createImageAsset)([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolderModel::factory()->create(['volumeId' => $volume->id])->id,
+    ]);
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+
+    $url = app(AssetTransformers::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100])->url,
+    );
+
+    expect(str_contains($url, 'generate-transform'))->toBe(! $direct);
+})->with([
+    'output disk, public, has_urls unset' => [true, 'legacy-url-output', null, false],
+    'output disk, private, has_urls true' => [false, 'legacy-url-output', true, true],
+    'own disk, public, has_urls false' => [true, null, false, false],
+    'own disk, public, has_urls unset' => [true, null, null, true],
+]);
+
 it('stores temporary uploads’ transforms on their own disk, not the output disk', function () {
     $root = storage_path('framework/testing/image-transformer-test/temp-uploads');
     config()->set('filesystems.disks.temp-uploads', ['driver' => 'local', 'root' => "{$root}/temp"]);
