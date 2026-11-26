@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Mixins;
 use Closure;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Flash;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Testing\Assert;
 use Illuminate\Testing\TestResponse;
 use Illuminate\View\View;
@@ -30,9 +31,9 @@ class TestResponseMixin
     /**
      * The messages the response delivers to the browser: those in an Inertia
      * page's `messages` prop, those flashed for the page a redirect or an
-     * Inertia hard visit leads to,
-     * and those in the `messages` list of a JSON body, as
-     * {@see RespondsWithFlash::asSuccess()} returns.
+     * Inertia hard visit leads to, those a Twig page queues in
+     * `window.CraftMessageQueue`, and those in the `messages` list of a JSON
+     * body, as {@see RespondsWithFlash::asSuccess()} returns.
      *
      * Messages a response leaves in the session without redirecting aren't
      * included, since the browser shows them on some later page.
@@ -54,6 +55,9 @@ class TestResponseMixin
                 $response->isRedirect(), $response->headers->has('X-Inertia-Location') => Flash::all(),
                 ($response->baseResponse->original ?? null) instanceof View => $response->baseResponse->original->getData()['page']['props']['messages'] ?? [],
                 $response->baseResponse instanceof JsonResponse => $response->json('messages'),
+                // `_layouts/components/messages.twig` writes the queue on one line, and its JSON escapes `</script>`.
+                is_string($html = $response->baseResponse->getContent())
+                    && preg_match('/\(window\.CraftMessageQueue = window\.CraftMessageQueue \|\| \[\]\)\.push\(\.\.\.(\[.*\])\);/', $html, $queue) === 1 => Json::decode($queue[1]),
                 default => [],
             };
 

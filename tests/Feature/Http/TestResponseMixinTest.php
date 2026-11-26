@@ -2,14 +2,18 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use PHPUnit\Framework\AssertionFailedError;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\pageTemplate;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
@@ -45,6 +49,28 @@ it('finds messages flashed for the page an Inertia hard visit leads to', functio
     withHeaders(['X-Inertia' => 'true'])
         ->post('/test-messages-hard-visit')->assertConflict()
         ->assertCpMessage('success', 'Entry saved.');
+});
+
+it('finds messages a Twig page queues for its legacy message display', function () {
+    app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 2).'/Support/templates');
+
+    Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
+        ->prefix(Cms::config()->cpTrigger)
+        ->get('test-messages-document/{flash}', function (string $flash) {
+            if ($flash === 'yes') {
+                Flash::error('Couldn’t save “Draft]);” </script>.');
+            }
+
+            return pageTemplate('test-plugin/document');
+        });
+
+    get(cp_url('test-messages-document/no'))
+        ->assertOk()
+        ->assertNoCpMessages();
+
+    get(cp_url('test-messages-document/yes'))
+        ->assertOk()
+        ->assertCpMessage('error', 'Couldn’t save “Draft]);” </script>.');
 });
 
 it('ignores messages a response leaves in the session for a later page', function () {
