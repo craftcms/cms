@@ -62,4 +62,21 @@ describe('view-state-sync', () => {
     await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
     expect(post.mock.calls[1]![1]).toMatchObject({all: true});
   });
+
+  it('sends a state whose push failed again on the next navigation', async () => {
+    installElementIndexViewStateSync();
+    post.mockRejectedValueOnce(new Error('offline'));
+    post.mockResolvedValueOnce({});
+
+    expect(await pushElementIndexViewStates({a: {static: true} as never})).toBe(
+      false
+    );
+
+    navigate(true);
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    expect(post.mock.calls[1]![1]).toEqual({
+      states: {a: {static: true}},
+      all: false,
+    });
+  });
 });

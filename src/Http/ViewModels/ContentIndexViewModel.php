@@ -65,6 +65,16 @@ abstract class ContentIndexViewModel extends ViewModel
 {
     protected const string RENDER_CONTEXT = 'index';
 
+    /**
+     * The URL params the page's rows were rendered for that came from the
+     * session's view state rather than the request (see
+     * {@see storedViewStateQuery()}). The index treats them as its own view
+     * state, not as the link's choice, so local storage still wins over them.
+     *
+     * @var string[]
+     */
+    public array $sessionViewStateParams = [];
+
     private ?ElementIndexSourceSettings $resolvedSourceSettings = null;
 
     private ?ElementQueryInterface $query = null;
@@ -167,14 +177,16 @@ abstract class ContentIndexViewModel extends ViewModel
      * An index page renders a load that names no view mode as though it named
      * these params, and gives the page a URL with them, so the response,
      * prefetched ones included, comes with rows. They're the params
-     * `useElementIndex`'s `restore()` would request, and with them in the URL
-     * it finds nothing left to restore.
+     * `useElementIndex`'s `restore()` would request, so it has nothing left to
+     * request unless local storage changed since they were pushed.
+     *
+     * Takes the view states as a parameter, which also keeps it out of the
+     * page's props.
      *
      * @return array<string, mixed>|null
      */
-    public function storedViewStateQuery(): ?array
+    public function storedViewStateQuery(ElementIndexViewStates $viewStates): ?array
     {
-        $viewStates = app(ElementIndexViewStates::class);
         $sourceKey = $this->source()['key'] ?? null;
 
         if (! is_string($sourceKey) || ! $viewStates->synced()) {

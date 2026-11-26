@@ -18,6 +18,9 @@ export function isSyncedViewStateKey(key: string): boolean {
 
 let pushes: Promise<boolean> = Promise.resolve(true);
 
+/** States whose push failed, sent again with the next one. */
+let unsent: Record<string, ViewState> = {};
+
 /**
  * Mirrors element index view states to the server for the session, so an
  * index page load (a nav prefetch included) comes with rows rendered for
@@ -26,24 +29,35 @@ let pushes: Promise<boolean> = Promise.resolve(true);
  *
  * Pushes go one at a time, so an older one can't land after a newer one and
  * put its state back. Once one lands, pages prefetched before it are dropped,
- * since they were rendered for the old state. Resolves to whether it landed;
- * until one does, the index requests its rows itself.
+ * since they were rendered for the old state. States that fail to land go
+ * with the next push. Resolves to whether it landed; until one does, the index
+ * requests its rows itself.
  */
 export function pushElementIndexViewStates(
   states: Record<string, ViewState>,
   all = false
 ): Promise<boolean> {
-  pushes = pushes
-    .then(() =>
-      actionClient.post(ElementIndexViewStateController.url(), {states, all})
-    )
-    .then(
-      () => {
-        router.flushAll();
-        return true;
-      },
-      () => false
-    );
+  pushes = pushes.then(() => {
+    const sending = {...unsent, ...states};
+    unsent = {};
+
+    if (!all && Object.keys(sending).length === 0) {
+      return true;
+    }
+
+    return actionClient
+      .post(ElementIndexViewStateController.url(), {states: sending, all})
+      .then(
+        () => {
+          router.flushAll();
+          return true;
+        },
+        () => {
+          unsent = {...sending, ...unsent};
+          return false;
+        }
+      );
+  });
 
   return pushes;
 }
@@ -74,7 +88,8 @@ function storedViewStates(): Record<string, ViewState> {
 
 /**
  * Pushes every view state in local storage the first time a page says the
- * session doesn't have them yet, such as after signing in.
+ * session doesn't have them yet, such as after signing in, and retries states
+ * whose push failed on each navigation after.
  */
 export function installElementIndexViewStateSync(): void {
   let pushed = false;
@@ -89,6 +104,11 @@ export function installElementIndexViewStateSync(): void {
     // predate the push.
     if (synced) {
       pushed = false;
+
+      if (Object.keys(unsent).length > 0) {
+        void pushElementIndexViewStates({});
+      }
+
       return;
     }
 

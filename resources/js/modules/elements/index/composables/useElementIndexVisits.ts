@@ -96,6 +96,16 @@ export interface IndexRestore {
   only: Array<string>;
 }
 
+/**
+ * Whether a query names a param, either flat (`columns`) or the way a page
+ * URL lists it (`columns[0]`).
+ */
+export function queryHasParam(query: IndexQueryParams, name: string): boolean {
+  return Object.keys(query).some(
+    (key) => key === name || key.startsWith(`${name}[`)
+  );
+}
+
 export interface IndexVisitor {
   currentQuery(replacing?: Array<string>): IndexQueryParams;
   visit(query: IndexQueryParams, options?: IndexVisitOptions): void;

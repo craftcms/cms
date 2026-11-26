@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Concerns;
 
 use Closure;
+use CraftCms\Cms\Element\ElementIndexViewStates;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Support\Str;
@@ -20,8 +21,9 @@ use Inertia\Support\Header;
  * them once it has read the view state from local storage. With the stored
  * state, the response has them, so navigating to an index, and prefetching it
  * from the nav, shows its rows straight away. The page's URL names the params
- * the rows were rendered for, as if the request had, so the index finds
- * nothing left to restore.
+ * the rows were rendered for, as if the request had, and
+ * `sessionViewStateParams` lists them, so the index compares them with local
+ * storage rather than adopting them as the link's choice.
  */
 trait AppliesStoredViewState
 {
@@ -45,7 +47,7 @@ trait AppliesStoredViewState
             return $viewModel;
         }
 
-        $query = $viewModel->storedViewStateQuery();
+        $query = $viewModel->storedViewStateQuery(app(ElementIndexViewStates::class));
 
         if ($query === null) {
             return $viewModel;
@@ -61,6 +63,9 @@ trait AppliesStoredViewState
         $request->merge($query);
         request()->merge($query);
 
-        return $makeViewModel();
+        $viewModel = $makeViewModel();
+        $viewModel->sessionViewStateParams = array_keys($query);
+
+        return $viewModel;
     }
 }

@@ -280,6 +280,7 @@ it('renders a page load that names no view mode for the view state the browser p
             ->has('data', 2)
             ->where('viewState.mode', $expectedQuery['viewMode'])
             ->where('pagination.per_page', (int) ($expectedQuery['per_page'] ?? 50))
+            ->where('sessionViewStateParams', array_keys(array_diff_key($expectedQuery, $requestQuery)))
         );
     parse_str((string) parse_url($response->viewData('page')['url'], PHP_URL_QUERY), $query);
 

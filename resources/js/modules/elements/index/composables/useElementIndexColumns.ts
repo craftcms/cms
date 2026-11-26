@@ -1,7 +1,9 @@
 import {computed, type Ref} from 'vue';
-import type {
-  IndexVisitor,
-  IndexRestore,
+import {
+  queryHasParam,
+  type IndexQueryParams,
+  type IndexVisitor,
+  type IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
 import type {ViewState} from '@/modules/elements/types/view-state';
@@ -18,6 +20,8 @@ interface ElementIndexColumnsContext {
   source?: SourceItem | null;
   /** Element-type default columns, used when the source defines none. */
   defaultTableColumns?: Array<string>;
+  /** `tableColumns` lists the columns the rows were rendered with. */
+  viewState?: {tableColumns?: Array<string>};
 }
 
 interface TableColumn {
@@ -200,22 +204,30 @@ export function useElementIndexColumns(
   });
 
   // On load, if the user has a persisted column selection that differs from
-  // what the server rendered by default, restore it so the rows include those
+  // the columns the server rendered, restore it so the rows include those
   // columns' data. The page folds this into one mount-time restore visit
   // alongside the view-mode/sort restores (see `useElementIndex`), so they
-  // can't interrupt each other.
-  function restore(): IndexRestore | null {
-    // A page URL carries the list as `columns[0]`, `columns[1]`, ….
-    const hasColumnsInQuery = Object.keys(visitor.currentQuery()).some(
-      (key) => key === 'columns' || key.startsWith('columns[')
+  // can't interrupt each other. `query` holds the params the link named.
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
+    const persisted = sourceColumnState.value?.visible?.filter((key) =>
+      columnsByKey.value.has(key)
     );
-    const persisted = sourceColumnState.value?.visible;
+    const rendered = props.viewState?.tableColumns ?? defaultVisible.value;
+    const matches = JSON.stringify(persisted) === JSON.stringify(rendered);
 
-    if (hasColumnsInQuery || !persisted?.length) {
+    // Columns the link names win, and become the source's, so the columns
+    // shown are the ones the rows have data for.
+    if (queryHasParam(query, 'columns')) {
+      if (props.viewState?.tableColumns && !matches) {
+        patchSourceColumnState({visible: props.viewState.tableColumns});
+      }
+
       return null;
     }
 
-    if (JSON.stringify(persisted) === JSON.stringify(defaultVisible.value)) {
+    if (!persisted?.length || matches) {
       return null;
     }
 
