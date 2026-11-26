@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Slet tags fra tag-gruppen “{tagGroup}”',
     'Delete them' => 'Slet dem',
     'Delete users' => 'Slet brugere',
+    'Delete {name}' => 'Slet {name}',
     'Delete {site}' => 'Slet {site}',
     'Delete {types}' => 'Slet {types}',
     'Delete {type} for site' => 'Slet {type} for site',

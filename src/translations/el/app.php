@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Διαγραφή ετικετών από την ομάδα ετικετών «{tagGroup}»',
     'Delete them' => 'Διαγραφή τους',
     'Delete users' => 'Διαγραφή χρηστών',
+    'Delete {name}' => 'Διαγραφή {name}',
     'Delete {site}' => 'Διαγραφή {site}',
     'Delete {types}' => 'Διαγραφή {types}',
     'Delete {type} for site' => 'Διαγραφή για τον ιστότοπο: {type}',

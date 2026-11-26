@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Radera taggar från taggruppen ”{tagGroup}”',
     'Delete them' => 'Radera dem',
     'Delete users' => 'Radera användare',
+    'Delete {name}' => 'Radera {name}',
     'Delete {site}' => 'Ta bort {site}',
     'Delete {types}' => 'Ta bort {types}',
     'Delete {type} for site' => 'Ta bort {type} för webbplatsen',

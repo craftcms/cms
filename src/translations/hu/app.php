@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Címkék törlése a „{tagGroup}” címkecsoportból',
     'Delete them' => 'Törlésük',
     'Delete users' => 'Felhasználók törlése',
+    'Delete {name}' => '{name} törlése',
     'Delete {site}' => 'A(z) {site} törlése',
     'Delete {types}' => '{types} törlése',
     'Delete {type} for site' => '{type} törlése a webhelyen',

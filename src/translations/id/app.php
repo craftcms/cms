@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Hapus tag dari grup tag “{tagGroup}”',
     'Delete them' => 'Hapus semuanya',
     'Delete users' => 'Hapus pengguna',
+    'Delete {name}' => 'Hapus {name}',
     'Delete {site}' => 'Hapus {site}',
     'Delete {types}' => 'Hapus {types}',
     'Delete {type} for site' => 'Hapus {type} untuk situs',

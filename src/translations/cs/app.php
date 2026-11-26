@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Smazat tagy ze skupiny tagů „{tagGroup}“',
     'Delete them' => 'Odstranit je',
     'Delete users' => 'Smazat uživatele',
+    'Delete {name}' => 'Smazat {name}',
     'Delete {site}' => 'Odstranit {site}',
     'Delete {types}' => 'Smazat {types}',
     'Delete {type} for site' => 'Smazat pro web: {type}',

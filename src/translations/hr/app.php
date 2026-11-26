@@ -622,6 +622,7 @@ return [
     'Delete tags from the “{tagGroup}” tag group' => 'Brisanje oznaka iz grupe oznaka „{tagGroup}“',
     'Delete them' => 'Izbriši ih',
     'Delete users' => 'Brisanje korisnika',
+    'Delete {name}' => 'Izbriši {name}',
     'Delete {site}' => 'Izbriši {site}',
     'Delete {types}' => 'Izbriši: {types}',
     'Delete {type} for site' => 'Izbriši za web-mjesto: {type}',
