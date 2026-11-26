@@ -2798,7 +2798,7 @@ return [
     'Sign-in Providers' => 'Innskráningarveitur',
     'Signed in' => 'Skráður inn',
     'Signing in' => 'Innskráning',
-    'Single' => 'Einhleypur',
+    'Single' => 'Stakt',
     'Single-line text' => 'Einlínu texti',
     'Single: for one-off content' => 'Stakt: fyrir einstakt efni',
     'Singles' => 'Einhleypur',

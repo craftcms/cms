@@ -2410,7 +2410,7 @@ return [
     'Palette' => 'Palette',
     'Panels' => 'Panels',
     'Parent {type} Title' => 'Übergeordneter {type}-Titel',
-    'Parent' => 'Ursprung',
+    'Parent' => 'Elternelement',
     'Parish' => 'Gemeinde',
     'Partition' => 'Partition',
     'Passed with warning' => 'Mit Warnung bestanden',

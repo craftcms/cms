@@ -489,7 +489,7 @@ return [
     'Only scheduled releases can be unscheduled.' => '只有已排期的发行版才能取消排期。',
     'Only users who match these rules see this link.' => '只有符合这些规则的用户才能看到此链接。',
     'Only users who match these rules see this section.' => '只有符合这些规则的用户才能看到此分区。',
-    'Open' => '待处理',
+    'Open' => '未结',
     'Open in Figma' => '在 Figma 中打开',
     'Open in a new window' => '在新窗口中打开',
     'Open in new tab' => '在新标签页中打开',
