@@ -66,7 +66,8 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
     #[\Override]
     public function uiControl(FieldContext $context): Control
     {
-        $hasBlankOption = collect($this->options)->contains(fn (array $option): bool => ($option['value'] ?? null) === '');
+        $hasBlankOption = collect($this->translatedOptions(false, $context->value, $context->element))
+            ->contains(fn (array $option): bool => ($option['value'] ?? null) === '');
         $value = $this->encodeValue($context->value);
 
         // Without a blank option, an empty value is the control's own empty state, not an option's __blank__ value
