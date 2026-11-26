@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Workflow\Exceptions\WorkflowException;
 use CraftCms\Cms\Workflow\Workflows;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
@@ -262,12 +263,12 @@ readonly class Drafts
         $draft = $this->findDraft($type, $id, $uid, $siteId, $draftId);
         $actor = $this->actor->user();
 
-        if (
-            ! $draft
-            || ! Gate::forUser($actor)->allows('save', $draft)
-            || ! Gate::forUser($actor)->allows('saveCanonical', $draft)
-        ) {
+        if (! $draft || ! Gate::forUser($actor)->allows('view', $draft)) {
             throw new ToolCallException('Draft not found.');
+        }
+
+        if (! Gate::forUser($actor)->allows('save', $draft) || ! Gate::forUser($actor)->allows('saveCanonical', $draft)) {
+            throw new ToolCallException('You are not authorized to apply this draft.');
         }
 
         if ($workflowRunId !== null && ! $this->workflows->requiresApproval($draft)) {
@@ -275,13 +276,19 @@ readonly class Drafts
         }
 
         try {
-            $apply = fn (ElementInterface $draft): ElementInterface => $this->drafts->applyDraft($draft, Arr::whereNotNull([
-                'workflowRunId' => $workflowRunId,
-                'workflowCurrentStage' => $workflowCurrentStage,
-            ]));
+            $apply = function (ElementInterface $draft) use ($workflowRunId, $workflowCurrentStage): ElementInterface {
+                if (! $this->drafts->saveDraftForApplying($draft, Sites::isMultiSite())) {
+                    throw new InvalidElementException($draft);
+                }
+
+                return $this->drafts->applyDraft($draft, Arr::whereNotNull([
+                    'workflowRunId' => $workflowRunId,
+                    'workflowCurrentStage' => $workflowCurrentStage,
+                ]));
+            };
             $release = $this->releases->releaseForDraft($draft);
             $element = $release === null
-                ? $apply($draft)
+                ? DB::transaction(fn (): ElementInterface => $apply($draft))
                 : $this->releases->publishAheadOfRelease($release->id, $draft, $actor, $apply);
         } catch (WorkflowException|HttpExceptionInterface $exception) {
             throw new ToolCallException($exception->getMessage(), previous: $exception);

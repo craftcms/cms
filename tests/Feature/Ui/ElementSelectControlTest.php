@@ -214,3 +214,28 @@ it('gives each chip its element’s color', function () {
     expect($entryElement['color'])->toBe('violet')
         ->and($assetElement['color'])->toBeNull();
 });
+
+it('shows statuses on relation cards unless the element has none to show', function (bool $showStatusField) {
+    $entryType = EntryTypeModel::factory()->create(['showStatusField' => $showStatusField]);
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    EntryTypes::refreshEntryTypes();
+    Sections::refreshSections();
+    $entry = Entry::factory()->forSection($section)->forEntryType($entryType)->createElement();
+    $asset = AssetModel::factory()->createElement();
+
+    $entryCard = ElementSelect::make('related')->elementType(EntryElement::class)->viewMode('cards')
+        ->props([$entry->id])['elements'][0]['cardContentHtml'];
+    $assetCard = ElementSelect::make('related')->elementType($asset::class)->viewMode('cards')
+        ->props([$asset->id])['elements'][0]['cardContentHtml'];
+
+    if ($showStatusField) {
+        expect($entryCard)->toContainTag('craft-badge', ['fill' => 'teal'])->toContain('>Live</craft-badge>');
+    } else {
+        expect($entryCard)->not->toContain('<craft-badge');
+    }
+    // Assets have no statuses.
+    expect($assetCard)->not->toContain('<craft-badge');
+})->with([
+    'Status field shown' => true,
+    'Status field hidden' => false,
+]);

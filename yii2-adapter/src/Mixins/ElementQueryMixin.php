@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
+use yii\db\Query;
 use function CraftCms\Yii2Adapter\Helpers\Queries\buildCondition;
 
 class ElementQueryMixin
@@ -121,7 +122,7 @@ class ElementQueryMixin
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($sql, $bindings);
+            return $this->whereRaw("($sql)", $bindings);
         };
     }
 
@@ -130,7 +131,7 @@ class ElementQueryMixin
         return function($condition) {
             LegacyUsage::record('ElementQuery-filterWhere', 'Calling ->filterWhere on an ElementQuery is deprecated.');
 
-            $condition = ElementQueryMixin::filterCondition($condition);
+            $condition = (new Query())->filterWhere($condition)->where ?? [];
 
             if ($condition === []) {
                 return $this;
@@ -145,10 +146,10 @@ class ElementQueryMixin
             /** @phpstan-ignore-next-line */
             $this->query->wheres = [];
             /** @phpstan-ignore-next-line */
-            $this->subQuery->wheres = [];
+            $this->query->bindings['where'] = [];
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, $bindings);
+            return $this->whereRaw("($sql)", $bindings);
         };
     }
 
@@ -157,7 +158,7 @@ class ElementQueryMixin
         return function($condition) {
             LegacyUsage::record('ElementQuery-andFilterWhere', 'Calling ->andFilterWhere on an ElementQuery is deprecated. Use ->where() instead.');
 
-            $condition = ElementQueryMixin::filterCondition($condition);
+            $condition = (new Query())->filterWhere($condition)->where ?? [];
 
             if ($condition === []) {
                 return $this;
@@ -170,7 +171,7 @@ class ElementQueryMixin
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->whereRaw($condition, $bindings);
+            return $this->whereRaw("($sql)", $bindings);
         };
     }
 
@@ -179,7 +180,7 @@ class ElementQueryMixin
         return function($condition) {
             LegacyUsage::record('ElementQuery-orFilterWhere', 'Calling ->orFilterWhere on an ElementQuery is deprecated. Use ->orWhere() instead.');
 
-            $condition = ElementQueryMixin::filterCondition($condition);
+            $condition = (new Query())->filterWhere($condition)->where ?? [];
 
             if ($condition === []) {
                 return $this;
@@ -192,7 +193,7 @@ class ElementQueryMixin
             }
 
             /** @phpstan-ignore-next-line */
-            return $this->orWhereRaw($condition, $bindings);
+            return $this->orWhereRaw("($sql)", $bindings);
         };
     }
 
@@ -235,83 +236,5 @@ class ElementQueryMixin
                 $table,
             ));
         };
-    }
-
-    /**
-     * Removes [[isEmpty()|empty operands]] from the given query condition.
-     *
-     * @param  array  $condition  the original condition
-     * @return array the condition with [[isEmpty()|empty operands]] removed.
-     *
-     * @throws NotSupportedException if the condition operator is not supported
-     */
-    private static function filterCondition(array $condition): array
-    {
-        if (!isset($condition[0])) {
-            // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
-            foreach ($condition as $name => $value) {
-                if (self::isEmpty($value)) {
-                    unset($condition[$name]);
-                }
-            }
-
-            return $condition;
-        }
-
-        // operator format: operator, operand 1, operand 2, ...
-
-        $operator = array_shift($condition);
-
-        switch (strtoupper($operator)) {
-            case 'NOT':
-            case 'AND':
-            case 'OR':
-                foreach ($condition as $i => $operand) {
-                    $subCondition = self::filterCondition($operand);
-                    if (self::isEmpty($subCondition)) {
-                        unset($condition[$i]);
-                    } else {
-                        $condition[$i] = $subCondition;
-                    }
-                }
-
-                if (empty($condition)) {
-                    return [];
-                }
-                break;
-            case 'BETWEEN':
-            case 'NOT BETWEEN':
-                if (array_key_exists(1, $condition) && array_key_exists(2, $condition)) {
-                    if (self::isEmpty($condition[1]) || self::isEmpty($condition[2])) {
-                        return [];
-                    }
-                }
-                break;
-            default:
-                if (array_key_exists(1, $condition) && self::isEmpty($condition[1])) {
-                    return [];
-                }
-        }
-
-        array_unshift($condition, $operator);
-
-        return $condition;
-    }
-
-    /**
-     * Returns a value indicating whether the give value is "empty".
-     *
-     * The value is considered "empty", if one of the following conditions is satisfied:
-     *
-     * - it is `null`,
-     * - an empty string (`''`),
-     * - a string containing only whitespace characters,
-     * - or an empty array.
-     *
-     * @return bool if the value is empty
-     */
-    private static function isEmpty(mixed $value): bool
-    {
-        return $value === '' || $value === [] || $value === null || is_string($value) && trim($value) === '';
     }
 }

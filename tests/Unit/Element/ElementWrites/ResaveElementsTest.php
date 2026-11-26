@@ -41,7 +41,7 @@ beforeEach(function () {
         'elements' => Mockery::mock(Elements::class),
         'drafts' => Mockery::mock(Drafts::class),
         'elementUris' => Mockery::mock(ElementUris::class),
-        'elementCaches' => Mockery::mock(ElementCaches::class),
+        'elementCaches' => Mockery::mock(ElementCaches::class)->makePartial(),
         'search' => Mockery::mock(Search::class),
         'sites' => Mockery::mock(Sites::class),
         'workflows' => Mockery::mock(Workflows::class),

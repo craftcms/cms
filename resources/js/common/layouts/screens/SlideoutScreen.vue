@@ -253,6 +253,17 @@
               <slot name="content-actions"></slot>
             </LayoutSlotOutlet>
 
+            <!-- Sets the screen's actions apart from the panel's own. -->
+            <span
+              v-if="
+                (regions.has('content-toolbar-actions') ||
+                  regions.has('content-actions')) &&
+                (editUrl || !slideout?.coversPreviewEditor)
+              "
+              class="slideout-screen__separator"
+              aria-hidden="true"
+            ></span>
+
             <template v-if="editUrl">
               <craft-button
                 :id="editLinkId"
@@ -438,6 +449,14 @@
     --_link-min-width: calc(24px + var(--c-spacing-sm));
 
     flex-shrink: 0;
+  }
+
+  .slideout-screen__separator {
+    align-self: center;
+    width: 1px;
+    height: 1rem;
+    margin-inline: var(--c-spacing-sm);
+    background: var(--c-color-border-quiet);
   }
 
   .slideout-screen__toolbar {

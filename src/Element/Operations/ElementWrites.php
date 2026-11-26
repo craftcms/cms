@@ -290,50 +290,53 @@ readonly class ElementWrites
             $position = 0;
 
             try {
+                // A regular closure, so the inner closure's &$position refers to the shared counter rather than a copy
                 $query->cursor()->each(function (ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
-                    $position++;
+                    $this->elementCaches->deferInvalidations(function () use ($element, $continueOnError, $query, &$position, $siteIds) {
+                        $position++;
 
-                    event(new ElementPropagating($query, $element, $position));
+                        event(new ElementPropagating($query, $element, $position));
 
-                    $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-                    $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
-                    $supportedSiteIds = array_keys($supportedSites);
-                    $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
-                        $supportedSiteIds) : $supportedSiteIds;
-                    $elementType = $element::class;
+                        $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+                        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
+                        $supportedSiteIds = array_keys($supportedSites);
+                        $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
+                            $supportedSiteIds) : $supportedSiteIds;
+                        $elementType = $element::class;
 
-                    $throwable = null;
-                    try {
-                        $element->newSiteIds = [];
-                        $siteElements = [];
+                        $throwable = null;
+                        try {
+                            $element->newSiteIds = [];
+                            $siteElements = [];
 
-                        foreach ($elementSiteIds as $siteId) {
-                            if ($siteId === $element->siteId) {
-                                continue;
+                            foreach ($elementSiteIds as $siteId) {
+                                if ($siteId === $element->siteId) {
+                                    continue;
+                                }
+
+                                $siteElement = $this->elements->getElementById($element->id, $elementType, $siteId);
+                                if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
+                                    $siteElement ??= false;
+                                    $this->propagate($element, $supportedSites, $siteId, $siteElement);
+                                    $siteElements[$siteId] = $siteElement;
+                                }
                             }
 
-                            $siteElement = $this->elements->getElementById($element->id, $elementType, $siteId);
-                            if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                $siteElement ??= false;
-                                $this->propagate($element, $supportedSites, $siteId, $siteElement);
-                                $siteElements[$siteId] = $siteElement;
+                            $element->markAsDirty();
+                            $this->afterPropagate($element, false, $siteElements);
+                        } catch (Throwable $throwable) {
+                            if (! $continueOnError) {
+                                throw $throwable;
                             }
+
+                            report($throwable);
                         }
 
-                        $element->markAsDirty();
-                        $this->afterPropagate($element, false, $siteElements);
-                    } catch (Throwable $throwable) {
-                        if (! $continueOnError) {
-                            throw $throwable;
-                        }
+                        event(new ElementPropagated($query, $element, $position, $throwable));
 
-                        report($throwable);
-                    }
-
-                    event(new ElementPropagated($query, $element, $position, $throwable));
-
-                    BulkOps::trackElement($element);
-                    $this->elementCaches->invalidateForElement($element);
+                        BulkOps::trackElement($element);
+                        $this->elementCaches->invalidateForElement($element);
+                    });
                 });
             } catch (QueryAbortedException) {
                 // Fail silently
@@ -828,6 +831,8 @@ readonly class ElementWrites
         } finally {
             $element->ruleset->useScenario($originalScenario);
         }
+
+        $this->elementCaches->flushBeforeFinalEvent();
 
         event(new ElementSaved($element, $isNewElement));
 

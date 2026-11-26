@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Ui;
 
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Tab;
@@ -282,7 +283,7 @@ class UiHtmlRenderer
     private function errorList(array $errors, ?string $id, array $attributes = []): string
     {
         return Html::tag('ul', implode('', array_map(
-            fn (string $error): string => Html::tag('li', Html::encode($error)),
+            fn (string $error): string => Html::tag('li', Html::encode(Str::stripEmphasis($error))),
             $errors,
         )), [...$attributes, 'id' => $id, 'class' => 'error-list']);
     }

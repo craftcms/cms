@@ -1,7 +1,8 @@
-import type {TemplateResult} from 'lit';
+import type {PropertyValues, TemplateResult} from 'lit';
 import {html, LitElement} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate.js';
+import type {WindowWithCraft} from '@src/types/globals.js';
 import styles from './resize-grips.styles.js';
 
 type Axis = 'x' | 'y' | 'both';
@@ -31,6 +32,12 @@ export interface ResizeGripsSize {
  * the box's computed `max-width`/`max-height` and `min-size`, and are clamped
  * again when the window resizes.
  *
+ * With a `storage-key`, the size a person picks is kept in local storage and
+ * reported again when the grips next connect, so every box sharing the key
+ * opens at it. Resetting clears it. A stored size is not clamped when it is
+ * restored: the box's max size caps it as it's drawn, so a size picked on a
+ * larger window comes back once there is room for it.
+ *
  * @example <craft-resize-grips .target=${box}></craft-resize-grips>
  *
  * @fires craft-resize - The box has a new size. `detail` is a
@@ -53,6 +60,12 @@ export default class CraftResizeGrips extends LitElement {
 
   /** Shift + arrow-key increment, in px. */
   @property({type: Number, attribute: 'large-step'}) largeStep = 64;
+
+  /**
+   * Local storage key to remember the size under, shared by every box that
+   * uses the same key. Scoped to this Craft install.
+   */
+  @property({attribute: 'storage-key'}) storageKey = '';
 
   /** The axis being dragged, if any. */
   @state() private dragging: Axis | null = null;
@@ -81,11 +94,66 @@ export default class CraftResizeGrips extends LitElement {
     window.removeEventListener('resize', this.#onWindowResize);
   }
 
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+
+    if (changed.has('storageKey') && this.storageKey) {
+      this.#restore();
+    }
+  }
+
   /** Puts the box back to its own size. */
   reset(): void {
     this.#width = null;
     this.#height = null;
     this.#emit();
+    this.#store();
+  }
+
+  get #storageKey(): string {
+    const systemUid = (window as WindowWithCraft).Craft?.systemUid ?? '';
+
+    return `Craft-${systemUid}.${this.storageKey}`;
+  }
+
+  #restore(): void {
+    let stored: Partial<ResizeGripsSize> | null = null;
+
+    try {
+      stored = JSON.parse(localStorage.getItem(this.#storageKey) ?? 'null');
+    } catch {
+      return;
+    }
+
+    const valid = (value: unknown): number | null =>
+      typeof value === 'number' && value > 0 ? value : null;
+    const width = valid(stored?.width);
+    const height = valid(stored?.height);
+
+    if (width !== null || height !== null) {
+      this.#width = width;
+      this.#height = height;
+      this.#emit();
+    }
+  }
+
+  #store(): void {
+    if (!this.storageKey) {
+      return;
+    }
+
+    try {
+      if (this.#width === null && this.#height === null) {
+        localStorage.removeItem(this.#storageKey);
+      } else {
+        localStorage.setItem(
+          this.#storageKey,
+          JSON.stringify({width: this.#width, height: this.#height})
+        );
+      }
+    } catch {
+      // Storage is unavailable or full: the size lasts as long as the box.
+    }
   }
 
   get #box(): HTMLElement | null {
@@ -198,6 +266,7 @@ export default class CraftResizeGrips extends LitElement {
     }
     this.#drag = null;
     this.dragging = null;
+    this.#store();
   }
 
   #onKeydown(event: KeyboardEvent): void {
@@ -228,6 +297,7 @@ export default class CraftResizeGrips extends LitElement {
     }
 
     event.preventDefault();
+    this.#store();
   }
 
   #gripEvents(axis: Axis) {

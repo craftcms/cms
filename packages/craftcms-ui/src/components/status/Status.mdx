@@ -47,7 +47,13 @@ Without a `label`, the name is "Status: live" derived from the state. Set `label
 
 A status with neither `status` nor `label` has no name and is not exposed as an image at all.
 
-**Show the state in visible text too.** Carry it in the surrounding row, so its meaning doesn't rest on the dot alone.
+**Show the state in visible text too.** Carry it in the surrounding row, so its meaning doesn't rest on the dot alone. When text beside the dot names the state, the dot is decorative: its color doesn't need to contrast with what's behind it.
+
+**A dot without text beside it** is the only cue to the state. For someone who can't tell the colors apart and has turned on "Use shapes to represent statuses", its shape is all they have. So:
+
+- Prefer a [Badge](?path=/docs/components-badge--docs) when there's room. It names the state in words.
+- Only `pending` (a triangle) and `expired` (a square) have shapes of their own. `live`, `enabled` and `disabled` are all circles, so on their own they differ by color alone. Show those states in text.
+- The dot must reach 3:1 against what's behind it, so the shape is visible. The status colors do on the default, white, sunken, page and details surfaces, on selected and hovered rows, and on tinted card headers, in both themes. In a selected card's header, the dot takes a ring in the header's text color instead. Anywhere else, check the contrast.
 
 ## Properties
 

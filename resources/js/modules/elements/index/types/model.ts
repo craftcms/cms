@@ -107,7 +107,7 @@ export interface ElementIndexView {
 }
 
 export interface ElementIndexOperations {
-  refresh(this: void, options?: {selectId?: number}): Promise<void>;
+  refresh(this: void): Promise<void>;
   clearSelection(this: void): void;
   findRow(this: void, id: string | number): ElementIndexRow | undefined;
   captureSelection(this: void): () => void;
@@ -118,4 +118,6 @@ export interface ElementIndexModel extends ElementIndexOperations {
   view: ElementIndexView;
   changeSource(this: void, key: string): void;
   changeSite(this: void, handle: string): void;
+  /** Selects the rows on screen with these IDs. */
+  selectElements(this: void, ids: number[]): void;
 }

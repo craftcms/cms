@@ -1,8 +1,8 @@
-import {css} from 'lit';
+import {css, unsafeCSS} from 'lit';
 import {
-  activeSegmentDividerForcedColorsStyles,
   segmentDividerStyles,
-} from './segment-divider.styles.js';
+  segmentTrackStyles,
+} from './segment-track.styles.js';
 
 export default css`
   :host {
@@ -31,75 +31,78 @@ export default css`
       var(--c-color-accent-fill-quiet)
     );
     display: inline-flex;
-    align-items: stretch;
+    align-items: center;
     min-height: max(var(--_segment-height), var(--touch-target-size));
     outline: none;
   }
 
+  ${segmentTrackStyles(unsafeCSS('.slide-picker__track'))}
+
+  .slide-picker__track {
+    --_split: calc(
+      min(var(--_filled), 1) * 1px + var(--_filled) *
+        (var(--_segment-width) + 1px)
+    );
+    display: inline-flex;
+  }
+
+  .slide-picker__track::before {
+    border-color: var(--_segment-active-border);
+    background-color: var(--_segment-active-fill);
+  }
+
+  .slide-picker__track::after {
+    border-color: var(--_segment-border);
+    background-color: var(--_segment-fill);
+  }
+
   .slide-picker__segment {
     position: relative;
-    box-sizing: border-box;
     inline-size: calc(var(--_segment-width) + 1px);
     block-size: calc(var(--_segment-height) + 2px);
-
-    border: 1px solid var(--_segment-border);
-    border-inline-start-width: 0;
-    background-color: var(--_segment-fill);
     cursor: pointer;
-    margin-block: auto;
   }
 
   .slide-picker__segment:first-child {
     inline-size: calc(var(--_segment-width) + 2px);
-    border-inline-start-width: 1px;
-    border-start-start-radius: var(--c-radius-sm);
-    border-end-start-radius: var(--c-radius-sm);
   }
 
-  .slide-picker__segment:last-child {
-    border-start-end-radius: var(--c-radius-sm);
-    border-end-end-radius: var(--c-radius-sm);
-  }
-
-  .slide-picker__segment.is-active {
-    background-color: var(--_segment-active-fill);
-    border-color: var(--_segment-active-border);
-  }
-
-  .slide-picker__segment.is-active:not(.is-last-active) {
-    border-inline-end-color: transparent;
-  }
-
-  .slide-picker__segment.is-active:not(.is-last-active)::after {
-    --_divider-edge: var(--_segment-active-border);
-    --_divider: var(--_segment-divider);
+  .slide-picker__segment:not(:last-child)::after {
+    --_divider: var(--_segment-border);
     ${segmentDividerStyles}
   }
 
-  .slide-picker.is-previewing .slide-picker__segment {
-    background-color: transparent;
-    border-color: var(--_segment-border);
+  .slide-picker__segment.is-active:not(:last-child)::after {
+    --_divider: var(--_segment-divider);
   }
 
-  .slide-picker.is-previewing .slide-picker__segment::after {
-    content: none;
+  .slide-picker__segment.is-last-active:not(:last-child)::after {
+    --_divider: var(--_segment-active-border);
   }
 
-  .slide-picker.is-previewing .slide-picker__segment.is-previewed {
-    background-color: var(--_segment-hover-fill);
+  .slide-picker.is-previewing .slide-picker__track::before {
+    border-width: 2px;
     border-color: var(--_segment-preview-border);
-    border-block-width: 2px;
-    border-inline-end-width: 2px;
+    background-color: var(--_segment-hover-fill);
   }
 
-  .slide-picker.is-previewing .slide-picker__segment.is-previewed:first-child {
-    border-inline-start-width: 2px;
+  .slide-picker.is-previewing .slide-picker__track::after {
+    background-color: transparent;
+  }
+
+  .slide-picker.is-previewing .slide-picker__segment:not(:last-child)::after {
+    --_divider: var(--_segment-border);
+  }
+
+  .slide-picker.is-previewing
+    .slide-picker__segment.is-previewed:not(:last-child)::after {
+    --_divider: var(--_segment-preview-border);
+    inline-size: 2px;
   }
 
   :host(:focus-visible) .slide-picker__segment.is-last-active {
     outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
-    position: relative;
     z-index: 1;
   }
 
@@ -108,28 +111,42 @@ export default css`
   }
 
   @media (forced-colors: active) {
-    .slide-picker__segment {
-      background: Canvas;
-      border-color: ButtonBorder;
-    }
-
-    .slide-picker__segment.is-active {
-      background: Highlight;
+    .slide-picker__track::before {
       border-color: Highlight;
+      background-color: Highlight;
     }
 
-    .slide-picker__segment.is-active:not(.is-last-active)::after {
-      ${activeSegmentDividerForcedColorsStyles}
-    }
-
-    .slide-picker.is-previewing .slide-picker__segment {
-      background: Canvas;
+    .slide-picker__track::after {
       border-color: ButtonBorder;
+      background-color: Canvas;
     }
 
-    .slide-picker.is-previewing .slide-picker__segment.is-previewed {
-      background: Canvas;
+    /* Forced colors would recolor the dividers to vanish on Highlight. */
+    .slide-picker__segment:not(:last-child)::after {
+      forced-color-adjust: none;
+      --_divider: ButtonBorder;
+    }
+
+    .slide-picker__segment.is-active:not(:last-child)::after {
+      --_divider: Canvas;
+    }
+
+    .slide-picker__segment.is-last-active:not(:last-child)::after {
+      --_divider: Highlight;
+    }
+
+    .slide-picker.is-previewing .slide-picker__track::before {
       border-color: Highlight;
+      background-color: Canvas;
+    }
+
+    .slide-picker.is-previewing .slide-picker__segment:not(:last-child)::after {
+      --_divider: ButtonBorder;
+    }
+
+    .slide-picker.is-previewing
+      .slide-picker__segment.is-previewed:not(:last-child)::after {
+      --_divider: Highlight;
     }
   }
 `;

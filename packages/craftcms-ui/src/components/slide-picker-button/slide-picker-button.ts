@@ -134,6 +134,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
       steps.push(value);
     }
     const valueText = this.#valueText(this.value);
+    const filled = steps.filter((value) => value <= this.value).length;
 
     return html`
       <craft-popover placement="bottom">
@@ -146,7 +147,11 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           flush=${ifDefined(this.flush)}
           aria-describedby=${this.itemLabel ? 'item-label' : nothing}
         >
-          <span class="segments" aria-hidden="true">
+          <span
+            class="segments"
+            style="--_filled: ${filled}"
+            aria-hidden="true"
+          >
             ${steps.map(
               (value) =>
                 html`<span

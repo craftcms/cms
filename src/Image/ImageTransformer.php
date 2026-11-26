@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Image;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
@@ -25,6 +26,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
@@ -64,7 +66,7 @@ class ImageTransformer
         bool $immediately,
         ?CraftAssetTransformDriver $driver = null,
     ): string {
-        $driver ??= $this->currentDriver($asset);
+        $driver ??= $this->currentDriver($asset->getVolume());
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
@@ -78,8 +80,8 @@ class ImageTransformer
 
         $index = $this->getTransformIndex($asset, $imageTransform);
         $disk = $this->transformDisk($asset, $driver);
-        $transformHasUrls = $this->transformHasUrls($asset, $driver);
-        $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
+        $transformHasUrls = $this->transformHasUrls($asset->getVolume(), $driver);
+        $uri = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
         if ($disk instanceof LocalFilesystemAdapter) {
@@ -182,14 +184,14 @@ class ImageTransformer
 
     public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
     {
-        return $this->transformHasUrls($asset, $this->currentDriver($asset));
+        return $this->transformHasUrls($asset->getVolume(), $this->currentDriver($asset->getVolume()));
     }
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
     {
-        $driver = $this->currentDriver($asset);
+        $driver = $this->currentDriver($asset->getVolume());
         $this->getTransformUrl($asset, $index->getTransform(), true, $driver);
-        $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $path = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $index);
         $stream = $this->transformDisk($asset, $driver)->readStream($path);
 
         if (! is_resource($stream)) {
@@ -233,14 +235,28 @@ class ImageTransformer
         ImageTransformIndex $transformIndex,
         ?CraftAssetTransformDriver $driver = null,
     ): void {
-        $driver ??= $this->currentDriver($asset);
-        $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
+        $driver ??= $this->currentDriver($asset->getVolume());
+        $folderPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath);
+        // Disk paths use forward slashes on every OS
+        $diskPath = $folderPath.$this->getTransformUri($asset, $transformIndex);
 
         try {
+            // Only a generated transform was served from its own URL. It’s built as getTransformUrl() served it,
+            // revved with when the transform was generated.
+            $url = $transformIndex->fileExists && $this->transformHasUrls($asset->getVolume(), $driver)
+                ? Html::encodeSpaces(AssetsHelper::revUrl(
+                    $this->transformDisk($asset, $driver)->url($diskPath),
+                    $asset,
+                    $transformIndex->dateIndexed,
+                ))
+                : null;
+
             event(new DeletingTransformedImage(
                 asset: $asset,
                 imageTransformIndex: $transformIndex,
                 path: $diskPath,
+                disk: $this->outputDisk($asset->getVolume(), $driver),
+                url: $url,
             ));
             $this->transformDisk($asset, $driver)->delete($diskPath);
         } catch (Throwable) {
@@ -368,7 +384,7 @@ class ImageTransformer
         }
 
         $transformDisk = $this->transformDisk($asset, $driver);
-        $transformPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $transformPath = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $index);
 
         if ($transformDisk->exists($transformPath)) {
             $dateModified = $transformDisk->lastModified($transformPath);
@@ -440,7 +456,7 @@ class ImageTransformer
             throw new ImageTransformException('Asset not found - '.$index->assetId);
         }
 
-        $driver ??= $this->currentDriver($asset);
+        $driver ??= $this->currentDriver($asset->getVolume());
         $index->detectedFormat = $index->format ?: ImageTransformHelper::detectTransformFormat($asset);
         $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
@@ -448,11 +464,11 @@ class ImageTransformer
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
         $disk = $this->transformDisk($asset, $driver);
 
-        $target = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
+        $target = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $index);
 
         // If we have a match, copy the file.
         if ($matchFound) {
-            $from = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $matchFound);
+            $from = $this->getTransformFolderPath($asset->getVolume(), $asset->folderPath).$this->getTransformSubpath($asset, $matchFound);
 
             // Sanity check
             try {
@@ -743,24 +759,47 @@ class ImageTransformer
         return $tempPath;
     }
 
-    private function getTransformBasePath(Asset $asset): string
+    /**
+     * Returns the directory on the transform disk that holds the transforms of a volume folder’s assets.
+     */
+    public function getTransformFolderPath(Volume $volume, ?string $folderPath): string
     {
-        return '_'.$asset->getVolume()->uid.DIRECTORY_SEPARATOR.($asset->folderPath ?? '');
+        return '_'.$volume->uid.'/'.($folderPath ?? '');
+    }
+
+    /**
+     * Returns the URL of the directory that holds the transforms of a volume folder’s assets, or null if transforms
+     * don’t have public URLs.
+     */
+    public function getTransformFolderUrl(Volume $volume, ?string $folderPath): ?string
+    {
+        if (! $this->transformHasUrls($volume, $this->currentDriver($volume))) {
+            return null;
+        }
+
+        // Built like getTransformUrl() builds transform URLs, so it’s a prefix of them
+        return Html::encodeSpaces($this->getTransformDisk($volume)->url($this->getTransformFolderPath($volume, $folderPath)));
+    }
+
+    /**
+     * Returns the disk that a volume’s transforms are stored on.
+     */
+    public function getTransformDisk(Volume $volume): FilesystemAdapter
+    {
+        return Storage::disk($this->outputDisk($volume, $this->currentDriver($volume)));
     }
 
     private function transformDisk(Asset $asset, CraftAssetTransformDriver $driver): FilesystemAdapter
     {
-        return Storage::disk($this->outputDisk($asset, $driver));
+        return Storage::disk($this->outputDisk($asset->getVolume(), $driver));
     }
 
     /**
      * Returns whether transforms get direct URLs on their output disk: when the source volume has public URLs, unless a
      * disk’s deprecated `asset_transformer` key sets `has_urls`. Other transforms are served through Craft’s action URL.
      */
-    private function transformHasUrls(Asset $asset, CraftAssetTransformDriver $driver): bool
+    private function transformHasUrls(Volume $volume, CraftAssetTransformDriver $driver): bool
     {
-        $volume = $asset->getVolume();
-
         // Temporary uploads ignore the output disk, so they ignore its has_urls too
         if ($driver->hasUrls !== null && ! $volume->isTemporary()) {
             return $driver->hasUrls;
@@ -774,9 +813,8 @@ class ImageTransformer
      * volume’s own disk. Temporary uploads always use their own disk, since they have no setting to opt out of a public
      * output disk.
      */
-    private function outputDisk(Asset $asset, CraftAssetTransformDriver $driver): string
+    private function outputDisk(Volume $volume, CraftAssetTransformDriver $driver): string
     {
-        $volume = $asset->getVolume();
         $disk = $volume->isTemporary() ? null : $driver->outputDisk;
         $diskName = $disk === null
             ? $volume->getResolvedDisk()
@@ -802,13 +840,13 @@ class ImageTransformer
     }
 
     /**
-     * Returns the `craft` driver instance for an asset’s volume: its transformer’s, when that uses the `craft` driver,
-     * or the `craft` transformer’s, for when another driver hands a file to `craft` or a caller uses this class directly.
+     * Returns the `craft` driver instance for a volume: its transformer’s, when that uses the `craft` driver, or the
+     * `craft` transformer’s, for when another driver hands a file to `craft` or a caller uses this class directly.
      */
-    private function currentDriver(Asset $asset): CraftAssetTransformDriver
+    private function currentDriver(Volume $volume): CraftAssetTransformDriver
     {
         $transformers = app(AssetTransformers::class);
-        $driver = $transformers->transformer($transformers->forVolume($asset->getVolume())->name);
+        $driver = $transformers->transformer($transformers->forVolume($volume)->name);
         $driver = $driver instanceof CraftAssetTransformDriver ? $driver : $transformers->transformer('craft');
 
         if (! $driver instanceof CraftAssetTransformDriver) {

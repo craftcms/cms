@@ -13,13 +13,10 @@ export default css`
     );
     --_dialog-max-inline-size: var(--c-dialog-max-inline-size, 96vw);
     --_dialog-max-block-size: var(--c-dialog-max-block-size, 90dvh);
-
-    /*
-      A floor, not a fixed height. The surface grows with the result list up to
-      the max-block-size above and then scrolls inside; a short list gets a
-      short dialog rather than a tall one full of empty space. The floor keeps
-      a one-row result from collapsing into a sliver.
-    */
+    --_dialog-block-size: var(
+      --c-dialog-block-size,
+      calc(var(--_dialog-inline-size) / 1.618)
+    );
     --_dialog-min-block-size: var(--c-dialog-min-block-size, 400px);
   }
 
@@ -41,11 +38,6 @@ export default css`
 
   :host([fullscreen]) {
     --_dialog-min-block-size: var(--c-dialog-min-block-size, 100dvh);
-  }
-
-  /* Held at the height it opened at (see #queueSizeLock), within the max. */
-  :host([size-locked]:not([fullscreen])) .surface {
-    block-size: min(var(--_locked-block-size), var(--_dialog-max-block-size));
   }
 
   /* The index supplies its own padding, and its sidebar runs edge to edge. */

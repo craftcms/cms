@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Actions\DeleteAssets;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
@@ -10,6 +11,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\QueryForTableAttributePreparing;
+use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageTransformer;
@@ -26,6 +28,7 @@ use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
@@ -460,6 +463,85 @@ it('provides current-folder actions and moves relative to its parent', function 
                 && str_contains($move['redirectUrl'], '/assets/testvolume/parent');
         }));
 });
+
+it('runs element actions on the assets in the subfolder on screen', function (bool $selectAll) {
+    $volumeModel = Volume::factory()->create([
+        'disk' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $volume = Volumes::getVolumeById($volumeModel->id);
+    $folder = Folders::ensureFolderByFullPathAndVolume('pages', $volume);
+    $rootAsset = Asset::factory()->createElement([
+        'volumeId' => $volumeModel->id,
+        'folderId' => Folders::getRootFolderByVolumeId($volumeModel->id)->id,
+    ]);
+    $folderAsset = Asset::factory()->createElement([
+        'volumeId' => $volumeModel->id,
+        'folderId' => $folder->id,
+    ]);
+
+    $source = null;
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume/pages']))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) use (&$source): void {
+            $source = $page->toArray()['props']['source'];
+        });
+
+    postJson(action(PerformElementActionController::class), [
+        'elementAction' => DeleteAssets::class,
+        'elementType' => AssetElement::class,
+        'context' => 'index',
+        'source' => $source['keyPath'] ?? $source['key'],
+        ...($selectAll ? ['selectAll' => true] : ['elementIds' => [$folderAsset->id]]),
+    ])->assertOk();
+
+    expect(AssetElement::find()->id($folderAsset->id)->exists())->toBeFalse()
+        ->and(AssetElement::find()->id($rootAsset->id)->exists())->toBeTrue();
+})->with([
+    'selected assets' => false,
+    'every asset' => true,
+]);
+
+it('runs element actions on the descendant assets a subfolder search lists', function (bool $selectAll) {
+    $volumeModel = Volume::factory()->create([
+        'disk' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $volume = Volumes::getVolumeById($volumeModel->id);
+    $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $volume);
+    $nestedAsset = Asset::factory()->createElement([
+        'volumeId' => $volumeModel->id,
+        'folderId' => $child->id,
+        'filename' => 'nested-needle.txt',
+        'kind' => 'text',
+    ]);
+    Search::indexElementAttributes($nestedAsset);
+
+    $props = null;
+    get(route('craft.cp.assets.index', [
+        'defaultSource' => 'testvolume/parent',
+        'search' => 'nested-needle',
+        'includeSubfolders' => 1,
+    ]))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) use (&$props): void {
+            $props = $page->toArray()['props'];
+        });
+
+    postJson(action(PerformElementActionController::class), [
+        'elementAction' => DeleteAssets::class,
+        'elementType' => AssetElement::class,
+        'context' => 'index',
+        'source' => $props['source']['keyPath'] ?? $props['source']['key'],
+        'criteria' => [...$props['queryCriteria'], 'search' => 'nested-needle'],
+        ...($selectAll ? ['selectAll' => true] : ['elementIds' => [$nestedAsset->id]]),
+    ])->assertOk();
+
+    expect(AssetElement::find()->id($nestedAsset->id)->exists())->toBeFalse();
+})->with([
+    'selected assets' => false,
+    'every asset' => true,
+]);
 
 it('optionally searches the current folder’s descendants', function () {
     $volumeModel = Volume::factory()->create([

@@ -31,9 +31,9 @@ it('shows each option’s icon or color before its label', function (ChoicePrese
     $crawler = iconChoiceHtml($presentation);
 
     expect($crawler->filter('.cp-icon'))->toHaveCount(1)
-        ->and($crawler->filter('.cp-icon')->attr('style'))->toContain('--icon-color: #ff0000')
-        ->and($crawler->filter('.color-preview'))->toHaveCount(1)
-        ->and($crawler->filter('.color-preview')->attr('style'))->toContain('#00ff00');
+        ->and($crawler->filter('.cp-icon')->attr('style'))->toBe('color: #ff0000;')
+        ->and($crawler->filter('craft-indicator'))->toHaveCount(1)
+        ->and($crawler->filter('craft-indicator')->attr('fill'))->toBe('#00ff00');
 })->with([
     'checkboxes' => ChoicePresentation::Checkboxes,
     'radios' => ChoicePresentation::Radios,

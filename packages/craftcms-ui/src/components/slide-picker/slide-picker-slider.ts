@@ -172,6 +172,9 @@ export default class CraftSlidePickerSlider extends LitElement {
 
   override render() {
     const preview = this.#editable ? this.preview : null;
+    const values = this.#values();
+    const run = preview ?? this.#number;
+    const filled = values.filter((value) => value <= run).length;
 
     return html`
       <div
@@ -181,24 +184,26 @@ export default class CraftSlidePickerSlider extends LitElement {
         })}
         @pointerleave=${this.#endPreview}
       >
-        ${this.#values().map((segmentValue) => {
-          return html`
-            <span
-              class=${classMap({
-                'slide-picker__segment': true,
-                'is-active': segmentValue <= this.#number,
-                'is-last-active': segmentValue === this.#number,
-                'is-previewed': preview !== null && segmentValue <= preview,
-              })}
-              aria-hidden="true"
-              @pointerenter=${(event: PointerEvent) =>
-                this.#startPreview(event, segmentValue)}
-              @click=${() => this.#select(segmentValue)}
-              title=${this.valueText(segmentValue)}
-              >${nothing}</span
-            >
-          `;
-        })}
+        <span class="slide-picker__track" style="--_filled: ${filled}">
+          ${values.map((segmentValue) => {
+            return html`
+              <span
+                class=${classMap({
+                  'slide-picker__segment': true,
+                  'is-active': segmentValue <= this.#number,
+                  'is-last-active': segmentValue === this.#number,
+                  'is-previewed': preview !== null && segmentValue <= preview,
+                })}
+                aria-hidden="true"
+                @pointerenter=${(event: PointerEvent) =>
+                  this.#startPreview(event, segmentValue)}
+                @click=${() => this.#select(segmentValue)}
+                title=${this.valueText(segmentValue)}
+                >${nothing}</span
+              >
+            `;
+          })}
+        </span>
       </div>
     `;
   }

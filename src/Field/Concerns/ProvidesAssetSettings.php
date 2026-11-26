@@ -232,10 +232,8 @@ trait ProvidesAssetSettings
                 ->instructions(t('The volumes that should be available when selecting assets.'))
                 ->control(Choice::make('availableVolumes')
                     ->multiple()
-                    ->options([
-                        ['label' => t('All'), 'value' => '*'],
-                        ...$volumeOptions,
-                    ])
+                    ->options($volumeOptions)
+                    ->allOption()
                     ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
             UiField::make(t('Show unpermitted volumes'))
                 ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))

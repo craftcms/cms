@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
+use CraftCms\Cms\Asset\Events\FolderCreated;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
 use CraftCms\Cms\Asset\Events\VolumeDeleting;
 use CraftCms\Cms\Asset\Events\VolumeDeletionApplied;
@@ -150,6 +151,22 @@ it('clears an existing volume’s transform index when its asset transformer cha
 
     expect($afterRename)->toEqualCanonicalizing([$changed, $untouched])
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->whereIn('id', [$changed, $untouched])->pluck('id')->all())->toBe([$untouched]);
+});
+
+it('dispatches FolderCreated for a new volume’s root folder with a resolvable volume', function () {
+    $this->volumes->getAllVolumes();
+    $handles = [];
+    Event::listen(function (FolderCreated $event) use (&$handles) {
+        $handles[] = $event->folder->getVolume()->handle;
+    });
+
+    $this->volumes->saveVolume(new VolumeData([
+        'name' => 'Test Volume',
+        'handle' => 'testVolume',
+        'disk' => 'test-disk',
+    ]));
+
+    expect($handles)->toBe(['testVolume']);
 });
 
 it('can save an existing volume', function () {

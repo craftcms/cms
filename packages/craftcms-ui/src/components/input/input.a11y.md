@@ -15,6 +15,7 @@ The `FormControl` mixin does the label, help text and feedback wiring. It render
 
 - [x] The control is a native `<input>` in the light DOM, and the `label` attribute or a slotted `label` is a `<label>` whose `for` points at it, so the input's accessible name is the visible label. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `renders a native input with the label wired to it` in `input.test.ts`.
 - [ ] The label is also added to the native input's `aria-labelledby`, and text in a `prefix`, `suffix`, `before` or `after` element marked `data-label` joins it. Per WCAG 1.3.1 (Info and Relationships). Not yet verified.
+- [x] Text in a `prefix` or `suffix` element marked `data-description` is referenced by the native input's `aria-describedby`, including elements added, replaced or removed after it renders. Per WCAG 1.3.1 (Info and Relationships). Verified by `is described by a %s marked data-description added, replaced or removed after it renders` in `input.test.ts`.
 - [x] `type` is passed to the native input, so `email`, `number`, `url` and the rest keep their native role, keyboard and validation. Per WCAG 4.1.2 (Name, Role, Value). Verified by `passes a type through to the native input` in `input.test.ts`.
 - [ ] `autocomplete` is passed to the native input. Per WCAG 1.3.5 (Identify Input Purpose). Not yet verified.
 - [x] `disabled` disables the native input, so it leaves the Tab order and is announced as unavailable. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables the native input` in `input.test.ts`.
@@ -27,6 +28,7 @@ The `FormControl` mixin does the label, help text and feedback wiring. It render
 - [ ] A `Required` validator sets `aria-required="true"` on the native input, and removes it when the validator is removed. Per WCAG 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Not yet verified.
 - [x] While an error is shown, the native input carries `aria-invalid="true"`, from the host's `invalid` property, and loses it once the error clears. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Verified by `marks the native input invalid` in `input.test.ts`.
 - [x] Validation messages in the `feedback` slot are referenced by the native input's `aria-describedby`, including ones shown, replaced or removed after it renders. Per WCAG 3.3.1 (Error Identification). Verified by `is described by feedback added, replaced or removed after it renders` in `input.test.ts`.
+- [x] With `show-chars-left`, the number of characters left is shown at the end of the control and kept up to date as text is typed, in a `role="status"` region that reads it as "Characters left: 7". Per WCAG 3.3.2 (Labels or Instructions) and 4.1.3 (Status Messages). Verified by `counts down the characters left as text is typed` in `show-chars-left.browser.test.ts`.
 - [ ] Validation messages are announced when they appear: the `feedback` slot is `aria-live="polite"` while focus is in the control and `assertive` once it leaves. Per WCAG 4.1.3 (Status Messages). Not yet verified.
 
 ### Keyboard and focus
@@ -44,6 +46,7 @@ The `FormControl` mixin does the label, help text and feedback wiring. It render
 
 ### Reflow and zoom
 
+- [x] The characters-left count never covers the text being typed. Per WCAG 1.4.10 (Reflow). Verified by `keeps typed text in craft-input clear of the counter` in `show-chars-left.browser.test.ts`.
 - [x] A `maxlength` shrinks the control to its expected width but never past its container, so a long limit doesn't push the page sideways. Per WCAG 1.4.10 (Reflow). Verified by `shrinks to fit a short maxlength` and `doesn’t outgrow its container for a long maxlength` in `input.browser.test.ts`.
 - [ ] The control's text and height scale with the text size, so the value isn't clipped at 200% zoom. Per WCAG 1.4.4 (Resize Text). Not yet verified.
 - [ ] Wide content in `prefix` or `suffix` doesn't push the control past its container at a 320px viewport. Per WCAG 1.4.10 (Reflow). Not yet verified.

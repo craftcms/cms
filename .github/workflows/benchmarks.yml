@@ -59,6 +59,17 @@ jobs:
           git clone --depth 1 --branch 6.x https://github.com/craftcms/cms-assets.git "$RUNNER_TEMP/cms-assets"
           cp -rn "$RUNNER_TEMP/cms-assets/resources/." cms-assets/resources/
 
+      # Tally loads its tally_hooks extension only in the counted run, and loading it changes PHP's opcache system ID.
+      # The counted run would then miss the opcache file cache that the native run filled and compile every script.
+      # Which case compiled a script first would decide which case paid for it. Loading the extension into tally run
+      # itself puts it in every worker's php.ini, so both runs share one cache. The path is the same for both checkouts.
+      - name: Load Tally's extension in every benchmark process
+        run: |
+          mkdir -p "$RUNNER_TEMP/tally-ini"
+          build=$(php -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;')
+          echo "extension=$GITHUB_WORKSPACE/vendor/phpstan/tally/codspeed/linux-$(uname -m)/tally_hooks-$build.so" \
+            > "$RUNNER_TEMP/tally-ini/tally-hooks.ini"
+
       # Both are measured on the same runner. Tally counts instructions, cycles and memory under a CPU simulation rather
       # than timing them, so the numbers hardly move between runs. The base runs its own benchmarks and seed, so a
       # change to either shows from the next pull request on.
@@ -74,7 +85,7 @@ jobs:
           composer config version "6.x-dev"
           composer install --no-interaction --no-progress
           scripts/benchmark-setup.sh
-          GITHUB_ACTIONS=false vendor/bin/tally run --output="$RUNNER_TEMP/base" \
+          GITHUB_ACTIONS=false PHP_INI_SCAN_DIR=":$RUNNER_TEMP/tally-ini" vendor/bin/tally run --output="$RUNNER_TEMP/base" \
             || echo "::warning::Some of the base branch's benchmarks failed, so they have nothing to compare with."
 
       # `tally accept` writes the base's numbers into the pull request's benchmarks as their expected numbers, so
@@ -96,7 +107,7 @@ jobs:
           # point to lines of the benchmarks with the base's numbers written into them.
           set -o pipefail
           status=0
-          GITHUB_STEP_SUMMARY="$RUNNER_TEMP/tally.md" vendor/bin/tally run | sed '/^::/d' || status=$?
+          GITHUB_STEP_SUMMARY="$RUNNER_TEMP/tally.md" PHP_INI_SCAN_DIR=":$RUNNER_TEMP/tally-ini" vendor/bin/tally run | sed '/^::/d' || status=$?
           echo "status=$status" >> "$GITHUB_OUTPUT"
 
       # Tally's report suggests commands that reproduce or accept numbers committed to the benchmarks, which they

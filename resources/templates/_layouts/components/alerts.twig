@@ -43,7 +43,40 @@
                       },
                     } only %}
                   {% endif %}
+                  {% if alert.title ?? false %}
+                    {% include '_layouts/components/tag.twig' with {
+                      type: 'h2',
+                      style: {display: 'block'},
+                      content: alert.title|e,
+                    } only %}
+                  {% endif %}
                   {{ (alert is array ? alert.content : alert)|raw }}
+                  {% if (alert.actions ?? false) or (alert.refreshable ?? false) %}
+                    {% embed '_layouts/components/tag.twig' with {
+                      alert,
+                      type: 'p',
+                      attributes: {
+                        class: ['flex', 'flex-nowrap', (alert.refreshable ?? false) ? 'resolvable-alert-buttons']|filter,
+                      },
+                      style: {display: 'block'},
+                    } only %}
+                      {% block content %}
+                        {% for action in alert.actions ?? [] %}
+                          {% include '_layouts/components/tag.twig' with {
+                            type: 'craft-button',
+                            attributes: {
+                              href: action.url,
+                              variant: 'outline',
+                              size: 'small',
+                              inherit: true,
+                            },
+                            style: {display: 'inline-flex'},
+                            content: action.label|e,
+                          } only %}
+                        {% endfor %}
+                      {% endblock %}
+                    {% endembed %}
+                  {% endif %}
                 {% endblock %}
               {% endembed %}
             {% endblock %}

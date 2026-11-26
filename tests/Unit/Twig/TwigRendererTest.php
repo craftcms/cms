@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\File;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\EscaperExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Markup;
 use Twig\Sandbox\SecurityError;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Yiisoft\Arrays\ArrayableInterface;
@@ -305,6 +307,43 @@ describe('sandboxed rendering', function () {
     it('does not allow the attribute() function in sandbox', function () {
         $this->manager->renderSandboxedString('{{ attribute(_context, "foo") }}');
     })->throws(SecurityError::class);
+
+    it('does not let sandboxed templates replace the content of Markup objects', function (string $template) {
+        $this->manager->renderSandboxedString($template, ['safe' => new Markup('original', 'UTF-8')]);
+    })->throws(SecurityNotAllowedMethodError::class)->with([
+        'constructor' => ['{% set x = safe.__construct("<script>", "UTF-8") %}{{ safe }}'],
+        'withContent()' => ['{{ safe.withContent("<script>") }}'],
+    ]);
+
+    it('allows tests that don’t convert values to strings in sandbox', function (string $template, string $expected) {
+        $stringable = new class implements Stringable
+        {
+            public function __toString(): string
+            {
+                return 'SECRET';
+            }
+        };
+
+        expect($this->manager->renderSandboxedString($template, ['stringable' => $stringable, 'entry' => new Entry]))->toBe($expected);
+    })->with([
+        ['{{ stringable is object ? "y" : "n" }}', 'y'],
+        ['{{ stringable is string ? "y" : "n" }}', 'n'],
+        ['{{ stringable is instance of("Stringable") ? "y" : "n" }}', 'y'],
+        ['{{ entry is empty ? "y" : "n" }}', 'n'],
+        ['{{ [entry] is empty ? "y" : "n" }}', 'n'],
+    ]);
+
+    it('checks __toString() for the empty test in sandbox', function () {
+        $stringable = new class implements Stringable
+        {
+            public function __toString(): string
+            {
+                return '';
+            }
+        };
+
+        $this->manager->renderSandboxedString('{{ stringable is empty ? "y" : "n" }}', ['stringable' => $stringable]);
+    })->throws(SecurityNotAllowedMethodError::class);
 
     it('renders sandboxed templates', function () {
         Event::fake([TemplateRendering::class, TemplateRendered::class]);

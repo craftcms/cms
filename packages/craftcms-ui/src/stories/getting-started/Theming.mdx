@@ -12,9 +12,9 @@ There are three levels to reach for, in order.
 ## 1. The palette
 
 Under everything is a palette of raw colors — `--color-red-500`, `--color-slate-200`, and so on across the ramp.
-These are the only place literal colors are written.
+These are the only place literal colors are written. Leonardo generates them from a few key colors, along with a handful of tokens tuned to a contrast ratio, such as the status colors and form control borders.
 
-Redefining one retunes every component that ends up reading it, which makes it the right lever for a brand color and the wrong one for a one-off:
+Redefining one retunes every component that ends up reading it, which makes it the right lever for a brand color and the wrong one for a one-off. Its contrast is then yours to check: the generated stops are made to reach their ratios, and an override isn't, so check text and control borders on the surfaces they sit on, in both themes:
 
 ```css
 :root {

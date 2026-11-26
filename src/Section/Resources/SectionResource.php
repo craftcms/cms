@@ -25,7 +25,7 @@ use function CraftCms\Cms\currentUser;
  */
 class SectionResource extends JsonResource
 {
-    /** @return array{uid: string, id: int, name: string, handle: string, type: string, sites: int[], entryTypes: list<array{id: int, handle: string, name: string, icon: array<string, string>|null}>, entryTypeIdsBySite: object, canSave: bool|null} */
+    /** @return array{uid: string, id: int, name: string, handle: string, type: string, sites: int[], entryTypes: list<array{uid: string, id: int, handle: string, name: string, icon: array<string, string>|null}>, entryTypeIdsBySite: object, canSave: bool|null} */
     #[\Override]
     public function toArray(Request $request): array
     {
@@ -35,6 +35,8 @@ class SectionResource extends JsonResource
         foreach ($entryTypesBySite as $siteEntryTypes) {
             foreach ($siteEntryTypes as $entryType) {
                 $entryTypes[$entryType->id] ??= [
+                    // For selection conditions’ Entry Type rules, which list entry types by UID
+                    'uid' => $entryType->uid,
                     'id' => $entryType->id,
                     'handle' => $entryType->handle,
                     'name' => $entryType->getUiLabel(),

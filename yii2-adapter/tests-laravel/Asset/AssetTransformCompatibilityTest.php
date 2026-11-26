@@ -21,6 +21,7 @@ use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
+use CraftCms\Cms\Asset\Events\TransformGenerating;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -263,6 +264,40 @@ it('returns the source URL for assets the transformer can’t transform', functi
     Exceptions::assertNothingReported();
 });
 
+it('transforms legacy assets with an applied transform through the craft driver', function(): void {
+    Cms::config()->assetTransformers->defaultTransformer(null);
+    app(AssetTransformers::class)->forgetTransformers();
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-transform-compatibility'),
+    ]);
+    $volume = Volume::factory()->create(['disk' => 'uploads']);
+    $asset = ($this->asset)([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'source.jpg',
+        'kind' => 'image',
+        'width' => 960,
+        'height' => 640,
+    ]);
+    $asset->getVolume()->sourceDisk()->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 3) . '/tests/_data/assets/files/background.jpg'),
+    );
+
+    $asset->setTransform(['width' => 100]);
+
+    expect($asset->getUrl())->toBeString()
+        ->and($asset->getWidth())->toBe(100)
+        ->and($asset->getHeight())->toBe(67);
+
+    $asset->setTransform(['width' => 200]);
+
+    expect($asset->getWidth())->toBe(200);
+
+    Storage::disk('uploads')->deleteDirectory('');
+});
+
 it('routes registered legacy image transformers through adapter drivers', function(): void {
     Event::on(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS, function(RegisterComponentTypesEvent $event): void {
         $event->types[] = RegisteredLegacyImageTransformer::class;
@@ -324,17 +359,12 @@ it('selects the volume’s or disk’s transformer before the legacy transformer
     ]);
     $transform = new LegacyImageTransform(['width' => 320]);
     $transform->setTransformer(RegisteredLegacyImageTransformer::class);
-    $before = function(GenerateTransformEvent $event): void {
-        $event->url = '/legacy/event.jpg';
-    };
-    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
 
     try {
         expect($asset->getUrl($transform))->toBe('/transforms/320x160.webp')
             ->and($this->driver->request)->not->toBeNull()
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
-        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
     }
 })->with([
@@ -399,6 +429,110 @@ it('lazily bridges a selected legacy transformer that was not registered', funct
         ->and(Craft::$app->getImageTransforms()->getImageTransformer(UnregisteredLegacyImageTransformer::class)->invalidatedAsset)->toBe($asset);
 });
 
+it('triggers legacy generate transform events for asset transform drivers', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $generated = [];
+    $before = function(GenerateTransformEvent $event): void {
+        if ($event->transform->width === 100) {
+            $event->url = '/legacy/event.jpg';
+        }
+    };
+    $after = function(GenerateTransformEvent $event) use (&$generated): void {
+        $generated[] = [$event->transform->width, $event->url];
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
+
+    try {
+        expect($asset->transform(['width' => 320])->url)->toBe('/transforms/320x160.webp')
+            ->and($asset->transform(['width' => 100])->url)->toBe('/legacy/event.jpg')
+            ->and($generated)->toBe([[320, '/transforms/320x160.webp']]);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
+    }
+});
+
+it('passes inline transform parameters to legacy generate transform handlers', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $zones = [];
+    $before = function(GenerateTransformEvent $event) use (&$zones): void {
+        $zones[] = $event->transform->getParameters()['zone'] ?? null;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+
+    try {
+        $asset->transform(['width' => 320, 'zone' => 'eu']);
+
+        expect($zones)->toBe(['eu']);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    }
+});
+
+it('only triggers legacy generate transform events for image files', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'document.pdf',
+        'kind' => 'pdf',
+    ]);
+    $legacy = 0;
+    $core = 0;
+    $before = function() use (&$legacy): void {
+        $legacy++;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    EventFacade::listen(TransformGenerating::class, function() use (&$core): void {
+        $core++;
+    });
+
+    try {
+        $asset->transform(['width' => 320]);
+
+        expect($core)->toBe(1)
+            ->and($legacy)->toBe(0);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+    }
+});
+
+it('only triggers legacy generate transform events for GIFs on site requests when transformGifs allows it', function(): void {
+    Cms::config()->transformGifs = false;
+    $asset = ($this->asset)([
+        'filename' => 'animation.gif',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $legacy = 0;
+    $before = function() use (&$legacy): void {
+        $legacy++;
+    };
+    Event::on(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+
+    try {
+        request()->attributes->set('isCpRequest', false);
+        $asset->transform(['width' => 320]);
+        $siteRequestCount = $legacy;
+
+        request()->attributes->set('isCpRequest', true);
+        $asset->transform(['width' => 320]);
+
+        expect($siteRequestCount)->toBe(0)
+            ->and($legacy)->toBe(1);
+    } finally {
+        Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
+        Cms::config()->transformGifs = true;
+        request()->attributes->remove('isCpRequest');
+    }
+});
+
 it('honors before-generate URLs before invoking a legacy transformer', function(): void {
     $asset = ($this->asset)();
     $transform = new LegacyImageTransform(['width' => 320]);
@@ -414,6 +548,28 @@ it('honors before-generate URLs before invoking a legacy transformer', function(
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
     }
+});
+
+it('resolves listener URLs for assets with an applied transform', function(): void {
+    $asset = ($this->asset)([
+        'filename' => 'source.jpg',
+        'width' => 800,
+        'height' => 400,
+    ]);
+    $calls = 0;
+    EventFacade::listen(TransformGenerating::class, function(TransformGenerating $event) use (&$calls): void {
+        if (++$calls > 10) {
+            throw new RuntimeException('The listener was called recursively.');
+        }
+
+        $event->url = 'https://cdn.test/source.jpg?w=100';
+    });
+
+    $asset->setTransform(['width' => 100]);
+
+    expect($asset->getUrl())->toBe('https://cdn.test/source.jpg?w=100')
+        ->and($asset->getWidth())->toBe(100)
+        ->and($asset->getHeight())->toBe(50);
 });
 
 it('keeps unexpected legacy transformer exceptions observable', function(): void {

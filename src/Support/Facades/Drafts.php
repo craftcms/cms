@@ -13,6 +13,7 @@ use Override;
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface createDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $canonical, int|null $creatorId = null, string|null $name = null, string|null $notes = null, array $newAttributes = [], bool $provisional = false)
  * @method static string generateDraftName(int $canonicalId)
  * @method static bool saveElementAsDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $element, int|null $creatorId = null, string|null $name = null, string|null $notes = null, bool $markAsSaved = true)
+ * @method static bool saveDraftForApplying(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, bool $crossSiteValidate, bool $saveContent = false)
  * @method static \CraftCms\Cms\Element\Contracts\ElementInterface applyDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $draft, array $newAttributes = [])
  * @method static bool discardDraft(\CraftCms\Cms\Element\Contracts\ElementInterface $draft)
  * @method static void removeDraftData(\CraftCms\Cms\Element\Contracts\ElementInterface $draft)
