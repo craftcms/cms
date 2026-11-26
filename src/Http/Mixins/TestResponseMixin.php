@@ -29,7 +29,8 @@ class TestResponseMixin
 {
     /**
      * The messages the response delivers to the browser: those in an Inertia
-     * page's `messages` prop, those flashed for the page a redirect leads to,
+     * page's `messages` prop, those flashed for the page a redirect or an
+     * Inertia hard visit leads to,
      * and those in the `messages` list of a JSON body, as
      * {@see RespondsWithFlash::asSuccess()} returns.
      *
@@ -50,8 +51,8 @@ class TestResponseMixin
             $response = $this;
             $messages = match (true) {
                 $response->headers->has('X-Inertia') => $response->json('props.messages'),
-                $response->isRedirect() => Flash::all(),
-                $response->original instanceof View => $response->original->getData()['page']['props']['messages'] ?? [],
+                $response->isRedirect(), $response->headers->has('X-Inertia-Location') => Flash::all(),
+                ($response->baseResponse->original ?? null) instanceof View => $response->baseResponse->original->getData()['page']['props']['messages'] ?? [],
                 $response->baseResponse instanceof JsonResponse => $response->json('messages'),
                 default => [],
             };

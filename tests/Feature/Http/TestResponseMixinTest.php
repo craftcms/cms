@@ -6,6 +6,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use PHPUnit\Framework\AssertionFailedError;
 
 use function CraftCms\Cms\cp_url;
@@ -33,8 +34,27 @@ it('finds messages flashed for the page a redirect leads to', function () {
         ->assertNoCpMessages('error');
 });
 
+it('finds messages flashed for the page an Inertia hard visit leads to', function () {
+    Route::middleware('web')->post('/test-messages-hard-visit', function () {
+        request()->attributes->set('isCpRequest', true);
+        Flash::success('Entry saved.');
+
+        return Inertia::location('/elsewhere');
+    });
+
+    withHeaders(['X-Inertia' => 'true'])
+        ->post('/test-messages-hard-visit')->assertConflict()
+        ->assertCpMessage('success', 'Entry saved.');
+});
+
 it('ignores messages a response leaves in the session for a later page', function () {
     post('/test-messages/page')
+        ->assertOk()
+        ->assertNoCpMessages();
+
+    Route::middleware('web')->get('/test-messages-download', fn () => response()->streamDownload(fn () => print ('file'), 'file.txt'));
+
+    get('/test-messages-download')
         ->assertOk()
         ->assertNoCpMessages();
 });
