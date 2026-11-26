@@ -47,6 +47,7 @@ class ElementIndexViewStates
 
         if (is_array($keys)) {
             Cache::put($this->cacheKey(), array_values(array_unique([...$keys, ...array_keys($states)])), $this->ttl());
+            $this->renew();
         }
     }
 
@@ -65,14 +66,22 @@ class ElementIndexViewStates
     public function get(string $elementType, string $context): ?array
     {
         $state = Cache::get($this->cacheKey("elementindex.$elementType.$context"));
+        $this->renew();
 
+        return is_array($state) ? $state : null;
+    }
+
+    /**
+     * Renews every pushed view state and the synced flag together, so the
+     * flag never outlives a view state it says the session has.
+     */
+    private function renew(): void
+    {
         foreach ((array) Cache::get($this->cacheKey(), []) as $key) {
             Cache::touch($this->cacheKey($key), $this->ttl());
         }
 
         Cache::touch($this->cacheKey(), $this->ttl());
-
-        return is_array($state) ? $state : null;
     }
 
     private function ttl(): DateTimeInterface

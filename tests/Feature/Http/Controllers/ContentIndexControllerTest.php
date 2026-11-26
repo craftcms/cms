@@ -357,7 +357,14 @@ it('keeps rendering page loads for the view states for as long as the session is
             ->has('data', 2)
         );
 
-    // An index not visited in that time keeps its view state too.
+    // A push renews every view state too.
+    $this->travel($lifetime - 1)->minutes();
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'table']]]],
+    ])->assertNoContent();
+    $this->travel($lifetime - 1)->minutes();
+
+    // An index not visited in that time keeps its view state.
     Edition::set(Edition::Pro);
     get("/{$this->cpTrigger}/users/all")
         ->assertOk()
