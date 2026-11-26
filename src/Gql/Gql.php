@@ -371,6 +371,11 @@ class Gql
 
                 [$dep, $duration] = $this->elementCaches->stopCollectingCacheInfo();
 
+                // So the response gets the tag on a miss too, as it does when a hit applies the stored tags.
+                if ($cacheKey) {
+                    $this->elementCaches->collectCacheTags([self::CACHE_TAG]);
+                }
+
                 if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
                     $this->setCachedResult($cacheKey, $result, $dep, $duration);
                 }

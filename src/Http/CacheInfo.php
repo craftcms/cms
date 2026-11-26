@@ -28,7 +28,8 @@ use Illuminate\Container\Attributes\Scoped;
  *
  * Craft doesn't send the tags anywhere itself. Cache integrations, such as `craftcms/http-cache` or a plugin, read
  * them with {@see getTags()} from wherever they run, and can cap their own lifetimes, such as `CDN-Cache-Control`,
- * at {@see getExpiryDate()}.
+ * at {@see getExpiryDate()}. Read them before the response is sent: collection stops when {@see CollectCacheInfo}
+ * terminates, so `defer()` callbacks and terminating callbacks get nothing.
  *
  * @since 6.0.0
  */

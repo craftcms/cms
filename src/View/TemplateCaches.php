@@ -112,6 +112,9 @@ class TemplateCaches
         ];
         $collectorPayloads = [];
 
+        // So the page gets the tag on a miss too, as it does when a hit applies the stored tags.
+        $this->dependencyCollector->collectTags(['template']);
+
         foreach ($this->collectors() as $collector) {
             $payload = $collector->end($context);
 

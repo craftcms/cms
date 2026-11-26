@@ -155,13 +155,13 @@ it('keeps tags and element expiry dates from inside a cached block on a cache hi
     ))->setPublic()->setMaxAge(3600));
 
     $first = $this->get('/page');
-    expect($this->cacheInfo['tags'])->toContain('nav', 'element::'.Entry::class);
+    expect($this->cacheInfo['tags'])->toContain('nav', 'template', 'element::'.Entry::class);
 
     app()->forgetScopedInstances();
     $second = $this->get('/page');
 
     expect($second->getContent())->toBe($first->getContent())
-        ->and($this->cacheInfo['tags'])->toContain('nav', 'element::'.Entry::class)
+        ->and($this->cacheInfo['tags'])->toContain('nav', 'template', 'element::'.Entry::class)
         ->and($this->cacheInfo['expiry'])->toBe(now()->addMinutes(10)->getTimestamp())
         ->and($second->headers->getCacheControlDirective('max-age'))->toBe('600');
 });
