@@ -51,7 +51,9 @@ export function findInHasArgument(selector) {
       bracket = char !== ']';
     } else if (char === '[') {
       bracket = true;
-      const attribute = /^\[\s*(class|style)\b/i.exec(selector.slice(i));
+      const attribute = /^\[\s*(class|style)\s*(?:[~|^$*]?=|\])/i.exec(
+        selector.slice(i)
+      );
       if (attribute && inHas()) {
         return `[${attribute[1].toLowerCase()}]`;
       }
