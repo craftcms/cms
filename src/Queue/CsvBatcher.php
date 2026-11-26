@@ -113,6 +113,11 @@ class CsvBatcher implements Batchable
             throw new RuntimeException("Unable to open $this->path.");
         }
 
+        // Excel and other apps start UTF-8 CSV files with a byte order mark
+        if (fread($handle, 3) !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
         return $handle;
     }
 
@@ -124,14 +129,7 @@ class CsvBatcher implements Batchable
     {
         $header = $this->readRow($handle);
 
-        if ($header === null) {
-            return null;
-        }
-
-        // Excel and other apps start UTF-8 CSV files with a byte order mark
-        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
-
-        return array_map(strval(...), $header);
+        return $header !== null ? array_map(strval(...), $header) : null;
     }
 
     /**

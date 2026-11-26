@@ -6,7 +6,7 @@ use CraftCms\Cms\Queue\CsvBatcher;
 
 beforeEach(function () {
     $this->path = tempnam(sys_get_temp_dir(), 'csv');
-    file_put_contents($this->path, "\xEF\xBB\xBFname,notes\nAlpha,\"line one\nline two, with a comma\"\n\nBravo\nCharlie,c\nDelta,d\n");
+    file_put_contents($this->path, "\xEF\xBB\xBF\"name\",notes\nAlpha,\"line one\nline two, with a comma\"\n\nBravo\nCharlie,c\nDelta,d\n");
 });
 
 afterEach(function () {
