@@ -1295,7 +1295,7 @@ return [
     'Palette cannot be blank if custom colors aren’t allowed.' => 'Palette darf nicht leer sein, wenn benutzerdefinierte Farben unzulässig sind.',
     'Palette' => 'Palette',
     'Parent {type} Title' => 'Übergeordneter {type}-Titel',
-    'Parent' => 'Ursprung',
+    'Parent' => 'Elternelement',
     'Parish' => 'Gemeinde',
     'Partition' => 'Partition',
     'Passed with warning' => 'Mit Warnung bestanden',

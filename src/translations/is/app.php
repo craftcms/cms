@@ -1695,7 +1695,7 @@ return [
     'Signing in' => 'Innskráning',
     'Similar issues on GitHub' => 'Svipuð mál á GitHub',
     'Similar questions on Stack Exchange' => 'Svipaðar spurningar um Stack Exchange',
-    'Single' => 'Einhleypur',
+    'Single' => 'Stakt',
     'Single-line text' => 'Einlínu texti',
     'Singles' => 'Einhleypur',
     'Site Group' => 'Vefhópur',
