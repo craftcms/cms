@@ -29,4 +29,32 @@ describe('useElementIndexColumns', () => {
 
     expect(table.getRowModel().rows[0]!.getValue(key)).toBe('Nested headline');
   });
+
+  it.each([
+    [{}, {params: {columns: ['postDate']}, only: ['data']}],
+    [{'columns[0]': 'postDate'}, null],
+    [{columns: ['postDate']}, null],
+  ])(
+    'restores saved columns unless the query %o names them',
+    (query, expected) => {
+      const {restore} = useElementIndexColumns(
+        {
+          tableColumns: [
+            {label: 'Post Date', value: 'postDate'},
+            {label: 'Author', value: 'author'},
+          ],
+          defaultTableColumns: ['author'],
+        },
+        ref<ViewState>({
+          showHeaderColumn: true,
+          static: false,
+          sources: {'*': {visible: ['postDate']}},
+        }),
+        null,
+        {...visitor, currentQuery: () => query}
+      );
+
+      expect(restore()).toEqual(expected);
+    }
+  );
 });

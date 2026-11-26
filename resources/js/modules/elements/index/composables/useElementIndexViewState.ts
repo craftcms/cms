@@ -45,7 +45,7 @@ export function useElementIndexViewState(
   if (isSyncedViewStateKey(storageKey)) {
     watchDebounced(
       viewState,
-      (state) => pushElementIndexViewStates({[storageKey]: state}),
+      (state) => void pushElementIndexViewStates({[storageKey]: state}),
       {deep: true, debounce: 100}
     );
   }

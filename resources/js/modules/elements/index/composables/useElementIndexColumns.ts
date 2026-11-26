@@ -205,7 +205,10 @@ export function useElementIndexColumns(
   // alongside the view-mode/sort restores (see `useElementIndex`), so they
   // can't interrupt each other.
   function restore(): IndexRestore | null {
-    const hasColumnsInQuery = visitor.currentQuery().columns !== undefined;
+    // A page URL carries the list as `columns[0]`, `columns[1]`, ….
+    const hasColumnsInQuery = Object.keys(visitor.currentQuery()).some(
+      (key) => key === 'columns' || key.startsWith('columns[')
+    );
     const persisted = sourceColumnState.value?.visible;
 
     if (hasColumnsInQuery || !persisted?.length) {

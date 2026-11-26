@@ -265,7 +265,7 @@ it('leaves the rows out of a page load that names no view mode until they are re
         ->assertJsonPath('props.pagination.total', 2);
 });
 
-it('renders a page load that names no view mode for the view state the browser pushed this session', function (array $sourceState, array $expectedQuery) {
+it('renders a page load that names no view mode for the view state the browser pushed this session', function (array $sourceState, array $expectedQuery, array $requestQuery = []) {
     EntryModel::factory()->count(2)->create();
     $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
 
@@ -274,7 +274,7 @@ it('renders a page load that names no view mode for the view state the browser p
         'all' => true,
     ])->assertNoContent();
 
-    $response = get("/{$this->cpTrigger}/content/entries")
+    $response = get("/{$this->cpTrigger}/content/entries".($requestQuery ? '?'.http_build_query($requestQuery) : ''))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('data', 2)
@@ -307,6 +307,11 @@ it('renders a page load that names no view mode for the view state the browser p
     'nothing saved for the source' => [
         [],
         ['viewMode' => 'table'],
+    ],
+    'params the URL names' => [
+        ['mode' => 'cards', 'pageSize' => 7],
+        ['per_page' => '25', 'viewMode' => 'cards'],
+        ['per_page' => '25'],
     ],
 ]);
 

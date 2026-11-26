@@ -51,6 +51,9 @@ trait AppliesStoredViewState
             return $viewModel;
         }
 
+        // Params the URL names win, as they do in the index's own restore.
+        $query = array_diff_key($query, $request->query());
+
         $url = Str::after($request->fullUrlWithQuery($query), $request->getSchemeAndHttpHost());
         Inertia::resolveUrlUsing(fn (): string => $url);
 

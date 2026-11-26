@@ -16,21 +16,36 @@ export function isSyncedViewStateKey(key: string): boolean {
   return VIEW_STATE_KEY.test(key);
 }
 
+let pushes: Promise<boolean> = Promise.resolve(true);
+
 /**
  * Mirrors element index view states to the server for the session, so an
  * index page load (a nav prefetch included) comes with rows rendered for
  * them, rather than placeholders until the index has read local storage and
  * requested its rows.
+ *
+ * Pushes go one at a time, so an older one can't land after a newer one and
+ * put its state back. Once one lands, pages prefetched before it are dropped,
+ * since they were rendered for the old state. Resolves to whether it landed;
+ * until one does, the index requests its rows itself.
  */
 export function pushElementIndexViewStates(
   states: Record<string, ViewState>,
   all = false
-): void {
-  actionClient
-    .post(ElementIndexViewStateController.url(), {states, all})
-    .catch(() => {
-      // The index requests its rows itself while the server doesn't know.
-    });
+): Promise<boolean> {
+  pushes = pushes
+    .then(() =>
+      actionClient.post(ElementIndexViewStateController.url(), {states, all})
+    )
+    .then(
+      () => {
+        router.flushAll();
+        return true;
+      },
+      () => false
+    );
+
+  return pushes;
 }
 
 /** Every element index view state in local storage, by unprefixed key. */
@@ -80,6 +95,9 @@ export function installElementIndexViewStateSync(): void {
     if (pushed) return;
 
     pushed = true;
-    pushElementIndexViewStates(storedViewStates(), true);
+    // Retried on the next navigation if it fails.
+    void pushElementIndexViewStates(storedViewStates(), true).then((landed) => {
+      pushed = landed;
+    });
   });
 }
