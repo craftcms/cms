@@ -43,23 +43,30 @@ class InvalidateTagsCommand extends Command
         $tag = Str::after($this->signature, 'craft:invalidate-tags:');
 
         if ($tag === 'all') {
+            $result = self::SUCCESS;
+
             collect(ClearCaches::tagOptions())
                 ->flatMap(fn (array $option) => array_values(Arr::only($option, ['tag'])))
-                ->each(function (string $tag) {
-                    $this->call("craft:invalidate-tags:$tag");
+                ->each(function (string $tag) use (&$result) {
+                    if ($this->call("craft:invalidate-tags:$tag") !== self::SUCCESS) {
+                        $result = self::FAILURE;
+                    }
                 });
 
-            return self::SUCCESS;
+            return $result;
         }
 
         $option = collect(ClearCaches::tagOptions())->firstWhere('tag', $tag);
 
-        $this->components->task(
-            t('Invalidating:').' '.$option['label'],
-            fn () => app(ElementCaches::class)->invalidateTags([$option['tag']]),
-        );
+        $elementCaches = app(ElementCaches::class);
+        $elementCaches->invalidateTags([$option['tag']]);
 
-        return self::SUCCESS;
+        // The tag stays pending if the cache store failed; the error is reported, and the tag retried later.
+        $invalidated = ! $elementCaches->hasPendingInvalidations([$option['tag']]);
+
+        $this->components->task(t('Invalidating:').' '.$option['label'], fn () => $invalidated);
+
+        return $invalidated ? self::SUCCESS : self::FAILURE;
     }
 
     public function list(): int

@@ -47,7 +47,12 @@ readonly class ClearCachesController
             'tags.*' => ['string'],
         ])['tags'];
 
-        $elementCaches->invalidateTags(array_values($tags));
+        $tags = $elementCaches->invalidateTags(array_values($tags));
+
+        // Tags stay pending if the cache store failed; the error is reported, and they're retried later.
+        if ($elementCaches->hasPendingInvalidations($tags)) {
+            return $this->asFailure(t('Couldn’t invalidate the caches.'));
+        }
 
         return back();
     }

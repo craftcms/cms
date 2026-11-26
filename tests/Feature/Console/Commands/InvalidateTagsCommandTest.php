@@ -7,6 +7,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 
 use function Pest\Laravel\artisan;
 
@@ -35,3 +36,19 @@ it('invalidates every tag option with all', function () {
         Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === [$tag]);
     }
 });
+
+it('fails when the cache store fails', function () {
+    failCacheStore();
+
+    artisan('craft:invalidate-tags:template')->assertFailed();
+    artisan('craft:invalidate-tags:all')->assertFailed();
+});
+
+function failCacheStore(): void
+{
+    Exceptions::fake();
+    // Only invalidation fails; everything else still reaches the real store.
+    $store = Mockery::mock(DependencyCache::store())->makePartial();
+    $store->shouldReceive('deleteMultiple')->andThrow(new RuntimeException('Cache store unavailable'));
+    DependencyCache::partialMock()->shouldReceive('store')->andReturn($store);
+}

@@ -7,8 +7,10 @@ use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -79,4 +81,16 @@ test('can invalidate cache tags', function () {
         ->assertRedirectBack();
 
     Event::assertDispatched(fn (ElementCachesInvalidated $event) => $event->tags === ['test-tag-1', 'test-tag-2']);
+});
+
+test('reports a failure when the cache store fails to invalidate tags', function () {
+    Exceptions::fake();
+    // Only invalidation fails; everything else still reaches the real store.
+    $store = Mockery::mock(DependencyCache::store())->makePartial();
+    $store->shouldReceive('deleteMultiple')->andThrow(new RuntimeException('Cache store unavailable'));
+    DependencyCache::partialMock()->shouldReceive('store')->andReturn($store);
+
+    postJson(action([ClearCachesController::class, 'invalidateTags']), [
+        'tags' => ['test-tag-1'],
+    ])->assertBadRequest();
 });

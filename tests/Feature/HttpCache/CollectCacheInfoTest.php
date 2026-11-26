@@ -109,6 +109,22 @@ it('caps the lifetimes of 304 responses', function () {
         ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600');
 });
 
+it('caps the lifetimes of redirects', function () {
+    $this->freezeSecond();
+    $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
+
+    Route::get('/page', function () use ($entry) {
+        Entry::find()->id($entry->id)->one();
+
+        return redirect('/elsewhere', 301)->setPublic()->setMaxAge(3600);
+    });
+
+    $response = $this->get('/page');
+
+    expect($response->getStatusCode())->toBe(301)
+        ->and($response->headers->getCacheControlDirective('max-age'))->toBe('600');
+});
+
 it('leaves the lifetimes of error responses alone', function () {
     $entry = EntryFactory::new()->create(['expiryDate' => now()->addMinutes(10)]);
 
