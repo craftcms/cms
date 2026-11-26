@@ -53,7 +53,8 @@ class TestResponseMixin
             $messages = match (true) {
                 $response->headers->has('X-Inertia') => $response->json('props.messages'),
                 $response->isRedirect(), $response->headers->has('X-Inertia-Location') => Flash::all(),
-                ($response->baseResponse->original ?? null) instanceof View => $response->baseResponse->original->getData()['page']['props']['messages'] ?? [],
+                ($view = $response->baseResponse->original ?? null) instanceof View
+                    && isset($view->getData()['page']['props']) => $view->getData()['page']['props']['messages'] ?? [],
                 $response->baseResponse instanceof JsonResponse => $response->json('messages'),
                 // `_layouts/components/messages.twig` writes the queue on one line, and its JSON escapes `</script>`.
                 is_string($html = $response->baseResponse->getContent())
