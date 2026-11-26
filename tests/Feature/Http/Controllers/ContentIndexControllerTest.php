@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
@@ -331,7 +332,7 @@ it('waits for every view state before rendering page loads for them', function (
         );
 });
 
-it('keeps rendering page loads for the view state for as long as the session is active', function () {
+it('keeps rendering page loads for the view states for as long as the session is active', function () {
     EntryModel::factory()->count(2)->create();
     $this->withCredentials()->withCookie(config('session.cookie'), str_repeat('a', 40));
     $lifetime = (int) config('session.lifetime');
@@ -339,6 +340,9 @@ it('keeps rendering page loads for the view state for as long as the session is 
     postJson(action(ElementIndexViewStateController::class), [
         'states' => ['elementindex.'.EntryElement::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
         'all' => true,
+    ])->assertNoContent();
+    postJson(action(ElementIndexViewStateController::class), [
+        'states' => ['elementindex.'.User::class.'.index' => ['sources' => ['*' => ['mode' => 'cards']]]],
     ])->assertNoContent();
 
     $this->travel($lifetime - 1)->minutes();
@@ -352,6 +356,12 @@ it('keeps rendering page loads for the view state for as long as the session is 
             ->where('viewState.mode', 'cards')
             ->has('data', 2)
         );
+
+    // An index not visited in that time keeps its view state too.
+    Edition::set(Edition::Pro);
+    get("/{$this->cpTrigger}/users/all")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('viewState.mode', 'cards'));
 });
 
 it('includes the active source exporters in the page payload', function () {

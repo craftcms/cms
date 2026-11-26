@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Cache;
 class ElementIndexViewStates
 {
     /**
-     * Whether the browser has pushed its view states this session.
+     * Whether the browser has pushed its view states this session. The flag
+     * lists the keys it has pushed, so they can be renewed together.
      */
     public function synced(): bool
     {
@@ -42,31 +43,34 @@ class ElementIndexViewStates
             Cache::put($this->cacheKey($key), $state, $this->ttl());
         }
 
-        if ($all) {
-            Cache::put($this->cacheKey(), true, $this->ttl());
+        $keys = $all ? [] : Cache::get($this->cacheKey());
+
+        if (is_array($keys)) {
+            Cache::put($this->cacheKey(), array_values(array_unique([...$keys, ...array_keys($states)])), $this->ttl());
         }
     }
 
     /**
      * An index's view state, or null when the browser has none for it.
      *
-     * Reading it renews it and the synced flag, as activity renews the
-     * session, so an index stays rendered with rows for as long as the
-     * session lasts.
+     * Reading it renews every pushed view state and the synced flag, as
+     * activity renews the session, so each index stays rendered with rows
+     * for as long as the session lasts, including ones not visited lately.
+     * Otherwise the flag could outlive a view state and keep the browser from
+     * pushing it again.
      *
      * @param  class-string  $elementType
      * @return array<string, mixed>|null
      */
     public function get(string $elementType, string $context): ?array
     {
-        $key = $this->cacheKey("elementindex.$elementType.$context");
-        $state = Cache::get($key);
+        $state = Cache::get($this->cacheKey("elementindex.$elementType.$context"));
+
+        foreach ((array) Cache::get($this->cacheKey(), []) as $key) {
+            Cache::touch($this->cacheKey($key), $this->ttl());
+        }
 
         Cache::touch($this->cacheKey(), $this->ttl());
-
-        if ($state !== null) {
-            Cache::touch($key, $this->ttl());
-        }
 
         return is_array($state) ? $state : null;
     }
