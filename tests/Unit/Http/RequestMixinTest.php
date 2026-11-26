@@ -322,3 +322,18 @@ describe('getSigned', function () {
             ->toThrow(HttpException::class, 'Request contained an invalid body param');
     });
 });
+
+describe('clientOs', function () {
+    it('detects the OS from the user agent', function () {
+        $request = Request::create('/admin', server: ['HTTP_USER_AGENT' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)']);
+
+        expect($request->clientOs())->toBe('Windows');
+    });
+
+    it('returns Other when the request has no user agent', function () {
+        $request = Request::create('/admin');
+        $request->headers->remove('User-Agent');
+
+        expect($request->clientOs())->toBe('Other');
+    });
+});

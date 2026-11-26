@@ -93,7 +93,7 @@ class RequestMixin
              *
              * @phpstan-ignore-next-line
              */
-            $userAgent = $this->userAgent();
+            $userAgent = $this->userAgent() ?? '';
 
             if (str_contains($userAgent, 'Linux')) {
                 return 'Linux';
