@@ -9,13 +9,16 @@ const ruleName = 'craft/has-argument-positive';
 
 const messages = ruleMessages(ruleName, {
   rejected: (found) =>
-    `Avoid ${found} inside :has(): Chromium then restyles the whole document whenever any element is added or removed. Match positively inside :has() and negate outside it, as in :has(a):not(:has(a.b)).`,
+    `Avoid ${found} inside :has(): Chromium then restyles the whole document whenever an element is added or removed, or a class or inline style changes. Match positively inside :has() and negate outside it, as in :has(a):not(:has(a.b)), and match classes with .name rather than [class].`,
 });
 
 /**
- * Finds the first `:not()` or `*` inside a `:has()` argument, at any nesting
- * depth. Skips strings, escapes, and attribute selectors, so `[a*='b']`,
- * `[a=':not(']`, and `.\*` are fine.
+ * Finds the first `:not()`, `*`, or `[class]`/`[style]` attribute selector
+ * inside a `:has()` argument, at any nesting depth. Chromium can't scope
+ * invalidation for those, so any insertion, class change, or inline style
+ * change restyles the whole document. Match classes with `.name` instead.
+ * Skips strings and escapes, and other attribute selectors are fine, so
+ * `[a*='b']`, `[a=':not(']`, and `.\*` pass.
  *
  * @param {string} selector
  * @returns {string | null}
@@ -48,6 +51,10 @@ export function findInHasArgument(selector) {
       bracket = char !== ']';
     } else if (char === '[') {
       bracket = true;
+      const attribute = /^\[\s*(class|style)\b/i.exec(selector.slice(i));
+      if (attribute && inHas()) {
+        return `[${attribute[1].toLowerCase()}]`;
+      }
     } else if (char === '(') {
       const has = /:has$/i.test(selector.slice(0, i));
       stack.push(has || inHas());

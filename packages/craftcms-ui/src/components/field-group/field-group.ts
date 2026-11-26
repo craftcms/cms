@@ -188,8 +188,22 @@ export default class CraftFieldGroup extends LitElement {
           max-width: 100%;
         }
 
+        /* The width classes are listed rather than matched with [class*=], which
+           inside :has() makes Chromium restyle the whole document on every class
+           change. They're the FieldWidth enum's values. */
         craft-field[fieldset]
-          > craft-field-group.auto-widths:not(:has(> [class*='width-'])) {
+          > craft-field-group.auto-widths:not(
+            :has(
+              > :is(
+                .width-25,
+                .width-33,
+                .width-50,
+                .width-66,
+                .width-75,
+                .width-100
+              )
+            )
+          ) {
           display: flex;
           flex-wrap: wrap;
           gap: var(--c-spacing-sm) var(--c-spacing-md);
