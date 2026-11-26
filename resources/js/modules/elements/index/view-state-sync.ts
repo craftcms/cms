@@ -5,8 +5,16 @@ import {prefixedKey} from '@/common/composables/useStorage';
 import type {CraftData} from '@/common/composables/useCraftData';
 import type {ViewState} from '@/modules/elements/types/view-state';
 
-/** An element index's view state key: `elementindex.{elementType}.{context}`. */
-const VIEW_STATE_KEY = /^elementindex\.[\w\\]+\.[\w-]+$/;
+/**
+ * The view states index pages render for: `elementindex.{elementType}.index`.
+ * Modals, embedded indexes, and nested elements request their own rows.
+ */
+const VIEW_STATE_KEY = /^elementindex\.[\w\\]+\.index$/;
+
+/** Whether a view state's local storage key is one the server renders for. */
+export function isSyncedViewStateKey(key: string): boolean {
+  return VIEW_STATE_KEY.test(key);
+}
 
 /**
  * Mirrors element index view states to the server for the session, so an
@@ -33,7 +41,7 @@ function storedViewStates(): Record<string, ViewState> {
   for (const storageKey of Object.keys(localStorage)) {
     const key = storageKey.slice(prefix.length);
 
-    if (!storageKey.startsWith(prefix) || !VIEW_STATE_KEY.test(key)) continue;
+    if (!storageKey.startsWith(prefix) || !isSyncedViewStateKey(key)) continue;
 
     try {
       const state = JSON.parse(localStorage.getItem(storageKey) ?? '');

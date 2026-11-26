@@ -31,7 +31,7 @@ readonly class ElementIndexViewStateController
         $states = $request->array('states');
 
         foreach (array_keys($states) as $key) {
-            if (! Str::isMatch('/^elementindex\.[\w\\\\]+\.[\w-]+$/', (string) $key)) {
+            if (! Str::isMatch('/^elementindex\.[\w\\\\]+\.index$/', (string) $key)) {
                 throw ValidationException::withMessages(['states' => "Invalid view state key: $key"]);
             }
         }
