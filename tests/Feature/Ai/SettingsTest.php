@@ -6,7 +6,6 @@ use CraftCms\Cms\Ai\Agents\AttachmentProbe;
 use CraftCms\Cms\Ai\AiTasks;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Tests\Support\Ai\AltTextTask;
 use CraftCms\Cms\Tests\Support\Ai\IndexTask;
 use CraftCms\Cms\Tests\Support\Ai\SummarizeTask;
@@ -209,10 +208,10 @@ it('shows errors that can be fixed right away after saving, rather than in the s
 
     post(route('craft.cp.settings.ai.store'), [
         'tasks' => ['test:altText' => ['enabled' => '1', 'provider' => 'anthropic', 'model' => 'claude-vision']],
-    ])->assertRedirect();
-
-    expect(collect(Flash::all())->where('type', 'error')->pluck('message')->implode(''))
-        ->toStartWith('Craft couldn’t check whether the claude-vision model on the anthropic provider supports vision:');
+    ])
+        ->assertRedirect()
+        ->assertCpMessage(fn (array $message): bool => $message['type'] === 'error'
+            && str_starts_with($message['message'], 'Craft couldn’t check whether the claude-vision model on the anthropic provider supports vision:'));
 
     get(route('craft.cp.settings.ai.index'))
         ->assertInertia(fn (AssertableInertia $page) => expect(json_encode($page->toArray()['props']['ui']['nodes'], JSON_UNESCAPED_UNICODE))->not->toContain('couldn’t check'))
