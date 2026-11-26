@@ -22,8 +22,7 @@ use Illuminate\Support\Facades\Cache;
 class ElementIndexViewStates
 {
     /**
-     * Whether the browser has pushed its view states this session. The flag
-     * lists the keys it has pushed, so they can be renewed together.
+     * Whether the browser has pushed its view states this session.
      */
     public function synced(): bool
     {
@@ -34,54 +33,37 @@ class ElementIndexViewStates
      * Stores view states by their local storage key, such as
      * `elementindex.CraftCms\Cms\Entry\Elements\Entry.index`.
      *
+     * They're kept in one cache entry, so they expire together and the session
+     * is never synced with some of them missing. Until the browser has pushed
+     * all of them, nothing is rendered for them, so a single one isn't kept.
+     *
      * @param  array<string, array<string, mixed>>  $states
      * @param  bool  $all  Whether these are all of the browser's view states.
      */
     public function put(array $states, bool $all = false): void
     {
-        foreach ($states as $key => $state) {
-            Cache::put($this->cacheKey($key), $state, $this->ttl());
-        }
+        $stored = $all ? [] : Cache::get($this->cacheKey());
 
-        $keys = $all ? [] : Cache::get($this->cacheKey());
-
-        if (is_array($keys)) {
-            Cache::put($this->cacheKey(), array_values(array_unique([...$keys, ...array_keys($states)])), $this->ttl());
-            $this->renew();
+        if (is_array($stored)) {
+            Cache::put($this->cacheKey(), [...$stored, ...$states], $this->ttl());
         }
     }
 
     /**
      * An index's view state, or null when the browser has none for it.
      *
-     * Reading it renews every pushed view state and the synced flag, as
-     * activity renews the session, so each index stays rendered with rows
-     * for as long as the session lasts, including ones not visited lately.
-     * Otherwise the flag could outlive a view state and keep the browser from
-     * pushing it again.
+     * Reading it renews the view states, as activity renews the session, so
+     * indexes keep rendering with rows for as long as the session lasts.
      *
      * @param  class-string  $elementType
      * @return array<string, mixed>|null
      */
     public function get(string $elementType, string $context): ?array
     {
-        $state = Cache::get($this->cacheKey("elementindex.$elementType.$context"));
-        $this->renew();
+        $state = Cache::get($this->cacheKey())["elementindex.$elementType.$context"] ?? null;
+        Cache::touch($this->cacheKey(), $this->ttl());
 
         return is_array($state) ? $state : null;
-    }
-
-    /**
-     * Renews every pushed view state and the synced flag together, so the
-     * flag never outlives a view state it says the session has.
-     */
-    private function renew(): void
-    {
-        foreach ((array) Cache::get($this->cacheKey(), []) as $key) {
-            Cache::touch($this->cacheKey($key), $this->ttl());
-        }
-
-        Cache::touch($this->cacheKey(), $this->ttl());
     }
 
     private function ttl(): DateTimeInterface
@@ -89,10 +71,8 @@ class ElementIndexViewStates
         return now()->addMinutes((int) config('session.lifetime', 120));
     }
 
-    private function cacheKey(?string $key = null): string
+    private function cacheKey(): string
     {
-        $prefix = 'elementIndexViewStates:'.session()->getId();
-
-        return $key === null ? $prefix : "$prefix:$key";
+        return 'elementIndexViewStates:'.session()->getId();
     }
 }
