@@ -569,9 +569,7 @@ class Asset extends Element
         ], $siteIds);
     }
 
-    /**
-     * @return AssetQuery The newly created [[AssetQuery]] instance.
-     */
+    /** @return AssetQuery<self> */
     #[Override]
     public static function find(): AssetQuery
     {
@@ -1151,7 +1149,7 @@ class Asset extends Element
         $originalLimit = $elementQuery->limit;
 
         // Include folders in the results?
-        /** @var AssetQuery $elementQuery */
+        /** @var AssetQuery<self> $elementQuery */
         if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
             $folderQuery = self::_createFolderQueryForIndex($elementQuery, $queryFolder);
             $totalFolders = $folderQuery->count();
@@ -1276,7 +1274,7 @@ class Asset extends Element
     {
         $count = 0;
 
-        /** @var AssetQuery $elementQuery */
+        /** @var AssetQuery<self> $elementQuery */
         if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
             try {
                 $count += self::_createFolderQueryForIndex($elementQuery, $queryFolder)->count();
@@ -1292,6 +1290,7 @@ class Asset extends Element
         return $count;
     }
 
+    /** @param  AssetQuery<self>  $assetQuery */
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
         if (
@@ -1335,6 +1334,8 @@ class Asset extends Element
     }
 
     /**
+     * @param  AssetQuery<self>  $assetQuery
+     *
      * @throws QueryAbortedException
      */
     private static function _createFolderQueryForIndex(AssetQuery $assetQuery, ?VolumeFolder $queryFolder = null): Builder

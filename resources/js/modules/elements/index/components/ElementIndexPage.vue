@@ -149,7 +149,7 @@
           :selected-elements="selection.selectedRows.value"
           :actions="elementIndex.actions"
           :element-type="elementIndex.elementType"
-          :source="elementIndex.source?.key"
+          :source="elementIndex.source?.keyPath ?? elementIndex.source?.key"
           :context="elementIndex.context"
           :params="actionParams"
           :site-id="elementIndex.siteId"

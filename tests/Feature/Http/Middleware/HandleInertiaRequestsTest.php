@@ -163,3 +163,12 @@ it('shares broadcast messages with the next page once', function () {
     get(action([DashboardController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('broadcasts', []));
 });
+
+it('gives the page URL with its query string as requested', function () {
+    actingAs(User::find()->one());
+
+    get(cp_url('settings/sections').'?site=default&draftId=1')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->url(parse_url(cp_url('settings/sections'), PHP_URL_PATH).'?site=default&draftId=1'));
+});

@@ -164,6 +164,7 @@
 - Relational fields now have a “Paste” button when the clipboard holds elements they could relate.
 - Copied elements are now put on the system clipboard as their titles, and links to their URLs in apps that take rich text, like copied relational field values. The “Copied” notification now matches copied field values’, with the elements’ chips side by side, and copying elements replaces a copied field value, and the reverse. Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>V</kbd> within a relational or nested element field that can take the copied elements pastes them, as long as the clipboard still holds what was copied. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Relational fields now have a “Thumb Size” setting, like element index View menus, with “Small”, “Medium”, and “Large” options for the List and Inline list view modes, plus “XL” and “2XL” for the Thumbs view mode. ([#20257](https://github.com/craftcms/cms/pull/20257))
+- Required Dropdown fields without a default option now show “Select…” until an option is chosen, rather than the first option. Set a default option to keep the previous behavior. ([#21152](https://github.com/craftcms/cms/issues/21152), [#21154](https://github.com/craftcms/cms/pull/21154))
 
 ### Mail
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.

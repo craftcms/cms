@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -102,6 +103,7 @@ trait QueriesAssetLocation
         }
     }
 
+    /** @param  AssetQuery<Asset>  $assetQuery */
     public static function applyFolderId(BuilderContract $query, mixed $value, AssetQuery $assetQuery): void
     {
         if (! $value) {
