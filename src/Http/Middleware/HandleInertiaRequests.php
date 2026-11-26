@@ -18,6 +18,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementIndexViewStates;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
@@ -268,6 +269,8 @@ class HandleInertiaRequests extends Middleware
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
                     'aiAssistant' => Assistant::isAvailable(),
+                    // Whether the browser has pushed its element index view states this session (see `view-state-sync.ts`).
+                    'elementIndexViewStatesSynced' => app(ElementIndexViewStates::class)->synced(),
                     'showPermissions' => app(EditUserScreens::class)->showPermissionsScreen(),
                     'showTokens' => app(EditUserScreens::class)->showTokensScreen($currentUser),
                     // Where the AI assistant’s guidance and skills are edited, for its chat to link to.

@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\ElementIndexState;
+use CraftCms\Cms\Element\ElementIndexViewStates;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -126,6 +127,10 @@ abstract class ContentIndexViewModel extends ViewModel
      * the page draws placeholders instead and requests the rows itself once it
      * has read its view state (see `useElementIndex`'s `restore()`). That visit
      * puts `viewMode` in the URL, so later visits come with rows again.
+     *
+     * Once the browser has pushed its view states for the session, index
+     * pages render such a load for them instead (see
+     * {@see storedViewStateQuery()}), so this only applies until then.
      */
     #[\Override]
     public function toInertiaProperties(RenderContext $context): array
@@ -153,6 +158,87 @@ abstract class ContentIndexViewModel extends ViewModel
         unset($properties['data'], $properties['pagination'], $properties['structure']);
 
         return $properties;
+    }
+
+    /**
+     * The query params that render the rows for the view state the browser
+     * pushed this session, or null when the server doesn't know it.
+     *
+     * An index page renders a load that names no view mode as though it named
+     * these params, and gives the page a URL with them, so the response,
+     * prefetched ones included, comes with rows. They're the params
+     * `useElementIndex`'s `restore()` would request, and with them in the URL
+     * it finds nothing left to restore.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function storedViewStateQuery(): ?array
+    {
+        $viewStates = app(ElementIndexViewStates::class);
+        $sourceKey = $this->source()['key'] ?? null;
+
+        if (! is_string($sourceKey) || ! $viewStates->synced()) {
+            return null;
+        }
+
+        $viewState = $viewStates->get($this->elementType, $this->context()) ?? [];
+        $sourceState = $viewState['sources'][$sourceKey] ?? [];
+
+        if (! is_array($sourceState)) {
+            $sourceState = [];
+        }
+
+        $structureId = $this->source()['structureId'] ?? null;
+        $modes = array_values(array_filter(array_map(
+            fn (array $viewMode): ?string => empty($viewMode['structuresOnly']) || $structureId
+                ? ($viewMode['mode'] ?? null)
+                : null,
+            $this->viewModes(),
+        )));
+        $mode = collect([$sourceState['mode'] ?? null, $this->mode(), $modes[0] ?? null])
+            ->first(fn (mixed $mode): bool => in_array($mode, $modes, true))
+            ?? ElementIndexViewMode::Table->value;
+        $query = ['viewMode' => $mode];
+
+        [$thumbView, $defaultThumbSize] = match ($mode) {
+            ElementIndexViewMode::Table->value, ElementIndexViewMode::Structure->value => ['table', ChipThumbSize::Sm->value],
+            ElementIndexViewMode::Thumbs->value => ['thumbs', ChipThumbSize::Lg->value],
+            default => [null, null],
+        };
+        $thumbSize = $thumbView !== null ? ($sourceState['thumbSizes'][$thumbView] ?? null) : null;
+
+        if (is_string($thumbSize) && $thumbSize !== $defaultThumbSize) {
+            $query['thumbSize'] = $thumbSize;
+        }
+
+        $columns = array_values(array_filter((array) ($sourceState['visible'] ?? []), is_string(...)));
+
+        if ($columns !== []) {
+            $query['columns'] = $columns;
+        }
+
+        $sort = array_values(array_filter(array_map(
+            fn (mixed $item): ?array => is_array($item) && is_string($item['field'] ?? null) && $item['field'] !== 'score'
+                ? ['field' => $item['field'], 'direction' => ($item['direction'] ?? null) === 'desc' ? 'desc' : 'asc']
+                : null,
+            (array) ($sourceState['sort'] ?? []),
+        )));
+
+        if ($sort !== []) {
+            $query['sort'] = $sort;
+        }
+
+        if (is_int($sourceState['pageSize'] ?? null) && $sourceState['pageSize'] > 0) {
+            $query['per_page'] = $sourceState['pageSize'];
+        }
+
+        $collapsedElementIds = array_values(array_filter((array) ($viewState['collapsedElementIds'] ?? []), is_numeric(...)));
+
+        if ($mode === ElementIndexViewMode::Structure->value && $collapsedElementIds !== []) {
+            $query['collapsedElementIds'] = $collapsedElementIds;
+        }
+
+        return $query;
     }
 
     /**

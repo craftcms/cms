@@ -1,5 +1,7 @@
+import {watchDebounced} from '@vueuse/core';
 import {useLocalStorage} from '@/common/composables/useStorage';
 import type {ViewState} from '@/modules/elements/types/view-state';
+import {pushElementIndexViewStates} from '../view-state-sync';
 
 interface ElementIndexViewStateContext {
   elementType: string;
@@ -11,7 +13,8 @@ interface ElementIndexViewStateContext {
  * The element index's persisted view configuration (per-source view mode,
  * column, sort, thumbnail size, and page size overrides). Seeded from the
  * server-provided view state and kept in local storage, keyed per element
- * type + context.
+ * type + context. Changes are pushed to the server too, so the next page
+ * load of the index renders its rows for them (see `view-state-sync.ts`).
  *
  * Column visibility and sort are resolved per-source by their respective
  * composables (source `tableAttributes` / `defaultSort` → element-type
@@ -32,7 +35,15 @@ export function useElementIndexViewState(
     ...props.viewState,
   };
 
-  return useLocalStorage<ViewState>(storageKey, initialViewState, {
+  const viewState = useLocalStorage<ViewState>(storageKey, initialViewState, {
     listenToStorageChanges: false,
   });
+
+  watchDebounced(
+    viewState,
+    (state) => void pushElementIndexViewStates({[storageKey]: state}),
+    {deep: true, debounce: 100}
+  );
+
+  return viewState;
 }

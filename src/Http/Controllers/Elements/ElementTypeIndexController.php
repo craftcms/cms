@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Http\Controllers\Concerns\AppliesStoredViewState;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\ElementTypeIndexViewModel;
 use Illuminate\Support\Facades\Gate;
@@ -36,13 +37,19 @@ use function CraftCms\Cms\t;
  */
 readonly class ElementTypeIndexController
 {
+    use AppliesStoredViewState;
+
     public function __invoke(ElementIndexRequest $request): Response
     {
         $elementType = $request->route('elementType');
 
         abort_unless(is_string($elementType) && is_subclass_of($elementType, ElementInterface::class), 404);
 
-        $viewModel = new ElementTypeIndexViewModel($elementType, $request);
+        $viewModel = $this->withStoredViewState(
+            $request,
+            new ElementTypeIndexViewModel($elementType, $request),
+            fn (): ElementTypeIndexViewModel => new ElementTypeIndexViewModel($elementType, $request),
+        );
 
         return Inertia::render('elements/Index', [$viewModel])
             ->with([
