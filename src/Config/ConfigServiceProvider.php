@@ -196,8 +196,6 @@ class ConfigServiceProvider extends ServiceProvider
      */
     private function applyRenamedEnvironmentOverrides(GeneralConfig $config): void
     {
-        $cloned = [];
-
         foreach ($config::renamedSettings() as $setting => $newSetting) {
             $envName = 'CRAFT_'.$this->renamedSettingEnvName($config, $setting, $newSetting);
 
@@ -209,14 +207,6 @@ class ConfigServiceProvider extends ServiceProvider
 
             if ($value === null) {
                 continue;
-            }
-
-            // A cached config may share its nested objects with another copy, so change a clone
-            $nested = str($newSetting)->before('.')->value();
-
-            if ($nested !== $newSetting && ! isset($cloned[$nested])) {
-                $config->{$nested} = clone $config->{$nested};
-                $cloned[$nested] = true;
             }
 
             $this->deprecateEnvironmentOverride($envName, $setting);
@@ -266,9 +256,6 @@ class ConfigServiceProvider extends ServiceProvider
 
             Typecast::properties($nested::class, $envConfig);
 
-            // A cached config may share its nested objects with another copy, so change a clone
-            $nested = clone $nested;
-
             foreach ($envConfig as $property => $value) {
                 if (method_exists($nested, $property)) {
                     $nested->{$property}($value);
@@ -276,8 +263,6 @@ class ConfigServiceProvider extends ServiceProvider
                     $nested->{$property} = $value;
                 }
             }
-
-            $config->{$setting} = $nested;
         }
     }
 

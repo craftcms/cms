@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use craft\config\GeneralConfig;
 use CraftCms\Cms\Asset\AssetTransformers;
+use CraftCms\Cms\Cms;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use Illuminate\Container\Container;
@@ -14,6 +15,12 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
+
+it('doesn’t change the Laravel config’s settings objects through the legacy config', function(): void {
+    Craft::$app->getConfig()->getGeneral()->gql->maxDepth(3);
+
+    expect(Cms::config()->gql->maxDepth)->not->toBe(3);
+});
 
 it('preserves callable config values', function(): void {
     $originalConfigPath = $this->app->configPath();

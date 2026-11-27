@@ -815,6 +815,7 @@ class GeneralConfig extends BaseConfig
      * - `transformGifs` – Whether GIF files should be cleansed and transformed. (Default is `true`.)
      * - `transformSvgs` – Whether SVG files should be transformed. (Default is `true`.)
      * - `upscale` – Whether transforms should upscale images smaller than their dimensions by default. (Default is `true`.)
+     * - `brokenPath` – The server path to an image file that should be sent when responding to an image request with a 404 status code, such as `@webroot/assets/404.svg`. (Default is `null`.)
      *
      * ```php
      * ->images(\CraftCms\Cms\Config\ImagesConfig::create()
@@ -2500,6 +2501,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns the temporary asset upload disk name.
+     *
+     * @deprecated in 6.0.0. [[AssetsConfig::getTempUploadDisk()]] should be used instead.
      */
     public function getTempAssetUploadDisk(): string
     {
@@ -2508,6 +2511,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns the upload session disk name.
+     *
+     * @deprecated in 6.0.0. [[AssetsConfig::getUploadSessionDisk()]] should be used instead.
      */
     public function getUploadSessionDisk(): string
     {
@@ -2517,7 +2522,7 @@ class GeneralConfig extends BaseConfig
     /**
      * Returns the disk name that soft-deleted assets’ files should be moved to, if one is set.
      *
-     * @see $trashedAssetDisk
+     * @deprecated in 6.0.0. [[AssetsConfig::getTrashDisk()]] should be used instead.
      */
     public function getTrashedAssetDisk(): ?string
     {
@@ -2616,6 +2621,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @deprecated in 6.0.0. [[BackupsConfig::shouldBackUpOnUpdate()]] should be used instead.
      */
     public function getBackupOnUpdate(): bool
     {

@@ -126,7 +126,7 @@ class Config extends Component
         }
 
         if ($config instanceof NewGeneralConfig) {
-            return LegacyGeneralConfig::__set_state($config->toArray());
+            return LegacyGeneralConfig::__set_state((clone $config)->toArray());
         }
 
         return $config;

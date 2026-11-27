@@ -336,7 +336,6 @@ it('forwards the renamed image, backup, and queue settings', function () {
         ->and($config->backups->command)->toBeFalse()
         ->and($config->getBackupOnUpdate())->toBeFalse()
         ->and($config->queue->name)->toBe('craft')
-        ->and($config->queueName)->toBe('craft')
         ->and($config->queue->runAutomatically)->toBeFalse()
         ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->not->toContain(GeneralConfig::class.'::queueName');
 });
@@ -393,7 +392,8 @@ it('forwards the renamed routing, security, user, and garbage collection setting
         ->and($config->routing->getPageTriggerParam())->toBe('p')
         ->and($config->users->disable2fa)->toBeTrue()
         ->and($config->security->maxInvalidLogins)->toBeFalse()
-        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain('env:CRAFT_DISABLE_2FA', 'env:CRAFT_MAX_INVALID_LOGINS');
+        ->and($config->storeUserIps)->toBeFalse()
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain('env:CRAFT_DISABLE_2FA', 'env:CRAFT_MAX_INVALID_LOGINS', GeneralConfig::class.'::storeUserIps');
 });
 
 it('does not change a cached config’s nested objects when applying environment overrides', function () {

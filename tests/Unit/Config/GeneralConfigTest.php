@@ -65,3 +65,13 @@ it('normalizes pageTrigger', function () {
         ->and($config->pageTrigger('page/')->getPageTrigger())->toBe('?page=')
         ->and($config->pageTrigger('')->getPageTrigger())->toBe('?page=');
 });
+
+it('doesn’t share its config objects with clones', function () {
+    $config = GeneralConfig::create();
+    $clone = clone $config;
+    $clone->gql->enabled(false);
+    $clone->enableGql = false;
+
+    expect($config->gql->enabled)->toBeTrue()
+        ->and($clone->gql)->not->toBe($config->gql);
+});

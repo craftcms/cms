@@ -14,5 +14,5 @@ it('names the entry URI format in its errors', function () {
     $settings->validate();
 
     expect($settings->errors()->first('uriFormat'))
-        ->toBe('Entry URI Format cannot start with the cpTrigger config setting.');
+        ->toBe('Entry URI Format cannot start with the routing.cpTrigger config setting.');
 });

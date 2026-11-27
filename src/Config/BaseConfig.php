@@ -86,6 +86,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
             return $value;
         }
 
+        $this->deprecateRenamedSetting($name);
         [$config, $setting] = $this->renamedSettingTarget($name);
 
         return $config->$setting;
@@ -181,6 +182,18 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         unset($this->$offset);
+    }
+
+    /**
+     * Clones the config objects that settings hold, so a clone can be changed without changing the original.
+     */
+    public function __clone(): void
+    {
+        foreach (get_object_vars($this) as $property => $value) {
+            if ($value instanceof self) {
+                $this->{$property} = clone $value;
+            }
+        }
     }
 
     #[Override]
