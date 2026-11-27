@@ -52,24 +52,28 @@ class ImageDuplicates
     }
 
     /**
-     * Returns the images that look like copies of an asset, closest first.
+     * Returns the images in an asset’s volume that look like copies of it, closest first.
      *
+     * @param  int|null  $volumeId  The volume to look in instead, such as the one a temporary upload will be moved to
      * @return list<Asset>
      */
-    public function find(Asset $asset, int $limit = 5): array
+    public function find(Asset $asset, int $limit = 5, ?int $volumeId = null): array
     {
         $hash = $asset->analysis?->hash;
+        $volumeId ??= $asset->volumeId;
 
-        return $hash !== null ? $this->findByHash($hash, $limit, $asset->id) : [];
+        // Temporary uploads with nowhere to go have no volume to look in
+        return $hash !== null && $volumeId !== null ? $this->findByHash($hash, $limit, $asset->id, $volumeId) : [];
     }
 
     /**
      * Returns the images that look like copies of the image a hash was found for, closest first.
      *
      * @param  int|null  $excludeId  An asset to leave out, such as the one the hash is for
+     * @param  int|null  $volumeId  The volume to look in, or `null` for all of them
      * @return list<Asset>
      */
-    public function findByHash(string $hash, int $limit = 5, ?int $excludeId = null): array
+    public function findByHash(string $hash, int $limit = 5, ?int $excludeId = null, ?int $volumeId = null): array
     {
         if (! ImageHash::isHash($hash)) {
             return [];
@@ -83,6 +87,7 @@ class ImageDuplicates
                 }
             })
             ->when($excludeId !== null, fn ($query) => $query->where('imagehashes.assetId', '!=', $excludeId))
+            ->when($volumeId !== null, fn ($query) => $query->where('assets.volumeId', $volumeId))
             // Keyed by asset ID, so assets that share several bands are only checked once
             ->pluck('assets.analysis', 'imagehashes.assetId');
 

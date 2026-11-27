@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\DeletionBlocker\BlockerRegistry;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
-use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Elements;
@@ -56,7 +56,7 @@ readonly class DeleteElementsController
         $this->elements = $this->elements();
     }
 
-    public function deletionBlockers(PreviewHtml $previewHtml): JsonResponse
+    public function deletionBlockers(PreviewHtml $previewHtml, BlockerRegistry $blockerRegistry): JsonResponse
     {
         $elements = $this->elements->when(
             // filter out elements that primarily belong to a different element,
@@ -66,15 +66,9 @@ readonly class DeleteElementsController
             fn (ElementCollection $elements) => $elements->filter(fn (NestedElementInterface $element) => $this->elementOwnedByPrimaryOwner($element)),
         );
 
-        $blockers = collect($this->elementType::deletionBlockers($elements, $this->hardDelete))
-            ->filter(fn (DeletionBlockerInterface $blocker) => $blocker->isActive())
-            ->map(fn (DeletionBlockerInterface $blocker) => [
-                'summary' => $blocker->getSummary(),
-                'details' => $blocker->getDetails(),
-                'actions' => $blocker->getActions(),
-            ])
-            ->values()
-            ->all();
+        $blockers = $blockerRegistry->blockerData(
+            $this->elementType::deletionBlockers($elements, $this->hardDelete),
+        );
 
         $elementPreview = $previewHtml->elementPreviewHtml(
             elements: $this->elements->all(),

@@ -768,6 +768,7 @@
 
   // Cells carry a bottom border only. The one between two selected rows sits
   // inside the selection, so it takes the accent too; the rest stay as they are.
+  /* stylelint-disable-next-line craft/has-subject-only -- anchored on one row */
   :deep(.cp-table-row.sel:has(+ .cp-table-row.sel) > td) {
     border-block-end-color: var(--c-color-accent-border-quiet);
   }

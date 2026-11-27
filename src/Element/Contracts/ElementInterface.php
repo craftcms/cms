@@ -49,7 +49,7 @@ use Symfony\Component\HttpFoundation\Response;
  * @phpstan-type SourceConfig array<string,mixed>
  * @phpstan-type AttributeConfig array<string,mixed>
  *
- * @extends ArrayAccess<array-key,mixed>
+ * @extends ArrayAccess<string,mixed>
  * @extends IteratorAggregate<array-key,mixed>
  */
 interface ElementInterface extends Actionable, ArrayAccess, Chippable, ComponentInterface, CpEditable, IteratorAggregate, ProvidesObjectTemplateSuggestions, Renderable, Statusable, Thumbable, Validatable

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {DeletionBlockersModal} from '@/modules/deletion-blockers-modal/deletion-blockers-modal';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import type {MixedInputPart} from '@/pages/settings/routes/types';
   import MixedInput from '@/common/form/MixedInput.vue';
@@ -79,12 +80,20 @@
     );
   }
 
-  function deleteRoute() {
+  async function deleteRoute() {
     if (!props.route.uid) {
       return;
     }
 
-    if (!confirm(t('Are you sure you want to delete this route?'))) {
+    const result = await DeletionBlockersModal.confirm(
+      'route',
+      props.route.uid
+    );
+    if (
+      !result ||
+      (result === true &&
+        !confirm(t('Are you sure you want to delete this route?')))
+    ) {
       return;
     }
 

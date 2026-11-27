@@ -22,6 +22,7 @@ import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {installClipboard} from '@/modules/elements/clipboard';
+import {installElementIndexViewStateSync} from '@/modules/elements/index/view-state-sync';
 import {installElementInstanceRefresh} from '@/modules/elements/element-instances';
 import {installFieldValueClipboard} from '@/modules/ui/copiedFieldValue';
 import {installAnnouncer} from '@/common/announcer';
@@ -167,6 +168,7 @@ const Cp = {
 
     installAnnouncer();
     installClipboard();
+    installElementIndexViewStateSync();
     installElementInstanceRefresh();
     installFieldValueClipboard();
     observeFieldToggles();

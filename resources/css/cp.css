@@ -506,15 +506,15 @@ ul.path > li:not(:last-child)::after {
   gap: 2px var(--c-spacing-sm);
   min-width: 0;
   max-width: 100%;
+}
 
-  & > .context-label {
-    display: block;
-    max-width: 100%;
-    margin-inline-start: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+:is(.label-link, .label-link > span) > .context-label {
+  display: block;
+  max-width: 100%;
+  margin-inline-start: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /**
