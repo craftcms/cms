@@ -20,6 +20,7 @@ use craft\web\twig\Extension;
 use DateTime;
 use ReflectionClass;
 use Twig\Environment as TwigEnvironment;
+use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
@@ -149,10 +150,13 @@ class Deprecator extends Component
         }
 
         if (preg_match('/\s\(?in (?:"([^"]+)"|(\S+(?: \(string template \w+\))?)) at line (\d+)\)?\.?$/', $message, $match, PREG_OFFSET_CAPTURE)) {
-            $name = preg_replace('/ \(string template \w+\)$/', '', $match[1][0] !== '' ? $match[1][0] : $match[2][0]);
-            $file = is_file($name) ? $name : (Craft::$app->getView()->resolveTemplate($name) ?: $name);
+            $file = $this->_resolveTwigTemplateName($match[1][0] !== '' ? $match[1][0] : $match[2][0]);
             $line = (int)$match[3][0];
             $message = rtrim(substr($message, 0, $match[0][1]), '.') . '.';
+        } elseif (preg_match('/ more than once in "([^"]+)" .* new definition at line (\d+)\)/', $message, $match)) {
+            // Duplicate macro definitions name the template mid-message
+            $file = $this->_resolveTwigTemplateName($match[1]);
+            $line = (int)$match[2];
         } else {
             $coreDirs = [
                 dirname((new ReflectionClass(TwigEnvironment::class))->getFileName()),
@@ -167,13 +171,31 @@ class Deprecator extends Component
             $template = $traces[$t + 1]['object'] ?? null;
 
             if ($template instanceof TwigTemplate) {
-                $templateName = $template->getTemplateName();
-                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $file = $this->_resolveTwigTemplateName($template->getTemplateName());
                 $line = $this->_findTemplateLine($template, $line);
             }
         }
 
         $this->log('twig:' . md5($message), $message, $file, $line);
+    }
+
+    /**
+     * Returns the path to the template that Twig reports by name, or the name itself if it isn't a template Craft can resolve.
+     */
+    private function _resolveTwigTemplateName(string $name): string
+    {
+        $name = preg_replace('/ \(string template \w+\)$/', '', $name);
+
+        if (is_file($name)) {
+            return $name;
+        }
+
+        try {
+            return Craft::$app->getView()->resolveTemplate($name) ?: $name;
+        } catch (TwigLoaderError) {
+            // Templates created from strings can have names Craft won't resolve, such as "../preview"
+            return $name;
+        }
     }
 
     private function _storeLogsInDb(): bool
@@ -434,13 +456,14 @@ class Deprecator extends Component
                 [$file, $line] = $templateInfo;
             }
 
+            // Anonymous class names contain a NUL byte, which PostgreSQL can't store
             $logTraces[] = [
-                'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
+                'objectClass' => !empty($trace['object']) ? str_replace("\0", '', get_class($trace['object'])) : null,
                 'file' => $file,
                 'line' => $line,
-                'class' => !empty($trace['class']) ? $trace['class'] : null,
+                'class' => !empty($trace['class']) ? str_replace("\0", '', $trace['class']) : null,
                 'method' => !empty($trace['function']) ? $trace['function'] : null,
-                'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
+                'args' => !empty($trace['args']) ? str_replace("\0", '', $this->_argsToString($trace['args'])) : null,
             ];
         }
 

@@ -119,8 +119,8 @@ class Compiler extends TwigCompiler
 
                 if (!$method->hasReturnType() && !$this->isTwigClass($class)) {
                     Craft::$app->getDeprecator()->log(
-                        "twig4-return-type:$class::$name",
-                        "`$class::$name()` must declare a return type to be compatible with Twig 4.",
+                        sprintf('twig4-return-type:%s::%s', $this->storableClassName($class), $name),
+                        sprintf('`%s::%s()` must declare a return type to be compatible with Twig 4.', $this->readableClassName($class), $name),
                         $method->getFileName() ?: null,
                         $method->getStartLine() ?: null,
                     );
@@ -139,6 +139,23 @@ class Compiler extends TwigCompiler
     }
 
     /**
+     * Returns a class name without the NUL byte that anonymous class names contain, which PostgreSQL can't store.
+     * Anonymous classes keep their file and line, so each one gets its own deprecation warning.
+     */
+    private function storableClassName(string $class): string
+    {
+        return str_replace("\0", '', $class);
+    }
+
+    /**
+     * Returns a class name as PHP shows it, such as `Twig\Node\Node@anonymous`.
+     */
+    private function readableClassName(string $class): string
+    {
+        return strstr($class, "\0", true) ?: $class;
+    }
+
+    /**
      * Logs custom nodes that capture their output with `ob_start()`, which captures nothing on Twig 4, as Twig 4 yields output instead of echoing it.
      */
     private function checkForOutputBuffering(string $code): void
@@ -149,11 +166,9 @@ class Compiler extends TwigCompiler
             return;
         }
 
-        $class = $node::class;
-
         Craft::$app->getDeprecator()->log(
-            "twig4-ob-start:$class",
-            "`$class` captures output with `ob_start()`, which won't capture anything on Twig 4. Wrap the nodes it captures in `Twig\\Node\\CaptureNode` instead.",
+            sprintf('twig4-ob-start:%s', $this->storableClassName($node::class)),
+            sprintf("`%s` captures output with `ob_start()`, which won't capture anything on Twig 4. Wrap the nodes it captures in `Twig\\Node\\CaptureNode` instead.", $this->readableClassName($node::class)),
             $node->getTemplateName(),
             $node->getTemplateLine() ?: null,
         );
