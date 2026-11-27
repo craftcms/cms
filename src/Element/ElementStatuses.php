@@ -89,6 +89,7 @@ readonly class ElementStatuses
         return $count;
     }
 
+    /** @internal */
     public function handleElementSaving(ElementSaving $event): void
     {
         $element = $event->element;
@@ -119,6 +120,7 @@ readonly class ElementStatuses
         ];
     }
 
+    /** @internal */
     public function handleElementSaved(ElementSaved $event): void
     {
         $element = $event->element;
@@ -168,6 +170,8 @@ readonly class ElementStatuses
 
     /**
      * @return array<class-string, string>
+     *
+     * @internal
      */
     public function subscribe(): array
     {

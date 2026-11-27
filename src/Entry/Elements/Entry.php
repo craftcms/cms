@@ -1636,6 +1636,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * Returns nothing while the deprecated `staticStatuses` config setting is on. Entry queries then read the stored
      * statuses, and `craft:update-statuses` keeps them up to date by re-saving entries.
+     *
+     * @internal
      */
     public static function findIdsWithOutdatedStatus(): array
     {
@@ -1663,6 +1665,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ->all();
     }
 
+    /** @internal */
     public static function updateStoredStatus(int $elementId): ?array
     {
         return DB::transaction(function () use ($elementId): ?array {
@@ -1687,11 +1690,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         });
     }
 
+    /** @internal */
     public function getStoredStatusWrite(): ?array
     {
         return $this->storedStatusWrite;
     }
 
+    /** @internal */
     public static function storedStatuses(array $elementIds): array
     {
         if ($elementIds === []) {
