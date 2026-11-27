@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestBatchedJob;
 use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestCsvBatchedJob;
+use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestJsonlBatchedJob;
 use Illuminate\Queue\Jobs\DatabaseJob;
 use Illuminate\Queue\Jobs\DatabaseJobRecord;
 use Illuminate\Queue\QueueManager;
@@ -278,4 +279,27 @@ it('processes a CSV file across queued batches', function () {
             ['name' => 'Delta'],
             ['name' => 'Echo'],
         ]);
+});
+
+it('processes a JSONL file in reverse across queued batches', function () {
+    $path = tempnam(sys_get_temp_dir(), 'jsonl');
+    file_put_contents($path, "{\"id\":1}\n{\"id\":2}\n{\"id\":3}\n{\"id\":4}\n{\"id\":5}\n");
+
+    Queue::fake()->serializeAndRestore();
+
+    $job = new TestJsonlBatchedJob($path, reverse: true);
+    $job->batchSize = 2;
+    // Each batch stops after its first item, leaving the rest of its slice for the next batch
+    $job->timeout = 0;
+    $jobs = [$job];
+
+    for ($i = 0; isset($jobs[$i]); $i++) {
+        $jobs[$i]->handle();
+        $jobs = [$job, ...Queue::pushed(TestJsonlBatchedJob::class)->all()];
+    }
+
+    unlink($path);
+
+    expect($jobs)->toHaveCount(5)
+        ->and(array_column(end($jobs)->processedItems, 'id'))->toBe([5, 4, 3, 2, 1]);
 });
