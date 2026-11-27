@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Operations;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\Contracts\ExpirableElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadInfo;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Rules\HandleRule;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
@@ -186,6 +186,9 @@ readonly class ElementEagerLoader
      */
     private function eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with): void
     {
+        // DependencyCollector is scoped, so it can't be injected into this singleton
+        $dependencyCollector = $this->elementCaches->isCollectingCacheInfo() ? app(DependencyCollector::class) : null;
+
         foreach ($elementsBySite as $siteId => $elements) {
             $elements = array_values($elements);
 
@@ -423,13 +426,7 @@ readonly class ElementEagerLoader
                                     $positionsForSource[] = $targetElementIdsBySourceIds[$sourceElement->id][$elementId];
 
                                     // If we're collecting cache info and the element is expirable, register its expiry date
-                                    if (
-                                        $element instanceof ExpirableElementInterface &&
-                                        $this->elementCaches->isCollectingCacheInfo() &&
-                                        ($expiryDate = $element->getExpiryDate()) !== null
-                                    ) {
-                                        $this->elementCaches->setCacheExpiryDate($expiryDate);
-                                    }
+                                    $dependencyCollector?->collectElementExpiry($element);
 
                                     if ($limit && ++$count === $limit) {
                                         break 2;

@@ -89,7 +89,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     use Concerns\CachesQueries;
-    use Concerns\CollectsCacheTags;
+    use Concerns\CollectsCacheInfo;
     use Concerns\FormatsResults;
 
     /** @use Concerns\HydratesElements<TElement> */
@@ -244,6 +244,12 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @see whereNestedElementQuery()
      */
     private bool $isNestedCondition = false;
+
+    /**
+     * Whether preparing the query skips its events and cache info collection, for a copy made only to look up when
+     * its statuses change.
+     */
+    private bool $preparesSilently = false;
 
     /**
      * @var bool Whether columns were added to the default select with addSelect() or its variants, so the
@@ -669,7 +675,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->getModels($columns));
         }
 
-        if (! is_null($result = $this->getResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             if ($this->with) {
                 Elements::eagerLoadElements($this->elementType, $result, $this->with);
             }
@@ -746,7 +752,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->pluck($column, $key));
         }
 
-        if (! is_null($result = $this->getResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             return collect($result)->pluck($this->attributeName($column), $key === null ? null : $this->attributeName($key));
         }
 
@@ -1089,8 +1095,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->executeOnCopy(fn (self $query) => $query->count($columns));
         }
 
-        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
+        if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->resolveResultOverride())) {
             return count($result);
+        }
+
+        // Use an eager-loaded count before preparing the query, as getModels() does, so it isn't prepared for nothing
+        if (($eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns)) !== null) {
+            return $this->applyAfterQueryCallbacks($eagerLoadedCount);
         }
 
         try {
@@ -1099,13 +1110,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return 0;
         }
 
-        $eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns);
         $cacheKeyColumns = $columns;
         $columns = is_array($columns) ? array_map($this->resolveColumn(...), $columns) : $this->resolveColumn($columns);
-
-        if ($eagerLoadedCount !== null) {
-            return $this->applyAfterQueryCallbacks($eagerLoadedCount);
-        }
 
         if ((int) $this->queryCacheDuration >= 0) {
             $result = $this->rememberQueryResult(
@@ -1174,7 +1180,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function nth(int $n, $columns = ['*']): ElementInterface|array|null
     {
-        if (! is_null($result = $this->getResultOverride())) {
+        if (! is_null($result = $this->resolveResultOverride())) {
             return $result[$n] ?? null;
         }
 
@@ -1701,6 +1707,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * either of two sets of params, give each its own closure:
      * `->where(fn ($q) => $q->section('news'))->orWhere(fn ($q) => $q->featured(true))`.
      *
+     * A status set only within a closure doesn’t make `{% cache %}` tags and cached GraphQL results refresh when
+     * entries go live or expire. Set the status on the outer query instead.
+     *
      * @param  Closure|string|array<array-key, mixed>|Expression  $column
      */
     public function where($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
@@ -1923,29 +1932,42 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         // Nested conditions leave the events to the query they belong to
-        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition;
+        $dispatchesEvents = ! $this->elementQueryBeforeQueryCalled && ! $this->isNestedCondition && ! $this->preparesSilently;
         $originalWhereCount = count($this->query->wheres);
 
-        if ($dispatchesEvents) {
-            event(new ElementQueryPreparing($this));
+        try {
+            if ($dispatchesEvents) {
+                event(new ElementQueryPreparing($this));
+            }
+
+            $preparingWhereCount = count($this->query->wheres);
+
+            foreach ($this->beforeQueryCallbacks as $i => $callback) {
+                $callback($this);
+
+                unset($this->beforeQueryCallbacks[$i]);
+            }
+
+            $this->beforeQueryCallbacks = [];
+
+            $this->elementQueryBeforeQuery();
+
+            $paramWhereCount = count($this->query->wheres);
+
+            if ($dispatchesEvents) {
+                event(new ElementQueryPrepared($this));
+            }
+        } catch (QueryAbortedException $e) {
+            // An empty result still changes when elements are saved
+            if ($dispatchesEvents) {
+                $this->collectCacheTags();
+            }
+
+            throw $e;
         }
 
-        $preparingWhereCount = count($this->query->wheres);
-
-        foreach ($this->beforeQueryCallbacks as $i => $callback) {
-            $callback($this);
-
-            unset($this->beforeQueryCallbacks[$i]);
-        }
-
-        $this->beforeQueryCallbacks = [];
-
-        $this->elementQueryBeforeQuery();
-
-        $paramWhereCount = count($this->query->wheres);
-
         if ($dispatchesEvents) {
-            event(new ElementQueryPrepared($this));
+            $this->collectCacheInfo();
         }
 
         $wheres = $this->query->wheres;

@@ -12,7 +12,7 @@ use Override;
  * @method static bool hasAnyPendingInvalidations()
  * @method static bool hasPendingInvalidations(string[] $tags)
  * @method static bool isCollectingCacheInfo()
- * @method static void startCollectingCacheInfo()
+ * @method static void startCollectingCacheInfo(bool $withStatusChanges = true)
  * @method static void collectCacheTags(array $tags)
  * @method static void setCacheExpiryDate(\DateTimeInterface $expiryDate)
  * @method static void collectCacheInfoForElement(\CraftCms\Cms\Element\Contracts\ElementInterface $element)
