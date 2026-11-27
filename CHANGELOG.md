@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where MCP field layout updates could save layouts without their mandatory fields. ([#21185](https://github.com/craftcms/cms/issues/21185))
+
 ## 5.12.4 - 2026-11-25
 
 - Improved the Dutch control panel translations. ([#21099](https://github.com/craftcms/cms/discussions/21099))
