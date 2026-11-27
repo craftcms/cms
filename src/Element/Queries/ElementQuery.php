@@ -26,7 +26,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -691,11 +690,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ((int) $this->queryCacheDuration >= 0) {
-            $result = DependencyCache::remember(
+            $result = $this->rememberQueryResult(
                 key: $this->queryCacheKey($this, 'all', $columns),
-                ttl: $this->queryCacheDuration,
                 callback: fn () => $this->query->get($columns)->all(),
-                dependency: $this->getCacheDependency(),
             );
         } else {
             $result = $this->query->get($columns)->all();
@@ -776,11 +773,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $pluck = fn () => $query->pluck($valueColumn, $keyColumn);
 
         if ((int) $this->queryCacheDuration >= 0) {
-            return DependencyCache::remember(
+            return $this->rememberQueryResult(
                 key: $this->queryCacheKey($this, 'pluck', [$column, $key]),
-                ttl: $this->queryCacheDuration,
                 callback: $pluck,
-                dependency: $this->getCacheDependency(),
             );
         }
 
@@ -1113,11 +1108,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ((int) $this->queryCacheDuration >= 0) {
-            $result = DependencyCache::remember(
+            $result = $this->rememberQueryResult(
                 key: $this->queryCacheKey($this, 'count', $cacheKeyColumns),
-                ttl: $this->queryCacheDuration,
                 callback: fn () => $this->query->count($columns),
-                dependency: $this->getCacheDependency(),
             );
         } else {
             $result = $this->query->count($columns);
@@ -1144,11 +1137,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ((int) $query->queryCacheDuration >= 0) {
-            return DependencyCache::remember(
+            return $query->rememberQueryResult(
                 key: $query->queryCacheKey($query, 'getcountforpagination', $columns),
-                ttl: $query->queryCacheDuration,
                 callback: fn () => $query->query->getCountForPagination($columns),
-                dependency: $query->getCacheDependency(),
             );
         }
 
@@ -1168,11 +1159,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if ((int) $this->queryCacheDuration >= 0) {
-            return DependencyCache::remember(
+            return $this->rememberQueryResult(
                 key: $this->queryCacheKey($this, 'exists'),
-                ttl: $this->queryCacheDuration,
                 callback: fn () => $this->getQuery()->exists(),
-                dependency: $this->getCacheDependency(),
             );
         }
 
@@ -1210,7 +1199,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked with the result and executing query after execution.
      */
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     public function afterQuery(Closure $callback): self
     {
         $this->afterQueryCallbacks[] = $callback;
@@ -1276,7 +1265,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->query;
     }
 
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the limit for paginated results.')]
     public function limit(?int $value): self
     {
@@ -1293,7 +1282,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->getQuery()->getLimit();
     }
 
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the offset for paginated results.')]
     public function offset(?int $value): self
     {
@@ -1305,7 +1294,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * @param  string|Expression|array<int|string, int|string|Expression>  $column
      * @param  int|string  $direction
-     * @return self<TElement>
+     *
+     * @phpstan-return static
      */
     #[ElementQueryParam(ElementQueryParamType::String, 'Sets the field the returned {elements} should be ordered by.')]
     public function orderBy($column, $direction = 'asc'): self
@@ -1346,7 +1336,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Order the query by a date column, newest first, as Eloquent orders by the model’s creation date by default.
      *
-     * @return self<TElement>
+     * @phpstan-return static
      */
     public function latest(string|Expression|null $column = null): self
     {
@@ -1356,7 +1346,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Order the query by a date column, oldest first, as Eloquent orders by the model’s creation date by default.
      *
-     * @return self<TElement>
+     * @phpstan-return static
      */
     public function oldest(string|Expression|null $column = null): self
     {
@@ -1635,11 +1625,9 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $parameters = $this->resolveAggregateColumns(strtolower($method), $this->toBaseSubqueries($parameters));
 
             if ((int) $this->queryCacheDuration >= 0) {
-                return DependencyCache::remember(
+                return $this->rememberQueryResult(
                     key: $this->queryCacheKey($this, strtolower($method), $cacheKeyParameters),
-                    ttl: $this->queryCacheDuration,
                     callback: fn () => $this->getQuery()->{$method}(...$parameters),
-                    dependency: $this->getCacheDependency(),
                 );
             }
 
@@ -1874,7 +1862,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked on a clone.
      */
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     public function onClone(Closure $callback): self
     {
         $this->onCloneCallbacks[] = $callback;
@@ -1918,7 +1906,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked before the query is executed.
      */
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     public function beforeQuery(Closure $callback): self
     {
         $this->beforeQueryCallbacks[] = $callback;

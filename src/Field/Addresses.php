@@ -112,7 +112,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', AddressQuery::class, ElementCollection::class, Address::class);
+        return sprintf('\\%s|\\%s<int, \\%s>', AddressQuery::class, ElementCollection::class, Address::class);
     }
 
     #[Override]

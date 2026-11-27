@@ -1481,6 +1481,40 @@ describe('UiRenderer', () => {
     expect(ui.getValue(['summary'])).toBe('Derived from My Site');
   });
 
+  it('shows field and global errors without their emphasis markers', async () => {
+    const invalid: UiPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Date'},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: ['date'],
+            mode: 'editable',
+            deltaGroup: ['date'],
+          },
+        },
+      ],
+      values: {date: ''},
+      errors: [{path: ['date'], messages: ['The *Date* field is required.']}],
+      globalErrors: ['*Blocks* has an invalid entry.'],
+    };
+    app.unmount();
+    await mount(invalid);
+
+    expect(
+      container.querySelector('[slot="feedback"] li')?.textContent?.trim()
+    ).toBe('The Date field is required.');
+    expect(
+      container.querySelector('ul[role="alert"] li')?.textContent?.trim()
+    ).toBe('Blocks has an invalid entry.');
+  });
+
   it('uses a path slot to override a control without replacing UI behavior', async () => {
     const overridden: UiPayload = {
       scope: [],
@@ -2346,7 +2380,9 @@ describe('UiRenderer', () => {
     expect(tab?.querySelector('[slot="warning"] strong')?.textContent).toBe(
       'publicly'
     );
-    expect(content?.classList.contains('pane')).toBe(true);
+    expect(content?.localName).toBe('craft-pane');
+    expect(content?.getAttribute('appearance')).toBe('outline-fill');
+    expect(content?.classList.contains('prose')).toBe(true);
     expect(content?.classList.contains('width-50')).toBe(true);
     expect(content?.querySelector('strong')?.textContent).toBe(
       'Editorial note'
@@ -4086,7 +4122,7 @@ describe('UiRenderer', () => {
         'craft:range',
         'Range',
         'range',
-        {inputType: 'range', min: 1, max: 5, step: 1},
+        {inputType: 'range', min: 1, max: 5, step: 1, suffix: 'pts'},
         3,
       ],
       [
@@ -4253,6 +4289,13 @@ describe('UiRenderer', () => {
       input.dispatchEvent(new Event('input', {bubbles: true}));
     }
 
+    await nextTick();
+    const rangeGroup = container.querySelector('.range-group')!;
+    expect(
+      rangeGroup.querySelector<HTMLInputElement>('input[type="number"]')?.value
+    ).toBe('4');
+    expect(rangeGroup.textContent).toContain('pts');
+
     const money = container.querySelector<HTMLInputElement>(
       'input[name="settings[price][value]"]'
     )!;
@@ -4292,8 +4335,9 @@ describe('UiRenderer', () => {
         container.querySelector<HTMLTextAreaElement>('textarea')?.value
       ).toBe('<summary>');
       expect(
-        container.querySelector<HTMLInputElement>('input[inputmode="decimal"]')
-          ?.value
+        container.querySelector<HTMLInputElement>(
+          'craft-input-money input[inputmode="decimal"]'
+        )?.value
       ).toBe('12,50');
       expect(container.querySelector<HTMLSelectElement>('select')?.value).toBe(
         '1'

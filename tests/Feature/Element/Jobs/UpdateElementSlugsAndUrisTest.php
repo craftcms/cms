@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Events\ElementSlugAndUriUpdated;
 use CraftCms\Cms\Element\Jobs\UpdateElementSlugsAndUris;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
@@ -10,7 +11,9 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 it('can be instantiated with element type only', function () {
     $job = new UpdateElementSlugsAndUris(
@@ -99,3 +102,24 @@ function createEntriesWithUriFormat(int $count): array
 
     return [$section, $entries];
 }
+
+it('reports the URL an element was served from before its URI changed', function () {
+    [$section, [$entry]] = createEntriesWithUriFormat(1);
+    $events = [];
+    Event::listen(ElementSlugAndUriUpdated::class, function (ElementSlugAndUriUpdated $event) use (&$events) {
+        $events[] = $event;
+    });
+
+    // An unchanged URI has nothing to purge
+    Elements::updateElementSlugAndUri(EntryElement::find()->id($entry->id)->one(), false, false);
+
+    $section->siteSettings()->update(['uriFormat' => 'news/{slug}']);
+    Sections::refreshSections();
+    Elements::updateElementSlugAndUri(EntryElement::find()->id($entry->id)->one(), false, false);
+
+    expect($events)->toHaveCount(2)
+        ->and($events[0]->urls())->toHaveCount(0)
+        ->and($events[1]->oldUri)->toBe("blog/$entry->slug")
+        ->and($events[1]->element->uri)->toBe("news/$entry->slug")
+        ->and($events[1]->urls())->toBe([Url::siteUrl("blog/$entry->slug", null, null, $entry->siteId)]);
+});

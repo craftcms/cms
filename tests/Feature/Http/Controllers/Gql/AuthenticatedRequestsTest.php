@@ -211,6 +211,31 @@ it('lets OAuth clients discover, register for, and use the API with the access l
     'read and write' => ['graphql:write', ['graphql:read', 'graphql:write'], true],
 ]);
 
+it('lets OAuth clients discover the API’s OAuth endpoints', function (bool $headlessMode, bool $cpRequest): void {
+    Cms::config()->headlessMode = $headlessMode;
+    $apiPath = ($cpRequest ? Cms::config()->cpTrigger.'/' : '').'actions/graphql/api';
+
+    $challenge = $this->postJson("/$apiPath", ['query' => '{ __typename }'], ['Authorization' => 'Bearer not.a.jwt'])
+        ->assertUnauthorized()
+        ->headers->get('WWW-Authenticate');
+    preg_match('/resource_metadata="([^"]+)"/', $challenge, $match);
+
+    $resource = $this->getJson($match[1])->assertOk()->json();
+    $issuer = parse_url($resource['authorization_servers'][0]);
+    $metadata = $this->getJson("{$issuer['scheme']}://{$issuer['host']}/.well-known/oauth-authorization-server{$issuer['path']}")
+        ->assertOk()
+        ->json();
+
+    expect($resource['resource'])->toEndWith('://localhost/actions/graphql/api')
+        ->and($metadata['issuer'])->toBe($resource['authorization_servers'][0]);
+    $this->postJson($metadata['token_endpoint'])->assertStatus(400);
+    $this->postJson($metadata['registration_endpoint'])->assertStatus(400);
+    $this->get($metadata['authorization_endpoint'])->assertStatus(400);
+})->with([
+    'in headless mode' => [true, false],
+    'from its control panel action URL' => [false, true],
+]);
+
 it('pairs X-Craft-Gql-Token headers with the user’s access token or session', function (): void {
     Cms::config()->enableGraphqlCaching = true;
     $schema = new GqlSchema(['name' => 'Front end', 'scope' => GqlHelper::createFullAccessSchema()->scope]);
@@ -262,4 +287,44 @@ it('pairs X-Craft-Gql-Token headers with the user’s access token or session', 
     graphQL("{ entry(id: {$this->peer->id}, withProvisionalDrafts: true) { title } }", ['X-Craft-Gql-Token' => 'front-end'])
         ->assertOk()
         ->assertJsonPath('data.entry.title', 'Unsaved changes');
+});
+
+it('requires control panel access for access tokens sent to the control panel’s action URL', function (): void {
+    $cpPath = '/'.Cms::config()->cpTrigger.'/actions/graphql/api';
+    $request = function (string $token, string $path = '/actions/graphql/api'): TestResponse {
+        app(Factory::class)->forgetGuards();
+
+        return $this->postJson($path, ['query' => '{ ping }'], ['Authorization' => "Bearer $token"]);
+    };
+    $siteUser = UserModel::factory()->createElement(['admin' => false]);
+
+    $request(gqlUserToken($siteUser), $cpPath)->assertForbidden();
+    $request(gqlUserToken($this->editor), $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
+    $request(gqlUserToken($siteUser))->assertOk()->assertJsonPath('data.ping', 'pong');
+});
+
+it('requires offline access for access tokens while the system is offline', function (): void {
+    $cpPath = '/'.Cms::config()->cpTrigger.'/actions/graphql/api';
+    $request = function (string $token, string $path = '/actions/graphql/api'): TestResponse {
+        app(Factory::class)->forgetGuards();
+
+        return $this->postJson($path, ['query' => '{ ping }'], ['Authorization' => "Bearer $token"]);
+    };
+    $user = fn (array $permissions) => UserModel::factory()->withPermissions($permissions)->createElement(['admin' => false]);
+    $tokens = [
+        'none' => gqlUserToken($user([])),
+        'site' => gqlUserToken($user(['accessSiteWhenSystemIsOff'])),
+        'cp' => gqlUserToken($user(['accessCp'])),
+        'cpOffline' => gqlUserToken($user(['accessCp', 'accessCpWhenSystemIsOff'])),
+    ];
+    app()->maintenanceMode()->activate([]);
+
+    try {
+        $request($tokens['none'])->assertServiceUnavailable();
+        $request($tokens['site'])->assertOk()->assertJsonPath('data.ping', 'pong');
+        $request($tokens['cp'], $cpPath)->assertServiceUnavailable();
+        $request($tokens['cpOffline'], $cpPath)->assertOk()->assertJsonPath('data.ping', 'pong');
+    } finally {
+        app()->maintenanceMode()->deactivate();
+    }
 });

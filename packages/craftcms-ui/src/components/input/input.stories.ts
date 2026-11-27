@@ -48,6 +48,16 @@ export const WithMaxLength: Story = {
   args: {maxlength: 5, 'label-slot': 'Port'},
 };
 
+/** `show-chars-left` shows how many characters are left before the `maxlength`. */
+export const WithCharsLeft: Story = {
+  args: {
+    maxlength: 70,
+    'show-chars-left': true,
+    width: 'full',
+    'label-slot': 'Title',
+  },
+};
+
 /** `width="full"` spans the column even when a `maxlength` is set. */
 export const FullWidthOverride: Story = {
   args: {maxlength: 6, width: 'full', 'label-slot': 'Port'},

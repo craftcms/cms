@@ -20,11 +20,11 @@
   > :has(craft-select) {
     flex: none;
     max-width: 100%;
+  }
 
-    craft-select {
-      width: max-content;
-      max-width: 100%;
-    }
+  > * craft-select {
+    width: max-content;
+    max-width: 100%;
   }
 
   > :not(:has(craft-select)) {
@@ -40,12 +40,8 @@
   min-width: 0;
 }
 
-.craft-link-selected-label {
+.craft-link-field__chip {
   min-width: 0;
-  overflow: hidden;
-  color: var(--c-text-quiet);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .craft-link-field .buttons {

@@ -78,11 +78,11 @@ describe('input', function () {
             ->and($html)->toContain('aria-expanded="false"');
     });
 
-    it('marks the input for the chars-left counter with matching padding', function () {
+    it('shows the chars-left counter on the host', function () {
         $html = Input::make()->id('i')->maxlength(255)->showCharsLeft()->toHtml();
 
-        expect($html)->toContain('data-show-chars-left')
-            ->and($html)->toContain('padding-right: 35.6px');
+        expect($html)->toContain('<craft-input maxlength="255" show-chars-left')
+            ->and($html)->not->toContain('padding');
     });
 
     it('lets inputAttributes override computed defaults like dir', function () {
@@ -182,6 +182,22 @@ describe('suffix', function () {
         $html = Input::make()->id('i')->suffix('MB')->describedBy('help')->toHtml();
 
         expect($html)->toContain('aria-describedby="help i-desc"');
+    });
+
+    it('renders the prefix slot, described together with the suffix', function () {
+        $html = Input::make()->id('i')->prefix('€')->suffix('kg')->toHtml();
+
+        expect($html)->toContainTag('div', ['slot' => 'prefix', 'class' => 'label light', 'aria-hidden' => 'true'])
+            ->and($html)->toContain('>€</div>')
+            ->and($html)->toContain('>Value prefixed by “€”. Value suffixed by “kg”.</span>')
+            ->and($html)->toContain('aria-describedby="i-desc"');
+    });
+
+    it('describes the input with its prefix without an id', function () {
+        $html = Input::make()->prefix('€')->toHtml();
+
+        expect(preg_match('/<span id="([^"]+)" hidden>Value prefixed by “€”\.<\/span>/u', $html, $matches))->toBe(1)
+            ->and($html)->toContain(sprintf('aria-describedby="%s"', $matches[1]));
     });
 
     it('encodes the suffix text', function () {

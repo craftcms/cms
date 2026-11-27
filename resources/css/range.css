@@ -1,0 +1,87 @@
+.range-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--c-spacing-sm) var(--c-spacing-md);
+}
+
+.range-suffix {
+  color: var(--c-text-quiet);
+}
+
+.range-wrapper {
+  flex: 0 1 200px;
+  min-width: 0;
+}
+
+input.range {
+  --_track-height: 6px;
+  --_thumb-size: var(--c-size-control-xs);
+
+  display: block;
+  appearance: none;
+  width: 100%;
+  height: var(--c-size-control-sm);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &::-webkit-slider-runnable-track {
+    height: var(--_track-height);
+    border-radius: calc(var(--_track-height) / 2);
+    background: var(--c-form-control-fill);
+    box-shadow: inset 0 0 0 1px var(--c-form-control-border-color);
+  }
+
+  &::-moz-range-track {
+    height: var(--_track-height);
+    border-radius: calc(var(--_track-height) / 2);
+    background: var(--c-form-control-fill);
+    box-shadow: inset 0 0 0 1px var(--c-form-control-border-color);
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    box-sizing: border-box;
+    width: var(--_thumb-size);
+    height: var(--_thumb-size);
+    margin-block-start: calc((var(--_track-height) - var(--_thumb-size)) / 2);
+    border: none;
+    border-radius: 50%;
+    background: var(--c-color-accent-fill-loud);
+    box-shadow: 0 0 0 1px var(--c-form-control-fill);
+  }
+
+  &::-moz-range-thumb {
+    box-sizing: border-box;
+    width: var(--_thumb-size);
+    height: var(--_thumb-size);
+    border: none;
+    border-radius: 50%;
+    background: var(--c-color-accent-fill-loud);
+    box-shadow: 0 0 0 1px var(--c-form-control-fill);
+  }
+
+  @media (forced-colors: active) {
+    &::-webkit-slider-runnable-track {
+      border: 1px solid ButtonText;
+    }
+
+    &::-moz-range-track {
+      border: 1px solid ButtonText;
+    }
+
+    &::-webkit-slider-thumb {
+      border: calc(var(--_thumb-size) / 2) solid ButtonText;
+    }
+
+    &::-moz-range-thumb {
+      border: calc(var(--_thumb-size) / 2) solid ButtonText;
+    }
+  }
+}

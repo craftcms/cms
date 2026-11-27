@@ -16,7 +16,7 @@ ElementIndexPage                 ElementPicker
                       ElementTable uses common DataTable
 ```
 
-`ElementIndex` accepts an explicit view model. Its model exposes source/site changes, refresh, selection clearing, and row lookup. Request bookkeeping and raw row-selection state stay in the model implementation. The picker refreshes and selects uploads through `refresh({selectId})`.
+`ElementIndex` accepts an explicit view model. Its model exposes source/site changes, refresh, selection clearing, and row lookup. Request bookkeeping and raw row-selection state stay in the model implementation. The picker shows uploads by calling `refresh()`, then `selectElements([id])`.
 
 ## Selection
 

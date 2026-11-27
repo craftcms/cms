@@ -49,3 +49,32 @@ test('addOrderBy', function() {
     $this->expectNotToPerformAssertions();
     User::find()->select('id')->addOrderBy(['id', SORT_ASC]);
 });
+
+test('andWhere', function() {
+    [$x, $y, $z] = UserModel::factory()->count(3)->create()->pluck('id')->all();
+
+    expect(User::find()->status(null)->id(999999999)->andWhere(['or', ['elements.id' => $x], ['elements.id' => $y]])->ids())->toBe([])
+        ->and(User::find()->status(null)->id([$x, $z])->andWhere(['or', ['elements.id' => $x], ['elements.id' => $y]])->ids())->toBe([$x]);
+});
+
+test('filterWhere', function() {
+    [$x, $y, $z] = UserModel::factory()->count(3)->create()->pluck('id')->all();
+
+    expect(User::find()->status(null)->id(999999999)->filterWhere(['or', ['elements.id' => $x], ['elements.id' => $y]])->ids())->toBe([])
+        ->and(User::find()->status(null)->id([$x, $z])->where('elements.id', $z)->filterWhere(['or', ['elements.id' => $x], ['elements.uid' => null]])->ids())->toBe([$x])
+        ->and(User::find()->status(null)->id([$x, $z])->where('elements.id', $z)->filterWhere(['elements.uid' => null])->ids())->toBe([$z]);
+});
+
+test('andFilterWhere', function() {
+    [$x, $y, $z] = UserModel::factory()->count(3)->create()->pluck('id')->all();
+
+    expect(User::find()->status(null)->id(999999999)->andFilterWhere(['or', ['elements.id' => $x], ['elements.id' => $y]])->ids())->toBe([])
+        ->and(User::find()->status(null)->id([$x, $z])->andFilterWhere(['or', ['elements.id' => $x], ['elements.uid' => null]])->ids())->toBe([$x]);
+});
+
+test('orFilterWhere', function() {
+    [$x, $y, $z] = UserModel::factory()->count(3)->create()->pluck('id')->all();
+
+    expect(User::find()->status(null)->id(999999999)->where('elements.id', $z)->orFilterWhere(['or', ['elements.id' => $x], ['elements.id' => $y]])->ids())->toBe([])
+        ->and(User::find()->status(null)->id([$x, $y])->where('elements.id', $z)->orFilterWhere(['or', ['elements.id' => $x], ['elements.uid' => null]])->ids())->toBe([$x]);
+});

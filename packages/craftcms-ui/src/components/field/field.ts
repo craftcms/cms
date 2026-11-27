@@ -131,6 +131,14 @@ export default class CraftField extends FormControl(LitElement) {
     this.__onLightDomChanged()
   );
 
+  /**
+   * A Lit control reflects a `width` property set by a framework such as
+   * Vue after it's slotted, which the child list observer doesn't see.
+   */
+  private __controlWidthObserver = new MutationObserver(() =>
+    this.__syncControlWidth()
+  );
+
   /** The slotted control the field last wired up. */
   private __enhancedInput: HTMLElement | null = null;
 
@@ -138,6 +146,10 @@ export default class CraftField extends FormControl(LitElement) {
     super.connectedCallback();
     this.__enhancedInput = this._control ?? null;
     this.__lightDomObserver.observe(this, {childList: true});
+    this.__controlWidthObserver.observe(this, {
+      attributeFilter: ['width'],
+      subtree: true,
+    });
     this.__syncHasErrors();
     this.__syncHasMaxlength();
     this.__syncControlWidth();
@@ -190,6 +202,7 @@ export default class CraftField extends FormControl(LitElement) {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.__lightDomObserver.disconnect();
+    this.__controlWidthObserver.disconnect();
   }
 
   override updated(changedProperties: PropertyValues): void {

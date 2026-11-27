@@ -1,4 +1,9 @@
-import {Theme, Color, BackgroundColor} from '@adobe/leonardo-contrast-colors';
+import {
+  Theme,
+  Color,
+  BackgroundColor,
+  contrast,
+} from '@adobe/leonardo-contrast-colors';
 
 const contrastRatios = {
   static: [1.45, 1.78, 2.22, 2.78, 3.54, 4.61, 5.92, 7.81, 10.21, 13.01, 15.91],
@@ -191,3 +196,111 @@ export const stops = [
   '900',
   '950',
 ];
+
+/*
+  Status colors (enabled, pending, expired) are more vivid than the palette, so
+  each one has its own key colors rather than a palette stop. A status dot has
+  no darker ring, so its fill alone must reach 3:1 (WCAG 1.4.11) against every
+  surface it sits on, and the text color must reach 4.5:1.
+
+  Leonardo measures against one background per theme, so each theme targets the
+  surface a status color contrasts least with:
+  - light: the page surface (`--c-surface-page`, base-200), the darkest one;
+  - dark: the lime card header (lime's `--c-color-fill-quiet`), the lightest
+    surface or tint a dot sits on.
+  Selected card headers are left out. No fill can contrast with both them and
+  the page, so a dot there needs a ring instead.
+
+  A key that already passes keeps its contrast, so the output stays the key
+  itself. A key that falls short is moved to the target in OKLCH, which keeps
+  its hue. If a surface changes, these backgrounds have to change with it;
+  status.browser.test.ts measures the dots on the real surfaces.
+*/
+const statusSurfaces = {light: '#e6ecf4', dark: '#324912'};
+
+// Targets sit above 3 and 4.5. Leonardo can land up to 0.01 under its target,
+// and browsers mix and round the surface colors slightly differently.
+const statusRatios = {fill: 3.2, text: 4.55};
+
+const statusKeys = {
+  light: {
+    enabled: {fill: '#009a5f', text: '#007a4a'},
+    pending: {fill: '#008ae2', text: '#006db4'},
+    expired: {fill: '#ff002f', text: '#d50026'},
+  },
+  dark: {
+    enabled: {fill: '#00ffa1', text: '#00ffa1'},
+    pending: {fill: '#009dff', text: '#5eb4ff'},
+    expired: {fill: '#ff4a4d', text: '#ff8e87'},
+  },
+};
+
+const hexToRgb = (hex) =>
+  [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+/**
+ * Runs each `{name, key, ratio}` through Leonardo against one exact
+ * background. A key that already reaches its ratio is kept as it is; one that
+ * falls short is moved to the ratio in OKLCH, which keeps its hue.
+ */
+function keyedColors(background, specs) {
+  const colors = specs.map(({name, key, ratio}) => {
+    const keyRatio = Math.abs(contrast(hexToRgb(key), hexToRgb(background)));
+
+    return new Color({
+      name,
+      colorKeys: [key],
+      colorSpace: 'OKLCH',
+      ratios: [Math.max(ratio, keyRatio)],
+    });
+  });
+
+  // A string background makes the theme measure against that exact color.
+  return new Theme({colors, backgroundColor: background}).contrastColors
+    .slice(1)
+    .map(({name, values: [{value}]}) => ({name, value}));
+}
+
+function makeStatusColors(theme) {
+  return keyedColors(
+    statusSurfaces[theme],
+    Object.entries(statusKeys[theme]).flatMap(([status, keys]) =>
+      Object.entries(keys).map(([part, key]) => ({
+        name: `status-${status}-${part}`,
+        key,
+        ratio: statusRatios[part],
+      }))
+    )
+  );
+}
+
+export const statusColors = {
+  light: makeStatusColors('light'),
+  dark: makeStatusColors('dark'),
+};
+
+/*
+  A form control's border (inputs, checkboxes, radios) is its only boundary, so
+  it needs 3:1 against what's behind it (WCAG 1.4.11). It starts from the
+  palette's slate-400 and is darkened (light) or lightened (dark) only as far as
+  it takes to reach that on the darkest or lightest backdrop a control sits on:
+  the body of a selected white card, tinted with the accent's quiet fill. A
+  selected neutral card's body is lighter in the light theme and darker in the
+  dark one, so it passes too. Tinted cards recolor their controls' borders.
+  card.browser.test.ts measures real controls in every card.
+*/
+const formControlBackdrops = {light: '#e7eefd', dark: '#1e3e83'};
+
+const slate400 = (theme) =>
+  theme.contrastColors.find(({name}) => name === 'slate').values[
+    stops.indexOf('400')
+  ].value;
+
+export const formControlColors = {
+  light: keyedColors(formControlBackdrops.light, [
+    {name: 'form-control-border', key: slate400(lightTheme), ratio: 3.2},
+  ]),
+  dark: keyedColors(formControlBackdrops.dark, [
+    {name: 'form-control-border', key: slate400(darkTheme), ratio: 3.2},
+  ]),
+};

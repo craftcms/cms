@@ -452,7 +452,6 @@ class NestedElementManager extends Component
         return [
             'context' => 'field',
             'showActionMenu' => true,
-            'showStatus' => true,
             'showNestedActions' => ! $config['static'],
             'selectable' => $config['selectable'],
             'sortable' => $config['sortable'],

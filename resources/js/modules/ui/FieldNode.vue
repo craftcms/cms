@@ -47,6 +47,7 @@
     pathsMatch,
     controlValueAt,
   } from './runtime';
+  import {stripEmphasis} from '@/common/utils/emphasis';
   import {useUiRenderer} from './renderer/context';
   import {acceptsValue, readControlValue} from './valueAccess';
   import type {
@@ -711,7 +712,9 @@
       @change="onChange"
     />
     <ul v-if="controlErrors.length" slot="feedback" class="error-list">
-      <li v-for="error in controlErrors" :key="error">{{ error }}</li>
+      <li v-for="error in controlErrors" :key="error">
+        {{ stripEmphasis(error) }}
+      </li>
     </ul>
   </craft-field>
   <FieldChangesModal

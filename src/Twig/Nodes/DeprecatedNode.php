@@ -33,7 +33,7 @@ class DeprecatedNode extends Node
      * Compiles the node.
      */
     #[Override]
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler->addDebugInfo($this);
 

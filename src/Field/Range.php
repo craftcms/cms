@@ -68,13 +68,14 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
             ->min($this->min)
             ->max($this->max)
             ->step($this->step)
+            ->suffix($this->suffix)
             ->value($context->value);
     }
 
     #[Override]
     public static function phpType(): string
     {
-        return 'int|null';
+        return 'int|float|null';
     }
 
     #[Override]
@@ -186,7 +187,7 @@ class Range extends Field implements DefaultableFieldInterface, InlineEditableFi
             }
         }
 
-        return $value;
+        return is_int($value) || is_float($value) ? $value : null;
     }
 
     /** @return list<string> */

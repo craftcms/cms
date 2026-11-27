@@ -557,16 +557,16 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor.merge({site: handle}, {resetPage: true});
   }
 
-  async function refresh(refreshOptions?: {
-    selectId?: number;
-    silent?: boolean;
-  }): Promise<void> {
-    const applied = await options.refresh({silent: refreshOptions?.silent});
-    if (!applied || refreshOptions?.selectId === undefined) return;
-    const row = table
-      .getRowModel()
-      .rows.find(({original}) => original.id === refreshOptions.selectId);
-    if (row) selection.selectRow(row, {checked: true});
+  async function refresh(refreshOptions?: {silent?: boolean}): Promise<void> {
+    await options.refresh({silent: refreshOptions?.silent});
+  }
+
+  function selectElements(ids: number[]): void {
+    for (const row of table.getRowModel().rows) {
+      if (ids.includes(Number(row.original.id))) {
+        selection.selectRow(row, {checked: true});
+      }
+    }
   }
 
   // Rows saved in another tab are reloaded, once for all the rows saved
@@ -667,6 +667,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     changeSource,
     changeSite,
     refresh,
+    selectElements,
     clearSelection: selection.clearSelection,
     findRow: (id) => data.value.find((row) => String(row.id) === String(id)),
     captureSelection: () => {

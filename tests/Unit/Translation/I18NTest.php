@@ -38,6 +38,9 @@ test('normalize number', function (mixed $expected, mixed $number, ?string $loca
     ['20 0000 0000', '20 0000 0000', null],
     ['20.0000.0000', '20.0000.0000', null],
     [2000000000, 2000000000, null],
+    ['-1234.50', "\u{2212}1\u{00A0}234,50", 'sv-SE'],
+    ['-1234.50', "\u{061C}-\u{0661}\u{066C}\u{0662}\u{0663}\u{0664}\u{066B}\u{0665}\u{0660}", 'ar-EG'],
+    ['-1234.50', "-1\u{202F}234,50", 'fr-FR'],
 ]);
 
 test('getAllLocaleIds returns all ICU locales with hyphens', function () {

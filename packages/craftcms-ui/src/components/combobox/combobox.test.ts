@@ -323,6 +323,35 @@ describe('craft-combobox', () => {
     expect(combobox.value).toBe('en-US');
   });
 
+  it('clears a requireOptionMatch value when the textbox is emptied', async () => {
+    const combobox = await createFixture((c) => {
+      c.requireOptionMatch = true;
+      c.options = [
+        {label: 'Documents', value: 'documents'},
+        {label: 'Images', value: 'images'},
+      ];
+      c.value = 'images';
+    });
+    let changes = 0;
+    combobox.addEventListener('change', () => changes++);
+    const input = combobox.querySelector('input')!;
+    input.focus();
+
+    // Unmatched text keeps the selected option until another one is picked.
+    await typeQuery(combobox, 'Imag');
+    expect(combobox.value).toBe('images');
+
+    await typeQuery(combobox, '');
+    expect(combobox.value).toBe('');
+
+    input.blur();
+    await combobox.updateComplete;
+
+    expect(combobox.value).toBe('');
+    expect(input.value).toBe('');
+    expect(changes).toBe(1);
+  });
+
   it('displays the matching option label for an initial value', async () => {
     const combobox = await createFixture();
     combobox.options = [

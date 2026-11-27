@@ -29,7 +29,9 @@ export default css`
     font-size: var(--c-text-sm);
   }
 
+  /* Small badges' icons match small buttons'. */
   .badge--small {
+    --c-icon-size: var(--c-size-icon-xs);
     font-size: var(--c-text-xs);
   }
 

@@ -375,15 +375,12 @@ class Checkbox extends ViewComponent
         $chip = $this->icon !== null
             ? Html::tag('span', Icons::svg($this->icon), [
                 'class' => 'cp-icon puny',
-                'style' => $this->color !== null ? "--icon-color: {$this->color};" : null,
+                'style' => $this->color !== null ? "color: {$this->color};" : null,
             ])
-            : Html::tag('div', Html::tag('div', '', [
-                'class' => 'color-preview',
-                'style' => "background-color: {$this->color}",
-            ]), ['class' => 'color small']);
+            : Html::tag('craft-indicator', '', ['fill' => $this->color]);
 
         return Html::tag('div', $chip.Html::tag('span', $labelHtml), [
-            'class' => 'flex flex-nowrap gap-xs',
+            'class' => 'flex flex-nowrap items-center gap-xs',
         ]);
     }
 

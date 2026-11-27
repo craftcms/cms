@@ -150,13 +150,22 @@ jobs:
           - name: Run @craftcms/ui type check
             run: vp run @craftcms/ui#check:types
 
+          # The palette is generated with Leonardo and committed, and the build
+          # doesn't regenerate it, so a hand edit or a stale file would slip by.
+          - name: Check the generated color palette is current
+            run: vp run @craftcms/ui#check:palette
+
           - name: Run @craftcms/ui tests
             run: vp run test:ui
 
           # The vitest projects in vite.config.js pick up every *.test.ts
           # (happy-dom) and *.browser.test.ts (Chromium) file on their own.
+          # The generated sources are already in place. Regenerating them here
+          # would rewrite and prune files while the type check reads them.
           - name: Run frontend unit tests
             run: vp test run --project unit
+            env:
+              CRAFT_SKIP_PHP_CODEGEN: '1'
 
       # Outside the parallel group: these measure real layout and animation
       # timing, which the other steps' CPU load throws off.

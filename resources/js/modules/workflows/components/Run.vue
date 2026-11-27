@@ -154,8 +154,11 @@
     gap: 0;
     margin-block-end: calc(-1 * var(--c-spacing-md));
 
+    /* stylelint-disable-next-line craft/has-subject-only -- anchored on one list item */
     &
-      > li:has(> :is(craft-disclosure:not([open]), section))
+      > li:has(> :is(craft-disclosure, section)):not(
+        :has(> craft-disclosure[open])
+      )
       + li
       :deep(.workflow-review-stage > .workflow-review-stage__heading) {
       border-block-start: 1px solid var(--c-color-neutral-border-quiet);

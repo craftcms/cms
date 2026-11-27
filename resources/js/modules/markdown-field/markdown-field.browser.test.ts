@@ -1,5 +1,6 @@
 import OverType from 'overtype';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
+import '../../../css/cp.css';
 import './markdown-field';
 
 type MarkdownField = HTMLElement & {
@@ -56,10 +57,14 @@ it('is as tall as its text, and never shorter than its rows', () => {
   const grown = wrapper.offsetHeight;
 
   // The textarea's text is laid over the preview's, so both have to be as tall
-  // as the text: neither may have any of it scrolled out of view.
+  // as the text: neither may have any of it scrolled out of view. The footer
+  // row below them holds the Markdown indicator.
+  const footer = field.querySelector<HTMLElement>(
+    '.markdown-field-footer-controls'
+  )!;
   expect(grown).toBeGreaterThan(minimum * 2);
-  expect(textarea.offsetHeight).toBe(grown);
-  expect(preview.offsetHeight).toBe(grown);
+  expect(textarea.offsetHeight).toBe(grown - footer.offsetHeight);
+  expect(preview.offsetHeight).toBe(grown - footer.offsetHeight);
   expect(textarea.scrollHeight).toBeLessThanOrEqual(textarea.clientHeight);
 
   type(textarea, 'One line');
@@ -107,6 +112,52 @@ it('stops growing at its max height, and scrolls the rest', async () => {
   await field.updateComplete;
 
   expect(wrapper.offsetHeight).toBeGreaterThan(120);
+});
+
+it('keeps its character counter below the text', async () => {
+  const field = mount({rows: '2', 'max-length': '2000', 'max-height': '120'});
+  await field.updateComplete;
+  const {textarea} = parts(field);
+  const counter = field.querySelector<HTMLElement>(
+    '.markdown-field-char-counter'
+  )!;
+
+  // Both while the field grows with its text and once it scrolls at its cap.
+  for (const value of ['A line', lines(30)]) {
+    type(textarea, value);
+
+    const charsLeft = 2000 - value.length;
+    expect(counter.getAttribute('role')).toBe('status');
+    expect(counter.querySelector('.sr-only')!.textContent).toBe(
+      `Characters left: ${charsLeft.toLocaleString()}`
+    );
+    expect(counter.querySelector('[aria-hidden="true"]')!.textContent).toBe(
+      charsLeft.toLocaleString()
+    );
+    expect(counter.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      textarea.getBoundingClientRect().bottom
+    );
+  }
+});
+
+it('spaces its character counter evenly from the right and bottom edges', async () => {
+  const field = mount({rows: '2', 'max-length': '2000', 'show-toolbar': ''});
+  await field.updateComplete;
+  const container = field.querySelector<HTMLElement>('.overtype-container')!;
+  const number = field.querySelector<HTMLElement>(
+    '.markdown-field-char-counter [aria-hidden="true"]'
+  )!;
+  // An empty inline block sits with its bottom edge on the baseline.
+  const baseline = document.createElement('span');
+  baseline.style.display = 'inline-block';
+  number.append(baseline);
+
+  const edges = container.getBoundingClientRect();
+  const right = edges.right - number.getBoundingClientRect().right;
+  const bottom = edges.bottom - baseline.getBoundingClientRect().bottom;
+
+  expect(right).toBeGreaterThan(0);
+  expect(Math.abs(right - bottom)).toBeLessThanOrEqual(1);
 });
 
 it('doesn’t redraw its preview when it’s given the value it already shows', () => {

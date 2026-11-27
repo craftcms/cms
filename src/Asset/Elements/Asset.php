@@ -18,9 +18,11 @@ use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Asset\Enums\AssetFileChange;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Enums\ImageOrientation;
 use CraftCms\Cms\Asset\Enums\ImageType;
+use CraftCms\Cms\Asset\Events\AssetFileChanged;
 use CraftCms\Cms\Asset\Events\AssetFileHandling;
 use CraftCms\Cms\Asset\Events\AssetUrlDefined;
 use CraftCms\Cms\Asset\Events\AssetUrlResolving;
@@ -572,9 +574,7 @@ class Asset extends Element
         ], $siteIds);
     }
 
-    /**
-     * @return AssetQuery The newly created [[AssetQuery]] instance.
-     */
+    /** @return AssetQuery<self> */
     #[Override]
     public static function find(): AssetQuery
     {
@@ -1154,7 +1154,7 @@ class Asset extends Element
         $originalLimit = $elementQuery->limit;
 
         // Include folders in the results?
-        /** @var AssetQuery $elementQuery */
+        /** @var AssetQuery<self> $elementQuery */
         if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
             $folderQuery = self::_createFolderQueryForIndex($elementQuery, $queryFolder);
             $totalFolders = $folderQuery->count();
@@ -1279,7 +1279,7 @@ class Asset extends Element
     {
         $count = 0;
 
-        /** @var AssetQuery $elementQuery */
+        /** @var AssetQuery<self> $elementQuery */
         if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
             try {
                 $count += self::_createFolderQueryForIndex($elementQuery, $queryFolder)->count();
@@ -1295,6 +1295,7 @@ class Asset extends Element
         return $count;
     }
 
+    /** @param  AssetQuery<self>  $assetQuery */
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
         if (
@@ -1338,6 +1339,8 @@ class Asset extends Element
     }
 
     /**
+     * @param  AssetQuery<self>  $assetQuery
+     *
      * @throws QueryAbortedException
      */
     private static function _createFolderQueryForIndex(AssetQuery $assetQuery, ?VolumeFolder $queryFolder = null): Builder
@@ -3730,7 +3733,7 @@ CSS,
 
             // Relocate the file?
             if (isset($this->newLocation) || isset($this->tempFilePath) || $this->uploadSource !== null) {
-                $this->_relocateFile();
+                $this->_relocateFile($isNew);
             }
 
             // Get the asset record
@@ -3856,6 +3859,8 @@ CSS,
         $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
 
         if (! $this->keepFileOnDelete) {
+            $oldUrl = $this->getUrl();
+
             if ($trashedAssetDisk !== null) {
                 $this->moveFileToTrash($trashedAssetDisk);
             } else {
@@ -3865,6 +3870,14 @@ CSS,
                     // NBD
                 }
             }
+
+            event(new AssetFileChanged(
+                asset: $this,
+                change: AssetFileChange::Deleted,
+                oldVolume: $this->getVolume(),
+                oldPath: $this->getPath(),
+                oldUrl: $oldUrl,
+            ));
         }
 
         if ($this->hardDelete && $this->trashedFileExists) {
@@ -3899,6 +3912,14 @@ CSS,
     {
         if ($this->trashedFileExists) {
             $this->restoreFileFromTrash();
+
+            event(new AssetFileChanged(
+                asset: $this,
+                change: AssetFileChange::Restored,
+                oldVolume: $this->getVolume(),
+                oldPath: $this->getPath(),
+                oldUrl: $this->getUrl(),
+            ));
         }
 
         parent::afterRestore();
@@ -4149,7 +4170,7 @@ CSS,
      * @throws VolumeException if a file operation errored
      * @throws Exception if something else goes wrong
      */
-    private function _relocateFile(): void
+    private function _relocateFile(bool $isNew): void
     {
         // Get the (new?) folder ID & filename
         if (isset($this->newLocation)) {
@@ -4235,6 +4256,19 @@ CSS,
         if ($this->folderId) {
             // Nuke the transforms
             $this->deleteTransformData();
+        }
+
+        $hasNewFile = $this->uploadSource !== null || $tempPath !== null;
+        // A new asset can have a folder before its first save, but it has no old file
+        if (! $isNew && $oldVolume !== null && $oldPath !== null && ($hasNewFile || ! $sameFile)) {
+            event(new AssetFileChanged(
+                asset: $this,
+                change: $hasNewFile ? AssetFileChange::Replaced : AssetFileChange::Moved,
+                oldVolume: $oldVolume,
+                oldPath: $oldPath,
+                // The asset’s properties aren’t updated yet, so this is still the URL it was served from
+                oldUrl: $this->getUrl(),
+            ));
         }
 
         // Update file properties

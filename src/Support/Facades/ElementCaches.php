@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
+ * @method static mixed deferInvalidations(callable $callback)
+ * @method static bool hasAnyPendingInvalidations()
+ * @method static bool hasPendingInvalidations(string[] $tags)
  * @method static bool isCollectingCacheInfo()
  * @method static void startCollectingCacheInfo()
  * @method static void collectCacheTags(array $tags)

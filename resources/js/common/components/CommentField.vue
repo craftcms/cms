@@ -160,10 +160,10 @@
   }
 
   /* The ring the field draws around itself when it has its own box. */
-  .comment-field:has(textarea:focus) {
-    box-shadow:
-      0 0 0 var(--c-spacing-xs) var(--c-color-accent-border-normal),
-      var(--c-input-shadow, 0 0 transparent);
+  .comment-field:has(textarea:focus-visible) {
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
   }
 
   .comment-field--disabled {
@@ -200,6 +200,7 @@
     padding-block-start: var(--c-spacing-xs) !important;
   }
 
+  /* stylelint-disable-next-line craft/has-subject-only -- anchored on one comment field */
   .comment-field:has(.comment-field__footer)
     craft-markdown-field:defined
     :deep(:is(.overtype-input, .overtype-preview, .overtype-placeholder)) {

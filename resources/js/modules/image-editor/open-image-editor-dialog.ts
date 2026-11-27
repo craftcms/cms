@@ -19,12 +19,13 @@ export interface ImageEditorSettings {
  * its own — for the “Open in Image Editor” action on asset chips and cards.
  *
  * The dialog and the editor behind it are imported on demand, so the CP bundle
- * doesn't carry them onto pages that never open it.
+ * doesn't carry them onto pages that never open it. Resolves once the dialog
+ * is open, with `closed`, which settles once it has closed.
  */
 export async function openImageEditorDialog(
   settings: ImageEditorSettings,
   onSaved?: (result: SaveResult) => void
-): Promise<void> {
+): Promise<{closed: Promise<void>}> {
   const [{createApp, h, ref}, {default: ImageEditorDialog}] = await Promise.all(
     [import('vue'), import('./components/ImageEditorDialog.vue')]
   );
@@ -33,6 +34,10 @@ export async function openImageEditorDialog(
   document.body.append(host);
 
   const open = ref(true);
+  let settleClosed: () => void = () => {};
+  const closed = new Promise<void>((resolve) => {
+    settleClosed = resolve;
+  });
 
   const app: App = createApp({
     render: () =>
@@ -58,6 +63,7 @@ export async function openImageEditorDialog(
 
       app.unmount();
       host.remove();
+      settleClosed();
     },
     {capture: true}
   );
@@ -65,4 +71,6 @@ export async function openImageEditorDialog(
   app.config.compilerOptions.isCustomElement = (tag: string) =>
     tag.includes('-');
   app.mount(host);
+
+  return {closed};
 }

@@ -61,7 +61,8 @@ readonly class TokensController extends GqlController
             ->emptyMessage(t('No GraphQL tokens exist yet.'))
             ->createAction(t('New token'), route('craft.cp.graphql.tokens.create'))
             ->createActionInPageHeader()
-            ->when($allowDeletion, fn (Table $table) => $table->deletable());
+            ->when($allowDeletion, fn (Table $table) => $table->deletable()
+                ->deletionBlockers('graphql-token'));
 
         return new CpScreenResponse()
             ->title(t('GraphQL Tokens'))

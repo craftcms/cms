@@ -113,7 +113,7 @@ class Assets extends BaseRelationField
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', AssetQuery::class, ElementCollection::class, Asset::class);
+        return sprintf('\\%1$s<\\%3$s>|\\%2$s<int, \\%3$s>', AssetQuery::class, ElementCollection::class, Asset::class);
     }
 
     /**

@@ -8,8 +8,11 @@ use CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand;
 use CraftCms\Cms\Asset\Commands\ImportAssetsCommand;
 use CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand;
 use CraftCms\Cms\Asset\Commands\IndexOneAssetCommand;
+use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\TransformGenerated;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +27,13 @@ class AssetServiceProvider extends ServiceProvider
             AssetTransformsInvalidating::class,
             $imageTransformer->handleAssetTransformsInvalidating(...),
         );
+        Event::listen(function (TransformGenerated $event) {
+            // Wildcard listeners don’t count, so tools that listen to every event don’t trigger the deprecation
+            if (isset(Event::getRawListeners()[AfterGenerateTransform::class])) {
+                Deprecator::log(AfterGenerateTransform::class, '`'.AfterGenerateTransform::class.'` is deprecated. Listen to `'.TransformGenerated::class.'` instead.');
+                event(new AfterGenerateTransform($event->asset, $event->transform, $event->url));
+            }
+        });
         if (! $this->app->runningInConsole()) {
             return;
         }

@@ -571,6 +571,10 @@ export default class CraftCombobox extends FormAssociated(
 
     if (!this.multiple && !this.requireOptionMatch) {
       this.#setValue(this.#parse(query));
+    } else if (!this.multiple && query === '') {
+      // Text that matches no option keeps the selected one, but an emptied
+      // textbox clears it.
+      this.#setValue('');
     }
 
     this.open = this.#shouldOpen();

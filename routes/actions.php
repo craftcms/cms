@@ -7,6 +7,7 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Auth\LoginRateLimiter;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Gql\Http\Middleware\AuthenticateAccessToken as AuthenticateGqlAccessToken;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\ApiController;
 use CraftCms\Cms\Http\Controllers\App\AboutCraftController;
@@ -35,6 +36,7 @@ use CraftCms\Cms\Http\Controllers\ConditionsController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\DeletionBlockersController;
 use CraftCms\Cms\Http\Controllers\EditionController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityCommentsController;
 use CraftCms\Cms\Http\Controllers\Elements\ActivityMentionSuggestionsController;
@@ -53,6 +55,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ExportElementIndexContro
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\SaveElementIndexElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementRevisionsController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
+use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalMatchController;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\Http\Controllers\Elements\PasteableElementsController;
 use CraftCms\Cms\Http\Controllers\Elements\PerformElementActionController;
@@ -172,7 +175,8 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
         Route::any('assets/generate-transform', [TransformController::class, 'generate']);
 
         // GQL API
-        Route::any('graphql/api', GqlApiController::class);
+        // Access tokens are authenticated before the control panel and maintenance mode checks
+        Route::allowDuringMaintenance()->middleware(AuthenticateGqlAccessToken::class)->any('graphql/api', GqlApiController::class);
 
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
@@ -263,6 +267,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('delete-elements/replace-relations', [DeleteElementsController::class, 'replaceRelations']);
         Route::any('delete-elements/replace-references-modal', [DeleteElementsController::class, 'replaceReferencesModal']);
         Route::post('delete-elements/replace-references', [DeleteElementsController::class, 'replaceReferences']);
+        Route::post('deletion-blockers', DeletionBlockersController::class);
 
         Route::post('elements/create', CreateElementController::class);
         Route::any('elements/edit', EditElementController::class);
@@ -320,6 +325,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('element-indexes/perform-action', PerformElementActionController::class);
         Route::post('element-search/search', ElementSearchController::class);
         Route::post('element-selector-modals/body', ElementSelectorModalController::class);
+        Route::post('element-selector-modals/matches', ElementSelectorModalMatchController::class);
         Route::post('element-selects/pasteable', PasteableElementsController::class);
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('element-index-settings/get-customize-sources-modal-data', [ElementSourcesController::class, 'show']);
@@ -332,6 +338,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
         Route::post('entries/save-entry', StoreEntryController::class);
         Route::post('entries/move-to-section-modal-data', [MoveEntryToSectionController::class, 'showModal']);
         Route::post('entries/move-to-section', [MoveEntryToSectionController::class, 'move']);
+        Route::post('entries/section-entry-ids', [MoveEntryToSectionController::class, 'sectionEntryIds']);
         Route::any('entries/reassign-modal', [ReassignEntriesModalController::class, 'show']);
         Route::any('entries/reassign', [ReassignEntriesModalController::class, 'store']);
 

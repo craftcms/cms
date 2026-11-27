@@ -309,6 +309,22 @@ describe('Vue table rows', () => {
     }
   );
 
+  it('shows a cell’s error without the emphasis markers around a field name', async () => {
+    const {errors} = await mountTable();
+    errors.value = [
+      {path: ['rows', '0', 'title'], messages: ['*Title* must be unique.']},
+    ];
+    await settle();
+
+    const input = form.querySelector<HTMLInputElement>(
+      'input[name="rows[0][title]"]'
+    )!;
+    expect(referencedText(input, 'aria-describedby')).toContain(
+      'Title must be unique.'
+    );
+    expect(form.textContent).not.toContain('*');
+  });
+
   it('moves between rows with Enter, adding rows at either end, and leaves Ctrl/Command + Enter to the form', async () => {
     await mountTable();
     const input = (row: number) =>

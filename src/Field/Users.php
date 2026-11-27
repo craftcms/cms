@@ -56,7 +56,7 @@ class Users extends BaseRelationField
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', UserQuery::class, ElementCollection::class, User::class);
+        return sprintf('\\%s|\\%s<int, \\%s>', UserQuery::class, ElementCollection::class, User::class);
     }
 
     #[Override]

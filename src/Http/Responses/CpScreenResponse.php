@@ -300,6 +300,8 @@ class CpScreenResponse implements Responsable
 
     /**
      * Sets the control panel edit URL for this screen.
+     *
+     * A slideout links to it from "Open in a new tab", falling back to its own URL.
      */
     public function editUrl(?string $value): self
     {
@@ -840,7 +842,7 @@ class CpScreenResponse implements Responsable
 
         return $request->inertia()
             ? $this->slideoutInertiaResponse($request, $parts)
-            : $this->slideoutJsonResponse($parts);
+            : $this->slideoutJsonResponse($request, $parts);
     }
 
     /**
@@ -912,10 +914,10 @@ class CpScreenResponse implements Responsable
      *
      * @param  array<string, mixed>  $parts
      */
-    private function slideoutJsonResponse(array $parts): JsonResponse
+    private function slideoutJsonResponse(Request $request, array $parts): JsonResponse
     {
         return new JsonResponse([
-            'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+            'editUrl' => $this->slideoutEditUrl($request),
             'namespace' => $parts['namespace'],
             'title' => $this->title,
             'notice' => $parts['notice'],
@@ -959,7 +961,7 @@ class CpScreenResponse implements Responsable
             ->with($this->screenProps('slideout', [
                 'containerId' => $parts['containerId'],
                 'namespace' => $parts['namespace'],
-                'editUrl' => $this->editUrl ? Url::cpUrl($this->editUrl) : null,
+                'editUrl' => $this->slideoutEditUrl($request),
                 'bodyClass' => $this->slideoutBodyClass,
                 'action' => $this->action,
                 'formAttributes' => $this->formAttributes,
@@ -981,6 +983,25 @@ class CpScreenResponse implements Responsable
                 'errorSummary' => $parts['errorSummary'],
             ])
             ->toResponse($request);
+    }
+
+    /**
+     * Where the slideout's "Open in a new tab" link goes.
+     *
+     * Falls back to the screen's own URL, since a CP route renders the same
+     * screen as a full page when visited directly. Action URLs aren't pages.
+     */
+    private function slideoutEditUrl(Request $request): ?string
+    {
+        if ($this->editUrl) {
+            return Url::cpUrl($this->editUrl);
+        }
+
+        if (! $request->isMethod('GET') || ! $request->isCpRequest() || $request->isActionRequest()) {
+            return null;
+        }
+
+        return $request->fullUrl();
     }
 
     /**

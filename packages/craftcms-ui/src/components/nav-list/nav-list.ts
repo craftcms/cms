@@ -79,6 +79,36 @@ export default class CraftNavList extends LitElement {
     this.#applyAppearance();
   }
 
+  override connectedCallback() {
+    super.connectedCallback();
+
+    // An item can't select the sibling before it from its own shadow root, so
+    // the list marks the item after an open subnav, which sets itself off.
+    this.#subnavObserver = new MutationObserver(this.#markAfterOpenSubnav);
+    this.#subnavObserver.observe(this, {
+      childList: true,
+      subtree: true,
+      attributeFilter: ['subnav-open'],
+    });
+    this.#markAfterOpenSubnav();
+  }
+
+  override disconnectedCallback() {
+    this.#subnavObserver?.disconnect();
+    super.disconnectedCallback();
+  }
+
+  #subnavObserver?: MutationObserver;
+
+  #markAfterOpenSubnav = () => {
+    this.items.forEach((item, index, items) => {
+      item.toggleAttribute(
+        'after-open-subnav',
+        !!items[index - 1]?.hasAttribute('subnav-open')
+      );
+    });
+  };
+
   protected override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
 

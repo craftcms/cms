@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Controls\Link as LinkControl;
 use InvalidArgumentException;
 
@@ -96,7 +97,20 @@ class LinkResolver
                 'filename' => '',
                 ...$value->serialize(),
                 'defaultLabel' => $value->getLabel(false),
+                ...$this->elementPresentation($value),
             ] : $value);
+    }
+
+    /**
+     * Returns the chip data for the element a link points to, so the picker can show it as a chip.
+     *
+     * @return array{element?: array<string, mixed>}
+     */
+    private function elementPresentation(LinkData $value): array
+    {
+        $element = $value->getElement();
+
+        return $element ? ['element' => ElementSelect::presentation($element)] : [];
     }
 
     /**

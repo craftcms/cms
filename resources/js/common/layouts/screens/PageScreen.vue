@@ -25,6 +25,7 @@
   import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
   import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
+  import CpAlerts from '@/common/components/CpAlerts.vue';
   import CpSidebar from '@/common/components/CpSidebar.vue';
   import CpTopBar from '@/common/components/CpHeaderBar.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
@@ -200,10 +201,11 @@
     (props.subnavActions?.length ?? 0) > 0 ||
     subnav.value.length > 0;
 
-  // The top bar scrolls away with the page, so the sidebar and the details
-  // pane are only as tall as the viewport below whatever's still showing of it.
-  const topBar = useTemplateRef<{$el: HTMLElement}>('topBar');
-  const topBarVisibleHeight = useVisibleHeight(() => topBar.value?.$el);
+  // The top bar and the alerts above it scroll away with the page, so the
+  // sidebar and the details pane are only as tall as the viewport below
+  // whatever's still showing of them.
+  const topBar = useTemplateRef<HTMLElement>('topBar');
+  const topBarVisibleHeight = useVisibleHeight(topBar);
   // The details pane and the sidebar both stop short of Laravel Debugbar.
   const debugBarHeight = useDebugBarHeight();
   const contentLayout = useTemplateRef<HTMLElement>('contentLayout');
@@ -298,11 +300,10 @@
     :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
     :style="pageScreenStyle"
   >
-    <CpTopBar
-      ref="topBar"
-      :crumbs="crumbs"
-      :has-context-menu="hasContextMenu()"
-    />
+    <div ref="topBar">
+      <CpAlerts />
+      <CpTopBar :crumbs="crumbs" :has-context-menu="hasContextMenu()" />
+    </div>
     <div class="cp">
       <div class="cp__sidebar">
         <!-- No props: the sidebar reads the shared store directly, and renders
@@ -342,6 +343,9 @@
                         :class="{
                           'cp-content--sidebar': hasSidebar(),
                           'cp-content--details': regions.hasDetails(),
+                          'cp-content--details-folded':
+                            screenPanels.panels.value.length > 0 &&
+                            screenPanels.openPanelId.value === null,
                         }"
                         :style="detailsResizer.style.value"
                       >
@@ -722,7 +726,8 @@ Content: the secondary nav, content, and details panes
     --cp-content-details-max: 40cqi;
   }
 
-  .cp-body:has(.cp-details-rail [data-open='false']) .cp-content--details {
+  /* Repeats `.cp-content` to outweigh the narrow-width fold rules below. */
+  .cp-content.cp-content--details.cp-content--details-folded {
     /* Definite widths, not `max-content` — see the container note above. The
        track goes with it, or its range would keep reserving the minimum. */
     --cp-content-details-width: 0px !important;

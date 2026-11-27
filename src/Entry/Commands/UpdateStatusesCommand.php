@@ -5,14 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementResaved;
 use CraftCms\Cms\Element\Events\ElementResaving;
-use CraftCms\Cms\Element\Events\ElementsResaved;
-use CraftCms\Cms\Element\Events\ElementsResaving;
-use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
@@ -131,59 +126,6 @@ final class UpdateStatusesCommand extends Command implements Isolatable
         Event::listen(fn (ElementResaving $event) => $beforeCallback($event));
         Event::listen(fn (ElementResaved $event) => $afterCallback($event));
 
-        $this->resaveQuery($query);
-    }
-
-    /** @param EntryQuery<Entry> $query */
-    private function resaveQuery(EntryQuery $query): void
-    {
-        event(new ElementsResaving($query));
-
-        $position = 0;
-
-        foreach ($query->cursor() as $entry) {
-            $position++;
-            $entry->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
-            $entry->resaving = true;
-
-            event(new ElementResaving($query, $entry, $position));
-
-            $exception = null;
-
-            try {
-                $this->ensureEntryCanBeResaved($entry);
-                Elements::saveElement(
-                    element: $entry,
-                    updateSearchIndex: false,
-                    saveContent: true,
-                );
-            } catch (Throwable $exception) {
-                report($exception);
-            }
-
-            event(new ElementResaved($query, $entry, $position, $exception));
-        }
-
-        event(new ElementsResaved($query));
-    }
-
-    private function ensureEntryCanBeResaved(Entry $entry): void
-    {
-        $label = $entry->getUiLabel();
-        $label = $label !== '' ? "$label ($entry->id)" : sprintf('%s %s', $entry::lowerDisplayName(), $entry->id);
-
-        try {
-            $isRevision = ElementHelper::isRevision($entry);
-        } catch (Throwable $exception) {
-            throw new InvalidElementException(
-                $entry,
-                "Skipped resaving $label due to an error obtaining its root element: {$exception->getMessage()}",
-                previous: $exception,
-            );
-        }
-
-        if ($isRevision) {
-            throw new InvalidElementException($entry, "Skipped resaving $label because it's a revision.");
-        }
+        Elements::resaveElements($query, continueOnError: true, updateSearchIndex: false);
     }
 }
