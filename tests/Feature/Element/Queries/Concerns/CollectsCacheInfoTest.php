@@ -155,6 +155,24 @@ it('doesn’t cache a result that’s already stale when the minute changes as t
         ->and($duration)->toBe(0);
 });
 
+it('doesn’t count a lookup in a transaction as a write', function () {
+    travelTo(Date::parse('2026-01-01 09:30:00'));
+    Entry::factory()->create(['postDate' => Date::parse('2026-01-01 10:00:30')]);
+
+    $modified = DB::transaction(function () {
+        DB::connection()->forgetRecordModificationState();
+        ElementCaches::startCollectingCacheInfo();
+        entryQuery()->count();
+        [, $duration] = ElementCaches::stopCollectingCacheInfo();
+        expect($duration)->toBe(1800);
+
+        return DB::connection()->hasModifiedRecords();
+    });
+
+    // A sticky connection would read from the primary for the rest of the request
+    expect($modified)->toBeFalse();
+});
+
 it('looks up when entries go live even when a listener sets the query’s status', function () {
     travelTo(Date::parse('2026-01-01 09:30:00'));
     $entry = Entry::factory()->create(['postDate' => Date::parse('2026-01-01 10:00:30')]);

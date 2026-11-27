@@ -12,7 +12,6 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use DateTimeInterface;
-use Illuminate\Database\PostgresConnection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 
@@ -196,8 +195,10 @@ trait CollectsCacheInfo
      *
      * The lookup prepares a copy of the query without dispatching its [[ElementQueryPreparing]] and
      * [[ElementQueryPrepared]] events. Params listeners set on the query still apply, but changes they make to the query
-     * builder, such as joins and conditions, don’t. Without them, the lookup can find a date for an element that
-     * wouldn’t make the result, or fail and leave the cache to its usual duration.
+     * builder, such as joins and conditions, don’t. When those changes narrow the result, the lookup can find a date
+     * for an element that wouldn’t make the result, or fail and leave the cache to its usual duration. When they widen
+     * it, such as with an `orWhere()`, the lookup can miss an element that would join the result, leaving the cache
+     * stale until its usual duration.
      *
      * @param  string[]  $statuses
      * @param  string  $column  A qualified database column, such as `entries.postDate`
@@ -220,10 +221,12 @@ trait CollectsCacheInfo
                 ->value($column));
 
             // A failed query aborts a Postgres transaction, so run the lookup in a savepoint, released after it
-            if (! $connection instanceof PostgresConnection || $connection->transactionLevel() === 0) {
+            if (! $connection->isPgsql() || $connection->transactionLevel() === 0) {
                 return $value();
             }
 
+            // The savepoint statements count as writes, which would send a sticky connection's later reads to the primary
+            $modified = $connection->hasModifiedRecords();
             $connection->unprepared('SAVEPOINT craft_status_lookup');
 
             try {
@@ -234,6 +237,7 @@ trait CollectsCacheInfo
                 throw $e;
             } finally {
                 $connection->unprepared('RELEASE SAVEPOINT craft_status_lookup');
+                $connection->setRecordModificationState($modified);
             }
 
             return $result;
