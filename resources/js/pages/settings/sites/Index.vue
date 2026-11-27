@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {DeletionBlockersModal} from '@/modules/deletion-blockers-modal/deletion-blockers-modal';
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
   import FieldTip from '@/common/components/FieldTip.vue';
@@ -62,12 +63,21 @@
     modalActive.value = true;
   }
 
-  function handleDeleteClick() {
+  async function handleDeleteClick() {
+    if (!props.group?.id || tableNode.value.props.rows.length !== 0) {
+      return;
+    }
+
+    const result = await DeletionBlockersModal.confirm(
+      'site-group',
+      props.group.id
+    );
+
     if (
-      props.group?.id &&
-      tableNode.value.props.rows.length === 0 &&
-      // @TODO custom confirmation dialog?
-      confirm(t('Are you sure you want to delete this group?'))
+      result &&
+      (result !== true ||
+        // @TODO custom confirmation dialog?
+        confirm(t('Are you sure you want to delete this group?')))
     ) {
       router.delete(destroy({groupId: props.group.id}));
     }

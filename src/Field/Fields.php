@@ -12,6 +12,7 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Condition\Contracts\ConditionGroupInterface;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -858,6 +859,64 @@ class Fields
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
             )));
+    }
+
+    /**
+     * Returns how many elements have a value for any of the given fields in a field layout.
+     *
+     * It doesn’t count drafts, revisions, or trashed elements. It returns `null` if a field other than a Matrix
+     * field stores its values outside the elements’ content.
+     *
+     * @param  FieldInterface[]  $fields  Field instances from the layout, as returned by {@see FieldLayout::getCustomFields()}
+     */
+    public function countElementsWithValues(FieldLayout $layout, array $fields): ?int
+    {
+        if (! isset($layout->id) || $fields === []) {
+            return 0;
+        }
+
+        $grammar = DB::connection()->getQueryGrammar();
+        $contentConditions = [];
+        $nestedFieldIds = [];
+
+        foreach ($fields as $field) {
+            if ($field::dbType() !== null && isset($field->layoutElement)) {
+                // Fields store empty values as empty strings, arrays, objects, or JSON null
+                $valueSql = new JsonExtract('elements_sites.content', $field->layoutElement->uid)->getValue($grammar);
+                $contentConditions[] = "$valueSql IS NOT NULL AND $valueSql NOT IN ('', '[]', '{}', 'null')";
+            } elseif ($field instanceof Matrix) {
+                $nestedFieldIds[] = $field->id;
+            } else {
+                return null;
+            }
+        }
+
+        return DB::table(Table::ELEMENTS, 'elements')
+            ->join(Table::ELEMENTS_SITES.' as elements_sites', 'elements_sites.elementId', '=', 'elements.id')
+            ->where('elements.fieldLayoutId', $layout->id)
+            ->whereNull([
+                'elements.draftId',
+                'elements.revisionId',
+                'elements.canonicalId',
+                'elements.dateDeleted',
+            ])
+            ->where(function (Builder $query) use ($contentConditions, $nestedFieldIds) {
+                foreach ($contentConditions as $condition) {
+                    $query->orWhereRaw($condition);
+                }
+
+                if ($nestedFieldIds !== []) {
+                    $query->orWhereExists(fn (Builder $query) => $query
+                        ->from(Table::ELEMENTS_OWNERS, 'owners')
+                        ->join(Table::ENTRIES.' as nested', 'nested.id', '=', 'owners.elementId')
+                        ->join(Table::ELEMENTS.' as nestedElements', 'nestedElements.id', '=', 'nested.id')
+                        ->whereColumn('owners.ownerId', 'elements.id')
+                        ->whereIn('nested.fieldId', $nestedFieldIds)
+                        ->whereNull('nestedElements.dateDeleted'));
+                }
+            })
+            ->distinct()
+            ->count('elements.id');
     }
 
     public function merge(

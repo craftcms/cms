@@ -64,6 +64,7 @@ import './modules/element-selector-modal/index';
 import './modules/element-select-input/index';
 import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
+import './modules/deletion-blockers-modal/index';
 import './modules/element-deletion-manager/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
