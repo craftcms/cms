@@ -35,6 +35,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Tpetry\QueryExpressions\Language\Alias;
 
 it('preserves select expressions bindings and mapped aliases across element types', function (Closure $factory) {
@@ -452,6 +453,15 @@ it('keeps a replaced source table when looking up drafts', function () {
         ->and(Entry::find()->fromSub(DB::table(Table::ENTRIES)->where('id', '<>', $draft->id), 'entries')->draftOf($entry->id)->status(null)->ids())->toBe([])
         ->and(Entry::find()->fromRaw('('.DB::table(Table::ENTRIES)->where('id', '<>', $draft->id)->toRawSql().') as '.DB::getQueryGrammar()->wrapTable('entries'))->draftOf($entry->id)->status(null)->ids())->toBe([]);
 });
+
+it('keeps an index hint on the source table when looking up drafts', function () {
+    $entry = EntryModel::factory()->createElement();
+    $draft = app(Drafts::class)->createDraft($entry);
+
+    $typeIdIndex = collect(Schema::getIndexes(Table::ENTRIES))->firstWhere('columns', ['typeId'])['name'];
+
+    expect(Entry::find()->useIndex($typeIdIndex)->draftOf($entry->id)->status(null)->ids())->toBe([$draft->id]);
+})->skip(fn () => ! DB::isMysql(), 'Only MySQL compiles index hints this way.');
 
 it('does not duplicate pending before query callbacks when cloned while preparing', function () {
     $query = new ElementQuery;
