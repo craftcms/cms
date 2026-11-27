@@ -30,6 +30,7 @@
 - Added `CraftCms\Cms\Queue\BatchedJob::data()` and `loadData()`. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Added `CraftCms\Cms\Queue\Contracts\Batchable`. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Added `CraftCms\Cms\Queue\CsvBatcher`. ([#21164](https://github.com/craftcms/cms/pull/21164))
+- Added `CraftCms\Cms\Queue\JsonlBatcher`. ([#21171](https://github.com/craftcms/cms/pull/21171))
 - Added `CraftCms\Cms\Queue\QueryBatcher`. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Deprecated `craft\base\Batchable`. `CraftCms\Cms\Queue\Contracts\Batchable` should be used instead. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Removed the `Response::setNoCacheHeaders()` macro. `CraftCms\Cms\Http\ResponseHeaders::setNoCacheHeaders()` should be used instead. ([#20953](https://github.com/craftcms/cms/pull/20953))
