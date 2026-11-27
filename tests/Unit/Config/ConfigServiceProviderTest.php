@@ -247,7 +247,7 @@ it('materializes anchors configuration from general.php and JSON environment ove
     $anchors = app(GeneralConfig::class)->anchors;
 
     expect($anchors)->toBeInstanceOf(AnchorsConfig::class)
-        ->and($anchors->anchorLinkText)->toBe('#')
+        ->and($anchors->anchorLinkText)->toBe('¶')
         ->and($anchors->anchorLinkPosition)->toBe(AnchorsConfig::POS_BEFORE)
         ->and($anchors->useAdditionalTagToAnchorTo)->toBeFalse();
 });
@@ -281,7 +281,7 @@ it('materializes GraphQL configuration from general.php and environment override
     $gql = app(GeneralConfig::class)->gql;
 
     expect($gql)->toBeInstanceOf(GqlConfig::class)
-        ->and($gql->typePrefix)->toBe('')
+        ->and($gql->typePrefix)->toBe('site_')
         ->and($gql->enableIntrospection)->toBeFalse()
         ->and($gql->maxComplexity)->toBe(500)
         ->and($gql->maxDepth)->toBe(12)

@@ -44,6 +44,36 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
      */
     public static function fromConfig(array|string $value): static
     {
+        return static::create()->merge($value);
+    }
+
+    /**
+     * Applies settings on top of this object’s current ones.
+     *
+     * An array or a JSON object applies the settings it names, through their fluent methods. A config object applies
+     * the settings it changes from their defaults. Other settings keep their current values, including ones set with
+     * their old names.
+     *
+     * @param  static|array<string, mixed>|string  $value
+     */
+    public function merge(self|array|string $value): static
+    {
+        if ($value instanceof self) {
+            if (! $value instanceof static) {
+                throw new InvalidArgumentException(sprintf('%s can’t be merged into %s.', $value::class, static::class));
+            }
+
+            $defaults = static::create();
+
+            foreach (get_object_vars($value) as $property => $propertyValue) {
+                if ($propertyValue !== $defaults->{$property}) {
+                    $this->{$property} = $propertyValue;
+                }
+            }
+
+            return $this;
+        }
+
         $value = is_array($value) ? $value : Json::decode($value);
 
         if (! is_array($value)) {
@@ -52,17 +82,15 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
 
         Typecast::properties(static::class, $value);
 
-        $config = static::create();
-
         foreach ($value as $property => $propertyValue) {
             if (isset(static::$renamedSettings[$property])) {
-                $config->{$property} = $propertyValue;
-            } elseif (property_exists($config, $property) && method_exists($config, $property)) {
-                $config->{$property}($propertyValue);
+                $this->{$property} = $propertyValue;
+            } elseif (property_exists($this, $property) && method_exists($this, $property)) {
+                $this->{$property}($propertyValue);
             }
         }
 
-        return $config;
+        return $this;
     }
 
     /**
