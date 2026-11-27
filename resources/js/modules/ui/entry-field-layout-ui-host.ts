@@ -12,7 +12,13 @@ import {
 import UiRenderer from './UiRenderer.vue';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {isolateFieldUi, rebaseFieldUi, preserveFieldUis} from './html-field-ui';
-import {canReuseUis, UI_REUSE_HEADER, withReusedUis} from './renderer/uiTree';
+import {createUiRefreshOrder} from './renderer/uiRefreshOrder';
+import {
+  canReuseUis,
+  reusedScopes,
+  UI_REUSE_HEADER,
+  withReusedUis,
+} from './renderer/uiTree';
 import {
   legacyElementEditor,
   prepareHtmlNestedOwner,
@@ -53,10 +59,6 @@ export interface EntryFieldLayoutUiHost extends HTMLElement {
 const htmlFieldUis = new WeakMap<HTMLFormElement, Map<string, UiPayload>>();
 
 class SupersededUiRefresh extends Error {}
-
-function scopeContains(scope: string[], candidate: string[]): boolean {
-  return scope.every((segment, index) => candidate[index] === segment);
-}
 
 function parseElementEditor(value: UiValue): ElementEditor | null {
   if (!isRecord(value) || !isRecord(value.settings)) {
@@ -119,17 +121,11 @@ export function defineEntryFieldLayoutUiHost(
         resetValues(payload: UiPayload): void;
       } | null>(null);
       #app: App | null = null;
-      #refreshEpoch = 0;
-      #refreshSequence = 0;
-      readonly #refreshes = new Map<
-        string,
-        {scope: string[]; sequence: number}
-      >();
+      readonly #refreshes = createUiRefreshOrder();
       #fieldPath: string[] | null = null;
       requestMetadata = (): UiValues => JSON.parse(this.dataset.owner ?? '{}');
 
       set payload(payload: UiPayload | null) {
-        this.#invalidateRefreshes();
         if (
           payload &&
           this.#fieldPath &&
@@ -143,6 +139,9 @@ export function defineEntryFieldLayoutUiHost(
             this.#fieldPath
           );
         }
+        // A refresh of a nested UI the payload left as a placeholder still
+        // stands, as the payload doesn't show that UI any newer.
+        this.#refreshes.invalidate(payload ? reusedScopes(payload.nodes) : []);
         // Fills in placeholders from the nested UIs this host shows, even while
         // no renderer is mounted to do it.
         if (payload && this.#renderedPayload) {
@@ -164,7 +163,7 @@ export function defineEntryFieldLayoutUiHost(
           }) === canonical(value)
         )
           return;
-        this.#invalidateRefreshes();
+        this.#refreshes.invalidate();
         const payload: UiPayload = JSON.parse(
           JSON.stringify(this.#payload.value)
         );
@@ -315,7 +314,7 @@ export function defineEntryFieldLayoutUiHost(
       }
 
       disconnectedCallback(): void {
-        this.#invalidateRefreshes();
+        this.#refreshes.invalidate();
         this.#renderedPayload = this.payload;
 
         if (this.#app) {
@@ -350,12 +349,12 @@ export function defineEntryFieldLayoutUiHost(
 
         const rootScope = this.#payload.value?.scope ?? [];
         const scopeKey = JSON.stringify(scope);
-        if (scopeKey === JSON.stringify(rootScope)) {
-          this.#invalidateRefreshes();
-        }
-        const epoch = this.#refreshEpoch;
-        const sequence = ++this.#refreshSequence;
-        this.#refreshes.set(scopeKey, {scope, sequence});
+        const superseded = this.#refreshes.start(scope);
+        const assertCurrent = () => {
+          if (superseded()) {
+            throw new SupersededUiRefresh();
+          }
+        };
         const data = new URLSearchParams(serializeFormInputs(form));
         const metadata = this.#fieldPath
           ? this.requestMetadata()
@@ -424,44 +423,21 @@ export function defineEntryFieldLayoutUiHost(
           throw new Error('The Entry FieldLayout did not return a UI payload.');
         }
 
-        this.#assertCurrentRefresh(scope, epoch, sequence);
+        assertCurrent();
 
         await appendHeadHtml(response.headHtml);
 
-        this.#assertCurrentRefresh(scope, epoch, sequence);
+        assertCurrent();
 
         await appendBodyHtml(response.bodyHtml);
 
-        this.#assertCurrentRefresh(scope, epoch, sequence);
+        assertCurrent();
 
         editor?.handleDismissibleTips?.();
 
         return this.#fieldPath
           ? isolateFieldUi(response.ui, this.#fieldPath, scope)
           : response.ui;
-      }
-
-      #invalidateRefreshes(): void {
-        this.#refreshEpoch++;
-        this.#refreshes.clear();
-      }
-
-      #assertCurrentRefresh(
-        scope: string[],
-        epoch: number,
-        sequence: number
-      ): void {
-        if (
-          epoch !== this.#refreshEpoch ||
-          [...this.#refreshes.values()].some(
-            (refresh) =>
-              refresh.sequence > sequence &&
-              (scopeContains(refresh.scope, scope) ||
-                scopeContains(scope, refresh.scope))
-          )
-        ) {
-          throw new SupersededUiRefresh();
-        }
       }
     }
   );

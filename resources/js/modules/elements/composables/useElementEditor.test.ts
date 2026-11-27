@@ -1990,6 +1990,73 @@ describe('useElementEditor', () => {
     expect(input('b')?.readOnly).toBe(true);
   });
 
+  it('applies a block’s own refresh when a save that left the block out answers first', async () => {
+    const heading = (uid: string) => nestedBlockHeading(container!, uid)!;
+    const label = () =>
+      heading('a').closest('craft-field')?.querySelector('[slot="label"]')
+        ?.textContent;
+    const type = async (uid: string, value: string) => {
+      await vi.waitFor(() => expect(heading(uid)).not.toBeNull());
+      heading(uid).value = value;
+      heading(uid).dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+    };
+    // Block a's heading is labeled after its value, and re-renders its block
+    // as soon as it changes.
+    const layout = (
+      headings: Record<string, string>,
+      reused: string[] = []
+    ) => {
+      const ui = {...nestedBlocksPayload(headings, reused), refreshable: true};
+      const a = ui.nodes[0]!.control!.uis![0]!;
+
+      if (!a.reused) {
+        const field = a.nodes[0]!;
+        field.props.label = `Heading ${headings.a}`;
+        field.control!.props.inputType = 'search';
+        Object.assign(field.control!, {reactive: true});
+      }
+
+      return ui;
+    };
+    const blockA = (value: string) => {
+      const ui = layout({a: value, b: 'B2'});
+      const a = ui.nodes[0]!.control!.uis![0]!;
+
+      return {...ui, scope: a.scope, nodes: a.nodes};
+    };
+    const save = deferred<{data: object}>();
+    const refresh = deferred<{data: object}>();
+    const saved = {
+      data: {draftId: 7, ui: layout({a: 'A', b: 'B2'}, ['a'])},
+    };
+    let saves = 0;
+    let refreshes = 0;
+    postSpy.mockImplementation(async (url: string) => {
+      if (url.includes('update-field-layout')) {
+        return ++refreshes === 1 ? {data: {ui: blockA('A2')}} : refresh.promise;
+      }
+
+      return ++saves === 1 ? save.promise : saved;
+    });
+    const {editor} = mount(
+      payload({canAutosave: true, draftId: 7, ui: layout({a: 'A', b: 'B'})})
+    );
+
+    await type('b', 'B2');
+    const saving = editor.autosave.save();
+
+    await type('a', 'A2');
+    await vi.waitFor(() => expect(label()).toBe('Heading A2'));
+
+    await type('a', 'A');
+    save.resolve(saved);
+    await saving;
+    refresh.resolve({data: {ui: blockA('A')}});
+
+    await vi.waitFor(() => expect(label()).toBe('Heading A'));
+  });
+
   it('drops the autosaved screen once a visit brings a newer payload', async () => {
     postSpy.mockResolvedValue({
       data: {

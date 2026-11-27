@@ -45,9 +45,9 @@ import {useElementActivity} from '@/modules/elements/composables/useElementActiv
 import {useSiteStatuses} from '@/modules/elements/composables/useSiteStatuses';
 import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
+import {createUiRefreshOrder} from '@/modules/ui/renderer/uiRefreshOrder';
 import {
   canReuseUis,
-  isWithin,
   reusedScopes,
   sharePayload,
   UI_REUSE_HEADER,
@@ -433,16 +433,8 @@ export function useElementEditor({
     sharePayload(previous, props.sidebarUi)
   );
   const form = useForm<ElementEditFormData>({});
-  let refreshGeneration = 0;
-  let refreshSequence = 0;
-  /** The latest refresh of each scope, by when it was sent. */
-  const refreshes = new Map<string, {scope: string[]; sequence: number}>();
+  const uiRefreshes = createUiRefreshOrder();
   let nestedElementsReloadPending = false;
-
-  function invalidateUiRefreshes(): void {
-    refreshGeneration++;
-    refreshes.clear();
-  }
 
   provideUiValueGroup();
 
@@ -660,7 +652,9 @@ export function useElementEditor({
         return;
       }
 
-      invalidateUiRefreshes();
+      // A refresh of a nested UI the save left as a placeholder still stands,
+      // as the save's answer doesn't show that UI any newer.
+      uiRefreshes.invalidate(form ? reusedScopes(form.nodes) : []);
       applyingSavedPayload = true;
 
       // The renderers measure the form against the values the save wrote, not
@@ -709,7 +703,7 @@ export function useElementEditor({
         return;
       }
 
-      invalidateUiRefreshes();
+      uiRefreshes.invalidate();
       draftElementIds.clear();
       savedUi.value = null;
       savedScreen.value = null;
@@ -841,19 +835,7 @@ export function useElementEditor({
     scope: string[] = uiPayload.value?.scope ?? [],
     {reuseUis = true}: {reuseUis?: boolean} = {}
   ): Promise<UiValues | undefined> {
-    const generation = refreshGeneration;
-    const sequence = ++refreshSequence;
-    refreshes.set(JSON.stringify(scope), {scope, sequence});
-    // Superseded by a save, or by a newer refresh of this scope, of one inside
-    // it, or of one it's inside. Refreshes of sibling scopes, such as the
-    // blocks the renderer fills, don't supersede each other.
-    const superseded = () =>
-      generation !== refreshGeneration ||
-      [...refreshes.values()].some(
-        (refresh) =>
-          refresh.sequence > sequence &&
-          (isWithin(refresh.scope, scope) || isWithin(scope, refresh.scope))
-      );
+    const superseded = uiRefreshes.start(scope);
     const rootScope = uiPayload.value?.scope ?? [];
     // Posts only what differs from what the server holds, as autosave does, so
     // the server can send placeholders for the nested UIs the refresh doesn't
@@ -1084,7 +1066,7 @@ export function useElementEditor({
       // A submission supersedes any in-flight draft write, and what the last
       // one reported.
       onBeforeSave: () => {
-        invalidateUiRefreshes();
+        uiRefreshes.invalidate();
         autosave.cancel();
         autosave.resetStatus();
       },
@@ -1488,7 +1470,7 @@ export function useElementEditor({
       return;
     }
 
-    invalidateUiRefreshes();
+    uiRefreshes.invalidate();
 
     // Held for the whole discard, so a mutation emitted while the screen is
     // being torn back down can't schedule a save against the deleted draft.
@@ -1629,7 +1611,7 @@ export function useElementEditor({
     onBeforeUnmount(removeNavigationGuard);
   }
 
-  onBeforeUnmount(invalidateUiRefreshes);
+  onBeforeUnmount(() => uiRefreshes.invalidate());
   onBeforeUnmount(autosave.cancel);
 
   return {
