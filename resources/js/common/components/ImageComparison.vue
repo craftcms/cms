@@ -451,7 +451,8 @@
 
   .image-comparison__table .image-comparison__images > td,
   .image-comparison__table tr > .image-comparison__slider-cell {
-    padding: 0;
+    padding-block: 0 var(--c-spacing-lg);
+    padding-inline: 0;
   }
 
   .image-comparison__table .image-comparison__images > :first-child {
