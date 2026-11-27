@@ -1011,42 +1011,50 @@ describe('UiRenderer', () => {
     );
   });
 
-  it('submits a block whose keyed table rows were reordered', async () => {
-    const onMutation = vi.fn();
-    const blocks = nestedBlocksPayload({a: 'Heading a', b: 'Heading b'});
-    const tablePath = ['fields', 'blocks', 'entries', 'a', 'fields', 'rows'];
-    const control = required(blocks.nodes[0]?.control, 'Expected blocks.');
-    control.uis![0]!.nodes = [
-      {
-        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
-        component: 'craft:field',
-        props: {label: 'Rows'},
-        control: {
-          type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
-          component: 'craft:table',
-          props: {columns: {label: {type: 'singleline'}}, keyed: true},
-          path: tablePath,
-          mode: 'editable',
-          deltaGroup: ['fields', 'blocks'],
+  it.each([
+    ['a block field', ['fields', 'rows']],
+    ['a control outside the block’s fields', ['rows']],
+  ])(
+    'submits a block whose keyed table rows were reordered, in %s',
+    async (_, rowsPath) => {
+      const onMutation = vi.fn();
+      const blocks = nestedBlocksPayload({a: 'Heading a', b: 'Heading b'});
+      const tablePath = ['fields', 'blocks', 'entries', 'a', ...rowsPath];
+      const control = required(blocks.nodes[0]?.control, 'Expected blocks.');
+      control.uis![0]!.nodes = [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: 'Rows'},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+            component: 'craft:table',
+            props: {columns: {label: {type: 'singleline'}}, keyed: true},
+            path: tablePath,
+            mode: 'editable',
+            deltaGroup: ['fields', 'blocks'],
+          },
         },
-      },
-    ];
-    Object.assign(valueAt(blocks.values, tablePath.slice(0, -1)) as object, {
-      rows: {first: {label: 'First'}, second: {label: 'Second'}},
-    });
-    app.unmount();
-    await mount(blocks, {onMutation});
+      ];
+      Object.assign(valueAt(blocks.values, tablePath.slice(0, -1)) as object, {
+        rows: {first: {label: 'First'}, second: {label: 'Second'}},
+      });
+      app.unmount();
+      await mount(blocks, {onMutation});
 
-    renderer.setValue(tablePath, {
-      second: {label: 'Second'},
-      first: {label: 'First'},
-    });
-    await nextTick();
+      renderer.setValue(tablePath, {
+        second: {label: 'Second'},
+        first: {label: 'First'},
+      });
+      await nextTick();
 
-    expect(
-      Object.keys(onMutation.mock.lastCall?.[0]?.fields?.blocks?.entries ?? {})
-    ).toEqual(['a']);
-  });
+      expect(
+        Object.keys(
+          onMutation.mock.lastCall?.[0]?.fields?.blocks?.entries ?? {}
+        )
+      ).toEqual(['a']);
+    }
+  );
 
   it('asks for the reused nested UIs it doesn’t show as the new payload does', async () => {
     const readOnly = (payload: UiPayload): UiPayload => {

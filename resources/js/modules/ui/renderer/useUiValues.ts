@@ -312,7 +312,12 @@ export function useUiValues(initial: UiPayload) {
 
       for (const [key, value] of Object.entries(entry)) {
         if (key !== 'fields' || !isRecord(value) || !isRecord(before.fields)) {
-          if (canonical(value) !== canonical(before[key])) {
+          const keyPath = [...path, 'entries', id, key];
+
+          if (
+            groupCanonical(value, keyPath) !==
+            groupCanonical(before[key], keyPath)
+          ) {
             changed[key] = value;
           }
 
