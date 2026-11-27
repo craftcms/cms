@@ -316,7 +316,6 @@
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 
 #### Plugins
-- Added `CraftCms\Cms\Console\SchedulerHeartbeat` and `CraftCms\Cms\Support\Facades\SchedulerHeartbeat`, for checking whether Laravel’s scheduler is running. ([#21166](https://github.com/craftcms/cms/pull/21166))
 - Added `CraftCms\Cms\Utility\Utility::contentMaxWidth()`, which utilities can override to cap their page’s content at the control panel’s readable width and center it, as the System Messages and Yii2 Loose Ends utilities now do.
 - Added `CraftCms\Cms\Field\Assets::getUploadVolume()`. ([#21151](https://github.com/craftcms/cms/pull/21151))
 - Any element type’s elements can be shown on the Compare screen, by linking to the `craft.cp.elements.compare` route. Each side gets a site menu when the element type is localized and a version menu when it supports drafts or revisions, listing only the sites and versions the user can view; with neither, it shows the element’s UI label. Each side can be edited when the user can save it. Two separate elements can be compared by linking to the `craft.cp.elements.compare-elements` route, and element indexes have a “Compare” action for them. ([#20384](https://github.com/craftcms/cms/pull/20384), [#20474](https://github.com/craftcms/cms/pull/20474))

@@ -33,7 +33,6 @@
 - The `configuration_*` MCP tools now reject condition rules that Craft would drop, and accept field layouts in the shape `configuration_get` returns them. ([#21112](https://github.com/craftcms/cms/pull/21112))
 - Added the `output` argument to the `@formatDateTime` GraphQL directive. It can be set to `date` or `time` to output only the date or time, using the locale’s date or time format for `short`, `medium`, `long`, and `full`. ([#21084](https://github.com/craftcms/cms/pull/21084))
 - Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
-- Added `CraftCms\Cms\Console\SchedulerHeartbeat` and `CraftCms\Cms\Support\Facades\SchedulerHeartbeat`, for checking whether Laravel’s scheduler is running. ([#21166](https://github.com/craftcms/cms/pull/21166))
 - Added `CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters`. ([#21170](https://github.com/craftcms/cms/pull/21170))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
