@@ -141,10 +141,15 @@ export const UI_REUSE_HEADER = 'X-Craft-Ui-Reuse';
 
 /**
  * Whether `payload` shows every nested UI a placeholder could stand in for.
- * A tab that's still deferred shows none of its own.
+ * A tab that's still deferred shows none of its own, and neither does a
+ * placeholder that hasn't been filled yet.
  */
 export function canReuseUis(payload: UiPayload | null | undefined): boolean {
-  return !!payload && !payload.nodes.some((node) => node.props.deferred);
+  return (
+    !!payload &&
+    !payload.nodes.some((node) => node.props.deferred) &&
+    reusedScopes(payload.nodes).length === 0
+  );
 }
 
 /**
@@ -160,6 +165,17 @@ export function canReuseUis(payload: UiPayload | null | undefined): boolean {
  */
 export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
   let values = next.values;
+  // Indexed once, on the first placeholder, rather than searched for each.
+  let shownUis: Map<string, NestedUiPayload> | undefined;
+  let shownModes: Map<string, UiControlPayload['mode']> | undefined;
+  const index = () => {
+    shownUis = new Map();
+    shownModes = new Map();
+    visitControls(toRaw(previous).nodes, (control) => {
+      shownModes!.set(JSON.stringify(control.path), control.mode);
+      control.uis?.forEach((ui) => shownUis!.set(JSON.stringify(ui.scope), ui));
+    });
+  };
 
   const fillUis = (
     owner: UiControlPayload,
@@ -172,12 +188,16 @@ export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
         return nodes === ui.nodes ? ui : {...ui, nodes};
       }
 
-      const shown = findNestedUi(toRaw(previous).nodes, ui.scope);
+      if (!shownUis) {
+        index();
+      }
+
+      const shown = shownUis!.get(JSON.stringify(ui.scope));
 
       if (
         !shown ||
         shown.reused ||
-        findControl(toRaw(previous).nodes, owner.path)?.mode !== owner.mode
+        shownModes!.get(JSON.stringify(owner.path)) !== owner.mode
       ) {
         return ui;
       }
@@ -228,18 +248,6 @@ export function reusedScopes(nodes: UiNodePayload[]): string[][] {
   );
 
   return scopes;
-}
-
-function findControl(
-  nodes: UiNodePayload[],
-  path: string[]
-): UiControlPayload | undefined {
-  let found: UiControlPayload | undefined;
-  visitControls(nodes, (control) => {
-    found ??= pathsMatch(control.path, path) ? control : undefined;
-  });
-
-  return found;
 }
 
 /**

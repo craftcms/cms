@@ -1804,6 +1804,38 @@ describe('useElementEditor', () => {
     );
   });
 
+  it('asks an autosave for every nested UI while one is still a placeholder', async () => {
+    const editB = async (value: string) => {
+      await vi.waitFor(() =>
+        expect(nestedBlockHeading(container!, 'b')).not.toBeNull()
+      );
+      const heading = nestedBlockHeading(container!, 'b')!;
+      heading.value = value;
+      heading.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      await editor.autosave.save();
+      await nextTick();
+    };
+    const {editor} = mount(
+      payload({
+        canAutosave: true,
+        ui: nestedBlocksPayload({a: 'A', b: 'B'}, ['a']),
+      })
+    );
+
+    postSpy.mockResolvedValue({
+      data: {draftId: 7, ui: nestedBlocksPayload({a: 'A', b: 'B2'}, ['a'])},
+    });
+    await editB('B2');
+    await editB('B3');
+
+    const saves = postSpy.mock.calls.filter(
+      ([url]) => !String(url).includes('update-field-layout')
+    );
+    expect(saves).toHaveLength(2);
+    expect(saves[1]?.[2]?.headers?.['X-Craft-Ui-Reuse']).toBeUndefined();
+  });
+
   it('saves a block edited back to a value a refresh rendered but an autosave left out', async () => {
     const heading = (uid: string) => nestedBlockHeading(container!, uid)!;
     const type = async (uid: string, value: string) => {
