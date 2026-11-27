@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Variables;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -44,8 +45,10 @@ class CraftVariable
 
     /**
      * Returns a new [asset query](https://craftcms.com/docs/5.x/reference/element-types/assets.html#querying-assets).
+     *
+     * @param  array<string, mixed>  $criteria
+     * @return AssetQuery<Asset>
      */
-    /** @param array<string, mixed> $criteria */
     public function assets(array $criteria = []): AssetQuery
     {
         return new AssetQuery($criteria);

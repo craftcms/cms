@@ -300,6 +300,44 @@ it.each([
   }
 );
 
+it('runs element actions against the nested source and criteria it lists', async () => {
+  const container = await mountPage({}, undefined, 'table', {
+    source: {
+      type: 'native',
+      key: 'volume:abc',
+      keyPath: 'volume:abc/folder:def',
+      label: 'Pages',
+    },
+    queryCriteria: {includeSubfolders: true},
+    status: '',
+    actions: [
+      {
+        key: 'Delete',
+        label: 'Delete',
+        bulk: true,
+        action: {
+          type: 'http',
+          method: 'POST',
+          url: '/actions/element-indexes/perform-action',
+          body: {elementAction: 'Delete'},
+        },
+      },
+    ],
+  });
+
+  const item = Array.from(
+    container.querySelectorAll<HTMLElement & {action?: {body: unknown}}>(
+      'craft-action-item'
+    )
+  ).find((item) => item.textContent?.trim() === 'Delete');
+
+  expect(item?.action?.body).toMatchObject({
+    elementAction: 'Delete',
+    source: 'volume:abc/folder:def',
+    criteria: {includeSubfolders: true, status: null},
+  });
+});
+
 it('passes the Actions invoker to the bulk Edit slideout', async () => {
   const container = await mountPage();
 

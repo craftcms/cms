@@ -1060,6 +1060,21 @@ Craft.CP = Garnish.Base.extend(
             };
           }
           let content = alert.content;
+          if (alert.title) {
+            content = `<h2>${Craft.escapeHtml(alert.title)}</h2>${content}`;
+          }
+          if (alert.actions?.length || alert.refreshable) {
+            const buttons = (alert.actions ?? [])
+              .map(
+                (action) =>
+                  `<craft-button href="${Craft.escapeHtml(action.url)}" variant="outline" size="small" inherit>${Craft.escapeHtml(action.label)}</craft-button>`
+              )
+              .join('');
+            const className = alert.refreshable
+              ? 'flex flex-nowrap resolvable-alert-buttons'
+              : 'flex flex-nowrap';
+            content += `<p class="${className}">${buttons}</p>`;
+          }
           if (alert.showIcon) {
             content = `<span data-icon="alert" aria-label="${Craft.t(
               'app',
@@ -1116,6 +1131,7 @@ Craft.CP = Garnish.Base.extend(
       if ($resolvableButtonsContainer.length) {
         const $refreshBtn = $('<craft-button/>', {
           type: 'button',
+          size: 'small',
           text: Craft.t('app', 'Refresh'),
         }).appendTo($resolvableButtonsContainer);
         $refreshBtn.on('click', async () => {

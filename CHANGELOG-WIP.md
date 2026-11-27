@@ -164,6 +164,7 @@
 - Relational fields now have a “Paste” button when the clipboard holds elements they could relate.
 - Copied elements are now put on the system clipboard as their titles, and links to their URLs in apps that take rich text, like copied relational field values. The “Copied” notification now matches copied field values’, with the elements’ chips side by side, and copying elements replaces a copied field value, and the reverse. Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>V</kbd> within a relational or nested element field that can take the copied elements pastes them, as long as the clipboard still holds what was copied. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Relational fields now have a “Thumb Size” setting, like element index View menus, with “Small”, “Medium”, and “Large” options for the List and Inline list view modes, plus “XL” and “2XL” for the Thumbs view mode. ([#20257](https://github.com/craftcms/cms/pull/20257))
+- Required Dropdown fields without a default option now show “Select…” until an option is chosen, rather than the first option. Set a default option to keep the previous behavior. ([#21152](https://github.com/craftcms/cms/issues/21152), [#21154](https://github.com/craftcms/cms/pull/21154))
 
 ### Mail
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
@@ -358,6 +359,7 @@
 - The `list-flip`, `list-tree-flip`, `share-flip`, `sidebar-nav-flip`, and `sidebar-nav-flip-light` icons are now drawn by mirroring the `list`, `list-tree`, `share`, `sidebar-nav`, and `sidebar-nav-light` icons, so paths to them, such as the deprecated `@appicons/listrtl.svg` alias, no longer point to a file. They still show when referenced by name. ([#20520](https://github.com/craftcms/cms/pull/20520))
 - `Garnish.uiLayerManager.registerShortcut()` now accepts `description` and `group` keys on its shortcut definition, which list the shortcut in the command palette’s “Keyboard shortcuts” view. ([#20263](https://github.com/craftcms/cms/pull/20263))
 - Element type indexes shown with `CraftCms\Cms\Http\Controllers\Elements\ElementTypeIndexController` can open their “New” button’s route in a new tab, with an external link icon, by setting the `newElementExternal` route default to `true`, for elements that are created outside the control panel. ([#20735](https://github.com/craftcms/cms/pull/20735))
+- Added the `assertCpMessage()`, `assertNoCpMessages()`, and `cpMessages()` `Illuminate\Testing\TestResponse` macros, for testing the control panel messages a response delivers. ([#21161](https://github.com/craftcms/cms/pull/21161))
 
 ##### Added
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
