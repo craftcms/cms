@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Gql\Attributes\Gql;
@@ -713,12 +714,19 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
 
         $scenario = $this->ruleset->getScenario();
         $layoutElements = $fieldLayout->getEditableCustomFieldElements($this);
+        // A draft holds work in progress, such as a half-typed email address, so validation skips its field values until
+        // it's saved live or applied. Fields that hold nested elements still validate those elements.
+        $inProgress = $scenario === ElementRules::SCENARIO_ESSENTIALS && ElementHelper::isDraft($this);
 
         foreach ($layoutElements as $layoutElement) {
             $field = $layoutElement->getField();
             $attribute = "field:$field->handle";
 
             if (isset($this->_attributeNames) && ! isset($this->_attributeNames[$attribute])) {
+                continue;
+            }
+
+            if ($inProgress && ! $field instanceof ElementContainerFieldInterface) {
                 continue;
             }
 

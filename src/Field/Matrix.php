@@ -1655,13 +1655,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
-            $entries = $value->getResultOverride() ?? (clone $value)
-                ->drafts(null)
-                ->savedDraftsOnly()
-                ->status(null)
-                ->limit(null)
-                ->eagerly()
-                ->all();
+            $entries = $element->ruleset->getScenario() === ElementRules::SCENARIO_ESSENTIALS && ElementHelper::isDraft($element)
+                // A draft only checks the entries this save writes. The rest haven't changed since they were saved.
+                ? array_values(array_filter(
+                    $value->getResultOverride() ?? [],
+                    fn (Entry $entry) => ! $entry->id || $entry->forceSave,
+                ))
+                : $value->getResultOverride() ?? (clone $value)
+                    ->drafts(null)
+                    ->savedDraftsOnly()
+                    ->status(null)
+                    ->limit(null)
+                    ->eagerly()
+                    ->all();
 
             $invalidEntryIds = [];
             $scenario = $element->ruleset->getScenario();
@@ -1687,7 +1693,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
 
             if (! empty($invalidEntryIds)) {
                 // Just in case the entries weren't already cached
-                $value->setResultOverride($entries);
+                $value->setResultOverride($value->getResultOverride() ?? $entries);
                 $element->addInvalidNestedElementIds($invalidEntryIds);
 
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {

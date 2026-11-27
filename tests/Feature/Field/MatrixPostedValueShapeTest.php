@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\ElementSaved;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -335,4 +337,36 @@ it('validates and renders nested blocks without a query for each outer block', f
     $queriesFor(1);
 
     expect($queriesFor(4))->toBe($queriesFor(2));
+});
+
+it('checks only the blocks a draft save writes', function () {
+    [$entry, $blockType] = matrixShapeFixture();
+    [$first, $second] = [Str::uuid()->toString(), Str::uuid()->toString()];
+    $tooLong = str_repeat('a', 256);
+
+    // A block with a stored title too long to save. A draft save that doesn't write the block shouldn't fail on it.
+    $entry->setFieldValueFromRequest('shapeMatrix', [
+        'entries' => [
+            "uid:$first" => ['type' => $blockType->handle, 'title' => $tooLong],
+            "uid:$second" => ['type' => $blockType->handle, 'title' => 'Second'],
+        ],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ]);
+    expect(Elements::saveElement($entry, runValidation: false))->toBeTrue();
+
+    $draftId = app(Drafts::class)->createDraft(entryQuery()->id($entry->id)->one(), auth()->id(), provisional: true)->draftId;
+    $saveSecond = function (string $title) use ($draftId, $first, $second): bool {
+        /** @var EntryElement $draft */
+        $draft = entryQuery()->draftId($draftId)->provisionalDrafts()->status(null)->one();
+        $draft->setFieldValueFromRequest('shapeMatrix', [
+            'entries' => ["uid:$second" => ['title' => $title]],
+            'sortOrder' => ["uid:$first", "uid:$second"],
+        ]);
+        $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
+
+        return Elements::saveElement($draft);
+    };
+
+    expect($saveSecond('Second, edited'))->toBeTrue()
+        ->and($saveSecond($tooLong))->toBeFalse();
 });

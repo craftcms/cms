@@ -69,6 +69,7 @@
 - Added `CraftCms\Cms\Cp\Alerts::areCached()`. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Control panel alerts can now have `title`, `actions`, and `refreshable` keys, which are shown in the alert’s heading and buttons. Plugins can pass them from `CpAlertsResolving` to show their links as buttons. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - `CraftCms\Cms\License\License::issues()` can now return a fourth item per issue, with link buttons for its alert. ([#21108](https://github.com/craftcms/cms/pull/21108))
+- Fixed a bug where drafts couldn’t be saved while a field had a value that wasn’t valid yet, such as an incomplete email address.
 - Fixed a bug where control panel alerts weren’t shown on Inertia pages. ([#21083](https://github.com/craftcms/cms/issues/21083), [#21108](https://github.com/craftcms/cms/pull/21108))
 - Fixed a bug where licensing and critical update alerts could be missing from the control panel once the cached update info expired. ([#21108](https://github.com/craftcms/cms/pull/21108))
 - Craft’s Twig tags and control panel templates no longer use features that Twig 3 deprecated, apart from the `spaceless` filter. ([#21117](https://github.com/craftcms/cms/pull/21117))
