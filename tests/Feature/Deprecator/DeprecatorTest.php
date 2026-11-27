@@ -59,6 +59,22 @@ it('can log deprecations to the log', function () {
     expect($logged)->toContain('A deprecation message');
 });
 
+it('stores deprecations logged from anonymous classes', function () {
+    // Anonymous class names contain a NUL byte, which PostgreSQL can't store
+    $logger = new class
+    {
+        public function log(Deprecator $deprecator): void
+        {
+            $deprecator->log('anonymous', 'A deprecation message', 'file.php', 1);
+        }
+    };
+
+    $logger->log($this->deprecator);
+    $this->deprecator->storeLogs();
+
+    expect(DeprecationError::query()->where('key', 'anonymous')->exists())->toBeTrue();
+});
+
 it('can log deprecations to the database', function () {
     expect(DeprecationError::count())->toBe(0);
 
