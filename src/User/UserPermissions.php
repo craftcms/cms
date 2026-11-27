@@ -544,6 +544,11 @@ class UserPermissions
                 key: 'accessSiteWhenSystemIsOff',
                 label: t('Access the site when maintenance mode is enabled'),
             ),
+            new Permission(
+                key: 'receiveCriticalNotifications',
+                label: t('Receive critical notifications'),
+                info: t('Such as critical updates and security problems with the site’s configuration.'),
+            ),
         ]);
 
         $cpPermissions = collect([
