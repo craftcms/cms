@@ -22,10 +22,13 @@ class ReleaseServiceProvider extends ServiceProvider
                 ->call(fn (): int => app(Releases::class)->publishDue())
                 ->when(fn (): bool => Cms::isInstalled()
                     && Edition::get()->supportsReleases()
-                    && ! app(Updates::class)->isUpdatePending())
+                    && ! app(Updates::class)->isUpdatePending()
+                    && app(Releases::class)->hasDue())
                 ->name('craft:publish-releases')
                 ->everyMinute()
-                ->withoutOverlapping(5);
+                // Requests can run this when the scheduler isn’t, so a killed request’s lock expires after 5 minutes, and
+                // the lock doesn’t install signal handlers that would outlive the run in a web worker.
+                ->withoutOverlapping(5, false);
         });
     }
 }

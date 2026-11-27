@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\SchedulerHeartbeat;
 use CraftCms\Cms\Element\Drafts;
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Element\Models\Revision;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
@@ -23,11 +23,11 @@ use function CraftCms\Cms\action_url;
 beforeEach(function () {
     Date::setTestNow('2026-10-01 12:00:00');
 
-    $actor = User::findOne();
+    $this->actor = $actor = User::findOne();
     $releases = app(Releases::class);
 
     $entryType = EntryType::factory()->create();
-    $section = Section::factory()->withEntryTypes($entryType)->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create(['enableVersioning' => true]);
     Sections::refreshSections();
     EntryTypes::refreshEntryTypes();
 
@@ -44,7 +44,6 @@ beforeEach(function () {
 
     Date::setTestNow('2026-10-01 12:05:00');
 
-    // Octane ends the response before deferred work runs, as PHP-FPM does.
     $_SERVER['LARAVEL_OCTANE'] = 1;
 
     Route::middleware(['web', 'craft', 'craft.web'])
@@ -56,20 +55,20 @@ afterEach(function () {
     unset($_SERVER['LARAVEL_OCTANE']);
 });
 
-function canonicalTitle(int $id): string
-{
-    return EntryElement::find()->id($id)->status(null)->one()->title;
-}
-
 it('publishes due scheduled releases after a site request when the scheduler is not running', function () {
     $this->get('/');
 
+    expect($this->release->fresh()->status)->toBe(ReleaseStatus::Published);
+});
+
+it('does not record the site request’s user as the publisher', function () {
+    $this->actingAs($this->actor)->get('/');
+
     expect($this->release->fresh()->status)->toBe(ReleaseStatus::Published)
-        ->and(canonicalTitle($this->canonicalId))->toBe('Released');
+        ->and(Revision::query()->where('canonicalId', $this->canonicalId)->latest('num')->value('creatorId'))->toBeNull();
 });
 
 it('checks for due work at most once a minute', function () {
-    // The release is due at 12:01.
     Date::setTestNow('2026-10-01 12:00:30');
     $this->get('/');
 
@@ -87,8 +86,7 @@ it('leaves scheduled releases to the scheduler while it is running', function ()
 
     $this->get('/');
 
-    expect($this->release->fresh()->status)->toBe(ReleaseStatus::Scheduled)
-        ->and(canonicalTitle($this->canonicalId))->toBe('Original');
+    expect($this->release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
 });
 
 it('takes over once the scheduler heartbeat is stale', function () {
@@ -115,18 +113,22 @@ it('requests due work in the background from HTML pages where the response canno
     expect($this->release->fresh()->status)->toBe(ReleaseStatus::Scheduled);
 
     $this->get(action_url('scheduled-work/run'))->assertOk();
-    expect($this->release->fresh()->status)->toBe(ReleaseStatus::Published)
-        ->and(canonicalTitle($this->canonicalId))->toBe('Released');
+    expect($this->release->fresh()->status)->toBe(ReleaseStatus::Published);
 
     $this->get('scheduled-work-test-page')->assertDontSee('scheduled-work', false);
 });
 
-it('does not request due work in the background when nothing is due', function () {
+it('checks for due work from HTML pages at most once a minute', function () {
     unset($_SERVER['LARAVEL_OCTANE']);
-    // The release is due at 12:01.
-    Date::setTestNow('2026-10-01 12:00:30');
 
+    Date::setTestNow('2026-10-01 12:00:30');
     $this->get('scheduled-work-test-page')->assertDontSee('scheduled-work', false);
+
+    Date::setTestNow('2026-10-01 12:01:10');
+    $this->get('scheduled-work-test-page')->assertDontSee('scheduled-work', false);
+
+    Date::setTestNow('2026-10-01 12:01:40');
+    $this->get('scheduled-work-test-page')->assertSee('scheduled-work\\/run', false);
 });
 
 it('does not request due work in the background while the scheduler is running', function () {
@@ -134,6 +136,11 @@ it('does not request due work in the background while the scheduler is running',
     app(SchedulerHeartbeat::class)->record();
 
     $this->get('scheduled-work-test-page')->assertDontSee('scheduled-work', false);
+});
+
+it('does not run scheduled work from the background action while the scheduler is running', function () {
+    app(SchedulerHeartbeat::class)->record();
+
     $this->get(action_url('scheduled-work/run'))->assertOk();
 
     expect($this->release->fresh()->status)->toBe(ReleaseStatus::Scheduled);

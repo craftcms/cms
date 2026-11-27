@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\ScheduledWork;
 use Symfony\Component\HttpFoundation\Response;
+
+use function Illuminate\Support\defer;
 
 /**
  * Runs Craft’s due scheduled tasks after the response, for site requests that couldn’t run them after their own.
@@ -23,12 +24,8 @@ readonly class ScheduledWorkController
 
     public function run(): Response
     {
-        if (
-            Cms::config()->runScheduledWorkAutomatically &&
-            ! app()->isDownForMaintenance() &&
-            $this->scheduledWork->claimRequestRun()
-        ) {
-            app()->terminating(fn () => $this->scheduledWork->runDue());
+        if ($this->scheduledWork->claimRun()) {
+            defer(fn () => $this->scheduledWork->runDue())->always();
         }
 
         return response()->make();

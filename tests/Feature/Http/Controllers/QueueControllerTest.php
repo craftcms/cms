@@ -24,6 +24,7 @@ use function Pest\Laravel\postJson;
 
 beforeEach(function () {
     actingAs(User::findOne());
+    Cms::config()->runScheduledWorkAutomatically(false);
 });
 
 function terminatingCallbacks(): array
