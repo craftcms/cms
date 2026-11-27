@@ -107,6 +107,7 @@ return [
     'Authenticated' => 'Authenticated',
     'Authorization Endpoint' => 'Authorization Endpoint',
     'Authorize' => 'Authorize',
+    'Backslash' => 'Backslash',
     'Batch' => 'Batch',
     'Before' => 'Before',
     'Before the input' => 'Before the input',
