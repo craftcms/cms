@@ -365,6 +365,7 @@
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
 
 ##### Deprecations
+- Deprecated `craft\base\Batchable`. `CraftCms\Cms\Queue\Contracts\Batchable` should be used instead. ([#21164](https://github.com/craftcms/cms/pull/21164))
 - Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
 - Deprecated `craft\base\PluginTrait`.
 - Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
