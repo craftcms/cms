@@ -10,18 +10,21 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use CraftCms\Cms\Http\PreviewRequestPreparer;
+use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\Livewire\LivewireComponents;
+use CraftCms\Cms\Livewire\LivewireServiceProvider as CraftLivewireServiceProvider;
 use CraftCms\Cms\Route\ControllerRoute;
 use CraftCms\Cms\Route\Data\Route as ProjectConfigRoute;
 use CraftCms\Cms\Route\ProjectConfigRoutes;
 use CraftCms\Cms\Route\Routes;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -110,31 +113,48 @@ it('keeps update requests on the site the component was rendered for', function 
     $response = $this->get('https://localhost/fr/lw-counter')->assertOk();
     expect($response->getContent())->toContain('<body>layout:')->toContain('count:0:site:french');
 
-    // The update endpoint is at the host root, which belongs to the primary site.
-    livewireCall($this, $response, 'like')
+    // The update endpoint is at the host root, which belongs to the primary site, and the client’s site header is ignored.
+    livewireCall($this, $response, 'like', ['X-Craft-Site' => (string) Sites::getPrimarySite()->id])
         ->assertOk()
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'count:1:site:french'));
 });
 
-it('keeps previewed drafts across update requests', function () {
-    $entry = createLivewireEntry('lw-preview', 'entries/show');
+it('keeps previews across update requests', function () {
+    $entry = createLivewireEntry('lw-preview', 'livewire/entry.blade.php');
     $draft = app(Drafts::class)->createDraft($entry, 1);
     $draft->title = 'Draft title';
     app(Elements::class)->saveElement($draft, runValidation: false);
-    $draft = Entry::find()->draftId($draft->draftId)->status(null)->one();
 
-    Route::middleware(['web', 'craft', 'craft.web'])->get('lw-preview-probe', function () use ($draft) {
-        app(PreviewRequestPreparer::class)->preparePreviewElement($draft);
+    $token = app(RouteTokens::class)->createPreviewToken([ActionRoute::uriForSegments(['preview', 'preview'], false), [
+        'elementType' => Entry::class,
+        'canonicalId' => $entry->id,
+        'siteId' => $entry->siteId,
+        'draftId' => $draft->draftId,
+    ]]);
 
-        return app(LivewireComponents::class)->mount('craft::livewire.entry', ['entry' => $draft]);
-    });
+    $response = $this->get('/lw-preview?'.http_build_query([
+        Cms::config()->tokenParam => $token,
+        'x-craft-preview' => Crypt::encrypt('preview'),
+    ]))->assertOk();
 
-    $response = $this->get('/lw-preview-probe')->assertOk();
-    expect($response->getContent())->toContain("entry:Draft title:{$draft->id}:likes:0");
+    expect($response->getContent())->toContain('entry:Draft title:')->toContain(':likes:0:')->toContain(':preview:1');
 
+    // The update is a preview request too, so caches skip it and drafts stay previewed.
     livewireCall($this, $response, 'like')
         ->assertOk()
-        ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, "entry:Draft title:{$draft->id}:likes:1"));
+        ->assertHeader('Cache-Control', 'max-age=0, must-revalidate, no-cache, no-store, private')
+        ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'entry:Draft title:')
+            && str_contains($html, ':likes:1:') && str_contains($html, ':preview:1'));
+});
+
+it('keeps the response a page component sets for section templates', function () {
+    createLivewireEntry('lw-status', 'livewire/status.blade.php');
+
+    $this->get('/lw-status')
+        ->assertStatus(202)
+        ->assertHeader('X-Livewire-Page', 'status')
+        ->assertCookie('livewire-page', 'status')
+        ->assertSee('status');
 });
 
 it('applies Craft’s middleware only to updates for components rendered on Craft routes', function () {
@@ -156,20 +176,52 @@ it('applies Craft’s middleware only to updates for components rendered on Craf
         ->assertOk()
         ->assertHeader('X-Robots-Tag', 'none')
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'likes:1'));
+
+    // A Craft component bundled after one of the app’s can’t skip Craft’s middleware.
+    $this->withHeaders(['X-Livewire' => '1'])->postJson(EndpointResolver::updatePath(), [
+        '_token' => csrf_token(),
+        'components' => [livewireComponentCall($appPage, 'increment'), livewireComponentCall($craftPage, 'like')],
+    ])->assertStatus(400);
 });
 
-function livewireCall($test, TestResponse $page, string $method): TestResponse
+it('applies Craft’s middleware on custom update routes', function () {
+    Cms::config()->disallowRobots();
+    Livewire::setUpdateRoute(fn ($handle) => Route::post('lw-custom/update', $handle));
+    // The app has already booted, so this adds the middleware to the new route right away.
+    new CraftLivewireServiceProvider(app())->boot();
+
+    createLivewireEntry('lw-custom-page', 'livewire/entry.blade.php');
+    $page = $this->get('/lw-custom-page')->assertOk();
+
+    livewireCall($this, $page, 'like', uri: '/lw-custom/update')
+        ->assertOk()
+        ->assertHeader('X-Robots-Tag', 'none')
+        ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'likes:1'));
+});
+
+/**
+ * @param  array<string, string>  $headers
+ */
+function livewireCall($test, TestResponse $page, string $method, array $headers = [], ?string $uri = null): TestResponse
+{
+    return $test->withHeaders(['X-Livewire' => '1', ...$headers])->postJson($uri ?? EndpointResolver::updatePath(), [
+        '_token' => csrf_token(),
+        'components' => [livewireComponentCall($page, $method)],
+    ]);
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function livewireComponentCall(TestResponse $page, string $method): array
 {
     preg_match('/wire:snapshot="([^"]+)"/', (string) $page->getContent(), $matches);
 
-    return $test->withHeaders(['X-Livewire' => '1'])->postJson(EndpointResolver::updatePath(), [
-        '_token' => csrf_token(),
-        'components' => [[
-            'snapshot' => html_entity_decode($matches[1]),
-            'updates' => new stdClass,
-            'calls' => [['path' => '', 'method' => $method, 'params' => []]],
-        ]],
-    ]);
+    return [
+        'snapshot' => html_entity_decode($matches[1]),
+        'updates' => new stdClass,
+        'calls' => [['path' => '', 'method' => $method, 'params' => []]],
+    ];
 }
 
 function createLivewireEntry(string $uri, string $template): Entry

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Livewire;
 
+use Closure;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use Livewire\Drawer\Utils;
@@ -66,6 +68,41 @@ class LivewireComponents
      */
     public function mountPage(string $name, array $variables): Response
     {
+        [$html, $layout] = $this->renderPage($name, $variables);
+        $response = response($html);
+
+        if (is_callable($layout->response)) {
+            ($layout->response)($response);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Mounts a component as a full page, in its layout, for a page template.
+     *
+     * The layout’s response callback is queued with {@see ResponseHeaders}, which applies it to the page’s
+     * response, so the component can still set its status code, headers, and cookies.
+     *
+     * @param  array<string, mixed>  $variables
+     */
+    public function renderPageTemplate(string $name, array $variables): string
+    {
+        [$html, $layout] = $this->renderPage($name, $variables);
+
+        if (is_callable($layout->response)) {
+            app(ResponseHeaders::class)->modify(Closure::fromCallable($layout->response));
+        }
+
+        return $html;
+    }
+
+    /**
+     * @param  array<string, mixed>  $variables
+     * @return array{string, PageComponentConfig}
+     */
+    private function renderPage(string $name, array $variables): array
+    {
         $html = '';
 
         $layout = SupportPageComponents::interceptTheRenderOfTheComponentAndRetreiveTheLayoutConfiguration(
@@ -76,13 +113,7 @@ class LivewireComponents
 
         $layout->normalizeViewNameAndParamsForBladeComponents();
 
-        $response = response(SupportPageComponents::renderContentsIntoLayout($html, $layout));
-
-        if (is_callable($layout->response)) {
-            ($layout->response)($response);
-        }
-
-        return $response;
+        return [SupportPageComponents::renderContentsIntoLayout($html, $layout), $layout];
     }
 
     /**

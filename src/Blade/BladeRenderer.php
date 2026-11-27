@@ -48,7 +48,7 @@ class BladeRenderer implements TemplateRendererInterface
 
             if ($name = $components->nameForTemplate($resolvedTemplate)) {
                 return Template::isRenderingPageRootTemplate()
-                    ? (string) $components->mountPage($name, $variables)->getContent()
+                    ? $components->renderPageTemplate($name, $variables)
                     : $components->mount($name, $variables);
             }
         }

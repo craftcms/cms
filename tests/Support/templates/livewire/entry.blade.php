@@ -16,4 +16,4 @@ new class extends Component
 };
 ?>
 
-<article>entry:{{ $entry->title }}:{{ $entry->id }}:likes:{{ $likes }}:site:{{ \CraftCms\Cms\Support\Facades\Sites::getCurrentSite()->handle }}</article>
+<article>entry:{{ $entry->title }}:{{ $entry->id }}:likes:{{ $likes }}:site:{{ \CraftCms\Cms\Support\Facades\Sites::getCurrentSite()->handle }}:preview:{{ request()->isPreview() ? 1 : 0 }}</article>

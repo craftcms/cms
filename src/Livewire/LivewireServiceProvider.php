@@ -44,11 +44,13 @@ class LivewireServiceProvider extends ServiceProvider
         Twig::registerExtension(new LivewireTwigExtension, TemplateMode::Site);
 
         // Livewire registers one update route for every component in the app, with only the `web` group.
-        // This adds Craft's middleware to updates for components rendered on Craft routes only.
+        // This adds Craft's middleware to updates for components rendered on Craft routes only. It goes on
+        // Livewire's default route and any custom one set with `Livewire::setUpdateRoute()`, which Livewire
+        // uses instead when there is one.
         $this->app->booted(function (): void {
             collect(Route::getRoutes()->getRoutes())
-                ->first(fn (IlluminateRoute $route): bool => Str::endsWith((string) $route->getName(), 'livewire.update'))
-                ?->middleware(ApplyCraftMiddleware::class);
+                ->filter(fn (IlluminateRoute $route): bool => Str::endsWith((string) $route->getName(), 'livewire.update'))
+                ->each(fn (IlluminateRoute $route) => $route->middleware(ApplyCraftMiddleware::class));
         });
     }
 }

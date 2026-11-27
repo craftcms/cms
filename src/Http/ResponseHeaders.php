@@ -88,6 +88,16 @@ class ResponseHeaders
     }
 
     /**
+     * Queues a callback that changes the response in other ways, such as its status code or cookies.
+     *
+     * @param  Closure(Response): mixed  $callback
+     */
+    public function modify(Closure $callback): void
+    {
+        $this->queue[] = $callback;
+    }
+
+    /**
      * Applies everything queued to the response, in the order it was queued.
      *
      * @internal
