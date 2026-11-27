@@ -37,6 +37,7 @@ use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -359,12 +360,18 @@ class Releases
         return $this->publishRelease($release, false, $actor);
     }
 
+    /**
+     * Returns whether any scheduled releases are due to be published.
+     */
+    public function hasDue(): bool
+    {
+        return $this->dueQuery()->exists();
+    }
+
     public function publishDue(): int
     {
         $published = 0;
-        $releaseIds = Release::query()
-            ->where('status', ReleaseStatus::Scheduled)
-            ->where('publishedAt', '<=', Query::prepareDateForDb(now()))
+        $releaseIds = $this->dueQuery()
             ->orderBy('publishedAt')
             ->pluck('id');
 
@@ -875,6 +882,14 @@ class Releases
                 'lastError' => null,
             ]);
         }
+    }
+
+    /** @return EloquentBuilder<Release> */
+    private function dueQuery(): EloquentBuilder
+    {
+        return Release::query()
+            ->where('status', ReleaseStatus::Scheduled)
+            ->where('publishedAt', '<=', Query::prepareDateForDb(now()));
     }
 
     private function lockRelease(int $releaseId): Release

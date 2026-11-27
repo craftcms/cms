@@ -78,6 +78,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreIn
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
+use CraftCms\Cms\Http\Controllers\ScheduledWorkController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
@@ -180,6 +181,9 @@ foreach ($sharedActionRouteGroups as [$prefix, $middleware]) {
 
         // Queue
         Route::any('queue/run', [QueueController::class, 'run']);
+
+        // Scheduled work
+        Route::any('scheduled-work/run', [ScheduledWorkController::class, 'run']);
         // Polled, so it reads the session without saving it, which would
         // otherwise keep the session from ever expiring.
         Route::middleware(['auth', 'can:accessCp', StartSessionWithoutPersistence::class])

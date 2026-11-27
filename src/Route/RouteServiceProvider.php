@@ -31,6 +31,7 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
+use CraftCms\Cms\Http\Middleware\RunScheduledWork;
 use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
@@ -259,6 +260,7 @@ class RouteServiceProvider extends ServiceProvider
             'web',
             AuthenticateCraftSession::class,
             RunQueue::class,
+            RunScheduledWork::class,
             HandleTemplateRequest::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
