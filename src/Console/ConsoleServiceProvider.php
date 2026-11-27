@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\Commands\ClearCachesCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
@@ -29,7 +30,10 @@ use CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand;
 use CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
+use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\GarbageCollection\Jobs\RunGarbageCollection;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Updates;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
@@ -90,6 +94,14 @@ class ConsoleServiceProvider extends ServiceProvider
                 ->everyMinute()
                 ->evenInMaintenanceMode()
                 ->evenWhenPaused();
+
+            $schedule
+                ->job(RunGarbageCollection::class)
+                ->name('craft:gc')
+                ->daily()
+                ->when(fn (): bool => Cms::isInstalled()
+                    && ! Updates::isCraftUpdatePending()
+                    && $this->app->make(GarbageCollection::class)->probability > 0);
         });
 
         if (! $this->app->runningInConsole()) {

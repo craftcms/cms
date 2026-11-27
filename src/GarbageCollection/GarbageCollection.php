@@ -6,6 +6,7 @@ namespace CraftCms\Cms\GarbageCollection;
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Console\SchedulerHeartbeat;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -58,7 +59,8 @@ class GarbageCollection
 
     /**
      * @var int the probability (parts per million) that garbage collection (GC) should be performed
-     *          on a request. Defaults to 10, meaning 0.001% chance.
+     *          on a request while Laravel’s scheduler isn’t running. Defaults to 10, meaning 0.001% chance.
+     *          While the scheduler is running, GC runs daily instead.
      *
      * This number should be between 0 and 1000000. A value 0 means no GC will be performed at all unless forced.
      */
@@ -161,7 +163,7 @@ class GarbageCollection
 
     public function queue(): void
     {
-        if (! $this->shouldRun()) {
+        if (! $this->shouldRun() || app(SchedulerHeartbeat::class)->isRunning()) {
             return;
         }
 
