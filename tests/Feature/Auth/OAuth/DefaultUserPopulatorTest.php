@@ -22,7 +22,7 @@ function defaultUserPopulatorProviderDefinition(): ProviderDefinition
 }
 
 beforeEach(function () {
-    app(GeneralConfig::class)->useEmailAsUsername = false;
+    app(GeneralConfig::class)->users->useEmailAsUsername = false;
 });
 
 test('it fills the email and full name', function () {
@@ -56,7 +56,7 @@ test('it resolves usernames from the configured fallbacks', function (
     array $attributes,
     string $expectedUsername,
 ) {
-    app(GeneralConfig::class)->useEmailAsUsername = $useEmailAsUsername;
+    app(GeneralConfig::class)->users->useEmailAsUsername = $useEmailAsUsername;
 
     $user = User::findOne();
     $user->email = null;

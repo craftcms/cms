@@ -77,7 +77,7 @@ class UtilityTypes extends TypeRegistry
                 default => false,
             });
 
-        $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
+        $disabledUtilities = array_flip($this->generalConfig->cp->disabledUtilities);
 
         return $types
             /** @var class-string<Utility> $class */

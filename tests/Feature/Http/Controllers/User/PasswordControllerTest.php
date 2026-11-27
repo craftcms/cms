@@ -225,7 +225,7 @@ it('returns error for invalid loginName on sendPasswordResetEmail', function () 
 });
 
 it('validates loginName as email when useEmailAsUsername is true for sendPasswordResetEmail', function () {
-    Cms::config()->useEmailAsUsername = true;
+    Cms::config()->users->useEmailAsUsername = true;
 
     postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'not-an-email',
@@ -233,7 +233,7 @@ it('validates loginName as email when useEmailAsUsername is true for sendPasswor
 });
 
 it('accepts username when useEmailAsUsername is false for sendPasswordResetEmail', function () {
-    Cms::config()->useEmailAsUsername = false;
+    Cms::config()->users->useEmailAsUsername = false;
     Cms::config()->security->preventUserEnumeration = false;
 
     // Should pass validation but fail because user doesn't exist

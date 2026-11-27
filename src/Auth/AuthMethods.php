@@ -532,7 +532,7 @@ class AuthMethods
             AuthError::NoCpAccess => t('You cannot access the control panel with that account.'),
             AuthError::NoCpOfflineAccess => t('You cannot access the control panel while maintenance mode is enabled with that account.'),
             AuthError::NoSiteOfflineAccess => t('You cannot access the site while maintenance mode is enabled with that account.'),
-            default => $this->generalConfig->useEmailAsUsername
+            default => $this->generalConfig->users->useEmailAsUsername
                 ? t('Invalid email or password.')
                 : t('Invalid username or password.'),
         };

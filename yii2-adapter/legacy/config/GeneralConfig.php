@@ -841,7 +841,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         // (Re-)normalize everything.
         // Even if they were already set via the fluent methods, \Craft may not have been autoloaded yet,
-        // so some values would still be in need of normalization, e.g. defaultCpLanguage/extraAppLocales.
+        // so some values would still be in need of normalization, e.g. cp.defaultLanguage/extraAppLocales.
         $this
             // durations
             ->cacheDuration($this->cacheDuration);
@@ -854,10 +854,11 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             // durations
             ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             // locales
-            ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
             // misc
             ->disabledPlugins($this->disabledPlugins);
+
+        $this->cp->defaultLanguage($this->cp->defaultLanguage);
     }
 
     /**

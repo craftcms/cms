@@ -124,8 +124,8 @@ class I18N
             }
         }
 
-        if (Cms::config()->defaultCpLocale) {
-            return $this->getLocaleById(Cms::config()->defaultCpLocale);
+        if (Cms::config()->cp->defaultLocale) {
+            return $this->getLocaleById(Cms::config()->cp->defaultLocale);
         }
 
         return $this->getLocale();
@@ -592,8 +592,8 @@ class I18N
             $this->appLocaleIds->put($localeId, true);
         }
 
-        if (Cms::config()->defaultCpLanguage) {
-            $this->appLocaleIds->put(Cms::config()->defaultCpLanguage, true);
+        if (Cms::config()->cp->defaultLanguage) {
+            $this->appLocaleIds->put(Cms::config()->cp->defaultLanguage, true);
         }
     }
 }

@@ -389,7 +389,7 @@ test('attemptLogin dispatches Failed event on wrong credentials', function () {
 });
 
 test('attemptLogin validates loginName as email when useEmailAsUsername is true', function () {
-    Cms::config()->useEmailAsUsername = true;
+    Cms::config()->users->useEmailAsUsername = true;
 
     postJson(action([LoginController::class, 'attemptLogin']), [
         'loginName' => 'not-an-email',
@@ -398,7 +398,7 @@ test('attemptLogin validates loginName as email when useEmailAsUsername is true'
 });
 
 test('attemptLogin accepts username when useEmailAsUsername is false', function () {
-    Cms::config()->useEmailAsUsername = false;
+    Cms::config()->users->useEmailAsUsername = false;
 
     $user = User::findOne();
 

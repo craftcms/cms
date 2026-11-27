@@ -211,7 +211,7 @@ readonly class Utilities
     {
         $id = $utility::id();
 
-        if (in_array($id, $this->generalConfig->disabledUtilities, true)) {
+        if (in_array($id, $this->generalConfig->cp->disabledUtilities, true)) {
             throw new ToolCallException("The $id utility is disabled.");
         }
 

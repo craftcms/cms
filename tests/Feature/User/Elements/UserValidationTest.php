@@ -152,7 +152,7 @@ describe('IP address validation', function () {
 
 describe('Username validation', function () {
     beforeEach(function () {
-        Cms::config()->useEmailAsUsername = false;
+        Cms::config()->users->useEmailAsUsername = false;
     });
 
     test('username whitespace validation', function (string $username, bool $expectError, ?string $errorContains = null) {
@@ -263,7 +263,7 @@ describe('Email uniqueness validation', function () {
 
 describe('Username uniqueness validation', function () {
     beforeEach(function () {
-        Cms::config()->useEmailAsUsername = false;
+        Cms::config()->users->useEmailAsUsername = false;
     });
 
     test('username must be unique among active users', function () {
@@ -658,7 +658,7 @@ describe('Edge cases', function () {
     });
 
     test('special characters in username are allowed except whitespace', function () {
-        Cms::config()->useEmailAsUsername = false;
+        Cms::config()->users->useEmailAsUsername = false;
 
         $user = UserModel::factory()->createElement();
         $user->username = 'user@name.test_123-abc';

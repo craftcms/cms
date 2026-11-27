@@ -39,6 +39,7 @@ class GeneralConfig extends BaseConfig
      * Settings that have been renamed in Craft 6, mapped to their new names.
      */
     protected const array RENAMED_SETTINGS = [
+        'accessibilityDefaults' => 'cp.accessibilityDefaults',
         'actionTrigger' => 'routing.actionTrigger',
         'activateAccountSuccessPath' => 'routing.activateAccountSuccessPath',
         'activityRetentionDuration' => 'garbageCollection.activityRetentionDuration',
@@ -47,6 +48,7 @@ class GeneralConfig extends BaseConfig
         'allowUppercaseInSlug' => 'slugs.allowUppercase',
         'authGuard' => 'security.authGuard',
         'authPasswordBroker' => 'security.authPasswordBroker',
+        'autoLoginAfterAccountActivation' => 'users.autoLoginAfterAccountActivation',
         'backupCommand' => 'backups.command',
         'backupCommandFormat' => 'backups.commandFormat',
         'backupOnUpdate' => 'backups.onUpdate',
@@ -55,14 +57,20 @@ class GeneralConfig extends BaseConfig
         'compiledTemplatesPath' => 'templates.compiledPath',
         'convertFilenamesToAscii' => 'assets.convertFilenamesToAscii',
         'cooldownDuration' => 'security.cooldownDuration',
+        'cpHeadTags' => 'cp.headTags',
+        'cpIconPath' => 'cp.iconPath',
+        'cpLogoPath' => 'cp.logoPath',
         'cpTrigger' => 'routing.cpTrigger',
+        'defaultCpLanguage' => 'cp.defaultLanguage',
+        'defaultCpLocale' => 'cp.defaultLocale',
         'defaultImageQuality' => 'images.defaultQuality',
         'defaultRateLimit' => 'security.defaultRateLimit',
         'defaultRateLimitDuration' => 'security.defaultRateLimitDuration',
         'defaultTemplateExtensions' => 'templates.defaultExtensions',
         'defaultTokenDuration' => 'security.defaultTokenDuration',
-        'deferPublicRegistrationPassword' => 'security.deferPublicRegistrationPassword',
-        'disable2fa' => 'users.disable2fa',
+        'deferPublicRegistrationPassword' => 'users.deferPublicRegistrationPassword',
+        'disable2fa' => 'security.disable2fa',
+        'disabledUtilities' => 'cp.disabledUtilities',
         'enableGql' => 'gql.enabled',
         'enableGraphqlCaching' => 'gql.enableCaching',
         'enableGraphqlIntrospection' => 'gql.enableIntrospection',
@@ -125,6 +133,7 @@ class GeneralConfig extends BaseConfig
         'slugWordSeparator' => 'slugs.wordSeparator',
         'softDeleteDuration' => 'garbageCollection.softDeleteDuration',
         'storeUserIps' => 'security.storeUserIps',
+        'systemTemplateCss' => 'cp.systemTemplateCss',
         'tempAssetUploadDisk' => 'assets.tempUploadDisk',
         'tokenParam' => 'routing.tokenParam',
         'trackedQueueNames' => 'queue.trackedNames',
@@ -136,6 +145,7 @@ class GeneralConfig extends BaseConfig
         'uploadSessionDisk' => 'assets.uploadSessionDisk',
         'uploadSessionDuration' => 'assets.uploadSessionDuration',
         'upscaleImages' => 'images.upscale',
+        'useEmailAsUsername' => 'users.useEmailAsUsername',
         'useSslOnTokenizedUrls' => 'routing.useSslOnTokenizedUrls',
         'verifyEmailPath' => 'routing.verifyEmailPath',
         'verifyEmailSuccessPath' => 'routing.verifyEmailSuccessPath',
@@ -143,39 +153,6 @@ class GeneralConfig extends BaseConfig
 
     #[Override]
     protected static array $renamedSettings = self::RENAMED_SETTINGS;
-
-    /**
-     * @var array<string, bool|int|string> The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
-     *
-     * The array can contain the following keys:
-     *
-     * - `useShapes` – Whether shapes should be used to represent statuses.
-     * - `underlineLinks` – Whether links should be underlined.
-     * - `disableAutofocus` – Whether inputs should make use of the `autofocus` attribute.
-     * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
-     *   milliseconds). Set to `0` to show them indefinitely.
-     * - `notificationPosition` – Where notifications should be shown on the screen (`'start-start'` for top-left,
-     *   `'start-end'` for top-right, `'end-start'` for bottom-left, or `'end-end'` for bottom-right, when using an
-     *   LTR orientation).
-     * - `slideoutPosition` – Where slideouts should be shown on the screen (`'start'` for left, or `'end'`
-     *   for right, when using an LTR orientation).
-     *
-     * ```php
-     * ->accessibilityDefaults([
-     *     'useShapes' => true,
-     * ])
-     * ```
-     *
-     * @group System
-     */
-    public array $accessibilityDefaults = [
-        'useShapes' => false,
-        'underlineLinks' => false,
-        'disableAutofocus' => false,
-        'notificationDuration' => 5000,
-        'notificationPosition' => 'end-start',
-        'slideoutPosition' => 'end',
-    ];
 
     /**
      * @var array<string,string|null> Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
@@ -319,17 +296,6 @@ class GeneralConfig extends BaseConfig
     public bool $autoEagerLoadElements = true;
 
     /**
-     * @var bool Whether users should automatically be logged in after activating their account.
-     *
-     * ```php
-     * ->autoLoginAfterAccountActivation(true)
-     * ```
-     *
-     * @group System
-     */
-    public bool $autoLoginAfterAccountActivation = false;
-
-    /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely.
@@ -347,62 +313,37 @@ class GeneralConfig extends BaseConfig
     public mixed $cacheDuration = 86400;
 
     /**
-     * @var list<array{0: string, 1?: array<string, mixed>}> List of additional HTML tags that should be included in the `<head>` of control panel pages.
+     * @var CpConfig Settings for the control panel.
      *
-     * Each tag can be specified as an array of the tag name and its attributes.
+     * Supported settings:
      *
-     * For example, you can give the control panel a custom favicon (etc.) like this:
-     *
-     * ```php
-     * ->cpHeadTags([
-     *     // Traditional favicon
-     *     ['link', ['rel' => 'icon', 'href' => '/icons/favicon.ico']],
-     *     // Scalable favicon for browsers that support them
-     *     ['link', ['rel' => 'icon', 'type' => 'image/svg+xml', 'sizes' => 'any', 'href' => '/icons/favicon.svg']],
-     *     // Touch icon for mobile devices
-     *     ['link', ['rel' => 'apple-touch-icon', 'sizes' => '180x180', 'href' => '/icons/touch-icon.svg']],
-     *     // Pinned tab icon for Safari
-     *     ['link', ['rel' => 'mask-icon', 'href' => '/icons/mask-icon.svg', 'color' => '#663399']],
-     * ])
-     * ```
-     *
-     * @group System
-     */
-    public array $cpHeadTags = [];
-
-    /**
-     * @var string|null The server path to the control panel’s icon, shown beside the system name in the global sidebar.
-     *
-     * This can be set to an aliased path such as `@root/branding/icon.svg`.
-     *
-     * A square SVG file is recommended. It will be displayed at 32px by 32px.
-     *
-     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. The selected
-     * theme may differ from the operating system’s, so use the [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark)
-     * CSS function or `currentColor` within the SVG, rather than a `prefers-color-scheme` media query.
-     *
-     * ```xml
-     * <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-     *   <style>.bg { fill: light-dark(#e5422b, #ff7a66); }</style>
-     *   <rect class="bg" width="32" height="32" rx="6"/>
-     * </svg>
-     * ```
+     * - `accessibilityDefaults` – The default accessibility preferences for users who haven’t saved their own: `useShapes`, `underlineLinks`, `disableAutofocus`, `notificationDuration`, `notificationPosition`, and `slideoutPosition`.
+     * - `defaultLanguage` – The default language the control panel should use for users who haven’t set a preferred language yet. (Default is `null`.)
+     * - `defaultLocale` – The default locale the control panel should use for date/number formatting, for users who haven’t set a preferred language or formatting locale. If this is `null`, `defaultLanguage` determines it. (Default is `null`.)
+     * - `disabledUtilities` – The IDs of utilities that should be disabled. (Default is `[]`.)
+     * - `headTags` – Additional HTML tags that should be included in the `<head>` of control panel pages, each as an array of the tag name and its attributes. (Default is `[]`.)
+     * - `iconPath` – The server path to the control panel’s icon, shown beside the system name in the global sidebar, such as `@root/branding/icon.svg`. (Default is `null`.)
+     * - `logoPath` – The server path to the logo shown on the login page and other sign-in screens, such as `@root/branding/logo.svg`. (Default is `null`.)
+     * - `systemTemplateCss` – The URL to a CSS file that should be included when rendering system templates on the front end, such as the Login and Set Password templates. (Default is `null`.)
      *
      * ```php
-     * ->cpIconPath('@root/branding/icon.svg')
+     * ->cp(\CraftCms\Cms\Config\CpConfig::create()
+     *     ->iconPath('@root/branding/icon.svg')
+     *     ->disabledUtilities(['find-replace'])
+     * )
      * ```
      *
      * @group System
      *
      * @since 6.0.0
      */
-    public ?string $cpIconPath = null;
+    public CpConfig $cp;
 
     /**
      * @var string|null The URL to the control panel’s icon.
      *
      * ::: warning
-     * This setting is deprecated. Set `cpIconPath` instead, which takes precedence over it.
+     * This setting is deprecated. Set `cp.iconPath` instead, which takes precedence over it.
      * :::
      *
      * @group System
@@ -410,32 +351,10 @@ class GeneralConfig extends BaseConfig
     public ?string $cpIconUrl = null;
 
     /**
-     * @var string|null The server path to the logo shown on the login page and other sign-in screens.
-     *
-     * This can be set to an aliased path such as `@root/branding/logo.svg`.
-     *
-     * An SVG file is recommended. It will be displayed at 288px wide.
-     *
-     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
-     * [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark) CSS function or
-     * `currentColor` within the SVG, as you would for `cpIconPath`. Once nobody is logged in, sign-in screens
-     * show the theme the last user to sign in on the browser had selected.
-     *
-     * ```php
-     * ->cpLogoPath('@root/branding/logo.svg')
-     * ```
-     *
-     * @group System
-     *
-     * @since 6.0.0
-     */
-    public ?string $cpLogoPath = null;
-
-    /**
      * @var string|null The URL to the logo shown on the login page and other sign-in screens.
      *
      * ::: warning
-     * This setting is deprecated. Set `cpLogoPath` instead, which takes precedence over it.
+     * This setting is deprecated. Set `cp.logoPath` instead, which takes precedence over it.
      * :::
      *
      * @group System
@@ -472,31 +391,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public string $defaultCountryCode = 'US';
-
-    /**
-     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
-     *
-     * ```php
-     * ->defaultCpLanguage('en-US')
-     * ```
-     *
-     * @group System
-     */
-    public ?string $defaultCpLanguage = null;
-
-    /**
-     * @var string|null The default locale the control panel should use for date/number formatting, for users who haven’t set
-     *                  a preferred language or formatting locale.
-     *
-     * If this is `null`, the <config5:defaultCpLanguage> config setting will determine which locale is used for date/number formatting by default.
-     *
-     * ```php
-     * ->defaultCpLocale('en-US')
-     * ```
-     *
-     * @group System
-     */
-    public ?string $defaultCpLocale = null;
 
     /**
      * @var mixed The default permission to be set for newly-generated directories.
@@ -600,20 +494,6 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public string|array|null $disabledPlugins = null;
-
-    /**
-     * @var string[] Array of utility IDs that should be disabled.
-     *
-     * ```php
-     *  ->disabledUtilities([
-     *      'updates',
-     *      'find-replace',
-     *  ])
-     * ```
-     *
-     * @group System
-     */
-    public array $disabledUtilities = [];
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
@@ -992,7 +872,7 @@ class GeneralConfig extends BaseConfig
      * - `defaultRateLimit` – The number of requests Craft will allow from a single IP address within {@see}, for actions that are rate-limited by default, before responding with a 429 error. (Default is `10`.)
      * - `defaultRateLimitDuration` – The amount of time that {@see} applies to. (Default is `60`.)
      * - `defaultTokenDuration` – The default amount of time tokens can be used before expiring. (Default is `86400`.)
-     * - `deferPublicRegistrationPassword` – By default, Craft requires a front-end “password” field for public user registrations. Setting this to `true` removes that requirement for the initial registration form. Instead, new users will set their password once they’ve followed the link in their activation email. (Default is `false`.)
+     * - `disable2fa` – Whether two-step verification features should be disabled. (Default is `false`.)
      * - `invalidLoginWindowDuration` – The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account. (Default is `3600`.)
      * - `maxInvalidLogins` – The number of invalid login attempts Craft will allow within the specified duration before the account gets locked. (Default is `5`.)
      * - `preventUserEnumeration` – When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users. (Default is `true`.)
@@ -1061,18 +941,6 @@ class GeneralConfig extends BaseConfig
     public bool $staticStatuses = false;
 
     /**
-     * @var string|null The URL to a CSS file that should be included when rendering system templates on the front end,
-     *                  such as the Login and Set Password templates.
-     *
-     * ```php
-     * ->systemTemplateCss('/css/cp-theme.css');
-     * ```
-     *
-     * @group System
-     */
-    public ?string $systemTemplateCss = null;
-
-    /**
      * @var TemplatesConfig Settings for how Craft finds, routes, and compiles templates.
      *
      * Supported settings:
@@ -1133,23 +1001,6 @@ class GeneralConfig extends BaseConfig
     public bool $translationDebugOutput = false;
 
     /**
-     * @var bool Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
-     *
-     * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
-     *
-     * ```bash
-     * php artisan craft:utils:update-usernames
-     * ```
-     *
-     * ```php
-     * ->useEmailAsUsername(true)
-     * ```
-     *
-     * @group System
-     */
-    public bool $useEmailAsUsername = false;
-
-    /**
      * @var bool Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
      *           flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
      *           email addresses from IDNA ASCII to Unicode.
@@ -1177,17 +1028,19 @@ class GeneralConfig extends BaseConfig
      *
      * Supported settings:
      *
-     * - `disable2fa` – Whether two-step verification features should be disabled. (Default is `false`.)
+     * - `autoLoginAfterAccountActivation` – Whether users should automatically be logged in after activating their account. (Default is `false`.)
+     * - `deferPublicRegistrationPassword` – Whether public registration forms can leave out the password field, so new users set their password after following the link in their activation email. (Default is `false`.)
      * - `extraLastNamePrefixes` – Any additional last name prefixes that should be supported by the name parser. (Default is `[]`.)
      * - `extraNameSalutations` – Any additional name salutations that should be supported by the name parser. (Default is `[]`.)
      * - `extraNameSuffixes` – Any additional name suffixes that should be supported by the name parser. (Default is `[]`.)
      * - `oauthProviders` – The OAuth providers that should be available for login. (Default is `[]`.)
      * - `showFirstAndLastNameFields` – Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields. (Default is `false`.)
+     * - `useEmailAsUsername` – Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately. (Default is `false`.)
      *
      * ```php
      * ->users(\CraftCms\Cms\Config\UsersConfig::create()
      *     ->showFirstAndLastNameFields()
-     *     ->disable2fa()
+     *     ->useEmailAsUsername()
      * )
      * ```
      *
@@ -1202,6 +1055,7 @@ class GeneralConfig extends BaseConfig
         $this->anchors = AnchorsConfig::create();
         $this->assets = AssetsConfig::create();
         $this->backups = BackupsConfig::create();
+        $this->cp = CpConfig::create();
         $this->garbageCollection = GarbageCollectionConfig::create();
         $this->gql = GqlConfig::create();
         $this->images = ImagesConfig::create();
@@ -1220,40 +1074,9 @@ class GeneralConfig extends BaseConfig
             // durations
             ->cacheDuration($this->cacheDuration)
             // locales
-            ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
             // misc
             ->disabledPlugins($this->disabledPlugins);
-    }
-
-    /**
-     * The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
-     *
-     * The array can contain the following keys:
-     *
-     * - `useShapes` – Whether shapes should be used to represent statuses.
-     * - `underlineLinks` – Whether links should be underlined.
-     * - `disableAutofocus` – Whether search inputs should be focused on page load.
-     * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
-     *   milliseconds). Set to `0` to show them indefinitely.
-     *
-     * ```php
-     * ->accessibilityDefaults([
-     *     'useShapes' => true,
-     * ])
-     * ```
-     *
-     * @group System
-     *
-     * @param  array<string, bool|int|string>  $value
-     *
-     * @see $accessibilityDefaults
-     */
-    public function accessibilityDefaults(array $value): self
-    {
-        $this->accessibilityDefaults = $value;
-
-        return $this;
     }
 
     /**
@@ -1440,24 +1263,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether users should automatically be logged in after activating their account.
-     *
-     * ```php
-     * ->autoLoginAfterAccountActivation(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $autoLoginAfterAccountActivation
-     */
-    public function autoLoginAfterAccountActivation(bool $value = true): self
-    {
-        $this->autoLoginAfterAccountActivation = $value;
-
-        return $this;
-    }
-
-    /**
      * The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely.
@@ -1482,61 +1287,25 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * List of additional HTML tags that should be included in the `<head>` of control panel pages.
-     *
-     * Each tag can be specified as an array of the tag name and its attributes.
-     *
-     * For example, you can give the control panel a custom favicon (etc.) like this:
+     * Settings for the control panel.
      *
      * ```php
-     * ->cpHeadTags([
-     *     // Traditional favicon
-     *     ['link', ['rel' => 'icon', 'href' => '/icons/favicon.ico']],
-     *     // Scalable favicon for browsers that support them
-     *     ['link', ['rel' => 'icon', 'type' => 'image/svg+xml', 'sizes' => 'any', 'href' => '/icons/favicon.svg']],
-     *     // Touch icon for mobile devices
-     *     ['link', ['rel' => 'apple-touch-icon', 'sizes' => '180x180', 'href' => '/icons/touch-icon.svg']],
-     *     // Pinned tab icon for Safari
-     *     ['link', ['rel' => 'mask-icon', 'href' => '/icons/mask-icon.svg', 'color' => '#663399']],
-     * ])
-     * ```
-     *
-     * @group System
-     *
-     * @param  list<array{0: string, 1?: array<string, mixed>}>  $value
-     *
-     * @see $cpHeadTags
-     */
-    public function cpHeadTags(array $value): self
-    {
-        $this->cpHeadTags = $value;
-
-        return $this;
-    }
-
-    /**
-     * The server path to the control panel’s icon, shown beside the system name in the global sidebar.
-     *
-     * This can be set to an aliased path such as `@root/branding/icon.svg`.
-     *
-     * A square SVG file is recommended. It will be displayed at 32px by 32px.
-     *
-     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. The selected
-     * theme may differ from the operating system’s, so use the `light-dark()` CSS function or `currentColor` within
-     * the SVG, rather than a `prefers-color-scheme` media query.
-     *
-     * ```php
-     * ->cpIconPath('@root/branding/icon.svg')
+     * ->cp(\CraftCms\Cms\Config\CpConfig::create()
+     *     ->iconPath('@root/branding/icon.svg')
+     *     ->disabledUtilities(['find-replace'])
+     * )
      * ```
      *
      * @group System
      *
      * @since 6.0.0
-     * @see $cpIconPath
+     * @see $cp
+     *
+     * @param  CpConfig|array<string, mixed>|string  $value
      */
-    public function cpIconPath(?string $value): self
+    public function cp(CpConfig|array|string $value): self
     {
-        $this->cpIconPath = $value;
+        $this->cp->merge($value);
 
         return $this;
     }
@@ -1546,7 +1315,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @deprecated in 6.0.0. {@see cpIconPath()} should be used instead.
+     * @deprecated in 6.0.0. [[CpConfig::iconPath()]] should be used instead.
      * @see $cpIconUrl
      */
     public function cpIconUrl(?string $value): self
@@ -1557,37 +1326,11 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The server path to the logo shown on the login page and other sign-in screens.
-     *
-     * This can be set to an aliased path such as `@root/branding/logo.svg`.
-     *
-     * An SVG file is recommended. It will be displayed at 288px wide.
-     *
-     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
-     * `light-dark()` CSS function or `currentColor` within the SVG, as you would for {@see cpIconPath()}.
-     *
-     * ```php
-     * ->cpLogoPath('@root/branding/logo.svg')
-     * ```
-     *
-     * @group System
-     *
-     * @since 6.0.0
-     * @see $cpLogoPath
-     */
-    public function cpLogoPath(?string $value): self
-    {
-        $this->cpLogoPath = $value;
-
-        return $this;
-    }
-
-    /**
      * The URL to the logo shown on the login page and other sign-in screens.
      *
      * @group System
      *
-     * @deprecated in 6.0.0. {@see cpLogoPath()} should be used instead.
+     * @deprecated in 6.0.0. [[CpConfig::logoPath()]] should be used instead.
      * @see $cpLogoUrl
      */
     public function cpLogoUrl(?string $value): self
@@ -1636,56 +1379,6 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->defaultCountryCode = $value;
-
-        return $this;
-    }
-
-    /**
-     * The default language the control panel should use for users who haven’t set a preferred language yet.
-     *
-     * ```php
-     * ->defaultCpLanguage('en-US')
-     * ```
-     *
-     * @group System
-     *
-     * @throws RuntimeException
-     *
-     * @see $defaultCpLanguage
-     */
-    public function defaultCpLanguage(?string $value): self
-    {
-        if ($value !== null) {
-            try {
-                $value = I18N::normalizeLanguage($value);
-                /** @phpstan-ignore catch.neverThrown */
-            } catch (InvalidArgumentException $e) {
-                throw new RuntimeException($e->getMessage(), 0, $e);
-            }
-        }
-
-        $this->defaultCpLanguage = $value;
-
-        return $this;
-    }
-
-    /**
-     * The default locale the control panel should use for date/number formatting, for users who haven’t set
-     * a preferred language or formatting locale.
-     *
-     * If this is `null`, the <config5:defaultCpLanguage> config setting will determine which locale is used for date/number formatting by default.
-     *
-     * ```php
-     * ->defaultCpLocale('en-US')
-     * ```
-     *
-     * @group System
-     *
-     * @see $defaultCpLocale
-     */
-    public function defaultCpLocale(?string $value): self
-    {
-        $this->defaultCpLocale = $value;
 
         return $this;
     }
@@ -1808,29 +1501,6 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->disabledPlugins = $value;
-
-        return $this;
-    }
-
-    /**
-     * Array of utility IDs that should be disabled.
-     *
-     * ```php
-     *  ->disabledUtilities([
-     *      'updates',
-     *      'find-replace',
-     *  ])
-     * ```
-     *
-     * @group System
-     *
-     * @param  string[]  $value
-     *
-     * @see $disabledUtilities
-     */
-    public function disabledUtilities(array $value): self
-    {
-        $this->disabledUtilities = $value;
 
         return $this;
     }
@@ -2330,25 +2000,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The URL to a CSS file that should be included when rendering system templates on the front end,
-     * such as the Login and Set Password templates.
-     *
-     * ```php
-     * ->systemTemplateCss('/css/cp-theme.css');
-     * ```
-     *
-     * @group System
-     *
-     * @see $systemTemplateCss
-     */
-    public function systemTemplateCss(?string $value): self
-    {
-        $this->systemTemplateCss = $value;
-
-        return $this;
-    }
-
-    /**
      * Settings for how Craft finds, routes, and compiles templates.
      *
      * ```php
@@ -2423,30 +2074,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
-     *
-     * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
-     *
-     * ```bash
-     * php artisan craft:utils:update-usernames
-     * ```
-     *
-     * ```php
-     * ->useEmailAsUsername(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $useEmailAsUsername
-     */
-    public function useEmailAsUsername(bool $value = true): self
-    {
-        $this->useEmailAsUsername = $value;
-
-        return $this;
-    }
-
-    /**
      * Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
      * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
      * email addresses from IDNA ASCII to Unicode.
@@ -2481,7 +2108,7 @@ class GeneralConfig extends BaseConfig
      * ```php
      * ->users(\CraftCms\Cms\Config\UsersConfig::create()
      *     ->showFirstAndLastNameFields()
-     *     ->disable2fa()
+     *     ->useEmailAsUsername()
      * )
      * ```
      *

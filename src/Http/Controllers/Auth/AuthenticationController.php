@@ -71,7 +71,7 @@ abstract readonly class AuthenticationController
     ): Response {
         $loginUser ??= $user;
 
-        if (! $skipTwoFactor && ! $this->generalConfig->users->disable2fa && $this->auth->hasActiveMethod($user)) {
+        if (! $skipTwoFactor && ! $this->generalConfig->security->disable2fa && $this->auth->hasActiveMethod($user)) {
             $this->auth->setUser($user, $remember, $loginUser);
 
             if (! $request->isCpRequest() && ! $request->wantsJson()) {
@@ -192,7 +192,7 @@ abstract readonly class AuthenticationController
 
     protected function maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        if (! Cms::config()->autoLoginAfterAccountActivation) {
+        if (! Cms::config()->users->autoLoginAfterAccountActivation) {
             return false;
         }
 

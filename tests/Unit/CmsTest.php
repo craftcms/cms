@@ -217,7 +217,7 @@ it('uses a valid CP user language preference', function () {
 it('falls back to the configured default CP language', function () {
     Cms::setIsInstalled();
     Cms::config()->routing->cpTrigger = 'admin';
-    Cms::config()->defaultCpLanguage = 'es';
+    Cms::config()->cp->defaultLanguage = 'es';
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $this->authGuard->shouldReceive('user')->once()->andReturnNull();
 
@@ -227,7 +227,7 @@ it('falls back to the configured default CP language', function () {
 it('falls back to the accepted language when the CP user preference is invalid and no default is configured', function () {
     Cms::setIsInstalled();
     Cms::config()->routing->cpTrigger = 'admin';
-    Cms::config()->defaultCpLanguage = null;
+    Cms::config()->cp->defaultLanguage = null;
     Updates::shouldReceive('isCraftUpdatePending')->once()->andReturn(false);
     $user = Mockery::mock(CraftUser::class);
     $user->shouldReceive('getAuthIdentifier')->once()->andReturn(42);

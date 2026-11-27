@@ -243,7 +243,7 @@ test('user activation email as username with an unverified email', function (str
     $user = UserModel::factory()->pending()->createElement(['unverifiedEmail' => 'verified@example.test']);
 
     // Set useEmailAsUsername to true and add an unverified email.
-    Cms::config()->useEmailAsUsername = true;
+    Cms::config()->users->useEmailAsUsername = true;
 
     Elements::saveElement($user);
 
@@ -263,7 +263,7 @@ test('user activation email as username with no unverified email', function () {
     $user = UserModel::factory()->pending()->createElement();
 
     // Run the same test as above but without an unverified email.
-    Cms::config()->useEmailAsUsername = true;
+    Cms::config()->users->useEmailAsUsername = true;
 
     // Remove the unverifiedEmail property from the user record - meaning no username will be set.
     $user->unverifiedEmail = null;

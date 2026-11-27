@@ -26,7 +26,7 @@ class UserCondition extends ElementCondition
             LastNameConditionRule::class,
         ]);
 
-        if (! Cms::config()->useEmailAsUsername) {
+        if (! Cms::config()->users->useEmailAsUsername) {
             $types[] = UsernameConditionRule::class;
         }
 

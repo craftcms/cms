@@ -165,7 +165,7 @@ window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.loca
                                     {% endif %}
                                     <div class="flex-grow">
                                         <div>{{ currentUser.username }}</div>
-                                        {% if not config('craft.general.useEmailAsUsername') %}
+                                        {% if not config('craft.general.users.useEmailAsUsername') %}
                                             <div class="smalltext">{{ currentUser.email }}</div>
                                         {% endif %}
                                     </div>

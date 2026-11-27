@@ -143,7 +143,7 @@ class UserRules extends ElementRules
                 $rules['email'][] = $unique('email');
             }
 
-            if (! Cms::config()->useEmailAsUsername) {
+            if (! Cms::config()->users->useEmailAsUsername) {
                 array_unshift($rules['username'], Rule::requiredIf($treatAsActive));
 
                 if ($treatAsActive) {
@@ -164,7 +164,7 @@ class UserRules extends ElementRules
 
         $rules['newPassword'] = [
             Rule::requiredIf(
-                ! Cms::config()->security->deferPublicRegistrationPassword
+                ! Cms::config()->users->deferPublicRegistrationPassword
                 && $this->inScenarios(self::SCENARIO_PASSWORD, self::SCENARIO_REGISTRATION)
             ),
             new UserPasswordRule(

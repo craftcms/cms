@@ -46,13 +46,13 @@ class ListAdminsCommand extends Command
 
         table(
             headers: array_filter([
-                $generalConfig->useEmailAsUsername ? 'Email' : 'Username',
-                $generalConfig->useEmailAsUsername ? null : 'Email',
+                $generalConfig->users->useEmailAsUsername ? 'Email' : 'Username',
+                $generalConfig->users->useEmailAsUsername ? null : 'Email',
                 'Status',
             ]),
             rows: $users->map(fn (User $user) => array_filter([
-                $generalConfig->useEmailAsUsername ? $user->email : $user->username,
-                $generalConfig->useEmailAsUsername ? null : $user->email,
+                $generalConfig->users->useEmailAsUsername ? $user->email : $user->username,
+                $generalConfig->users->useEmailAsUsername ? null : $user->email,
                 match ($user->getStatus()) {
                     User::STATUS_SUSPENDED => $this->red('suspended'),
                     User::STATUS_ARCHIVED => $this->red('archived'),

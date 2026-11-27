@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Config;
 
+use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
@@ -89,11 +90,10 @@ class SecurityConfig extends BaseConfig
     public mixed $defaultTokenDuration = 86400;
 
     /**
-     * By default, Craft requires a front-end “password” field for public user registrations. Setting this to
-     * `true` removes that requirement for the initial registration form. Instead, new users will set their password
-     * once they’ve followed the link in their activation email.
+     * Whether two-step verification features should be disabled.
      */
-    public bool $deferPublicRegistrationPassword = false;
+    #[EnvName('DISABLE_2FA')]
+    public bool $disable2fa = false;
 
     /**
      * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
@@ -185,9 +185,9 @@ class SecurityConfig extends BaseConfig
         return $this;
     }
 
-    public function deferPublicRegistrationPassword(bool $value = true): self
+    public function disable2fa(bool $value = true): self
     {
-        $this->deferPublicRegistrationPassword = $value;
+        $this->disable2fa = $value;
 
         return $this;
     }

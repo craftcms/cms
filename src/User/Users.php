@@ -842,7 +842,7 @@ class Users
         }
 
         $changes = ['email' => $user->unverifiedEmail, 'unverifiedEmail' => null];
-        if (Cms::config()->useEmailAsUsername) {
+        if (Cms::config()->users->useEmailAsUsername) {
             $changes['username'] = $user->unverifiedEmail;
         }
 

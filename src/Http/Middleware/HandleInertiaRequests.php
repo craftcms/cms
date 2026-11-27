@@ -267,10 +267,10 @@ class HandleInertiaRequests extends Middleware
                     'photoColors' => $currentUser->photoColors(),
                     'admin' => $currentUser->admin,
                     'useShapes' => (bool) ($currentUser->getPreference('useShapes')
-                        ?? $generalConfig->accessibilityDefaults['useShapes']
+                        ?? $generalConfig->cp->accessibilityDefaults['useShapes']
                         ?? false),
                     'underlineLinks' => (bool) ($currentUser->getPreference('underlineLinks')
-                        ?? $generalConfig->accessibilityDefaults['underlineLinks']
+                        ?? $generalConfig->cp->accessibilityDefaults['underlineLinks']
                         ?? false),
                     'aiAssistant' => Assistant::isAvailable(),
                     'showPermissions' => app(EditUserScreens::class)->showPermissionsScreen(),

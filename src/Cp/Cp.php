@@ -111,7 +111,7 @@ readonly class Cp
                 ...self::craftData(),
                 'cpTrigger' => $generalConfig->routing->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
-                'defaultCpLocale' => $generalConfig->defaultCpLocale,
+                'defaultCpLocale' => $generalConfig->cp->defaultLocale,
                 'rememberedUserSessionDuration' => (int) config(sprintf('auth.guards.%s.remember', Cms::config()->security->getAuthGuard()), 20160) * 60,
                 'runQueueAutomatically' => $generalConfig->queue->runAutomatically,
             ];
@@ -239,7 +239,7 @@ readonly class Cp
     {
         $generalConfig = Cms::config();
 
-        return self::brandImageHtml($generalConfig->cpIconPath, $generalConfig->cpIconUrl, 'cpIcon');
+        return self::brandImageHtml($generalConfig->cp->iconPath, $generalConfig->cpIconUrl, 'cpIcon');
     }
 
     /**
@@ -251,7 +251,7 @@ readonly class Cp
     {
         $generalConfig = Cms::config();
 
-        return self::brandImageHtml($generalConfig->cpLogoPath, $generalConfig->cpLogoUrl, 'cpLogo');
+        return self::brandImageHtml($generalConfig->cp->logoPath, $generalConfig->cpLogoUrl, 'cpLogo');
     }
 
     /**
@@ -400,7 +400,7 @@ readonly class Cp
             'systemUid' => Cms::systemUid(),
             'timezone' => Cms::timezone(),
             'tokenParam' => $generalConfig->routing->tokenParam,
-            'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
+            'useEmailAsUsername' => $generalConfig->users->useEmailAsUsername,
         ];
 
         if (request()->isCpRequest()) {
@@ -435,7 +435,7 @@ readonly class Cp
             'defaultIndexCriteria' => [],
             'disableAutofocus' => (bool) (
                 $currentUser->getPreference('disableAutofocus')
-                ?? $generalConfig->accessibilityDefaults['disableAutofocus']
+                ?? $generalConfig->cp->accessibilityDefaults['disableAutofocus']
                 ?? false
             ),
             'edition' => Edition::get()->value,
@@ -450,14 +450,14 @@ readonly class Cp
             'maxAssetUploadSize' => AssetsHelper::getMaxAssetUploadSize(),
             'notificationDuration' => (int) (
                 $currentUser->getPreference('notificationDuration')
-                ?? $generalConfig->accessibilityDefaults['notificationDuration']
+                ?? $generalConfig->cp->accessibilityDefaults['notificationDuration']
                 ?? 5000
             ),
             'notificationPosition' => $currentUser->getPreference('notificationPosition')
-                ?? $generalConfig->accessibilityDefaults['notificationPosition']
+                ?? $generalConfig->cp->accessibilityDefaults['notificationPosition']
                     ?? 'end-start',
             'slideoutPosition' => $currentUser->getPreference('slideoutPosition')
-                ?? $generalConfig->accessibilityDefaults['slideoutPosition']
+                ?? $generalConfig->cp->accessibilityDefaults['slideoutPosition']
                     ?? 'end',
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),

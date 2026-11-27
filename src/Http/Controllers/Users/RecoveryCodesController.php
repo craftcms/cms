@@ -63,7 +63,7 @@ readonly class RecoveryCodesController
 
         $userElement = $user->asElement();
         $generalConfig = Cms::config();
-        $username = ! $generalConfig->useEmailAsUsername && $userElement->username ? $userElement->username : null;
+        $username = ! $generalConfig->users->useEmailAsUsername && $userElement->username ? $userElement->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $userElement->email) : $userElement->email;
         $generated = $i18N->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
         $codeContent = implode('', array_map(

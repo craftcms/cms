@@ -127,7 +127,7 @@ readonly class InstallController
             'defaultSiteUrl' => $defaultSiteUrl,
             'defaultSiteLanguage' => $defaultSiteLanguage,
             'defaultTimezone' => $this->defaultTimezone(),
-            'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
+            'useEmailAsUsername' => $generalConfig->users->useEmailAsUsername,
             'dbConfig' => [
                 'driver' => $this->dbDriver($dbConfig['driver'] ?? null),
             ],
@@ -176,7 +176,7 @@ readonly class InstallController
     {
         $request->validate([
             'email' => ['required', 'email:strict'],
-            'username' => [Rule::excludeIf($generalConfig->useEmailAsUsername), 'required', 'string', 'max:255', 'alpha_num'],
+            'username' => [Rule::excludeIf($generalConfig->users->useEmailAsUsername), 'required', 'string', 'max:255', 'alpha_num'],
             'password' => ['required', Password::default()],
         ]);
 

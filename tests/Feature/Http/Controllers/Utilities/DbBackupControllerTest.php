@@ -16,7 +16,7 @@ beforeEach(function () {
 });
 
 test('unauthorized users cannot access database backup utility', function () {
-    Cms::config()->disabledUtilities = [DbBackup::id()];
+    Cms::config()->cp->disabledUtilities = [DbBackup::id()];
 
     postJson(action(DbBackupController::class))
         ->assertForbidden();

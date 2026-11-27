@@ -336,7 +336,7 @@ trait ApplicationTrait
             }
 
             // Fall back on the default control panel language, if there is one, otherwise the browser language
-            return Cms::config()->defaultCpLanguage ?? $this->_getFallbackLanguage();
+            return Cms::config()->cp->defaultLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */

@@ -21,7 +21,7 @@ afterEach(function () {
 });
 
 test('unauthorized users cannot access cache clearing utility', function () {
-    Cms::config()->disabledUtilities = [ClearCaches::id()];
+    Cms::config()->cp->disabledUtilities = [ClearCaches::id()];
 
     postJson(action([ClearCachesController::class, 'clearCaches']), [
         'caches' => 'all',

@@ -29,7 +29,7 @@ class LegacyUtilityTypes extends UtilityTypes
 
         $event = new RegisterComponentTypesEvent(['types' => $types->all()]);
         $service->trigger(LegacyUtilities::EVENT_REGISTER_UTILITIES, $event);
-        $disabledUtilities = array_flip(Cms::config()->disabledUtilities);
+        $disabledUtilities = array_flip(Cms::config()->cp->disabledUtilities);
 
         return collect($event->types)
             ->map(fn(mixed $type) => $this->normalizeType($type))

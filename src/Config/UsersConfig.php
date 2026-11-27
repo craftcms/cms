@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Config;
 
-use CraftCms\Cms\Support\Attributes\EnvName;
-
 /**
  * Settings for user accounts.
  *
@@ -14,10 +12,16 @@ use CraftCms\Cms\Support\Attributes\EnvName;
 class UsersConfig extends BaseConfig
 {
     /**
-     * Whether two-step verification features should be disabled.
+     * Whether users should automatically be logged in after activating their account.
      */
-    #[EnvName('DISABLE_2FA')]
-    public bool $disable2fa = false;
+    public bool $autoLoginAfterAccountActivation = false;
+
+    /**
+     * By default, Craft requires a front-end “password” field for public user registrations. Setting this to
+     * `true` removes that requirement for the initial registration form. Instead, new users will set their password
+     * once they’ve followed the link in their activation email.
+     */
+    public bool $deferPublicRegistrationPassword = false;
 
     /**
      * @var string[] Any additional last name prefixes that should be supported by the name parser.
@@ -67,9 +71,27 @@ class UsersConfig extends BaseConfig
      */
     public bool $showFirstAndLastNameFields = false;
 
-    public function disable2fa(bool $value = true): self
+    /**
+     * Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
+     *
+     * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
+     *
+     * ```bash
+     * php artisan craft:utils:update-usernames
+     * ```
+     */
+    public bool $useEmailAsUsername = false;
+
+    public function autoLoginAfterAccountActivation(bool $value = true): self
     {
-        $this->disable2fa = $value;
+        $this->autoLoginAfterAccountActivation = $value;
+
+        return $this;
+    }
+
+    public function deferPublicRegistrationPassword(bool $value = true): self
+    {
+        $this->deferPublicRegistrationPassword = $value;
 
         return $this;
     }
@@ -109,6 +131,13 @@ class UsersConfig extends BaseConfig
     public function showFirstAndLastNameFields(bool $value = true): self
     {
         $this->showFirstAndLastNameFields = $value;
+
+        return $this;
+    }
+
+    public function useEmailAsUsername(bool $value = true): self
+    {
+        $this->useEmailAsUsername = $value;
 
         return $this;
     }

@@ -32,7 +32,7 @@ trait PromptsForMissingUser
                         ->whereNull(Table::ELEMENTS.'.dateDeleted')
                         ->select(['username', 'email', Table::USERS.'.id'])
                         ->get()
-                        ->mapWithKeys(fn (User $user) => [$user->id => "{$user->username} ".(Cms::config()->useEmailAsUsername ? '' : "({$user->email})")])
+                        ->mapWithKeys(fn (User $user) => [$user->id => "{$user->username} ".(Cms::config()->users->useEmailAsUsername ? '' : "({$user->email})")])
                         ->all()
                     : []
             ),

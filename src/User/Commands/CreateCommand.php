@@ -72,7 +72,7 @@ class CreateCommand extends Command
             return self::FAILURE;
         }
 
-        if ($generalConfig->useEmailAsUsername) {
+        if ($generalConfig->users->useEmailAsUsername) {
             $user->username = $this->option('email') ?? text(
                 label: 'Email:',
                 required: true,

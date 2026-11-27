@@ -375,7 +375,7 @@ it('properly handles email with leading/trailing spaces', function () {
 });
 
 it('succeeds without password when deferPublicRegistrationPassword is true', function () {
-    Cms::config()->security->deferPublicRegistrationPassword = true;
+    Cms::config()->users->deferPublicRegistrationPassword = true;
     ProjectConfig::set('users.deactivateByDefault', true);
 
     $initialCount = User::find()->count();
@@ -394,7 +394,7 @@ it('succeeds without password when deferPublicRegistrationPassword is true', fun
 });
 
 it('logs user in after registration when autoLoginAfterAccountActivation is true', function () {
-    Cms::config()->autoLoginAfterAccountActivation = true;
+    Cms::config()->users->autoLoginAfterAccountActivation = true;
 
     post(action(SaveUserController::class), [
         'email' => 'autologin@example.com',
@@ -606,8 +606,8 @@ it('activates, notifies, and logs in public registrants based on user settings',
     Edition::set(Edition::Pro);
     ProjectConfig::set('users.deactivateByDefault', $deactivateByDefault);
     ProjectConfig::set('users.requireEmailVerification', $requireEmailVerification);
-    Cms::config()->security->deferPublicRegistrationPassword = $deferPassword;
-    Cms::config()->autoLoginAfterAccountActivation = true;
+    Cms::config()->users->deferPublicRegistrationPassword = $deferPassword;
+    Cms::config()->users->autoLoginAfterAccountActivation = true;
 
     postJson(action(SaveUserController::class), array_filter([
         'username' => 'registrant',
