@@ -139,9 +139,9 @@ it.each([true, false])(
     expect(container.querySelector('#cp-assistant-toggle') !== null).toBe(
       aiAssistant
     );
-    expect(clientActions().some((action) => action.id === 'ask-ai')).toBe(
-      aiAssistant
-    );
+    expect(
+      clientActions().find((action) => action.id === 'ask-ai')?.shortcut
+    ).toBe(aiAssistant ? 'Mod+I' : undefined);
     expect(pressCommandI().defaultPrevented).toBe(aiAssistant);
   }
 );

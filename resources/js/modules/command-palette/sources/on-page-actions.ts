@@ -4,6 +4,7 @@ import type {ActionItem} from '@/common/types';
 import {parseHotkey} from '@tanstack/hotkeys';
 import {useGlobalSidebar} from '@/common/composables/useGlobalSidebar';
 import {listedShortcuts} from '@/common/shortcuts';
+import {menuShortcutHotkey} from '../keys';
 import {labelScore, normalize} from '../rank';
 import {getNotifications} from '../../notifications/store';
 import {fieldLabel, trail} from './on-this-page';
@@ -248,9 +249,6 @@ function pageMenuActions(): CommandPaletteItem[] {
       return [];
     }
 
-    // The menu shows it with Cmd/Ctrl implied.
-    const keys = item.shortcutKeys;
-
     return [
       {
         id: `page-action-${index}`,
@@ -258,9 +256,7 @@ function pageMenuActions(): CommandPaletteItem[] {
         description: t('This page'),
         icon: item.icon ?? null,
         variant: item.variant ?? null,
-        shortcut: keys
-          ? `Mod+${keys.alt ? 'Alt+' : ''}${keys.shift ? 'Shift+' : ''}${keys.key}`
-          : null,
+        shortcut: menuShortcutHotkey(item.shortcutKeys),
         run: () => (item.closest<HTMLElement>('a') ?? item).click(),
       },
     ];

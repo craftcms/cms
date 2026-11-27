@@ -27,6 +27,7 @@
         label: t('Ask AI'),
         icon: 'sparkles',
         keywords: 'assistant chat',
+        shortcut: 'Mod+I',
         run: panel.show,
       },
     ]).unregister

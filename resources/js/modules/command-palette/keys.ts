@@ -62,3 +62,24 @@ function keyOf(key: string): Key {
       return {symbol: key, name: key};
   }
 }
+
+/**
+ * A shortcut as an action menu item shows it, with Cmd/Ctrl implied, such as
+ * `S` or `{key: 'S', shift: true}`, written as `registerShortcut()` takes it.
+ */
+export function menuShortcutHotkey(
+  shortcut:
+    | string
+    | {key: string; alt?: boolean; shift?: boolean}
+    | null
+    | undefined
+): string | null {
+  if (!shortcut) {
+    return null;
+  }
+
+  const {key, alt, shift} =
+    typeof shortcut === 'string' ? {key: shortcut} : shortcut;
+
+  return `Mod+${alt ? 'Alt+' : ''}${shift ? 'Shift+' : ''}${key}`;
+}
