@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Address\Models\Address;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -442,6 +443,15 @@ it('reads elements first on MySQL only when draft or revision IDs are required',
     'canonical ID or section' => [fn () => Entry::find()->revisions(null)->where('elements.canonicalId', 5)->orWhere('entries.sectionId', 1), 'entries'],
     'not a draft ID' => [fn () => Entry::find()->drafts(null)->whereNot(fn (Builder $q) => $q->where('elements.draftId', 5)), 'entries'],
 ]);
+
+it('keeps a replaced source table when looking up drafts', function () {
+    $entry = EntryModel::factory()->createElement();
+    $draft = app(Drafts::class)->createDraft($entry);
+
+    expect(Entry::find()->draftOf($entry->id)->status(null)->ids())->toBe([$draft->id])
+        ->and(Entry::find()->fromSub(DB::table(Table::ENTRIES)->where('id', '<>', $draft->id), 'entries')->draftOf($entry->id)->status(null)->ids())->toBe([])
+        ->and(Entry::find()->fromRaw('('.DB::table(Table::ENTRIES)->where('id', '<>', $draft->id)->toRawSql().') as '.DB::getQueryGrammar()->wrapTable('entries'))->draftOf($entry->id)->status(null)->ids())->toBe([]);
+});
 
 it('does not duplicate pending before query callbacks when cloned while preparing', function () {
     $query = new ElementQuery;

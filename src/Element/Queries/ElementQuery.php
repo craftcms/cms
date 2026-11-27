@@ -1975,11 +1975,18 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * condition and reads that table by its primary key.
      *
      * Nested conditions keep the original order, because {@see whereNestedElementQuery()} throws when a nested
-     * condition’s joins differ from the outer query’s.
+     * condition’s joins differ from the outer query’s. So do queries whose source was replaced, such as with
+     * `fromSub()`, because the swap would drop that source.
      */
     private function straightJoinFromElementsForDraftAndRevisionLookups(): void
     {
-        if (! $this->hasElementSourceTable || $this->isNestedCondition || ! DB::isMysql() || ! self::requiresDraftOrRevisionIds($this->query->wheres)) {
+        if (
+            ! $this->hasElementSourceTable ||
+            $this->query->from !== $this->table ||
+            $this->isNestedCondition ||
+            ! DB::isMysql() ||
+            ! self::requiresDraftOrRevisionIds($this->query->wheres)
+        ) {
             return;
         }
 
