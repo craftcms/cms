@@ -2282,7 +2282,8 @@ class Asset extends Element
 
     protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
-        if ($this->isFolder) {
+        // Unsaved assets, such as field preview placeholders, have no file to transform
+        if ($this->isFolder || ! $this->id) {
             return null;
         }
 

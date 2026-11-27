@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Assets;
@@ -59,4 +63,19 @@ it('keeps empty relations nullable and does not search later relations for thumb
     expect($field->getThumbHtml(new ElementCollection, $withoutThumbnail, 120, ImageTransformMode::Crop))->toBeNull()
         ->and($field->getThumbHtml(new ElementCollection([$withoutThumbnail, $asset]), $withoutThumbnail, 120, ImageTransformMode::Crop))->toBeNull();
     Event::assertNotDispatched(ThumbUrlResolving::class);
+});
+
+it('renders an icon for the placeholder asset of an image-only Assets field', function () {
+    $field = new Assets([
+        'selectionCondition' => [
+            'class' => AssetCondition::class,
+            'elementType' => AssetElement::class,
+            'conditionRules' => [['class' => FileTypeConditionRule::class, 'operator' => 'in', 'values' => ['image']]],
+        ],
+    ]);
+
+    expect($field->previewPlaceholderHtml(null, null))
+        ->not->toContain('<craft-thumbnail')
+        ->toContain('<svg')
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(0);
 });
