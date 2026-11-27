@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
@@ -16,7 +17,11 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -434,5 +439,31 @@ it('renders the blocks of each Matrix field that shares a handle with another', 
         $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
 
         expect($ui->values['fields']['shapeMatrix']['sortOrder'])->toBe([$uids[$owner->id]]);
+    }
+});
+
+it('renders each site’s own blocks for owners fetched across sites', function () {
+    [$entry, $blockType] = matrixShapeFixture(['viewMode' => Matrix::VIEW_MODE_BLOCKS, 'propagationMethod' => 'none']);
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create(['sectionId' => $entry->sectionId, 'siteId' => $secondSite->id, 'hasUrls' => true]);
+    Sections::refreshSections();
+    app(ElementsService::class)->propagateElement($entry, $secondSite->id);
+
+    foreach ([$entry->siteId, $secondSite->id] as $siteId) {
+        $uid = 'uid:'.Str::uuid()->toString();
+        saveMatrixShape(entryQuery()->id($entry->id)->siteId($siteId)->status(null)->one(), [
+            'entries' => [$uid => ['type' => $blockType->handle, 'title' => "Block for site $siteId"]],
+            'sortOrder' => [$uid],
+        ]);
+    }
+
+    $owners = entryQuery()->id($entry->id)->site('*')->status(null)->all();
+    expect($owners)->toHaveCount(2);
+
+    foreach ($owners as $owner) {
+        $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+        expect(Json::encode($ui))->toContain("Block for site $owner->siteId");
     }
 });

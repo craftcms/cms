@@ -735,9 +735,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ->canonicalsOnly()
                     ->status(null)
                     ->limit(null)
-                    // Its own alias, since validation eager-loads this field with other criteria, and other fields
-                    // can share its handle.
-                    ->eagerly("matrix-ui:$this->id:$this->handle")
+                    // Its own alias, since validation eager-loads this field with other criteria, other fields can
+                    // share its handle, and owners from other sites load their own entries.
+                    ->eagerly($this->eagerLoadAlias('matrix-ui', $value))
                     ->all(),
             default => [],
         });
@@ -1661,6 +1661,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $value->count() === 0;
     }
 
+    /** @param EntryQuery<Entry> $query */
+    private function eagerLoadAlias(string $purpose, EntryQuery $query): string
+    {
+        return sprintf('%s:%s:%s:%s', $purpose, $this->id, $this->handle, implode(',', (array) $query->siteId));
+    }
+
     /** @param EntryQuery<Entry>|ElementCollection<int,Entry> $value */
     private function validateEntries(ElementInterface $element, string $attribute, EntryQuery|ElementCollection $value, Closure $fail): void
     {
@@ -1674,7 +1680,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                 ->savedDraftsOnly()
                 ->status(null)
                 ->limit(null)
-                ->eagerly("matrix-validation:$this->id:$this->handle")
+                ->eagerly($this->eagerLoadAlias('matrix-validation', $value))
                 ->all();
 
             // A draft only checks the entries this save writes, as `NestedElementManager::saveNestedElements()` decides
