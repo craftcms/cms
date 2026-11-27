@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
@@ -16,9 +18,12 @@ use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexViewStateController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
@@ -27,6 +32,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Sections as SectionsFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -35,10 +41,12 @@ use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia;
 use Mockery\MockInterface;
 use Symfony\Component\DomCrawler\Crawler;
@@ -171,6 +179,61 @@ it('selects fit for index tiles and inline cards', function (string $viewMode, s
     'tiles' => ['thumbs', 'thumbHtml', 'fit', 120],
     'inline cards' => ['cards', 'cardThumbHtml', 'fit', 120],
 ]);
+
+it('preloads the thumbnail indexes for the images that entries’ thumbnails show', function () {
+    Queue::fake();
+    config()->set('filesystems.disks.test-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/content-index-controller-test/test-disk'),
+    ]);
+    $volume = Volume::factory()->create(['disk' => 'test-disk']);
+    $folder = Folders::getRootFolderByVolumeId($volume->id);
+    $imageTransformer = new ImageTransformer;
+    $assetIds = [];
+
+    foreach (range(1, 3) as $number) {
+        $asset = Asset::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => "image-{$number}.jpg",
+            'width' => 800,
+            'height' => 400,
+            'dateModified' => now()->subMinute(),
+        ]);
+
+        foreach ([30, 60] as $size) {
+            $imageTransformer->getTransformIndex($asset, new ImageTransform(['width' => $size, 'height' => $size, 'mode' => 'fit']));
+        }
+
+        $assetIds[] = $asset->id;
+    }
+
+    $entry = EntryModel::factory()->withField('photo', Assets::class, value: [$assetIds[0]])
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    foreach (array_slice($assetIds, 1) as $assetId) {
+        $other = EntryModel::factory()->createElement(['sectionId' => $entry->sectionId, 'typeId' => $entry->typeId]);
+        $other->setFieldValue('photo', [$assetId]);
+        expect(app(Elements::class)->saveElement($other))->toBeTrue();
+    }
+
+    $queries = [];
+    DB::listen(function (QueryExecuted $query) use (&$queries): void {
+        if (str_starts_with($query->sql, 'select') && str_contains($query->sql, Table::IMAGETRANSFORMINDEX)) {
+            $queries[] = $query;
+        }
+    });
+
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => 'table']), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(3, 'props.data');
+
+    expect($queries)->toHaveCount(2)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
+});
 
 it('tells the placeholders whether the source’s entries have thumbnails', function () {
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: 'fit')

@@ -450,9 +450,9 @@ it('allows users with view entry permission to author entries', function () {
 it('allows current authors to move entries when a compatible section exists', function () {
     $entryType = new EntryType(['id' => 7]);
     $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
-    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect([$compatibleSection]));
+    SectionsFacade::shouldReceive('getAllSections')->andReturn(collect([$compatibleSection]));
 
-    $user = createEntryTestUser(['saveEntries:channel-section-uid']);
+    $user = createEntryTestUser(['saveEntries:channel-section-uid', 'viewEntries:target-section-uid']);
     $entry = createEntryTestEntry($this->channelSection, authorIds: [$user->id], typeId: 7);
 
     $result = $this->policy->move($user, $entry);
@@ -463,32 +463,37 @@ it('allows current authors to move entries when a compatible section exists', fu
 it('requires save peer entries permission to move entries authored by someone else', function () {
     $entryType = new EntryType(['id' => 7]);
     $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
-    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect([$compatibleSection]));
+    SectionsFacade::shouldReceive('getAllSections')->andReturn(collect([$compatibleSection]));
 
     $entry = createEntryTestEntry($this->channelSection, authorIds: [999], typeId: 7);
 
-    expect($this->policy->move(createEntryTestUser(['saveEntries:channel-section-uid']), $entry))->toBeFalse()
+    expect($this->policy->move(createEntryTestUser(['saveEntries:channel-section-uid', 'viewEntries:target-section-uid']), $entry))->toBeFalse()
         ->and($this->policy->move(createEntryTestUser([
             'saveEntries:channel-section-uid',
             'savePeerEntries:channel-section-uid',
+            'viewEntries:target-section-uid',
         ]), $entry))->toBeTrue();
 });
 
-it('does not move entries without a compatible section', function () {
-    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect());
+it('does not move entries without a compatible section the user can view', function () {
+    $otherSection = createEntryTestSectionWithEntryTypes(4, 'other-section-uid', [new EntryType(['id' => 8])]);
+    $hiddenSection = createEntryTestSectionWithEntryTypes(5, 'hidden-section-uid', [new EntryType(['id' => 7])]);
+    SectionsFacade::shouldReceive('getAllSections')->andReturn(collect([$otherSection, $hiddenSection]));
 
-    $user = createEntryTestUser(['saveEntries:channel-section-uid']);
+    $user = createEntryTestUser(['saveEntries:channel-section-uid', 'viewEntries:other-section-uid']);
     $entry = createEntryTestEntry($this->channelSection, authorIds: [$user->id], typeId: 7);
 
-    $result = $this->policy->move($user, $entry);
+    expect($this->policy->move($user, $entry))->toBeFalse();
 
-    expect($result)->toBeFalse();
+    $user->grantedPermissions[] = 'viewEntries:hidden-section-uid';
+
+    expect($this->policy->move($user, $entry))->toBeTrue();
 });
 
 it('does not treat a missing user id as the draft creator when moving drafts', function () {
     $entryType = new EntryType(['id' => 7]);
     $compatibleSection = createEntryTestSectionWithEntryTypes(4, 'target-section-uid', [$entryType]);
-    SectionsFacade::shouldReceive('getEditableSections')->andReturn(collect([$compatibleSection]));
+    SectionsFacade::shouldReceive('getAllSections')->andReturn(collect([$compatibleSection]));
 
     $user = createEntryTestUser(['saveEntries:channel-section-uid']);
     $user->id = null;

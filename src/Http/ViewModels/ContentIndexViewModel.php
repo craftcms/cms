@@ -24,6 +24,7 @@ use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\ElementActions;
 use CraftCms\Cms\Support\Facades\ElementExporters;
 use CraftCms\Cms\Support\Facades\ElementSources;
@@ -923,8 +924,49 @@ abstract class ContentIndexViewModel extends ViewModel
         };
     }
 
-    /** @param list<ElementInterface|array<string, mixed>> $elements */
-    protected function prepareElements(array $elements): void {}
+    /**
+     * Loads the transform indexes for the images in the rows' thumbnails with one query per thumbnail size, rather than
+     * one per row.
+     *
+     * @param  list<ElementInterface|array<string, mixed>>  $elements
+     */
+    protected function prepareElements(array $elements): void
+    {
+        $assets = [];
+
+        foreach ($elements as $element) {
+            if ($element instanceof ElementInterface && $asset = $element->getThumb()?->getAsset()) {
+                $assets[] = $asset;
+            }
+        }
+
+        if ($assets === []) {
+            return;
+        }
+
+        match ($this->mode()) {
+            ElementIndexViewMode::Cards->value => $this->preloadCardThumbs($assets),
+            ElementIndexViewMode::Thumbs->value => Assets::preloadThumbs($assets, [
+                $size = $this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE,
+                $size * 2,
+            ]),
+            // Table rows show plain chips, whose small thumbnails are 30px
+            default => Assets::preloadThumbs($assets, [$size = $this->thumbSize()->pixels() ?? 30, $size * 2]),
+        };
+    }
+
+    /**
+     * @param  list<Asset>  $assets
+     */
+    private function preloadCardThumbs(array $assets): void
+    {
+        Assets::preloadThumbs($assets, [120, 240]);
+        Assets::preloadThumbs(
+            array_values(array_filter($assets, fn (Asset $asset): bool => $asset->canCoverCard())),
+            [Asset::CARD_COVER_SIZE],
+            ImageTransformMode::Crop,
+        );
+    }
 
     /** @return array<int, array<string, mixed>>|null */
     public function actions(): ?array
