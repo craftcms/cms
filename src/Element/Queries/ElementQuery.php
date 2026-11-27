@@ -1960,6 +1960,74 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $this->convertDateBindingsToUtc();
+        $this->straightJoinFromElementsForDraftAndRevisionLookups();
+    }
+
+    /**
+     * Reads `elements` before the element type’s table on MySQL when the query requires a canonical ID, draft ID or
+     * revision ID, such as a lookup of an entry’s drafts or revisions.
+     *
+     * The constructor straight-joins `elements` after the element type’s table, which keeps listings filtered on that
+     * table’s columns fast. With that order, a lookup by one of these columns reads every row of the element type’s
+     * table. Reading `elements` first lets MySQL use the index on that column instead.
+     *
+     * Element ID lookups don’t need this. MySQL copies the ID condition to the element type’s table through the join
+     * condition and reads that table by its primary key.
+     *
+     * Nested conditions keep the original order, because {@see whereNestedElementQuery()} throws when a nested
+     * condition’s joins differ from the outer query’s. So do queries whose source was replaced, such as with
+     * `fromSub()`, because the swap would drop that source, and queries with an index hint, which MySQL applies to
+     * the first table.
+     */
+    private function straightJoinFromElementsForDraftAndRevisionLookups(): void
+    {
+        if (
+            ! $this->hasElementSourceTable ||
+            $this->query->from !== $this->table ||
+            $this->query->indexHint !== null ||
+            $this->isNestedCondition ||
+            ! DB::isMysql() ||
+            ! self::requiresDraftOrRevisionIds($this->query->wheres)
+        ) {
+            return;
+        }
+
+        $elementsTable = Table::ELEMENTS.' as elements';
+
+        foreach ($this->query->joins as $i => $join) {
+            if ($join->type === 'straight_join' && $join->table === $elementsTable) {
+                // Clones of the query, such as the copy saved before preparing, share this join object, so change a copy
+                $join = clone $join;
+                $join->table = $this->table;
+                $this->query->joins[$i] = $join;
+                $this->query->from = $elementsTable;
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * Returns whether the where clauses require `elements.canonicalId`, `draftId` or `revisionId` to equal a value or
+     * be in a list of values.
+     *
+     * @param  array<int, array<string, mixed>>  $wheres
+     */
+    private static function requiresDraftOrRevisionIds(array $wheres): bool
+    {
+        // Laravel ignores the first clause’s boolean. An `or` on any later clause means no single clause has to match.
+        if (array_any(array_slice($wheres, 1), fn (array $where) => str_starts_with($where['boolean'], 'or'))) {
+            return false;
+        }
+
+        $columns = ['elements.canonicalId', 'elements.draftId', 'elements.revisionId'];
+
+        return array_any($wheres, fn (array $where) => ! str_ends_with($where['boolean'], 'not') && match ($where['type']) {
+            'Basic' => $where['operator'] === '=' && in_array($where['column'], $columns, true),
+            'In', 'InRaw' => in_array($where['column'], $columns, true),
+            'Nested' => self::requiresDraftOrRevisionIds($where['query']->wheres),
+            default => false,
+        });
     }
 
     /**

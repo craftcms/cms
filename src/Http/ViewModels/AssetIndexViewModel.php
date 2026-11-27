@@ -9,12 +9,10 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\FolderActionsResolving;
-use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
-use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
-use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -74,6 +72,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      * in the URL instead of bouncing to the root. The resolved source key
      * (`volume:{uid}`) is available on the base `source` payload.
      */
+    #[UnaffectedByFilters]
     public function defaultSource(): ?string
     {
         return $this->defaultSource;
@@ -93,6 +92,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
         return $this->includeSubfolders() ? ['includeSubfolders' => true] : [];
     }
 
+    #[UnaffectedByFilters]
     public function canSearchSubfolders(): bool
     {
         return ($this->subfolder() ?? $this->rootFolder())?->getHasChildren() ?? false;
@@ -216,35 +216,6 @@ class AssetIndexViewModel extends ContentIndexViewModel
         ], fn (mixed $value): bool => $value !== null);
     }
 
-    #[Override]
-    protected function prepareElements(array $elements): void
-    {
-        $assets = array_values(array_filter($elements, fn (mixed $element): bool => $element instanceof Asset));
-
-        match ($this->viewState()['mode']) {
-            ElementIndexViewMode::Table->value => Assets::preloadThumbs($assets, [30, 60]),
-            ElementIndexViewMode::Cards->value => $this->preloadCardThumbs($assets),
-            ElementIndexViewMode::Thumbs->value => Assets::preloadThumbs($assets, [
-                $size = $this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE,
-                $size * 2,
-            ]),
-            default => null,
-        };
-    }
-
-    /**
-     * @param  list<Asset>  $assets
-     */
-    private function preloadCardThumbs(array $assets): void
-    {
-        Assets::preloadThumbs($assets, [120, 240]);
-        Assets::preloadThumbs(
-            array_values(array_filter($assets, fn (Asset $asset): bool => $asset->canCoverCard())),
-            [Asset::CARD_COVER_SIZE],
-            ImageTransformMode::Crop,
-        );
-    }
-
     /**
      * The breadcrumb trail for the folder bar: volume root → current folder.
      *
@@ -256,6 +227,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      *
      * @return array<int, array<string, mixed>>
      */
+    #[UnaffectedByFilters]
     public function breadcrumbs(): array
     {
         $current = $this->subfolder() ?? $this->rootFolder();
@@ -319,6 +291,7 @@ class AssetIndexViewModel extends ContentIndexViewModel
      *
      * @return list<array<string, mixed>>
      */
+    #[UnaffectedByFilters]
     public function folderActions(): array
     {
         $folder = $this->subfolder() ?? $this->rootFolder();

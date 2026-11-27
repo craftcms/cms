@@ -37,6 +37,38 @@ it('rejects an incompatible bulk move before moving any entries', function () {
         ->and($entries->getEntryById($entryB->id)->sectionId)->toBe($sourceSection->id);
 });
 
+it('moves entries to the section the control panel posts as a string', function () {
+    actingAs(User::findOne());
+
+    $entryType = EntryType::factory()->create();
+    $sourceSection = Section::factory()->withEntryTypes($entryType)->create();
+    $targetSection = Section::factory()->withEntryTypes($entryType)->create();
+    $entry = Entry::factory()->forSection($sourceSection)->forEntryType($entryType)->create();
+
+    postJson(action([MoveEntryToSectionController::class, 'move']), [
+        'entryIds' => [(string) $entry->id],
+        'sectionId' => (string) $targetSection->id,
+    ])->assertOk();
+
+    expect(app(Entries::class)->getEntryById($entry->id)->sectionId)->toBe($targetSection->id);
+});
+
+it('returns the IDs of a section’s entries for moving them all', function () {
+    actingAs(User::findOne());
+
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    $otherSection = Section::factory()->withEntryTypes($entryType)->create();
+    $entries = Entry::factory()->forSection($section)->forEntryType($entryType)->count(2)->create();
+    Entry::factory()->forSection($otherSection)->forEntryType($entryType)->create();
+
+    $entryIds = postJson(action([MoveEntryToSectionController::class, 'sectionEntryIds']), [
+        'sectionId' => $section->id,
+    ])->assertOk()->json('entryIds');
+
+    expect($entryIds)->toEqualCanonicalizing($entries->pluck('id')->all());
+});
+
 it('lists the sections every selected entry could move to', function () {
     actingAs(User::findOne());
 

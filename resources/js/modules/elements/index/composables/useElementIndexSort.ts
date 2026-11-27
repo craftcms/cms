@@ -1,8 +1,10 @@
 import {computed, ref, type Ref, watch} from 'vue';
 import type {SortingState, Updater} from '@tanstack/vue-table';
-import type {
-  IndexVisitor,
-  IndexRestore,
+import {
+  queryHasParam,
+  type IndexQueryParams,
+  type IndexVisitor,
+  type IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useServerSort} from '@/common/table/useServerSort';
 import type {SortItem} from '@/common/types';
@@ -172,11 +174,13 @@ export function useElementIndexSort(
   // previous visit, restore it. The page folds this into one mount-time restore
   // visit alongside the view-mode/column restores (see `useElementIndex`),
   // so they can't interrupt each other.
-  function restore(): IndexRestore | null {
+  // `query` holds the params the link named.
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
     const persisted = normalizeSort(persistedSort());
-    const hasSortInQuery = visitor.currentQuery().sort !== undefined;
 
-    if (hasSortInQuery || !persisted.length) {
+    if (queryHasParam(query, 'sort') || !persisted.length) {
       return null;
     }
 

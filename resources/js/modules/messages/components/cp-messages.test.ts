@@ -7,6 +7,7 @@ vi.mock('@craftcms/ui/utilities/translate', () => ({
 
 afterEach(() => {
   document.body.innerHTML = '';
+  document.documentElement.removeAttribute('data-cp-messages');
   delete (window as {Craft?: unknown}).Craft;
 });
 
@@ -39,6 +40,7 @@ it('moves messages added before it was upgraded into their regions', () => {
   expect(
     element.querySelector('[role="status"] > .notification')
   ).not.toBeNull();
+  expect(document.documentElement.hasAttribute('data-cp-messages')).toBe(true);
 });
 
 it('takes its position from the user’s preference unless one is given', () => {

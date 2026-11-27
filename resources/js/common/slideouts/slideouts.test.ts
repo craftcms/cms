@@ -998,6 +998,56 @@ describe('SlideoutPanel', () => {
     expect(isProxy(instance.component)).toBe(false);
   });
 
+  it('keeps the tab panel ids of stacked slideouts showing the same screen apart', async () => {
+    // A tab strip finds its panels by id, so a shared id lets one slideout's
+    // tabs show and hide another's panels.
+    const TabNode = (await import('@/modules/ui/TabNode.vue')).default;
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({
+        render: () =>
+          h(TabNode, {
+            node: {
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+              component: 'craft:tab',
+              props: {label: 'Settings'},
+              uid: 'settings',
+              children: [],
+            },
+            values: {},
+            errors: [],
+            touchedPaths: new Set<string>(),
+            scope: [],
+            refreshable: false,
+          }),
+      }),
+      props: {},
+      url: '/settings/entry-types/1',
+    });
+    const outer = required(
+      await openSlideout('/settings/entry-types/1'),
+      'Expected the outer slideout.'
+    );
+    const inner = required(
+      await openSlideout('/settings/entry-types/1', {
+        opener: openerInPanel(outer.id),
+      }),
+      'Expected the inner slideout.'
+    );
+    const roots = [outer, inner].map((instance) =>
+      mount(defineComponent({render: () => h(SlideoutPanel, {instance})}))
+    );
+    await nextTick();
+    await nextTick();
+
+    const ids = roots.map(
+      (root) => root.querySelector('[data-ui-tab="settings"]')?.id
+    );
+
+    expect(ids[0]).toContain('ui-tab-settings');
+    expect(ids[1]).toContain('ui-tab-settings');
+    expect(ids[0]).not.toBe(ids[1]);
+  });
+
   it('presents itself to assistive technology as a modal dialog', async () => {
     const {root} = await mountPanel(defineComponent({render: () => h('div')}));
     const panel = root.querySelector<HTMLElement>('.slideout-panel')!;

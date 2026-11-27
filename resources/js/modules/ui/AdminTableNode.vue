@@ -31,6 +31,7 @@
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
+  import {DeletionBlockersModal} from '@/modules/deletion-blockers-modal/deletion-blockers-modal';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
   import {UiTableFlush, UiTableRefresh} from './runtime';
@@ -526,6 +527,14 @@
     )
       return;
 
+    let blockersConfirmed = false;
+    const blockerType = props.node.props.deletionBlockerType;
+    if (blockerType && row.id !== undefined) {
+      const result = await DeletionBlockersModal.confirm(blockerType, row.id);
+      if (!result) return;
+      blockersConfirmed = result !== true;
+    }
+
     if (slots['delete-modal']) {
       deletingRow.value = row;
       return;
@@ -536,7 +545,7 @@
       props.node.props.deleteConfirmMessage ??
       t('Are you sure you want to delete “{name}”?', {name: rowLabel(row)});
 
-    if (!confirm(message)) {
+    if (!blockersConfirmed && !confirm(message)) {
       return;
     }
 

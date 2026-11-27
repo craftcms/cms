@@ -86,7 +86,8 @@ readonly class SectionsController
             ->unless($this->readOnly, fn (UiTable $table) => $table
                 ->createAction(t('New section'), route('craft.cp.settings.sections.create'))
                 ->createActionInPageHeader()
-                ->deletable());
+                ->deletable()
+                ->deletionBlockers('section'));
 
         return new CpScreenResponse()
             ->title(t('Sections'))

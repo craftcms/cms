@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestBatchedJob;
+use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestCsvBatchedJob;
+use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestJsonlBatchedJob;
 use Illuminate\Queue\Jobs\DatabaseJob;
 use Illuminate\Queue\Jobs\DatabaseJobRecord;
 use Illuminate\Queue\QueueManager;
@@ -217,6 +219,31 @@ it('queues the next batch without the running queue job', function () {
         && $pushedJob->itemOffset === 2);
 });
 
+it('finishes when the query runs out of items before reaching its total', function () {
+    Queue::fake()->serializeAndRestore();
+
+    // The query counts 5 items but only returns 3.
+    $job = new TestBatchedJob([1, 2, 3]);
+    $job->count = 5;
+    $job->batchSize = 2;
+    $job->handle();
+
+    $handled = [$job];
+
+    // Run each queued batch in turn, giving up after 10 so a job that keeps spawning batches can't hang the test.
+    while (count($handled) < 10 && ($next = Queue::pushed(TestBatchedJob::class)->get(count($handled) - 1)) !== null) {
+        $next->handle();
+        $handled[] = $next;
+    }
+
+    $last = end($handled);
+
+    expect($handled)->toHaveCount(3)
+        ->and($last->processedItems)->toBe([1, 2, 3])
+        ->and($last->afterBatchCalls)->toBe(3)
+        ->and($last->afterCalled)->toBeTrue();
+});
+
 it('stops processing when cancelled between items', function () {
     $progressService = app(JobProgress::class);
     $testUuid = 'test-cancellation-'.uniqid();
@@ -250,4 +277,54 @@ it('does not process any items when already cancelled', function () {
 
     // Should not have processed any items
     expect($job->processedItems)->toBe([]);
+});
+
+it('processes a CSV file across queued batches', function () {
+    $path = tempnam(sys_get_temp_dir(), 'csv');
+    file_put_contents($path, "name\nAlpha\nBravo\nCharlie\nDelta\nEcho\n");
+
+    Queue::fake()->serializeAndRestore();
+
+    $job = new TestCsvBatchedJob($path);
+    $job->batchSize = 2;
+    $jobs = [$job];
+
+    for ($i = 0; isset($jobs[$i]); $i++) {
+        $jobs[$i]->handle();
+        $jobs = [$job, ...Queue::pushed(TestCsvBatchedJob::class)->all()];
+    }
+
+    unlink($path);
+
+    expect($jobs)->toHaveCount(3)
+        ->and(end($jobs)->processedItems)->toBe([
+            ['name' => 'Alpha'],
+            ['name' => 'Bravo'],
+            ['name' => 'Charlie'],
+            ['name' => 'Delta'],
+            ['name' => 'Echo'],
+        ]);
+});
+
+it('processes a JSONL file in reverse across queued batches', function () {
+    $path = tempnam(sys_get_temp_dir(), 'jsonl');
+    file_put_contents($path, "{\"id\":1}\n{\"id\":2}\n{\"id\":3}\n{\"id\":4}\n{\"id\":5}\n");
+
+    Queue::fake()->serializeAndRestore();
+
+    $job = new TestJsonlBatchedJob($path, reverse: true);
+    $job->batchSize = 2;
+    // Each batch stops after its first item, leaving the rest of its slice for the next batch
+    $job->timeout = 0;
+    $jobs = [$job];
+
+    for ($i = 0; isset($jobs[$i]); $i++) {
+        $jobs[$i]->handle();
+        $jobs = [$job, ...Queue::pushed(TestJsonlBatchedJob::class)->all()];
+    }
+
+    unlink($path);
+
+    expect($jobs)->toHaveCount(5)
+        ->and(array_column(end($jobs)->processedItems, 'id'))->toBe([5, 4, 3, 2, 1]);
 });

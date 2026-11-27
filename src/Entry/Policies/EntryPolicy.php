@@ -188,7 +188,7 @@ class EntryPolicy extends ElementPolicy
             return false;
         }
 
-        if (! $this->compatibleSectionsCount($entry)) {
+        if (! $this->hasCompatibleSection($user, $entry)) {
             return false;
         }
 
@@ -223,14 +223,19 @@ class EntryPolicy extends ElementPolicy
         }
     }
 
-    private function compatibleSectionsCount(Entry $entry): int
+    /**
+     * Returns whether the entry's type is available in another non-single section the user can view.
+     *
+     * It checks the user's permission last and stops at the first matching section, because element indexes call it for
+     * every entry they show.
+     */
+    private function hasCompatibleSection(CraftUser $user, Entry $entry): bool
     {
         $entryTypeId = $entry->getType()->id;
 
-        return Sections::getEditableSections()
-            ->filter(fn (Section $section) => $section->type !== SectionType::Single && $section->id !== $entry->sectionId)
-            ->map(fn (Section $section) => ['entryTypes' => $section->getEntryTypes()])
-            ->filter(fn (array $section) => collect($section['entryTypes'])->contains('id', $entryTypeId))
-            ->count();
+        return Sections::getAllSections()->contains(fn (Section $section) => $section->type !== SectionType::Single
+            && $section->id !== $entry->sectionId
+            && collect($section->getEntryTypes())->contains('id', $entryTypeId)
+            && $user->can("viewEntries:$section->uid"));
     }
 }

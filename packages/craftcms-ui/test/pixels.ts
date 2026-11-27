@@ -24,11 +24,15 @@ export async function pixels(element: Element): Promise<Pixels> {
     );
   }
   const origin = element.getBoundingClientRect();
+  // The clip is in the top page's document coordinates. That page can scroll
+  // a few px, because the inline test frame leaves room below it, and a
+  // scroll into view in any earlier test or file keeps it scrolled.
+  const top = frame ? window.top! : window;
   const {data: base64} = (await cdp().send('Page.captureScreenshot', {
     format: 'png',
     clip: {
-      x: (frame?.x ?? 0) + origin.x + window.scrollX,
-      y: (frame?.y ?? 0) + origin.y + window.scrollY,
+      x: (frame?.x ?? 0) + top.scrollX + origin.x,
+      y: (frame?.y ?? 0) + top.scrollY + origin.y,
       width: origin.width,
       height: origin.height,
       scale: 1,

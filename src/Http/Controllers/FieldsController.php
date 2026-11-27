@@ -131,7 +131,8 @@ class FieldsController
             ->unless($this->readOnly, fn (Table $table) => $table
                 ->createAction(t('New field'), route('craft.cp.settings.fields.create'))
                 ->createActionInPageHeader()
-                ->deletable());
+                ->deletable()
+                ->deletionBlockers('field'));
 
         return new CpScreenResponse()
             ->title(t('Fields'))
@@ -232,6 +233,7 @@ class FieldsController
                     'confirm' => t('Are you sure you want to delete “{name}”?', [
                         'name' => $field->name,
                     ]),
+                    'deletionBlockers' => ['type' => 'field', 'id' => $field->id],
                 ],
             ]);
         }
@@ -310,6 +312,7 @@ class FieldsController
             'withGeneratedFields' => ['required', 'boolean'],
             'withCardViewDesigner' => ['required', 'boolean'],
             'cardViewDesignerOutlet' => ['nullable', 'string'],
+            'idNamespace' => ['nullable', 'string'],
         ]);
 
         return new JsonResponse([
@@ -322,6 +325,7 @@ class FieldsController
                 $data['withGeneratedFields'],
                 $data['withCardViewDesigner'],
                 $data['cardViewDesignerOutlet'] ?? null,
+                $data['idNamespace'] ?? null,
             ),
         ]);
     }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cp\SiteSwitcher;
+use CraftCms\Cms\Http\Controllers\Concerns\AppliesStoredViewState;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\ViewModels\AssetIndexViewModel;
@@ -20,6 +21,7 @@ use function CraftCms\Cms\cp_url;
  */
 readonly class IndexController
 {
+    use AppliesStoredViewState;
     use RespondsWithFlash;
 
     public function __invoke(ElementIndexRequest $request, ?string $defaultSource = null): Response|RedirectResponse
@@ -30,10 +32,11 @@ readonly class IndexController
         // global request, which is a separate instance from this FormRequest.
         request()->merge(['showFolders' => true]);
 
-        $viewModel = new AssetIndexViewModel(
+        $makeViewModel = fn (): AssetIndexViewModel => new AssetIndexViewModel(
             $request,
             defaultSource: $request->input('defaultSource', $defaultSource),
         );
+        $viewModel = $makeViewModel();
 
         if ($redirect = $this->firstSourceRedirect($request, $viewModel, $defaultSource)) {
             return $redirect;
@@ -43,7 +46,7 @@ readonly class IndexController
             app(SiteSwitcher::class)->scopeToSite();
         }
 
-        return Inertia::render('assets/Index', [$viewModel]);
+        return Inertia::render('assets/Index', [$this->withStoredViewState($request, $viewModel, $makeViewModel)]);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
@@ -34,17 +35,20 @@ class UserIndexViewModel extends ContentIndexViewModel
      * (sort, filter, pagination) stay on the current source instead of
      * bouncing back to “all users”.
      */
+    #[UnaffectedByFilters]
     public function slug(): ?string
     {
         return $this->slug;
     }
 
+    #[UnaffectedByFilters]
     public function canRegisterUsers(): bool
     {
         return Gate::allows('save', new User);
     }
 
     /** The "New user" button label, matching the legacy index's wording. */
+    #[UnaffectedByFilters]
     public function newUserLabel(): string
     {
         return mb_ucfirst(t('New {type}', [
