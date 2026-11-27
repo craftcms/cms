@@ -22,6 +22,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Support\Facades\Crypt;
@@ -32,6 +33,8 @@ use Illuminate\Testing\TestResponse;
 use Livewire\Component;
 use Livewire\Livewire;
 use Livewire\Mechanisms\HandleRequests\EndpointResolver;
+
+use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $templates = dirname(__DIR__, 2).'/Support/templates';
@@ -119,6 +122,30 @@ it('keeps update requests on the site the component was rendered for', function 
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'count:1:site:french'));
 });
 
+it('keeps site tokens across update requests', function () {
+    $french = Site::factory()->create(['handle' => 'french', 'baseUrl' => 'https://localhost/fr', 'enabled' => false]);
+    Sites::refreshSites();
+    app(Routes::class)->saveRoute(new ProjectConfigRoute(
+        uriParts: ['lw-counter'],
+        template: 'livewire/counter',
+        siteUid: $french->uid,
+    ));
+    app(ProjectConfigRoutes::class)->register();
+
+    $response = $this->get('https://localhost/fr/lw-counter?'.http_build_query([
+        Cms::config()->siteToken => Crypt::encrypt((string) $french->id),
+    ]))->assertOk();
+    expect($response->getContent())->toContain('count:0:site:french');
+
+    // The site is disabled, so the update needs the site token too.
+    livewireCall($this, $response, 'like')
+        ->assertOk()
+        ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'count:1:site:french'));
+
+    // A site token for another site can’t move the component there.
+    livewireCall($this, $response, 'like', ['X-Craft-Site-Token' => Crypt::encrypt((string) Sites::getPrimarySite()->id)])->assertBadRequest();
+});
+
 it('keeps previews across update requests', function () {
     $entry = createLivewireEntry('lw-preview', 'livewire/entry.blade.php');
     $draft = app(Drafts::class)->createDraft($entry, 1);
@@ -145,6 +172,12 @@ it('keeps previews across update requests', function () {
         ->assertHeader('Cache-Control', 'max-age=0, must-revalidate, no-cache, no-store, private')
         ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'entry:Draft title:')
             && str_contains($html, ':likes:1:') && str_contains($html, ':preview:1'));
+
+    // Once the preview token is gone, the snapshot no longer gives access to the draft.
+    DB::table(Table::ROUTETOKENS)->where('token', $token)->delete();
+    app()->forgetScopedInstances();
+
+    livewireCall($this, $response, 'like')->assertForbidden();
 });
 
 it('keeps the response a page component sets for section templates', function () {
@@ -182,6 +215,27 @@ it('applies Craft’s middleware only to updates for components rendered on Craf
         '_token' => csrf_token(),
         'components' => [livewireComponentCall($appPage, 'increment'), livewireComponentCall($craftPage, 'like')],
     ])->assertStatus(400);
+});
+
+it('applies Craft’s maintenance rules to updates', function () {
+    Route::middleware('web')->get('lw-app-page', fn () => '<html><body>'.Livewire::mount(LivewireAppTestComponent::class).'</body></html>');
+    $appPage = $this->get('/lw-app-page')->assertOk();
+
+    createLivewireEntry('lw-offline', 'livewire/entry.blade.php');
+    actingAs(User::factory()->withPermissions(['accessSiteWhenSystemIsOff'])->createElement());
+    app()->maintenanceMode()->activate([]);
+
+    $craftPage = $this->get('/lw-offline')->assertOk();
+
+    livewireCall($this, $craftPage, 'like')
+        ->assertOk()
+        ->assertJsonPath('components.0.effects.html', fn (string $html) => str_contains($html, 'likes:1'));
+
+    // The app’s own components keep Laravel’s maintenance check.
+    livewireCall($this, $appPage, 'increment')->assertServiceUnavailable();
+
+    auth()->logout();
+    livewireCall($this, $craftPage, 'like')->assertServiceUnavailable();
 });
 
 it('applies Craft’s middleware on custom update routes', function () {

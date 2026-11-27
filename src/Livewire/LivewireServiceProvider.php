@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Livewire;
 
+use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
@@ -50,7 +51,16 @@ class LivewireServiceProvider extends ServiceProvider
         $this->app->booted(function (): void {
             collect(Route::getRoutes()->getRoutes())
                 ->filter(fn (IlluminateRoute $route): bool => Str::endsWith((string) $route->getName(), 'livewire.update'))
-                ->each(fn (IlluminateRoute $route) => $route->middleware(ApplyCraftMiddleware::class));
+                // ApplyCraftMiddleware checks maintenance mode itself, once it knows whose component it is.
+                ->each(fn (IlluminateRoute $route) => $route
+                    ->middleware(ApplyCraftMiddleware::class)
+                    ->metadata([PreventRequestsDuringMaintenance::ALLOW_DURING_MAINTENANCE_METADATA => true]));
+
+            // Craft listed the routes that allow maintenance before these were marked. Cached routes were
+            // listed after the app booted, so they already include them.
+            if (! $this->app->routesAreCached()) {
+                PreventRequestsDuringMaintenance::registerRouteExceptions();
+            }
         });
     }
 }

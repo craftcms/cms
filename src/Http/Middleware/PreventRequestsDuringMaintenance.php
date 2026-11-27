@@ -22,7 +22,8 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  */
 class PreventRequestsDuringMaintenance extends LaravelMiddleware
 {
-    private const string ALLOW_DURING_MAINTENANCE_METADATA = 'craft.allowDuringMaintenance';
+    /** The route metadata key that lets a route outside the `craft` group stay reachable during maintenance. */
+    public const string ALLOW_DURING_MAINTENANCE_METADATA = 'craft.allowDuringMaintenance';
 
     /** @var array<int, string> */
     private static array $routeExceptions = [];
@@ -72,6 +73,17 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
             return $next($request);
         }
 
+        return parent::handle($request, $next);
+    }
+
+    /**
+     * Applies Laravel’s maintenance check to a request, as for routes outside the `craft` group, even when its
+     * route allows maintenance.
+     *
+     * @param  Request  $request
+     */
+    public function preventRequest($request, Closure $next): mixed
+    {
         return parent::handle($request, $next);
     }
 

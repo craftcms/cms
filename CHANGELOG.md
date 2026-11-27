@@ -33,6 +33,7 @@
 - Added `CraftCms\Cms\Http\PreviewRequestPreparer::preparePreviewElement()`. ([#21189](https://github.com/craftcms/cms/pull/21189))
 - Added `CraftCms\Cms\View\TemplateManager::isRenderingPageRootTemplate()`. ([#21189](https://github.com/craftcms/cms/pull/21189))
 - Added `CraftCms\Cms\Http\ResponseHeaders::modify()`. ([#21189](https://github.com/craftcms/cms/pull/21189))
+- Added `CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance::ALLOW_DURING_MAINTENANCE_METADATA` and `preventRequest()`. ([#21189](https://github.com/craftcms/cms/pull/21189))
 - Added `CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters`. ([#21170](https://github.com/craftcms/cms/pull/21170))
 - Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`. ([#20953](https://github.com/craftcms/cms/pull/20953))
 - Added `CraftCms\Cms\Http\Events\LazySessionSaved`. ([#20953](https://github.com/craftcms/cms/pull/20953))
