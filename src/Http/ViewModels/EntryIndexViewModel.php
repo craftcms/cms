@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
+use CraftCms\Cms\Http\ViewModels\Attributes\UnaffectedByFilters;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Url;
@@ -27,6 +28,7 @@ class EntryIndexViewModel extends ContentIndexViewModel
         parent::__construct(Entry::class, $request, $page);
     }
 
+    #[UnaffectedByFilters]
     public function sectionHandle(): string
     {
         return $this->sectionHandle ?? '';
