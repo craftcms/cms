@@ -79,7 +79,7 @@ class Entries extends BaseRelationField
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<int, \\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
+        return sprintf('\\%1$s<\\%3$s>|\\%2$s<int, \\%3$s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
     /** @param array<string, mixed> $config */
