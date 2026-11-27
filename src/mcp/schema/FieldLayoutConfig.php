@@ -39,7 +39,9 @@ class FieldLayoutConfig
     public function make(array $config, string $elementType, ?FieldLayout $existing = null): FieldLayout
     {
         $this->validateFieldReferences($config);
-        $config['type'] = $elementType;
+        // Set the type first, so setTabs() can add any missing mandatory fields
+        unset($config['type']);
+        $config = ['type' => $elementType, ...$config];
 
         if ($existing) {
             $config['id'] = $existing->id;
