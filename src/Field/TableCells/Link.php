@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\Data\LinkData;
-use CraftCms\Cms\Field\Link as LinkField;
 use CraftCms\Cms\Field\LinkResolver;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Gql\Types\Input\LinkData as LinkDataInput;
@@ -61,8 +60,7 @@ class Link extends TableCell implements ElementAwareTableCellInterface
     public function uiControl(TableCellContext $context): Control
     {
         return $this->resolver()->control($context->path, $context->value)
-            ->compact()
-            ->registeredTypes(array_keys(LinkField::types()));
+            ->compact();
     }
 
     public function normalizeValue(mixed $value, bool $fromRequest = false): mixed

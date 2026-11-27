@@ -16,8 +16,10 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
  * A Link Control. Its canonical value is an object with required `type` and
  * `value` strings, an optional `label`, and the optional advanced attributes
  * (`urlSuffix`, `target`, `title`, `class`, `id`, `rel`, `ariaLabel`,
- * `download`, and `filename`). Each edit applies as it's made, unless the
- * control is compact, in which case edits are applied from a popover.
+ * `download`, and `filename`). Each edit applies as it's made. A control too
+ * narrow for its link type and destination side by side shows the link as a
+ * chip, edited in a popover. A link of a type the control doesn't offer is
+ * kept as it is: it shows as a chip that can only be removed.
  *
  * @since 6.0.0
  */
@@ -26,9 +28,6 @@ class Link extends Control implements ReadableValueControl, WritableValueControl
     use HasLinkFieldSettings;
 
     private bool $compact = false;
-
-    /** @var list<string>|null */
-    private ?array $registeredTypes = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
@@ -42,29 +41,17 @@ class Link extends Control implements ReadableValueControl, WritableValueControl
             'advanced-fields' => Json::encode($control->props['advancedFields'] ?? []),
             'disabled' => $attributes['name'] === null,
             'live' => true,
+            'compact' => $control->props['compact'] ?? false,
         ]);
     }
 
     /**
-     * Shows a summary of the link with a button that edits it in a popover,
-     * instead of the full link editor.
+     * Keeps the control one line tall, as in table cells: its label and
+     * advanced attributes open in a popover.
      */
     public function compact(bool $compact = true): static
     {
         $this->compact = $compact;
-
-        return $this;
-    }
-
-    /**
-     * Locks links whose type isn’t one of the given link type IDs, so values of
-     * link types that are no longer available are kept as they are.
-     *
-     * @param  list<string>  $typeIds
-     */
-    public function registeredTypes(array $typeIds): static
-    {
-        $this->registeredTypes = $typeIds;
 
         return $this;
     }
@@ -86,7 +73,6 @@ class Link extends Control implements ReadableValueControl, WritableValueControl
     {
         return $this->linkFieldSettingsProps() + [
             'compact' => $this->compact,
-            'registeredTypes' => $this->registeredTypes,
         ];
     }
 }

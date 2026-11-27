@@ -12,6 +12,7 @@
 /* The link type and its destination read as one input, like a grouped UI field (“Field Limit”). */
 .craft-link-field__destination {
   --c-field-label-margin-block-end: var(--c-spacing-xs);
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: start;
@@ -44,18 +45,128 @@
   min-width: 0;
 }
 
-.craft-link-field .buttons {
+.craft-link-popover::part(popup) {
+  width: min(24rem, calc(100vw - var(--c-spacing-xl)));
+  max-width: none;
+  container: link-popover / inline-size;
+}
+
+.craft-link-popover > [slot='content-body'] {
+  padding: calc(var(--c-spacing) * 3);
+}
+
+/* The popover's body is a grid, which would otherwise grow to fit a long chip. */
+.craft-link-popover craft-link-field {
+  min-width: 0;
+}
+
+/* A full-width popover keeps the type and destination on one row, as the
+   inline field does. The 23rem threshold allows for the pane's border. */
+@container link-popover (min-width: 23rem) {
+  .craft-link-field__destination {
+    flex-wrap: nowrap;
+
+    > :not(:has(craft-select)) {
+      flex-basis: 0;
+    }
+  }
+}
+
+.craft-link-popover > [slot='content-footer'] {
   display: flex;
   justify-content: flex-end;
   gap: var(--c-spacing-sm);
-}
-
-.craft-link-popover::part(popup) {
-  width: min(20rem, calc(100vw - var(--c-spacing-xl)));
-}
-
-/* The buttons' 44px hit-area sizers hang past the padding, which would make
-   the pane scroll by a few pixels. */
-.craft-link-popover > [slot='content'] {
+  /* The buttons' 44px hit-area sizers hang past the padding, which would make
+     the pane scroll by a few pixels. */
   overflow: clip;
+}
+
+.craft-link-field--compact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--c-spacing-xs);
+  /* Keeps long labels from widening table columns past their width settings */
+  contain: inline-size;
+}
+
+.craft-link-field__note {
+  margin: 0;
+  font-size: var(--c-text-sm);
+  color: var(--c-text-quiet);
+}
+
+/* Live fields are measured to choose between the chip and the side-by-side
+   view, so their width can't depend on which one they show. */
+craft-link-field[live] {
+  display: block;
+  contain: inline-size;
+}
+
+/* As tall as the inputs beside it, so the button sits on their centre line */
+.craft-link-field__destination > .craft-link-field__advanced {
+  flex: none;
+  align-self: end;
+  display: flex;
+  align-items: center;
+  height: var(--c-input-height, var(--c-size-control-md));
+}
+
+/* A compact field stays one line tall. Narrower than its row needs, it's a chip. */
+craft-link-field[compact] .craft-link-field__destination {
+  flex-wrap: nowrap;
+
+  > :not(:has(craft-select), .craft-link-field__advanced) {
+    flex-basis: 0;
+  }
+}
+
+/*
+  Editable tables strip their cells' inputs to fill the cell, and have the cell
+  draw their focus ring. A link field's inputs keep the look they have outside
+  a table, and its cell keeps the regular cell padding.
+*/
+.cp-table--editable td:has(craft-link-field) {
+  padding-block: var(--c-spacing-sm);
+  padding-inline: var(--_input-padding-inline);
+  cursor: auto;
+
+  &:has(:focus-visible) {
+    outline: none;
+  }
+
+  /* The cell turns its controls' focus rings off; the field's inputs draw their own, as in tokens.css. */
+  craft-link-field {
+    --c-focus-outline-style: solid;
+    --c-focus-outline-offset: 2px;
+  }
+
+  craft-link-field :is(craft-input, craft-select),
+  craft-link-field :is(input, select, .form-control) {
+    --c-input-border-width: inherit;
+    --c-input-radius: inherit;
+    --c-input-shadow: inherit;
+    --c-focus-outline-offset: inherit;
+    --c-focus-outline-style: inherit;
+  }
+
+  /* The table flattens its cells' inputs directly, over their own control styles. */
+  craft-link-field craft-input > input.form-control {
+    --c-focus-outline-offset: inherit;
+    border-width: var(
+      --c-input-border-width,
+      var(--c-form-control-border-width)
+    );
+    border-style: var(
+      --c-input-border-style,
+      var(--c-form-control-border-style)
+    );
+    border-color: var(
+      --c-input-border-color,
+      var(--c-form-control-border-color)
+    );
+    padding-block: 0;
+    padding-inline: var(--c-input-spacing-inline);
+    height: auto;
+  }
 }
