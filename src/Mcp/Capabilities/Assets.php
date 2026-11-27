@@ -591,7 +591,7 @@ readonly class Assets
             'id' => $session->id,
             'chunkSize' => $session->chunkSize,
             'partCount' => $session->partCount,
-            'expiresInSeconds' => Cms::config()->uploadSessionDuration,
+            'expiresInSeconds' => Cms::config()->assets->uploadSessionDuration,
             'transport' => $transport,
             'urls' => [
                 'transfer' => $transferUrl,

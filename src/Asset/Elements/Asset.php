@@ -36,7 +36,7 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\AssetsConfig;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -310,7 +310,7 @@ class Asset extends Element
      * @var bool Whether the file was moved to the trashed asset disk when the asset was soft-deleted, so it can be put
      *           back if the asset is restored
      *
-     * @see GeneralConfig::$trashedAssetDisk
+     * @see AssetsConfig::$trashDisk
      */
     #[AllowedInSandbox]
     public bool $trashedFileExists = false;
@@ -412,7 +412,7 @@ class Asset extends Element
 
     /**
      * @var bool|null Whether the associated file should be sanitized on upload, if it's an image. Defaults to `true`,
-     *                unless it’s a control panel request and <config4:sanitizeCpImageUploads> is disabled.
+     *                unless it’s a control panel request and the `assets.sanitizeCpImageUploads` config setting is disabled.
      *
      * @see afterSave()
      */
@@ -2855,7 +2855,7 @@ class Asset extends Element
     public static function sharedImageEditorSettings(): array
     {
         return [
-            'imageEditorRatios' => Cms::config()->imageEditorRatios,
+            'imageEditorRatios' => Cms::config()->images->editorRatios,
             // Only Imagick can rotate by a fraction of a degree; GD rounds.
             'allowDegreeFractions' => Images::getIsImagick(),
             // Picks which cropper handles get the left and right labels.
@@ -3672,7 +3672,7 @@ CSS,
     }
 
     /**
-     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `preserveExifData`
+     * Returns whether an uploaded image should be sanitized, which strips its metadata, unless the `images.preserveExifData`
      * config setting is enabled.
      */
     private function shouldSanitizeUpload(): bool
@@ -3680,7 +3680,7 @@ CSS,
         return $this->ruleset->inScenarios(AssetRules::SCENARIO_REPLACE, AssetRules::SCENARIO_CREATE) &&
             ($this->sanitizeOnUpload ?? (
                 ! request()->isCpRequest() ||
-                Cms::config()->sanitizeCpImageUploads
+                Cms::config()->assets->sanitizeCpImageUploads
             ));
     }
 
@@ -3851,7 +3851,7 @@ CSS,
     #[Override]
     public function afterDelete(): void
     {
-        $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->getTrashedAssetDisk();
+        $trashedAssetDisk = $this->hardDelete ? null : Cms::config()->assets->getTrashDisk();
 
         if (! $this->keepFileOnDelete) {
             $oldUrl = $this->getUrl();
@@ -3923,7 +3923,7 @@ CSS,
     /**
      * Returns the path to the asset’s file on the trashed asset disk: its ID, followed by its extension.
      *
-     * @see GeneralConfig::$trashedAssetDisk
+     * @see AssetsConfig::$trashDisk
      */
     public function getTrashedFilePath(): string
     {
@@ -3940,7 +3940,7 @@ CSS,
     {
         return $this->deletedWithVolume || (
             $this->trashedFileExists &&
-            Cms::config()->getTrashedAssetDisk() !== null
+            Cms::config()->assets->getTrashDisk() !== null
         );
     }
 
@@ -3979,7 +3979,7 @@ CSS,
      */
     private function restoreFileFromTrash(): void
     {
-        $trashedAssetDisk = Storage::disk((string) Cms::config()->getTrashedAssetDisk());
+        $trashedAssetDisk = Storage::disk((string) Cms::config()->assets->getTrashDisk());
         $volumeDisk = $this->getVolume()->sourceDisk();
         $path = $this->getPath();
 
@@ -4004,7 +4004,7 @@ CSS,
 
     private function deleteTrashedFile(): void
     {
-        $trashedAssetDisk = Cms::config()->getTrashedAssetDisk();
+        $trashedAssetDisk = Cms::config()->assets->getTrashDisk();
 
         if ($trashedAssetDisk !== null) {
             $trashPath = $this->getTrashedFilePath();

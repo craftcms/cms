@@ -504,7 +504,7 @@ it('only triggers legacy generate transform events for image files', function():
 });
 
 it('only triggers legacy generate transform events for GIFs on site requests when transformGifs allows it', function(): void {
-    Cms::config()->transformGifs = false;
+    Cms::config()->images->transformGifs = false;
     $asset = ($this->asset)([
         'filename' => 'animation.gif',
         'width' => 800,
@@ -528,7 +528,7 @@ it('only triggers legacy generate transform events for GIFs on site requests whe
             ->and($legacy)->toBe(1);
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_BEFORE_GENERATE_TRANSFORM, $before);
-        Cms::config()->transformGifs = true;
+        Cms::config()->images->transformGifs = true;
         request()->attributes->remove('isCpRequest');
     }
 });

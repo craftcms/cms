@@ -21,8 +21,8 @@ use yii\web\IdentityInterface;
 use function CraftCms\Cms\craftAuth;
 
 beforeEach(function() {
-    Cms::config()->authGuard = 'craft';
-    Cms::config()->authPasswordBroker = 'craft';
+    Cms::config()->security->authGuard = 'craft';
+    Cms::config()->security->authPasswordBroker = 'craft';
 
     $this->legacyUser = app('Craft')->getUser();
     $this->authUser = new GenericUser(['id' => 42, 'password' => '']);

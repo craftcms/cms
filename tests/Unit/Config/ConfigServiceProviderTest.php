@@ -7,6 +7,7 @@ use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\AssetTransformersConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\GqlConfig;
 use CraftCms\Cms\Config\McpConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettings;
@@ -27,7 +28,7 @@ afterEach(function () {
     unset($_SERVER['CRAFT_CACHED_ENV_TEST']);
     putenv('CRAFT_CACHED_ENV_TEST');
 
-    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO'] as $name) {
+    foreach (['CRAFT_ANCHORS', 'CRAFT_CP_TRIGGER', 'CRAFT_DEFAULT_COUNTRY_CODE', 'CRAFT_MCP', 'CRAFT_MCP_INSTRUCTIONS', 'CRAFT_ANCHORS_USE_ADDITIONAL_TAG_TO_ANCHOR_TO', 'CRAFT_GQL', 'CRAFT_GQL_MAX_DEPTH', 'CRAFT_GQL_MAX_COMPLEXITY', 'CRAFT_MAX_GRAPHQL_DEPTH', 'CRAFT_MAX_GRAPHQL_COMPLEXITY', 'CRAFT_DEFAULT_IMAGE_QUALITY', 'CRAFT_QUEUE_NAME', 'CRAFT_BACKUP_COMMAND', 'CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS', 'CRAFT_ASSETS_UPLOAD_CHUNK_SIZE', 'CRAFT_DEFAULT_TEMPLATE_EXTENSIONS', 'CRAFT_SLUG_WORD_SEPARATOR', 'CRAFT_DISABLE_2FA', 'CRAFT_MAX_INVALID_LOGINS'] as $name) {
         unset($_SERVER[$name]);
         putenv($name);
     }
@@ -157,7 +158,8 @@ it('materializes array configuration through fluent setters', function () {
 
     $config = app(GeneralConfig::class);
 
-    expect($config->allowedFileExtensions)->toContain('custom')
+    expect($config->assets->allowedFileExtensions)->toContain('custom')
+        ->and($config->assets->extraAllowedFileExtensions)->toBeNull()
         ->and(app(ConfigRepository::class)->get('craft.general'))->toBe($config);
 });
 
@@ -194,7 +196,7 @@ it('applies environment overrides when resolved', function () {
 
     new ConfigServiceProvider(app())->register();
 
-    expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
+    expect(app(GeneralConfig::class)->routing->cpTrigger)->toBe('adminus');
 });
 
 it('logs a deprecation warning for each environment override', function () {
@@ -216,7 +218,7 @@ it('logs a deprecation warning for each environment override', function () {
     $logs = collect(Deprecator::getRequestLogs());
     $messages = $logs->mapWithKeys(fn ($log) => [$log->key => $log->message]);
 
-    expect($messages->keys()->sort()->values()->all())->toBe(['env:CRAFT_CP_TRIGGER', 'env:CRAFT_DISABLE_2FA', 'env:CRAFT_HTTP_PROXY', 'env:CRAFT_MCP_INSTRUCTIONS'])
+    expect($messages->keys()->filter(fn (string $key) => str_starts_with($key, 'env:'))->sort()->values()->all())->toBe(['env:CRAFT_CP_TRIGGER', 'env:CRAFT_DISABLE_2FA', 'env:CRAFT_HTTP_PROXY', 'env:CRAFT_MCP_INSTRUCTIONS'])
         ->and(Json::encode($logs->pluck('traces')))->not->toContain('hunter2')
         ->and($messages['env:CRAFT_MCP_INSTRUCTIONS'])->toStartWith('Setting `mcp.instructions` with the `CRAFT_MCP_INSTRUCTIONS` environment variable is deprecated.')
         ->and($messages['env:CRAFT_DISABLE_2FA'])->toStartWith('Setting `disable2fa` with the `CRAFT_DISABLE_2FA` environment variable is deprecated.');
@@ -268,16 +270,146 @@ it('merges per-setting environment overrides into nested config objects', functi
         ->and($config->anchors->useAdditionalTagToAnchorTo)->toBeFalse();
 });
 
+it('materializes GraphQL configuration from general.php and environment overrides', function () {
+    app(ConfigRepository::class)->set('craft.general', ['gql' => ['typePrefix' => 'site_', 'maxDepth' => 5]]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_GQL'] = '{"enableIntrospection":false,"maxComplexity":500}';
+    $_SERVER['CRAFT_GQL_MAX_DEPTH'] = '12';
+    $_SERVER['CRAFT_MAX_GRAPHQL_COMPLEXITY'] = '300';
+
+    new ConfigServiceProvider(app())->register();
+
+    $gql = app(GeneralConfig::class)->gql;
+
+    expect($gql)->toBeInstanceOf(GqlConfig::class)
+        ->and($gql->typePrefix)->toBe('')
+        ->and($gql->enableIntrospection)->toBeFalse()
+        ->and($gql->maxComplexity)->toBe(500)
+        ->and($gql->maxDepth)->toBe(12)
+        ->and($gql->enabled)->toBeTrue();
+});
+
+it('forwards the renamed GraphQL settings to the gql setting', function () {
+    app(ConfigRepository::class)->set('craft.general', ['enableGql' => false, 'gqlTypePrefix' => 'site_']);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_MAX_GRAPHQL_DEPTH'] = '7';
+    $_SERVER['CRAFT_MAX_GRAPHQL_COMPLEXITY'] = '300';
+    $_SERVER['CRAFT_GQL_MAX_COMPLEXITY'] = '500';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)
+        ->enableGraphqlIntrospection(false)
+        ->setGraphqlDatesToSystemTimeZone()
+        ->maxGraphqlBatchSize('3');
+    $config->maxGraphqlResults = 20;
+
+    expect($config->gql->enabled)->toBeFalse()
+        ->and($config->gql->typePrefix)->toBe('site_')
+        ->and($config->gql->maxDepth)->toBe(7)
+        ->and($config->gql->maxComplexity)->toBe(500)
+        ->and($config->gql->enableIntrospection)->toBeFalse()
+        ->and($config->gql->setDatesToSystemTimeZone)->toBeTrue()
+        ->and($config->gql->maxResults)->toBe(20)
+        ->and($config->gql->maxBatchSize)->toBe(3)
+        ->and($config->enableGql)->toBeFalse()
+        ->and($config['maxGraphqlDepth'])->toBe(7)
+        ->and($config->gql->enableCaching)->toBeTrue()
+        ->and($config->toArray())->not->toHaveKey('enableGql')
+        ->and(GeneralConfig::fromConfig(['enableGql' => false])->gql->enabled)->toBeFalse()
+        ->and(collect(Deprecator::getRequestLogs())->firstWhere('key', GeneralConfig::class.'::enableGraphqlIntrospection')?->file)->toBe(__FILE__);
+});
+
+it('forwards the renamed image, backup, and queue settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['upscaleImages' => false, 'maxBackups' => false]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DEFAULT_IMAGE_QUALITY'] = '90';
+    $_SERVER['CRAFT_QUEUE_NAME'] = 'craft';
+    $_SERVER['CRAFT_BACKUP_COMMAND'] = 'false';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)->runQueueAutomatically(false);
+
+    expect($config->images->upscale)->toBeFalse()
+        ->and($config->images->defaultQuality)->toBe(90)
+        ->and($config->backups->max)->toBeFalse()
+        ->and($config->backups->command)->toBeFalse()
+        ->and($config->getBackupOnUpdate())->toBeFalse()
+        ->and($config->queue->name)->toBe('craft')
+        ->and($config->queueName)->toBe('craft')
+        ->and($config->queue->runAutomatically)->toBeFalse()
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->not->toContain(GeneralConfig::class.'::queueName');
+});
+
+it('forwards the renamed asset settings through their fluent methods', function () {
+    app(ConfigRepository::class)->set('craft.general', ['maxUploadFileSize' => '2M', 'revAssetUrls' => true]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS'] = 'MBOX,xml';
+    $_SERVER['CRAFT_ASSETS_UPLOAD_CHUNK_SIZE'] = '1024';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class);
+    $config->tempAssetUploadDisk = 'temp-uploads';
+    $config->allowedFileExtensions[] = 'zzz';
+
+    expect($config->assets->maxUploadFileSize)->toBe(2097152)
+        ->and($config->assets->revUrls)->toBeTrue()
+        ->and($config->assets->allowedFileExtensions)->toContain('mbox', 'xml', 'jpg', 'zzz')
+        ->and($config->assets->uploadChunkSize)->toBe(1024)
+        ->and($config->assets->getTempUploadDisk())->toBe('temp-uploads');
+});
+
+it('forwards the renamed template and slug settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['privateTemplateTrigger' => '', 'maxSlugIncrement' => 5]);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DEFAULT_TEMPLATE_EXTENSIONS'] = 'blade.php,twig';
+    $_SERVER['CRAFT_SLUG_WORD_SEPARATOR'] = '.';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)->enableTemplateCaching(false);
+
+    expect($config->templates->privateTrigger)->toBe('')
+        ->and($config->templates->defaultExtensions)->toBe(['blade.php', 'twig'])
+        ->and($config->templates->enableCaching)->toBeFalse()
+        ->and($config->slugs->maxIncrement)->toBe(5)
+        ->and($config->slugs->wordSeparator)->toBe('.');
+});
+
+it('forwards the renamed routing, security, user, and garbage collection settings', function () {
+    app(ConfigRepository::class)->set('craft.general', ['softDeleteDuration' => 'P1D', 'loginPath' => '/login/']);
+    app()->forgetInstance(GeneralConfig::class);
+    $_SERVER['CRAFT_DISABLE_2FA'] = 'true';
+    $_SERVER['CRAFT_MAX_INVALID_LOGINS'] = 'false';
+
+    new ConfigServiceProvider(app())->register();
+
+    $config = app(GeneralConfig::class)->pageTrigger('?p=');
+
+    expect($config->garbageCollection->softDeleteDuration)->toBe(86400)
+        ->and($config->routing->getLoginPath())->toBe('login')
+        ->and($config->getLoginPath())->toBe('login')
+        ->and($config->routing->getPageTriggerParam())->toBe('p')
+        ->and($config->users->disable2fa)->toBeTrue()
+        ->and($config->security->maxInvalidLogins)->toBeFalse()
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->all())->toContain('env:CRAFT_DISABLE_2FA', 'env:CRAFT_MAX_INVALID_LOGINS');
+});
+
 it('does not change a cached config’s nested objects when applying environment overrides', function () {
     $cached = GeneralConfig::create();
     app(ConfigRepository::class)->set('craft.general', $cached);
     app()->forgetInstance(GeneralConfig::class);
     $_SERVER['CRAFT_MCP_INSTRUCTIONS'] = 'Be brief.';
+    $_SERVER['CRAFT_EXTRA_ALLOWED_FILE_EXTENSIONS'] = 'zzz';
 
     new ConfigServiceProvider(app())->register();
 
     expect(app(GeneralConfig::class)->mcp->instructions)->toBe('Be brief.')
-        ->and($cached->mcp->instructions)->toBe('');
+        ->and($cached->mcp->instructions)->toBe('')
+        ->and(app(GeneralConfig::class)->assets->allowedFileExtensions)->toContain('zzz')
+        ->and($cached->assets->allowedFileExtensions)->not->toContain('zzz');
 });
 
 it('extends the default Twig sandbox allowlist with project entries', function () {

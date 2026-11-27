@@ -24,14 +24,14 @@ dataset('unavailable user states', [
 ]);
 
 test('getAuthError reports why the user cannot sign in', function (array $attributes, ?int $cooldownDuration, AuthError $expected) {
-    Cms::config()->cooldownDuration = $cooldownDuration;
+    Cms::config()->security->cooldownDuration = $cooldownDuration;
     $user = UserModel::factory()->createElement($attributes);
 
     expect($this->auth->getAuthError($user))->toBe($expected);
 })->with('unavailable user states');
 
 test('authenticate rejects a correct password with the user state error', function (array $attributes, ?int $cooldownDuration, AuthError $expected) {
-    Cms::config()->cooldownDuration = $cooldownDuration;
+    Cms::config()->security->cooldownDuration = $cooldownDuration;
     $user = UserModel::factory()->createElement($attributes);
 
     expect($this->auth->authenticate($user, ['password' => 'password']))->toBeFalse()
@@ -40,7 +40,7 @@ test('authenticate rejects a correct password with the user state error', functi
 
 test('getAuthError uses explicit CP context or defaults to the request', function (bool $cpRequest, ?bool $cpContext, ?AuthError $expected) {
     Edition::set(Edition::Pro);
-    Cms::config()->cpTrigger = $cpRequest ? '/' : 'admin';
+    Cms::config()->routing->cpTrigger = $cpRequest ? '/' : 'admin';
     $user = UserModel::factory()->createElement(['admin' => false]);
 
     expect($this->auth->getAuthError($user, $cpContext))->toBe($expected);
@@ -69,7 +69,7 @@ test('getLoginFailureInfo returns correct messages', function () {
 });
 
 test('getLoginFailureInfo with preventUserEnumeration', function () {
-    Cms::config()->preventUserEnumeration = true;
+    Cms::config()->security->preventUserEnumeration = true;
 
     $user = UserModel::factory()->createElement();
 
@@ -87,7 +87,7 @@ test('handleInvalidLogin increments invalid count', function () {
 });
 
 test('handleInvalidLogin locks after max attempts', function () {
-    Cms::config()->maxInvalidLogins = 3;
+    Cms::config()->security->maxInvalidLogins = 3;
 
     $user = UserModel::factory()->createElement();
 

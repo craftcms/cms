@@ -19,7 +19,7 @@ class TableRequest extends FormRequest
             return $this->integer('page', 1);
         }
 
-        return $this->integer(Cms::config()->getPageTriggerParam(), 1);
+        return $this->integer(Cms::config()->routing->getPageTriggerParam(), 1);
     }
 
     public function limit(): int

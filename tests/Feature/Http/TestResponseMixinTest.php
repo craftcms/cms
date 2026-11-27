@@ -56,7 +56,7 @@ it('finds messages a Twig page queues for its legacy message display', function 
     app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 2).'/Support/templates');
 
     Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-        ->prefix(Cms::config()->cpTrigger)
+        ->prefix(Cms::config()->routing->cpTrigger)
         ->get('test-messages-document/{flash}', function (string $flash) use ($render) {
             if ($flash === 'yes') {
                 Flash::error('Couldn’t save “Draft]);” </script>.');

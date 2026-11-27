@@ -115,7 +115,7 @@ abstract class ElementResolver extends Resolver
         }
 
         // Apply max result config
-        $maxGraphqlResults = Cms::config()->maxGraphqlResults;
+        $maxGraphqlResults = Cms::config()->gql->maxResults;
 
         // Reset negative limit to zero
         if ((int) $query->getLimit() < 0) {

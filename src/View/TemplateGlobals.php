@@ -46,7 +46,7 @@ class TemplateGlobals
         }
 
         $isInstalled = Cms::isInstalled();
-        $setPasswordRequestPath = $this->generalConfig->getSetPasswordRequestPath();
+        $setPasswordRequestPath = $this->generalConfig->routing->getSetPasswordRequestPath();
 
         if ($isInstalled && ! $this->updates->isCraftUpdatePending()) {
             $currentSite = $this->sites->getCurrentSite();
@@ -67,10 +67,10 @@ class TemplateGlobals
             'language' => app()->getLocale(),
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
-            'loginUrl' => is_string($loginPath = $this->generalConfig->getLoginPath())
+            'loginUrl' => is_string($loginPath = $this->generalConfig->routing->getLoginPath())
                 ? Url::siteUrl($loginPath)
                 : null,
-            'logoutUrl' => is_string($logoutPath = $this->generalConfig->getLogoutPath())
+            'logoutUrl' => is_string($logoutPath = $this->generalConfig->routing->getLogoutPath())
                 ? Url::siteUrl($logoutPath)
                 : null,
             'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,

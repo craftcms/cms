@@ -31,7 +31,7 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([AddressesController::class, 'index']))->assertRedirect(Cms::config()->cpTrigger.'/login');
+    get(action([AddressesController::class, 'index']))->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
     postJson(action([AddressesController::class, 'store']))->assertUnauthorized();
     postJson(action([AddressesController::class, 'destroy']))->assertUnauthorized();
 });

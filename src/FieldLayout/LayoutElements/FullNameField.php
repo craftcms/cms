@@ -58,7 +58,7 @@ class FullNameField extends TextField
 
         if (
             ! $element ||
-            ! Cms::config()->showFirstAndLastNameFields ||
+            ! Cms::config()->users->showFirstAndLastNameFields ||
             count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) !== 2
         ) {
             return parent::uiNode($context);
@@ -101,7 +101,7 @@ class FullNameField extends TextField
     #[Override]
     protected function settingsNodes(UiContext $context): array
     {
-        if (Cms::config()->showFirstAndLastNameFields) {
+        if (Cms::config()->users->showFirstAndLastNameFields) {
             // can't know for sure if the element will support firstName and lastName, but probably?
             return [];
         }

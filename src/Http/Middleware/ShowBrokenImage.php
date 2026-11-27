@@ -32,7 +32,7 @@ class ShowBrokenImage
             return $response;
         }
 
-        if (! Cms::config()->brokenImagePath) {
+        if (! Cms::config()->images->brokenPath) {
             return $response;
         }
 
@@ -47,11 +47,11 @@ class ShowBrokenImage
             return $response;
         }
 
-        $generalConfig = Cms::config();
-        $imagePath = Aliases::get($generalConfig->brokenImagePath);
+        $brokenPath = Cms::config()->images->brokenPath;
+        $imagePath = Aliases::get($brokenPath);
 
         if (! is_file($imagePath)) {
-            throw new RuntimeException("Invalid broken image path: $generalConfig->brokenImagePath");
+            throw new RuntimeException("Invalid broken image path: $brokenPath");
         }
 
         return response(File::get($imagePath), $statusCode, [

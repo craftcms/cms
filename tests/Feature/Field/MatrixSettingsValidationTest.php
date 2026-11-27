@@ -10,7 +10,7 @@ it('names the entry URI format in its errors', function () {
         'name' => 'Blocks',
         'handle' => 'blocks',
         'siteSettings' => [
-            ['uriFormat' => Cms::config()->cpTrigger.'/{slug}'],
+            ['uriFormat' => Cms::config()->routing->cpTrigger.'/{slug}'],
         ],
     ]);
 

@@ -45,7 +45,7 @@ describe('password-reset rate limiter', function () {
     });
 
     it('does not throttle when defaultRateLimit is disabled', function () {
-        Cms::config()->defaultRateLimit = false;
+        Cms::config()->security->defaultRateLimit = false;
 
         $request = Request::create('/actions/users/send-password-reset-email', 'POST', [
             'loginName' => 'test@example.com',

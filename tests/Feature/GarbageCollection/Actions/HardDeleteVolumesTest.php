@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 it('deletes trashed volumes and their folders', function () {
     createVolume(['dateDeleted' => null]);
     createVolume(['dateDeleted' => now()]);
-    createVolume(['dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1)]);
+    createVolume(['dateDeleted' => now()->subSeconds(Cms::config()->garbageCollection->softDeleteDuration + 1)]);
 
     expect(DB::table(Table::VOLUMES)->count())->toBe(3);
     expect(DB::table(Table::VOLUMEFOLDERS)->count())->toBe(3);

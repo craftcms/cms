@@ -518,7 +518,7 @@ readonly class Drafts
      */
     public function purgeUnsavedDrafts(): void
     {
-        if (Cms::config()->purgeUnsavedDraftsDuration === 0) {
+        if (Cms::config()->garbageCollection->purgeUnsavedDraftsDuration === 0) {
             return;
         }
 
@@ -527,7 +527,7 @@ readonly class Drafts
             ->join(Table::DRAFTS.' as drafts', 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
-            ->where('elements.dateUpdated', '<', Query::prepareDateForDb(now()->subSeconds(Cms::config()->purgeUnsavedDraftsDuration)))
+            ->where('elements.dateUpdated', '<', Query::prepareDateForDb(now()->subSeconds(Cms::config()->garbageCollection->purgeUnsavedDraftsDuration)))
             ->get();
 
         foreach ($drafts as $draftInfo) {

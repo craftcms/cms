@@ -49,9 +49,9 @@ trait HasNames
             $languages = [
                 // Load our custom language file first so config settings can override the defaults
                 new CustomLanguage(
-                    Cms::config()->extraNameSuffixes,
-                    Cms::config()->extraNameSalutations,
-                    Cms::config()->extraLastNamePrefixes,
+                    Cms::config()->users->extraNameSuffixes,
+                    Cms::config()->users->extraNameSalutations,
+                    Cms::config()->users->extraLastNamePrefixes,
                 ),
                 new English,
                 new German,

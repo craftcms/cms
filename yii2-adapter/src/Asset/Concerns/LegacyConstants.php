@@ -266,8 +266,8 @@ trait LegacyConstants
         }
 
         return match ($extension) {
-            'gif' => Cms::config()->transformGifs,
-            'svg' => Cms::config()->transformSvgs,
+            'gif' => Cms::config()->images->transformGifs,
+            'svg' => Cms::config()->images->transformSvgs,
             default => true,
         };
     }

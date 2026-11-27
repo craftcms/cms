@@ -9,14 +9,14 @@ use CraftCms\Cms\Queue\Middleware\ShouldRun;
 use Illuminate\Support\Facades\Queue;
 
 it('sets queue name from config', function () {
-    Cms::config()->queueName = 'foo';
+    Cms::config()->queue->name = 'foo';
 
     $job = new class extends Job
     {
         public function handle(): void {}
     };
 
-    expect($job->queue)->toBe(Cms::config()->queueName);
+    expect($job->queue)->toBe(Cms::config()->queue->name);
 });
 
 it('can set a custom timeout', function () {

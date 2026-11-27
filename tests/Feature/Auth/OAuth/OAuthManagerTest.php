@@ -23,12 +23,12 @@ beforeEach(function () {
 
     FakeOAuthProvider::reset();
 
-    app(GeneralConfig::class)->oauthProviders([]);
+    app(GeneralConfig::class)->users->oauthProviders([]);
 });
 
 function configureOAuthManagerProvider(array $config = []): void
 {
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'test' => array_merge([
             'driver' => FakeOAuthProvider::class,
             'clientId' => 'client-id',
@@ -144,7 +144,7 @@ describe('provider configuration', function () {
             'client_secret' => 'services-github-secret',
         ]);
 
-        app(GeneralConfig::class)->oauthProviders($providers);
+        app(GeneralConfig::class)->users->oauthProviders($providers);
 
         $provider = app(OAuth::class)->getProviderDefinition('github');
 
@@ -176,7 +176,7 @@ test('named aliases keep credentials scopes and cached drivers isolated', functi
         'first' => ['driver' => 'github', 'clientId' => 'first-id', 'scopes' => ['repo']],
         'second' => ['driver' => 'github', 'clientSecret' => 'second-secret', 'scopes' => []],
     ];
-    app(GeneralConfig::class)->oauthProviders($reverse ? array_reverse($providers, true) : $providers);
+    app(GeneralConfig::class)->users->oauthProviders($reverse ? array_reverse($providers, true) : $providers);
     $oauth = app(OAuth::class);
 
     foreach ([false, true, false] as $cp) {

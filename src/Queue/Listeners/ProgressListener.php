@@ -21,9 +21,9 @@ abstract readonly class ProgressListener
 
     protected function shouldTrackQueue(?string $queueName): bool
     {
-        $defaultQueueName = Queue::getConfig()['queue'] ?? $this->generalConfig->queueName;
+        $defaultQueueName = Queue::getConfig()['queue'] ?? $this->generalConfig->queue->name;
 
-        return in_array($queueName === 'sync' ? $defaultQueueName : $queueName ?? $defaultQueueName, $this->generalConfig->trackedQueueNames, true);
+        return in_array($queueName === 'sync' ? $defaultQueueName : $queueName ?? $defaultQueueName, $this->generalConfig->queue->trackedNames, true);
     }
 
     /**

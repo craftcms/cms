@@ -206,6 +206,17 @@ it('applies array general configs through the legacy settings', function(): void
         ->and($config->usePathInfo)->toBeTrue();
 });
 
+it('maps the Craft 5 GraphQL settings to the gql setting', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([
+        'enableGraphQlCaching' => false,
+        'gqlTypePrefix' => 'site_',
+    ]);
+
+    expect($config)->toBeInstanceOf(GeneralConfig::class)
+        ->and($config->gql->enableCaching)->toBeFalse()
+        ->and($config->gql->typePrefix)->toBe('site_');
+});
+
 it('passes the deprecated proxy settings to the Yii request', function(\CraftCms\Cms\Config\GeneralConfig $config): void {
     Config::set('craft.general', $config);
     app()->instance(\CraftCms\Cms\Config\GeneralConfig::class, $config);

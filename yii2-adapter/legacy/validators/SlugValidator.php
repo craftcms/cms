@@ -51,7 +51,7 @@ class SlugValidator extends Validator
         }
 
         if (!isset($this->limitAutoSlugsToAscii)) {
-            $this->limitAutoSlugsToAscii = Cms::config()->limitAutoSlugsToAscii;
+            $this->limitAutoSlugsToAscii = Cms::config()->slugs->limitAutoToAscii;
         }
     }
 

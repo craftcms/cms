@@ -55,7 +55,7 @@ class UriFormatRule implements ValidationRule, ValidatorAwareRule
         $generalConfig = Cms::config();
         $firstSeg = explode('/', (string) $value, 2)[0];
 
-        if ($firstSeg === $generalConfig->actionTrigger) {
+        if ($firstSeg === $generalConfig->routing->actionTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [
                 'attribute' => $label,
                 'setting' => 'actionTrigger',
@@ -64,7 +64,7 @@ class UriFormatRule implements ValidationRule, ValidatorAwareRule
             return;
         }
 
-        if ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
+        if ($generalConfig->routing->cpTrigger && $firstSeg === $generalConfig->routing->cpTrigger) {
             $fail(t('{attribute} cannot start with the {setting} config setting.', [
                 'attribute' => $label,
                 'setting' => 'cpTrigger',

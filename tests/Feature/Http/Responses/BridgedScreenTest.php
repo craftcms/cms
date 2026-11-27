@@ -32,7 +32,7 @@ it('preserves the header fragments of a Twig page in the Inertia shell', functio
     app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 3).'/Support/templates');
 
     Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-        ->prefix(Cms::config()->cpTrigger)
+        ->prefix(Cms::config()->routing->cpTrigger)
         ->get('bridged-header-test', fn () => pageTemplate('test-plugin/bridged-header'));
 
     get(cp_url('bridged-header-test'))
@@ -54,7 +54,7 @@ it('declares no form actions on a bridged Twig form that has none', function () 
     app(TemplateRoots::class)->register(TemplateMode::Cp, 'test-plugin', dirname(__DIR__, 3).'/Support/templates');
 
     Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-        ->prefix(Cms::config()->cpTrigger)
+        ->prefix(Cms::config()->routing->cpTrigger)
         ->get('bridged-form-test', fn () => pageTemplate('test-plugin/bridged-header', ['fullPageForm' => true]));
 
     get(cp_url('bridged-form-test'))
@@ -70,7 +70,7 @@ dataset('bridgedScreens', [
     'cp screen response' => [
         function (): string {
             Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-                ->prefix(Cms::config()->cpTrigger)
+                ->prefix(Cms::config()->routing->cpTrigger)
                 ->get('bridged-cp-screen-test', fn () => new CpScreenResponse()
                     ->title('Bridged screen')
                     ->contentHtml('<p>Server-rendered content</p>'));
@@ -81,7 +81,7 @@ dataset('bridgedScreens', [
     'template extending _layouts/cp' => [
         function (): string {
             Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-                ->prefix(Cms::config()->cpTrigger)
+                ->prefix(Cms::config()->routing->cpTrigger)
                 ->get('bridged-screen-test', fn () => template('_special/sitepicker', ['baseUrl' => cp_url()]));
 
             return cp_url('bridged-screen-test');
@@ -122,7 +122,7 @@ it('loads deferred props on a bridged screen without a hard visit', function (Cl
 
 it('encrypts a bridged screen’s save shortcut redirect', function () {
     Route::middleware(['craft', 'craft.web', 'craft.cp', 'auth', 'can:accessCp'])
-        ->prefix(Cms::config()->cpTrigger)
+        ->prefix(Cms::config()->routing->cpTrigger)
         ->get('bridged-save-shortcut-test', fn () => new CpScreenResponse()
             ->title('Bridged screen')
             ->action('test/save')

@@ -22,7 +22,7 @@ it('requires login', function () {
     auth()->logout();
 
     get(action([PluginStoreController::class, 'index']))
-        ->assertRedirect(Cms::config()->cpTrigger.'/login');
+        ->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
 });
 
 it('renders the discover page with the install’s context and crumb', function () {
@@ -39,7 +39,7 @@ it('renders the discover page with the install’s context and crumb', function 
 });
 
 it('routes plugin store pages to their screens', function (string $uri, string $component, array $props) {
-    get(Cms::config()->cpTrigger.'/plugin-store/'.$uri)
+    get(Cms::config()->routing->cpTrigger.'/plugin-store/'.$uri)
         ->assertOk()
         ->assertInertia(function (AssertableInertia $page) use ($component, $props) {
             $page->component($component);
@@ -62,7 +62,7 @@ it('routes plugin store pages to their screens', function (string $uri, string $
 ]);
 
 it('doesn’t take unknown plugin tabs', function () {
-    get(Cms::config()->cpTrigger.'/plugin-store/seomatic/settings')->assertNotFound();
+    get(Cms::config()->routing->cpTrigger.'/plugin-store/seomatic/settings')->assertNotFound();
 });
 
 it('keeps browsing available but disables package changes without Composer', function () {

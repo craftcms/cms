@@ -29,7 +29,7 @@ beforeEach(function (): void {
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
 
-    Cms::config()->enableGql = false;
+    Cms::config()->gql->enabled = false;
 
     $this->user = User::query()->firstOrFail();
     actingAs($this->user);

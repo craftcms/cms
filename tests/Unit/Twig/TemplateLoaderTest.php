@@ -115,7 +115,7 @@ describe('isFresh', function () {
         file_put_contents($path, 'content');
 
         // Make request()->isCpRequest() return true
-        Cms::config()->cpTrigger = '';
+        Cms::config()->routing->cpTrigger = '';
 
         $updates = Mockery::mock(Updates::class);
         $updates->shouldReceive('isCraftUpdatePending')->andReturn(true);
@@ -129,7 +129,7 @@ describe('isFresh', function () {
         file_put_contents($path, 'content');
 
         // Make request()->isCpRequest() return true
-        Cms::config()->cpTrigger = '';
+        Cms::config()->routing->cpTrigger = '';
 
         $updates = Mockery::mock(Updates::class);
         $updates->shouldReceive('isCraftUpdatePending')->andReturn(false);

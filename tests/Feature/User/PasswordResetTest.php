@@ -59,7 +59,7 @@ test('queued reset password emails keep the front-end site of the request', func
     $notification = Notification::sent(UserModel::findOrFail($user->id), ResetPasswordNotification::class)->sole();
     $mailable = unserialize(serialize($notification))->toMail($user);
 
-    expect((string) $mailable->variables['link'])->toStartWith('https://example.test/b/'.Cms::config()->getSetPasswordPath().'?code=')
+    expect((string) $mailable->variables['link'])->toStartWith('https://example.test/b/'.Cms::config()->routing->getSetPasswordPath().'?code=')
         ->and($mailable->siteId)->toBe($siteB->id)
         ->and($mailable->renderedMessage()->language)->toBe('nl');
 })->with([

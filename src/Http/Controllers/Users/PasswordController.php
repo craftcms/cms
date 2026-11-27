@@ -214,7 +214,7 @@ readonly class PasswordController
                 $errors[] = t('There was a problem sending the password reset email.');
             }
 
-            if ($generalConfig->preventUserEnumeration) {
+            if ($generalConfig->security->preventUserEnumeration) {
                 if (! empty($errors)) {
                     $list = implode("\n", array_map(fn (string $error) => sprintf('- %s', $error), $errors));
                     Log::warning(sprintf("Password reset email not sent:\n%s", $list), [__METHOD__]);

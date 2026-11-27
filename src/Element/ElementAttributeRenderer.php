@@ -314,7 +314,7 @@ readonly class ElementAttributeRenderer
             $find = ['/'];
             $replace = ['/<wbr>'];
 
-            $wordSeparator = Cms::config()->slugWordSeparator;
+            $wordSeparator = Cms::config()->slugs->wordSeparator;
 
             if ($wordSeparator) {
                 $find[] = $wordSeparator;

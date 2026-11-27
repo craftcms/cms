@@ -39,12 +39,12 @@ beforeEach(function () {
     CustomUserResolver::reset();
     CustomUserGroupResolver::reset();
 
-    app(GeneralConfig::class)->oauthProviders([]);
+    app(GeneralConfig::class)->users->oauthProviders([]);
 });
 
 function configureOAuthControllerProvider(array $config = []): void
 {
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'test' => array_merge([
             'driver' => FakeOAuthProvider::class,
             'clientId' => 'client-id',
@@ -71,7 +71,7 @@ function oauthControllerCallbackUrl(bool $isCpRequest = false, string $provider 
 function oauthControllerLoginUrl(bool $isCpRequest): string
 {
     if (! $isCpRequest) {
-        $loginPath = app(GeneralConfig::class)->getLoginPath();
+        $loginPath = app(GeneralConfig::class)->routing->getLoginPath();
 
         if ($loginPath !== false) {
             return Url::siteUrl($loginPath);
@@ -118,7 +118,7 @@ describe('redirect flow', function () {
             ->assertRedirect('https://provider.test/oauth/authorize');
 
         expect(session()->has('auth.context'))->toBeFalse()
-            ->and(session('url.intended'))->toContain(app(GeneralConfig::class)->getPostCpLoginRedirect());
+            ->and(session('url.intended'))->toContain(app(GeneralConfig::class)->routing->getPostCpLoginRedirect());
     });
 
     test('redirect sends inertia visits to the provider with a full page load', function () {
@@ -321,7 +321,7 @@ describe('callback flow', function () {
     });
 
     test('callback rejects unavailable users', function (array $elementAttributes, array $userAttributes, AuthError $error, ?int $cooldown, bool $isCpRequest) {
-        app(GeneralConfig::class)->cooldownDuration = $cooldown;
+        app(GeneralConfig::class)->security->cooldownDuration = $cooldown;
         $user = UserModel::factory()->active()->createElement([
             'email' => 'unavailable@example.com',
             'username' => 'unavailable-user',

@@ -59,14 +59,16 @@ class TemplateResolver
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and
-     * index filenames are configurable via the <config5:defaultTemplateExtensions>
-     * and <config5:indexTemplateFilenames> config settings.
+     * index filenames are configurable via the `templates.defaultExtensions`
+     * and `templates.indexFilenames` config settings.
      *
      * For example if you set the following in config/general.php:
      *
      * ```php
-     * 'defaultTemplateExtensions' => ['htm'],
-     * 'indexTemplateFilenames' => ['default'],
+     * 'templates' => [
+     *     'defaultExtensions' => ['htm'],
+     *     'indexFilenames' => ['default'],
+     * ],
      * ```
      *
      * then the following files would be searched for instead:

@@ -22,8 +22,8 @@ class FallbackTransformer implements ImageTransformerInterface
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         if (match ($asset->getMimeType()) {
-            'image/gif' => Cms::config()->transformGifs,
-            'image/svg+xml' => Cms::config()->transformSvgs,
+            'image/gif' => Cms::config()->images->transformGifs,
+            'image/svg+xml' => Cms::config()->images->transformSvgs,
             default => true,
         }) {
             $transformString = ltrim(ImageTransformHelper::getTransformString($imageTransform, true), '_');

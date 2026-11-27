@@ -86,7 +86,7 @@ test('password confirmation can be disabled', function () {
 });
 
 test('password confirmation is isolated for a configured Craft guard', function () {
-    Cms::config()->authGuard = 'craft';
+    Cms::config()->security->authGuard = 'craft';
     Auth::guard('craft')->login(User::find()->first());
     Session::forget('auth.craft.password_confirmed_at');
     Session::put('auth.password_confirmed_at', now()->unix());

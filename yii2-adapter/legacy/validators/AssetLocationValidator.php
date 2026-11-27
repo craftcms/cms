@@ -76,7 +76,7 @@ class AssetLocationValidator extends Validator
         parent::init();
 
         if (!isset($this->allowedExtensions)) {
-            $this->allowedExtensions = Cms::config()->allowedFileExtensions;
+            $this->allowedExtensions = Cms::config()->assets->allowedFileExtensions;
         }
 
         if (!isset($this->disallowedExtension)) {

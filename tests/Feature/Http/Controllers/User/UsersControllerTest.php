@@ -25,8 +25,8 @@ beforeEach(function () {
 it('requires login', function () {
     auth()->logout();
 
-    get(action([UsersController::class, 'create']))->assertRedirect(Cms::config()->cpTrigger.'/login');
-    get(action([UsersController::class, 'edit']))->assertRedirect(Cms::config()->cpTrigger.'/login');
+    get(action([UsersController::class, 'create']))->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
+    get(action([UsersController::class, 'edit']))->assertRedirect(Cms::config()->routing->cpTrigger.'/login');
 });
 
 describe('create', function () {

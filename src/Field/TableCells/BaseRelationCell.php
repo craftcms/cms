@@ -314,7 +314,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         }
 
         // Capped as element resolvers cap their queries
-        $maxGraphqlResults = Cms::config()->maxGraphqlResults;
+        $maxGraphqlResults = Cms::config()->gql->maxResults;
         if ($maxGraphqlResults > 0) {
             $query->limit($query->getLimit() === null ? $maxGraphqlResults : min($maxGraphqlResults, (int) $query->getLimit()));
         }

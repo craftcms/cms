@@ -1280,7 +1280,7 @@ class Sections
     ): array {
         $sortDir = $sortDir === SORT_DESC ? 'desc' : 'asc';
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
 
         $query = $query->orderBy($orderBy, $sortDir);
 

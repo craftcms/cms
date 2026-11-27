@@ -66,7 +66,7 @@ readonly class CheckForUpdates
             return;
         }
 
-        if ($request->is($this->generalConfig->cpTrigger.'*')) {
+        if ($request->is($this->generalConfig->routing->cpTrigger.'*')) {
             $version = Info::fetch()->version;
 
             throw new RuntimeException(t('Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [

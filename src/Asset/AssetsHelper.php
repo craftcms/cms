@@ -96,7 +96,7 @@ class AssetsHelper
         $path = implode('/', array_map(rawurlencode(...), $pathParts));
         $url = $volume->sourceDisk()->url($path);
 
-        if (Cms::config()->revAssetUrls) {
+        if (Cms::config()->assets->revUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
         }
 
@@ -207,14 +207,14 @@ class AssetsHelper
         }
 
         $generalConfig = Cms::config();
-        $separator = $generalConfig->filenameWordSeparator;
+        $separator = $generalConfig->assets->filenameWordSeparator;
 
         if (! is_string($separator)) {
             $separator = null;
         }
 
         $baseName = File::sanitizeFilename($originalBaseName, [
-            'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+            'asciiOnly' => $generalConfig->assets->convertFilenamesToAscii,
             'separator' => $separator,
         ]);
 
@@ -332,7 +332,7 @@ class AssetsHelper
     public static function getAllowedFileKinds(): array
     {
         $allowedFileKinds = [];
-        $allowedExtensions = array_flip(Cms::config()->allowedFileExtensions);
+        $allowedExtensions = array_flip(Cms::config()->assets->allowedFileExtensions);
 
         foreach (static::getFileKinds() as $kind => $info) {
             foreach ($info['extensions'] as $extension) {
@@ -409,7 +409,7 @@ class AssetsHelper
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = Cms::config()->maxUploadFileSize;
+        $configLimit = Cms::config()->assets->maxUploadFileSize;
 
         if ($configLimit) {
             return min($uploadInBytes, $configLimit);
@@ -421,7 +421,7 @@ class AssetsHelper
     /** The asset limit, independent of the size of individual upload requests. */
     public static function getMaxAssetUploadSize(): int
     {
-        $limit = PHP::sizeToBytes(Cms::config()->maxUploadFileSize);
+        $limit = PHP::sizeToBytes(Cms::config()->assets->maxUploadFileSize);
 
         return $limit > 0 ? $limit : PHP_INT_MAX;
     }
@@ -802,7 +802,7 @@ class AssetsHelper
             // Sanitize the subpath
             $segments = array_filter(explode('/', $renderedSubpath), fn (string $segment): bool => $segment !== ':ignore:');
             $segments = array_map(fn (string $segment): string => File::sanitizeFilename($segment, [
-                'asciiOnly' => Cms::config()->convertFilenamesToAscii,
+                'asciiOnly' => Cms::config()->assets->convertFilenamesToAscii,
             ]), $segments);
             $subpath = implode('/', $segments);
         }

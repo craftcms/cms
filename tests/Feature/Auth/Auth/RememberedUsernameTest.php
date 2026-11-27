@@ -21,10 +21,10 @@ test('remembered username', function () {
     $cookie = Cookie::queued(app(AuthMethods::class)->rememberedUsernameCookie());
 
     expect($cookie->getValue())->toBe($user->username);
-    expect($cookie->getExpiresTime())->toBe(now()->timestamp + Cms::config()->rememberUsernameDuration);
+    expect($cookie->getExpiresTime())->toBe(now()->timestamp + Cms::config()->security->rememberUsernameDuration);
 
     // Setting to 0 will remove the cookie.
-    Cms::config()->rememberUsernameDuration = 0;
+    Cms::config()->security->rememberUsernameDuration = 0;
 
     app(AuthMethods::class)->setRememberedUsername($user);
 

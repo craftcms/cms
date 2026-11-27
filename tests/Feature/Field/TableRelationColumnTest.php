@@ -258,14 +258,14 @@ it('indexes relation cells with the related elements’ titles in the element’
     expect($field->cellType($field->columns['col1'])->searchKeywords($value[0]['entries']))->toBe('Bonjour');
 });
 
-it('caps related elements in GraphQL at maxGraphqlResults', function () {
+it('caps related elements in GraphQL at gql.maxResults', function () {
     $users = array_map(fn () => UserModel::factory()->createElement(), range(1, 3));
     $field = new Table([
         'handle' => 'related',
         'columns' => ['col1' => ['heading' => 'Users', 'handle' => 'users', 'type' => 'users']],
     ]);
     app(Gql::class)->setActiveSchema(new GqlSchema(['scope' => ['usergroups.everyone:read']]));
-    Cms::config()->maxGraphqlResults = 2;
+    Cms::config()->gql->maxResults = 2;
 
     $value = $field->normalizeValue([['col1' => array_map(fn ($user) => $user->id, $users)]], null);
 
@@ -303,7 +303,7 @@ it('applies the GraphQL schema to relations nested in entries cells', function (
     $target = $entry($allowed, 'Target', ['relatedEntries' => [$secret->id, $public->id]]);
     $owner = $entry($allowed, 'Owner', ['cells' => [['col1' => [$target->id]]]]);
 
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
     $gql = app(Gql::class);
     $gql->flushCaches();
     $result = $gql->executeQuery(

@@ -13,7 +13,7 @@ class PurgePendingUsers extends GarbageCollectionAction
 {
     public function __invoke(): void
     {
-        if ($this->generalConfig->purgePendingUsersDuration === 0) {
+        if ($this->generalConfig->garbageCollection->purgePendingUsersDuration === 0) {
             return;
         }
 

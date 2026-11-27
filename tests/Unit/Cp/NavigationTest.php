@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Config\GqlConfig;
 use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
@@ -58,9 +59,10 @@ function findNavItem(array $items, string $label): ?NavItem
 beforeEach(function () {
     Cms::setIsInstalled();
 
+    Cms::config()->routing->cpTrigger('admin');
+
     Cms::config()
-        ->cpTrigger('admin')
-        ->enableGql(true)
+        ->gql(GqlConfig::create()->enabled())
         ->allowAdminChanges(true);
 
     // Answered through the test's own state: a facade mock can't be swapped
@@ -145,7 +147,7 @@ it('uses the cp navigation service for the twig variable', function () {
 });
 
 it('keeps cp destinations for nav listeners on site and cp requests', function () {
-    Cms::config()->cpTrigger('control')->baseCpUrl('https://cp.example.test');
+    Cms::config()->routing->cpTrigger('control')->baseCpUrl('https://cp.example.test');
 
     $navigationForRequest = fn (): Navigation => new Navigation(
         request(),
@@ -595,7 +597,7 @@ it('leaves a source addressed by query to requests that ask for it', function (s
 
 it('links a source the way the nav does, on whichever page it lives', function () {
     $this->totalEditableSections = 1;
-    Cms::config()->baseCpUrl('https://cp.example.test');
+    Cms::config()->routing->baseCpUrl('https://cp.example.test');
     swapUrlRequest('https://site.example.test/');
 
     $sources = Mockery::mock(ElementSources::class);
@@ -629,7 +631,7 @@ it('links a source the way the nav does, on whichever page it lives', function (
         new NavCustomizer,
     );
 
-    $cpTrigger = Cms::config()->cpTrigger;
+    $cpTrigger = Cms::config()->routing->cpTrigger;
 
     expect($navigation->sourceUrl(Entry::class, 'section:abc'))->toBe("https://cp.example.test/$cpTrigger/content/blog-posts/posts")
         ->and($navigation->sourceUrl(Entry::class, 'custom:1'))->toBe("https://cp.example.test/$cpTrigger/content/blog-posts?source=custom%3A1")

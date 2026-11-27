@@ -125,20 +125,20 @@ class ScalarTypesTest extends TestCase
             'getFieldValue' => fn() => clone $dateTime,
         ]);
 
-        $settingValue = Cms::config()->setGraphqlDatesToSystemTimeZone;
+        $settingValue = Cms::config()->gql->setDatesToSystemTimeZone;
         $currentTimezone = Cms::timezone();
 
         // Make sure we don't use UTC
         $newTimezone = 'America/New_York';
 
         Cms::config()->timezone = $newTimezone;
-        Cms::config()->setGraphqlDatesToSystemTimeZone = true;
+        Cms::config()->gql->setDatesToSystemTimeZone = true;
         $value1 = $resolver($element, [], null, $resolveInfo);
 
-        Cms::config()->setGraphqlDatesToSystemTimeZone = false;
+        Cms::config()->gql->setDatesToSystemTimeZone = false;
         $value2 = $resolver($element, [], null, $resolveInfo);
 
-        Cms::config()->setGraphqlDatesToSystemTimeZone = $settingValue;
+        Cms::config()->gql->setDatesToSystemTimeZone = $settingValue;
 
         self::assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
         Cms::config()->timezone = $currentTimezone;

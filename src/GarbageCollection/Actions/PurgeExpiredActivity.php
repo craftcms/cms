@@ -17,7 +17,7 @@ class PurgeExpiredActivity extends GarbageCollectionAction
 {
     public function __invoke(): void
     {
-        if ($this->generalConfig->activityRetentionDuration === 0) {
+        if ($this->generalConfig->garbageCollection->activityRetentionDuration === 0) {
             return;
         }
 
@@ -27,7 +27,7 @@ class PurgeExpiredActivity extends GarbageCollectionAction
                 DB::table(Table::ACTIVITYEVENTS)
                     ->select(['id', 'eventType'])
                     ->whereNull('rootEventId')
-                    ->where('occurredAt', '<', Query::prepareDateForDb(now()->subSeconds($this->generalConfig->activityRetentionDuration)))
+                    ->where('occurredAt', '<', Query::prepareDateForDb(now()->subSeconds($this->generalConfig->garbageCollection->activityRetentionDuration)))
                     ->orderBy('id')
                     ->chunkById(
                         $this->garbageCollection::CHUNK_SIZE,

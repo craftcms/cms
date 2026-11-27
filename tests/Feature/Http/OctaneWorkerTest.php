@@ -98,7 +98,7 @@ it('does not give later requests the previous site’s CRAFT_SITE env vars', fun
     Site::factory()->create(['handle' => 'secondSite']);
 
     $siteEnvVars = fn () => Env::get('CRAFT_SITE', 'none').' '.Env::get('CRAFT_SITE_UPPER', 'none');
-    $cpUrl = '/'.Cms::config()->cpTrigger.'/octane-site-env';
+    $cpUrl = '/'.Cms::config()->routing->cpTrigger.'/octane-site-env';
     Route::get('/octane-site-env', $siteEnvVars);
     Route::get($cpUrl, $siteEnvVars);
 
@@ -112,7 +112,7 @@ it('does not give later requests the previous site’s CRAFT_SITE env vars', fun
 });
 
 it('includes the legacy asset bundles on every control panel page', function () {
-    $loginUrl = '/'.Cms::config()->cpTrigger.'/login';
+    $loginUrl = '/'.Cms::config()->routing->cpTrigger.'/login';
 
     $responses = serveFromOctaneWorker([
         Request::create($loginUrl),

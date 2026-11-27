@@ -270,17 +270,17 @@ class Gql
 
         if (! $isIntrospectionQuery) {
             // Set complexity rule, if defined,
-            if (! empty($generalConfig->maxGraphqlComplexity)) {
-                $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->maxGraphqlComplexity);
+            if (! empty($generalConfig->gql->maxComplexity)) {
+                $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->gql->maxComplexity);
             }
 
             // Set depth rule, if defined,
-            if (! empty($generalConfig->maxGraphqlDepth)) {
-                $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->maxGraphqlDepth);
+            if (! empty($generalConfig->gql->maxDepth)) {
+                $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->gql->maxDepth);
             }
         }
 
-        if (! $generalConfig->enableGraphqlIntrospection && craftAuth()->guest()) {
+        if (! $generalConfig->gql->enableIntrospection && craftAuth()->guest()) {
             $validationRules[DisableIntrospection::class] = new DisableIntrospection(0);
         }
 
@@ -344,7 +344,7 @@ class Gql
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $prebuildSchema = $isIntrospectionQuery || ! Cms::config()->lazyGqlTypes;
+                $prebuildSchema = $isIntrospectionQuery || ! Cms::config()->gql->lazyTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $this->elementCaches->startCollectingCacheInfo();
 
@@ -1178,7 +1178,7 @@ class Gql
         // No cache key, if explicitly disabled
         $generalConfig = Cms::config();
 
-        if (! $generalConfig->enableGraphqlCaching) {
+        if (! $generalConfig->gql->enableCaching) {
             return null;
         }
 

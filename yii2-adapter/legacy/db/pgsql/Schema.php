@@ -162,7 +162,7 @@ class Schema extends \yii\db\pgsql\Schema
 
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $format = $this->getBackupFormat();
-        $commandFromConfig = Cms::config()->backupCommand;
+        $commandFromConfig = Cms::config()->backups->command;
 
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
@@ -207,7 +207,7 @@ class Schema extends \yii\db\pgsql\Schema
                 ->addArg('{file}');
         }
 
-        $commandFromConfig = Cms::config()->restoreCommand;
+        $commandFromConfig = Cms::config()->backups->restoreCommand;
 
         if ($commandFromConfig instanceof Closure) {
             $command = $commandFromConfig($command);
@@ -402,7 +402,7 @@ ORDER BY i.relname, k';
      */
     public function getBackupFormat(): ?string
     {
-        return $this->backupFormat ?? Cms::config()->backupCommandFormat;
+        return $this->backupFormat ?? Cms::config()->backups->commandFormat;
     }
 
     /**

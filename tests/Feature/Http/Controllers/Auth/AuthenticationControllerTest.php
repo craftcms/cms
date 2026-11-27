@@ -17,7 +17,7 @@ use function Pest\Laravel\get;
 
 describe('renderViewWithFallback', function () {
     test('username prop is empty when rememberUsernameDuration is disabled', function () {
-        Cms::config()->rememberUsernameDuration = 0;
+        Cms::config()->security->rememberUsernameDuration = 0;
 
         get(action([LoginController::class, 'showLogin']))
             ->assertOk()
@@ -28,7 +28,7 @@ describe('renderViewWithFallback', function () {
 
     describe('front-end requests', function () {
         beforeEach(function () {
-            Cms::config()->loginPath = 'member/login';
+            Cms::config()->routing->loginPath = 'member/login';
 
             Route::middleware(['web', 'craft', 'craft.web'])->group(dirname(__DIR__, 5).'/routes/web.php');
 

@@ -46,7 +46,7 @@ readonly class EnsureTwoFactorChallengeIsRecent
             return new JsonResponse(['message' => t('Your verification session has expired. Please sign in again.')], 419);
         }
 
-        if ($request->isSiteRequest() && $loginPath = $this->generalConfig->getLoginPath()) {
+        if ($request->isSiteRequest() && $loginPath = $this->generalConfig->routing->getLoginPath()) {
             return redirect($loginPath);
         }
 

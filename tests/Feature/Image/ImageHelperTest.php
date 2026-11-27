@@ -285,8 +285,8 @@ it('returns empty dimensions for malformed stream structures', function (string 
 
 it('cleans images by path when image is manipulatable', function () {
     $path = $this->sandboxPath.'/dirty-svg.svg';
-    $original = Cms::config()->sanitizeSvgUploads;
-    Cms::config()->sanitizeSvgUploads = true;
+    $original = Cms::config()->assets->sanitizeSvgUploads;
+    Cms::config()->assets->sanitizeSvgUploads = true;
 
     try {
         ImageHelper::cleanImageByPath($path);
@@ -296,7 +296,7 @@ it('cleans images by path when image is manipulatable', function () {
         expect($contents)->not->toContain('<script>')
             ->and($contents)->not->toContain('<this>');
     } finally {
-        Cms::config()->sanitizeSvgUploads = $original;
+        Cms::config()->assets->sanitizeSvgUploads = $original;
     }
 });
 
@@ -306,20 +306,20 @@ it('cleans exif data from imagick images under both config modes', function () {
     }
 
     $path = $this->sandboxPath.'/google.png';
-    $originalPreserveExif = Cms::config()->preserveExifData;
+    $originalPreserveExif = Cms::config()->images->preserveExifData;
 
     try {
         $imagick = new Imagick($path);
 
-        Cms::config()->preserveExifData = false;
+        Cms::config()->images->preserveExifData = false;
         ImageHelper::cleanExifDataFromImagickImage($imagick);
         expect($imagick->getImageWidth())->toBeGreaterThan(0);
 
-        Cms::config()->preserveExifData = true;
+        Cms::config()->images->preserveExifData = true;
         ImageHelper::cleanExifDataFromImagickImage($imagick);
         expect($imagick->getImageHeight())->toBeGreaterThan(0);
     } finally {
-        Cms::config()->preserveExifData = $originalPreserveExif;
+        Cms::config()->images->preserveExifData = $originalPreserveExif;
     }
 });
 

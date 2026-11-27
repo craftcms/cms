@@ -13,7 +13,7 @@ use Illuminate\Session\Store as SessionStore;
 use Illuminate\Support\Facades\Session;
 
 beforeEach(function () {
-    Cms::config()->cpTrigger = 'admin';
+    Cms::config()->routing->cpTrigger = 'admin';
 });
 
 it('registers flash accessors as closures that can be rebound by Laravel macros', function () {

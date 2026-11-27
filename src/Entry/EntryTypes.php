@@ -686,7 +686,7 @@ class EntryTypes
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-        $pageParam = Cms::config()->getPageTriggerParam();
+        $pageParam = Cms::config()->routing->getPageTriggerParam();
 
         $query = $query->orderBy($orderBy, $sortDir === SORT_DESC ? 'desc' : 'asc');
 

@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 
 it('passes through for CP request', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger.'/dashboard');
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger.'/dashboard');
 
     $result = $this->middleware->handle($request, fn () => 'passed');
 
@@ -27,7 +27,7 @@ it('aborts 401 for non-CP request', function () {
 });
 
 it('passes through for CP root request', function () {
-    $request = Request::create('/'.Cms::config()->cpTrigger);
+    $request = Request::create('/'.Cms::config()->routing->cpTrigger);
 
     $result = $this->middleware->handle($request, fn () => 'passed');
 

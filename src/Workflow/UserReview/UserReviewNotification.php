@@ -36,7 +36,7 @@ class UserReviewNotification extends CpNotification implements ShouldQueueAfterC
     ) {
         parent::__construct($message);
 
-        $this->queue = Cms::config()->queueName;
+        $this->queue = Cms::config()->queue->name;
         $this
             ->title($title)
             ->icon('clipboard-list-check')

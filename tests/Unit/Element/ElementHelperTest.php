@@ -43,7 +43,7 @@ test('detects temporary slugs', function (bool $expected, ?string $slug) {
 ]);
 
 test('generate slug', function (string $expected, string $input, ?bool $ascii = null, ?string $language = null) {
-    $expected = str_replace('[separator-here]', Cms::config()->slugWordSeparator, $expected);
+    $expected = str_replace('[separator-here]', Cms::config()->slugs->wordSeparator, $expected);
 
     expect(ElementHelper::generateSlug($input, $ascii, $language))->toBe($expected);
 })->with([
@@ -62,7 +62,7 @@ test('generate slug', function (string $expected, string $input, ?bool $ascii = 
 ]);
 
 test('normalize slug', function (string $expected, string $slug) {
-    $expected = str_replace('[separator-here]', Cms::config()->slugWordSeparator, $expected);
+    $expected = str_replace('[separator-here]', Cms::config()->slugs->wordSeparator, $expected);
 
     expect(ElementHelper::normalizeSlug($slug))->toBe($expected);
 })->with([
@@ -82,15 +82,15 @@ test('normalize slug', function (string $expected, string $slug) {
 ]);
 
 test('normalizes slug using lowercase when uppercase is disallowed', function () {
-    Cms::config()->allowUppercaseInSlug = false;
+    Cms::config()->slugs->allowUppercase = false;
 
     expect(ElementHelper::normalizeSlug('word WORD'))
-        ->toBe('word'.Cms::config()->slugWordSeparator.'word');
+        ->toBe('word'.Cms::config()->slugs->wordSeparator.'word');
 });
 
 test('normalize slug respects language', function (string $expected, string $slug, ?string $language) {
     // The slug can only get lowercased if uppercase characters aren't allowed
-    Cms::config()->allowUppercaseInSlug = false;
+    Cms::config()->slugs->allowUppercase = false;
 
     expect(ElementHelper::normalizeSlug($slug, $language))->toBe($expected);
 })->with([

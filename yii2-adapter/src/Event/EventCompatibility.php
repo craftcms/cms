@@ -160,7 +160,7 @@ readonly class EventCompatibility
         });
 
         Event::listen(function(Authenticated $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 
@@ -171,7 +171,7 @@ readonly class EventCompatibility
         });
 
         Event::listen(function(Login $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 
@@ -182,7 +182,7 @@ readonly class EventCompatibility
         });
 
         Event::listen(Logout::class, function(Logout $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 

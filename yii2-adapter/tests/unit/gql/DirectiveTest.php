@@ -25,6 +25,7 @@ use craft\test\mockclasses\gql\MockDirective;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\GqlConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -214,9 +215,7 @@ class DirectiveTest extends TestCase
         $directiveName = $className::name();
 
         Craft::$app->set('config', $this->make(Config::class, [
-            'getGeneral' => $this->make(GeneralConfig::class, [
-                'gqlTypePrefix' => 'test',
-            ]),
+            'getGeneral' => GeneralConfig::create()->gql(GqlConfig::create()->typePrefix('test')),
         ]));
 
         GqlEntityRegistry::getOrCreate($directiveName, fn() => $className::create());

@@ -67,7 +67,7 @@ class UrlGenerator extends BaseUrlGenerator
     public static function isSiteRoute(Route $route): bool
     {
         $middleware = (array) $route->middleware();
-        $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+        $cpTrigger = trim((string) Cms::config()->routing->cpTrigger, '/');
 
         return in_array('craft', $middleware, true) &&
             ! in_array('craft.cp', $middleware, true) &&

@@ -53,7 +53,7 @@ class SendAnnouncement extends Job
 
         $totalUsers = $userQuery->count();
         $batchSize = 100;
-        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->getAuthGuard()));
+        $provider = config(sprintf('auth.guards.%s.provider', Cms::config()->security->getAuthGuard()));
         /** @var class-string<Model> $userModel */
         $userModel = config("auth.providers.$provider.model");
 

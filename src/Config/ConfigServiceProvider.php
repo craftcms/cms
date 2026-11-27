@@ -163,6 +163,8 @@ class ConfigServiceProvider extends ServiceProvider
             }
         }
 
+        $this->applyRenamedEnvironmentOverrides($config);
+
         $envConfig = Env::config($config::class, 'CRAFT_');
         $this->deprecateEnvironmentOverrides($config::class, 'CRAFT_', $envConfig);
         Typecast::properties($config::class, $envConfig);
@@ -184,6 +186,61 @@ class ConfigServiceProvider extends ServiceProvider
         $repository->set('craft.general', $config);
 
         return $config;
+    }
+
+    /**
+     * Applies environment variables named after renamed settings, such as `CRAFT_ENABLE_GQL` for `gql.enabled`.
+     * Variables named after the new settings, such as `CRAFT_GQL` and `CRAFT_GQL_ENABLED`, are applied after them, so
+     * they win. A variable that's named after both, such as `CRAFT_QUEUE_NAME` for `queueName` and `queue.name`, is
+     * left to the new setting.
+     */
+    private function applyRenamedEnvironmentOverrides(GeneralConfig $config): void
+    {
+        $cloned = [];
+
+        foreach ($config::renamedSettings() as $setting => $newSetting) {
+            $envName = 'CRAFT_'.$this->renamedSettingEnvName($config, $setting, $newSetting);
+
+            if ($envName === 'CRAFT_'.str($newSetting)->replace('.', '_')->snake()->upper()->value()) {
+                continue;
+            }
+
+            $value = Env::get($envName);
+
+            if ($value === null) {
+                continue;
+            }
+
+            // A cached config may share its nested objects with another copy, so change a clone
+            $nested = str($newSetting)->before('.')->value();
+
+            if ($nested !== $newSetting && ! isset($cloned[$nested])) {
+                $config->{$nested} = clone $config->{$nested};
+                $cloned[$nested] = true;
+            }
+
+            $this->deprecateEnvironmentOverride($envName, $setting);
+            $config->{$setting} = $value;
+        }
+    }
+
+    /**
+     * Returns the environment variable name a renamed setting had, without the `CRAFT_` prefix. A setting that kept its
+     * name and has an `#[EnvName]` attribute, such as `disable2fa`, keeps the variable name it had, `DISABLE_2FA`.
+     */
+    private function renamedSettingEnvName(GeneralConfig $config, string $setting, string $newSetting): string
+    {
+        [$nested, $property] = array_pad(explode('.', $newSetting, 2), 2, null);
+
+        if ($property === $setting) {
+            $attribute = Arr::first(new ReflectionProperty($config->{$nested}, $property)->getAttributes(EnvName::class));
+
+            if ($attribute) {
+                return $attribute->newInstance()->name;
+            }
+        }
+
+        return str($setting)->snake()->upper()->value();
     }
 
     /**
@@ -236,8 +293,13 @@ class ConfigServiceProvider extends ServiceProvider
             $attribute = Arr::first(new ReflectionProperty($class, $setting)->getAttributes(EnvName::class));
             $var = $prefix.($attribute?->newInstance()->name ?? str($setting)->snake()->upper()->value());
 
-            Deprecator::log("env:$var", "Setting `$settingPrefix$setting` with the `$var` environment variable is deprecated. Set it in `config/craft/general.php` instead, using an environment variable that doesn’t start with `CRAFT_`, such as `->allowAdminChanges(env('ALLOW_ADMIN_CHANGES'))`.");
+            $this->deprecateEnvironmentOverride($var, $settingPrefix.$setting);
         }
+    }
+
+    private function deprecateEnvironmentOverride(string $var, string $setting): void
+    {
+        Deprecator::log("env:$var", "Setting `$setting` with the `$var` environment variable is deprecated. Set it in `config/craft/general.php` instead, using an environment variable that doesn’t start with `CRAFT_`, such as `->allowAdminChanges(env('ALLOW_ADMIN_CHANGES'))`.");
     }
 
     private function applyGeneralConfigSetting(GeneralConfig $config, string $setting, mixed $value): void

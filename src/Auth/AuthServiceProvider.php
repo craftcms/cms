@@ -103,7 +103,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         Authenticate::redirectUsing(function (Request $request) {
             if ($request->isCpRequest()) {
-                return Cms::config()->cpTrigger.'/login';
+                return Cms::config()->routing->cpTrigger.'/login';
             }
 
             // The `AuthenticationException` redirect callback resolves the current site's login URL
@@ -164,7 +164,7 @@ class AuthServiceProvider extends ServiceProvider
             ->update(['updated_at' => Passport::client()->freshTimestampString()]));
 
         Event::listen(function (Authenticated $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 
@@ -174,7 +174,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Event::listen(Login::class, function (Login $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 
@@ -188,13 +188,13 @@ class AuthServiceProvider extends ServiceProvider
 
             app(AuthMethods::class)->setRememberedUsername($user);
 
-            Session::put(Cms::config()->getPasswordConfirmationKey(), now()->unix());
+            Session::put(Cms::config()->security->getPasswordConfirmationKey(), now()->unix());
 
             Theme::rememberPreference($user);
         });
 
         Event::listen(Failed::class, function (Failed $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 
@@ -208,7 +208,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Event::listen(Logout::class, function (Logout $event) {
-            if ($event->guard !== Cms::config()->getAuthGuard()) {
+            if ($event->guard !== Cms::config()->security->getAuthGuard()) {
                 return;
             }
 

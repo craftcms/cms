@@ -161,7 +161,7 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
     {
         $path = str_replace(
             ['{cpTrigger}', '{actionTrigger}'],
-            [trim((string) Cms::config()->cpTrigger, '/'), trim(Cms::config()->actionTrigger, '/')],
+            [trim((string) Cms::config()->routing->cpTrigger, '/'), trim(Cms::config()->routing->actionTrigger, '/')],
             $template,
         );
 

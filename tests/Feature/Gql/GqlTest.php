@@ -47,7 +47,7 @@ use Illuminate\Support\Facades\Event;
 beforeEach(function () {
     app(Gql::class)->flushCaches();
     app(Gql::class)->setActiveSchema(new GqlSchema);
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 });
 
 it('creates a schema definition', function () {
@@ -192,7 +192,7 @@ it('allows post-execution listeners to replace the result', function () {
 });
 
 it('fills the cache when querying through the new service', function () {
-    Cms::config()->enableGraphqlCaching = true;
+    Cms::config()->gql->enableCaching = true;
 
     $gql = app(Gql::class);
     $schema = $gql->getPublicSchema();
@@ -213,7 +213,7 @@ it('fills the cache when querying through the new service', function () {
 });
 
 it('does not create cache keys for mutations', function (string $query, ?string $operationName) {
-    Cms::config()->enableGraphqlCaching = true;
+    Cms::config()->gql->enableCaching = true;
 
     $gql = app(Gql::class);
     $schema = $gql->getPublicSchema();

@@ -156,7 +156,7 @@ test('password confirmation captures alternative login methods and assets', func
 test('password confirmation includes configured OAuth buttons', function () {
     Edition::set(Edition::Pro);
     actingAs(User::findOne());
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'test' => [
             'driver' => FakeOAuthProvider::class,
             'clientId' => 'client-id',
@@ -182,7 +182,7 @@ test('password confirmation validates its options', function () {
 
 test('login methods are available to a signed-out user', function () {
     Edition::set(Edition::Pro);
-    app(GeneralConfig::class)->oauthProviders([
+    app(GeneralConfig::class)->users->oauthProviders([
         'test' => [
             'driver' => FakeOAuthProvider::class,
             'clientId' => 'client-id',

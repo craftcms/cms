@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Event;
 beforeEach(function () {
     app(Gql::class)->flushCaches();
     app(Gql::class)->setActiveSchema(new GqlSchema);
-    Cms::config()->enableGraphqlCaching = false;
+    Cms::config()->gql->enableCaching = false;
 });
 
 it('allows type field definitions to be modified', function () {

@@ -98,7 +98,7 @@ class AppServiceProvider extends ServiceProvider
         EncryptCookies::except([Theme::COOKIE, Theme::PREFERENCE_COOKIE]);
 
         AuthenticationException::redirectUsing(function () {
-            $loginPath = Cms::config()->getLoginPath();
+            $loginPath = Cms::config()->routing->getLoginPath();
 
             if (! request()->isCpRequest() && $loginPath !== false) {
                 return Url::siteUrl($loginPath);
@@ -194,10 +194,10 @@ class AppServiceProvider extends ServiceProvider
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
-                return Url::cpUrl(Cms::config()->getPostCpLoginRedirect());
+                return Url::cpUrl(Cms::config()->routing->getPostCpLoginRedirect());
             }
 
-            return Url::siteUrl(Cms::config()->getPostLoginRedirect());
+            return Url::siteUrl(Cms::config()->routing->getPostLoginRedirect());
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {

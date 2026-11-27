@@ -14,7 +14,7 @@ it('hard deletes soft deleted elements', function () {
     // Recently deleted
     Element::factory()->create(['dateDeleted' => now()]);
     // Old deleted
-    Element::factory()->create(['dateDeleted' => now()->subSeconds(Cms::config()->softDeleteDuration + 1)]);
+    Element::factory()->create(['dateDeleted' => now()->subSeconds(Cms::config()->garbageCollection->softDeleteDuration + 1)]);
 
     $currentCount = DB::table(Table::ELEMENTS)->count();
 

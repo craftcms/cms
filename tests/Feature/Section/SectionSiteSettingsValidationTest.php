@@ -8,7 +8,7 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings;
 it('names the entry URI format in its errors', function () {
     $settings = new SectionSiteSettings([
         'hasUrls' => true,
-        'uriFormat' => Cms::config()->cpTrigger.'/{slug}',
+        'uriFormat' => Cms::config()->routing->cpTrigger.'/{slug}',
     ]);
 
     $settings->validate();

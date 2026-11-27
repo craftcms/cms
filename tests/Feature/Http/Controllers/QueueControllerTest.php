@@ -34,14 +34,14 @@ function terminatingCallbacks(): array
 }
 
 it('runs the queue anonymously through the site action route', function () {
-    Cms::config()->runQueueAutomatically(false);
+    Cms::config()->queue->runAutomatically(false);
     Auth::logout();
 
     get(action_url('queue/run'))->assertOk();
 });
 
 it('does not run the queue when automatic queue running is disabled', function () {
-    Cms::config()->runQueueAutomatically(false);
+    Cms::config()->queue->runAutomatically(false);
 
     Artisan::shouldReceive('call')->never();
 
@@ -55,7 +55,7 @@ it('does not run the queue when automatic queue running is disabled', function (
 });
 
 it('does not run the queue when a job is reserved', function () {
-    Cms::config()->runQueueAutomatically(true);
+    Cms::config()->queue->runAutomatically(true);
 
     app(JobProgress::class)->processing('reserved-job');
     Artisan::shouldReceive('call')->never();
@@ -70,7 +70,7 @@ it('does not run the queue when a job is reserved', function () {
 });
 
 it('does not run the queue when there are no pending jobs', function () {
-    Cms::config()->runQueueAutomatically(true);
+    Cms::config()->queue->runAutomatically(true);
 
     Artisan::shouldReceive('call')->never();
 
@@ -85,9 +85,7 @@ it('does not run the queue when there are no pending jobs', function () {
 
 it('runs one queued job after the response terminates', function () {
     Cms::config()
-        ->runQueueAutomatically(true)
-        ->queueName('high')
-        ->lowPriorityQueueName('low')
+        ->queue(['runAutomatically' => true, 'name' => 'high', 'lowPriorityName' => 'low'])
         ->phpMaxMemoryLimit('512M');
 
     app(JobProgress::class)->queued('pending-job', 'Pending Job');
@@ -107,12 +105,12 @@ it('runs one queued job after the response terminates', function () {
 });
 
 it('does not run the queue during maintenance mode', function () {
-    Cms::config()->runQueueAutomatically(true);
+    Cms::config()->queue->runAutomatically(true);
     app(JobProgress::class)->queued('pending-job', 'Pending Job');
     app()->maintenanceMode()->activate([]);
     Artisan::shouldReceive('call')->never();
 
-    post(cp_url(Cms::config()->actionTrigger.'/queue/run'))
+    post(cp_url(Cms::config()->routing->actionTrigger.'/queue/run'))
         ->assertOk()
         ->assertContent('');
 
@@ -123,9 +121,7 @@ it('does not run the queue during maintenance mode', function () {
 
 it('deduplicates queue names and falls back to the default memory limit', function () {
     Cms::config()
-        ->runQueueAutomatically(true)
-        ->queueName('default')
-        ->lowPriorityQueueName('default')
+        ->queue(['runAutomatically' => true, 'name' => 'default', 'lowPriorityName' => 'default'])
         ->phpMaxMemoryLimit('');
 
     app(JobProgress::class)->queued('pending-job', 'Pending Job');
@@ -231,11 +227,11 @@ it('cancels all jobs', function () {
 });
 
 it('releases failed jobs when cancelling all jobs', function () {
-    Cms::config()->runQueueAutomatically(false);
+    Cms::config()->queue->runAutomatically(false);
     $queue = app(QueueManager::class)->connection('database');
-    $queue->push(new FindAndReplace('missing', 'replacement'), queue: Cms::config()->queueName);
-    $job = $queue->pop(Cms::config()->queueName);
-    app('queue.failer')->log('database', Cms::config()->queueName, $job->getRawBody(), new RuntimeException('Failed'));
+    $queue->push(new FindAndReplace('missing', 'replacement'), queue: Cms::config()->queue->name);
+    $job = $queue->pop(Cms::config()->queue->name);
+    app('queue.failer')->log('database', Cms::config()->queue->name, $job->getRawBody(), new RuntimeException('Failed'));
     $job->delete();
     app(JobProgress::class)->failed($job->uuid(), 'Failed Job', 'Failed');
 
@@ -243,16 +239,16 @@ it('releases failed jobs when cancelling all jobs', function () {
         ->assertRedirectBack();
 
     expect(app(JobProgress::class)->getTotalJobs())->toBe(0)
-        ->and(app('queue.failer')->ids(Cms::config()->queueName))->toBeEmpty();
+        ->and(app('queue.failer')->ids(Cms::config()->queue->name))->toBeEmpty();
 });
 
 it('explicitly reactivates retried jobs with the same UID', function (string $method) {
-    Cms::config()->runQueueAutomatically(false);
+    Cms::config()->queue->runAutomatically(false);
     $queue = app(QueueManager::class)->connection('database');
-    $queue->push(new FindAndReplace('missing', 'replacement'), queue: Cms::config()->queueName);
-    $job = $queue->pop(Cms::config()->queueName);
+    $queue->push(new FindAndReplace('missing', 'replacement'), queue: Cms::config()->queue->name);
+    $job = $queue->pop(Cms::config()->queue->name);
     $uid = $job->uuid();
-    $failedId = app('queue.failer')->log('database', Cms::config()->queueName, $job->getRawBody(), new RuntimeException('Failed'));
+    $failedId = app('queue.failer')->log('database', Cms::config()->queue->name, $job->getRawBody(), new RuntimeException('Failed'));
     $job->delete();
     app(JobProgress::class)->cancel($uid);
 
@@ -261,12 +257,12 @@ it('explicitly reactivates retried jobs with the same UID', function (string $me
 
     expect(app(JobProgress::class)->getProgress($uid)?->status)->toBe(JobStatus::Pending);
 
-    Artisan::call('queue:work', ['connection' => 'database', '--queue' => Cms::config()->queueName, '--once' => true]);
+    Artisan::call('queue:work', ['connection' => 'database', '--queue' => Cms::config()->queue->name, '--once' => true]);
     expect(app(JobProgress::class)->getProgress($uid)?->status)->toBe(JobStatus::Done);
 })->with(['retry', 'retryAll']);
 
 it('retries all jobs and returns the queue runner response', function () {
-    Cms::config()->runQueueAutomatically(false);
+    Cms::config()->queue->runAutomatically(false);
 
     Artisan::shouldReceive('call')->once()->with('queue:retry', [
         'id' => 'all',

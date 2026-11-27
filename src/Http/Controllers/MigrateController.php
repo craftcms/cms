@@ -55,7 +55,7 @@ class MigrateController
         $maintenance->startUpdate();
 
         // Backup the DB?
-        if ($generalConfig->getBackupOnUpdate()) {
+        if ($generalConfig->backups->shouldBackUpOnUpdate()) {
             try {
                 $backupPath = $backups->backup();
             } catch (Throwable $e) {

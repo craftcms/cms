@@ -167,11 +167,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      * ```
      * ```twig
      * {% if craft.app.user.isGuest %}
-     *   <a href="{{ url(craft.app.config.general.getLoginPath()) }}">
+     *   <a href="{{ url(craft.app.config.general.routing.getLoginPath()) }}">
      *     Login
      *   </a>
      * {% else %}
-     *   <a href="{{ url(craft.app.config.general.getLogoutPath()) }}">
+     *   <a href="{{ url(craft.app.config.general.routing.getLogoutPath()) }}">
      *     Logout
      *   </a>
      * {% endif %}

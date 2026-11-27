@@ -23,7 +23,7 @@ test('unauthorized users cannot access database backup utility', function () {
 });
 
 test('download backup returns a file when requested', function () {
-    Cms::config()->backupCommand = 'touch {file}';
+    Cms::config()->backups->command = 'touch {file}';
 
     $response = post(
         action(DbBackupController::class),
@@ -36,7 +36,7 @@ test('download backup returns a file when requested', function () {
 });
 
 test('download backup request over inertia is redirected', function () {
-    Cms::config()->backupCommand = 'touch {file}';
+    Cms::config()->backups->command = 'touch {file}';
 
     post(
         action(DbBackupController::class),

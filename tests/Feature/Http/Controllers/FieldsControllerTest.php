@@ -181,7 +181,7 @@ it('searches, sorts, and paginates fields through the index route', function (ar
     foreach ([['Article Alpha', 'zebra'], ['Article Zulu', 'apple'], ['Other', 'other']] as [$name, $handle]) {
         Fields::saveField(Fields::createField(['type' => PlainText::class, 'name' => $name, 'handle' => $handle]));
     }
-    Cms::config()->pageTrigger('p');
+    Cms::config()->routing->pageTrigger('p');
 
     $response = $this->withHeaders([
         'X-Inertia' => 'true',
@@ -274,7 +274,7 @@ it('renders the edit screen read-only without admin changes', function () {
 
     Cms::config()->allowAdminChanges(false);
 
-    $this->get(sprintf('/%s/settings/fields/edit/%d', Cms::config()->cpTrigger, $field->id))
+    $this->get(sprintf('/%s/settings/fields/edit/%d', Cms::config()->routing->cpTrigger, $field->id))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('settings/fields/Edit')
             ->where('refreshUrl', null)

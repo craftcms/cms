@@ -32,7 +32,7 @@ readonly class QueueController
 
     public function run(): Response
     {
-        if (app()->isDownForMaintenance() || ! Cms::config()->runQueueAutomatically) {
+        if (app()->isDownForMaintenance() || ! Cms::config()->queue->runAutomatically) {
             return response()->make();
         }
 
@@ -44,7 +44,7 @@ readonly class QueueController
             maxPowerCaptain();
 
             Artisan::call('queue:work', [
-                '--queue' => collect([Cms::config()->queueName, Cms::config()->lowPriorityQueueName])
+                '--queue' => collect([Cms::config()->queue->name, Cms::config()->queue->lowPriorityName])
                     ->unique()
                     ->join(','),
                 '--memory' => Cms::config()->phpMaxMemoryLimit ?: '1536M',

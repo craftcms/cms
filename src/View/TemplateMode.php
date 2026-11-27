@@ -93,7 +93,7 @@ enum TemplateMode: string
     {
         return match ($this) {
             self::Cp => ['twig', 'html', 'blade.php'],
-            self::Site => Cms::config()->defaultTemplateExtensions,
+            self::Site => Cms::config()->templates->defaultExtensions,
         };
     }
 
@@ -104,7 +104,7 @@ enum TemplateMode: string
     {
         return match ($this) {
             self::Cp => ['index'],
-            self::Site => Cms::config()->indexTemplateFilenames,
+            self::Site => Cms::config()->templates->indexFilenames,
         };
     }
 
@@ -112,7 +112,7 @@ enum TemplateMode: string
     {
         return match ($this) {
             self::Cp => '_',
-            self::Site => Cms::config()->privateTemplateTrigger,
+            self::Site => Cms::config()->templates->privateTrigger,
         };
     }
 

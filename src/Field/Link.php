@@ -178,7 +178,7 @@ class Link extends Field implements InlineEditableFieldInterface, InputSchemaFie
                 ->instructions(t('The maximum length (in bytes) the field can hold.'))
                 ->control(Number::make('maxLength')->min(10)->value($this->maxLength)),
         )->when(
-            Cms::config()->enableGql,
+            Cms::config()->gql->enabled,
             fn (Ui $ui): Ui => $ui->add(
                 UiField::make(t('GraphQL Mode'))
                     ->control(Choice::make('graphqlMode')->options([

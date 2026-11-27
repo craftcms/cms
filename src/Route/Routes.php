@@ -42,20 +42,20 @@ class Routes
             'handle' => '[^\/]+',
             'slug' => '[^\/]+',
             'tag' => '[^\/]+',
-            'cpTrigger' => preg_quote(trim((string) Cms::config()->cpTrigger, '/'), '#') ?: '(?!)',
-            'actionTrigger' => preg_quote(trim(Cms::config()->actionTrigger, '/'), '#') ?: '(?!)',
+            'cpTrigger' => preg_quote(trim((string) Cms::config()->routing->cpTrigger, '/'), '#') ?: '(?!)',
+            'actionTrigger' => preg_quote(trim(Cms::config()->routing->actionTrigger, '/'), '#') ?: '(?!)',
             '*' => '[^\/]+',
         ];
     }
 
     public function cpTriggerRoutePrefix(): string
     {
-        return trim((string) Cms::config()->cpTrigger, '/') === '' ? '' : '{cpTrigger}';
+        return trim((string) Cms::config()->routing->cpTrigger, '/') === '' ? '' : '{cpTrigger}';
     }
 
     public function actionTriggerRoutePrefix(): string
     {
-        return trim(Cms::config()->actionTrigger, '/') === '' ? '' : '{actionTrigger}';
+        return trim(Cms::config()->routing->actionTrigger, '/') === '' ? '' : '{actionTrigger}';
     }
 
     public function cpActionTriggerRoutePrefix(): string
@@ -68,13 +68,13 @@ class Routes
 
     public function actionTriggerUriPrefix(): string
     {
-        return trim(Cms::config()->actionTrigger, '/');
+        return trim(Cms::config()->routing->actionTrigger, '/');
     }
 
     public function cpActionTriggerUriPrefix(): string
     {
         return $this->joinRoutePrefix([
-            trim((string) Cms::config()->cpTrigger, '/'),
+            trim((string) Cms::config()->routing->cpTrigger, '/'),
             $this->actionTriggerUriPrefix(),
         ]);
     }

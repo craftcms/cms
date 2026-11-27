@@ -39,13 +39,13 @@ class Uploads
     {
         $parameters = app($handler)->authorize($request, $parameters, $filename, $size);
 
-        if (Cms::config()->uploadSessionDuration < 1) {
+        if (Cms::config()->assets->uploadSessionDuration < 1) {
             throw new RuntimeException('uploadSessionDuration must be greater than zero.');
         }
 
         event($event = new UploadSessionStarting($request, $handler, $filename, $size, $parameters));
 
-        $disk = $event->disk ?? Cms::config()->getUploadSessionDisk();
+        $disk = $event->disk ?? Cms::config()->assets->getUploadSessionDisk();
         $name = $event->uploader ?? $this->uploaders->getDefaultDriver($disk);
         $uploader = $this->uploaders->driver($name);
 
@@ -59,7 +59,7 @@ class Uploads
             'size' => $size,
             'parameters' => $parameters,
             'state' => [],
-            'expiresAt' => now()->addSeconds(Cms::config()->uploadSessionDuration),
+            'expiresAt' => now()->addSeconds(Cms::config()->assets->uploadSessionDuration),
         ]);
 
         $setup = $uploader->start($session);
@@ -184,7 +184,7 @@ class Uploads
             $result = $callback($session, $this->uploader($session));
 
             if ($session->exists) {
-                $session->expiresAt = now()->addSeconds(Cms::config()->uploadSessionDuration);
+                $session->expiresAt = now()->addSeconds(Cms::config()->assets->uploadSessionDuration);
                 $session->save();
             }
 

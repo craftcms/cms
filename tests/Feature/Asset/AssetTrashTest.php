@@ -28,7 +28,7 @@ beforeEach(function () {
     Storage::fake('asset-trash-source');
     $this->volumeDisk = Storage::fake('asset-trash-volume');
     $this->trashDisk = Storage::fake('asset-trash-trash');
-    Cms::config()->trashedAssetDisk('asset-trash-trash');
+    Cms::config()->assets->trashDisk('asset-trash-trash');
 
     $volume = Volume::factory()->create(['disk' => 'asset-trash-volume']);
     $folderModel = VolumeFolderModel::factory()->create([
@@ -54,7 +54,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    Cms::config()->trashedAssetDisk(null);
+    Cms::config()->assets->trashDisk(null);
 });
 
 it('moves a soft-deleted asset’s file to the trashed asset disk', function () {
@@ -86,7 +86,7 @@ it('moves a restored asset’s file back into its volume', function () {
 });
 
 it('deletes a soft-deleted asset’s file when there’s no trashed asset disk, and can’t restore it', function () {
-    Cms::config()->trashedAssetDisk(null);
+    Cms::config()->assets->trashDisk(null);
     $asset = ($this->upload)('report.pdf', 'pdf bytes');
 
     Elements::deleteElement($asset);
@@ -100,7 +100,7 @@ it('can’t restore an asset once the trashed asset disk is no longer set', func
     $asset = ($this->upload)('report.pdf', 'pdf bytes');
 
     Elements::deleteElement($asset);
-    Cms::config()->trashedAssetDisk(null);
+    Cms::config()->assets->trashDisk(null);
 
     expect(Elements::restoreElement(($this->findTrashed)($asset->id)))->toBeFalse();
 });

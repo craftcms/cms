@@ -16,8 +16,8 @@ beforeEach(function () {
     $this->generalConfig = Cms::config();
 });
 
-it('does not inject script when runQueueAutomatically is disabled', function () {
-    $this->generalConfig->runQueueAutomatically(false);
+it('does not inject script when queue.runAutomatically is disabled', function () {
+    $this->generalConfig->queue->runAutomatically(false);
 
     $request = Request::create('/');
     $response = new Response('<html><body>Test</body></html>');
@@ -29,7 +29,7 @@ it('does not inject script when runQueueAutomatically is disabled', function () 
 });
 
 it('does not inject script for ajax requests', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
 
     $request = Request::create('/');
     $request->headers->set('X-Requested-With', 'XMLHttpRequest');
@@ -43,7 +43,7 @@ it('does not inject script for ajax requests', function () {
 });
 
 it('does not inject script for non-HTML responses', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
@@ -57,7 +57,7 @@ it('does not inject script for non-HTML responses', function () {
 });
 
 it('does not inject script when jobs are already running', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(true);
 
     $request = Request::create('/');
@@ -70,7 +70,7 @@ it('does not inject script when jobs are already running', function () {
 });
 
 it('does not inject script when queue is empty', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(0);
 
@@ -84,7 +84,7 @@ it('does not inject script when queue is empty', function () {
 });
 
 it('injects queue runner script for HTML responses with waiting jobs', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(5);
 
@@ -101,7 +101,7 @@ it('injects queue runner script for HTML responses with waiting jobs', function 
 });
 
 it('injects queue runner script when earlier jobs failed or are waiting', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $progress = app(JobProgress::class);
     $progress->failed('failed-job', 'Failed job', 'Boom');
     $progress->queued('pending-job', 'Pending job');
@@ -115,7 +115,7 @@ it('injects queue runner script when earlier jobs failed or are waiting', functi
 });
 
 it('injects script before closing body tag', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
@@ -133,7 +133,7 @@ it('injects script before closing body tag', function () {
 });
 
 it('appends script if no closing body tag exists', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
@@ -149,7 +149,7 @@ it('appends script if no closing body tag exists', function () {
 });
 
 it('handles xhtml content type', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
@@ -163,7 +163,7 @@ it('handles xhtml content type', function () {
 });
 
 it('does not inject script for error responses', function () {
-    $this->generalConfig->runQueueAutomatically(true);
+    $this->generalConfig->queue->runAutomatically(true);
 
     $request = Request::create('/');
     $response = new Response('<html><body>Error</body></html>', 500);

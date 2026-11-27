@@ -42,7 +42,7 @@ class ActivationNotification extends Notification implements ShouldQueue
         CraftUser $user,
         public ?string $recipient = null,
     ) {
-        $this->queue = Cms::config()->queueName;
+        $this->queue = Cms::config()->queue->name;
 
         // The message is sent from a queue worker, which has no request or current site of its own
         $user = $user->asElement();

@@ -165,7 +165,7 @@ class UrlManager extends \yii\web\UrlManager
         unset($params[0]);
 
         // Create the action URL manually here, so it doesn't get treated as a control panel request
-        $path = Cms::config()->actionTrigger . '/' . $route;
+        $path = Cms::config()->routing->actionTrigger . '/' . $route;
 
         return Url::siteUrl($path, $params, $scheme);
     }

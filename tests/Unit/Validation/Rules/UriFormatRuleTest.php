@@ -21,12 +21,12 @@ it('names the attribute in its messages', function (Closure $uriFormat, bool $re
         fn () => 'Entry URI Format must contain “{slug}”',
     ],
     'starts with the action trigger' => [
-        fn () => Cms::config()->actionTrigger.'/{slug}',
+        fn () => Cms::config()->routing->actionTrigger.'/{slug}',
         false,
         fn () => 'Entry URI Format cannot start with the actionTrigger config setting.',
     ],
     'starts with the control panel trigger' => [
-        fn () => Cms::config()->cpTrigger.'/{slug}',
+        fn () => Cms::config()->routing->cpTrigger.'/{slug}',
         false,
         fn () => 'Entry URI Format cannot start with the cpTrigger config setting.',
     ],

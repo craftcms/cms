@@ -140,7 +140,7 @@ final readonly class Backups
         return $this->resolveCommand(
             connection: $connection,
             filePath: $filePath,
-            configCommand: $this->generalConfig->backupCommand,
+            configCommand: $this->generalConfig->backups->command,
             defaultCommandGenerator: fn () => $this->defaultBackupCommand(
                 connection: $connection,
                 filePath: $filePath,
@@ -156,7 +156,7 @@ final readonly class Backups
         return $this->resolveCommand(
             connection: $connection,
             filePath: $filePath,
-            configCommand: $this->generalConfig->restoreCommand,
+            configCommand: $this->generalConfig->backups->restoreCommand,
             defaultCommandGenerator: fn () => $this->defaultRestoreCommand(
                 connection: $connection,
                 filePath: $filePath,
@@ -317,7 +317,7 @@ final readonly class Backups
 
     private function cycleBackups(Connection $connection, ?string $backupFormat): void
     {
-        $maxBackups = $this->generalConfig->maxBackups;
+        $maxBackups = $this->generalConfig->backups->max;
         if (! $maxBackups) {
             return;
         }
@@ -341,7 +341,7 @@ final readonly class Backups
     private function dumpExtension(Connection $connection, ?string $backupFormat): string
     {
         $format = $connection->isPgsql()
-            ? ($backupFormat ?? $this->generalConfig->backupCommandFormat)
+            ? ($backupFormat ?? $this->generalConfig->backups->commandFormat)
             : null;
 
         return match ($format) {
