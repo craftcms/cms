@@ -32,7 +32,6 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\User\Elements\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
@@ -938,12 +937,13 @@ abstract class ContentIndexViewModel extends ViewModel
         $covers = [];
 
         foreach ($elements as $element) {
-            if (! $element instanceof ElementInterface || ! $asset = $element->getThumb()?->getAsset()) {
+            $thumb = $element instanceof ElementInterface ? $element->getThumb() : null;
+
+            if (! $asset = $thumb?->getAsset()) {
                 continue;
             }
 
-            // Users' own photos are always cropped
-            $mode = $element instanceof User && $asset === $element->getPhoto() ? ImageTransformMode::Crop : ImageTransformMode::Fit;
+            $mode = $thumb->getAssetTransformMode() ?? ImageTransformMode::Fit;
             $thumbs[$mode->value][] = $asset;
 
             // The same styles as ElementHtml::cardAttributes() shows covers for

@@ -20,6 +20,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexViewStateController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -220,6 +221,34 @@ it('preloads the cropped thumbnail indexes for users’ photos', function () {
     get("/{$this->cpTrigger}/users/all?viewMode=table", ['X-Inertia' => 'true'])
         ->assertOk()
         ->assertJsonCount(4, 'props.data');
+
+    expect($queries)->toHaveCount(2)
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
+});
+
+it('preloads the cropped thumbnail indexes for the user photos that entries’ thumbnails show', function () {
+    $userIds = array_map(
+        fn (int $photoId): int => UserModel::factory()->create(['photoId' => $photoId])->id,
+        createIndexThumbnailImages(800, [[30, 30, 'crop'], [60, 60, 'crop']]),
+    );
+
+    $entry = EntryModel::factory()->withField('people', Users::class, value: [$userIds[0]])
+        ->createElementWithFields()->element;
+    $layout = $entry->getFieldLayout();
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
+    expect(Fields::saveLayout($layout))->toBeTrue();
+
+    foreach (array_slice($userIds, 1) as $userId) {
+        $other = EntryModel::factory()->createElement(['sectionId' => $entry->sectionId, 'typeId' => $entry->typeId]);
+        $other->setFieldValue('people', [$userId]);
+        expect(app(Elements::class)->saveElement($other))->toBeTrue();
+    }
+
+    $queries = listenForTransformIndexSelects();
+
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => 'table']), ['X-Inertia' => 'true'])
+        ->assertOk()
+        ->assertJsonCount(3, 'props.data');
 
     expect($queries)->toHaveCount(2)
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->count())->toBe(6);
