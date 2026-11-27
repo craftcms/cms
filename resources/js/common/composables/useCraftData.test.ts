@@ -68,3 +68,51 @@ it('builds URLs from the current Craft data after navigation', () => {
   );
   expect(helpers.getApiUrl('entries')).toBe('https://other.test/api/entries');
 });
+
+it('points the site crumb links at the current page URL', () => {
+  state.page = reactive({
+    url: '/admin/entries?search=new&site=english',
+    props: {
+      craft: {
+        siteCrumb: {
+          id: 'site-crumb',
+          label: 'English',
+          items: [
+            {
+              type: 'link',
+              label: 'English',
+              href: 'https://example.test/admin/entries?site=english&search=old&fresh=1',
+              selected: true,
+            },
+            {
+              type: 'group',
+              heading: 'Europe',
+              items: [
+                {
+                  type: 'link',
+                  label: 'French',
+                  href: 'https://example.test/admin/entries?site=french&search=old&fresh=1',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  });
+  const {siteCrumb} = useCraftData();
+
+  expect(siteCrumb.value?.items?.[0]).toMatchObject({
+    href: 'https://example.test/admin/entries?search=new&site=english',
+    selected: true,
+  });
+  expect((siteCrumb.value!.items![1] as any).items[0].href).toBe(
+    'https://example.test/admin/entries?search=new&site=french'
+  );
+
+  state.page.url = '/admin/entries?site=english';
+
+  expect((siteCrumb.value!.items![1] as any).items[0].href).toBe(
+    'https://example.test/admin/entries?site=french'
+  );
+});
