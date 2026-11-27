@@ -81,7 +81,7 @@ class Categories extends BaseRelationField
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', CategoryQuery::class, ElementCollection::class, Category::class);
+        return sprintf('\\%s|\\%s<int, \\%s>', CategoryQuery::class, ElementCollection::class, Category::class);
     }
 
     /**

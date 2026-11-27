@@ -75,7 +75,7 @@ class Tags extends BaseRelationField
     #[Override]
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', TagQuery::class, ElementCollection::class, Tag::class);
+        return sprintf('\\%s|\\%s<int, \\%s>', TagQuery::class, ElementCollection::class, Tag::class);
     }
 
     /**
