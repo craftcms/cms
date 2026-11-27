@@ -182,6 +182,7 @@ Error summaries shown when a save fails now show field names in bold, and each e
 - Fixed a bug where labels in field layout designers’ Appearance settings and Generated Fields tables could point to the inputs of another field layout designer in a stacked slideout. ([#21153](https://github.com/craftcms/cms/issues/21153), [#21186](https://github.com/craftcms/cms/pull/21186))
 - Fixed a bug where PHPStan reported `generics.interfaceConflict` errors for element classes with an `@extends` tag, such as Eloquent elements, because `ElementInterface` and `Component` disagreed on the type of their array-access keys. ([#21135](https://github.com/craftcms/cms/pull/21135))
 - Fixed a bug where closing a Matrix field’s settings slideout always warned about unsaved changes. ([#21158](https://github.com/craftcms/cms/issues/21158), [#21182](https://github.com/craftcms/cms/pull/21182))
+- Fixed an error that occurred on element indexes with a generated field column, if a generated value was numeric. ([#21195](https://github.com/craftcms/cms/issues/21195), [#21200](https://github.com/craftcms/cms/pull/21200))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) vulnerability where sandboxed templates could replace the content of `Twig\Markup` and `Illuminate\Support\HtmlString` objects. ([#21081](https://github.com/craftcms/cms/pull/21081), [#21082](https://github.com/craftcms/cms/pull/21082))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability.
 
