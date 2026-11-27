@@ -115,6 +115,21 @@ it('caps the lifetimes of successful responses, 304s and redirects only', functi
     'shorter lifetime' => [fn () => response('ok')->setPublic()->setMaxAge(60), [], 200, '60'],
 ]);
 
+it('doesn’t look up when pending entries go live, unless a cached block does', function () {
+    $this->travelTo(now()->startOfMinute());
+    EntryFactory::new()->create(['postDate' => now()->addMinutes(10)]);
+
+    Route::get('/page', fn () => response(renderString('{{ craft.entries.all()|length }}')));
+    Route::get('/cached', fn () => response(renderString("{% cache globally using key 'list' %}{{ craft.entries.all()|length }}{% endcache %}")));
+
+    $this->get('/page')->assertOk();
+    expect($this->cacheInfo['expiry'])->toBeNull();
+
+    app()->forgetScopedInstances();
+    $this->get('/cached')->assertOk();
+    expect($this->cacheInfo['expiry'])->toBe(now()->addMinutes(10)->getTimestamp());
+});
+
 it('collects tags added through the facade and the Twig global', function () {
     Route::get('/page', function () {
         CacheInfo::addTags(['from-php']);

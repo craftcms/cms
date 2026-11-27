@@ -94,6 +94,8 @@ class CacheInfo
         }
 
         $this->dependencies->begin(new TemplateCacheContext(cacheKey: '', global: false, resources: false));
+        // Looking up when entries go live or expire costs queries on every page. `{% cache %}` blocks still do it.
+        $this->dependencies->skipStatusChanges();
         $this->collecting = true;
     }
 
