@@ -100,11 +100,21 @@
       return slideoutPanelId.value;
     }
 
-    if (props.syncLocationHash && window.location.hash) {
-      return window.location.hash.slice(1);
+    // A folded column only opens for a hash that names one of its panels, not
+    // for one that points elsewhere on the page, such as the skip link's.
+    const hashPanelId = locationHashPanelId();
+    if (hashPanelId && (!pageFolded?.value || isVisible(hashPanelId))) {
+      return hashPanelId;
     }
 
     return pageFolded?.value ? null : undefined;
+  }
+
+  /** The panel the URL hash names, when the column follows the hash. */
+  function locationHashPanelId(): string | null {
+    return props.syncLocationHash && window.location.hash
+      ? window.location.hash.slice(1)
+      : null;
   }
 
   props.registry.start(preferredPanelId());
@@ -114,7 +124,23 @@
     props.registry.startPage(preferredPanelId(), overlaid?.value ?? false);
   });
 
-  watch(visiblePanels, () => props.registry.reconcile(preferredPanelId()));
+  watch(visiblePanels, () => {
+    // A folded column started without the panel the hash names, when it
+    // hadn't arrived yet, so it opens on that panel once it does. Closing a
+    // panel drops it from the hash, so this can't reopen one the person closed.
+    const hashPanelId = locationHashPanelId();
+    if (
+      pageFolded?.value &&
+      openPanelId.value === null &&
+      hashPanelId &&
+      isVisible(hashPanelId)
+    ) {
+      props.registry.startPage(hashPanelId, overlaid?.value ?? false);
+      return;
+    }
+
+    props.registry.reconcile(preferredPanelId());
+  });
 
   /**
    * The column folds to its rail once the shell overlays it. The width that

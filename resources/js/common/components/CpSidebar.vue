@@ -90,12 +90,41 @@
 
   const {announce} = useAnnouncer();
 
+  /**
+   * Docked, collapsing or expanding re-renders the nav's items, which drops
+   * focus to the page when it was on one. Focus goes back to that element, or
+   * to the Collapse item when it's no longer shown, such as a subnav item
+   * that moved into a flyout.
+   */
+  async function restoreNavFocus(element: HTMLElement): Promise<void> {
+    await nextTick();
+    await (element as HTMLElement & {updateComplete?: Promise<unknown>})
+      .updateComplete;
+
+    if (element.isConnected && element.checkVisibility()) {
+      element.focus();
+    } else {
+      collapseItem.value?.focus();
+    }
+  }
+
   // Pressed from wherever focus is, such as a field, so focus stays there and
   // the change is announced instead. Left alone while a slideout is open.
   useShortcut(
     'Mod+[Backslash]',
     () => {
+      const focused = document.activeElement;
+      const focusedInNav =
+        sidebar.mode === 'docked' &&
+        focused instanceof HTMLElement &&
+        !!nav.value?.contains(focused);
+
       toggleSidebar();
+
+      if (focusedInNav) {
+        void restoreNavFocus(focused);
+      }
+
       announce(
         sidebar.visibility === 'visible'
           ? t('Global navigation expanded')

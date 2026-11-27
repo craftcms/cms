@@ -695,6 +695,29 @@ describe('remembering a folded column on pages', () => {
     expect(panel('history').hidden).toBe(false);
   });
 
+  it('stays folded for a URL hash that names no panel', async () => {
+    localStorage.setItem('Page.detailsFolded', 'true');
+    window.history.replaceState(null, '', '/#content-main');
+
+    await mount('#rail', {syncLocationHash: true});
+
+    expect(panel('info').hidden).toBe(true);
+    expect(panel('history').hidden).toBe(true);
+  });
+
+  it('opens the panel the URL hash names once it arrives', async () => {
+    localStorage.setItem('Page.detailsFolded', 'true');
+    window.history.replaceState(null, '', '/#late');
+
+    await mount('#rail', {syncLocationHash: true});
+    expect(panel('info').hidden).toBe(true);
+
+    latePanel.value = true;
+    await settle();
+
+    expect(panel('late').hidden).toBe(false);
+  });
+
   it('drops the folded panel from the URL hash', async () => {
     window.history.replaceState(null, '', '/#info');
     await mount('#rail', {syncLocationHash: true});

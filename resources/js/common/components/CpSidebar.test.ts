@@ -2,6 +2,8 @@ import {detectPlatform} from '@tanstack/hotkeys';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {computed, createApp, nextTick, reactive, ref, type App} from 'vue';
 import {announcement} from '@/common/announcer';
+import {standInCheckVisibility} from '@/test/check-visibility';
+import {node} from './nav.fixture';
 
 const state = vi.hoisted(() => ({
   page: null as any,
@@ -67,7 +69,8 @@ function appendElement<T extends HTMLElement>(el: T): T {
 
 async function mountSidebar(
   mode: 'docked' | 'floating',
-  visibility: 'visible' | 'hidden'
+  visibility: 'visible' | 'hidden',
+  nav: unknown[] = []
 ) {
   state.sidebar = reactive({mode, visibility});
   state.toggleButton = ref(null);
@@ -84,7 +87,7 @@ async function mountSidebar(
         site: null,
         app: {version: '6.0.0', edition: {name: 'Pro'}},
         general: {cpTrigger: 'admin'},
-        nav: [],
+        nav,
         navBadges: {},
       },
       queue: {
@@ -197,6 +200,8 @@ it('stays open on a click elsewhere while docked', async () => {
 });
 
 describe('Mod+Backslash', () => {
+  standInCheckVisibility();
+
   const mod = detectPlatform() === 'mac' ? 'metaKey' : 'ctrlKey';
 
   function press(init: KeyboardEventInit = {}): void {
@@ -233,6 +238,28 @@ describe('Mod+Backslash', () => {
     expect(announcement.value).toBe('Global navigation expanded');
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(document.activeElement).toBe(field);
+  });
+
+  it('keeps focus on the nav item it was on while docked', async () => {
+    const container = await mountSidebar('docked', 'visible', [
+      node('Entries', {href: '/admin/entries', icon: 'newspaper'}),
+    ]);
+    const item = () =>
+      container.querySelector<HTMLElement>('.cp-sidebar__body craft-nav-item')!;
+    await (item() as HTMLElement & {updateComplete: Promise<unknown>})
+      .updateComplete;
+    item().focus();
+    expect(document.activeElement).toBe(item());
+
+    press();
+    await vi.waitFor(() => expect(item().hasAttribute('icon-only')).toBe(true));
+    await vi.waitFor(() => expect(document.activeElement).toBe(item()));
+
+    press();
+    await vi.waitFor(() =>
+      expect(item().hasAttribute('icon-only')).toBe(false)
+    );
+    await vi.waitFor(() => expect(document.activeElement).toBe(item()));
   });
 
   it('leaves Mod+Shift+Backslash to the details sidebar', async () => {
