@@ -1100,13 +1100,16 @@ describe('UiRenderer', () => {
       refreshable: true,
       nodes: full.nodes[0]!.control!.uis![0]!.nodes,
     }));
+    const onMutation = vi.fn();
     app.unmount();
-    await mount(nestedBlocksPayload({a: 'A'}, ['a']), {refresh});
+    await mount(nestedBlocksPayload({a: 'A'}, ['a']), {refresh, onMutation});
 
     await vi.waitFor(() =>
       expect(nestedBlockHeading(container, 'a')?.value).toBe('A')
     );
     expect(refresh).toHaveBeenCalledOnce();
+    // The filled block's values are what the server holds, not an edit.
+    expect(onMutation.mock.lastCall?.[0]).toEqual({});
   });
 
   it('keeps the nested UIs a new payload sends as reused', async () => {

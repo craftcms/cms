@@ -37,9 +37,8 @@ export function useUiValues(initial: UiPayload) {
    * use these to mark changes not yet reported by the server.
    */
   const changedPaths = ref(new Set<string>());
-  const controlBehaviors = reactive(
-    new Map<string, {path: string[]; behavior: UiControlBehavior}>()
-  );
+  type ControlBehavior = {path: string[]; behavior: UiControlBehavior};
+  const controlBehaviors = reactive(new Map<string, ControlBehavior>());
 
   rememberControls(initial.nodes);
 
@@ -95,6 +94,14 @@ export function useUiValues(initial: UiPayload) {
       }
     });
     rememberControls(nodes);
+  }
+
+  /**
+   * Adds the values `source` has at `scope` to the baseline, where the
+   * baseline has none, such as for a nested UI the client hadn't shown yet.
+   */
+  function adoptBaseline(scope: string[], source: UiValues): void {
+    baseline = withMissingValues(baseline, scope, valueAt(source, scope));
   }
 
   /** Seeds the values again from `source`, as mounting it would have. */
@@ -279,11 +286,18 @@ export function useUiValues(initial: UiPayload) {
    * block of a large field saves only that block.
    *
    * Other values come back whole.
+   *
+   * `behaviors` are the control behaviors within `path`. Each level hands
+   * every block field only its own, so a layout with many blocks and tables
+   * isn't searched in full for each field.
    */
   function blocksDelta(
     current: UiValue,
     original: UiValue,
-    path: string[]
+    path: string[],
+    behaviors: ControlBehavior[] = [...controlBehaviors.values()].filter(
+      (entry) => isWithin(entry.path, path)
+    )
   ): UiValue {
     if (
       knownControls.get(JSON.stringify(path))?.component !==
@@ -297,9 +311,15 @@ export function useUiValues(initial: UiPayload) {
     }
 
     const entries: UiValues = {};
+    // Keyed by the segments after `entries`: a block's ID, then the key or
+    // field handle within it.
+    const byBlock = groupBy(behaviors, path.length + 1);
 
     for (const [id, entry] of Object.entries(current.entries)) {
       const before = original.entries[id];
+      const blockBehaviors = byBlock.get(id) ?? [];
+      const byKey = groupBy(blockBehaviors, path.length + 2);
+      const byField = groupBy(byKey.get('fields') ?? [], path.length + 3);
 
       // The server hasn't seen a new block, so it gets all of it.
       if (!isRecord(entry) || !isRecord(before)) {
@@ -312,11 +332,13 @@ export function useUiValues(initial: UiPayload) {
 
       for (const [key, value] of Object.entries(entry)) {
         if (key !== 'fields' || !isRecord(value) || !isRecord(before.fields)) {
-          const keyPath = [...path, 'entries', id, key];
-
           if (
-            groupCanonical(value, keyPath) !==
-            groupCanonical(before[key], keyPath)
+            differs(
+              value,
+              before[key],
+              [...path, 'entries', id, key],
+              byKey.get(key) ?? []
+            )
           ) {
             changed[key] = value;
           }
@@ -330,13 +352,15 @@ export function useUiValues(initial: UiPayload) {
           const beforeValue = before.fields[handle];
           const fieldPath = [...path, 'entries', id, 'fields', handle];
 
-          // Compared as the group is, so a change only a control's comparison
-          // value shows, such as reordered keyed table rows, still counts.
-          if (
-            groupCanonical(fieldValue, fieldPath) !==
-            groupCanonical(beforeValue, fieldPath)
-          ) {
-            fields[handle] = blocksDelta(fieldValue, beforeValue, fieldPath);
+          const fieldBehaviors = byField.get(handle) ?? [];
+
+          if (differs(fieldValue, beforeValue, fieldPath, fieldBehaviors)) {
+            fields[handle] = blocksDelta(
+              fieldValue,
+              beforeValue,
+              fieldPath,
+              fieldBehaviors
+            );
           }
         }
 
@@ -383,6 +407,57 @@ export function useUiValues(initial: UiPayload) {
   }
 
   /** Serializes a scope's values the way change detection compares them. */
+  /**
+   * Whether `value` differs from `before`, as {@link groupCanonical} would
+   * compare them, checking only `behaviors`, the ones within `path`. A change
+   * only a control's comparison value shows, such as reordered keyed table
+   * rows, counts.
+   */
+  function differs(
+    value: UiValue,
+    before: UiValue,
+    path: string[],
+    behaviors: ControlBehavior[]
+  ): boolean {
+    if (canonical(value) !== canonical(before)) {
+      return true;
+    }
+
+    return behaviors.some(({path: controlPath, behavior}) => {
+      if (!behavior.comparisonValue) {
+        return false;
+      }
+
+      const relative = controlPath.slice(path.length);
+
+      return (
+        canonical(behavior.comparisonValue(valueAt(value, relative))) !==
+        canonical(behavior.comparisonValue(valueAt(before, relative)))
+      );
+    });
+  }
+
+  /** `behaviors`, grouped by the segment of their paths at `index`. */
+  function groupBy(
+    behaviors: ControlBehavior[],
+    index: number
+  ): Map<string | undefined, ControlBehavior[]> {
+    const groups = new Map<string | undefined, ControlBehavior[]>();
+
+    for (const entry of behaviors) {
+      const key = entry.path[index];
+      const group = groups.get(key);
+
+      if (group) {
+        group.push(entry);
+      } else {
+        groups.set(key, [entry]);
+      }
+    }
+
+    return groups;
+  }
+
   function groupCanonical(value: UiValue, path: string[]): string {
     const comparisons: UiValue[] = [];
     for (const {path: controlPath, behavior} of controlBehaviors.values()) {
@@ -477,6 +552,7 @@ export function useUiValues(initial: UiPayload) {
     recordEdit,
     adopt,
     adoptDeferred,
+    adoptBaseline,
     reset,
     rebase,
     settle,

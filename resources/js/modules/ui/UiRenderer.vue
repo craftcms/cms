@@ -319,6 +319,14 @@
 
     const filled = filledTabs(payload.value.nodes, refreshed.nodes);
     valueState.adoptDeferred(filled, refreshed.values);
+    // A placeholder's values are what the server holds, like a deferred tab's.
+    if (
+      reusedScopes(payload.value.nodes).some((reused) =>
+        pathsMatch(reused, scope)
+      )
+    ) {
+      valueState.adoptBaseline(scope, refreshed.values);
+    }
     valueState.adopt(refreshed);
 
     // Settled before the mutation below, which would otherwise report the
