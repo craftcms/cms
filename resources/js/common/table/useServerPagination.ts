@@ -67,9 +67,13 @@ export function useServerPagination({
 
     // Show a new page size right away rather than when the rows arrive. The
     // page size select would otherwise snap back to the old size and send it
-    // as a second request.
+    // as a second request. The page index waits for the rows, so a page typed
+    // while they load still counts as a change.
     if (next.pageSize !== paginationState.value.pageSize) {
-      paginationState.value = next;
+      paginationState.value = {
+        ...paginationState.value,
+        pageSize: next.pageSize,
+      };
     }
   }
 
