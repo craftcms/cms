@@ -408,7 +408,10 @@ export function defineEntryFieldLayoutUiHost(
           'X-Craft-Ui-Scope': JSON.stringify(
             this.#fieldPath ? rootScope : scope
           ),
-          ...this.uiReuseHeaders,
+          // A native field asks for its whole UI, so placeholders could stand
+          // in for the nested scope this refresh is for.
+          ...((!this.#fieldPath || scopeKey === JSON.stringify(rootScope)) &&
+            this.uiReuseHeaders),
         };
 
         const {data: response} = await actionClient.post(

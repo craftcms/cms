@@ -1011,6 +1011,79 @@ describe('UiRenderer', () => {
     );
   });
 
+  it('submits a block whose keyed table rows were reordered', async () => {
+    const onMutation = vi.fn();
+    const blocks = nestedBlocksPayload({a: 'Heading a', b: 'Heading b'});
+    const tablePath = ['fields', 'blocks', 'entries', 'a', 'fields', 'rows'];
+    const control = required(blocks.nodes[0]?.control, 'Expected blocks.');
+    control.uis![0]!.nodes = [
+      {
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Rows'},
+        control: {
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+          component: 'craft:table',
+          props: {columns: {label: {type: 'singleline'}}, keyed: true},
+          path: tablePath,
+          mode: 'editable',
+          deltaGroup: ['fields', 'blocks'],
+        },
+      },
+    ];
+    Object.assign(valueAt(blocks.values, tablePath.slice(0, -1)) as object, {
+      rows: {first: {label: 'First'}, second: {label: 'Second'}},
+    });
+    app.unmount();
+    await mount(blocks, {onMutation});
+
+    renderer.setValue(tablePath, {
+      second: {label: 'Second'},
+      first: {label: 'First'},
+    });
+    await nextTick();
+
+    expect(
+      Object.keys(onMutation.mock.lastCall?.[0]?.fields?.blocks?.entries ?? {})
+    ).toEqual(['a']);
+  });
+
+  it('asks for the reused nested UIs it doesn’t show as the new payload does', async () => {
+    const readOnly = (payload: UiPayload): UiPayload => {
+      visitControls(payload.nodes, (control) =>
+        Object.assign(control, {mode: 'readOnly'})
+      );
+
+      return payload;
+    };
+    const refresh = vi.fn(async (_values: UiValues, scope?: string[]) => {
+      const full = readOnly(nestedBlocksPayload({a: 'A', b: 'B'}));
+      const ui = full.nodes[0]!.control!.uis!.find(
+        (ui) => JSON.stringify(ui.scope) === JSON.stringify(scope)
+      )!;
+
+      return {...full, scope: ui.scope, refreshable: true, nodes: ui.nodes};
+    });
+    app.unmount();
+    await mount(nestedBlocksPayload({a: 'A', b: 'B'}), {refresh});
+
+    // The field has just become read-only, so the blocks it shows are editable.
+    currentPayload.value = readOnly(
+      nestedBlocksPayload({a: 'A', b: 'B'}, ['a', 'b'])
+    );
+    const heading = (uid: string) =>
+      container.querySelector<HTMLInputElement>(
+        `#ui-fields-blocks-entries-${uid}-fields-heading input`
+      );
+    await vi.waitFor(() => expect(heading('b')?.readOnly).toBe(true));
+
+    expect(refresh.mock.calls.map(([, scope]) => scope?.at(-1))).toEqual([
+      'a',
+      'b',
+    ]);
+    expect(heading('a')?.readOnly).toBe(true);
+  });
+
   it('keeps the nested UIs a new payload sends as reused', async () => {
     const path = ['fields', 'blocks'];
 
@@ -1417,6 +1490,49 @@ describe('UiRenderer', () => {
     expect(container.textContent).not.toContain('Failed to render');
     expect(container.querySelectorAll('tbody > tr')).toHaveLength(0);
     expect(renderer.currentValues()).toEqual({details: null});
+  });
+
+  it('renders table columns in the order a new payload gives them', async () => {
+    const table = (columns: string[]): UiPayload => ({
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+            component: 'craft:table',
+            props: {
+              columns: Object.fromEntries(
+                columns.map((key) => [
+                  key,
+                  {type: 'singleline', heading: `Column ${key}`},
+                ])
+              ),
+            },
+            path: ['details'],
+            mode: 'editable',
+            deltaGroup: ['details'],
+          },
+        },
+      ],
+      values: {details: null},
+      errors: [],
+      globalErrors: [],
+    });
+    const headings = () =>
+      [...container.querySelectorAll('thead th')]
+        .map((th) => th.textContent?.trim())
+        .filter((text) => text?.startsWith('Column'));
+    app.unmount();
+    await mount(table(['a', 'b']));
+
+    currentPayload.value = table(['b', 'a']);
+    await nextTick();
+
+    expect(headings()).toEqual(['Column b', 'Column a']);
   });
 
   it('renders table cell errors beside scalar values', async () => {

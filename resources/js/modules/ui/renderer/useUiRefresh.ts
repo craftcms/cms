@@ -111,6 +111,27 @@ export function useUiRefresh(options: {
     }
   }
 
+  /**
+   * Asks for `scope` straight away, even when its values haven't changed
+   * since it was last rendered, such as for a nested UI the client lacks.
+   */
+  function fill(scope: string[]): void {
+    if (options.disabled() || !options.refresh()) {
+      return;
+    }
+
+    const key = JSON.stringify(scope);
+
+    if (active.has(key)) {
+      return;
+    }
+
+    lastValues.delete(key);
+    versions.set(key, (versions.get(key) ?? 0) + 1);
+    clearTimeout(timers.get(key));
+    void request(scope, scope);
+  }
+
   /** Records the values `scope` was last rendered with. */
   function seed(scope: string[], fingerprint: string): void {
     lastValues.set(JSON.stringify(scope), fingerprint);
@@ -133,6 +154,7 @@ export function useUiRefresh(options: {
     /** Control paths, as JSON, whose changes have a refresh in flight. */
     refreshingFields: readonly(refreshingFields),
     schedule,
+    fill,
     seed,
     cancel,
   };

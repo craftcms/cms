@@ -316,15 +316,15 @@ export function useUiValues(initial: UiPayload) {
 
         for (const [handle, fieldValue] of Object.entries(value)) {
           const beforeValue = before.fields[handle];
+          const fieldPath = [...path, 'entries', id, 'fields', handle];
 
-          if (canonical(fieldValue) !== canonical(beforeValue)) {
-            fields[handle] = blocksDelta(fieldValue, beforeValue, [
-              ...path,
-              'entries',
-              id,
-              'fields',
-              handle,
-            ]);
+          // Compared as the group is, so a change only a control's comparison
+          // value shows, such as reordered keyed table rows, still counts.
+          if (
+            groupCanonical(fieldValue, fieldPath) !==
+            groupCanonical(beforeValue, fieldPath)
+          ) {
+            fields[handle] = blocksDelta(fieldValue, beforeValue, fieldPath);
           }
         }
 

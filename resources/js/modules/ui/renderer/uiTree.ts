@@ -73,12 +73,16 @@ export function shareEqual<T extends UiValue>(
 
   if (isRecord(prev) && isRecord(raw)) {
     const keys = Object.keys(raw);
-    let same = keys.length === Object.keys(prev).length;
+    const prevKeys = Object.keys(prev);
+    // Key order counts: controls such as tables render a record in order.
+    let same =
+      keys.length === prevKeys.length &&
+      keys.every((key, index) => key === prevKeys[index]);
     const shared: UiValues = {};
 
     for (const key of keys) {
       shared[key] = shareEqual(prev[key], raw[key]!);
-      same &&= key in prev && shared[key] === prev[key];
+      same &&= shared[key] === prev[key];
     }
 
     // SAFETY: each entry is `next`'s own entry or one deeply equal to it.
@@ -149,13 +153,18 @@ export function canReuseUis(payload: UiPayload | null | undefined): boolean {
  * copied over. A server sends placeholders only to a client that asks for
  * them, so it builds and sends only the nested UIs a request changed.
  *
- * A placeholder stays when `previous` has no UI at its scope. That only
- * happens when a host asks for placeholders without showing the whole payload.
+ * A placeholder stays when `previous` doesn't show a UI at its scope, such as
+ * for a field a condition has just revealed, or shows it in another mode,
+ * such as for a field that has just become read-only. The renderer asks for
+ * the UIs at the scopes {@link reusedScopes} lists.
  */
 export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
   let values = next.values;
 
-  const fillUis = (uis: NestedUiPayload[]): NestedUiPayload[] => {
+  const fillUis = (
+    owner: UiControlPayload,
+    uis: NestedUiPayload[]
+  ): NestedUiPayload[] => {
     const filled = uis.map((ui) => {
       if (!ui.reused) {
         const nodes = fillNodes(ui.nodes);
@@ -165,7 +174,11 @@ export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
 
       const shown = findNestedUi(toRaw(previous).nodes, ui.scope);
 
-      if (!shown || shown.reused) {
+      if (
+        !shown ||
+        shown.reused ||
+        findControl(toRaw(previous).nodes, owner.path)?.mode !== owner.mode
+      ) {
         return ui;
       }
 
@@ -183,7 +196,7 @@ export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
 
   const fillNodes = (nodes: UiNodePayload[]): UiNodePayload[] => {
     const filled = nodes.map((node) => {
-      const uis = node.control?.uis && fillUis(node.control.uis);
+      const uis = node.control?.uis && fillUis(node.control, node.control.uis);
       const children = node.children && fillNodes(node.children);
 
       if (uis === node.control?.uis && children === node.children) {
@@ -205,6 +218,28 @@ export function withReusedUis(previous: UiPayload, next: UiPayload): UiPayload {
   const nodes = fillNodes(next.nodes);
 
   return nodes === next.nodes ? next : {...next, nodes, values};
+}
+
+/** The scopes of the placeholders {@link withReusedUis} couldn't fill. */
+export function reusedScopes(nodes: UiNodePayload[]): string[][] {
+  const scopes: string[][] = [];
+  visitControls(nodes, (control) =>
+    control.uis?.forEach((ui) => ui.reused && scopes.push(ui.scope))
+  );
+
+  return scopes;
+}
+
+function findControl(
+  nodes: UiNodePayload[],
+  path: string[]
+): UiControlPayload | undefined {
+  let found: UiControlPayload | undefined;
+  visitControls(nodes, (control) => {
+    found ??= pathsMatch(control.path, path) ? control : undefined;
+  });
+
+  return found;
 }
 
 /**
@@ -309,6 +344,7 @@ export function withNestedUi(
 
   nested.nodes = refreshed.nodes;
   nested.refreshable = refreshed.refreshable;
+  delete nested.reused;
 
   return {
     ...updated,

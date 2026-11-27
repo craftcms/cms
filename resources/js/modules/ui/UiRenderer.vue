@@ -45,6 +45,7 @@
     disabledNodes,
     isWithin,
     readOnlyNodes,
+    reusedScopes,
     shareEqual,
     sharePayload,
     withReusedUis,
@@ -343,6 +344,7 @@
     emit('update:payload', payload.value);
     emitMutation();
     resetObservedValues(payload.value.nodes);
+    reusedScopes(payload.value.nodes).forEach(refresher.fill);
 
     if (restoreFocus) {
       nextTick(restoreFocus);
