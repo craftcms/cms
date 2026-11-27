@@ -173,9 +173,9 @@ describe('callback flow', function () {
 
         get(oauthControllerCallbackUrl(true))
             ->assertRedirect(action([SignInProvidersController::class, 'index']))
-            ->assertSessionHas('error', fn (mixed $message): bool => is_string($message)
-                && str_contains($message, 'control panel')
-                && str_contains($message, 'maintenance mode'));
+            ->assertCpMessage(fn (array $message): bool => $message['type'] === 'error'
+                && str_contains($message['message'], 'control panel')
+                && str_contains($message['message'], 'maintenance mode'));
 
         expect(oauthControllerHasLinkedIdentity('test', 'provider-connect-maintenance', $user->id))->toBeFalse()
             ->and(Auth::id())->toBe($user->id);
@@ -238,7 +238,7 @@ describe('callback flow', function () {
             'email' => $scenario['email'],
         ])
             ->assertRedirect(oauthControllerLoginUrl(false))
-            ->assertSessionHas('error', $scenario['expectedError']);
+            ->assertCpMessage('error', $scenario['expectedError']);
 
         expect(User::find()->email($scenario['email'])->status(null)->first())->toBeNull()
             ->and(Auth::check())->toBeFalse();

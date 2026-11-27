@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: craftcms/skills
-          ref: 9d9497e0c66e8250b6e7d2e78ea55fdcfbb87739
+          ref: e33e24b7ed46e0c29935c587ce64fee2443cac9e
           path: .skills
           sparse-checkout: skills/craft-translations/scripts
       - uses: shivammathur/setup-php@v2

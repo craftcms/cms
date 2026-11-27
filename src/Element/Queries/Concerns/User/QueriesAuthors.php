@@ -103,6 +103,8 @@ trait QueriesAuthors
      *
      * @param  bool|null  $value  The property value (defaults to true)
      *
+     * @phpstan-return static
+     *
      * @uses $authors
      */
     #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results based on whether the users are listed as the author of any entries.')]
@@ -117,6 +119,8 @@ trait QueriesAuthors
      * Narrows the query results to users who are the author of the given entry.
      *
      * @uses $authorOf
+     *
+     * @phpstan-return static
      */
     public function authorOf(?ElementInterface $value): self
     {

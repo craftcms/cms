@@ -835,3 +835,175 @@ describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     expect(weight(items[0]!)).toBeGreaterThan(weight(items[1]!));
   });
 });
+
+/**
+ * A nav with a top-level heading, a branch whose subnav is open and holds a
+ * heading of its own, and the rows around them.
+ */
+async function rhythmFixture() {
+  document.body.innerHTML = `
+    <craft-nav-list style="width: 300px">
+      <craft-nav-item group id="content">
+        Content
+        <craft-nav-list slot="subnav">
+          <craft-nav-item href="/admin/dashboard" icon="gauge">Dashboard</craft-nav-item>
+          <craft-nav-item href="/admin/users" icon="user" initial-state="open" id="users">
+            Users
+            <craft-nav-list slot="subnav">
+              <craft-nav-item href="/admin/users/all">All users</craft-nav-item>
+              <craft-nav-item group id="account">
+                Account Type
+                <craft-nav-list slot="subnav">
+                  <craft-nav-item href="/admin/users/credentialed">Credentialed</craft-nav-item>
+                </craft-nav-list>
+              </craft-nav-item>
+            </craft-nav-list>
+          </craft-nav-item>
+          <craft-nav-item href="/admin/graphql" icon="gear" id="graphql">GraphQL</craft-nav-item>
+        </craft-nav-list>
+      </craft-nav-item>
+      <craft-nav-item group id="admin">
+        Administration
+        <craft-nav-list slot="subnav">
+          <craft-nav-item href="/admin/settings" icon="gear" id="settings">Settings</craft-nav-item>
+        </craft-nav-list>
+      </craft-nav-item>
+    </craft-nav-list>
+  `;
+
+  const items = [...document.querySelectorAll<CraftNavItem>('craft-nav-item')];
+  await Promise.all(items.map((item) => item.updateComplete));
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+  const row = (selector: string) =>
+    document
+      .querySelector<CraftNavItem>(selector)!
+      .shadowRoot!.querySelector('.nav-item')!
+      .getBoundingClientRect();
+  const label = (selector: string) =>
+    document
+      .querySelector<CraftNavItem>(selector)!
+      .shadowRoot!.querySelector('.nav-item__action-item')!
+      .getBoundingClientRect();
+
+  return {row, label};
+}
+
+it('sets off a section, a nested heading, and the row after an open subnav by whole spacing steps', async () => {
+  const {row} = await rhythmFixture();
+  const gap = (before: string, after: string) =>
+    row(after).top - row(before).bottom;
+  const rowGap = gap('[href="/admin/dashboard"]', '[href="/admin/users"]');
+  // The tokens as laid out, so a missing one can't pass as zero.
+  const step = (name: string) => {
+    const probe = document.createElement('div');
+    probe.style.width = `var(${name})`;
+    document.body.append(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
+  };
+
+  expect(rowGap).toBeGreaterThan(0);
+  expect(step('--c-spacing-sm')).toBeGreaterThan(0);
+  expect(step('--c-spacing-md')).toBeGreaterThan(step('--c-spacing-sm'));
+
+  expect(gap('[href="/admin/users/all"]', '#account')).toBeCloseTo(
+    rowGap + step('--c-spacing-sm'),
+    0
+  );
+  expect(gap('[href="/admin/users/credentialed"]', '#graphql')).toBeCloseTo(
+    rowGap + step('--c-spacing-md'),
+    0
+  );
+  expect(gap('#graphql', '#admin')).toBeCloseTo(
+    rowGap + step('--c-spacing-md'),
+    0
+  );
+});
+
+it('drops the space after a subnav once it closes', async () => {
+  const {row} = await rhythmFixture();
+  const users = document.querySelector<CraftNavItem>('#users')!;
+  const gap = () => row('#graphql').top - row('[href="/admin/users"]').bottom;
+  const rowGap =
+    row('[href="/admin/users"]').top - row('[href="/admin/dashboard"]').bottom;
+
+  // Open, the space is there to drop.
+  expect(
+    row('#graphql').top - row('[href="/admin/users/credentialed"]').bottom
+  ).toBeGreaterThan(rowGap);
+
+  users.toggleSubnav(new Event('click'));
+  await users.updateComplete;
+
+  await expect.poll(gap).toBeCloseTo(rowGap, 0);
+});
+
+describe.each(['light', 'dark'])('chevrons in the %s theme', (theme) => {
+  async function sidebar() {
+    const surface = document.createElement('div');
+    surface.dataset.theme = theme;
+    surface.style.backgroundColor = 'var(--c-surface-page)';
+    // As CpSidebar sets it.
+    surface.style.setProperty('--c-nav-item-color', 'var(--color-slate-700)');
+    // As MainNav styles it.
+    const chevronStyle = document.createElement('style');
+    chevronStyle.textContent = `craft-nav-item::part(toggle-icon) {
+      color: color-mix(in srgb, currentcolor 75%, transparent);
+    }`;
+    surface.style.width = '300px';
+    surface.innerHTML = `
+      <craft-nav-list>
+        <craft-nav-item href="/admin/users" icon="user">
+          Users
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="/admin/users/all">All users</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+        <craft-nav-item href="/admin/settings" icon="gear" subnav-display="flyout">
+          Settings
+          <craft-nav-list slot="subnav">
+            <craft-nav-item href="/admin/settings/general">General</craft-nav-item>
+          </craft-nav-list>
+        </craft-nav-item>
+      </craft-nav-list>
+    `;
+    surface.append(chevronStyle);
+    document.body.append(surface);
+    const items = [...surface.querySelectorAll<CraftNavItem>('craft-nav-item')];
+    await Promise.all(items.map((item) => item.updateComplete));
+
+    const [users, , settings] = items as [
+      CraftNavItem,
+      CraftNavItem,
+      CraftNavItem,
+    ];
+    const chevron = (item: CraftNavItem, toggle: string) =>
+      getComputedStyle(item.shadowRoot!.querySelector(`${toggle} craft-icon`)!)
+        .color;
+    const label = (item: CraftNavItem) =>
+      getComputedStyle(item.shadowRoot!.querySelector('.nav-item')!).color;
+
+    return {
+      background: getComputedStyle(surface).backgroundColor,
+      rows: [
+        {item: users, chevron: () => chevron(users, '.subnav-toggle')},
+        {item: settings, chevron: () => chevron(settings, '.flyout-toggle')},
+      ],
+      label,
+    };
+  }
+
+  it('draws a row’s chevrons quieter than its label, and still at 3:1', async () => {
+    const {background, rows, label} = await sidebar();
+
+    for (const {item, chevron} of rows) {
+      const labelContrast = contrast(label(item), background);
+      const chevronContrast = contrast(chevron(), background);
+
+      expect(chevronContrast).toBeLessThan(labelContrast);
+      expect(chevronContrast).toBeGreaterThanOrEqual(3);
+    }
+  });
+});

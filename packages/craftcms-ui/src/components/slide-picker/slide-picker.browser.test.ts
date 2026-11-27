@@ -8,6 +8,8 @@ import './slide-picker.js';
 beforeEach(async () => {
   const {page} = await import('vite-plus/test/browser');
   await page.viewport(414, 720);
+  // The test file before this one, in the same tab, may have left it on a segment.
+  await movePointerAway();
   document.body.innerHTML = '';
 });
 
@@ -28,12 +30,21 @@ async function render(
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
   await picker.updateComplete;
+  // A pointer resting where the picker renders previews a value once the
+  // browser next updates hover, a frame after the picker is laid out.
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
   await slider(picker).updateComplete;
+  expect(previewing(picker), 'previewing before any hover').toBe(false);
   return picker;
 }
 
 function slider(picker: CraftSlidePicker) {
   return picker.querySelector('craft-slide-picker-slider')!;
+}
+
+function previewing(picker: CraftSlidePicker): boolean {
+  return !!slider(picker).shadowRoot!.querySelector('.is-previewing');
 }
 
 function segments(picker: CraftSlidePicker): HTMLElement[] {
@@ -96,6 +107,7 @@ it('fills only the segments up to the hovered one', async () => {
   const [selected] = await fills(picker);
 
   await userEvent.hover(segments(picker)[1]!);
+  expect(previewing(picker)).toBe(true);
   const [first, second, third, fourth] = await fills(picker);
 
   expect(first).not.toBe(empty);
