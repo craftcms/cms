@@ -52,15 +52,10 @@ class LivewireServiceProvider extends ServiceProvider
             collect(Route::getRoutes()->getRoutes())
                 ->filter(fn (IlluminateRoute $route): bool => Str::endsWith((string) $route->getName(), 'livewire.update'))
                 // ApplyCraftMiddleware checks maintenance mode itself, once it knows whose component it is.
-                ->each(fn (IlluminateRoute $route) => $route
-                    ->middleware(ApplyCraftMiddleware::class)
-                    ->metadata([PreventRequestsDuringMaintenance::ALLOW_DURING_MAINTENANCE_METADATA => true]));
-
-            // Craft listed the routes that allow maintenance before these were marked. Cached routes were
-            // listed after the app booted, so they already include them.
-            if (! $this->app->routesAreCached()) {
-                PreventRequestsDuringMaintenance::registerRouteExceptions();
-            }
+                ->each(function (IlluminateRoute $route): void {
+                    $route->middleware(ApplyCraftMiddleware::class);
+                    PreventRequestsDuringMaintenance::allowRouteDuringMaintenance($route);
+                });
         });
     }
 }
