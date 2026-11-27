@@ -32,6 +32,20 @@ it('throws if an invalid token is passed', function () {
     ]), fn () => 'bar');
 });
 
+it('ignores a token field in the request body', function () {
+    $token = app(RouteTokens::class)->createToken('token/route');
+
+    foreach (['header.payload.signature', $token] as $value) {
+        $result = $this->middleware->handle(Request::create('foo', 'POST', [
+            Cms::config()->tokenParam => $value,
+        ]), fn (Request $request) => $request->path());
+
+        expect($result)->toBe('foo');
+    }
+
+    expect(Context::getHidden(HandleTokenRequest::TOKEN_KEY))->toBeNull();
+});
+
 it('adds the token to the context', function () {
     $token = app(RouteTokens::class)->createToken('token/route');
 
@@ -95,8 +109,7 @@ it('rebinds the request after resolving a token route', function () {
 it('does not let a hidden action parameter override a resolved token route', function () {
     $token = app(RouteTokens::class)->createToken('token/route');
 
-    $path = $this->middleware->handle(Request::create('foo', 'POST', [
-        Cms::config()->tokenParam => $token,
+    $path = $this->middleware->handle(Request::create('foo?'.Cms::config()->tokenParam."=$token", 'POST', [
         'action' => 'users/save-user',
     ]), fn (Request $request) => app(HandleActionRequest::class)->handle(
         $request,

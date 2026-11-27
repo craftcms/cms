@@ -22,6 +22,7 @@ use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\Contracts\AuthorizationViewResponse;
 use Laravel\Passport\Passport;
@@ -57,11 +58,11 @@ function mcpAuthorizationParameters(string $clientId, array $overrides = []): ar
     ], $overrides);
 }
 
-function mcpExchangeAuthorizationCode(TestCase $test, string $clientId, string $location): void
+function mcpExchangeAuthorizationCode(TestCase $test, string $clientId, string $location): TestResponse
 {
     parse_str(parse_url($location, PHP_URL_QUERY), $callback);
 
-    $test->postJson(route('passport.token'), [
+    return $test->postJson(route('passport.token'), [
         'grant_type' => 'authorization_code',
         'client_id' => $clientId,
         'redirect_uri' => 'https://client.example/callback',
@@ -334,6 +335,20 @@ it('marks registered clients as authorized once they get a token', function (): 
     mcpExchangeAuthorizationCode($this, $clientId, $location);
 
     expect(Passport::client()->newQuery()->find($clientId)->updated_at)->not->toBeNull();
+});
+
+it('issues one-hour access tokens and 30-day refresh tokens', function (): void {
+    $clientId = $this->postJson(route('craft.mcp.oauth.register'), mcpRegistration())->json('client_id');
+
+    $this->actingAs(User::query()->firstOrFail(), Cms::config()->getAuthGuard());
+    $this->get(route('craft.mcp.oauth.authorize', mcpAuthorizationParameters($clientId)))->assertOk();
+    $location = $this->post(route('craft.mcp.oauth.approve'), ['auth_token' => session('authToken')])->headers->get('Location');
+    expect(mcpExchangeAuthorizationCode($this, $clientId, $location)->json('expires_in'))
+        ->toBeGreaterThan(3590)
+        ->toBeLessThanOrEqual(3600);
+
+    expect(Passport::refreshToken()->newQuery()->sole()->expires_at->diffInDays(now()->addDays(30), absolute: true))
+        ->toBeLessThan(1);
 });
 
 it('answers CORS preflight requests without authentication or collecting user instructions', function (bool $public): void {

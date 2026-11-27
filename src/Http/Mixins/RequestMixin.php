@@ -151,7 +151,7 @@ class RequestMixin
              */
             $request = $this;
 
-            return $request->input(Cms::config()->tokenParam, $request->header(HandleTokenRequest::TOKEN_HEADER));
+            return $request->query(Cms::config()->tokenParam, $request->header(HandleTokenRequest::TOKEN_HEADER));
         };
     }
 

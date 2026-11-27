@@ -34,6 +34,7 @@ use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Notifications\SendQueuedUserNotifications;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
+use DateInterval;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -95,6 +96,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->bootRedirects();
         $this->registerElementPolicies();
+
+        // Passport defaults to one-year access and refresh tokens. `??=` keeps lifetimes the app sets itself.
+        Passport::$tokensExpireIn ??= new DateInterval('PT1H');
+        Passport::$refreshTokensExpireIn ??= new DateInterval('P30D');
 
         $this->app->booted(fn () => $this->app->make(PersonalAccessTokens::class)->registerPassportScopes());
     }

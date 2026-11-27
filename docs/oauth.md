@@ -98,7 +98,7 @@ return GeneralConfig::create()
 
 ## Routes and Callback URLs
 
-Craft provides a stable callback endpoint and two redirect entrypoints:
+Craft provides one callback endpoint and two redirect entrypoints:
 
 - Site redirect: `oauth/{provider}/redirect`
 - CP redirect: `{cpTrigger}/oauth/{provider}/redirect`
@@ -110,11 +110,18 @@ The callback URL is generated from the site's normal web URL:
 siteUrl('oauth/google/callback')
 ```
 
-Register that callback URL with your OAuth provider.
+Logins can start from the site or the control panel, so Craft has a redirect route for each. Both send the provider back to the same callback route on the site's URL.
 
-The redirect endpoint can be entered from either the site or control panel. Craft uses separate redirect routes so the callback can stay stable while still preserving the correct CP vs site auth context.
+When the login starts from the control panel, Craft appends `?context=cp` to the callback URL so the callback applies CP auth checks. The context travels in the URL rather than the session, so it reaches the callback even when the session doesn't, such as when the control panel uses a different domain than the site.
 
-When the login starts from the control panel, Craft appends `?context=cp` to the callback URL so the callback can apply CP auth checks without any session-based context tracking.
+Register both callback URLs with your OAuth provider if people sign in from the front end and the control panel:
+
+```
+https://example.com/oauth/google/callback
+https://example.com/oauth/google/callback?context=cp
+```
+
+Providers that match redirect URIs exactly, as [RFC 9700](https://www.rfc-editor.org/rfc/rfc9700#section-2.1) requires, treat these as two different URLs. If only one is registered, logins from the other side fail at the provider with a redirect URI mismatch error.
 
 ## Default Behavior
 
@@ -290,6 +297,6 @@ If you do not want to rely on a named driver, you can set `driver` to a Socialit
 ## Troubleshooting
 
 - If a provider button does not appear, check the logs first. Invalid provider config is logged and the provider is omitted.
-- Make sure the callback URL registered with the OAuth provider exactly matches Craft's callback URL.
+- Make sure the callback URLs registered with the OAuth provider exactly match Craft's callback URLs. If front-end logins work but control panel logins fail with a redirect URI error, register the `?context=cp` callback URL too.
 - If you expect an existing user match and one is not found, verify that the provider is returning an email or provide a custom `userResolver`.
 - If your provider does not support state or your infrastructure breaks stateful callbacks, set `stateless` to `true`.

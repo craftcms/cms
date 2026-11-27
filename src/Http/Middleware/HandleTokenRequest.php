@@ -35,7 +35,8 @@ readonly class HandleTokenRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        $token = $request->input($this->generalConfig->tokenParam, $request->header(self::TOKEN_HEADER));
+        // Only the query string, so form posts with their own `token` field (such as OAuth token revocation) pass through
+        $token = $request->query($this->generalConfig->tokenParam, $request->header(self::TOKEN_HEADER));
 
         if (! $token) {
             return $next($request);
