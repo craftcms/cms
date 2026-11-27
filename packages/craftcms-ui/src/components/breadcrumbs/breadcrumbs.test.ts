@@ -50,12 +50,19 @@ describe('craft-breadcrumbs', () => {
     expect(nav(element).getAttribute('aria-label')).toBe('You are here');
   });
 
-  it('renders its items from the default slot', async () => {
+  /**
+   * The first crumb moves to a slot of its own, ahead of the overflow menu, so
+   * the trail is every crumb assigned to either.
+   */
+  it('renders its items from the trail slots', async () => {
     const element = await createBreadcrumbs();
-    const slot =
-      element.shadowRoot!.querySelector<HTMLSlotElement>('slot:not([name])')!;
+    const slots = element.shadowRoot!.querySelectorAll<HTMLSlotElement>(
+      'nav slot[name="first"], nav slot:not([name])'
+    );
 
-    expect(slot.assignedElements()).toHaveLength(3);
+    expect([...slots].flatMap((slot) => slot.assignedElements())).toHaveLength(
+      3
+    );
   });
 
   /**

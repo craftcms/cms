@@ -6,6 +6,7 @@ import type CraftPopover from '../popover/popover.js';
 import '../../styles/cp.css';
 import '../button/button.js';
 import './dialog.js';
+import {deepActiveElement} from '../../../test/deep-active';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -37,14 +38,6 @@ function button(text: string, slot?: string): HTMLButtonElement {
     element.slot = slot;
   }
   return element;
-}
-
-function deepActiveElement(): Element | null {
-  let active = document.activeElement;
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
-  }
-  return active;
 }
 
 function longText(): string {
