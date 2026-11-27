@@ -735,7 +735,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
                     ->canonicalsOnly()
                     ->status(null)
                     ->limit(null)
-                    ->eagerly()
+                    // Its own alias, since validation eager-loads this field with other criteria.
+                    ->eagerly("matrix-ui:$this->handle")
                     ->all(),
             default => [],
         });
@@ -1665,20 +1666,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $new = 0;
 
         if ($value instanceof EntryQuery) {
+            $override = $value->getResultOverride();
             /** @var Entry[] $entries */
-            $entries = $element->ruleset->getScenario() === ElementRules::SCENARIO_ESSENTIALS && ElementHelper::isDraft($element)
-                // A draft only checks the entries this save writes. The rest haven't changed since they were saved.
-                ? array_values(array_filter(
-                    $value->getResultOverride() ?? [],
-                    fn (Entry $entry) => ! $entry->id || $entry->forceSave,
-                ))
-                : $value->getResultOverride() ?? (clone $value)
-                    ->drafts(null)
-                    ->savedDraftsOnly()
-                    ->status(null)
-                    ->limit(null)
-                    ->eagerly()
-                    ->all();
+            $entries = $override ?? (clone $value)
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->status(null)
+                ->limit(null)
+                ->eagerly("matrix-validation:$this->handle")
+                ->all();
+
+            // A draft only checks the entries this save writes, as `NestedElementManager::saveNestedElements()` decides
+            // them. The rest haven't changed since they were saved.
+            if (
+                $override !== null &&
+                empty($element->newSiteIds) &&
+                $element->ruleset->getScenario() === ElementRules::SCENARIO_ESSENTIALS &&
+                ElementHelper::isDraft($element)
+            ) {
+                $entries = array_values(array_filter($entries, fn (Entry $entry) => ! $entry->id || $entry->forceSave));
+            }
 
             $invalidEntryIds = [];
             $scenario = $element->ruleset->getScenario();

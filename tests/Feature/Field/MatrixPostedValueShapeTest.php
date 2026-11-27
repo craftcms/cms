@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Events\ValidationRulesResolving;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
@@ -36,8 +37,11 @@ use function Pest\Laravel\actingAs;
  * @see ElementHelper::nestedElementDelta()
  */
 
-/** @return array{0: EntryElement, 1: EntryType} */
-function matrixShapeFixture(): array
+/**
+ * @param  array<string, mixed>  $settings
+ * @return array{0: EntryElement, 1: EntryType}
+ */
+function matrixShapeFixture(array $settings = []): array
 {
     $innerField = Field::factory()->create([
         'name' => 'Inner Text',
@@ -57,7 +61,7 @@ function matrixShapeFixture(): array
         'name' => 'Shape Matrix',
         'handle' => 'shapeMatrix',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$blockType->id]],
+        'settings' => ['entryTypes' => [$blockType->id], ...$settings],
     ]);
 
     $entryModel = Entry::factory()
@@ -342,31 +346,65 @@ it('validates and renders nested blocks without a query for each outer block', f
 it('checks only the blocks a draft save writes', function () {
     [$entry, $blockType] = matrixShapeFixture();
     [$first, $second] = [Str::uuid()->toString(), Str::uuid()->toString()];
-    $tooLong = str_repeat('a', 256);
 
-    // A block with a stored title too long to save. A draft save that doesn't write the block shouldn't fail on it.
-    $entry->setFieldValueFromRequest('shapeMatrix', [
+    saveMatrixShape($entry, [
         'entries' => [
-            "uid:$first" => ['type' => $blockType->handle, 'title' => $tooLong],
+            "uid:$first" => ['type' => $blockType->handle, 'title' => 'Stale'],
             "uid:$second" => ['type' => $blockType->handle, 'title' => 'Second'],
         ],
         'sortOrder' => ["uid:$first", "uid:$second"],
     ]);
-    expect(Elements::saveElement($entry, runValidation: false))->toBeTrue();
 
     $draftId = app(Drafts::class)->createDraft(entryQuery()->id($entry->id)->one(), auth()->id(), provisional: true)->draftId;
-    $saveSecond = function (string $title) use ($draftId, $first, $second): bool {
+
+    // A rule added once the blocks are saved, which the first one now breaks.
+    Event::listen(function (ValidationRulesResolving $event) {
+        if ($event->subject instanceof EntryElement && $event->subject->ownerId !== null) {
+            $event->addRule('title', 'not_in:Stale,Rejected');
+        }
+    });
+    expect(entryQuery()->uid($first)->status(null)->one()->validate())->toBeFalse();
+
+    $saveDraft = function (?string $secondTitle) use ($draftId, $first, $second): bool {
         /** @var EntryElement $draft */
         $draft = entryQuery()->draftId($draftId)->provisionalDrafts()->status(null)->one();
-        $draft->setFieldValueFromRequest('shapeMatrix', [
-            'entries' => ["uid:$second" => ['title' => $title]],
-            'sortOrder' => ["uid:$first", "uid:$second"],
-        ]);
+
+        if ($secondTitle === null) {
+            $draft->setDirtyFields(['shapeMatrix']);
+        } else {
+            $draft->setFieldValueFromRequest('shapeMatrix', [
+                'entries' => ["uid:$second" => ['title' => $secondTitle]],
+                'sortOrder' => ["uid:$first", "uid:$second"],
+            ]);
+        }
+
         $draft->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
 
         return Elements::saveElement($draft);
     };
 
-    expect($saveSecond('Second, edited'))->toBeTrue()
-        ->and($saveSecond($tooLong))->toBeFalse();
+    expect($saveDraft('Second, edited'))->toBeTrue()
+        ->and($saveDraft('Rejected'))->toBeFalse()
+        // Without posted blocks, the save writes every block.
+        ->and($saveDraft(null))->toBeFalse();
+});
+
+it('renders the blocks a Matrix field shows once its entries are validated', function () {
+    [$entry, $blockType] = matrixShapeFixture(['viewMode' => Matrix::VIEW_MODE_BLOCKS]);
+    $uid = Str::uuid()->toString();
+
+    saveMatrixShape($entry, [
+        'entries' => ["uid:$uid" => ['type' => $blockType->handle, 'title' => 'Block']],
+        'sortOrder' => ["uid:$uid"],
+    ]);
+
+    // A saved draft of the block, which validation checks but the block UI doesn't show.
+    app(Drafts::class)->createDraft(entryQuery()->uid($uid)->status(null)->one(), auth()->id(), 'Block draft');
+
+    // Fetched with another entry, since nested entries are only eager-loaded for more than one owner.
+    $owner = collect(entryQuery()->id([$entry->id, Entry::factory()->create()->id])->all())->firstWhere('id', $entry->id);
+    $owner->validate();
+    $ui = app(FieldLayoutCompiler::class)->compile($owner->getFieldLayout(), $owner, new UiContext(mode: ControlMode::Editable));
+
+    expect($ui->values['fields']['shapeMatrix']['sortOrder'])->toBe([$uid]);
 });
