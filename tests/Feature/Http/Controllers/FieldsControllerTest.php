@@ -491,6 +491,30 @@ it('renders field layout and generated field values at their root submission pat
         ->and($generatedFields['nodes'][0]['control']['path'])->toBe(['generatedFields']);
 });
 
+it('prefixes the designer’s ids, but not its input names, with the requested id namespace', function () {
+    $html = $this->postJson(action([FieldsController::class, 'renderFieldLayoutDesigner']), [
+        'value' => [],
+        'elementType' => Entry::class,
+        'name' => 'fieldLayout',
+        'disabled' => false,
+        'customizableTabs' => true,
+        'withGeneratedFields' => true,
+        'withCardViewDesigner' => true,
+        'idNamespace' => 'slideout-4',
+    ])->assertOk()->json('html');
+    $crawler = new Crawler($html);
+    $ids = $crawler->filter('[id]')->each(fn (Crawler $element): string => $element->attr('id'));
+    $labelTargets = $crawler->filter('label[for]')->each(fn (Crawler $label): string => $label->attr('for'));
+    $generatedFields = json_decode($crawler->filter('craft-generated-fields-table')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
+
+    expect($ids)->toContain('slideout-4-thumb-style')
+        ->and(array_filter($ids, fn (string $id): bool => ! str_starts_with($id, 'slideout-4-')))->toBe([])
+        ->and($labelTargets)->not->toBeEmpty()
+        ->and(array_diff($labelTargets, $ids))->toBe([])
+        ->and($crawler->filter('[data-config-input][name="fieldLayout"]'))->toHaveCount(1)
+        ->and($generatedFields['nodes'][0]['control']['path'])->toBe(['generatedFields']);
+});
+
 it('rejects non-condition classes from the condition builder endpoint', function () {
     $this->postJson(action([FieldsController::class, 'renderConditionBuilder']), [
         'value' => [],
