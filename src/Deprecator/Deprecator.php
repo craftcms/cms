@@ -102,6 +102,9 @@ class Deprecator
      */
     public function logTwigDeprecation(string $message, array $traces): void
     {
+        // Twig names classes in some messages, and anonymous class names contain a NUL byte, which PostgreSQL can't store
+        $message = str_replace("\0", '', $message);
+
         if (preg_match('/\s\(?in (?:"([^"]+)"|(\S+(?: \(string template \w+\))?)) at line (\d+)\)?\.?$/', $message, $match, PREG_OFFSET_CAPTURE)) {
             $file = $this->resolveTwigTemplateName($match[1][0] !== '' ? $match[1][0] : $match[2][0]);
             $line = (int) $match[3][0];

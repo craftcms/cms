@@ -97,7 +97,8 @@ it('logs extensions, token parsers, and nodes that Twig 4 will reject', function
         ->and(collect($messages)->contains(fn (string $message) => str_contains($message, '::getTokenParsers()')))->toBeFalse();
 
     // Anonymous class names contain a NUL byte, which PostgreSQL can't store
-    expect(collect(app(Deprecator::class)->getRequestLogs())->pluck('key'))
+    expect(collect($messages)->contains(fn (string $message) => str_contains($message, "\0")))->toBeFalse()
+        ->and(collect(app(Deprecator::class)->getRequestLogs())->pluck('key'))
         ->toContain('twig4-return-type:'.str_replace("\0", '', $node::class).'::compile');
 });
 
