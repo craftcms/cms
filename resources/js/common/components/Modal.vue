@@ -237,7 +237,7 @@
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
     position: relative;
-    overflow-y: scroll;
+    overflow-y: auto;
     overscroll-behavior: contain;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing

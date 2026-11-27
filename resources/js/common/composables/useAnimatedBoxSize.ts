@@ -56,11 +56,13 @@ export function useAnimatedBoxSize({
           width: `${from.width}px`,
           height: `${from.height}px`,
           minHeight: `${from.height}px`,
+          overflow: 'hidden',
         },
         {
           width: `${to.width}px`,
           height: `${to.height}px`,
           minHeight: `${to.height}px`,
+          overflow: 'hidden',
         },
       ],
       {duration, easing: 'ease-out'}
