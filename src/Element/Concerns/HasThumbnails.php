@@ -72,8 +72,9 @@ trait HasThumbnails
      * Returns a thumbnail rendered from the element's [[thumbUrl()]] or [[thumbSvg()]].
      *
      * @param  Asset|null  $asset  The asset whose image the thumbnail shows, if any.
+     * @param  ImageTransformMode|null  $assetTransformMode  The mode [[thumbUrl()]] always transforms the asset's image in, if it ignores the requested one.
      */
-    protected function ownThumb(?Asset $asset = null): Thumb
+    protected function ownThumb(?Asset $asset = null, ?ImageTransformMode $assetTransformMode = null): Thumb
     {
         return new Thumb(function (int $size, ImageTransformMode $mode): ?string {
             if ($thumbUrl = $this->thumbUrl($size, $mode)) {
@@ -85,7 +86,7 @@ trait HasThumbnails
             }
 
             return null;
-        }, $asset);
+        }, $asset, $assetTransformMode);
     }
 
     private function renderImageThumb(int $size, string $thumbUrl, ImageTransformMode $mode): string
