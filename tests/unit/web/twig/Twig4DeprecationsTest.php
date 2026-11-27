@@ -98,6 +98,7 @@ class Twig4DeprecationsTest extends TestCase
         self::assertEmpty(array_filter($messages, fn(string $message) => str_contains($message, '::getTokenParsers()')));
 
         // Anonymous class names contain a NUL byte, which PostgreSQL can't store
+        self::assertEmpty(array_filter($messages, fn(string $message) => str_contains($message, "\0")));
         Craft::$app->getDeprecator()->storeLogs();
         self::assertTrue((new Query())
             ->from(Table::DEPRECATIONERRORS)

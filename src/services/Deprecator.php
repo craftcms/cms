@@ -141,6 +141,9 @@ class Deprecator extends Component
      */
     public function logTwigDeprecation(string $message, array $traces): void
     {
+        // Twig names classes in some messages, and anonymous class names contain a NUL byte, which PostgreSQL can't store
+        $message = str_replace("\0", '', $message);
+
         // Start from the trigger_deprecation() call
         foreach ($traces as $i => $trace) {
             if ($trace['function'] === 'trigger_deprecation') {
