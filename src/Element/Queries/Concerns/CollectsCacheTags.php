@@ -38,6 +38,8 @@ trait CollectsCacheTags
      *
      * It’s called when the query is prepared, so it covers every way of running it against the database. When
      * preparing the query aborts it, only the tags are registered, since the result can’t change until a save.
+     *
+     * @internal
      */
     protected function collectCacheInfo(bool $aborted = false): void
     {
@@ -115,6 +117,8 @@ trait CollectsCacheTags
      *
      * Unlike [[collectCacheInfo()]], this doesn’t look up when other elements’ statuses change, such as when a pending
      * entry that would join the result goes live, since that would take the query the loaded elements saved.
+     *
+     * @internal
      *
      * @param  iterable<ElementInterface>  $elements
      */

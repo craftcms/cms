@@ -27,6 +27,8 @@ trait QueriesStructures
 {
     /**
      * The params that need the query to join structure data.
+     *
+     * @internal
      */
     protected const array STRUCTURE_PARAMS = [
         'hasDescendants',

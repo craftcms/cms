@@ -52,6 +52,8 @@ trait OverridesResults
      * Returns the resulting elements set by [[setResultOverride()]] for the query to use as its result, registering
      * them with the caches being collected.
      *
+     * @internal
+     *
      * @return TValue[]|null
      */
     protected function useResultOverride(): ?array
