@@ -881,6 +881,131 @@ describe('UiRenderer', () => {
     expect(matrix().getAttribute('status')).toBeNull();
   });
 
+  it('submits only the nested blocks that changed, at every level', async () => {
+    const onMutation = vi.fn();
+    const group = ['fields', 'outer'];
+    const text = (path: string[]): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: path.at(-1) ?? ''},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+        component: 'craft:text',
+        props: {inputType: 'text'},
+        path,
+        mode: 'editable',
+        deltaGroup: group,
+      },
+    });
+    const blocks = (
+      path: string[],
+      uids: string[],
+      nodes: (scope: string[]) => UiPayload['nodes']
+    ): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: path.at(-1) ?? ''},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
+        component: 'craft:nested-element-blocks',
+        props: {
+          entryTypes: [{value: 'block', label: 'Block'}],
+          addLabel: 'Add an entry',
+          minEntries: null,
+          maxEntries: null,
+        },
+        path,
+        mode: 'editable',
+        deltaGroup: group,
+        uis: uids.map((uid) => ({
+          scope: [...path, 'entries', uid],
+          refreshable: true,
+          nodes: nodes([...path, 'entries', uid]),
+        })),
+      },
+    });
+    const inner = (uids: string[]) => ({
+      entries: Object.fromEntries(
+        uids.map((uid) => [
+          uid,
+          {type: 'block', enabled: true, fields: {heading: `Heading ${uid}`}},
+        ])
+      ),
+      sortOrder: uids,
+    });
+
+    app.unmount();
+    await mount(
+      {
+        scope: [],
+        refreshable: false,
+        nodes: [
+          blocks(group, ['a', 'b'], (scope) => [
+            text([...scope, 'fields', 'heading']),
+            blocks([...scope, 'fields', 'inner'], ['x', 'y'], (innerScope) => [
+              text([...innerScope, 'fields', 'heading']),
+            ]),
+          ]),
+        ],
+        values: {
+          fields: {
+            outer: {
+              entries: {
+                a: {
+                  type: 'block',
+                  enabled: true,
+                  fields: {heading: 'Heading a', inner: inner(['x', 'y'])},
+                },
+                b: {
+                  type: 'block',
+                  enabled: true,
+                  fields: {heading: 'Heading b', inner: inner(['x', 'y'])},
+                },
+              },
+              sortOrder: ['a', 'b'],
+            },
+          },
+        },
+        errors: [],
+        globalErrors: [],
+      },
+      {onMutation}
+    );
+
+    const input = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="fields[outer][entries][b][fields][inner][entries][y][fields][heading]"]'
+      ),
+      'Expected the inner block’s heading input.'
+    );
+    input.value = 'Changed';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    // The server keeps the blocks left out and saves only the ones posted, so
+    // the renderer must post both sort orders but not block a or inner block x.
+    expect(onMutation).toHaveBeenLastCalledWith(
+      {
+        fields: {
+          outer: {
+            entries: {
+              b: {
+                fields: {
+                  inner: {
+                    entries: {y: {fields: {heading: 'Changed'}}},
+                    sortOrder: ['x', 'y'],
+                  },
+                },
+              },
+            },
+            sortOrder: ['a', 'b'],
+          },
+        },
+      },
+      'typing'
+    );
+  });
+
   it('submits all scoped settings when one setting in a shared delta group changes', async () => {
     const onMutation = vi.fn();
     const settingsField = (name: string): UiPayload['nodes'][number] => ({
@@ -3654,12 +3779,16 @@ describe('UiRenderer', () => {
 
     renderer.setValue(sibling, 'After');
     await nextTick();
-    expect(mutation).toMatchObject({
+    // The renderer posts only the block's changed values, and the server
+    // keeps the rest.
+    expect(mutation).toEqual({
       settings: {
-        matrix: {entries: {'block-a': {heading: 'After', note: null}}},
+        matrix: {
+          entries: {'block-a': {heading: 'After'}},
+          sortOrder: ['block-a'],
+        },
       },
     });
-    expect(JSON.stringify(mutation)).not.toContain('"cards"');
 
     renderer.setValue(manager, '*');
     await nextTick();
@@ -4854,14 +4983,7 @@ describe('UiRenderer', () => {
     expect(mutation).toEqual({
       settings: {
         matrix: {
-          entries: {
-            'block-a': {
-              type: 'text',
-              heading: 'Changed',
-              content: {body: 'Nested body'},
-            },
-            'block-b': {type: 'text', heading: 'Second'},
-          },
+          entries: {'block-a': {heading: 'Changed'}},
           sortOrder: ['block-a', 'block-b'],
         },
       },

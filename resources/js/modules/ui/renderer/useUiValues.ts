@@ -239,8 +239,10 @@ export function useUiValues(initial: UiPayload) {
       const current = groupValue(values, path, editablePaths);
       const original = groupValue(baseline, path, editablePaths);
 
+      const include = included.has(JSON.stringify(path));
+
       if (
-        included.has(JSON.stringify(path)) ||
+        include ||
         groupCanonical(current, path) !== groupCanonical(original, path)
       ) {
         if (path.length === 0 && isRecord(current)) {
@@ -249,11 +251,94 @@ export function useUiValues(initial: UiPayload) {
           continue;
         }
 
-        setPathValue(result, path, current);
+        // A group the caller asks for whole, such as the owner of a nested
+        // element about to be edited, has to reach the server whole.
+        setPathValue(
+          result,
+          path,
+          include ? current : blocksDelta(current, original, path)
+        );
       }
     }
 
     return result;
+  }
+
+  /**
+   * The parts of a blocks value that differ from `original`, in the delta
+   * format the server reads: the whole sort order, and only the blocks that
+   * changed, each with only its changed keys and fields. The server keeps the
+   * blocks left out as they are and doesn't save them again, so editing one
+   * block of a large field saves only that block.
+   *
+   * Other values come back whole.
+   */
+  function blocksDelta(
+    current: UiValue,
+    original: UiValue,
+    path: string[]
+  ): UiValue {
+    if (
+      knownControls.get(JSON.stringify(path))?.component !==
+        'craft:nested-element-blocks' ||
+      !isRecord(current) ||
+      !isRecord(original) ||
+      !isRecord(current.entries) ||
+      !isRecord(original.entries)
+    ) {
+      return current;
+    }
+
+    const entries: UiValues = {};
+
+    for (const [id, entry] of Object.entries(current.entries)) {
+      const before = original.entries[id];
+
+      // The server hasn't seen a new block, so it gets all of it.
+      if (!isRecord(entry) || !isRecord(before)) {
+        entries[id] = entry;
+
+        continue;
+      }
+
+      const changed: UiValues = {};
+
+      for (const [key, value] of Object.entries(entry)) {
+        if (key !== 'fields' || !isRecord(value) || !isRecord(before.fields)) {
+          if (canonical(value) !== canonical(before[key])) {
+            changed[key] = value;
+          }
+
+          continue;
+        }
+
+        const fields: UiValues = {};
+
+        for (const [handle, fieldValue] of Object.entries(value)) {
+          const beforeValue = before.fields[handle];
+
+          if (canonical(fieldValue) !== canonical(beforeValue)) {
+            fields[handle] = blocksDelta(fieldValue, beforeValue, [
+              ...path,
+              'entries',
+              id,
+              'fields',
+              handle,
+            ]);
+          }
+        }
+
+        if (Object.keys(fields).length) {
+          changed.fields = fields;
+        }
+      }
+
+      if (Object.keys(changed).length) {
+        entries[id] = changed;
+      }
+    }
+
+    return {...current, entries};
   }
 
   /** Every delta group of `nodes`, whatever its mode. */

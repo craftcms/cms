@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Events\ElementSaved;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -235,4 +237,37 @@ it('only marks the nested fields whose posted values changed as dirty', function
 
     expect($firstBlock->getDirtyFields())->toBe(['shapeInnerText'])
         ->and($secondBlock->getDirtyFields())->toBe([]);
+});
+
+it('saves only the blocks a delta posts, and keeps the rest', function () {
+    [$entry, $blockType] = matrixShapeFixture();
+    [$first, $second] = [Str::uuid()->toString(), Str::uuid()->toString()];
+
+    saveMatrixShape($entry, [
+        'entries' => [
+            "uid:$first" => ['type' => $blockType->handle, 'title' => 'First', 'fields' => ['shapeInnerText' => 'One']],
+            "uid:$second" => ['type' => $blockType->handle, 'title' => 'Second', 'fields' => ['shapeInnerText' => 'Two']],
+        ],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ]);
+
+    $saved = [];
+    Event::listen(ElementSaved::class, function (ElementSaved $event) use (&$saved) {
+        $saved[] = $event->element->uid;
+    });
+
+    /** @var EntryElement $owner */
+    $owner = entryQuery()->id($entry->id)->one();
+    saveMatrixShape($owner, [
+        'entries' => ["uid:$second" => ['fields' => ['shapeInnerText' => 'Edited']]],
+        'sortOrder' => ["uid:$first", "uid:$second"],
+    ]);
+
+    /** @var EntryElement $reloaded */
+    $reloaded = entryQuery()->id($entry->id)->status(null)->one();
+    $blocks = array_values($reloaded->getFieldValue('shapeMatrix')->status(null)->all());
+
+    expect($saved)->toContain($second)->not->toContain($first)
+        ->and(array_map(fn (EntryElement $block): array => [$block->title, $block->getFieldValue('shapeInnerText')], $blocks))
+        ->toBe([['First', 'One'], ['Second', 'Edited']]);
 });
