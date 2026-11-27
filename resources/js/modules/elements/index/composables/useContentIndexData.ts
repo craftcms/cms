@@ -57,8 +57,14 @@ export type ContentIndexData = Omit<
   sources: Source[];
   sites: IndexSite[];
   currentCondition: ConditionConfig | null;
-  /** `mode` is the view mode the payload's rows were rendered for. */
-  viewState: Partial<ViewState> & {mode?: ViewMode['mode']};
+  /**
+   * `mode` and `tableColumns` are the view mode and columns the payload's rows
+   * were rendered for.
+   */
+  viewState: Partial<ViewState> & {
+    mode?: ViewMode['mode'];
+    tableColumns?: string[];
+  };
   viewModes: ViewMode[];
   sortOptions: SortOption[];
   sort: SortItem[];
@@ -138,6 +144,7 @@ export function useContentIndexData<
     statusMenuValue: computed(() => props().statusMenuValue),
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
+    filterProps: computed(() => props().filterProps),
     queryCriteria: computed(() => props().queryCriteria),
     currentCondition: computed(() => props().currentCondition),
     drafts: computed(() => props().drafts),
@@ -145,6 +152,7 @@ export function useContentIndexData<
 
     // View state
     viewState: computed(() => props().viewState),
+    sessionViewStateParams: computed(() => props().sessionViewStateParams),
     viewModes: computed(() => props().viewModes),
     tableColumns: computed(() => props().tableColumns),
     defaultTableColumns: computed(() => props().defaultTableColumns),

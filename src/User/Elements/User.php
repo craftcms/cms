@@ -1322,7 +1322,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     {
         $photo = $this->getPhoto();
 
-        return $photo || $this->uid ? $this->ownThumb($photo) : null;
+        return $photo || $this->uid ? $this->ownThumb($photo, ImageTransformMode::Crop) : null;
     }
 
     protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string

@@ -294,6 +294,7 @@ readonly class ElementHtml
      *
      * - `attributes` – Any custom HTML attributes that should be set on the chip
      * - `autoReload` – Whether the chip should auto-reload itself when it’s saved
+     * - `capabilities` – The element’s {@see elementCapabilities()} for `context`, if they’ve already been checked
      * - `class` – Class name(s) that should be added to the container element
      * - `context` – The context the chip is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the chip label should be hyperlinked to the element’s URL
@@ -392,6 +393,7 @@ readonly class ElementHtml
      *
      * - `attributes` – Any custom HTML attributes that should be set on the card
      * - `autoReload` – Whether the card should auto-reload itself when it’s saved
+     * - `capabilities` – The element’s {@see elementCapabilities()} for `context`, if they’ve already been checked
      * - `context` – The context the card is going to be shown in (`index`, `field`, etc.)
      * - `hyperlink` – Whether the card label should be hyperlinked to the element’s URL
      * - `returnUrl` – The `returnUrl` param that should be added to the hyperlink URL
@@ -1227,7 +1229,7 @@ readonly class ElementHtml
     {
         $user = currentUser();
         $editable = $user && $user->can('view', $element);
-        $capabilities = $this->elementCapabilities($element, $config['context']);
+        $capabilities = $config['capabilities'] ?? $this->elementCapabilities($element, $config['context']);
 
         return Arr::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),

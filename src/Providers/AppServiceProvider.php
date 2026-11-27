@@ -14,6 +14,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
+use CraftCms\Cms\Http\Mixins\TestResponseMixin;
 use CraftCms\Cms\Http\RequestBodyLogProcessor;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
@@ -47,6 +48,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Octane\Events\RequestReceived;
 use Laravel\Octane\Events\TaskReceived;
@@ -188,6 +190,7 @@ class AppServiceProvider extends ServiceProvider
 
         Request::mixin(new RequestMixin);
         SessionStore::mixin(new SessionMixin);
+        TestResponse::mixin(new TestResponseMixin);
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {

@@ -1,5 +1,6 @@
 import {watch, type Ref} from 'vue';
 import type {
+  IndexQueryParams,
   IndexRestore,
   IndexVisitor,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
@@ -77,14 +78,17 @@ export function useElementIndexPagination(
   // payload is paginated by the URL's `per_page`, or else the default. A size
   // named in the URL wins; otherwise a persisted one is requested as part of
   // the page's mount-time restore visit (see `useElementIndex`).
-  function restore(): IndexRestore | null {
+  // `query` holds the params the link named.
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
     const persisted = persistedPageSize();
     const rendered = props.pagination?.per_page ?? pendingPagination.per_page;
 
     if (
       persisted === undefined ||
       persisted === rendered ||
-      visitor.currentQuery().per_page !== undefined
+      query.per_page !== undefined
     ) {
       return null;
     }

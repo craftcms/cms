@@ -75,7 +75,10 @@ export function useElementIndexViewMode(
   // HTML — so the two have to agree. The page folds this into one mount-time
   // restore visit alongside the sort/column restores (see `useElementIndex`),
   // so they can't interrupt each other.
-  function restore(): IndexRestore | null {
+  /** `query` holds the params the link named. */
+  function restore(
+    query: IndexQueryParams = visitor.currentQuery()
+  ): IndexRestore | null {
     const persisted = persistedMode();
     const rendered = renderedMode() ?? 'table';
 
@@ -85,7 +88,7 @@ export function useElementIndexViewMode(
 
     // A mode named in the URL wins over the persisted one, and becomes the
     // source's.
-    if (visitor.currentQuery().viewMode !== undefined) {
+    if (query.viewMode !== undefined) {
       store(rendered);
       return null;
     }

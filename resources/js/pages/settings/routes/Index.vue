@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {DeletionBlockersModal} from '@/modules/deletion-blockers-modal/deletion-blockers-modal';
   import DropIndicator from '@/common/components/DropIndicator.vue';
   import {useInertiaReorder} from '@/common/composables/useInertiaReorder';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
@@ -45,8 +46,13 @@
     return state.type === 'is-over' ? state.closestEdge : null;
   }
 
-  function deleteRoute(route: RouteIndexData) {
-    if (!confirm(t('Are you sure you want to delete this route?'))) {
+  async function deleteRoute(route: RouteIndexData) {
+    const result = await DeletionBlockersModal.confirm('route', route.uid);
+    if (
+      !result ||
+      (result === true &&
+        !confirm(t('Are you sure you want to delete this route?')))
+    ) {
       return;
     }
 

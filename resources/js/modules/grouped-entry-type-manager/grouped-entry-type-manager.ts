@@ -205,8 +205,9 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
       this.groupSort?.addItems(el);
     }
 
-    // Selected ids aren't complete until every select has booted.
-    this.whenSelectsReady(() => this.refresh());
+    // Selected ids aren't complete until every select has booted. Booting
+    // isn't an edit, so it mustn't mark the settings form as changed.
+    this.whenSelectsReady(() => this.refresh(false));
   }
 
   /** Titlebar wiring stays in the DOM and resolves the live Group. */
@@ -390,8 +391,12 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
     void this.updateDefaultColumns();
   };
 
-  /** An entry type selected in any group is hidden from every Choose menu. */
-  refresh(): void {
+  /**
+   * An entry type selected in any group is hidden from every Choose menu.
+   *
+   * @param announce Whether to fire a `change` event for the update.
+   */
+  refresh(announce = true): void {
     const groups = this.groups;
     groups.forEach((group, index) => group.refresh(index, groups.length));
 
@@ -417,7 +422,9 @@ export class GroupedEntryTypeManager extends Base<GroupedEntryTypeManagerSetting
       }
     }
 
-    this.announceChange();
+    if (announce) {
+      this.announceChange();
+    }
   }
 
   /** Chip values are rewritten in place, which fires no event of its own. */
