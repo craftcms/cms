@@ -820,6 +820,7 @@ class GeneralConfig extends BaseConfig
      * - `transformGifs` – Whether GIF files should be cleansed and transformed. (Default is `true`.)
      * - `transformSvgs` – Whether SVG files should be transformed. (Default is `true`.)
      * - `upscale` – Whether transforms should upscale images smaller than their dimensions by default. (Default is `true`.)
+     * - `brokenPath` – The server path to an image file that should be sent when responding to an image request with a 404 status code, such as `@webroot/assets/404.svg`. (Default is `null`.)
      *
      * ```php
      * ->images(\CraftCms\Cms\Config\ImagesConfig::create()
@@ -1304,7 +1305,7 @@ class GeneralConfig extends BaseConfig
      */
     public function backups(BackupsConfig|array|string $value): self
     {
-        $this->backups = $value instanceof BackupsConfig ? $value : BackupsConfig::fromConfig($value);
+        $this->backups->merge($value);
 
         return $this;
     }
@@ -1396,7 +1397,7 @@ class GeneralConfig extends BaseConfig
      */
     public function anchors(AnchorsConfig|array|string $value): self
     {
-        $this->anchors = $value instanceof AnchorsConfig ? $value : AnchorsConfig::fromConfig($value);
+        $this->anchors->merge($value);
 
         return $this;
     }
@@ -1423,7 +1424,7 @@ class GeneralConfig extends BaseConfig
      */
     public function assets(AssetsConfig|array|string $value): self
     {
-        $this->assets = $value instanceof AssetsConfig ? $value : AssetsConfig::fromConfig($value);
+        $this->assets->merge($value);
 
         return $this;
     }
@@ -1915,7 +1916,7 @@ class GeneralConfig extends BaseConfig
      */
     public function garbageCollection(GarbageCollectionConfig|array|string $value): self
     {
-        $this->garbageCollection = $value instanceof GarbageCollectionConfig ? $value : GarbageCollectionConfig::fromConfig($value);
+        $this->garbageCollection->merge($value);
 
         return $this;
     }
@@ -1939,7 +1940,7 @@ class GeneralConfig extends BaseConfig
      */
     public function gql(GqlConfig|array|string $value): self
     {
-        $this->gql = $value instanceof GqlConfig ? $value : GqlConfig::fromConfig($value);
+        $this->gql->merge($value);
 
         return $this;
     }
@@ -2083,7 +2084,7 @@ class GeneralConfig extends BaseConfig
      */
     public function images(ImagesConfig|array|string $value): self
     {
-        $this->images = $value instanceof ImagesConfig ? $value : ImagesConfig::fromConfig($value);
+        $this->images->merge($value);
 
         return $this;
     }
@@ -2177,7 +2178,7 @@ class GeneralConfig extends BaseConfig
     /** @param array<string, mixed>|string $value */
     public function mcp(McpConfig|array|string $value): self
     {
-        $this->mcp = $value instanceof McpConfig ? $value : McpConfig::fromConfig($value);
+        $this->mcp->merge($value);
 
         return $this;
     }
@@ -2201,7 +2202,7 @@ class GeneralConfig extends BaseConfig
      */
     public function queue(QueueConfig|array|string $value): self
     {
-        $this->queue = $value instanceof QueueConfig ? $value : QueueConfig::fromConfig($value);
+        $this->queue->merge($value);
 
         return $this;
     }
@@ -2225,7 +2226,7 @@ class GeneralConfig extends BaseConfig
      */
     public function routing(RoutingConfig|array|string $value): self
     {
-        $this->routing = $value instanceof RoutingConfig ? $value : RoutingConfig::fromConfig($value);
+        $this->routing->merge($value);
 
         return $this;
     }
@@ -2269,7 +2270,7 @@ class GeneralConfig extends BaseConfig
      */
     public function security(SecurityConfig|array|string $value): self
     {
-        $this->security = $value instanceof SecurityConfig ? $value : SecurityConfig::fromConfig($value);
+        $this->security->merge($value);
 
         return $this;
     }
@@ -2312,7 +2313,7 @@ class GeneralConfig extends BaseConfig
      */
     public function slugs(SlugsConfig|array|string $value): self
     {
-        $this->slugs = $value instanceof SlugsConfig ? $value : SlugsConfig::fromConfig($value);
+        $this->slugs->merge($value);
 
         return $this;
     }
@@ -2374,7 +2375,7 @@ class GeneralConfig extends BaseConfig
      */
     public function templates(TemplatesConfig|array|string $value): self
     {
-        $this->templates = $value instanceof TemplatesConfig ? $value : TemplatesConfig::fromConfig($value);
+        $this->templates->merge($value);
 
         return $this;
     }
@@ -2501,13 +2502,15 @@ class GeneralConfig extends BaseConfig
      */
     public function users(UsersConfig|array|string $value): self
     {
-        $this->users = $value instanceof UsersConfig ? $value : UsersConfig::fromConfig($value);
+        $this->users->merge($value);
 
         return $this;
     }
 
     /**
      * Returns the temporary asset upload disk name.
+     *
+     * @deprecated in 6.0.0. [[AssetsConfig::getTempUploadDisk()]] should be used instead.
      */
     public function getTempAssetUploadDisk(): string
     {
@@ -2516,6 +2519,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns the upload session disk name.
+     *
+     * @deprecated in 6.0.0. [[AssetsConfig::getUploadSessionDisk()]] should be used instead.
      */
     public function getUploadSessionDisk(): string
     {
@@ -2525,7 +2530,7 @@ class GeneralConfig extends BaseConfig
     /**
      * Returns the disk name that soft-deleted assets’ files should be moved to, if one is set.
      *
-     * @see $trashedAssetDisk
+     * @deprecated in 6.0.0. [[AssetsConfig::getTrashDisk()]] should be used instead.
      */
     public function getTrashedAssetDisk(): ?string
     {
@@ -2624,6 +2629,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @deprecated in 6.0.0. [[BackupsConfig::shouldBackUpOnUpdate()]] should be used instead.
      */
     public function getBackupOnUpdate(): bool
     {

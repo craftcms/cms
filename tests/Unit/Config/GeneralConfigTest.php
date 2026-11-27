@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GarbageCollectionConfig;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\GqlConfig;
 use CraftCms\Cms\Config\QueueConfig;
 use CraftCms\Cms\Config\RoutingConfig;
 use CraftCms\Cms\Config\TemplatesConfig;
@@ -64,4 +65,27 @@ it('normalizes pageTrigger', function () {
         ->and($config->pageTrigger('?p=')->getPageTrigger())->toBe('?p=')
         ->and($config->pageTrigger('page/')->getPageTrigger())->toBe('?page=')
         ->and($config->pageTrigger('')->getPageTrigger())->toBe('?page=');
+});
+
+it('doesn’t share its config objects with clones', function () {
+    $config = GeneralConfig::create();
+    $clone = clone $config;
+    $clone->gql->enabled(false);
+    $clone->enableGql = false;
+
+    expect($config->gql->enabled)->toBeTrue()
+        ->and($clone->gql)->not->toBe($config->gql);
+});
+
+it('merges config objects with the settings already set', function () {
+    $config = GeneralConfig::create()
+        ->enableGql(false)
+        ->gql(GqlConfig::create()->maxDepth(5))
+        ->gql(['maxResults' => 10])
+        ->maxGraphqlComplexity(100);
+
+    expect($config->gql->enabled)->toBeFalse()
+        ->and($config->gql->maxDepth)->toBe(5)
+        ->and($config->gql->maxResults)->toBe(10)
+        ->and($config->gql->maxComplexity)->toBe(100);
 });
