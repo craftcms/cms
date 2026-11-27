@@ -7,6 +7,11 @@ export type Criteria = IndexQueryParams;
 
 interface BaseSource {
   key: string;
+  /**
+   * The key the server resolves a nested source by, such as an asset
+   * subfolder's `volume:{uid}/folder:{uid}`.
+   */
+  keyPath?: string;
   label: string;
   criteria?: Criteria;
   defaultSort?: string[];

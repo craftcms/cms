@@ -138,6 +138,7 @@ export function useContentIndexData<
     statusMenuValue: computed(() => props().statusMenuValue),
     statusOptions: computed(() => props().statusOptions),
     search: computed(() => props().search),
+    queryCriteria: computed(() => props().queryCriteria),
     currentCondition: computed(() => props().currentCondition),
     drafts: computed(() => props().drafts),
     trashed: computed(() => props().trashed),
@@ -180,7 +181,7 @@ export function elementIndexQueryParams(
   return {
     elementType: elementIndex.elementType,
     context: elementIndex.context,
-    source: elementIndex.source?.key,
+    source: elementIndex.source?.keyPath ?? elementIndex.source?.key,
     baseCriteria,
     criteria: {
       search: elementIndex.search ?? '',

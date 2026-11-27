@@ -576,7 +576,9 @@ Form controls
 
 /* Native selects draw the same chevron as craft-select, rather than the
    browser's own, which sits flush against the border. */
-.cp-select:has(> .cp-form-control--select:not([multiple])) {
+.cp-select:has(> .cp-form-control--select):not(
+  :has(> .cp-form-control--select[multiple])
+) {
   position: relative;
 
   &::after {

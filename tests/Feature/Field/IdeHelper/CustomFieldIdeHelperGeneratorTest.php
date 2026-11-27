@@ -5,6 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Fields;
@@ -12,10 +15,16 @@ use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayout as FieldLayoutData;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
 
 use function Pest\Laravel\actingAs;
 
@@ -80,10 +89,60 @@ describe('CustomFieldIdeHelperGenerator', function () {
 
         $fieldsService->saveField($fieldType);
 
+        // Regenerated once the request ends, after every change it makes
+        expect(File::exists($helperFile))->toBeFalse();
+
+        event(new RequestHandled(request(), response('')));
+
         expect(File::exists($helperFile))->toBeTrue();
 
         $content = File::get($helperFile);
         expect($content)->toContain('testRegenField');
+    });
+
+    it('includes every content model change made during the same request', function () {
+        $fieldsService = app(Fields::class);
+        $field = $fieldsService->createField(['type' => PlainText::class, 'name' => 'Probe field', 'handle' => 'probeField']);
+        expect($fieldsService->saveField($field))->toBeTrue();
+
+        foreach (['firstProbe', 'secondProbe'] as $handle) {
+            $entryType = new EntryType(['name' => $handle, 'handle' => $handle]);
+            $entryType->setFieldLayout(
+                new FieldLayoutData(['type' => EntryElement::class])
+                    ->tab('Content', fn (FieldLayoutTab $tab) => $tab->field('probeField'))
+            );
+
+            expect(app(EntryTypes::class)->saveEntryType($entryType))->toBeTrue();
+        }
+
+        event(new RequestHandled(request(), response('')));
+
+        expect(File::get($this->ideHelperPath.'/custom-fields.php'))
+            ->toContain('class FirstProbe extends Entry')
+            ->toContain('class SecondProbe extends Entry');
+    });
+
+    it('regenerates IDE helper when an Artisan command that changed the content model finishes', function () {
+        $field = Field::factory()->create([
+            'handle' => 'commandRegenField',
+            'type' => PlainText::class,
+        ]);
+
+        Entry::factory()
+            ->withFieldLayout(FieldLayout::factory()->forField($field))
+            ->create();
+
+        $fieldsService = app(Fields::class);
+        $fieldType = $fieldsService->getFieldById($field->id);
+        $fieldType->name = $fieldType->name.' Updated';
+        $fieldsService->saveField($fieldType);
+
+        $helperFile = $this->ideHelperPath.'/custom-fields.php';
+        expect(File::exists($helperFile))->toBeFalse();
+
+        event(new CommandFinished('craft:up', new ArrayInput([]), new NullOutput, 0));
+
+        expect(File::get($helperFile))->toContain('commandRegenField');
     });
 
     it('normalizes layout handles to StudlyCase', function () {

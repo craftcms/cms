@@ -1199,7 +1199,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked with the result and executing query after execution.
      */
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     public function afterQuery(Closure $callback): self
     {
         $this->afterQueryCallbacks[] = $callback;
@@ -1265,7 +1265,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->query;
     }
 
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the limit for paginated results.')]
     public function limit(?int $value): self
     {
@@ -1282,7 +1282,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->getQuery()->getLimit();
     }
 
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     #[ElementQueryParam(ElementQueryParamType::Int, 'Sets the offset for paginated results.')]
     public function offset(?int $value): self
     {
@@ -1294,7 +1294,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * @param  string|Expression|array<int|string, int|string|Expression>  $column
      * @param  int|string  $direction
-     * @return self<TElement>
+     *
+     * @phpstan-return static
      */
     #[ElementQueryParam(ElementQueryParamType::String, 'Sets the field the returned {elements} should be ordered by.')]
     public function orderBy($column, $direction = 'asc'): self
@@ -1335,7 +1336,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Order the query by a date column, newest first, as Eloquent orders by the model’s creation date by default.
      *
-     * @return self<TElement>
+     * @phpstan-return static
      */
     public function latest(string|Expression|null $column = null): self
     {
@@ -1345,7 +1346,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Order the query by a date column, oldest first, as Eloquent orders by the model’s creation date by default.
      *
-     * @return self<TElement>
+     * @phpstan-return static
      */
     public function oldest(string|Expression|null $column = null): self
     {
@@ -1861,7 +1862,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked on a clone.
      */
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     public function onClone(Closure $callback): self
     {
         $this->onCloneCallbacks[] = $callback;
@@ -1905,7 +1906,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Register a closure to be invoked before the query is executed.
      */
-    /** @return self<TElement> */
+    /** @phpstan-return static */
     public function beforeQuery(Closure $callback): self
     {
         $this->beforeQueryCallbacks[] = $callback;

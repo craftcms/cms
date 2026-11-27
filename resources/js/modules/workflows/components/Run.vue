@@ -155,7 +155,9 @@
     margin-block-end: calc(-1 * var(--c-spacing-md));
 
     &
-      > li:has(> :is(craft-disclosure:not([open]), section))
+      > li:has(> :is(craft-disclosure, section)):not(
+        :has(> craft-disclosure[open])
+      )
       + li
       :deep(.workflow-review-stage > .workflow-review-stage__heading) {
       border-block-start: 1px solid var(--c-color-neutral-border-quiet);

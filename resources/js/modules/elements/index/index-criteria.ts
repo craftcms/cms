@@ -3,7 +3,8 @@ import type {ContentIndexData} from './composables/useContentIndexData';
 type IndexCriteriaState = Pick<
   ContentIndexData,
   'canHaveDrafts' | 'status' | 'drafts' | 'trashed' | 'siteId'
->;
+> &
+  Partial<Pick<ContentIndexData, 'queryCriteria'>>;
 
 export type IndexQueryCriteria = {
   baseCriteria: Record<string, unknown>;
@@ -28,6 +29,7 @@ export function indexQueryCriteria(
       siteId: elementIndex.siteId,
     },
     criteria: {
+      ...elementIndex.queryCriteria,
       status: elementIndex.status || null,
       ...(elementIndex.trashed ? {trashed: true} : {}),
       ...(elementIndex.drafts ? {drafts: true, draftOf: null} : {}),
