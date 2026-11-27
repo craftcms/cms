@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Config;
 
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\PHP;
+use InvalidArgumentException;
 
 /**
- * Settings for assets: which files can be uploaded, how they’re uploaded and named, and where Craft keeps their files.
+ * Settings for assets: which files can be uploaded, how they’re uploaded and named, where Craft keeps their files, and
+ * which asset transformers volumes can use.
  *
  * @since 6.0.0
  */
@@ -188,6 +190,20 @@ class AssetsConfig extends BaseConfig
      */
     public string|int $maxUploadFileSize = 16777216;
 
+    /**
+     * The transformer for volumes that don’t choose one. `null` uses `craft`, and lets a hosting package such as Craft
+     * Cloud’s set its own default without overriding a project that chose one.
+     */
+    public ?string $defaultTransformer = null;
+
+    /**
+     * Transformers keyed by name. Each has a `driver`, registered with `AssetTransformers::extend()`, and that driver’s
+     * settings. The `craft` transformer is always defined, and its entry here only holds its settings.
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    public array $transformers = [];
+
     /** @param list<string> $value */
     public function allowedFileExtensions(array $value): self
     {
@@ -302,6 +318,81 @@ class AssetsConfig extends BaseConfig
         $this->maxUploadFileSize = PHP::sizeToBytes($value);
 
         return $this;
+    }
+
+    public function defaultTransformer(?string $value): self
+    {
+        $this->defaultTransformer = $value !== '' ? $value : null;
+
+        return $this;
+    }
+
+    /**
+     * Defines a transformer. Its config needs a `driver`, and can hold that driver’s settings. Transformers with the
+     * `craft` driver take `outputDisk` and `generateTransformsBeforePageLoad`. The `craft` transformer’s config can
+     * leave out `driver`. Adding a name that’s already defined replaces its config.
+     *
+     * @param  array<string, mixed>  $config
+     *
+     * @throws InvalidArgumentException if the name is empty, an integer, which PHP turns into an integer array key, or
+     *                                  starts with `disk:`, which names disks’ deprecated `asset_transformer` keys, or
+     *                                  if the `craft` transformer is given another driver.
+     */
+    public function addTransformer(string $name, array $config): self
+    {
+        // PHP turns integer-like array keys into integers, and `0` would resolve to the default transformer
+        if ($name === '' || (string) (int) $name === $name) {
+            throw new InvalidArgumentException('Asset transformer names can’t be empty or integers.');
+        }
+
+        if (str_starts_with($name, 'disk:')) {
+            throw new InvalidArgumentException('Asset transformer names can’t start with “disk:”, which is reserved for disks’ deprecated `asset_transformer` keys.');
+        }
+
+        if ($name === 'craft' && ($config['driver'] ?? 'craft') !== 'craft') {
+            throw new InvalidArgumentException('The craft transformer’s driver can’t be changed. Give the transformer another name.');
+        }
+
+        $this->transformers[$name] = $config;
+
+        return $this;
+    }
+
+    /** @param array<string, array<string, mixed>> $value */
+    public function transformers(array $value): self
+    {
+        $this->transformers = [];
+
+        foreach ($value as $name => $config) {
+            $this->addTransformer((string) $name, $config);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns a transformer’s config, or `null` if it isn’t defined. The `craft` transformer is always defined.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function transformerConfig(string $name): ?array
+    {
+        if ($name === 'craft') {
+            // The driver goes last, so a `null` driver in the config can't replace it
+            return [...($this->transformers['craft'] ?? []), 'driver' => 'craft'];
+        }
+
+        return $this->transformers[$name] ?? null;
+    }
+
+    /**
+     * Returns the names of the defined transformers, including `craft`.
+     *
+     * @return list<string>
+     */
+    public function transformerNames(): array
+    {
+        return array_values(array_unique(['craft', ...array_map(strval(...), array_keys($this->transformers))]));
     }
 
     /**

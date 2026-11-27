@@ -1,16 +1,16 @@
 # Asset Transformers
 
 A **transformer** turns an Asset and a transform definition into an `AssetTransformResult` with a URL and MIME type.
-Transformers are set with the `assetTransformers` setting in `config/craft/general.php`. Each transformer has a name, a
+Transformers are set with the `assets` setting in `config/craft/general.php`. Each transformer has a name, a
 `driver` such as `craft` or `imgix`, and that driver's settings. Craft defines the `craft` transformer. Plugins register
 other drivers.
 
 ```php
-use CraftCms\Cms\Config\AssetTransformersConfig;
+use CraftCms\Cms\Config\AssetsConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 
 return GeneralConfig::create()
-    ->assetTransformers(AssetTransformersConfig::create()
+    ->assets(AssetsConfig::create()
         ->defaultTransformer('imgix')
         ->addTransformer('craft', ['outputDisk' => 'transforms'])
         ->addTransformer('imgix', [
@@ -21,7 +21,7 @@ return GeneralConfig::create()
     );
 ```
 
-`AssetTransformersConfig` has these settings:
+`AssetsConfig` has these transformer settings:
 
 | Setting | Meaning |
 | --- | --- |
@@ -41,14 +41,14 @@ Each volume uses one transformer. Craft picks it in this order:
 
 1. The volume's **Asset Transformer** setting, if it names a transformer. It accepts an environment variable, such as
    `$IMAGES_TRANSFORMER`. An unset variable counts as no setting.
-2. The `assetTransformers` setting's `defaultTransformer`.
+2. The `assets` setting's `defaultTransformer`.
 3. The `craft` transformer.
 
 Most sites use one transformer per environment, so they set `defaultTransformer` with `env()` and leave the volume
 setting empty:
 
 ```php
-->assetTransformers(AssetTransformersConfig::create()
+->assets(AssetsConfig::create()
     ->defaultTransformer(env('ASSET_TRANSFORMER'))
     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
 )
@@ -66,7 +66,7 @@ Two transformers can use the same driver with different settings, such as two im
 choose it in the volumes that need it:
 
 ```php
-->assetTransformers(AssetTransformersConfig::create()
+->assets(AssetsConfig::create()
     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
     ->addTransformer('imgix-products', ['driver' => 'imgix', 'domain' => env('IMGIX_PRODUCTS_DOMAIN')])
 )
@@ -76,7 +76,7 @@ Craft builds one driver instance per transformer.
 
 6.0.0-beta.1 and beta.2 set transformers with an `asset_transformer` key on disks in `config/filesystems.php`. Craft still reads
 it, after a volume's Asset Transformer setting and before the `defaultTransformer`, and logs a deprecation warning. Its `has_urls`
-setting still applies, and still defaults to `false` when `output_disk` names a disk other than the volume's. Move the value to the volume's setting or to the `assetTransformers` setting, then remove the key.
+setting still applies, and still defaults to `false` when `output_disk` names a disk other than the volume's. Move the value to the volume's setting or to the `assets` setting, then remove the key.
 
 ### Invalid configuration
 
@@ -277,7 +277,7 @@ Craft passes settings through unchanged, so validate them.
 An `AssetTransformRequest` has:
 
 - `asset`: the source Asset;
-- `transformer`: the transformer, whose `name` is its name in the `assetTransformers` setting;
+- `transformer`: the transformer, whose `name` is its name in the `assets` setting;
 - `parameters`: the validated parameters.
 
 An `AssetTransformResult` needs a URL and MIME type. It can also give the output's `filename`, `width`, `height`, and

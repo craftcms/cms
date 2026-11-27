@@ -58,7 +58,7 @@ beforeEach(function(): void {
     // The default transformer stands in for `craft` without the volume choosing a transformer, which would take
     // precedence over legacy transformers.
     app(AssetTransformers::class)->extend('compatibility-default', fn() => $driver);
-    Cms::config()->assetTransformers
+    Cms::config()->assets
         ->addTransformer('compatibility-test', ['driver' => 'compatibility-test'])
         ->addTransformer('compatibility-default', ['driver' => 'compatibility-default'])
         ->defaultTransformer('compatibility-default');
@@ -265,7 +265,7 @@ it('returns the source URL for assets the transformer can’t transform', functi
 });
 
 it('transforms legacy assets with an applied transform through the craft driver', function(): void {
-    Cms::config()->assetTransformers->defaultTransformer(null);
+    Cms::config()->assets->defaultTransformer(null);
     app(AssetTransformers::class)->forgetTransformers();
     config()->set('filesystems.disks.uploads', [
         'driver' => 'local',

@@ -9,7 +9,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use Error;
 
 /**
- * The named transformer a volume uses, from the `assetTransformers` general config setting.
+ * The named transformer a volume uses, from the `assets` general config setting.
  *
  * @property-read string $driver The transformer’s driver name. Deprecated in 6.0.0; use [[$name]] instead.
  * @property-read array<string, mixed> $settings Always empty. Deprecated in 6.0.0; use `AssetTransformers::getInstanceConfig()` instead.
@@ -19,7 +19,7 @@ use Error;
 readonly class AssetTransformer
 {
     /**
-     * @param  string  $name  The transformer’s name in the `assetTransformers` general config setting.
+     * @param  string  $name  The transformer’s name in the `assets` general config setting.
      */
     public function __construct(
         public string $name,

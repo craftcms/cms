@@ -274,7 +274,7 @@ class GeneralConfig extends BaseConfig
     public AnchorsConfig $anchors;
 
     /**
-     * @var AssetsConfig Settings for assets: which files can be uploaded, how they’re uploaded and named, and where Craft keeps their files.
+     * @var AssetsConfig Settings for assets: which files can be uploaded, how they’re uploaded and named, where Craft keeps their files, and which asset transformers volumes can use.
      *
      * Supported settings:
      *
@@ -293,11 +293,16 @@ class GeneralConfig extends BaseConfig
      * - `uploadChunkSize` – The maximum bytes per PHP upload request. (Default is 8 MiB.)
      * - `uploadSessionDuration` – The seconds of inactivity before an upload session can be removed. (Default is 24 hours.)
      * - `maxUploadFileSize` – The maximum upload file size, in bytes or as a size such as `'25M'`. (Default is 16 MiB.)
+     * - `defaultTransformer` – The asset transformer for volumes that don’t choose one. (Default is `null`, the `craft` transformer.)
+     * - `transformers` – Asset transformers keyed by name, each with a `driver` and that driver’s settings. Add one at a time with `addTransformer()`. (Default is `[]`.)
      *
      * ```php
      * ->assets(\CraftCms\Cms\Config\AssetsConfig::create()
      *     ->extraAllowedFileExtensions(['mbox', 'xml'])
      *     ->maxUploadFileSize('25M')
+     *     ->defaultTransformer(env('ASSET_TRANSFORMER'))
+     *     ->addTransformer('craft', ['outputDisk' => 'transforms'])
+     *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
      * )
      * ```
      *
@@ -899,21 +904,6 @@ class GeneralConfig extends BaseConfig
     public bool $preloadSingles = false;
 
     /**
-     * @var AssetTransformersConfig Asset transformer settings: the default transformer and the named transformers.
-     *
-     * ```php
-     * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
-     *     ->defaultTransformer(env('ASSET_TRANSFORMER'))
-     *     ->addTransformer('craft', ['outputDisk' => 'transforms'])
-     *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
-     * )
-     * ```
-     *
-     * @group Image Handling
-     */
-    public AssetTransformersConfig $assetTransformers;
-
-    /**
      * @var McpConfig Administrative MCP transport and authentication configuration.
      *
      * @group System
@@ -1214,7 +1204,6 @@ class GeneralConfig extends BaseConfig
     public function __construct()
     {
         $this->anchors = AnchorsConfig::create();
-        $this->assetTransformers = AssetTransformersConfig::create();
         $this->assets = AssetsConfig::create();
         $this->backups = BackupsConfig::create();
         $this->garbageCollection = GarbageCollectionConfig::create();
@@ -1413,12 +1402,15 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Settings for assets: which files can be uploaded, how they’re uploaded and named, and where Craft keeps their files.
+     * Settings for assets: which files can be uploaded, how they’re uploaded and named, where Craft keeps their files, and which asset transformers volumes can use.
      *
      * ```php
      * ->assets(\CraftCms\Cms\Config\AssetsConfig::create()
      *     ->extraAllowedFileExtensions(['mbox', 'xml'])
      *     ->maxUploadFileSize('25M')
+     *     ->defaultTransformer(env('ASSET_TRANSFORMER'))
+     *     ->addTransformer('craft', ['outputDisk' => 'transforms'])
+     *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
      * )
      * ```
      *
@@ -2178,29 +2170,6 @@ class GeneralConfig extends BaseConfig
     public function preloadSingles(bool $value = true): self
     {
         $this->preloadSingles = $value;
-
-        return $this;
-    }
-
-    /**
-     * Asset transformer settings: the default transformer and the named transformers.
-     *
-     * ```php
-     * ->assetTransformers(\CraftCms\Cms\Config\AssetTransformersConfig::create()
-     *     ->defaultTransformer('imgix')
-     *     ->addTransformer('imgix', ['driver' => 'imgix', 'domain' => env('IMGIX_DOMAIN')])
-     * )
-     * ```
-     *
-     * @group Image Handling
-     *
-     * @see $assetTransformers
-     *
-     * @param  AssetTransformersConfig|array<string, mixed>|string  $value
-     */
-    public function assetTransformers(AssetTransformersConfig|array|string $value): self
-    {
-        $this->assetTransformers = $value instanceof AssetTransformersConfig ? $value : AssetTransformersConfig::fromConfig($value);
 
         return $this;
     }

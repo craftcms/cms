@@ -93,7 +93,7 @@ class Volume extends Component implements CpEditable, CustomFieldLayoutProviderI
 
     /**
      * The asset transformer for this volume’s assets, or an environment variable that names one. `null` uses the
-     * `default` in the `assetTransformers` general config setting.
+     * `default` in the `assets` general config setting.
      */
     public ?string $assetTransformer = null;
 

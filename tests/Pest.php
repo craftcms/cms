@@ -79,20 +79,20 @@ pest()->beforeEach(fn () => cache()->put('craftcms-mcp-tools', []))->in('Feature
  */
 function configureCraftTransformer(array $settings): void
 {
-    $config = Cms::config()->assetTransformers;
+    $config = Cms::config()->assets;
     $config->addTransformer('craft', $settings);
     app(AssetTransformers::class)->forgetTransformers();
 }
 
 /**
- * Defines a transformer in the `assetTransformers` general config setting. Its driver defaults to the driver of the
+ * Defines a transformer in the `assets` general config setting. Its driver defaults to the driver of the
  * same name.
  *
  * @param  array<string, mixed>  $config
  */
 function defineAssetTransformer(string $name, array $config = []): void
 {
-    Cms::config()->assetTransformers->addTransformer($name, ['driver' => $name, ...$config]);
+    Cms::config()->assets->addTransformer($name, ['driver' => $name, ...$config]);
     app(AssetTransformers::class)->forgetTransformers();
 }
 
@@ -104,7 +104,7 @@ function defineAssetTransformer(string $name, array $config = []): void
 function useAssetTransformer(string $name, array $config = []): void
 {
     defineAssetTransformer($name, $config);
-    Cms::config()->assetTransformers->defaultTransformer($name);
+    Cms::config()->assets->defaultTransformer($name);
 }
 
 /**

@@ -359,22 +359,22 @@ it('reports volumes with a separate Craft 5 transform filesystem until a transfo
     ]);
     config()->set('filesystems.disks.disk-chosen', ['driver' => 'local', 'root' => storage_path('framework/testing/disk-chosen'), 'asset_transformer' => 'craft']);
     config()->set('filesystems.disks.disk-chosen-child', ['driver' => 'scoped', 'disk' => 'disk-chosen', 'prefix' => 'child']);
-    Cms::config()->assetTransformers->addTransformer('craft', []);
+    Cms::config()->assets->addTransformer('craft', []);
 
     $finding = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
-    Cms::config()->assetTransformers->addTransformer('craft', ['outputDisk' => '']);
+    Cms::config()->assets->addTransformer('craft', ['outputDisk' => '']);
     $emptyDisk = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
-    Cms::config()->assetTransformers->addTransformer('craft', ['outputDisk' => 'transforms']);
+    Cms::config()->assets->addTransformer('craft', ['outputDisk' => 'transforms']);
     $afterChoosing = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     // The default is another craft transformer that still stores transforms on the source disk
-    Cms::config()->assetTransformers->addTransformer('craft-private', ['driver' => 'craft'])->defaultTransformer('craft-private');
+    Cms::config()->assets->addTransformer('craft-private', ['driver' => 'craft'])->defaultTransformer('craft-private');
     $craftDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     // The default's driver isn't registered, so volumes fall back to craft, which has no output disk
-    Cms::config()->assetTransformers->addTransformer('craft', [])->addTransformer('imgix', ['driver' => 'imgix'])->defaultTransformer('imgix');
+    Cms::config()->assets->addTransformer('craft', [])->addTransformer('imgix', ['driver' => 'imgix'])->defaultTransformer('imgix');
     $unregisteredDefault = collect(app(LooseEndsChecks::class)->database())->firstWhere('key', 'database.volume-transform-filesystems');
 
     // The default's driver can't be built from its settings, so volumes fall back to craft

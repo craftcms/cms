@@ -50,7 +50,7 @@ use WeakMap;
 /**
  * Registers asset transform drivers, resolves which transformer each volume uses, and runs transforms.
  *
- * Transformers are named in the `assetTransformers` general config setting, each with a `driver` and its settings.
+ * Transformers are named in the `assets` general config setting, each with a `driver` and its settings.
  * Craft defines the `craft` transformer. A volume picks a transformer with its `assetTransformer` setting,
  * a transformer name or an environment variable that names one. A volume without one uses the configured `default`.
  * Drivers other than `craft` are registered with `extend()`.
@@ -102,7 +102,7 @@ class AssetTransformers extends MultipleInstanceManager
     #[Override]
     public function getDefaultInstance(): string
     {
-        return Cms::config()->assetTransformers->defaultTransformer ?? 'craft';
+        return Cms::config()->assets->defaultTransformer ?? 'craft';
     }
 
     /**
@@ -111,11 +111,11 @@ class AssetTransformers extends MultipleInstanceManager
     #[Override]
     public function setDefaultInstance($name): void
     {
-        Cms::config()->assetTransformers->defaultTransformer($name);
+        Cms::config()->assets->defaultTransformer($name);
     }
 
     /**
-     * Returns a transformer’s config from the `assetTransformers` general config setting, or `null` if it isn’t defined.
+     * Returns a transformer’s config from the `assets` general config setting, or `null` if it isn’t defined.
      *
      * @param  string  $name
      * @return array<string, mixed>|null
@@ -129,7 +129,7 @@ class AssetTransformers extends MultipleInstanceManager
             return is_array($config) ? $config : null;
         }
 
-        $config = Cms::config()->assetTransformers->transformerConfig($name);
+        $config = Cms::config()->assets->transformerConfig($name);
 
         // Only a disk’s deprecated asset_transformer key can set has_urls. Otherwise the volume decides.
         return $config !== null ? Arr::except($config, 'has_urls') : null;
@@ -215,7 +215,7 @@ class AssetTransformers extends MultipleInstanceManager
      */
     public function names(): array
     {
-        return array_values(array_filter(Cms::config()->assetTransformers->names(), $this->has(...)));
+        return array_values(array_filter(Cms::config()->assets->transformerNames(), $this->has(...)));
     }
 
     /** @return array<string, AssetTransformDriverDefinition> */
@@ -298,7 +298,7 @@ class AssetTransformers extends MultipleInstanceManager
         if ($legacyConfig !== null) {
             Deprecator::log(
                 "filesystems.disks.$disk.asset_transformer",
-                "The `asset_transformer` key on the `$disk` disk is deprecated. Set the volume’s Asset Transformer setting or the `assetTransformers` config setting instead.",
+                "The `asset_transformer` key on the `$disk` disk is deprecated. Set the volume’s Asset Transformer setting or the `assets` config setting instead.",
             );
 
             $name = is_string($legacyConfig) ? $legacyConfig : self::LEGACY_DISK_PREFIX.$disk;
@@ -306,7 +306,7 @@ class AssetTransformers extends MultipleInstanceManager
             return $this->validTransformer($name, "the [{$disk}] disk’s asset_transformer", new AssetTransformer('craft'));
         }
 
-        $default = Cms::config()->assetTransformers->defaultTransformer;
+        $default = Cms::config()->assets->defaultTransformer;
 
         if ($default === null) {
             return new AssetTransformer('craft');
@@ -314,7 +314,7 @@ class AssetTransformers extends MultipleInstanceManager
 
         return $this->validTransformer(
             $default,
-            'the assetTransformers default',
+            'the assets defaultTransformer',
             new AssetTransformer('craft'),
         );
     }
@@ -559,7 +559,7 @@ class AssetTransformers extends MultipleInstanceManager
 
         $value = $config['asset_transformer'];
 
-        if (is_string($value) && $value !== '' && Cms::config()->assetTransformers->transformerConfig($value) !== null) {
+        if (is_string($value) && $value !== '' && Cms::config()->assets->transformerConfig($value) !== null) {
             return $value;
         }
 

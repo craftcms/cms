@@ -247,13 +247,13 @@ it('throws for invalid transformer config with debug mode on', function (string 
     defineAssetTransformer('unregistered', ['driver' => 'missing']);
     defineAssetTransformer('case-variant', ['driver' => 'CRAFT']);
     $volume = assetOnVolume('broken-source', ['handle' => 'broken', 'assetTransformer' => $value])->getVolume();
-    Cms::config()->assetTransformers->defaultTransformer = $value;
+    Cms::config()->assets->defaultTransformer = $value;
     $default = assetOnVolume('default-source')->getVolume();
 
     expect(fn () => app(AssetTransformers::class)->forVolume($volume))
         ->toThrow(AssetTransformDriverNotFoundException::class, '[broken] volume')
         ->and(fn () => app(AssetTransformers::class)->forVolume($default))
-        ->toThrow(AssetTransformDriverNotFoundException::class, 'assetTransformers default');
+        ->toThrow(AssetTransformDriverNotFoundException::class, 'assets defaultTransformer');
 })->with([
     'an undefined transformer' => 'missing',
     'a transformer with an unregistered driver' => 'unregistered',
