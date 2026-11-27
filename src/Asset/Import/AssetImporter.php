@@ -150,7 +150,7 @@ class AssetImporter extends ElementImporter
     public function prepareRootElementImportQuery(ElementInterface $element, ElementQueryInterface $query): ElementQueryInterface
     {
         /** @var Asset $element */
-        /** @var AssetQuery $query */
+        /** @var AssetQuery<Asset> $query */
         return $query->volumeId($element->getVolumeId());
     }
 
