@@ -1917,22 +1917,24 @@ class GeneralConfig extends BaseConfig
     public bool $rotateImagesOnUploadByExifData = true;
 
     /**
-     * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
+     * @var bool Whether Craft should run pending queue jobs from the browser while no queue worker is running.
      *
-     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
-     * managed by Supervisor or systemd:
+     * Craft stops running jobs from the browser while `queue:work` workers on the default queue connection have polled
+     * both the `queueName()` and `lowPriorityQueueName()` queues in the last three minutes, as long as the workers and
+     * the web server share a cache store. A worker is usually long-running, managed by Supervisor or systemd:
      *
      * ```shell
      * php /path/to/project/craft queue:work
      * ```
      *
-     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
-     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
-     * queue work there:
+     * If a long-running worker isn’t possible, process the queue every minute with `queue:work --stop-when-empty`,
+     * run directly or from Laravel’s scheduler:
      *
      * ```cron
-     * * * * * php /path/to/project/craft queue:work --once
+     * * * * * php /path/to/project/craft queue:work --stop-when-empty
      * ```
+     *
+     * Craft can’t detect a worker run with `--once`, and keeps running jobs from the browser alongside it.
      *
      * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
      * option.
@@ -4847,22 +4849,24 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether Craft should run pending queue jobs automatically when someone visits the control panel.
+     * Whether Craft should run pending queue jobs from the browser while no queue worker is running.
      *
-     * If disabled, a Laravel queue worker *must* be set up separately, usually as a long-running worker
-     * managed by Supervisor or systemd:
+     * Craft stops running jobs from the browser while `queue:work` workers on the default queue connection have polled
+     * both the `queueName()` and `lowPriorityQueueName()` queues in the last three minutes, as long as the workers and
+     * the web server share a cache store. A worker is usually long-running, managed by Supervisor or systemd:
      *
      * ```shell
      * php /path/to/project/craft queue:work
      * ```
      *
-     * If a long-running worker isn’t possible, schedule Laravel to process the queue every minute by running
-     * `queue:work --once` directly, or by running Laravel’s scheduler every minute and scheduling the same
-     * queue work there:
+     * If a long-running worker isn’t possible, process the queue every minute with `queue:work --stop-when-empty`,
+     * run directly or from Laravel’s scheduler:
      *
      * ```cron
-     * * * * * php /path/to/project/craft queue:work --once
+     * * * * * php /path/to/project/craft queue:work --stop-when-empty
      * ```
+     *
+     * Craft can’t detect a worker run with `--once`, and keeps running jobs from the browser alongside it.
      *
      * Include any custom queue names from `queueName()` and `lowPriorityQueueName()` in the worker’s `--queue`
      * option.

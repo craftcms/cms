@@ -8,6 +8,7 @@ use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Queue\Events\Looping;
 
 beforeEach(function () {
     $this->queue = Mockery::mock(Queue::class);
@@ -59,6 +60,21 @@ it('does not inject script for non-HTML responses', function () {
 it('does not inject script when jobs are already running', function () {
     $this->generalConfig->runQueueAutomatically(true);
     $this->progressService->allows('hasReservedJobs')->andReturn(true);
+
+    $request = Request::create('/');
+    $response = new Response('<html><body>Test</body></html>');
+    $response->headers->set('Content-Type', 'text/html');
+
+    $result = $this->middleware->handle($request, fn () => $response);
+
+    expect($result->getContent())->not->toContain('<script');
+});
+
+it('does not inject script while a queue worker is running', function () {
+    $this->generalConfig->runQueueAutomatically(true);
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
+    $this->queue->allows('size')->andReturn(1);
+    event(new Looping(config('queue.default'), 'default'));
 
     $request = Request::create('/');
     $response = new Response('<html><body>Test</body></html>');

@@ -13,6 +13,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Queue\Events\JobRetryRequested;
+use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -50,5 +51,6 @@ class QueueServiceProvider extends ServiceProvider
         Event::listen(JobProcessing::class, StoreReserved::class);
         Event::listen(JobProcessed::class, StoreCompleted::class);
         Event::listen(JobFailed::class, StoreFailed::class);
+        Event::listen(Looping::class, fn (Looping $event) => $this->app->make(QueueWorkerHeartbeat::class)->record($event->connectionName, $event->queue));
     }
 }

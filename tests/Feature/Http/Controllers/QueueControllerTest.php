@@ -10,6 +10,7 @@ use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Foundation\Application;
+use Illuminate\Queue\Events\Looping;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -58,6 +59,22 @@ it('does not run the queue when a job is reserved', function () {
     Cms::config()->runQueueAutomatically(true);
 
     app(JobProgress::class)->processing('reserved-job');
+    Artisan::shouldReceive('call')->never();
+
+    $callbackCount = count(terminatingCallbacks());
+
+    post(action([QueueController::class, 'run']))
+        ->assertOk()
+        ->assertContent('');
+
+    expect(terminatingCallbacks())->toHaveCount($callbackCount);
+});
+
+it('does not run the queue while a queue worker is running', function () {
+    Cms::config()->runQueueAutomatically(true);
+
+    app(JobProgress::class)->queued('pending-job', 'Pending Job');
+    event(new Looping(config('queue.default'), 'default'));
     Artisan::shouldReceive('call')->never();
 
     $callbackCount = count(terminatingCallbacks());
